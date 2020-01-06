@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.core.content.ContextCompat
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
+import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.getResourceColor
 

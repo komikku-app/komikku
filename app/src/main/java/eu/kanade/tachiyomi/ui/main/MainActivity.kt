@@ -22,6 +22,7 @@ import com.bluelinelabs.conductor.*
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.Migrations
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.base.controller.*
 import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
@@ -139,7 +140,7 @@ class MainActivity : BaseActivity() {
                     R.id.nav_drawer_extensions -> setRoot(ExtensionController(), id)
                     // --> EXH
                     R.id.nav_drawer_batch_add -> setRoot(BatchAddController(), id)
-                    // <-- EHX
+                    // <-- EHX 
                     R.id.nav_drawer_downloads -> {
                         router.pushController(DownloadController().withFadeTransaction())
                     }

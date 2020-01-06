@@ -60,4 +60,3 @@ interface SManga : Serializable {
         }
     }
 
-}

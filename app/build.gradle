@@ -134,7 +134,6 @@ dependencies {
     implementation 'com.github.inorichi:junrar-android:634c1f5'
 
     // Android support library
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.google.android.material:material:1.0.0'
@@ -241,7 +240,7 @@ dependencies {
     implementation("com.bluelinelabs:conductor-support:2.1.5") {
         exclude group: "com.android.support"
     }
-    implementation 'com.github.inorichi:conductor-support-preference:78e2344'
+    implementation 'com.github.inorichi:conductor-support-preference:a32c357'
 
     // RxBindings
     final rxbindings_version = '1.0.1'

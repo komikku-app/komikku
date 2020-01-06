@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import com.bluelinelabs.conductor.RouterTransaction
 import com.elvishew.xlog.XLog
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import com.jakewharton.rxbinding.view.clicks
@@ -455,8 +457,12 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
         presenter.deleteChapters(chapters)
     }
 
-    fun onChaptersDeleted() {
+    fun onChaptersDeleted(chapters: List<ChapterItem>) {
         dismissDeletingDialog()
+        //this is needed so the downloaded text gets removed from the item
+        chapters.forEach {
+            adapter?.updateItem(it)
+        }
         adapter?.notifyDataSetChanged()
     }
 

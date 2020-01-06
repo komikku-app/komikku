@@ -15,6 +15,8 @@ import okhttp3.Response
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
+import java.lang.Exception
 import java.net.URI
 import java.net.URISyntaxException
 import java.security.MessageDigest
