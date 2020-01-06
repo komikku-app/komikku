@@ -18,7 +18,7 @@ import kotlinx.android.synthetic.main.catalogue_grid_item.*
  */
 class LibraryGridHolder(
         private val view: View,
-        private val adapter: FlexibleAdapter<*>
+        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 
 ) : LibraryHolder(view, adapter) {
 

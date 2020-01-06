@@ -7,6 +7,7 @@ import android.preference.PreferenceManager
 import com.f2prateek.rx.preferences.Preference
 import com.f2prateek.rx.preferences.RxSharedPreferences
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.source.Source
 import exh.ui.migration.MigrationStatus
@@ -183,6 +184,8 @@ class PreferencesHelper(val context: Context) {
     fun trustedSignatures() = rxPrefs.getStringSet("trusted_signatures", emptySet())
 
     // --> AZ J2K CHERRYPICKING
+
+    fun defaultMangaOrder() = rxPrefs.getString("default_manga_order", "")
 
     fun upgradeFilters() {
         val filterDl = rxPrefs.getBoolean(Keys.filterDownloaded, false).getOrDefault()

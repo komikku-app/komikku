@@ -130,7 +130,10 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val source = Item.MultiSort(R.string.manga_info_source_label, this)
 
-        override val items = listOf(alphabetically, lastRead, lastUpdated, unread, total, source)
+        private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
+
+        override val items = listOf(alphabetically, lastRead, lastUpdated, unread, total, source,
+            dragAndDrop)
 
         override val header = Item.Header(R.string.action_sort)
 
@@ -147,6 +150,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             unread.state = if (sorting == LibrarySort.UNREAD) order else SORT_NONE
             total.state = if (sorting == LibrarySort.TOTAL) order else SORT_NONE
             source.state = if (sorting == LibrarySort.SOURCE) order else SORT_NONE
+            dragAndDrop.state = if (sorting == LibrarySort.DRAG_AND_DROP) order else SORT_NONE
         }
 
         override fun onItemClicked(item: Item) {
@@ -154,12 +158,15 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             val prevState = item.state
 
             item.group.items.forEach { (it as Item.MultiStateGroup).state = SORT_NONE }
-            item.state = when (prevState) {
-                SORT_NONE -> SORT_ASC
-                SORT_ASC -> SORT_DESC
-                SORT_DESC -> SORT_ASC
-                else -> throw Exception("Unknown state")
-            }
+            if (item == dragAndDrop)
+                item.state = SORT_ASC
+            else
+                item.state = when (prevState) {
+                    SORT_NONE -> SORT_ASC
+                    SORT_ASC -> SORT_DESC
+                    SORT_DESC -> SORT_ASC
+                    else -> throw Exception("Unknown state")
+                }
 
             preferences.librarySortingMode().set(when (item) {
                 alphabetically -> LibrarySort.ALPHA
@@ -168,9 +175,10 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
                 unread -> LibrarySort.UNREAD
                 total -> LibrarySort.TOTAL
                 source -> LibrarySort.SOURCE
+                dragAndDrop -> LibrarySort.DRAG_AND_DROP
                 else -> throw Exception("Unknown sorting")
             })
-            preferences.librarySortingAscending().set(if (item.state == SORT_ASC) true else false)
+            preferences.librarySortingAscending().set(item.state == SORT_ASC)
 
             item.group.items.forEach { adapter.notifyItemChanged(it) }
         }

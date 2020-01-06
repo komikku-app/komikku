@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.catalogue_list_item.*
 
 class LibraryListHolder(
         private val view: View,
-        private val adapter: FlexibleAdapter<*>
+        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 ) : LibraryHolder(view, adapter) {
 
     /**

@@ -18,7 +18,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = 9 // [EXH]
+        const val DATABASE_VERSION = 10 // [EXH + J2K DRAGNDROP]
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -95,6 +95,12 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         }
         // Remember to increment any Tachiyomi database upgrades after this
         // EXH <--
+
+        // AZ -->
+        if (oldVersion < 10) {
+            db.execSQL(CategoryTable.addMangaOrder)
+        }
+        // AZ <--
     }
 
     override fun onConfigure(db: SupportSQLiteDatabase) {

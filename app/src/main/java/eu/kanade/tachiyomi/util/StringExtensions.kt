@@ -14,6 +14,10 @@ fun String.chop(count: Int, replacement: String = "..."): String {
 
 }
 
+fun String.removeArticles(): String {
+    return this.replace(Regex("^(an|a|the) ", RegexOption.IGNORE_CASE), "")
+}
+
 /**
  * Replaces the given string to have at most [count] characters using [replacement] near the center.
  * If [replacement] is longer than [count] an exception will be thrown when `length > count`.

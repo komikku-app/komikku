@@ -20,6 +20,8 @@ import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Comp
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.combineLatest
 import eu.kanade.tachiyomi.util.isNullOrUnsubscribed
+import eu.kanade.tachiyomi.util.removeArticles
+import eu.kanade.tachiyomi.util.syncChaptersWithSource
 import exh.favorites.FavoritesSyncHelper
 import rx.Observable
 import rx.Subscription
@@ -208,6 +210,9 @@ class LibraryPresenter(
                     val source2Name = sourceManager.getOrStub(i2.manga.source).name
                     source1Name.compareTo(source2Name)
                 }
+                LibrarySort.DRAG_AND_DROP -> {
+                    0
+                }
                 else -> throw Exception("Unknown sorting mode")
             }
         }
@@ -218,6 +223,12 @@ class LibraryPresenter(
             Collections.reverseOrder(sortFn)
 
         return map.mapValues { entry -> entry.value.sortedWith(comparator) }
+    }
+
+    private fun sortAlphabetical(i1: LibraryItem, i2: LibraryItem): Int {
+        return if (preferences.removeArticles().getOrDefault())
+            i1.manga.title.removeArticles().compareTo(i2.manga.title.removeArticles(), true)
+        else i1.manga.title.compareTo(i2.manga.title, true)
     }
 
     /**
