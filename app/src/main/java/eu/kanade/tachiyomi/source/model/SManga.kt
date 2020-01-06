@@ -59,4 +59,4 @@ interface SManga : Serializable {
             return SMangaImpl()
         }
     }
-
+}
