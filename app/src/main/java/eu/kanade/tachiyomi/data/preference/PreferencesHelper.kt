@@ -166,7 +166,7 @@ class PreferencesHelper(val context: Context) {
 
     fun automaticUpdates() = prefs.getBoolean(Keys.automaticUpdates, false)
 
-    fun hiddenCatalogues() = rxPrefs.getStringSet("hidden_catalogues", emptySet())
+    fun hiddenCatalogues() = rxPrefs.getStringSet("hidden_catalogues", mutableSetOf())
 
     fun downloadNew() = rxPrefs.getBoolean(Keys.downloadNew, false)
 
