@@ -2,6 +2,10 @@ package eu.kanade.tachiyomi.ui.extension
 
 import android.view.*
 import androidx.appcompat.widget.SearchView
+import com.bluelinelabs.conductor.ControllerChangeHandler
+import com.bluelinelabs.conductor.ControllerChangeType
+import com.bluelinelabs.conductor.RouterTransaction
+import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -66,6 +70,25 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
     override fun onDestroyView(view: View) {
         adapter = null
         super.onDestroyView(view)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_filter -> {
+                router.pushController((RouterTransaction.with(SettingsExtensionsController()))
+                    .popChangeHandler(SettingsExtensionsFadeChangeHandler())
+                    .pushChangeHandler(FadeChangeHandler()))
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
+    }
+
+    override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
+        super.onChangeStarted(handler, type)
+        if (!type.isPush && handler is SettingsExtensionsFadeChangeHandler) {
+            presenter.findAvailableExtensions()
+        }
     }
 
     override fun onButtonClick(position: Int) {
@@ -169,4 +192,5 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
         presenter.uninstallExtension(pkgName)
     }
 
+    class SettingsExtensionsFadeChangeHandler : FadeChangeHandler()
 }

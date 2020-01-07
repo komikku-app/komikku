@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.source.Source
 import exh.ui.migration.MigrationStatus
 import java.io.File
+import java.util.Locale
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 fun <T> Preference<T>.getOrDefault(): T = get() ?: defaultValue()!!
@@ -96,7 +97,9 @@ class PreferencesHelper(val context: Context) {
 
     fun catalogueAsList() = rxPrefs.getBoolean(Keys.catalogueAsList, false)
 
-    fun enabledLanguages() = rxPrefs.getStringSet(Keys.enabledLanguages, setOf("all"))
+    fun enabledLanguages() = rxPrefs.getStringSet(Keys.enabledLanguages, setOf("all", "en", Locale.getDefault().language))
+
+    fun sourceSorting() = rxPrefs.getInteger(Keys.sourcesSort, 0)
 
     fun sourceUsername(source: Source) = prefs.getString(Keys.sourceUsername(source.id), "")
 

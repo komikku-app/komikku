@@ -67,6 +67,8 @@ object PreferenceKeys {
 
     const val enabledLanguages = "source_languages"
 
+    const val sourcesSort = "sources_sort"
+
     const val backupDirectory = "backup_directory"
 
     const val downloadsDirectory = "download_directory"

@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.4.6-AZ" changeDate="">
+        <changelogtext>MY FIRST REAL PROPER UPDATE</changelogtext>
+        <changelogtext>upgraded to androidx, this wont do anything for you but it was hard to do</changelogtext>
+        <changelogtext>tristate filters in library</changelogtext>
+        <changelogtext>tag searching now works on non-hentai manga</changelogtext>
+        <changelogtext>loading speed improvements when skipping through manga</changelogtext>
+        <changelogtext>search bar in sources settings</changelogtext>
+        <changelogtext>allow reordering downloads in queue</changelogtext>
+        <changelogtext>feature match with tachiyomi-dev</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.4.5-AZ" changeDate="">
         <changelogtext>FUCK</changelogtext>
         <changelogtext>FUCK</changelogtext>
@@ -11,5 +21,4 @@
         <changelogtext>aAAAAAAAAAAAaaAA</changelogtext>
 	<changelogtext>Fixed tsumino.</changelogtext>
     </changelogversion>
-
 </changelog>

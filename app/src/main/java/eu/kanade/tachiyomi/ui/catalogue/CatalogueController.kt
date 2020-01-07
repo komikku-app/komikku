@@ -212,7 +212,7 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
                 .subscribeUntilDestroy { performGlobalSearch(it.queryText().toString()) }
     }
 
-    fun performGlobalSearch(query: String){
+    private fun performGlobalSearch(query: String){
         router.pushController(CatalogueSearchController(query).withFadeTransaction())
     }
 

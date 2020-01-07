@@ -36,6 +36,7 @@
     <string name="action_filter_read">Read</string>
     <string name="action_filter_empty">Remove filter</string>
     <string name="action_sort_alpha">Alphabetically</string>
+    <string name="action_sort_enabled">Enabled</string>
     <string name="action_sort_total">Total chapters</string>
     <string name="action_sort_last_read">Last read</string>
     <string name="action_sort_last_updated">Last updated</string>
@@ -112,6 +113,7 @@
     <string name="pref_category_reader">Reader</string>
     <string name="pref_category_downloads">Downloads</string>
     <string name="pref_category_sources">Sources</string>
+    <string name="pref_category_all_sources">All Sources</string>
     <string name="pref_category_tracking">Tracking</string>
     <string name="pref_category_advanced">Advanced</string>
     <string name="pref_category_about">About</string>
