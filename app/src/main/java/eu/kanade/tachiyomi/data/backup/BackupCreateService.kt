@@ -57,7 +57,8 @@ class BackupCreateService : IntentService(NAME) {
         val uri = intent.getParcelableExtra<Uri>(BackupConst.EXTRA_URI)
         val flags = intent.getIntExtra(EXTRA_FLAGS, 0)
         // Create backup
-        backupManager.createBackup(uri, flags, false)
+        if (uri != null)
+            backupManager.createBackup(uri, flags, false)
     }
 
 }

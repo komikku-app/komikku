@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.*
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.SourceNotFoundException
 import eu.kanade.tachiyomi.util.chop
 import eu.kanade.tachiyomi.util.isServiceRunning
 import eu.kanade.tachiyomi.util.sendLocalBroadcast
@@ -112,6 +113,17 @@ class BackupRestoreService : Service() {
     private val errors = mutableListOf<Pair<Date, String>>()
 
     /**
+     * List containing distinct errors
+     */
+    private val errorsMini = mutableListOf<String>()
+
+
+    /**
+     * List containing missing sources
+     */
+    private val sourcesMissing = mutableListOf<Long>()
+
+    /**
      * Backup manager
      */
     private lateinit var backupManager: BackupManager
@@ -169,9 +181,9 @@ class BackupRestoreService : Service() {
      * @return the start value of the command.
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null) return Service.START_NOT_STICKY
+        if (intent == null) return START_NOT_STICKY
 
-        val uri = intent.getParcelableExtra<Uri>(BackupConst.EXTRA_URI)
+        val uri = intent.getParcelableExtra<Uri>(BackupConst.EXTRA_URI) ?: return START_NOT_STICKY
 
         throttleManager.resetThrottle()
 
@@ -198,7 +210,7 @@ class BackupRestoreService : Service() {
                 .subscribeOn(Schedulers.from(executor))
                 .subscribe()
 
-        return Service.START_NOT_STICKY
+        return START_NOT_STICKY
     }
 
     /**
@@ -212,7 +224,7 @@ class BackupRestoreService : Service() {
 
         return Observable.just(Unit)
                 .map {
-                    val reader = JsonReader(contentResolver.openInputStream(uri).bufferedReader())
+                    val reader = JsonReader(contentResolver.openInputStream(uri)!!.bufferedReader())
                     val json = JsonParser().parse(reader).asJsonObject
 
                     // Get parser version
@@ -226,6 +238,7 @@ class BackupRestoreService : Service() {
                     restoreAmount = mangasJson.size() + 1 // +1 for categories
                     restoreProgress = 0
                     errors.clear()
+                    errorsMini.clear()
 
                     // Restore categories
                     json.get(CATEGORIES)?.let {
@@ -280,6 +293,14 @@ class BackupRestoreService : Service() {
                         putExtra(BackupConst.EXTRA_ERRORS, errors.size)
                         putExtra(BackupConst.EXTRA_ERROR_FILE_PATH, logFile.parent)
                         putExtra(BackupConst.EXTRA_ERROR_FILE, logFile.name)
+                        val sourceMissingCount = sourcesMissing.distinct().size
+                        val sourceErrors = getString(R.string.sources_missing, sourceMissingCount)
+                        val otherErrors = errorsMini.distinct().joinToString("\n")
+                        putExtra(BackupConst.EXTRA_MINI_ERROR,
+                            if (sourceMissingCount > 0) sourceErrors + "\n" + otherErrors
+                            else otherErrors
+                            )
+                        putExtra(BackupConst.EXTRA_ERRORS, errors.size)
                         putExtra(BackupConst.ACTION, BackupConst.ACTION_RESTORE_COMPLETED_DIALOG)
                     }
                     sendLocalBroadcast(completeIntent)
@@ -374,6 +395,12 @@ class BackupRestoreService : Service() {
                             manga.url)
 
                     errors.add(Date() to "${manga.title} - ${it.message}")
+                    if (it is SourceNotFoundException) {
+                        sourcesMissing.add(it.id)
+                    }
+                    else {
+                        errorsMini.add(it.message ?: "")
+                    }
                     manga
                 }
                 .filter { it.id != null }
@@ -455,6 +482,7 @@ class BackupRestoreService : Service() {
                             chapters.size)
 
                     errors.add(Date() to "${manga.title} - ${it.message}")
+                    errorsMini.add(it.message ?: "")
                     Pair(emptyList(), emptyList())
                 }
     }
@@ -474,10 +502,13 @@ class BackupRestoreService : Service() {
                                 .doOnNext { db.insertTrack(it).executeAsBlocking() }
                                 .onErrorReturn {
                                     errors.add(Date() to "${manga.title} - ${it.message}")
+                                    errorsMini.add(it.message ?: "")
                                     track
                                 }
                     } else {
-                        errors.add(Date() to "${manga.title} - ${service?.name} not logged in")
+                        val notLoggedIn = getString(R.string.not_logged_into, service?.name)
+                        errors.add(Date() to "${manga.title} - $notLoggedIn")
+                        errorsMini.add(notLoggedIn)
                         Observable.empty()
                     }
                 }

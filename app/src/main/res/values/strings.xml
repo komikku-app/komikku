@@ -368,6 +368,8 @@
     <string name="delete_downloads_for_manga">Delete downloaded chapters?</string>
     <string name="copied_to_clipboard">%1$s copied to clipboard</string>
     <string name="source_not_installed">Source not installed: %1$s</string>
+    <string name="sources_missing">Sources missing: %1$d</string>
+    <string name="not_logged_into">Not logged into %1$s</string>
 
     <!-- Manga chapters fragment -->
     <string name="manga_chapters_tab">Chapters</string>

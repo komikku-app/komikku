@@ -165,3 +165,6 @@ open class SourceManager(private val context: Context) {
                                    val newSourceClass: KClass<out DelegatedHttpSource>)
     }
 }
+
+class SourceNotFoundException(message: String, val id: Long) : Exception(message)
+
