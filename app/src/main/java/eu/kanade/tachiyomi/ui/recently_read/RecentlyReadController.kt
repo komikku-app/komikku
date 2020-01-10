@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.catalogue.browse.ProgressItem
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.toast
@@ -21,6 +22,7 @@ import kotlinx.android.synthetic.main.recently_read_controller.*
  */
 class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
         FlexibleAdapter.OnUpdateListener,
+        FlexibleAdapter.EndlessScrollListener,
         RecentlyReadAdapter.OnRemoveClickListener,
         RecentlyReadAdapter.OnResumeClickListener,
         RecentlyReadAdapter.OnCoverClickListener,
@@ -31,6 +33,11 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
      */
     var adapter: RecentlyReadAdapter? = null
         private set
+
+    /**
+     * Endless loading item.
+     */
+    private var progressItem: ProgressItem? = null
 
     override fun getTitle(): String? {
         return resources?.getString(R.string.label_recent_manga)
@@ -70,7 +77,14 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
      * @param mangaHistory list of manga history
      */
     fun onNextManga(mangaHistory: List<RecentlyReadItem>) {
-        adapter?.updateDataSet(mangaHistory)
+        if (adapter?.itemCount ?: 0 == 0)
+            resetProgressItem()
+        adapter?.onLoadMoreComplete(mangaHistory)
+    }
+
+    fun onAddPageError(error: Throwable) {
+        adapter?.onLoadMoreComplete(null)
+        adapter?.endlessTargetCount = 1
     }
 
     override fun onUpdateEmptyView(size: Int) {
@@ -81,9 +95,25 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
         }
     }
 
+    /**
+     * Sets a new progress item and reenables the scroll listener.
+     */
+    private fun resetProgressItem() {
+        progressItem = ProgressItem()
+        adapter?.endlessTargetCount = 0
+        adapter?.setEndlessScrollListener(this, progressItem!!)
+    }
+
+    override fun onLoadMore(lastPosition: Int, currentPage: Int) {
+        val adapter = adapter ?: return
+        presenter.requestNext(adapter.itemCount)
+    }
+
+    override fun noMoreLoad(newItemsSize: Int) { }
+
     override fun onResumeClick(position: Int) {
         val activity = activity ?: return
-        val (manga, chapter, _) = adapter?.getItem(position)?.mch ?: return
+        val (manga, chapter, _) = (adapter?.getItem(position) as? RecentlyReadItem)?.mch ?: return
 
         val nextChapter = presenter.getNextChapter(chapter, manga)
         if (nextChapter != null) {
@@ -95,12 +125,12 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
     }
 
     override fun onRemoveClick(position: Int) {
-        val (manga, _, history) = adapter?.getItem(position)?.mch ?: return
+        val (manga, _, history) = (adapter?.getItem(position) as? RecentlyReadItem)?.mch ?: return
         RemoveHistoryDialog(this, manga, history).showDialog(router)
     }
 
     override fun onCoverClick(position: Int) {
-        val manga = adapter?.getItem(position)?.mch?.manga ?: return
+        val manga = (adapter?.getItem(position) as? RecentlyReadItem)?.mch?.manga ?: return
         router.pushController(MangaController(manga).withFadeTransaction())
     }
 

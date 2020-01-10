@@ -7,7 +7,9 @@ import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import rx.Observable
+import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
 import java.util.Comparator
@@ -30,20 +32,29 @@ class RecentlyReadPresenter : BasePresenter<RecentlyReadController>() {
 
         // Used to get a list of recently read manga
         getRecentMangaObservable()
-                .subscribeLatestCache(RecentlyReadController::onNextManga)
+            .subscribeLatestCache({ view, mangas ->
+                view.onNextManga(mangas)
+            }, RecentlyReadController::onAddPageError)
+    }
+
+    fun requestNext(offset: Int) {
+        getRecentMangaObservable((offset))
+            .subscribeLatestCache({ view, mangas ->
+                view.onNextManga(mangas)
+            }, RecentlyReadController::onAddPageError)
     }
 
     /**
      * Get recent manga observable
      * @return list of history
      */
-    fun getRecentMangaObservable(): Observable<List<RecentlyReadItem>> {
+    private fun getRecentMangaObservable(offset: Int = 0): Observable<List<RecentlyReadItem>> {
         // Set date for recent manga
         val cal = Calendar.getInstance()
         cal.time = Date()
-        cal.add(Calendar.MONTH, -1)
+        cal.add(Calendar.YEAR, -1)
 
-        return db.getRecentManga(cal.time).asRxObservable()
+        return db.getRecentManga(cal.time, offset).asRxObservable()
                 .map { recents -> recents.map(::RecentlyReadItem) }
                 .observeOn(AndroidSchedulers.mainThread())
     }

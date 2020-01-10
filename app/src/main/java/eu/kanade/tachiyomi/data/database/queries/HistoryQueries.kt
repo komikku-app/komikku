@@ -22,10 +22,10 @@ interface HistoryQueries : DbProvider {
      * Returns history of recent manga containing last read chapter
      * @param date recent date range
      */
-    fun getRecentManga(date: Date) = db.get()
+    fun getRecentManga(date: Date, offset: Int=0) = db.get()
             .listOfObjects(MangaChapterHistory::class.java)
             .withQuery(RawQuery.builder()
-                    .query(getRecentMangasQuery())
+                    .query(getRecentMangasQuery(offset))
                     .args(date.time)
                     .observesTables(HistoryTable.TABLE)
                     .build())

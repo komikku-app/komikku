@@ -47,7 +47,7 @@ fun getRecentsQuery() = """
  * and are read after the given time period
  * @return return limit is 25
  */
-fun getRecentMangasQuery() = """
+fun getRecentMangasQuery(offset: Int = 0) = """
     SELECT ${Manga.TABLE}.${Manga.COL_URL} as mangaUrl, ${Manga.TABLE}.*, ${Chapter.TABLE}.*, ${History.TABLE}.*
     FROM ${Manga.TABLE}
     JOIN ${Chapter.TABLE}
@@ -62,7 +62,7 @@ fun getRecentMangasQuery() = """
     ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = max_last_read.${Chapter.COL_MANGA_ID}
     WHERE ${History.TABLE}.${History.COL_LAST_READ} > ? AND max_last_read.${History.COL_CHAPTER_ID} = ${History.TABLE}.${History.COL_CHAPTER_ID}
     ORDER BY max_last_read.${History.COL_LAST_READ} DESC
-    LIMIT 25
+    LIMIT 25 OFFSET $offset
 """
 
 fun getHistoryByMangaId() = """
