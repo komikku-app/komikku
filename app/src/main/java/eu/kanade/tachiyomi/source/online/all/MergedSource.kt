@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -140,7 +141,10 @@ class MergedSource : HttpSource() {
         fun load(db: DatabaseHelper, sourceManager: SourceManager): Flow<LoadedMangaSource> {
             return children.asFlow().map { mangaSource ->
                 mangaSource.load(db, sourceManager)
-                        ?: throw IllegalStateException("Missing source manga: $mangaSource")
+                        ?: run {
+                           XLog.w("> Missing source manga: $mangaSource")
+                           throw IllegalStateException("Missing source manga: $mangaSource")
+                        }
             }
         }
 
