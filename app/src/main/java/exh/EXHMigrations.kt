@@ -110,7 +110,7 @@ object EXHMigrations {
         return false
     }
 
-    fun migrateBackupEntry(backupEntry: BackupEntry): Observable<BackupEntry> {
+    fun migrateBackupEntry(backupEntry: BackupEntry): BackupEntry {
         val (manga, chapters, categories, history, tracks) = backupEntry
 
         // Migrate HentaiCafe source IDs
@@ -143,7 +143,7 @@ object EXHMigrations {
             manga.source = EH_SOURCE_ID
         }
 
-        return Observable.just(backupEntry)
+        return backupEntry
     }
 
     private fun backupDatabase(context: Context, oldMigrationVersion: Int) {

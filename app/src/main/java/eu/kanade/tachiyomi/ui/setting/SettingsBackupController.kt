@@ -187,7 +187,7 @@ class SettingsBackupController : SettingsController() {
                 BackupCreateService.makeBackup(activity, uri, backupFlags)
             }
             CODE_BACKUP_RESTORE -> if (data != null && resultCode == Activity.RESULT_OK) {
-                val uri = data.data
+                val uri = data.data!!
                 RestoreBackupDialog(uri).showDialog(router)
             }
         }
@@ -310,7 +310,7 @@ class SettingsBackupController : SettingsController() {
                     .onPositive { _, _ ->
                         val context = applicationContext
                         if (context != null) {
-                            RestoringBackupDialog().showDialog(router, TAG_RESTORING_BACKUP_DIALOG)
+//                          RestoringBackupDialog().showDialog(router, TAG_RESTORING_BACKUP_DIALOG)
                             BackupRestoreService.start(context, args.getParcelable(KEY_URI))
                         }
                     }

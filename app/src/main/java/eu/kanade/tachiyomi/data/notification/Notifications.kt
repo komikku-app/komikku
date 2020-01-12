@@ -33,6 +33,11 @@ object Notifications {
     const val ID_DOWNLOAD_CHAPTER = 201
     const val ID_DOWNLOAD_CHAPTER_ERROR = 202
 
+    const val CHANNEL_RESTORE = "backup_restore_channel"
+    const val ID_RESTORE_PROGRESS = -401
+    const val ID_RESTORE_COMPLETE = -402
+    const val ID_RESTORE_ERROR = -403
+
     /**
      * Creates the notification channels introduced in Android Oreo.
      *
@@ -47,7 +52,11 @@ object Notifications {
                 NotificationChannel(CHANNEL_LIBRARY, context.getString(R.string.channel_library),
                         NotificationManager.IMPORTANCE_LOW),
                 NotificationChannel(CHANNEL_DOWNLOADER, context.getString(R.string.channel_downloader),
-                        NotificationManager.IMPORTANCE_LOW)
+                        NotificationManager.IMPORTANCE_LOW),
+                NotificationChannel(CHANNEL_RESTORE, context.getString(R.string.channel_backup_restore),
+                        NotificationManager.IMPORTANCE_LOW).apply {
+                    setShowBadge(false)
+                }
         )
         context.notificationManager.createNotificationChannels(channels)
     }

@@ -4,8 +4,10 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -55,6 +57,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1))
             // Cancel library update and dismiss notification
             ACTION_CANCEL_LIBRARY_UPDATE -> cancelLibraryUpdate(context, Notifications.ID_LIBRARY_PROGRESS)
+            ACTION_CANCEL_RESTORE -> cancelRestoreUpdate(context)
             // Open reader activity
             ACTION_OPEN_CHAPTER -> {
                 openChapter(context, intent.getLongExtra(EXTRA_MANGA_ID, -1),
@@ -143,6 +146,17 @@ class NotificationReceiver : BroadcastReceiver() {
         Handler().post { dismissNotification(context, notificationId) }
     }
 
+    /**
+     * Method called when user wants to stop a restore
+     *
+     * @param context context of application
+     * @param notificationId id of notification
+     */
+    private fun cancelRestoreUpdate(context: Context) {
+        BackupRestoreService.stop(context)
+        Handler().post { dismissNotification(context, Notifications.ID_RESTORE_PROGRESS) }
+    }
+
     companion object {
         private const val NAME = "NotificationReceiver"
 
@@ -154,6 +168,9 @@ class NotificationReceiver : BroadcastReceiver() {
 
         // Called to cancel library update.
         private const val ACTION_CANCEL_LIBRARY_UPDATE = "$ID.$NAME.CANCEL_LIBRARY_UPDATE"
+
+        // Called to cancel library update.
+        private const val ACTION_CANCEL_RESTORE = "$ID.$NAME.CANCEL_RESTORE"
 
         // Called to open chapter
         private const val ACTION_OPEN_CHAPTER = "$ID.$NAME.ACTION_OPEN_CHAPTER"
@@ -196,6 +213,18 @@ class NotificationReceiver : BroadcastReceiver() {
                 action = ACTION_RESUME_DOWNLOADS
             }
             return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+
+        /**Returns the PendingIntent that will open the error log in an external text viewer
+         *
+         */
+        internal fun openFileExplorerPendingActivity(context: Context, uri: Uri): PendingIntent {
+            val toLaunch = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "text/plain")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+            return PendingIntent.getActivity(context, 0, toLaunch, 0)
         }
 
         /**
@@ -305,6 +334,19 @@ class NotificationReceiver : BroadcastReceiver() {
         internal fun cancelLibraryUpdatePendingBroadcast(context: Context): PendingIntent {
             val intent = Intent(context, NotificationReceiver::class.java).apply {
                 action = ACTION_CANCEL_LIBRARY_UPDATE
+            }
+            return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+
+        /**
+         * Returns [PendingIntent] that starts a service which stops the restore service
+         *
+         * @param context context of application
+         * @return [PendingIntent]
+         */
+        internal fun cancelRestorePendingBroadcast(context: Context): PendingIntent {
+            val intent = Intent(context, NotificationReceiver::class.java).apply {
+                action = ACTION_CANCEL_RESTORE
             }
             return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }

@@ -264,15 +264,13 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
      * @param manga manga that needs updating
      * @return [Observable] that contains manga
      */
-    fun restoreMangaFetchObservable(source: Source, manga: Manga): Observable<Manga> {
-        return source.fetchMangaDetails(manga)
-                .map { networkManga ->
-                    manga.copyFrom(networkManga)
-                    manga.favorite = true
-                    manga.initialized = true
-                    manga.id = insertManga(manga)
-                    manga
-                }
+    suspend fun restoreMangaFetch(source: Source, manga: Manga): Manga {
+        val networkManga = source.fetchMangaDetails(manga).toBlocking().single()
+        manga.copyFrom(networkManga)
+        manga.favorite = true
+        manga.initialized = true
+        manga.id = insertManga(manga)
+        return manga
     }
 
     /**
@@ -294,6 +292,18 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
                         insertChapters(chapters)
                     }
                 }
+    }
+    suspend fun restoreChapterFetch(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager) {
+        val fetchChapters = if(source is EHentai) {
+            source.fetchChapterList(manga, throttleManager::throttle).toBlocking().single()
+        } else {
+            source.fetchChapterList(manga).toBlocking().single()
+        }
+        val syncChaptersWithSource = syncChaptersWithSource(databaseHelper, fetchChapters, manga, source)
+        if (syncChaptersWithSource.first.isNotEmpty()) {
+            chapters.forEach { it.manga_id = manga.id }
+            insertChapters(chapters)
+        }
     }
 
     /**

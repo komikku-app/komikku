@@ -269,8 +269,13 @@
     <string name="dialog_restoring_source_not_found">Restoring backup\n%1$s source not found</string>
     <string name="backup_created">Backup created</string>
     <string name="restore_completed">Restore completed</string>
+    <string name="restore_error">Restore error</string>
     <string name="error_opening_log">Could not open log</string>
-    <string name="restore_completed_content">Restore took %1$s.\n%2$s errors found.</string>
+<!--<string name="restore_completed_content">Restore took %1$s.\n%2$s errors found.</string>-->
+    <string name="restore_completed_content">Restore total %1$s</string>
+    <string name="restore_completed_content_2"> %1$s errors found</string>
+    <string name="restore_completed_content_3">%1$s were skipped out of %2$s, missing sources</string>
+    <string name="restore_completed_content_4"> %1$s were skipped out of %2$s because progress was cancelled </string>
     <string name="backup_restore_content">Restore uses source to fetch data, carrier costs may apply.\nAlso make sure you are properly logged in sources that require so before restoring.</string>
     <string name="file_saved">File saved at %1$s</string>
     <string name="backup_choice">What do you want to backup?</string>
@@ -481,6 +486,7 @@
     <string name="notification_not_connected_to_ac_body">Not connected to AC power</string>
     <string name="notification_no_connection_title">Sync canceled</string>
     <string name="notification_no_connection_body">Connection not available</string>
+    <string name="notification_action_error_log">View Errors</string>
 
     <!-- File Picker Titles -->
     <string name="file_select_cover">Select cover image</string>
@@ -527,6 +533,7 @@
     <string name="channel_common">Common</string>
     <string name="channel_library">Library</string>
     <string name="channel_downloader">Downloader</string>
+    <string name="channel_backup_restore">Restore Backup</string>
 
     <!-- EXH -->
     <string name="label_login">Login</string>

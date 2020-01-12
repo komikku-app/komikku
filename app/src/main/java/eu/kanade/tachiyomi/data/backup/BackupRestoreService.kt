@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.data.backup
 
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -7,9 +8,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.stream.JsonReader
 import eu.kanade.tachiyomi.R
@@ -23,11 +27,20 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.VERSION
 import eu.kanade.tachiyomi.data.backup.models.DHistory
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.*
+import eu.kanade.tachiyomi.data.notification.NotificationReceiver
+import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.util.getUriCompat
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceNotFoundException
 import eu.kanade.tachiyomi.util.chop
 import eu.kanade.tachiyomi.util.isServiceRunning
+import eu.kanade.tachiyomi.util.notificationManager
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import eu.kanade.tachiyomi.util.sendLocalBroadcast
 import exh.BackupEntry
 import exh.EH_SOURCE_ID
@@ -51,42 +64,6 @@ import java.util.concurrent.Executors
  */
 class BackupRestoreService : Service() {
 
-    companion object {
-
-        /**
-         * Returns the status of the service.
-         *
-         * @param context the application context.
-         * @return true if the service is running, false otherwise.
-         */
-        private fun isRunning(context: Context): Boolean =
-                context.isServiceRunning(BackupRestoreService::class.java)
-
-        /**
-         * Starts a service to restore a backup from Json
-         *
-         * @param context context of application
-         * @param uri path of Uri
-         */
-        fun start(context: Context, uri: Uri) {
-            if (!isRunning(context)) {
-                val intent = Intent(context, BackupRestoreService::class.java).apply {
-                    putExtra(BackupConst.EXTRA_URI, uri)
-                }
-                context.startService(intent)
-            }
-        }
-
-        /**
-         * Stops the service.
-         *
-         * @param context the application context.
-         */
-        fun stop(context: Context) {
-            context.stopService(Intent(context, BackupRestoreService::class.java))
-        }
-    }
-
     /**
      * Wake lock that will be held until the service is destroyed.
      */
@@ -95,7 +72,7 @@ class BackupRestoreService : Service() {
     /**
      * Subscription where the update is done.
      */
-    private var subscription: Subscription? = null
+    private var job: Job? = null
 
     /**
      * The progress of a backup restore
@@ -107,10 +84,19 @@ class BackupRestoreService : Service() {
      */
     private var restoreAmount = 0
 
+    private var skippedAmount = 0
+
+    private var totalAmount = 0
+
     /**
      * List containing errors
      */
-    private val errors = mutableListOf<Pair<Date, String>>()
+    private val errors = mutableListOf<String>()
+
+    /**
+     * count of cancelled
+     */
+    private var cancelled = 0
 
     /**
      * List containing distinct errors
@@ -138,9 +124,6 @@ class BackupRestoreService : Service() {
      */
     internal val trackManager: TrackManager by injectLazy()
 
-
-    private lateinit var executor: ExecutorService
-
     private val throttleManager = EHentaiThrottleManager()
 
     /**
@@ -148,10 +131,10 @@ class BackupRestoreService : Service() {
      */
     override fun onCreate() {
         super.onCreate()
+        startForeground(Notifications.ID_RESTORE_PROGRESS, progressNotification.build())
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK, "BackupRestoreService:WakeLock")
-        wakeLock.acquire()
-        executor = Executors.newSingleThreadExecutor()
+        wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
     }
 
     /**
@@ -159,8 +142,7 @@ class BackupRestoreService : Service() {
      * releases the wake lock.
      */
     override fun onDestroy() {
-        subscription?.unsubscribe()
-        executor.shutdown() // must be called after unsubscribe
+        job?.cancel()
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
@@ -188,137 +170,154 @@ class BackupRestoreService : Service() {
         throttleManager.resetThrottle()
 
         // Unsubscribe from any previous subscription if needed.
-        subscription?.unsubscribe()
-
-        subscription = Observable.using(
-                {
-                    // Pause auto-gallery-update during restore
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        EHentaiUpdateWorker.cancelBackground(this)
-                    }
-                    db.lowLevel().beginTransaction()
-                },
-                { getRestoreObservable(uri).doOnNext { db.lowLevel().setTransactionSuccessful() } },
-                {
-                    // Resume auto-gallery-update
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        EHentaiUpdateWorker.scheduleBackground(this)
-                    }
-                    executor.execute { db.lowLevel().endTransaction() }
-                })
-                .doAfterTerminate { stopSelf(startId) }
-                .subscribeOn(Schedulers.from(executor))
-                .subscribe()
+        job?.cancel()
+        val handler = CoroutineExceptionHandler { _, exception ->
+            Timber.e(exception)
+            showErrorNotification(exception.message!!)
+            stopSelf(startId)
+        }
+        job = GlobalScope.launch(handler) {
+            restoreBackup(uri!!)
+        }
+        job?.invokeOnCompletion { stopSelf(startId) }
 
         return START_NOT_STICKY
     }
 
     /**
-     * Returns an [Observable] containing restore process.
-     *
-     * @param uri restore file
-     * @return [Observable<Manga>]
+     * Restore a backup json file
      */
-    private fun getRestoreObservable(uri: Uri): Observable<List<Manga>> {
-        val startTime = System.currentTimeMillis()
+    private suspend fun restoreBackup(uri: Uri) {
+        val reader = JsonReader(contentResolver.openInputStream(uri)!!.bufferedReader())
+        val json = JsonParser().parse(reader).asJsonObject
 
-        return Observable.just(Unit)
-                .map {
-                    val reader = JsonReader(contentResolver.openInputStream(uri)!!.bufferedReader())
-                    val json = JsonParser().parse(reader).asJsonObject
+        // Get parser version
+        val version = json.get(VERSION)?.asInt ?: 1
 
-                    // Get parser version
-                    val version = json.get(VERSION)?.asInt ?: 1
+        // Initialize manager
+        backupManager = BackupManager(this, version)
 
-                    // Initialize manager
-                    backupManager = BackupManager(this, version)
+        val mangasJson = json.get(MANGAS).asJsonArray
 
-                    val mangasJson = json.get(MANGAS).asJsonArray
+        val validManga = mangasJson.filter {
+            val manga = backupManager.parser.fromJson<MangaImpl>(it.asJsonObject.get(MANGA))
+            val sourced = backupManager.sourceManager.get(manga.source)!= null
+            if (!sourced) {
+                restoreAmount -= 1
+            }
+            sourced
+        }
 
-                    restoreAmount = mangasJson.size() + 1 // +1 for categories
-                    restoreProgress = 0
-                    errors.clear()
-                    errorsMini.clear()
+        totalAmount = mangasJson.size()
+        skippedAmount = mangasJson.size() - validManga.count()
+        restoreAmount = validManga.count() + 1
 
-                    // Restore categories
-                    json.get(CATEGORIES)?.let {
-                        backupManager.restoreCategories(it.asJsonArray)
-                        restoreProgress += 1
-                        showRestoreProgress(restoreProgress, restoreAmount, "Categories added", errors.size)
-                    }
+        errors.clear()
+	errorsMini.clear()
+        cancelled = 0
+        // Restore categories
+        restoreCategories(json, backupManager)
 
-                    mangasJson
-                }
-                .flatMap { Observable.from(it) }
-                .concatMap {
-                    val obj = it.asJsonObject
-                    val manga = backupManager.parser.fromJson<MangaImpl>(obj.get(MANGA))
-                    val chapters = backupManager.parser.fromJson<List<ChapterImpl>>(obj.get(CHAPTERS) ?: JsonArray())
-                    val categories = backupManager.parser.fromJson<List<String>>(obj.get(CATEGORIES) ?: JsonArray())
-                    val history = backupManager.parser.fromJson<List<DHistory>>(obj.get(HISTORY) ?: JsonArray())
-                    val tracks = backupManager.parser.fromJson<List<TrackImpl>>(obj.get(TRACK) ?: JsonArray())
+        mangasJson.forEach {
+            restoreManga(it.asJsonObject, backupManager)
+        }
 
-                    // EXH -->
-                    val migrated = EXHMigrations.migrateBackupEntry(
-                            BackupEntry(
-                                    manga,
-                                    chapters,
-                                    categories,
-                                    history,
-                                    tracks
-                            )
-                    )
 
-                    val observable = migrated.flatMap { (manga, chapters, categories, history, tracks) ->
-                        getMangaRestoreObservable(manga, chapters, categories, history, tracks)
-                    }
-                    // EXH <--
-                    if (observable != null) {
-                        observable
-                    } else {
-                        errors.add(Date() to "${manga.title} - ${getString(R.string.source_not_found)}")
-                        restoreProgress += 1
-                        val content = getString(R.string.dialog_restoring_source_not_found, manga.title.chop(15))
-                        showRestoreProgress(restoreProgress, restoreAmount, manga.title, errors.size, content)
-                        Observable.just(manga)
-                    }
-                }
-                .toList()
-                .doOnNext {
-                    val endTime = System.currentTimeMillis()
-                    val time = endTime - startTime
-                    val logFile = writeErrorLog()
-                    val completeIntent = Intent(BackupConst.INTENT_FILTER).apply {
-                        putExtra(BackupConst.EXTRA_TIME, time)
-                        putExtra(BackupConst.EXTRA_ERRORS, errors.size)
-                        putExtra(BackupConst.EXTRA_ERROR_FILE_PATH, logFile.parent)
-                        putExtra(BackupConst.EXTRA_ERROR_FILE, logFile.name)
-                        val sourceMissingCount = sourcesMissing.distinct().size
-                        val sourceErrors = getString(R.string.sources_missing, sourceMissingCount)
-                        val otherErrors = errorsMini.distinct().joinToString("\n")
-                        putExtra(BackupConst.EXTRA_MINI_ERROR,
-                            if (sourceMissingCount > 0) sourceErrors + "\n" + otherErrors
-                            else otherErrors
-                            )
-                        putExtra(BackupConst.EXTRA_ERRORS, errors.size)
-                        putExtra(BackupConst.ACTION, BackupConst.ACTION_RESTORE_COMPLETED_DIALOG)
-                    }
-                    sendLocalBroadcast(completeIntent)
+        notificationManager.cancel(Notifications.ID_RESTORE_PROGRESS)
 
-                }
-                .doOnError { error ->
-                    // [EXH]
-                    XLog.w("> Failed to perform restore!", error)
-                    XLog.w("> (uri: %s)", uri)
+        cancelled = errors.count { it -> it.contains("standalonecoroutine", true) }
+        var tmpErrors = errors.filter { it -> !it.contains("standalonecoroutine", true) }
+        errors.clear()
+        errors.addAll(tmpErrors)
 
-                    writeErrorLog()
-                    val errorIntent = Intent(BackupConst.INTENT_FILTER).apply {
-                        putExtra(BackupConst.ACTION, BackupConst.ACTION_ERROR_RESTORE_DIALOG)
-                        putExtra(BackupConst.EXTRA_ERROR_MESSAGE, error.message)
-                    }
-                    sendLocalBroadcast(errorIntent)
-                }
-                .onErrorReturn { emptyList() }
+        val logFile = writeErrorLog()
+        showResultNotification(logFile.parent, logFile.name)
+    }
+
+    /**Restore categories if they were backed up
+     *
+     */
+    private fun restoreCategories(json: JsonObject, backupManager: BackupManager) {
+        val element = json.get(CATEGORIES)
+        if (element != null) {
+            backupManager.restoreCategories(element.asJsonArray)
+            restoreProgress += 1
+            showProgressNotification(restoreProgress, restoreAmount, "Categories added")
+        } else {
+            restoreAmount -= 1
+        }
+    }
+
+    /**
+     * Restore manga from json  this should be refactored more at some point to prevent the manga object from being mutable
+     */
+    private suspend fun restoreManga(obj: JsonObject, backupManager: BackupManager) {
+        val tmanga = backupManager.parser.fromJson<MangaImpl>(obj.get(MANGA))
+        val tchapters = backupManager.parser.fromJson<List<ChapterImpl>>(obj.get(CHAPTERS) ?: JsonArray())
+        val tcategories = backupManager.parser.fromJson<List<String>>(obj.get(CATEGORIES) ?: JsonArray())
+        val thistory = backupManager.parser.fromJson<List<DHistory>>(obj.get(HISTORY) ?: JsonArray())
+        val ttracks = backupManager.parser.fromJson<List<TrackImpl>>(obj.get(TRACK) ?: JsonArray())
+        // EXH -->
+        val migrated = EXHMigrations.migrateBackupEntry(
+            BackupEntry(
+                tmanga,
+                tchapters,
+                tcategories,
+                thistory,
+                ttracks
+            )
+        )
+        val (manga, chapters, categories, history, tracks) = migrated
+        val source = backupManager.sourceManager.getOrStub(manga.source)
+        // <-- EXH
+        try {
+            val dbManga = backupManager.getMangaFromDatabase(manga)
+            val dbMangaExists = dbManga != null
+            if (dbMangaExists) {
+                // Manga in database copy information from manga already in database
+                backupManager.restoreMangaNoFetch(manga, dbManga!!)
+            } else {
+                //manga gets details from network
+                backupManager.restoreMangaFetch(source, manga)
+            }
+            if (!dbMangaExists || !backupManager.restoreChaptersForManga(manga, chapters)) {
+                //manga gets chapters added
+                backupManager.restoreChapterFetch(source, manga, chapters, throttleManager)
+            }
+            // Restore categories
+            backupManager.restoreCategoriesForManga(manga, categories)
+            // Restore history
+            backupManager.restoreHistoryForManga(history)
+            // Restore tracking
+            backupManager.restoreTrackForManga(manga, tracks)
+            trackingFetch(manga, tracks)
+            restoreProgress += 1
+            showProgressNotification(restoreProgress, restoreAmount, manga.title)
+        } catch (e: Exception) {
+            Timber.e(e)
+            errors.add("${manga.title} - ${e.message}")
+        }
+    }
+
+    /**
+     * [refreshes tracking information
+     * @param manga manga that needs updating.
+     * @param tracks list containing tracks from restore file.
+     */
+    private fun trackingFetch(manga: Manga, tracks: List<Track>) {
+        tracks.forEach { track ->
+            val service = trackManager.getService(track.sync_id)
+            if (service != null && service.isLogged) {
+                service.refresh(track)
+                        .doOnNext { db.insertTrack(it).executeAsBlocking() }
+                        .onErrorReturn {
+                            errors.add("${manga.title} - ${it.message}")
+                            track
+                        }
+            } else {
+                errors.add("${manga.title} - ${service?.name} not logged in")
+            }
+        }
     }
 
     /**
@@ -331,206 +330,134 @@ class BackupRestoreService : Service() {
                 val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
                 destFile.bufferedWriter().use { out ->
-                    errors.forEach { (date, message) ->
-                        out.write("[${sdf.format(date)}] $message\n")
+                    errors.forEach { message ->
+                        out.write("$message\n")
                     }
                 }
                 return destFile
             }
         } catch (e: Exception) {
-            // Empty
+            Timber.e(e)
         }
         return File("")
     }
 
     /**
-     * Returns a manga restore observable
-     *
-     * @param manga manga data from json
-     * @param chapters chapters data from json
-     * @param categories categories data from json
-     * @param history history data from json
-     * @param tracks tracking data from json
-     * @return [Observable] containing manga restore information
+     * keep a partially constructed progress notification for resuse
      */
-    private fun getMangaRestoreObservable(manga: Manga, chapters: List<Chapter>,
-                                          categories: List<String>, history: List<DHistory>,
-                                          tracks: List<Track>): Observable<Manga>? {
-        // Get source
-        val source = backupManager.sourceManager.getOrStub(manga.source)
-        val dbManga = backupManager.getMangaFromDatabase(manga)
+    private val progressNotification by lazy {
+        NotificationCompat.Builder(this, Notifications.CHANNEL_RESTORE)
+                .setContentTitle(getString(R.string.app_name))
+                .setSmallIcon(R.drawable.ic_update_black_128dp)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setAutoCancel(false)
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                .addAction(R.drawable.ic_clear_grey, getString(android.R.string.cancel), cancelIntent)
+    }
 
-        return if (dbManga == null) {
-            // Manga not in database
-            mangaFetchObservable(source, manga, chapters, categories, history, tracks)
-        } else { // Manga in database
-            // Copy information from manga already in database
-            backupManager.restoreMangaNoFetch(manga, dbManga)
-            // Fetch rest of manga information
-            mangaNoFetchObservable(source, manga, chapters, categories, history, tracks)
+    /**
+     * Pending intent of action that cancels the library update
+     */
+    private val cancelIntent by lazy {
+        NotificationReceiver.cancelRestorePendingBroadcast(this)
+    }
+
+    /**
+     * Shows the notification containing the currently updating manga and the progress.
+     *
+     * @param manga the manga that's being updated.
+     * @param current the current progress.
+     * @param total the total progress.
+     */
+    private fun showProgressNotification(current: Int, total: Int, title: String) {
+        notificationManager.notify(Notifications.ID_RESTORE_PROGRESS, progressNotification
+                .setContentTitle(title)
+                .setProgress(total, current, false)
+                .build())
+    }
+
+    /**
+     * Show the result notification with option to show the error log
+     */
+    private fun showResultNotification(path: String?, file: String?) {
+        val content = listOf(getString(R.string.restore_completed_content, restoreProgress.toString()),
+                getString(R.string.restore_completed_content_2, errors.size.toString()),
+                getString(R.string.restore_completed_content_3, skippedAmount.toString(), totalAmount.toString()),
+                getString(R.string.restore_completed_content_4, cancelled.toString(), totalAmount.toString())).joinToString("\n")
+
+        val resultNotification = NotificationCompat.Builder(this, Notifications.CHANNEL_RESTORE)
+                .setContentTitle(getString(R.string.restore_completed))
+                .setContentText(content)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(content))
+                .setSmallIcon(R.drawable.ic_update_black_128dp)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
+        if (errors.size > 0 && !path.isNullOrEmpty() && !file.isNullOrEmpty()) {
+            resultNotification.addAction(R.drawable.ic_clear_grey, getString(R.string.notification_action_error_log), getErrorLogIntent(path, file))
+        }
+        notificationManager.notify(Notifications.ID_RESTORE_COMPLETE, resultNotification.build())
+    }
+
+    /**Show an error notification if something happens that prevents the restore from starting/working
+     *
+     */
+    private fun showErrorNotification(errorMessage: String) {
+        val resultNotification = NotificationCompat.Builder(this, Notifications.CHANNEL_RESTORE)
+                .setContentTitle(getString(R.string.restore_error))
+                .setContentText(errorMessage)
+                .setSmallIcon(R.drawable.ic_error_grey)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setColor(ContextCompat.getColor(this, R.color.md_red_500))
+        notificationManager.notify(Notifications.ID_RESTORE_ERROR, resultNotification.build())
+    }
+    /**Get the PendingIntent for the error log
+     *
+     */
+    private fun getErrorLogIntent(path: String, file: String): PendingIntent {
+        val destFile = File(path, file!!)
+        val uri = destFile.getUriCompat(applicationContext)
+        return NotificationReceiver.openFileExplorerPendingActivity(this@BackupRestoreService, uri)
+    }
+
+    companion object {
+
+        /**
+         * Returns the status of the service.
+         *
+         * @param context the application context.
+         * @return true if the service is running, false otherwise.
+         */
+        private fun isRunning(context: Context): Boolean =
+                context.isServiceRunning(BackupRestoreService::class.java)
+
+        /**
+         * Starts a service to restore a backup from Json
+         *
+         * @param context context of application
+         * @param uri path of Uri
+         */
+        fun start(context: Context, uri: Uri) {
+            if (!isRunning(context)) {
+                val intent = Intent(context, BackupRestoreService::class.java).apply {
+                    putExtra(BackupConst.EXTRA_URI, uri)
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    context.startService(intent)
+                } else {
+                    context.startForegroundService(intent)
+                }
+            }
+        }
+
+        /**
+         * Stops the service.
+         *
+         * @param context the application context.
+         */
+        fun stop(context: Context) {
+            context.stopService(Intent(context, BackupRestoreService::class.java))
         }
     }
+} 
 
-    /**
-     * [Observable] that fetches manga information
-     *
-     * @param manga manga that needs updating
-     * @param chapters chapters of manga that needs updating
-     * @param categories categories that need updating
-     */
-    private fun mangaFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>,
-                                     categories: List<String>, history: List<DHistory>,
-                                     tracks: List<Track>): Observable<Manga> {
-        if(source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID)
-            throttleManager.throttle()
-
-        return backupManager.restoreMangaFetchObservable(source, manga)
-                .onErrorReturn {
-                    // [EXH]
-                    XLog.w("> Failed to restore manga!", it)
-                    XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s)",
-                            source.id,
-                            source.name,
-                            manga.id,
-                            manga.url)
-
-                    errors.add(Date() to "${manga.title} - ${it.message}")
-                    if (it is SourceNotFoundException) {
-                        sourcesMissing.add(it.id)
-                    }
-                    else {
-                        errorsMini.add(it.message ?: "")
-                    }
-                    manga
-                }
-                .filter { it.id != null }
-                .flatMap {
-                    chapterFetchObservable(source, it, chapters)
-                            // Convert to the manga that contains new chapters.
-                            .map { manga }
-                }
-                .doOnNext {
-                    restoreExtraForManga(it, categories, history, tracks)
-                }
-                .flatMap {
-                    trackingFetchObservable(it, tracks)
-                            // Convert to the manga that contains new chapters.
-                            .map { manga }
-                }
-                .doOnCompleted {
-                    restoreProgress += 1
-                    showRestoreProgress(restoreProgress, restoreAmount, manga.title, errors.size)
-                }
-    }
-
-    private fun mangaNoFetchObservable(source: Source, backupManga: Manga, chapters: List<Chapter>,
-                                       categories: List<String>, history: List<DHistory>,
-                                       tracks: List<Track>): Observable<Manga> {
-
-        return Observable.just(backupManga)
-                .flatMap { manga ->
-                    if (!backupManager.restoreChaptersForManga(manga, chapters)) {
-                        chapterFetchObservable(source, manga, chapters)
-                                .map { manga }
-                    } else {
-                        Observable.just(manga)
-                    }
-                }
-                .doOnNext {
-                    restoreExtraForManga(it, categories, history, tracks)
-                }
-                .flatMap { manga ->
-                    trackingFetchObservable(manga, tracks)
-                            // Convert to the manga that contains new chapters.
-                            .map { manga }
-                }
-                .doOnCompleted {
-                    restoreProgress += 1
-                    showRestoreProgress(restoreProgress, restoreAmount, backupManga.title, errors.size)
-                }
-    }
-
-    private fun restoreExtraForManga(manga: Manga, categories: List<String>, history: List<DHistory>, tracks: List<Track>) {
-        // Restore categories
-        backupManager.restoreCategoriesForManga(manga, categories)
-
-        // Restore history
-        backupManager.restoreHistoryForManga(history)
-
-        // Restore tracking
-        backupManager.restoreTrackForManga(manga, tracks)
-    }
-
-    /**
-     * [Observable] that fetches chapter information
-     *
-     * @param source source of manga
-     * @param manga manga that needs updating
-     * @return [Observable] that contains manga
-     */
-    private fun chapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        return backupManager.restoreChapterFetchObservable(source, manga, chapters, throttleManager)
-                // If there's any error, return empty update and continue.
-                .onErrorReturn {
-                    // [EXH]
-                    XLog.w("> Failed to restore chapter!", it)
-                    XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapters.size: %s)",
-                            source.id,
-                            source.name,
-                            manga.id,
-                            manga.url,
-                            chapters.size)
-
-                    errors.add(Date() to "${manga.title} - ${it.message}")
-                    errorsMini.add(it.message ?: "")
-                    Pair(emptyList(), emptyList())
-                }
-    }
-
-    /**
-     * [Observable] that refreshes tracking information
-     * @param manga manga that needs updating.
-     * @param tracks list containing tracks from restore file.
-     * @return [Observable] that contains updated track item
-     */
-    private fun trackingFetchObservable(manga: Manga, tracks: List<Track>): Observable<Track> {
-        return Observable.from(tracks)
-                .concatMap { track ->
-                    val service = trackManager.getService(track.sync_id)
-                    if (service != null && service.isLogged) {
-                        service.refresh(track)
-                                .doOnNext { db.insertTrack(it).executeAsBlocking() }
-                                .onErrorReturn {
-                                    errors.add(Date() to "${manga.title} - ${it.message}")
-                                    errorsMini.add(it.message ?: "")
-                                    track
-                                }
-                    } else {
-                        val notLoggedIn = getString(R.string.not_logged_into, service?.name)
-                        errors.add(Date() to "${manga.title} - $notLoggedIn")
-                        errorsMini.add(notLoggedIn)
-                        Observable.empty()
-                    }
-                }
-    }
-
-    /**
-     * Called to update dialog in [BackupConst]
-     *
-     * @param progress restore progress
-     * @param amount total restoreAmount of manga
-     * @param title title of restored manga
-     */
-    private fun showRestoreProgress(progress: Int, amount: Int, title: String, errors: Int,
-                                    content: String = getString(R.string.dialog_restoring_backup, title.chop(15))) {
-        val intent = Intent(BackupConst.INTENT_FILTER).apply {
-            putExtra(BackupConst.EXTRA_PROGRESS, progress)
-            putExtra(BackupConst.EXTRA_AMOUNT, amount)
-            putExtra(BackupConst.EXTRA_CONTENT, content)
-            putExtra(BackupConst.EXTRA_ERRORS, errors)
-            putExtra(BackupConst.ACTION, BackupConst.ACTION_SET_PROGRESS_DIALOG)
-        }
-        sendLocalBroadcast(intent)
-    }
-
-}
