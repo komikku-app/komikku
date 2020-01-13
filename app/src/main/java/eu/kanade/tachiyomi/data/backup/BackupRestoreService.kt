@@ -428,7 +428,7 @@ class BackupRestoreService : Service() {
          * @param context the application context.
          * @return true if the service is running, false otherwise.
          */
-        private fun isRunning(context: Context): Boolean =
+        fun isRunning(context: Context): Boolean =
                 context.isServiceRunning(BackupRestoreService::class.java)
 
         /**

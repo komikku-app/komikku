@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -76,10 +77,11 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
      *
      * @param mangaHistory list of manga history
      */
-    fun onNextManga(mangaHistory: List<RecentlyReadItem>) {
-        if (adapter?.itemCount ?: 0 == 0)
+    fun onNextManga(mangaHistory: List<RecentlyReadItem>, cleanBatch: Boolean = false) {
+        if (adapter?.itemCount ?: 0 == 0 || cleanBatch)
             resetProgressItem()
-        adapter?.onLoadMoreComplete(mangaHistory)
+        if (cleanBatch) adapter?.updateDataSet(mangaHistory)
+        else adapter?.onLoadMoreComplete(mangaHistory)
     }
 
     fun onAddPageError(error: Throwable) {
@@ -105,6 +107,11 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
     }
 
     override fun onLoadMore(lastPosition: Int, currentPage: Int) {
+        val view = view ?: return
+        if (BackupRestoreService.isRunning(view.context.applicationContext)) {
+            onAddPageError(Throwable())
+            return
+        }
         val adapter = adapter ?: return
         presenter.requestNext(adapter.itemCount)
     }
@@ -138,6 +145,15 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
         if (all) {
             // Reset last read of chapter to 0L
             presenter.removeAllFromHistory(manga.id!!)
+            /*val safeAdapter = adapter ?: return
+            val items = (0 until safeAdapter.itemCount).filter {
+                val item = safeAdapter.getItem(it)
+                if (item is RecentlyReadItem)
+                    item.mch.manga.id == manga.id
+                else
+                    false
+            }
+            adapter?.removeItems(items)*/
         } else {
             // Remove all chapters belonging to manga from library
             presenter.removeFromHistory(history)
