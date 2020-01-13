@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import android.util.Log
 import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
@@ -142,8 +143,9 @@ class MergedSource : HttpSource() {
             return children.asFlow().map { mangaSource ->
                 mangaSource.load(db, sourceManager)
                         ?: run {
-                           XLog.w("> Missing source manga: $mangaSource")
-                           throw IllegalStateException("Missing source manga: $mangaSource")
+                            XLog.w("> Missing source manga: $mangaSource")
+                            Log.d("MERGED","> Missing source manga: $mangaSource")
+                            throw IllegalStateException("Missing source manga: $mangaSource")
                         }
             }
         }
