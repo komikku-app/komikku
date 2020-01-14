@@ -85,7 +85,8 @@ class RecentlyReadPresenter : BasePresenter<RecentlyReadController>() {
         updateList()
     }
 
-    fun updateList() {
+    fun updateList(search: String? = null) {
+        lastSearch = search?:lastSearch
         getRecentMangaLimitObservable(lastCount, lastSearch).take(1)
             .subscribeLatestCache({ view, mangas ->
                 view.onNextManga(mangas, true)
