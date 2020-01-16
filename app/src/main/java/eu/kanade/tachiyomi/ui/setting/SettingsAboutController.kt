@@ -72,6 +72,15 @@ class SettingsAboutController : SettingsController() {
             }
         }
         preference {
+            title = "Dev Build"
+            val url = "https://crafty.moe/tachiyomiAZ.apk"
+            summary = url
+            onClick {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            }
+        }
+        preference {
             titleRes = R.string.version
             summary = if (BuildConfig.DEBUG)
                 "r" + BuildConfig.COMMIT_COUNT
