@@ -200,7 +200,18 @@ class BackupRestoreService : Service() {
         val mangasJson = json.get(MANGAS).asJsonArray
 
         val validManga = mangasJson.filter {
-            val manga = backupManager.parser.fromJson<MangaImpl>(it.asJsonObject.get(MANGA))
+            val tmanga = backupManager.parser.fromJson<MangaImpl>(it.asJsonObject.get(MANGA))
+            // EXH -->
+            val migrated = EXHMigrations.migrateBackupEntry(
+                BackupEntry(
+                    tmanga,
+                    backupManager.parser.fromJson<List<ChapterImpl>>(JsonArray()),
+                    backupManager.parser.fromJson<List<String>>     (JsonArray()),
+                    backupManager.parser.fromJson<List<DHistory>>   (JsonArray()),
+                    backupManager.parser.fromJson<List<TrackImpl>>  (JsonArray())
+                )
+            )
+            val (manga,_,_,_,_) = migrated
             val sourced = backupManager.sourceManager.get(manga.source)!= null
             if (!sourced) {
                 restoreAmount -= 1

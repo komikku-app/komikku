@@ -241,9 +241,7 @@ class MainActivity : BaseActivity() {
                     WarnConfigureDialogController.uploadSettings(router)
 
                 // Scheduler uploader job if required
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    EHentaiUpdateWorker.scheduleBackground(this)
-                }
+                EHentaiUpdateWorker.scheduleBackground(this)
             }
             // EXH <--
         }
