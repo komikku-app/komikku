@@ -166,11 +166,13 @@ class ExtensionManager(
      * Finds the available extensions in the [api] and updates [availableExtensions].
      */
     fun findAvailableExtensions() {
-        api.findExtensions()
-                .onErrorReturn { emptyList() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { availableExtensions = it.filterNotBlacklisted() }
+        launchNow {
+            availableExtensions = try {
+                api.findExtensions().filterNotBlacklisted()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
     }
 
     /**
