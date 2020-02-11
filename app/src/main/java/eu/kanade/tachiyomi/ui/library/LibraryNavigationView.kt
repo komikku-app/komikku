@@ -126,14 +126,16 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val lastUpdated = Item.MultiSort(R.string.action_sort_last_updated, this)
 
+        private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
+
         private val unread = Item.MultiSort(R.string.action_filter_unread, this)
 
         private val source = Item.MultiSort(R.string.manga_info_source_label, this)
 
         private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
 
-        override val items = listOf(alphabetically, lastRead, lastUpdated, unread, total, source,
-            dragAndDrop)
+        override val items = listOf(alphabetically, lastRead, lastUpdated, latestChapter, unread,
+            total, source, dragAndDrop)
 
         override val header = Item.Header(R.string.action_sort)
 
@@ -147,6 +149,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             alphabetically.state = if (sorting == LibrarySort.ALPHA) order else SORT_NONE
             lastRead.state = if (sorting == LibrarySort.LAST_READ) order else SORT_NONE
             lastUpdated.state = if (sorting == LibrarySort.LAST_UPDATED) order else SORT_NONE
+            latestChapter.state = if (sorting == LibrarySort.LATEST_CHAPTER) order else SORT_NONE
             unread.state = if (sorting == LibrarySort.UNREAD) order else SORT_NONE
             total.state = if (sorting == LibrarySort.TOTAL) order else SORT_NONE
             source.state = if (sorting == LibrarySort.SOURCE) order else SORT_NONE
@@ -172,6 +175,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
                 alphabetically -> LibrarySort.ALPHA
                 lastRead -> LibrarySort.LAST_READ
                 lastUpdated -> LibrarySort.LAST_UPDATED
+                latestChapter -> LibrarySort.LATEST_CHAPTER
                 unread -> LibrarySort.UNREAD
                 total -> LibrarySort.TOTAL
                 source -> LibrarySort.SOURCE

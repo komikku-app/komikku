@@ -9,4 +9,5 @@ object LibrarySort {
     const val TOTAL = 4
     const val SOURCE = 5
     const val DRAG_AND_DROP = 6
+    const val LATEST_CHAPTER = 7
 }
