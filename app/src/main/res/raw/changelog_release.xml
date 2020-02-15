@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.4.7-AZ" changeDate="">
+        <changelogtext>Backups now restore in background</changelogtext>
+        <changelogtext>fixed hitomi.la</changelogtext>
+        <changelogtext>added search to read history</changelogtext>
+        <changelogtext>added language filtering to nhentai</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.4.6-AZ" changeDate="">
         <changelogtext>MY FIRST REAL PROPER UPDATE</changelogtext>
         <changelogtext>upgraded to androidx, this wont do anything for you but it was hard to do</changelogtext>
