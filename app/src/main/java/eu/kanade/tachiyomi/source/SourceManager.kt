@@ -110,7 +110,6 @@ open class SourceManager(private val context: Context) {
         exSrcs += PervEden(PERV_EDEN_EN_SOURCE_ID, PervEdenLang.en)
         exSrcs += PervEden(PERV_EDEN_IT_SOURCE_ID, PervEdenLang.it)
         exSrcs += NHentai(context)
-        exSrcs += Tsumino(context)
         exSrcs += Hitomi()
         exSrcs += EightMuses()
         exSrcs += HBrowse()
@@ -156,6 +155,12 @@ open class SourceManager(private val context: Context) {
                         2221515250486218861,
                         "eu.kanade.tachiyomi.extension.en.pururin.Pururin",
                         Pururin::class
+                ),
+                DelegatedSource(
+                        "Tsumino",
+                        6707338697138388238,
+                        "eu.kanade.tachiyomi.extension.en.tsumino.Tsumino",
+                        Tsumino::class
                 )
         ).associateBy { it.originalSourceQualifiedClassName }
 
