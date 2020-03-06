@@ -1,3 +1,3 @@
 I dont want to maintain a readme
 
-#YEET
+https://discord.gg/tachiyomi

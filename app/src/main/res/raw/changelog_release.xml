@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.4.9-AZ" changeDate="">
+        <changelogtext>Such a good update it had to skip a version number</changelogtext>
+        <changelogtext>Fixed hitomi.la again</changelogtext>
+        <changelogtext>Delegated tsumino - Make sure to install the tsumino extension</changelogtext>
+        <changelogtext>App lock no longer requires usage access and should work better</changelogtext>
+        <changelogtext>Added drag and drop filtering, thanks jay</changelogtext>
+        <changelogtext>fix hentaiCafe tags</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.4.7-AZ" changeDate="">
         <changelogtext>Backups now restore in background</changelogtext>
         <changelogtext>fixed hitomi.la</changelogtext>
