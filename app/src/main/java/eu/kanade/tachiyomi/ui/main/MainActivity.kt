@@ -90,7 +90,7 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-
+        tryLock()
         if(!firstPaint) {
             drawer.postDelayed({
                 if(!firstPaint) {
@@ -405,7 +405,6 @@ class MainActivity : BaseActivity() {
 
     // --> EH
     //Lock code
-    var willLock = false
     override fun onRestart() {
         super.onRestart()
         if(willLock && lockEnabled()) {
@@ -413,11 +412,6 @@ class MainActivity : BaseActivity() {
         }
 
         willLock = false
-    }
-
-    override fun onStop() {
-        super.onStop()
-        tryLock()
     }
 
     fun tryLock() {
@@ -429,6 +423,7 @@ class MainActivity : BaseActivity() {
         if(preferences.eh_lockManually().getOrDefault())
             return
 
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val mUsageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
             val time = System.currentTimeMillis()
@@ -449,7 +444,8 @@ class MainActivity : BaseActivity() {
             if (running.topActivity.packageName != packageName) {
                 willLock = true
             }
-        }
+        } */
+        willLock = true
     }
 
     fun doLock(animate: Boolean = false) {
@@ -459,6 +455,7 @@ class MainActivity : BaseActivity() {
     // <-- EH
 
     companion object {
+        var willLock = false
         // Shortcut actions
         const val SHORTCUT_LIBRARY = "eu.kanade.tachiyomi.SHOW_LIBRARY"
         const val SHORTCUT_RECENTLY_UPDATED = "eu.kanade.tachiyomi.SHOW_RECENTLY_UPDATED"

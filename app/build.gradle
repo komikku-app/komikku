@@ -149,6 +149,11 @@ dependencies {
     // DO NOT UPGRADE TO 17.0, IT REQUIRES ANDROIDX
     standardImplementation 'com.google.firebase:firebase-core:17.2.1'
 
+    final lifecycle_version = "2.1.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+
+
     // ReactiveX
     implementation 'io.reactivex:rxandroid:1.2.1'
     implementation 'io.reactivex:rxjava:1.3.8'

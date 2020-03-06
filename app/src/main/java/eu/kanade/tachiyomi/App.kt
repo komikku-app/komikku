@@ -3,6 +3,10 @@ package eu.kanade.tachiyomi
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
 import android.graphics.Color
 import android.os.Build
 import android.os.Environment
@@ -27,12 +31,16 @@ import com.ms_square.debugoverlay.modules.FpsModule
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
+import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.LocaleHelper
 import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
+import exh.ui.lock.lockEnabled
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import kotlinx.coroutines.GlobalScope
@@ -40,13 +48,14 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.InjektScope
+import uy.kohesive.injekt.injectLazy
 import uy.kohesive.injekt.registry.default.DefaultRegistrar
 import java.io.File
 import java.security.NoSuchAlgorithmException
 import javax.net.ssl.SSLContext
 import kotlin.concurrent.thread
 
-open class App : Application() {
+open class App : Application(), LifecycleObserver {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
@@ -66,6 +75,16 @@ open class App : Application() {
         }
 
         LocaleHelper.updateConfiguration(this, resources.configuration)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onAppBackgrounded() {
+        //App in background
+        val preferences: PreferencesHelper by injectLazy()
+        if (lockEnabled()) {
+            MainActivity.willLock = true
+        }
     }
 
     override fun attachBaseContext(base: Context) {
