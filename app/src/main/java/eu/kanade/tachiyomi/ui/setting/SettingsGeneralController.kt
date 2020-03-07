@@ -249,6 +249,11 @@ class SettingsGeneralController : SettingsController() {
                 summary = "Disable automatic app locking. The app can still be locked manually by long-pressing the three-lines/back button in the top left corner."
                 defaultValue = false
             }
+            switchPreference {
+                key = Keys.secureScreen
+                title = "Enable Secure Screen"
+                defaultValue = false
+            }
         }
         // <-- EXH
     }

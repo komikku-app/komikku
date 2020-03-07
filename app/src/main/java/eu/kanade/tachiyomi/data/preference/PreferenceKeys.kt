@@ -103,6 +103,8 @@ object PreferenceKeys {
 
     const val startScreen = "start_screen"
 
+    const val secureScreen = "secure_screen"
+
     const val downloadNew = "download_new"
 
     const val downloadNewCategories = "download_new_categories"

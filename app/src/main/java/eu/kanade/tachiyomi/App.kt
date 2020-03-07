@@ -1,8 +1,10 @@
 package eu.kanade.tachiyomi
 
+
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
+import android.view.WindowManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -41,6 +43,7 @@ import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
 import exh.ui.lock.lockEnabled
+import exh.ui.lock.LockActivityDelegate
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import kotlinx.coroutines.GlobalScope
@@ -81,10 +84,7 @@ open class App : Application(), LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
         //App in background
-        val preferences: PreferencesHelper by injectLazy()
-        if (lockEnabled()) {
-            MainActivity.willLock = true
-        }
+        LockActivityDelegate.willLock = true
     }
 
     override fun attachBaseContext(base: Context) {

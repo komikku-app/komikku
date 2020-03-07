@@ -44,6 +44,7 @@ import exh.ui.lock.LockChangeHandler
 import exh.ui.lock.LockController
 import exh.ui.lock.lockEnabled
 import exh.ui.lock.notifyLockSecurity
+import exh.ui.lock.LockActivityDelegate
 import exh.ui.migration.MetadataFetchDialog
 import kotlinx.android.synthetic.main.main_activity.*
 import timber.log.Timber
@@ -90,7 +91,7 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        tryLock()
+        LockActivityDelegate.onResume(this, router)
         if(!firstPaint) {
             drawer.postDelayed({
                 if(!firstPaint) {
@@ -192,9 +193,9 @@ class MainActivity : BaseActivity() {
         initWhenIdle {
             //Hook long press hamburger menu to lock
             getToolbarNavigationIcon(toolbar)?.setOnLongClickListener {
-                if(lockEnabled(preferences)) {
-                    doLock(true)
-                    vibrate(50) // Notify user of lock
+                if (lockEnabled(preferences)) {
+                    LockActivityDelegate.doLock(router, true)
+                    vibrate(50)
                     true
                 } else false
             }
@@ -204,12 +205,7 @@ class MainActivity : BaseActivity() {
         if (savedInstanceState == null) {
             if (lockEnabled(preferences)) {
                 //Special case first lock
-                doLock()
-
-                //Check lock security
-                initWhenIdle {
-                    notifyLockSecurity(this)
-                }
+                LockActivityDelegate.doLock(router)
             }
         }
         // <-- EH
@@ -403,59 +399,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    // --> EH
-    //Lock code
-    override fun onRestart() {
-        super.onRestart()
-        if(willLock && lockEnabled()) {
-            doLock()
-        }
-
-        willLock = false
-    }
-
-    fun tryLock() {
-        //Do not double-lock
-        if(router.backstack.lastOrNull()?.controller() is LockController)
-            return
-
-        //Do not lock if manual lock enabled
-        if(preferences.eh_lockManually().getOrDefault())
-            return
-
-        /*
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val mUsageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-            val time = System.currentTimeMillis()
-            // We get usage stats for the last 20 seconds
-            val sortedStats =
-                    mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,
-                            time - 1000 * 20,
-                            time)
-                            ?.associateBy {
-                                it.lastTimeUsed
-                            }?.toSortedMap()
-            if(sortedStats != null && sortedStats.isNotEmpty())
-                if(sortedStats[sortedStats.lastKey()]?.packageName != packageName)
-                    willLock = true
-        } else {
-            val am = getSystemService(Service.ACTIVITY_SERVICE) as ActivityManager
-            val running = am.getRunningTasks(1)[0]
-            if (running.topActivity.packageName != packageName) {
-                willLock = true
-            }
-        } */
-        willLock = true
-    }
-
-    fun doLock(animate: Boolean = false) {
-        router.pushController(RouterTransaction.with(LockController())
-                .popChangeHandler(LockChangeHandler(animate)))
-    }
-    // <-- EH
-
     companion object {
-        var willLock = false
         // Shortcut actions
         const val SHORTCUT_LIBRARY = "eu.kanade.tachiyomi.SHOW_LIBRARY"
         const val SHORTCUT_RECENTLY_UPDATED = "eu.kanade.tachiyomi.SHOW_RECENTLY_UPDATED"
