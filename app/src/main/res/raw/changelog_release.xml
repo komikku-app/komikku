@@ -6,7 +6,9 @@
         <changelogtext>Delegated tsumino - Make sure to install the tsumino extension</changelogtext>
         <changelogtext>App lock no longer requires usage access and should work better</changelogtext>
         <changelogtext>Added drag and drop filtering, thanks jay</changelogtext>
-        <changelogtext>fix hentaiCafe tags</changelogtext>
+        <changelogtext>Fix hentaiCafe tags</changelogtext>
+        <changelogtext>Added Secure Screen</changelogtext>
+        <changelogtext>Lock no longer requires usage permission</changelogtext>
     </changelogversion>
     <changelogversion versionName="v8.4.7-AZ" changeDate="">
         <changelogtext>Backups now restore in background</changelogtext>
