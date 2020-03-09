@@ -63,6 +63,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         fullscreen.bindToPreference(preferences.fullscreen())
         keepscreen.bindToPreference(preferences.keepScreenOn())
         long_tap.bindToPreference(preferences.readWithLongTap())
+        always_show_chapter_transition.bindToPreference(preferences.alwaysShowChapterTransition())
     }
 
     /**

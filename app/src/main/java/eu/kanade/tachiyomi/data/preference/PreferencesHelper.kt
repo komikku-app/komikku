@@ -185,6 +185,8 @@ class PreferencesHelper(val context: Context) {
 
     fun trustedSignatures() = rxPrefs.getStringSet("trusted_signatures", emptySet())
 
+    fun alwaysShowChapterTransition() = rxPrefs.getBoolean(Keys.alwaysShowChapterTransition, true)
+
     // --> AZ J2K CHERRYPICKING
 
     fun defaultMangaOrder() = rxPrefs.getString("default_manga_order", "")
