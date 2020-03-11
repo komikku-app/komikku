@@ -5,8 +5,7 @@ import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.lvla.rxjava.interopkt.toV1Observable
-import com.lvla.rxjava.interopkt.toV1Single
+import hu.akarnokd.rxjava.interop.RxJavaInterop
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.Source
@@ -45,15 +44,15 @@ class MergedSource : HttpSource() {
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return readMangaConfig(manga).load(db, sourceManager).take(1).map { loaded ->
+        return RxJavaInterop.toV1Observable(readMangaConfig(manga).load(db, sourceManager).take(1).map { loaded ->
             SManga.create().apply {
                 this.copyFrom(loaded.manga)
                 url = manga.url
             }
-        }.asFlowable().toV1Observable()
+        }.asFlowable())
     }
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return GlobalScope.async(Dispatchers.IO) {
+        return RxJavaInterop.toV1Single(GlobalScope.async(Dispatchers.IO) {
             val loadedMangas = readMangaConfig(manga).load(db, sourceManager).buffer()
             loadedMangas.map { loadedManga ->
                 async(Dispatchers.IO) {
@@ -66,7 +65,7 @@ class MergedSource : HttpSource() {
                     }.toSingle().await(Schedulers.io())
                 }
             }.buffer().map { it.await() }.toList().flatten()
-        }.asSingle(Dispatchers.IO).toV1Single().toObservable()
+        }.asSingle(Dispatchers.IO)).toObservable()
     }
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()

@@ -287,7 +287,7 @@ dependencies {
     implementation 'com.mattprecious.swirl:swirl:1.2.0'
 
     // RxJava 2 interop for Realm (EH)
-    implementation 'com.lvla.android:rxjava2-interop-kt:0.2.1'
+    implementation 'com.github.akarnokd:rxjava2-interop:0.13.7'
 
     // Debug network interceptor (EH)
     implementation "com.squareup.okhttp3:logging-interceptor:4.2.1"
