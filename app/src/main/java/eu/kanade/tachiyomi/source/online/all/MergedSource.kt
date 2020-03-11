@@ -129,7 +129,7 @@ class MergedSource : HttpSource() {
             val url: String
     ) {
         suspend fun load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource? {
-            val manga = db.getManga(url, source).await() ?: return null
+            val manga = db.getManga(url, source).executeAsBlocking() ?: return null
             val source = sourceManager.getOrStub(source)
             return LoadedMangaSource(source, manga)
         }
