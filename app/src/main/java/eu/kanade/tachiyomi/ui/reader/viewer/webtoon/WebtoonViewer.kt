@@ -71,23 +71,11 @@ class WebtoonViewer(val activity: ReaderActivity) : BaseViewer {
             override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                 val position = layoutManager.findLastEndVisibleItemPosition()
                 val item = adapter.items.getOrNull(position)
-                if (item != null) {
+                if (item != null && currentPage != item) {
                     currentPage = item
                     when (item) {
                         is ReaderPage -> onPageSelected(item, position)
-                        is ChapterTransition -> {
-                            onTransitionSelected(item)
-
-                            // If transition pages are invisible select page before transition page
-                            if(!activity.showTransitionPages) {
-                                val lastPosition = position - 1
-                                val lastItem = adapter.items.getOrNull(lastPosition)
-                                if(lastItem is ReaderPage) {
-                                    currentPage = lastItem
-                                    onPageSelected(lastItem, lastPosition)
-                                }
-                            }
-                        }
+                        is ChapterTransition -> onTransitionSelected(item)
                     }
                 }
 
