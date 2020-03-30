@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.notificationManager
+import eu.kanade.tachiyomi.util.notificationBuilder
 import java.io.File
 
 /**
@@ -20,7 +21,7 @@ class SaveImageNotifier(private val context: Context) {
     /**
      * Notification builder.
      */
-    private val notificationBuilder = NotificationCompat.Builder(context, Notifications.CHANNEL_COMMON)
+    private val notificationBuilder = context.notificationBuilder(Notifications.CHANNEL_COMMON)
 
     /**
      * Id of the notification.
@@ -58,8 +59,9 @@ class SaveImageNotifier(private val context: Context) {
             setLargeIcon(image)
             setAutoCancel(true)
             // Clear old actions if they exist
-            if (!mActions.isEmpty())
+            if (mActions.isNotEmpty()) {
                 mActions.clear()
+            }
 
             setContentIntent(NotificationHandler.openImagePendingActivity(context, file))
             // Share action

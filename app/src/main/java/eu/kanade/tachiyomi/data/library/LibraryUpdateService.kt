@@ -1,12 +1,19 @@
 package eu.kanade.tachiyomi.data.library
 
+import android.app.Notification
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.GROUP_ALERT_SUMMARY
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -29,6 +36,10 @@ import eu.kanade.tachiyomi.util.isServiceRunning
 import eu.kanade.tachiyomi.util.notificationManager
 import eu.kanade.tachiyomi.util.syncChaptersWithSource
 import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
+import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.util.chop
+import eu.kanade.tachiyomi.util.notification
+import eu.kanade.tachiyomi.util.notificationBuilder
 import rx.Observable
 import rx.Subscription
 import rx.schedulers.Schedulers
@@ -65,24 +76,31 @@ class LibraryUpdateService(
     private var subscription: Subscription? = null
 
     /**
+     * Bitmap of the app for notifications.
+     */
+    private val notificationBitmap by lazy {
+        BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
+    }
+
+    /**
      * Pending intent of action that cancels the library update
      */
     private val cancelIntent by lazy {
         NotificationReceiver.cancelLibraryUpdatePendingBroadcast(this)
     }
 
-    private val updateNotifier by lazy { LibraryUpdateNotifier(this) }
-
     /**
      * Cached progress notification to avoid creating a lot.
      */
-    private val progressNotification by lazy { NotificationCompat.Builder(this, Notifications.CHANNEL_LIBRARY)
-            .setContentTitle(getString(R.string.app_name))
-            .setSmallIcon(R.drawable.ic_refresh_white_24dp_img)
-            .setLargeIcon(updateNotifier.notificationBitmap)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .addAction(R.drawable.ic_clear_grey_24dp_img, getString(android.R.string.cancel), cancelIntent)
+    private val progressNotificationBuilder by lazy {
+        notificationBuilder(Notifications.CHANNEL_LIBRARY) {
+            setContentTitle(getString(R.string.app_name))
+            setSmallIcon(R.drawable.ic_refresh_white_24dp)
+            setLargeIcon(notificationBitmap)
+            setOngoing(true)
+            setOnlyAlertOnce(true)
+            addAction(R.drawable.ic_close_white_24dp, getString(android.R.string.cancel), cancelIntent)
+        }
     }
 
     /**
@@ -155,7 +173,7 @@ class LibraryUpdateService(
      */
     override fun onCreate() {
         super.onCreate()
-        startForeground(Notifications.ID_LIBRARY_PROGRESS, progressNotification.build())
+        startForeground(Notifications.ID_LIBRARY_PROGRESS, progressNotificationBuilder.build())
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK, "LibraryUpdateService:WakeLock")
         wakeLock.acquire()
@@ -189,9 +207,9 @@ class LibraryUpdateService(
      * @return the start value of the command.
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null) return Service.START_NOT_STICKY
+        if (intent == null) return START_NOT_STICKY
         val target = intent.getSerializableExtra(KEY_TARGET) as? Target
-                ?: return Service.START_NOT_STICKY
+                ?: return START_NOT_STICKY
 
         // Unsubscribe from any previous subscription if needed.
         subscription?.unsubscribe()
@@ -264,7 +282,7 @@ class LibraryUpdateService(
         // Initialize the variables holding the progress of the updates.
         val count = AtomicInteger(0)
         // List containing new updates
-        val newUpdates = ArrayList<Manga>()
+        val newUpdates = ArrayList<Pair<LibraryManga, Array<Chapter>>>()
         // list containing failed updates
         val failedUpdates = ArrayList<Manga>()
         // List containing categories that get included in downloads.
@@ -301,7 +319,8 @@ class LibraryUpdateService(
                                     }
                                 }
                                 // Convert to the manga that contains new chapters.
-                                .map { manga }
+                                .map { Pair(manga, (it.first.sortedByDescending { ch -> ch
+                                    .source_order }.toTypedArray())) }
                     }
                 }
                 // Add manga with new chapters to the list.
@@ -312,7 +331,7 @@ class LibraryUpdateService(
                 // Notify result of the overall update.
                 .doOnCompleted {
                     if (newUpdates.isNotEmpty()) {
-                        updateNotifier.showResultNotification(newUpdates)
+                        showResultNotification(newUpdates)
                         if (downloadNew && hasDownloads) {
                             DownloadService.start(this)
                         }
@@ -324,6 +343,7 @@ class LibraryUpdateService(
 
                     cancelProgressNotification()
                 }
+                .map { manga -> manga.first }
     }
 
     fun downloadChapters(manga: Manga, chapters: List<Chapter>) {
@@ -426,11 +446,99 @@ class LibraryUpdateService(
      * @param total the total progress.
      */
     private fun showProgressNotification(manga: Manga, current: Int, total: Int) {
-        notificationManager.notify(Notifications.ID_LIBRARY_PROGRESS, progressNotification
+        notificationManager.notify(Notifications.ID_LIBRARY_PROGRESS, progressNotificationBuilder
                 .setContentTitle(manga.title)
                 .setProgress(total, current, false)
                 .build())
     }
+
+    /**
+     * Shows the notification containing the result of the update done by the service.
+     *
+     * @param updates a list of manga with new updates.
+     */
+    private fun showResultNotification(updates: List<Pair<Manga, Array<Chapter>>>) {
+        val notifications = ArrayList<Pair<Notification, Int>>()
+        updates.forEach {
+            val manga = it.first
+            val chapters = it.second
+            val chapterNames = chapters.map { chapter -> chapter.name }.toSet()
+            notifications.add(Pair(notification(Notifications.CHANNEL_NEW_CHAPTERS) {
+                setSmallIcon(R.drawable.ic_tachi)
+                try {
+                    val icon = Glide.with(this@LibraryUpdateService)
+                        .asBitmap().load(manga).dontTransform().centerCrop().circleCrop()
+                        .override(256, 256).submit().get()
+                    setLargeIcon(icon)
+                }
+                catch (e: Exception) { }
+                setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
+                setContentTitle(manga.title)
+                val chaptersNames = if (chapterNames.size > 5) {
+                    "${chapterNames.take(4).joinToString(", ")}, " +
+                        resources.getQuantityString(R.plurals.notification_and_n_more,
+                            (chapterNames.size - 4), (chapterNames.size - 4))
+                } else chapterNames.joinToString(", ")
+                setContentText(chaptersNames)
+                setStyle(NotificationCompat.BigTextStyle().bigText(chaptersNames))
+                priority = NotificationCompat.PRIORITY_HIGH
+                setGroup(Notifications.GROUP_NEW_CHAPTERS)
+                setContentIntent(
+                    NotificationReceiver.openChapterPendingActivity(
+                        this@LibraryUpdateService, manga, chapters.first()
+                    )
+                )
+                addAction(R.drawable.ic_glasses_black_24dp, getString(R.string.action_mark_as_read),
+                    NotificationReceiver.markAsReadPendingBroadcast(this@LibraryUpdateService,
+                        manga, chapters, Notifications.ID_NEW_CHAPTERS))
+                addAction(R.drawable.ic_book_white_24dp, getString(R.string.action_view_chapters),
+                    NotificationReceiver.openChapterPendingActivity(this@LibraryUpdateService,
+                        manga, Notifications.ID_NEW_CHAPTERS))
+                setAutoCancel(true)
+            }, manga.id.hashCode()))
+        }
+
+        NotificationManagerCompat.from(this).apply {
+
+            notify(Notifications.ID_NEW_CHAPTERS, notification(Notifications.CHANNEL_NEW_CHAPTERS) {
+                setSmallIcon(R.drawable.ic_tachi)
+                setLargeIcon(notificationBitmap)
+                setContentTitle(getString(R.string.notification_new_chapters))
+                if (updates.size > 1) {
+                    setContentText(resources.getQuantityString(R.plurals
+                        .notification_new_chapters_text,
+                        updates.size, updates.size))
+                    setStyle(NotificationCompat.BigTextStyle().bigText(updates.joinToString("\n") {
+                        it.first.title.chop(45)
+                    }))
+                }
+                else {
+                    setContentText(updates.first().first.title.chop(45))
+                }
+                priority = NotificationCompat.PRIORITY_HIGH
+                setGroup(Notifications.GROUP_NEW_CHAPTERS)
+                setGroupAlertBehavior(GROUP_ALERT_SUMMARY)
+                setGroupSummary(true)
+                setContentIntent(getNotificationIntent())
+                setAutoCancel(true)
+            })
+
+            notifications.forEach {
+                notify(it.second, it.first)
+            }
+        }
+    }
+
+    /**
+     * Returns an intent to open the main activity.
+     */
+    private fun getNotificationIntent(): PendingIntent {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        intent.action = MainActivity.SHORTCUT_RECENTLY_UPDATED
+        return PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
 
     /**
      * Cancels the progress notification.

@@ -23,15 +23,22 @@ object Notifications {
      * Notification channel and ids used by the library updater.
      */
     const val CHANNEL_LIBRARY = "library_channel"
-    const val ID_LIBRARY_PROGRESS = 101
-    const val ID_LIBRARY_RESULT = 102
+    const val ID_LIBRARY_PROGRESS = -101
+    const val ID_LIBRARY_RESULT = -102
 
     /**
      * Notification channel and ids used by the downloader.
      */
     const val CHANNEL_DOWNLOADER = "downloader_channel"
-    const val ID_DOWNLOAD_CHAPTER = 201
-    const val ID_DOWNLOAD_CHAPTER_ERROR = 202
+    const val ID_DOWNLOAD_CHAPTER = -201
+    const val ID_DOWNLOAD_CHAPTER_ERROR = -202
+
+    /**
+     * Notification channel and ids used by the library updater.
+     */
+    const val CHANNEL_NEW_CHAPTERS = "new_chapters_channel"
+    const val ID_NEW_CHAPTERS = -301
+    const val GROUP_NEW_CHAPTERS = "eu.kanade.tachiyomi.NEW_CHAPTERS"
 
     const val CHANNEL_RESTORE = "backup_restore_channel"
     const val ID_RESTORE_PROGRESS = -401
@@ -56,7 +63,9 @@ object Notifications {
                 NotificationChannel(CHANNEL_RESTORE, context.getString(R.string.channel_backup_restore),
                         NotificationManager.IMPORTANCE_LOW).apply {
                     setShowBadge(false)
-                }
+                },
+                NotificationChannel(CHANNEL_NEW_CHAPTERS, context.getString(R.string.channel_new_chapters),
+                        NotificationManager.IMPORTANCE_DEFAULT)
         )
         context.notificationManager.createNotificationChannels(channels)
     }

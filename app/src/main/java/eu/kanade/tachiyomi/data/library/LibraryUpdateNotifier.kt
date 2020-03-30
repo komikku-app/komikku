@@ -51,7 +51,7 @@ class LibraryUpdateNotifier(private val context: Context) {
             setLargeIcon(notificationBitmap)
             setContentTitle(context.getString(R.string.notification_new_chapters))
             if (newUpdates.size > 1) {
-                setContentText(context.getString(R.string.notification_new_chapters_text, newUpdates.size))
+                setContentText(context.getString(R.string.notification_new_chapters_text_old, newUpdates.size))
                 setStyle(NotificationCompat.BigTextStyle().bigText(newUpdates.joinToString("\n")))
                 setNumber(newUpdates.size)
             } else {
