@@ -95,7 +95,7 @@ internal class ExtensionInstallReceiver(private val listener: Listener) :
     private suspend fun getExtensionFromIntent(context: Context, intent: Intent?): LoadResult {
         val pkgName = getPackageNameFromIntent(intent) ?:
                 return LoadResult.Error("Package name not found")
-        return withContext(Dispatchers.Default) { ExtensionLoader.loadExtensionFromPkgName(context, pkgName) }
+        return GlobalScope.async(Dispatchers.Default, CoroutineStart.DEFAULT) { ExtensionLoader.loadExtensionFromPkgName(context, pkgName) }.await()
     }
 
     /**

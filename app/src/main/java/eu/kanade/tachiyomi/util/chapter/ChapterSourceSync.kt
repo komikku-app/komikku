@@ -94,7 +94,7 @@ fun syncChaptersWithSource(db: DatabaseHelper,
     db.inTransaction {
         val deletedChapterNumbers = TreeSet<Float>()
         val deletedReadChapterNumbers = TreeSet<Float>()
-        if (!toDelete.isEmpty()) {
+        if (toDelete.isNotEmpty()) {
             for (c in toDelete) {
                 if (c.read) {
                     deletedReadChapterNumbers.add(c.chapter_number)
@@ -104,7 +104,7 @@ fun syncChaptersWithSource(db: DatabaseHelper,
             db.deleteChapters(toDelete).executeAsBlocking()
         }
 
-        if (!toAdd.isEmpty()) {
+        if (toAdd.isNotEmpty()) {
             // Set the date fetch for new items in reverse order to allow another sorting method.
             // Sources MUST return the chapters from most to less recent, which is common.
             var now = Date().time
@@ -138,7 +138,7 @@ fun syncChaptersWithSource(db: DatabaseHelper,
             db.insertChapters(toAdd).executeAsBlocking()
         }
 
-        if (!toChange.isEmpty()) {
+        if (toChange.isNotEmpty()) {
             db.insertChapters(toChange).executeAsBlocking()
         }
 
@@ -149,8 +149,8 @@ fun syncChaptersWithSource(db: DatabaseHelper,
         manga.last_update = Date().time
         db.updateLastUpdated(manga).executeAsBlocking()
     }
-    return Pair(toAdd.subtract(readded).toList(), toDelete.subtract(readded).toList())
 
+    return Pair(toAdd.subtract(readded).toList(), toDelete.subtract(readded).toList())
 }
 
 //checks if the chapter in db needs updated
