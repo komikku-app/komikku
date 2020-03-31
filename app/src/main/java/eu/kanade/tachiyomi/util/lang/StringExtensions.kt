@@ -1,6 +1,6 @@
-package eu.kanade.tachiyomi.util
+package eu.kanade.tachiyomi.util.lang
 
-import java.lang.Math.floor
+import kotlin.math.floor
 
 /**
  * Replaces the given string to have at most [count] characters using [replacement] at its end.
@@ -28,5 +28,12 @@ fun String.truncateCenter(count: Int, replacement: String = "..."): String{
 
     val pieceLength:Int = floor((count - replacement.length).div(2.0)).toInt()
 
-    return "${ take(pieceLength) }$replacement${ takeLast(pieceLength) }"
+    return "${take(pieceLength)}$replacement${takeLast(pieceLength)}"
+}
+
+/**
+ * Case-insensitive natural comparator for strings.
+ */
+fun String.compareToCaseInsensitiveNaturalOrder(other: String): Int {
+    return String.CASE_INSENSITIVE_ORDER.then(naturalOrder()).compare(this, other)
 }

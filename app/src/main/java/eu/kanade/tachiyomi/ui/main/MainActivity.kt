@@ -35,8 +35,8 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.recent_updates.RecentChaptersController
 import eu.kanade.tachiyomi.ui.recently_read.RecentlyReadController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
-import eu.kanade.tachiyomi.util.openInBrowser
-import eu.kanade.tachiyomi.util.vibrate
+import eu.kanade.tachiyomi.util.system.openInBrowser
+import eu.kanade.tachiyomi.util.system.vibrate
 import exh.EXHMigrations
 import exh.eh.EHentaiUpdateWorker
 import exh.uconfig.WarnConfigureDialogController

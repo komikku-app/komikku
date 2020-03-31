@@ -8,7 +8,7 @@ import android.os.Looper
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
-import eu.kanade.tachiyomi.util.WebViewClientCompat
+import eu.kanade.tachiyomi.util.system.WebViewClientCompat
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response

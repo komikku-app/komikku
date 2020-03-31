@@ -18,10 +18,10 @@ import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Comp
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.combineLatest
-import eu.kanade.tachiyomi.util.isNullOrUnsubscribed
-import eu.kanade.tachiyomi.util.removeArticles
-import eu.kanade.tachiyomi.util.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.lang.combineLatest
+import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
+import eu.kanade.tachiyomi.util.lang.removeArticles
+import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.favorites.FavoritesSyncHelper
 import rx.Observable
 import rx.Subscription

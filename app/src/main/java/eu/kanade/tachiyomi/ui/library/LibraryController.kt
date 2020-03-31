@@ -36,8 +36,8 @@ import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.migration.MigrationController
-import eu.kanade.tachiyomi.util.inflate
-import eu.kanade.tachiyomi.util.toast
+import eu.kanade.tachiyomi.util.view.inflate
+import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.ui.LoaderManager

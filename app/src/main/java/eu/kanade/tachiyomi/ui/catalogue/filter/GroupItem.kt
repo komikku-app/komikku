@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.model.Filter
-import eu.kanade.tachiyomi.util.setVectorCompat
+import eu.kanade.tachiyomi.util.view.setVectorCompat
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

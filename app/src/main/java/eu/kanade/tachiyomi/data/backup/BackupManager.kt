@@ -31,8 +31,8 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.sendLocalBroadcast
-import eu.kanade.tachiyomi.util.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.system.sendLocalBroadcast
+import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.eh.EHentaiThrottleManager
 import rx.Observable
 import timber.log.Timber

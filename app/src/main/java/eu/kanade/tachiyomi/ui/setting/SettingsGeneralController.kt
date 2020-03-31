@@ -14,7 +14,7 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.util.LocaleHelper
+import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.ui.lock.FingerLockPreference
 import exh.ui.lock.LockPreference
 import kotlinx.android.synthetic.main.pref_library_columns.view.*
