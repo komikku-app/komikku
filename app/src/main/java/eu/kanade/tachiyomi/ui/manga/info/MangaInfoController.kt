@@ -81,6 +81,8 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
      */
     private val preferences: PreferencesHelper by injectLazy()
 
+    val dateFormat: DateFormat = preferences.dateFormat().getOrDefault()
+
     // EXH -->
     private var lastMangaThumbnail: String? = null
 
@@ -378,7 +380,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
     fun setLastUpdateDate(date: Date) {
         if (date.time != 0L) {
-            manga_last_update?.text = DateFormat.getDateInstance(DateFormat.SHORT).format(date)
+            manga_last_update?.text = dateFormat.format(date)
         } else {
             manga_last_update?.text = resources?.getString(R.string.unknown)
         }
