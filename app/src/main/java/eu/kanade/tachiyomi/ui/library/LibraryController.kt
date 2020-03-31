@@ -32,7 +32,6 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.SecondaryDrawerController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.migration.MigrationController
@@ -396,9 +395,6 @@ class LibraryController(
             }
             R.id.action_update_library -> {
                 activity?.let { LibraryUpdateService.start(it) }
-            }
-            R.id.action_edit_categories -> {
-                router.pushController(CategoryController().withFadeTransaction())
             }
             R.id.action_source_migration -> {
                 router.pushController(MigrationController().withFadeTransaction())
