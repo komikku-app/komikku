@@ -149,9 +149,6 @@ class MainActivity : BaseActivity() {
                     R.id.nav_drawer_settings -> {
                         router.pushController(SettingsMainController().withFadeTransaction())
                     }
-                    R.id.nav_drawer_help -> {
-                        openInBrowser(URL_HELP)
-                    }
                 }
             }
             drawer.closeDrawer(GravityCompat.START)
@@ -416,8 +413,6 @@ class MainActivity : BaseActivity() {
         const val INTENT_SEARCH = "eu.kanade.tachiyomi.SEARCH"
         const val INTENT_SEARCH_QUERY = "query"
         const val INTENT_SEARCH_FILTER = "filter"
-
-        private const val URL_HELP = "https://tachiyomi.org/help/"
     }
 
 }

@@ -8,7 +8,7 @@ import exh.ui.lock.FingerLockPreference
 import exh.ui.lock.LockPreference
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
-class SettingsGeneralController : SettingsController() {
+class SettingsGeneralController : BaseSettingsController() {
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.pref_category_general
