@@ -87,7 +87,7 @@ class SettingsSourcesController : SettingsController(),
                     }
                     true
                 }
-            }))
+            }
         }
     }
 
