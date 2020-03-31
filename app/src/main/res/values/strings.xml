@@ -332,8 +332,11 @@
     <string name="password">Password</string>
     <string name="show_password">Show password</string>
     <string name="login">Login</string>
-    <string name="login_success">Login successful</string>
-    <string name="invalid_login">Login error</string>
+    <string name="login_success">Successfully logged in</string>
+    <string name="logout_title">Logout from %1$s?</string>
+    <string name="logout">Logout</string>
+    <string name="logout_success">You are now logged out</string>
+    <string name="invalid_login">Could not log in</string>
     <string name="unknown_error">Unknown error</string>
 
     <!-- Library fragment -->
