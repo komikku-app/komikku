@@ -29,7 +29,7 @@ class SettingsExtensionsController: SettingsController() {
             }
 
         availableLangs.forEach {
-            SwitchPreference(context).apply {
+            switchPreference {
                 preferenceScreen.addPreference(this)
                 title = LocaleHelper.getDisplayName(it, context)
                 isPersistent = false

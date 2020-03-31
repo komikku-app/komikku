@@ -24,7 +24,7 @@ import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.*
+import java.util.TreeMap
 
 class SettingsSourcesController : SettingsController(),
         SourceLoginDialog.Listener {
@@ -66,7 +66,7 @@ class SettingsSourcesController : SettingsController(),
             val sources = sourcesByLang[lang].orEmpty().sortedBy { it.name }
 
             // Create a preference group and set initial state and change listener
-            langPrefs.add(Pair(lang, SwitchPreferenceCategory(context).apply {
+            switchPreferenceCategory {
                 preferenceScreen.addPreference(this)
                 title = LocaleHelper.getDisplayName(lang, context)
                 isPersistent = false
