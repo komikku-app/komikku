@@ -13,9 +13,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionInstallReceiver
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNow
-import eu.kanade.tachiyomi.util.lang.launchUI
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.async
 import rx.Observable
@@ -168,16 +166,14 @@ class ExtensionManager(
      * Finds the available extensions in the [api] and updates [availableExtensions].
      */
     fun findAvailableExtensions() {
-        launchIO {
+        launchNow {
             val extensions: List<Extension.Available> = try {
                 api.findExtensions().filterNotBlacklisted()
             } catch (e: Exception) {
                 emptyList()
             }
 
-            launchUI {
-                availableExtensions = extensions
-            }
+            availableExtensions = extensions
         }
     }
 
