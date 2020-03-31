@@ -63,7 +63,7 @@ class SettingsAboutController : SettingsController() {
             }
         }
         preference {
-            title = "Github"
+            title = "GitHub"
             val url = "https://github.com/az4521/TachiyomiAZ"
             summary = url
             onClick {

@@ -286,7 +286,7 @@
     <string name="restore_completed_content_2"> %1$s errors found</string>
     <string name="restore_completed_content_3">%1$s were skipped out of %2$s, missing sources</string>
     <string name="restore_completed_content_4"> %1$s were skipped out of %2$s because progress was cancelled </string>
-    <string name="backup_restore_content">Restore uses source to fetch data, carrier costs may apply.\nAlso make sure you are properly logged in sources that require so before restoring.</string>
+    <string name="backup_restore_content">Restore uses sources to fetch data, carrier costs may apply.\n\nMake sure you have installed all necessary extensions and are logged in to sources and tracking services before restoring.</string>
     <string name="file_saved">File saved at %1$s</string>
     <string name="backup_choice">What do you want to backup?</string>
     <string name="restoring_backup">Restoring backup</string>
