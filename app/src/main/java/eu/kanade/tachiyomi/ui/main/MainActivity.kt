@@ -14,6 +14,7 @@ import android.os.Looper
 import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -22,8 +23,8 @@ import com.bluelinelabs.conductor.*
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
-import eu.kanade.tachiyomi.Migrations
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
+import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.base.controller.*
 import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
@@ -35,8 +36,10 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.recent_updates.RecentChaptersController
 import eu.kanade.tachiyomi.ui.recently_read.RecentlyReadController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
-import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.vibrate
+import eu.kanade.tachiyomi.util.view.gone
+import eu.kanade.tachiyomi.util.view.inflate
+import eu.kanade.tachiyomi.util.view.visible
 import exh.EXHMigrations
 import exh.eh.EHentaiUpdateWorker
 import exh.uconfig.WarnConfigureDialogController
@@ -52,7 +55,11 @@ import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.util.*
 import kotlin.collections.ArrayList
-
+import java.util.Date
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : BaseActivity() {
 
@@ -92,6 +99,7 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        getExtensionUpdates()
         LockActivityDelegate.onResume(this, router)
         if(!firstPaint) {
             drawer.postDelayed({
@@ -101,6 +109,7 @@ class MainActivity : BaseActivity() {
                 }
             }, 1000)
         }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -239,11 +248,47 @@ class MainActivity : BaseActivity() {
             }
             // EXH <--
         }
+        preferences.extensionUpdatesCount().asObservable().subscribe {
+            setExtensionsBadge()
+        }
+        setExtensionsBadge()
     }
 
     override fun onNewIntent(intent: Intent) {
         if (!handleIntentAction(intent)) {
             super.onNewIntent(intent)
+        }
+    }
+
+    private fun setExtensionsBadge() {
+        val extUpdateText: TextView = nav_view.menu.findItem(
+                R.id.nav_drawer_extensions
+        )?.actionView as? TextView ?: return
+
+        val updates = preferences.extensionUpdatesCount().getOrDefault()
+        if (updates > 0) {
+            extUpdateText.text = updates.toString()
+            extUpdateText.visible()
+        }
+        else {
+            extUpdateText.text = null
+            extUpdateText.gone()
+        }
+    }
+
+    private fun getExtensionUpdates() {
+        if (Date().time >= preferences.lastExtCheck().getOrDefault() +
+            TimeUnit.HOURS.toMillis(2)) {
+            GlobalScope.launch(Dispatchers.IO) {
+                val preferences: PreferencesHelper by injectLazy()
+                try {
+                    val pendingUpdates = ExtensionGithubApi().checkForUpdates(this@MainActivity)
+                    preferences.extensionUpdatesCount().set(pendingUpdates.size)
+                    preferences.lastExtCheck().set(Date().time)
+                } catch (e: java.lang.Exception) {
+                    Timber.e(e)
+                }
+            }
         }
     }
 
@@ -258,6 +303,7 @@ class MainActivity : BaseActivity() {
             SHORTCUT_RECENTLY_UPDATED -> setSelectedDrawerItem(R.id.nav_drawer_recent_updates)
             SHORTCUT_RECENTLY_READ -> setSelectedDrawerItem(R.id.nav_drawer_recently_read)
             SHORTCUT_CATALOGUES -> setSelectedDrawerItem(R.id.nav_drawer_catalogues)
+            SHORTCUT_EXTENSIONS -> setSelectedDrawerItem(R.id.nav_drawer_extensions)
             SHORTCUT_MANGA -> {
                 val extras = intent.extras ?: return false
                 router.setRoot(RouterTransaction.with(MangaController(extras)))
@@ -410,6 +456,7 @@ class MainActivity : BaseActivity() {
         const val SHORTCUT_CATALOGUES = "eu.kanade.tachiyomi.SHOW_CATALOGUES"
         const val SHORTCUT_DOWNLOADS = "eu.kanade.tachiyomi.SHOW_DOWNLOADS"
         const val SHORTCUT_MANGA = "eu.kanade.tachiyomi.SHOW_MANGA"
+        const val SHORTCUT_EXTENSIONS = "eu.kanade.tachiyomi.EXTENSIONS"
 
         const val INTENT_SEARCH = "eu.kanade.tachiyomi.SEARCH"
         const val INTENT_SEARCH_QUERY = "query"

@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.util.preference
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.preference.*
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
+import eu.kanade.tachiyomi.widget.preference.ExtensionPreference
 import eu.kanade.tachiyomi.widget.preference.IntListPreference
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 
@@ -44,6 +45,10 @@ inline fun PreferenceGroup.intListPreference(block: (@DSL IntListPreference).() 
 
 inline fun PreferenceGroup.multiSelectListPreference(block: (@DSL MultiSelectListPreference).() -> Unit): MultiSelectListPreference {
     return initThenAdd(MultiSelectListPreference(context), block).also(::initDialog)
+}
+
+inline fun PreferenceGroup.extensionPreference(block: (@DSL Preference).() -> Unit): ExtensionPreference {
+    return initThenAdd(ExtensionPreference(context), block)
 }
 
 inline fun PreferenceScreen.preferenceCategory(block: (@DSL PreferenceCategory).() -> Unit): PreferenceCategory {

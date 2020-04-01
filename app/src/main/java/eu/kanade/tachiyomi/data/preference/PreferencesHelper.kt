@@ -192,6 +192,12 @@ class PreferencesHelper(val context: Context) {
 
     fun hiddenCatalogues() = rxPrefs.getStringSet("hidden_catalogues", mutableSetOf())
 
+    fun automaticExtUpdates() = rxPrefs.getBoolean(Keys.automaticExtUpdates, false)
+
+    fun extensionUpdatesCount() = rxPrefs.getInteger("ext_updates_count", 0)
+
+    fun lastExtCheck() = rxPrefs.getLong("last_ext_check", 0)
+
     fun downloadNew() = rxPrefs.getBoolean(Keys.downloadNew, false)
 
     fun downloadNewCategories() = rxPrefs.getStringSet(Keys.downloadNewCategories, emptySet())
