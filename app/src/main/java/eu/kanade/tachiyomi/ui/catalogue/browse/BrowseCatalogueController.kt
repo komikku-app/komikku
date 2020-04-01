@@ -385,9 +385,8 @@ open class BrowseCatalogueController(bundle: Bundle) :
             R.id.action_set_filter -> navView?.let { activity?.drawer?.openDrawer(GravityCompat.END) }
             R.id.action_open_in_browser -> openInBrowser()
             R.id.action_open_in_web_view -> openInWebView()
-            else -> return super.onOptionsItemSelected(item)
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     private fun openInBrowser() {

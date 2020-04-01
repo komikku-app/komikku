@@ -80,9 +80,8 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
                         .popChangeHandler(SettingsExtensionsFadeChangeHandler())
                         .pushChangeHandler(FadeChangeHandler()))
             }
-            else -> return super.onOptionsItemSelected(item)
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {

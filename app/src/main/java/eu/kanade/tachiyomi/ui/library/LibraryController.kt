@@ -415,7 +415,7 @@ class LibraryController(
             else -> return super.onOptionsItemSelected(item)
         }
 
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     private fun reOrder(type: Int) {

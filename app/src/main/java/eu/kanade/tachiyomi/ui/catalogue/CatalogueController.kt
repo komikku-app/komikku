@@ -230,9 +230,8 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
                         .popChangeHandler(SettingsSourcesFadeChangeHandler())
                         .pushChangeHandler(FadeChangeHandler()))
             }
-            else -> return super.onOptionsItemSelected(item)
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     /**
