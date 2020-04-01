@@ -19,7 +19,8 @@ import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.library.LibraryController
-import eu.kanade.tachiyomi.util.toast
+import eu.kanade.tachiyomi.util.preference.*
+import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.SettingsDebugController
 import exh.log.EHLogLevel
 import exh.ui.migration.MetadataFetchDialog

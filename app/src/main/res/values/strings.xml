@@ -69,6 +69,7 @@
     <string name="action_sort_down">Sort down</string>
     <string name="action_show_downloaded">Downloaded</string>
     <string name="action_next_unread">Next unread</string>
+    <string name="action_view_chapters">View chapters</string>
     <string name="action_start">Start</string>
     <string name="action_stop">Stop</string>
     <string name="action_pause">Pause</string>
@@ -116,6 +117,7 @@
     <!-- Preferences -->
     <!-- Subsections -->
     <string name="pref_category_general">General</string>
+    <string name="pref_category_library">Library</string>
     <string name="pref_category_reader">Reader</string>
     <string name="pref_category_downloads">Downloads</string>
     <string name="pref_category_sources">Sources</string>
@@ -125,10 +127,24 @@
     <string name="pref_category_about">About</string>
 
     <!-- General section -->
+    <string name="pref_theme">App theme</string>
+    <string name="light_theme">Light</string>
+    <string name="dark_theme">Dark</string>
+    <string name="amoled_theme">AMOLED dark</string>
+    <string name="darkblue_theme">Dark blue</string>
+    <string name="pref_start_screen">Start screen</string>
+    <string name="pref_language">Language</string>
+    <string name="system_default">System default</string>
+    <string name="pref_date_format">Date format</string>
+
+    <!-- Library section -->
+    <string name="pref_category_library_display">Display</string>
     <string name="pref_library_columns">Library manga per row</string>
     <string name="portrait">Portrait</string>
     <string name="landscape">Landscape</string>
     <string name="default_columns">Default</string>
+
+    <string name="pref_category_library_update">Updates</string>
     <string name="pref_library_update_interval">Library update frequency</string>
     <string name="update_never">Manual</string>
     <string name="update_1hour">Hourly</string>
@@ -140,31 +156,23 @@
     <string name="update_48hour">Every 2 days</string>
     <string name="update_weekly">Weekly</string>
     <string name="update_monthly">Monthly</string>
-    <string name="pref_library_update_categories">Categories to include in global update</string>
-    <string name="all">All</string>
     <string name="pref_library_update_prioritization">Library update order</string>
-    <string name="pref_library_update_prioritization_summary">Select the order in which Tachiyomi checks for update</string>
     <string name="pref_library_update_restriction">Library update restrictions</string>
     <string name="pref_library_update_restriction_summary">Update only when the conditions are met</string>
     <string name="wifi">Wi-Fi</string>
     <string name="charging">Charging</string>
     <string name="pref_update_only_non_completed">Only update ongoing manga</string>
-    <string name="pref_auto_update_manga_sync">Sync chapters after reading</string>
-    <string name="pref_theme">Application theme</string>
-    <string name="light_theme">Main theme</string>
-    <string name="dark_theme">Dark theme</string>
-    <string name="amoled_theme">AMOLED theme</string>
-    <string name="darkblue_theme">Dark blue</string>
-    <string name="pref_start_screen">Start screen</string>
-    <string name="pref_language">Language</string>
-    <string name="system_default">System default</string>
+    <string name="pref_category_library_categories">Categories</string>
     <string name="default_category">Default category</string>
     <string name="default_category_summary">Always ask</string>
+    <string name="pref_library_update_categories">Categories to include in global update</string>
+    <string name="all">All</string>
 
     <!-- Extension section -->
     <string name="all_lang">All</string>
     <string name="ext_details">Details</string>
     <string name="ext_update">Update</string>
+    <string name="ext_obsolete">Obsolete</string>
     <string name="ext_install">Install</string>
     <string name="ext_pending">Pending</string>
     <string name="ext_downloading">Downloading</string>
@@ -176,10 +184,12 @@
     <string name="ext_preferences">Preferences</string>
     <string name="ext_available">Available</string>
     <string name="untrusted_extension">Untrusted extension</string>
-    <string name="untrusted_extension_message">This extension was signed with an untrusted certificate and it wasn\'t activated.\n\nA malicious extension could read any login credentials stored in Tachiyomi or execute arbitrary code.\n\nBy trusting this certificate you accept these risks.</string>
+    <string name="untrusted_extension_message">This extension was signed with an untrusted certificate and wasn\'t activated.\n\nA malicious extension could read any login credentials stored in Tachiyomi or execute arbitrary code.\n\nBy trusting this certificate you accept these risks.</string>
+    <string name="obsolete_extension_message">This extension is no longer available.</string>
     <string name="ext_version_info">Version: %1$s</string>
     <string name="ext_language_info">Language: %1$s</string>
     <string name="ext_empty_preferences">There are no preferences to edit for this extension</string>
+    <string name="action_auto_check_extensions">Auto-check for updates</string>
 
     <!-- Reader section -->
     <string name="pref_fullscreen">Fullscreen</string>
@@ -259,6 +269,7 @@
     <string name="pref_download_new_categories">Categories to include in download</string>
 
     <!-- Sync section -->
+    <string name="pref_auto_update_manga_sync">Sync chapters after reading</string>
     <string name="services">Services</string>
 
     <!-- Backup section -->
@@ -283,7 +294,7 @@
     <string name="restore_completed_content_2"> %1$s errors found</string>
     <string name="restore_completed_content_3">%1$s were skipped out of %2$s, missing sources</string>
     <string name="restore_completed_content_4"> %1$s were skipped out of %2$s because progress was cancelled </string>
-    <string name="backup_restore_content">Restore uses source to fetch data, carrier costs may apply.\nAlso make sure you are properly logged in sources that require so before restoring.</string>
+    <string name="backup_restore_content">Restore uses sources to fetch data, carrier costs may apply.\n\nMake sure you have installed all necessary extensions and are logged in to sources and tracking services before restoring.</string>
     <string name="file_saved">File saved at %1$s</string>
     <string name="backup_choice">What do you want to backup?</string>
     <string name="restoring_backup">Restoring backup</string>
@@ -322,8 +333,11 @@
     <string name="password">Password</string>
     <string name="show_password">Show password</string>
     <string name="login">Login</string>
-    <string name="login_success">Login successful</string>
-    <string name="invalid_login">Login error</string>
+    <string name="login_success">Successfully logged in</string>
+    <string name="logout_title">Logout from %1$s?</string>
+    <string name="logout">Logout</string>
+    <string name="logout_success">You are now logged out</string>
+    <string name="invalid_login">Could not log in</string>
     <string name="unknown_error">Unknown error</string>
 
     <!-- Library fragment -->
@@ -486,7 +500,12 @@
     <!-- Library update service notifications -->
     <string name="notification_update_progress">Update progress: %1$d/%2$d</string>
     <string name="notification_new_chapters">New chapters found</string>
-    <string name="notification_new_chapters_text">For %1$d titles</string>
+    <plurals name="notification_new_chapters_text">
+        <item quantity="one">For %d title</item>
+        <item quantity="other">For %d titles</item>
+    </plurals>
+    <string name="notification_and_n_more">and %1$d more</string>
+	<string name="notification_new_chapters_text_old">For %1$d titles</string>
     <string name="notification_cover_update_failed">Failed to update cover</string>
     <string name="notification_first_add_to_library">Please add the manga to your library before doing this</string>
     <string name="notification_not_connected_to_ac_title">Sync canceled</string>
@@ -515,6 +534,12 @@
     <string name="update_check_notification_download_error">Download error</string>
     <string name="update_check_notification_update_available">Update available</string>
 
+    <!--Extension Updates Notifications-->
+    <plurals name="update_check_notification_ext_updates">
+        <item quantity="one">Extension update available</item>
+        <item quantity="other">%d extension updates available</item>
+    </plurals>
+
     <!--Content Description-->
     <string name="description_backdrop">Backdrop image of manga</string>
     <string name="description_cover">Cover of manga</string>
@@ -541,6 +566,8 @@
     <string name="channel_library">Library</string>
     <string name="channel_downloader">Downloader</string>
     <string name="channel_backup_restore">Restore Backup</string>
+    <string name="channel_new_chapters">Chapter updates</string>
+    <string name="channel_ext_updates">Extension Updates</string>
 
     <!-- EXH -->
     <string name="label_login">Login</string>

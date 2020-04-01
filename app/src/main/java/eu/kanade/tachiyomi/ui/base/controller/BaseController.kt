@@ -85,21 +85,42 @@ abstract class BaseController(bundle: Bundle? = null) : RestoreViewOnCreateContr
     }
 
     /**
-     * Workaround for disappearing menu items when collapsing an expandable item like a SearchView.
+     * Workaround for buggy menu item layout after expanding/collapsing an expandable item like a SearchView.
      * This method should be removed when fixed upstream.
      * Issue link: https://issuetracker.google.com/issues/37657375
      */
-    fun MenuItem.fixExpand() {
+    var expandActionViewFromInteraction = false
+    fun MenuItem.fixExpand(onExpand: ((MenuItem) -> Boolean)? = null, onCollapse: ((MenuItem) -> Boolean)? = null) {
         setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                return true
+                return onExpand?.invoke(item) ?: true
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
                 activity?.invalidateOptionsMenu()
-                return true
+
+                return onCollapse?.invoke(item) ?: true
             }
         })
+
+        if (expandActionViewFromInteraction) {
+            expandActionViewFromInteraction = false
+            expandActionView()
+        }
+    }
+
+    /**
+     * Workaround for menu items not disappearing when expanding an expandable item like a SearchView.
+     * [expandActionViewFromInteraction] should be set to true in [onOptionsItemSelected] when the expandable item is selected
+     * This method should be called as part of [MenuItem.OnActionExpandListener.onMenuItemActionExpand]
+     */
+    fun invalidateMenuOnExpand(): Boolean {
+        return if (expandActionViewFromInteraction) {
+            activity?.invalidateOptionsMenu()
+            false
+        } else {
+            true
+        }
     }
 
 }

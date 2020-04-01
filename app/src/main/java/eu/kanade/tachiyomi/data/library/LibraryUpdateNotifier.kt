@@ -11,9 +11,9 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.ui.main.MainActivity
-import eu.kanade.tachiyomi.util.chop
-import eu.kanade.tachiyomi.util.notification
-import eu.kanade.tachiyomi.util.notificationManager
+import eu.kanade.tachiyomi.util.lang.chop
+import eu.kanade.tachiyomi.util.system.notification
+import eu.kanade.tachiyomi.util.system.notificationManager
 
 class LibraryUpdateNotifier(private val context: Context) {
     /**
@@ -51,7 +51,7 @@ class LibraryUpdateNotifier(private val context: Context) {
             setLargeIcon(notificationBitmap)
             setContentTitle(context.getString(R.string.notification_new_chapters))
             if (newUpdates.size > 1) {
-                setContentText(context.getString(R.string.notification_new_chapters_text, newUpdates.size))
+                setContentText(context.getString(R.string.notification_new_chapters_text_old, newUpdates.size))
                 setStyle(NotificationCompat.BigTextStyle().bigText(newUpdates.joinToString("\n")))
                 setNumber(newUpdates.size)
             } else {

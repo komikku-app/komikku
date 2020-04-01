@@ -12,7 +12,7 @@ import eu.davidea.flexibleadapter.helpers.UndoHelper
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
-import eu.kanade.tachiyomi.util.toast
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.android.synthetic.main.categories_controller.*
 
 /**
@@ -206,11 +206,11 @@ class CategoryController : NucleusController<CategoryPresenter>(),
      */
     override fun onItemClick(view: View, position: Int): Boolean {
         // Check if action mode is initialized and selected item exist.
-        if (actionMode != null && position != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+        return if (actionMode != null && position != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
             toggleSelection(position)
-            return true
+            true
         } else {
-            return false
+            false
         }
     }
 

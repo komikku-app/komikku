@@ -11,11 +11,15 @@ import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import kotlinx.android.synthetic.main.extension_controller.*
-
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * Controller to manage the catalogues available in the app.
@@ -74,14 +78,25 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_filter -> {
-                router.pushController((RouterTransaction.with(SettingsExtensionsController()))
-                    .popChangeHandler(SettingsExtensionsFadeChangeHandler())
-                    .pushChangeHandler(FadeChangeHandler()))
+            R.id.action_search -> expandActionViewFromInteraction = true
+            R.id.action_settings -> {
+                router.pushController((RouterTransaction.with(ExtensionFilterController()))
+                        .popChangeHandler(SettingsExtensionsFadeChangeHandler())
+                        .pushChangeHandler(FadeChangeHandler()))
+            }
+            R.id.action_auto_check -> {
+                item.isChecked = !item.isChecked
+                val preferences: PreferencesHelper = Injekt.get()
+                preferences.automaticExtUpdates().set(item.isChecked)
+
+                if (item.isChecked)
+                    ExtensionUpdateJob.setupTask()
+                else
+                    ExtensionUpdateJob.cancelTask()
             }
             else -> return super.onOptionsItemSelected(item)
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
@@ -117,7 +132,7 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
         val searchView = searchItem.actionView as SearchView
         searchView.maxWidth = Int.MAX_VALUE
 
-        if (!query.isEmpty()) {
+        if (query.isNotEmpty()) {
             searchItem.expandActionView()
             searchView.setQuery(query, true)
             searchView.clearFocus()
@@ -131,7 +146,11 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
             }
 
         // Fixes problem with the overflow icon showing up in lieu of search
-        searchItem.fixExpand()
+        searchItem.fixExpand(onExpand = { invalidateMenuOnExpand() })
+
+        val autoItem = menu.findItem(R.id.action_auto_check)
+        val preferences: PreferencesHelper = Injekt.get()
+        autoItem.isChecked = preferences.automaticExtUpdates().getOrDefault()
     }
 
     override fun onItemClick(view: View, position: Int): Boolean {

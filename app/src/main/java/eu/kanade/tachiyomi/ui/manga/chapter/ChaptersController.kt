@@ -25,9 +25,9 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.util.getCoordinates
-import eu.kanade.tachiyomi.util.snack
-import eu.kanade.tachiyomi.util.toast
+import eu.kanade.tachiyomi.util.view.getCoordinates
+import eu.kanade.tachiyomi.util.view.snack
+import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import kotlinx.android.synthetic.main.chapters_controller.*
@@ -191,9 +191,8 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
                 activity?.invalidateOptionsMenu()
             }
             R.id.action_sort -> presenter.revertSortOrder()
-            else -> return super.onOptionsItemSelected(item)
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     fun onNextChapters(chapters: List<ChapterItem>) {

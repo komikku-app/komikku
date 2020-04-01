@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
-import eu.kanade.tachiyomi.util.WebViewClientCompat
+import eu.kanade.tachiyomi.util.system.WebViewClientCompat
 import uy.kohesive.injekt.injectLazy
 
 class MangaWebViewController(bundle: Bundle? = null) : BaseController(bundle) {

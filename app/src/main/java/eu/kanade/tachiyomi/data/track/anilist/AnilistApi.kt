@@ -11,6 +11,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import rx.Observable
 import java.util.*
 
@@ -39,7 +40,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 "query" to query,
                 "variables" to variables
         )
-        val body = RequestBody.create(jsonMime, payload.toString())
+        val body = payload.toString().toRequestBody(jsonMime)
         val request = Request.Builder()
                 .url(apiUrl)
                 .post(body)
@@ -78,7 +79,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 "query" to query,
                 "variables" to variables
         )
-        val body = RequestBody.create(jsonMime, payload.toString())
+        val body = payload.toString().toRequestBody(jsonMime)
         val request = Request.Builder()
                 .url(apiUrl)
                 .post(body)
@@ -122,7 +123,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 "query" to query,
                 "variables" to variables
         )
-        val body = RequestBody.create(jsonMime, payload.toString())
+        val body = payload.toString().toRequestBody(jsonMime)
         val request = Request.Builder()
                 .url(apiUrl)
                 .post(body)
@@ -183,7 +184,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
                 "query" to query,
                 "variables" to variables
         )
-        val body = RequestBody.create(jsonMime, payload.toString())
+        val body = payload.toString().toRequestBody(jsonMime)
         val request = Request.Builder()
                 .url(apiUrl)
                 .post(body)
@@ -228,7 +229,7 @@ class AnilistApi(val client: OkHttpClient, interceptor: AnilistInterceptor) {
         val payload = jsonObject(
                 "query" to query
         )
-        val body = RequestBody.create(jsonMime, payload.toString())
+        val body = payload.toString().toRequestBody(jsonMime)
         val request = Request.Builder()
                 .url(apiUrl)
                 .post(body)

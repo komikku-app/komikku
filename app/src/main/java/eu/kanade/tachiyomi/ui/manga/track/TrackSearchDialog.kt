@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.util.plusAssign
+import eu.kanade.tachiyomi.util.lang.plusAssign
 import kotlinx.android.synthetic.main.track_search_dialog.view.*
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -50,7 +50,7 @@ class TrackSearchDialog : DialogController {
         service = Injekt.get<TrackManager>().getService(bundle.getInt(KEY_SERVICE))!!
     }
 
-    override fun onCreateDialog(savedState: Bundle?): Dialog {
+    override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         val dialog = MaterialDialog.Builder(activity!!)
                 .customView(R.layout.track_search_dialog, false)
                 .positiveText(android.R.string.ok)
@@ -63,7 +63,7 @@ class TrackSearchDialog : DialogController {
         }
 
         dialogView = dialog.view
-        onViewCreated(dialog.view, savedState)
+        onViewCreated(dialog.view, savedViewState)
 
         return dialog
     }

@@ -18,10 +18,10 @@ import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Comp
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.combineLatest
-import eu.kanade.tachiyomi.util.isNullOrUnsubscribed
-import eu.kanade.tachiyomi.util.removeArticles
-import eu.kanade.tachiyomi.util.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.lang.combineLatest
+import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
+import eu.kanade.tachiyomi.util.lang.removeArticles
+import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.favorites.FavoritesSyncHelper
 import rx.Observable
 import rx.Subscription
@@ -99,12 +99,15 @@ class LibraryPresenter(
     fun subscribeLibrary() {
         if (librarySubscription.isNullOrUnsubscribed()) {
             librarySubscription = getLibraryObservable()
-                    .combineLatest(downloadTriggerRelay.observeOn(Schedulers.io()),
-                            { lib, _ -> lib.apply { setDownloadCount(mangaMap) } })
-                    .combineLatest(filterTriggerRelay.observeOn(Schedulers.io()),
-                            { lib, _ -> lib.copy(mangaMap = applyFilters(lib.mangaMap)) })
-                    .combineLatest(sortTriggerRelay.observeOn(Schedulers.io()),
-                            { lib, _ -> lib.copy(mangaMap = applySort(lib.mangaMap)) })
+                    .combineLatest(downloadTriggerRelay.observeOn(Schedulers.io())) {
+                        lib, _ -> lib.apply { setDownloadCount(mangaMap) }
+                    }
+                    .combineLatest(filterTriggerRelay.observeOn(Schedulers.io())) {
+                        lib, _ -> lib.copy(mangaMap = applyFilters(lib.mangaMap))
+                    }
+                    .combineLatest(sortTriggerRelay.observeOn(Schedulers.io())) {
+                        lib, _ -> lib.copy(mangaMap = applySort(lib.mangaMap))
+                    }
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeLatestCache({ view, (categories, mangaMap) ->
                         view.onNextLibraryUpdate(categories, mangaMap)
@@ -237,16 +240,16 @@ class LibraryPresenter(
      * @return an observable of the categories and its manga.
      */
     private fun getLibraryObservable(): Observable<Library> {
-        return Observable.combineLatest(getCategoriesObservable(), getLibraryMangasObservable(),
-                { dbCategories, libraryManga ->
-                    val categories = if (libraryManga.containsKey(0))
-                        arrayListOf(Category.createDefault()) + dbCategories
-                    else
-                        dbCategories
+        return Observable.combineLatest(getCategoriesObservable(), getLibraryMangasObservable()) {
+            dbCategories, libraryManga ->
+                val categories = if (libraryManga.containsKey(0))
+                    arrayListOf(Category.createDefault()) + dbCategories
+                else
+                    dbCategories
 
-                    this.categories = categories
-                    Library(categories, libraryManga)
-                })
+                this.categories = categories
+                Library(categories, libraryManga)
+            }
     }
 
     /**

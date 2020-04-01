@@ -28,7 +28,13 @@ import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.manga.info.MangaWebViewController
-import eu.kanade.tachiyomi.util.*
+import eu.kanade.tachiyomi.util.system.connectivityManager
+import eu.kanade.tachiyomi.util.system.openInBrowser
+import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.gone
+import eu.kanade.tachiyomi.util.view.inflate
+import eu.kanade.tachiyomi.util.view.snack
+import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.EXHSavedSearch
 import kotlinx.android.synthetic.main.catalogue_controller.*
@@ -37,6 +43,7 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.Subscriptions
+import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 
@@ -308,34 +315,38 @@ open class BrowseCatalogueController(bundle: Bundle) :
         inflater.inflate(R.menu.catalogue_list, menu)
 
         // Initialize search menu
-        menu.findItem(R.id.action_search).apply {
-            val searchView = actionView as SearchView
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView as SearchView
 
-            val query = presenter.query
-            if (!query.isBlank()) {
-                expandActionView()
-                searchView.setQuery(query, true)
-                searchView.clearFocus()
-            }
-
-            val searchEventsObservable = searchView.queryTextChangeEvents()
-                    .skip(1)
-                    .share()
-            val writingObservable = searchEventsObservable
-                    .filter { !it.isSubmitted }
-                    .debounce(1250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-            val submitObservable = searchEventsObservable
-                    .filter { it.isSubmitted }
-
-            searchViewSubscription?.unsubscribe()
-            searchViewSubscription = Observable.merge(writingObservable, submitObservable)
-                    .map { it.queryText().toString() }
-                    .distinctUntilChanged()
-                    .subscribeUntilDestroy { searchWithQuery(it) }
-
-            untilDestroySubscriptions.add(
-                    Subscriptions.create { if (isActionViewExpanded) collapseActionView() })
+        val query = presenter.query
+        if (!query.isBlank()) {
+            searchItem.expandActionView()
+            searchView.setQuery(query, true)
+            searchView.clearFocus()
         }
+
+        val searchEventsObservable = searchView.queryTextChangeEvents()
+                .skip(1)
+                .filter { router.backstack.lastOrNull()?.controller() == this@BrowseCatalogueController }
+                .share()
+        val writingObservable = searchEventsObservable
+                .filter { !it.isSubmitted }
+                .debounce(1250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+        val submitObservable = searchEventsObservable
+                .filter { it.isSubmitted }
+
+        searchViewSubscription?.unsubscribe()
+        searchViewSubscription = Observable.merge(writingObservable, submitObservable)
+                .map { it.queryText().toString() }
+                .subscribeUntilDestroy { searchWithQuery(it) }
+
+        searchItem.fixExpand(
+                onExpand = { invalidateMenuOnExpand() },
+                onCollapse = {
+                    searchWithQuery("")
+                    true
+                }
+        )
 
         // Setup filters button
         menu.findItem(R.id.action_set_filter).apply {
@@ -369,13 +380,13 @@ open class BrowseCatalogueController(bundle: Bundle) :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_search -> expandActionViewFromInteraction = true
             R.id.action_display_mode -> swapDisplayMode()
             R.id.action_set_filter -> navView?.let { activity?.drawer?.openDrawer(GravityCompat.END) }
             R.id.action_open_in_browser -> openInBrowser()
             R.id.action_open_in_web_view -> openInWebView()
-            else -> return super.onOptionsItemSelected(item)
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     private fun openInBrowser() {
@@ -400,11 +411,6 @@ open class BrowseCatalogueController(bundle: Bundle) :
         // If text didn't change, do nothing
         if (presenter.query == newQuery)
             return
-
-        // FIXME dirty fix to restore the toolbar buttons after closing search mode.
-        if (newQuery == "") {
-            activity?.invalidateOptionsMenu()
-        }
 
         showProgressBar()
         adapter?.clear()

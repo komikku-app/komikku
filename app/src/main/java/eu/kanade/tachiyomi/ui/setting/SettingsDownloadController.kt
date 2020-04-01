@@ -17,7 +17,8 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.util.getFilePicker
+import eu.kanade.tachiyomi.util.preference.*
+import eu.kanade.tachiyomi.util.system.getFilePicker
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -160,7 +161,7 @@ class SettingsDownloadController : SettingsController() {
 
             return MaterialDialog.Builder(activity)
                     .items(externalDirs)
-                    .itemsCallbackSingleChoice(selectedIndex, { _, _, which, text ->
+                    .itemsCallbackSingleChoice(selectedIndex) { _, _, which, text ->
                         val target = targetController as? SettingsDownloadController
                         if (which == externalDirs.lastIndex) {
                             target?.customDirectorySelected(currentDir)
@@ -168,7 +169,7 @@ class SettingsDownloadController : SettingsController() {
                             target?.predefinedDirectorySelected(text.toString())
                         }
                         true
-                    })
+                    }
                     .build()
         }
 

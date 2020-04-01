@@ -375,7 +375,7 @@ open class BrowseCataloguePresenter(
      * @param selectedCategories selected categories
      */
     fun updateMangaCategories(manga: Manga, selectedCategories: List<Category>) {
-        if (!selectedCategories.isEmpty()) {
+        if (selectedCategories.isNotEmpty()) {
             if (!manga.favorite)
                 changeMangaFavorite(manga)
 

@@ -5,12 +5,11 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
- * Used to connect with the Github API.
+ * Used to connect with the GitHub API.
  */
 interface GithubService {
 
@@ -28,6 +27,6 @@ interface GithubService {
     }
 
     @GET("/repos/az4521/tachiyomiAZ/releases/latest")
-    fun getLatestVersion(): Observable<GithubRelease>
+    suspend fun getLatestVersion(): GithubRelease
 
 }

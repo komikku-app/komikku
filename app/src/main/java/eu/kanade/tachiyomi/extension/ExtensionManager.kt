@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionInstallReceiver
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.util.launchNow
+import eu.kanade.tachiyomi.util.lang.launchNow
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.async
 import rx.Observable
@@ -73,7 +73,7 @@ class ExtensionManager(
         private set(value) {
             field = value
             availableExtensionsRelay.call(value)
-            setUpdateFieldOfInstalledExtensions(value)
+            updatedInstalledExtensionsStatuses(value)
         }
 
     /**
@@ -166,11 +166,15 @@ class ExtensionManager(
      * Finds the available extensions in the [api] and updates [availableExtensions].
      */
     fun findAvailableExtensions() {
-        api.findExtensions()
-                .onErrorReturn { emptyList() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { availableExtensions = it.filterNotBlacklisted() }
+        launchNow {
+            val extensions: List<Extension.Available> = try {
+                api.findExtensions().filterNotBlacklisted()
+            } catch (e: Exception) {
+                emptyList()
+            }
+
+            availableExtensions = extensions
+        }
     }
 
     /**
@@ -178,23 +182,34 @@ class ExtensionManager(
      *
      * @param availableExtensions The list of extensions given by the [api].
      */
-    private fun setUpdateFieldOfInstalledExtensions(availableExtensions: List<Extension.Available>) {
+    private fun updatedInstalledExtensionsStatuses(availableExtensions: List<Extension.Available>) {
+        if (availableExtensions.isEmpty()) {
+            preferences.extensionUpdatesCount().set(0)
+            return
+        }
+
         val mutInstalledExtensions = installedExtensions.toMutableList()
         var changed = false
 
         for ((index, installedExt) in mutInstalledExtensions.withIndex()) {
             val pkgName = installedExt.pkgName
-            val availableExt = availableExtensions.find { it.pkgName == pkgName } ?: continue
+            val availableExt = availableExtensions.find { it.pkgName == pkgName }
 
-            val hasUpdate = availableExt.versionCode > installedExt.versionCode
-            if (installedExt.hasUpdate != hasUpdate) {
-                mutInstalledExtensions[index] = installedExt.copy(hasUpdate = hasUpdate)
+            if (availableExt == null && !installedExt.isObsolete) {
+                mutInstalledExtensions[index] = installedExt.copy(isObsolete = true)
                 changed = true
+            } else if (availableExt != null) {
+                val hasUpdate = availableExt.versionCode > installedExt.versionCode
+                if (installedExt.hasUpdate != hasUpdate) {
+                    mutInstalledExtensions[index] = installedExt.copy(hasUpdate = hasUpdate)
+                    changed = true
+                }
             }
         }
         if (changed) {
             installedExtensions = mutInstalledExtensions.filterNotBlacklisted()
         }
+        preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
     }
 
     /**
@@ -335,10 +350,12 @@ class ExtensionManager(
 
         override fun onExtensionInstalled(extension: Extension.Installed) {
             registerNewExtension(extension.withUpdateCheck())
+            preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
         }
 
         override fun onExtensionUpdated(extension: Extension.Installed) {
             registerUpdatedExtension(extension.withUpdateCheck())
+            preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
         }
 
         override fun onExtensionUntrusted(extension: Extension.Untrusted) {
@@ -347,6 +364,7 @@ class ExtensionManager(
 
         override fun onPackageUninstalled(pkgName: String) {
             unregisterExtension(pkgName)
+            preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
         }
     }
 

@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
-import eu.kanade.tachiyomi.util.launchNow
+import eu.kanade.tachiyomi.util.lang.launchNow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -95,7 +95,7 @@ internal class ExtensionInstallReceiver(private val listener: Listener) :
     private suspend fun getExtensionFromIntent(context: Context, intent: Intent?): LoadResult {
         val pkgName = getPackageNameFromIntent(intent) ?:
                 return LoadResult.Error("Package name not found")
-        return withContext(Dispatchers.Default) { ExtensionLoader.loadExtensionFromPkgName(context, pkgName) }
+        return GlobalScope.async(Dispatchers.Default, CoroutineStart.DEFAULT) { ExtensionLoader.loadExtensionFromPkgName(context, pkgName) }.await()
     }
 
     /**

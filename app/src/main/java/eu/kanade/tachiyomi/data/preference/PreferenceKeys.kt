@@ -101,6 +101,8 @@ object PreferenceKeys {
 
     const val automaticUpdates = "automatic_updates"
 
+    const val automaticExtUpdates = "automatic_ext_updates"
+
     const val startScreen = "start_screen"
 
     const val secureScreen = "secure_screen"
@@ -112,6 +114,8 @@ object PreferenceKeys {
     const val libraryAsList = "pref_display_library_as_list"
 
     const val lang = "app_language"
+
+    const val dateFormat = "app_date_format"
 
     const val defaultCategory = "default_category"
 

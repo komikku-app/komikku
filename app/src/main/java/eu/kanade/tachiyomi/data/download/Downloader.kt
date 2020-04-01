@@ -14,7 +14,13 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.fetchAllImageUrlsFromPageList
-import eu.kanade.tachiyomi.util.*
+import eu.kanade.tachiyomi.util.lang.RetryWithDelay
+import eu.kanade.tachiyomi.util.lang.launchNow
+import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.plusAssign
+import eu.kanade.tachiyomi.util.storage.DiskUtil
+import eu.kanade.tachiyomi.util.storage.saveTo
+import eu.kanade.tachiyomi.util.system.ImageUtil
 import kotlinx.coroutines.async
 import okhttp3.Response
 import rx.Observable
@@ -121,8 +127,6 @@ class Downloader(
             if (notifier.paused) {
                 notifier.paused = false
                 notifier.onDownloadPaused()
-            } else if (notifier.isSingleChapter && !notifier.errorThrown) {
-                notifier.isSingleChapter = false
             } else {
                 notifier.dismiss()
             }
@@ -223,9 +227,6 @@ class Downloader(
 
         if (chaptersToQueue.isNotEmpty()) {
             queue.addAll(chaptersToQueue)
-
-            // Initialize queue size.
-            notifier.initialQueueSize = queue.size
 
             if (isRunning) {
                 // Send the list of downloads to the downloader.
@@ -442,9 +443,6 @@ class Downloader(
             queue.remove(download)
         }
         if (areAllDownloadsFinished()) {
-            if (notifier.isSingleChapter && !notifier.errorThrown) {
-                notifier.onDownloadCompleted(download, queue)
-            }
             DownloadService.stop(context)
         }
     }

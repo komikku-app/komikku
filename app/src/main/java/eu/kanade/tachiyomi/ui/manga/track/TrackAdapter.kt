@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.manga.track
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.inflate
+import eu.kanade.tachiyomi.util.view.inflate
 
 class TrackAdapter(controller: TrackController) : androidx.recyclerview.widget.RecyclerView.Adapter<TrackHolder>() {
 

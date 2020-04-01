@@ -21,7 +21,12 @@ import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
-import eu.kanade.tachiyomi.util.*
+import eu.kanade.tachiyomi.util.preference.*
+import eu.kanade.tachiyomi.util.storage.getUriCompat
+import eu.kanade.tachiyomi.util.system.getFilePicker
+import eu.kanade.tachiyomi.util.system.registerLocalReceiver
+import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.system.unregisterLocalReceiver
 import java.io.File
 import java.util.concurrent.TimeUnit
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
@@ -234,7 +239,7 @@ class SettingsBackupController : SettingsController() {
                     .content(R.string.backup_choice)
                     .items(options)
                     .itemsDisabledIndices(0)
-                    .itemsCallbackMultiChoice(arrayOf(0, 1, 2, 3, 4), { _, positions, _ ->
+                    .itemsCallbackMultiChoice(arrayOf(0, 1, 2, 3, 4)) { _, positions, _ ->
                         var flags = 0
                         for (i in 1 until positions.size) {
                             when (positions[i]) {
@@ -247,7 +252,7 @@ class SettingsBackupController : SettingsController() {
 
                         (targetController as? SettingsBackupController)?.createBackup(flags)
                         true
-                    })
+                    }
                     .positiveText(R.string.action_create)
                     .negativeText(android.R.string.cancel)
                     .build()

@@ -8,8 +8,14 @@
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
     <item
-        android:id="@+id/action_filter"
+        android:id="@+id/action_settings"
         android:title="@string/action_filter"
         android:icon="@drawable/ic_filter_list_white_24dp"
-        app:showAsAction="always"/>
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_auto_check"
+        android:title="@string/action_auto_check_extensions"
+        android:checkable="true"
+        app:showAsAction="never"/>
 </menu>
