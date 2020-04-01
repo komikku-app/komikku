@@ -188,11 +188,11 @@ class PreferencesHelper(val context: Context) {
 
     fun librarySortingAscending() = rxPrefs.getBoolean("library_sorting_ascending", true)
 
-    fun automaticUpdates() = prefs.getBoolean(Keys.automaticUpdates, false)
+    fun automaticUpdates() = prefs.getBoolean(Keys.automaticUpdates, true)
 
     fun hiddenCatalogues() = rxPrefs.getStringSet("hidden_catalogues", mutableSetOf())
 
-    fun automaticExtUpdates() = rxPrefs.getBoolean(Keys.automaticExtUpdates, false)
+    fun automaticExtUpdates() = rxPrefs.getBoolean(Keys.automaticExtUpdates, true)
 
     fun extensionUpdatesCount() = rxPrefs.getInteger("ext_updates_count", 0)
 
