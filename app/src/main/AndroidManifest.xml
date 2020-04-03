@@ -32,7 +32,8 @@
         android:theme="@style/Theme.Tachiyomi">
         <activity
             android:name=".ui.main.MainActivity"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:theme="@style/SplashScreenBackground">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
