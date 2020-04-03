@@ -109,7 +109,7 @@ class Downloader(
         pending.forEach { if (it.status != Download.QUEUE) it.status = Download.QUEUE }
 
         downloadsRelay.call(pending)
-        return !pending.isEmpty()
+        return pending.isNotEmpty()
     }
 
     /**
