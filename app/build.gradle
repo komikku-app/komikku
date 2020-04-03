@@ -38,7 +38,7 @@ android {
 
     defaultConfig {
         applicationId "eu.kanade.tachiyomi.az"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 28
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         versionCode 8409
