@@ -3,14 +3,13 @@ package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
-import android.annotation.TargetApi
 import android.content.Context
-import android.os.Build
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.view.animation.DecelerateInterpolator
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.ui.reader.viewer.GestureDetectorWithLongTap
 import kotlin.math.abs
@@ -22,7 +21,7 @@ open class WebtoonRecyclerView @JvmOverloads constructor(
         context: Context,
         attrs: AttributeSet? = null,
         defStyle: Int = 0
-) : androidx.recyclerview.widget.RecyclerView(context, attrs, defStyle) {
+) : RecyclerView(context, attrs, defStyle) {
 
     private var isZooming = false
     private var atLastPosition = false
@@ -54,11 +53,10 @@ open class WebtoonRecyclerView @JvmOverloads constructor(
         super.onScrolled(dx, dy)
         val layoutManager = layoutManager
         lastVisibleItemPosition =
-                (layoutManager as androidx.recyclerview.widget.LinearLayoutManager).findLastVisibleItemPosition()
+                (layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
         firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     override fun onScrollStateChanged(state: Int) {
         super.onScrollStateChanged(state)
         val layoutManager = layoutManager

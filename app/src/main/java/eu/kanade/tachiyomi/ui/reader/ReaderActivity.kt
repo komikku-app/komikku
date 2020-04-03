@@ -8,7 +8,6 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.*
 import android.view.animation.Animation
@@ -31,9 +30,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
-import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.AddToLibraryFirst
-import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Error
-import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Success
+import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.*
 import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -489,10 +486,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 toolbarAnimation.setAnimationListener(object : SimpleAnimationListener() {
                     override fun onAnimationStart(animation: Animation) {
                         // Fix status bar being translucent the first time it's opened.
-                        if (Build.VERSION.SDK_INT >= 21) {
-                            window.addFlags(
-                                    WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                        }
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
                     }
                 })
                 // EXH -->
@@ -862,11 +856,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
          */
         private fun setFullscreen(enabled: Boolean) {
             systemUi = if (enabled) {
-                val level = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    SystemUiHelper.LEVEL_IMMERSIVE
-                } else {
-                    SystemUiHelper.LEVEL_HIDE_STATUS_BAR
-                }
+                val level = SystemUiHelper.LEVEL_IMMERSIVE
                 val flags = SystemUiHelper.FLAG_IMMERSIVE_STICKY or
                         SystemUiHelper.FLAG_LAYOUT_IN_SCREEN_OLDER_DEVICES
 
