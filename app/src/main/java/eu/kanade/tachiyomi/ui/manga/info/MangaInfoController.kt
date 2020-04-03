@@ -18,13 +18,17 @@ import androidx.core.graphics.drawable.IconCompat
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import com.afollestad.materialdialogs.MaterialDialog
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import com.bumptech.glide.signature.ObjectKey
 import com.elvishew.xlog.XLog
 import com.google.gson.Gson
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import com.jakewharton.rxbinding.view.clicks
 import com.jakewharton.rxbinding.view.longClicks
@@ -631,15 +635,18 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                         3 -> centerCrop().transform(MaskTransformation(R.drawable.mask_star))
                     }
                 }
-                .into(object : SimpleTarget<Bitmap>(96, 96) {
-                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                .listener(object : RequestListener<Bitmap> {
+                    override fun onResourceReady(resource: Bitmap, model: Any, target: Target<Bitmap>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
                         createShortcut(resource)
+                        return true
                     }
 
-                    override fun onLoadFailed(errorDrawable: Drawable?) {
+                    override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Bitmap>?, isFirstResource: Boolean): Boolean {
                         activity?.toast(R.string.icon_creation_fail)
+                        return true
                     }
                 })
+                .submit()
     }
 
     /**
