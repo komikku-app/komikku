@@ -365,7 +365,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         super.onDestroy()
         cancel()
     }
-    // EXH <--
 
     /**
      * Update chapter count TextView.

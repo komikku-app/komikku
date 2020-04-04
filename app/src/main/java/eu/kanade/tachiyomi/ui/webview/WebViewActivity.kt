@@ -11,7 +11,6 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.core.graphics.ColorUtils
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -21,7 +20,6 @@ import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.invisible
 import eu.kanade.tachiyomi.util.view.visible
-import exh.ui.webview.EhWebViewActivity
 import kotlinx.android.synthetic.main.webview_activity.*
 import uy.kohesive.injekt.injectLazy
 
@@ -153,15 +151,7 @@ class WebViewActivity : BaseActivity() {
     }
 
     private fun openInBrowser() {
-        if(preferences.eh_incogWebview().getOrDefault()) {
-            val intent = Intent(this, EhWebViewActivity::class.java).apply {
-                putExtra(EhWebViewActivity.KEY_URL, webview.url)
-            }
-            startActivity(intent)
-        }
-        else {
-            openInBrowser(webview.url)
-        }
+        openInBrowser(webview.url)
     }
 
     companion object {

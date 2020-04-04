@@ -187,8 +187,6 @@ object PreferenceKeys {
 
     const val eh_preserveReadingPosition = "eh_preserve_reading_position"
 
-    const val eh_incogWebview = "eh_incognito_webview"
-
     const val eh_autoSolveCaptchas = "eh_autosolve_captchas"
 
     const val eh_delegateSources = "eh_delegate_sources"
