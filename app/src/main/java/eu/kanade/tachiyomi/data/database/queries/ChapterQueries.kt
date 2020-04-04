@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.data.database.resolvers.ChapterProgressPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.ChapterSourceOrderPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaChapterGetResolver
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable
-import java.util.*
+import java.util.Date
 
 interface ChapterQueries : DbProvider {
 
@@ -99,5 +99,4 @@ interface ChapterQueries : DbProvider {
             .objects(chapters)
             .withPutResolver(ChapterSourceOrderPutResolver())
             .prepare()
-
 }

@@ -112,5 +112,4 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         }
         return PagerAdapter.POSITION_NONE
     }
-
 }

@@ -1,17 +1,15 @@
 package eu.kanade.tachiyomi
 
-
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
-import android.view.WindowManager
+import android.graphics.Color
+import android.os.Build
+import android.os.Environment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
-import android.graphics.Color
-import android.os.Build
-import android.os.Environment
 import androidx.multidex.MultiDex
 import com.elvishew.xlog.LogConfiguration
 import com.elvishew.xlog.LogLevel
@@ -33,30 +31,25 @@ import com.ms_square.debugoverlay.modules.FpsModule
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
-import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
-import exh.ui.lock.lockEnabled
 import exh.ui.lock.LockActivityDelegate
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import java.io.File
+import java.security.NoSuchAlgorithmException
+import javax.net.ssl.SSLContext
+import kotlin.concurrent.thread
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.InjektScope
-import uy.kohesive.injekt.injectLazy
 import uy.kohesive.injekt.registry.default.DefaultRegistrar
-import java.io.File
-import java.security.NoSuchAlgorithmException
-import javax.net.ssl.SSLContext
-import kotlin.concurrent.thread
 
 open class App : Application(), LifecycleObserver {
     override fun onCreate() {
@@ -72,8 +65,8 @@ open class App : Application(), LifecycleObserver {
         setupJobManager()
         setupNotificationChannels()
         GlobalScope.launch { deleteOldMetadataRealm() } // Delete old metadata DB (EH)
-        Reprint.initialize(this) //Setup fingerprint (EH)
-        if((BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest") && DebugToggles.ENABLE_DEBUG_OVERLAY.enabled) {
+        Reprint.initialize(this) // Setup fingerprint (EH)
+        if ((BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest") && DebugToggles.ENABLE_DEBUG_OVERLAY.enabled) {
             setupDebugOverlay()
         }
 
@@ -83,7 +76,7 @@ open class App : Application(), LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
-        //App in background
+        // App in background
         LockActivityDelegate.willLock = true
     }
 
@@ -98,8 +91,8 @@ open class App : Application(), LifecycleObserver {
     }
 
     private fun workaroundAndroid7BrokenSSL() {
-        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.N
-                || Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N ||
+                Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1) {
             try {
                 SSLContext.getInstance("TLSv1.2")
             } catch (e: NoSuchAlgorithmException) {
@@ -145,13 +138,13 @@ open class App : Application(), LifecycleObserver {
                 .build()
         Realm.deleteRealm(config)
 
-        //Delete old paper db files
+        // Delete old paper db files
         listOf(
                 File(filesDir, "gallery-ex"),
                 File(filesDir, "gallery-perveden"),
                 File(filesDir, "gallery-nhentai")
         ).forEach {
-            if(it.exists()) {
+            if (it.exists()) {
                 thread {
                     it.deleteRecursively()
                 }
@@ -163,7 +156,7 @@ open class App : Application(), LifecycleObserver {
     private fun setupExhLogging() {
         EHLogLevel.init(this)
 
-        val logLevel = if(EHLogLevel.shouldLog(EHLogLevel.EXTRA)) {
+        val logLevel = if (EHLogLevel.shouldLog(EHLogLevel.EXTRA)) {
             LogLevel.ALL
         } else {
             LogLevel.WARN
@@ -193,7 +186,7 @@ open class App : Application(), LifecycleObserver {
                 .build()
 
         // Install Crashlytics in prod
-        if(!BuildConfig.DEBUG) {
+        if (!BuildConfig.DEBUG) {
             printers += CrashlyticsPrinter(LogLevel.ERROR)
         }
 
@@ -215,7 +208,7 @@ open class App : Application(), LifecycleObserver {
                     .allowSystemLayer(false)
                     .build()
                     .install()
-        } catch(e: IllegalStateException) {
+        } catch (e: IllegalStateException) {
             // Crashes if app is in background
             XLog.e("Failed to initialize debug overlay, app in background?", e)
         }

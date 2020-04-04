@@ -33,10 +33,13 @@ data class SourceItem(val source: CatalogueSource, val header: LangItem? = null,
     /**
      * Binds this item to the given view holder.
      */
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>, holder: SourceHolder,
-                                position: Int, payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: SourceHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
 
         holder.bind(this)
     }
-
 }

@@ -24,5 +24,4 @@ class CategoryImpl : Category {
     override fun hashCode(): Int {
         return name.hashCode()
     }
-
 }

@@ -11,7 +11,6 @@ fun String.chop(count: Int, replacement: String = "..."): String {
         take(count - replacement.length) + replacement
     else
         this
-
 }
 
 fun String.removeArticles(): String {

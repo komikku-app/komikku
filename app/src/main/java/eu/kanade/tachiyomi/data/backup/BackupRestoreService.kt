@@ -10,7 +10,6 @@ import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -26,37 +25,29 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.models.Backup.VERSION
 import eu.kanade.tachiyomi.data.backup.models.DHistory
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.*
+import eu.kanade.tachiyomi.data.database.models.ChapterImpl
+import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.MangaImpl
+import eu.kanade.tachiyomi.data.database.models.Track
+import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.util.storage.getUriCompat
-import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceNotFoundException
-import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import eu.kanade.tachiyomi.util.system.notificationManager
+import exh.BackupEntry
+import exh.EXHMigrations
+import exh.eh.EHentaiThrottleManager
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import exh.BackupEntry
-import exh.EH_SOURCE_ID
-import exh.EXHMigrations
-import exh.EXH_SOURCE_ID
-import exh.eh.EHentaiThrottleManager
-import exh.eh.EHentaiUpdateWorker
-import rx.Observable
-import rx.Subscription
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 /**
  * Restores backup from json file
@@ -101,7 +92,6 @@ class BackupRestoreService : Service() {
      * List containing distinct errors
      */
     private val errorsMini = mutableListOf<String>()
-
 
     /**
      * List containing missing sources
@@ -232,7 +222,6 @@ class BackupRestoreService : Service() {
             restoreManga(it.asJsonObject, backupManager)
         }
 
-
         notificationManager.cancel(Notifications.ID_RESTORE_PROGRESS)
 
         cancelled = errors.count { it -> it.contains("standalonecoroutine", true) }
@@ -290,11 +279,11 @@ class BackupRestoreService : Service() {
                 // Manga in database copy information from manga already in database
                 backupManager.restoreMangaNoFetch(manga, dbManga!!)
             } else {
-                //manga gets details from network
+                // manga gets details from network
                 backupManager.restoreMangaFetch(source, manga)
             }
             if (!dbMangaExists || !backupManager.restoreChaptersForManga(manga, chapters)) {
-                //manga gets chapters added
+                // manga gets chapters added
                 backupManager.restoreChapterFetch(source, manga, chapters, throttleManager)
             }
             // Restore categories
@@ -473,5 +462,4 @@ class BackupRestoreService : Service() {
             context.stopService(Intent(context, BackupRestoreService::class.java))
         }
     }
-} 
-
+}

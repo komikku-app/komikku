@@ -19,8 +19,8 @@ import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import exh.EXHSavedSearch
 import kotlinx.android.synthetic.main.catalogue_drawer_content.view.*
 
-class CatalogueNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null)
-    : SimpleNavigationView(context, attrs) {
+class CatalogueNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+    SimpleNavigationView(context, attrs) {
 
     val adapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter<IFlexible<*>>(null)
             .setDisplayHeadersAtStartUp(true)
@@ -86,5 +86,4 @@ class CatalogueNavigationView @JvmOverloads constructor(context: Context, attrs:
         const val MAX_SAVED_SEARCHES = 5
     }
     // EXH <--
-
 }

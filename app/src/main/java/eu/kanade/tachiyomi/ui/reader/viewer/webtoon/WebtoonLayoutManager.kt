@@ -51,5 +51,4 @@ class WebtoonLayoutManager(activity: ReaderActivity) : androidx.recyclerview.wid
 
         return if (child == null) NO_POSITION else getPosition(child)
     }
-
 }

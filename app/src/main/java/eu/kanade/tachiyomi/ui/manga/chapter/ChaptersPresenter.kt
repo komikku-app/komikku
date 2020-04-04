@@ -13,13 +13,13 @@ import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
-import exh.isEhBasedSource
+import java.util.Date
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -28,20 +28,19 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import java.util.Date
 
 /**
  * Presenter of [ChaptersController].
  */
 class ChaptersPresenter(
-        val manga: Manga,
-        val source: Source,
-        private val chapterCountRelay: BehaviorRelay<Float>,
-        private val lastUpdateRelay: BehaviorRelay<Date>,
-        private val mangaFavoriteRelay: PublishRelay<Boolean>,
-        val preferences: PreferencesHelper = Injekt.get(),
-        private val db: DatabaseHelper = Injekt.get(),
-        private val downloadManager: DownloadManager = Injekt.get()
+    val manga: Manga,
+    val source: Source,
+    private val chapterCountRelay: BehaviorRelay<Float>,
+    private val lastUpdateRelay: BehaviorRelay<Date>,
+    private val mangaFavoriteRelay: PublishRelay<Boolean>,
+    val preferences: PreferencesHelper = Injekt.get(),
+    private val db: DatabaseHelper = Injekt.get(),
+    private val downloadManager: DownloadManager = Injekt.get()
 ) : BasePresenter<ChaptersController>() {
 
     /**
@@ -115,9 +114,9 @@ class ChaptersPresenter(
                             ?: 0))
 
                     // EXH -->
-                    if (chapters.isNotEmpty()
-                            && (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID)
-                            && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
+                    if (chapters.isNotEmpty() &&
+                            (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) &&
+                            DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
                         // Check for gallery in library and accept manga with lowest id
                         // Find chapters sharing same root
                         add(updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)

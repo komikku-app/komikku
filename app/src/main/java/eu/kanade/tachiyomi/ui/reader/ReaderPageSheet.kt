@@ -13,8 +13,8 @@ import kotlinx.android.synthetic.main.reader_page_sheet.*
  * Sheet to show when a page is long clicked.
  */
 class ReaderPageSheet(
-        private val activity: ReaderActivity,
-        private val page: ReaderPage
+    private val activity: ReaderActivity,
+    private val page: ReaderPage
 ) : BottomSheetDialog(activity) {
 
     /**
@@ -70,5 +70,4 @@ class ReaderPageSheet(
         activity.saveImage(page)
         dismiss()
     }
-
 }

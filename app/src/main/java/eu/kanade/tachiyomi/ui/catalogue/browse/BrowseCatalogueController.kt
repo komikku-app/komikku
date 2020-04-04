@@ -2,7 +2,12 @@ package eu.kanade.tachiyomi.ui.catalogue.browse
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -30,26 +35,22 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.connectivityManager
-import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
-import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.EXHSavedSearch
-import kotlinx.android.synthetic.main.catalogue_controller.catalogue_view
-import kotlinx.android.synthetic.main.catalogue_controller.progress
-import kotlinx.android.synthetic.main.main_activity.drawer
+import java.util.concurrent.TimeUnit
+import kotlinx.android.synthetic.main.catalogue_controller.*
+import kotlinx.android.synthetic.main.main_activity.*
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
-import rx.subscriptions.Subscriptions
-import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
-import java.util.concurrent.TimeUnit
 
 /**
  * Controller to manage the catalogues available in the app.
@@ -62,9 +63,11 @@ open class BrowseCatalogueController(bundle: Bundle) :
         FlexibleAdapter.EndlessScrollListener,
         ChangeMangaCategoriesDialog.Listener {
 
-    constructor(source: CatalogueSource,
-                searchQuery: String? = null,
-                smartSearchConfig: CatalogueController.SmartSearchConfig? = null) : this(Bundle().apply {
+    constructor(
+        source: CatalogueSource,
+        searchQuery: String? = null,
+        smartSearchConfig: CatalogueController.SmartSearchConfig? = null
+    ) : this(Bundle().apply {
         putLong(SOURCE_ID_KEY, source.id)
 
         if (searchQuery != null)
@@ -156,7 +159,7 @@ open class BrowseCatalogueController(bundle: Bundle) :
 
     override fun createSecondaryDrawer(drawer: DrawerLayout): ViewGroup? {
         // Inflate and prepare drawer
-        val navView = drawer.inflate(R.layout.catalogue_drawer) as CatalogueNavigationView //TODO whatever this is
+        val navView = drawer.inflate(R.layout.catalogue_drawer) as CatalogueNavigationView // TODO whatever this is
         this.navView = navView
         navView.setFilters(presenter.filterItems)
 
@@ -169,8 +172,8 @@ open class BrowseCatalogueController(bundle: Bundle) :
                     .title("Save current search query?")
                     .input("My search name", "") { _, searchName ->
                         val oldSavedSearches = presenter.loadSearches()
-                        if (searchName.isNotBlank()
-                                && oldSavedSearches.size < CatalogueNavigationView.MAX_SAVED_SEARCHES) {
+                        if (searchName.isNotBlank() &&
+                                oldSavedSearches.size < CatalogueNavigationView.MAX_SAVED_SEARCHES) {
                             val newSearches = oldSavedSearches + EXHSavedSearch(
                                     searchName.toString().trim(),
                                     presenter.query,
@@ -260,7 +263,7 @@ open class BrowseCatalogueController(bundle: Bundle) :
             presenter.sourceFilters = newFilters
             navView.setFilters(presenter.filterItems)
         }
-        return navView as ViewGroup //TODO fix this bullshit
+        return navView as ViewGroup // TODO fix this bullshit
     }
 
     override fun cleanupSecondaryDrawer(drawer: DrawerLayout) {
@@ -629,7 +632,6 @@ open class BrowseCatalogueController(bundle: Bundle) :
             }
             activity.toast(activity.getString(R.string.manga_added_library))
         }
-
     }
 
     /**
@@ -650,5 +652,4 @@ open class BrowseCatalogueController(bundle: Bundle) :
         const val SMART_SEARCH_CONFIG_KEY = "smartSearchConfig"
         // EXH <--
     }
-
 }

@@ -17,11 +17,10 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.system.jobScheduler
 import exh.source.BlacklistedSources
-import rx.Observable
-import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
+import uy.kohesive.injekt.injectLazy
 
 object EXHMigrations {
     private val db: DatabaseHelper by injectLazy()
@@ -122,7 +121,7 @@ object EXHMigrations {
                                 .prepare()
                                 .executeAsBlocking()
                         tsuminoManga.forEach {
-                            it.url = "/entry/"+it.url.split("/").last()
+                            it.url = "/entry/" + it.url.split("/").last()
                         }
 
                         db.db.put()
@@ -134,15 +133,14 @@ object EXHMigrations {
                     }
                 }
 
-
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
 
                 preferences.eh_lastVersionCode().set(BuildConfig.VERSION_CODE)
 
                 return true
             }
-        } catch(e: Exception) {
-            logger.e( "Failed to migrate app from $oldVersion -> ${BuildConfig.VERSION_CODE}!", e)
+        } catch (e: Exception) {
+            logger.e("Failed to migrate app from $oldVersion -> ${BuildConfig.VERSION_CODE}!", e)
         }
         return false
     }
@@ -151,37 +149,37 @@ object EXHMigrations {
         val (manga, chapters, categories, history, tracks) = backupEntry
 
         // Migrate HentaiCafe source IDs
-        if(manga.source == 6908L) {
+        if (manga.source == 6908L) {
             manga.source = HENTAI_CAFE_SOURCE_ID
         }
 
         // Migrate Tsumino source IDs
-        if(manga.source == 6909L) {
+        if (manga.source == 6909L) {
             manga.source = TSUMINO_SOURCE_ID
         }
 
         // Migrate nhentai URLs
-        if(manga.source == NHENTAI_SOURCE_ID) {
+        if (manga.source == NHENTAI_SOURCE_ID) {
             manga.url = getUrlWithoutDomain(manga.url)
         }
 
         // Allow importing of nhentai extension backups
-        if(manga.source in BlacklistedSources.NHENTAI_EXT_SOURCES) {
+        if (manga.source in BlacklistedSources.NHENTAI_EXT_SOURCES) {
             manga.source = NHENTAI_SOURCE_ID
         }
 
         // Allow importing of English PervEden extension backups
-        if(manga.source in BlacklistedSources.PERVEDEN_EN_EXT_SOURCES) {
+        if (manga.source in BlacklistedSources.PERVEDEN_EN_EXT_SOURCES) {
             manga.source = PERV_EDEN_EN_SOURCE_ID
         }
 
         // Allow importing of Italian PervEden extension backups
-        if(manga.source in BlacklistedSources.PERVEDEN_IT_EXT_SOURCES) {
+        if (manga.source in BlacklistedSources.PERVEDEN_IT_EXT_SOURCES) {
             manga.source = PERV_EDEN_IT_SOURCE_ID
         }
 
         // Allow importing of EHentai extension backups
-        if(manga.source in BlacklistedSources.EHENTAI_EXT_SOURCES) {
+        if (manga.source in BlacklistedSources.EHENTAI_EXT_SOURCES) {
             manga.source = EH_SOURCE_ID
         }
 
@@ -190,12 +188,12 @@ object EXHMigrations {
 
     private fun backupDatabase(context: Context, oldMigrationVersion: Int) {
         val backupLocation = File(File(context.filesDir, "exh_db_bck"), "$oldMigrationVersion.bck.db")
-        if(backupLocation.exists()) return // Do not backup same version twice
+        if (backupLocation.exists()) return // Do not backup same version twice
 
         val dbLocation = context.getDatabasePath(db.lowLevel().sqliteOpenHelper().databaseName)
         try {
             dbLocation.copyTo(backupLocation, overwrite = true)
-        } catch(t: Throwable) {
+        } catch (t: Throwable) {
             XLog.w("Failed to backup database!")
         }
     }
@@ -216,9 +214,9 @@ object EXHMigrations {
 }
 
 data class BackupEntry(
-        val manga: Manga,
-        val chapters: List<Chapter>,
-        val categories: List<String>,
-        val history: List<DHistory>,
-        val tracks: List<Track>
+    val manga: Manga,
+    val chapters: List<Chapter>,
+    val categories: List<String>,
+    val history: List<DHistory>,
+    val tracks: List<Track>
 )

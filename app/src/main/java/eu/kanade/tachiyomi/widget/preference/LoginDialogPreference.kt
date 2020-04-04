@@ -60,7 +60,6 @@ abstract class LoginDialogPreference(bundle: Bundle? = null) : DialogController(
                 }
             })
         }
-
     }
 
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
@@ -77,5 +76,4 @@ abstract class LoginDialogPreference(bundle: Bundle? = null) : DialogController(
     protected abstract fun checkLogin()
 
     protected abstract fun setCredentialsOnView(view: View)
-
 }

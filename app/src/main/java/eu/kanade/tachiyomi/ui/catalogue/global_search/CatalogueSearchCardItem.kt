@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.catalogue.global_search
 
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -18,8 +17,12 @@ class CatalogueSearchCardItem(val manga: Manga) : AbstractFlexibleItem<Catalogue
         return CatalogueSearchCardHolder(view, adapter as CatalogueSearchCardAdapter)
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>, holder: CatalogueSearchCardHolder,
-                                position: Int, payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: CatalogueSearchCardHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
         holder.bind(manga)
     }
 
@@ -33,5 +36,4 @@ class CatalogueSearchCardItem(val manga: Manga) : AbstractFlexibleItem<Catalogue
     override fun hashCode(): Int {
         return manga.id?.toInt() ?: 0
     }
-
 }

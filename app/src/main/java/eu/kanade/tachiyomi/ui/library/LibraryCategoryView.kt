@@ -1,11 +1,10 @@
 package eu.kanade.tachiyomi.ui.library
 
 import android.content.Context
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
+import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
 import eu.kanade.tachiyomi.R
@@ -22,12 +21,17 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.ui.LoadingHandle
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.library_category.view.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
 import uy.kohesive.injekt.injectLazy
-import java.util.concurrent.TimeUnit
 
 /**
  * Fragment containing the library manga for a certain category.
@@ -231,7 +235,6 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     suspend fun onNextLibraryManga(cScope: CoroutineScope, event: LibraryMangaEvent) {
         // Get the manga list for this category.
 
-
         val sortingMode = preferences.librarySortingMode().getOrDefault()
         adapter.isLongPressDragEnabled = sortingMode == LibrarySort.DRAG_AND_DROP
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
@@ -343,11 +346,9 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             else -> setSelection(position)
         }
         lastClickPosition = position
-
     }
 
     override fun onItemMove(fromPosition: Int, toPosition: Int) {
-
     }
 
     override fun onItemReleased(position: Int) {
@@ -408,5 +409,4 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         controller.setSelection(item.manga, true)
         controller.invalidateActionMode()
     }
-
 }

@@ -8,8 +8,8 @@ import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import kotlinx.android.synthetic.main.catalogue_list_item.*
 
 class MangaHolder(
-        private val view: View,
-        private val adapter: FlexibleAdapter<*>
+    private val view: View,
+    private val adapter: FlexibleAdapter<*>
 ) : BaseFlexibleViewHolder(view, adapter) {
 
     fun bind(item: MangaItem) {
@@ -32,5 +32,4 @@ class MangaHolder(
                 .dontAnimate()
                 .into(thumbnail)
     }
-
 }

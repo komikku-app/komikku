@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.ui.library
 
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.source.LocalSource
@@ -20,8 +20,8 @@ import kotlinx.android.synthetic.main.catalogue_list_item.*
  */
 
 class LibraryListHolder(
-        private val view: View,
-        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
+    private val view: View,
+    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 ) : LibraryHolder(view, adapter) {
 
     /**
@@ -44,7 +44,7 @@ class LibraryListHolder(
             visibility = if (item.downloadCount > 0) View.VISIBLE else View.GONE
             text = "${item.downloadCount}"
         }
-        //show local text badge if local manga
+        // show local text badge if local manga
         local_text.visibility = if (item.manga.source == LocalSource.ID) View.VISIBLE else View.GONE
 
         // Create thumbnail onclick to simulate long click
@@ -63,5 +63,4 @@ class LibraryListHolder(
                 .dontAnimate()
                 .into(thumbnail)
     }
-
 }

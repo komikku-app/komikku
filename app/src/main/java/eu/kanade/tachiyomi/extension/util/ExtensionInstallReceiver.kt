@@ -7,7 +7,6 @@ import android.content.IntentFilter
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
 import eu.kanade.tachiyomi.util.lang.launchNow
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -116,5 +115,4 @@ internal class ExtensionInstallReceiver(private val listener: Listener) :
         fun onExtensionUntrusted(extension: Extension.Untrusted)
         fun onPackageUninstalled(pkgName: String)
     }
-
 }

@@ -8,12 +8,7 @@ import eu.kanade.tachiyomi.util.view.getRound
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
 import io.github.mthli.slice.Slice
-import kotlinx.android.synthetic.main.catalogue_main_controller_card_item.card
-import kotlinx.android.synthetic.main.catalogue_main_controller_card_item.image
-import kotlinx.android.synthetic.main.catalogue_main_controller_card_item.source_browse
-import kotlinx.android.synthetic.main.catalogue_main_controller_card_item.source_latest
-import kotlinx.android.synthetic.main.catalogue_main_controller_card_item.title
-
+import kotlinx.android.synthetic.main.catalogue_main_controller_card_item.*
 
 class SourceHolder(view: View, override val adapter: CatalogueAdapter, val showButtons: Boolean) :
         BaseFlexibleViewHolder(view, adapter),

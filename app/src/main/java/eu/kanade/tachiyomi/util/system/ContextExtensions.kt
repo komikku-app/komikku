@@ -4,8 +4,12 @@ import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.job.JobScheduler
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.ConnectivityManager
@@ -22,14 +26,12 @@ import androidx.annotation.StringRes
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.nononsenseapps.filepicker.FilePickerActivity
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.widget.CustomLayoutPickerActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
 
 /**
  * Display a toast in this context.

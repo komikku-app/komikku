@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.drawerlayout.widget.DrawerLayout
 
 class DrawerSwipeCloseListener(
-        private val drawer: androidx.drawerlayout.widget.DrawerLayout,
-        private val navigationView: ViewGroup
+    private val drawer: androidx.drawerlayout.widget.DrawerLayout,
+    private val navigationView: ViewGroup
 ) : androidx.drawerlayout.widget.DrawerLayout.SimpleDrawerListener() {
 
     override fun onDrawerOpened(drawerView: View) {

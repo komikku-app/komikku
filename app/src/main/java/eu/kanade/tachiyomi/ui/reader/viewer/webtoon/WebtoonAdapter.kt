@@ -128,8 +128,8 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : androidx.recyclerview.widget.R
      * Diff util callback used to dispatch delta updates instead of full dataset changes.
      */
     private class Callback(
-            private val oldItems: List<Any>,
-            private val newItems: List<Any>
+        private val oldItems: List<Any>,
+        private val newItems: List<Any>
     ) : DiffUtil.Callback() {
 
         /**
@@ -175,5 +175,4 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : androidx.recyclerview.widget.R
          */
         const val TRANSITION_VIEW = 1
     }
-
 }

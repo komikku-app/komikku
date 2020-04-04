@@ -32,7 +32,5 @@ class LatestUpdatesController(bundle: Bundle) : BrowseCatalogueController(bundle
     }
 
     override fun cleanupSecondaryDrawer(drawer: androidx.drawerlayout.widget.DrawerLayout) {
-
     }
-
 }

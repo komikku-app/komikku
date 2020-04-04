@@ -5,13 +5,16 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import com.bluelinelabs.conductor.RouterTransaction
 import com.elvishew.xlog.XLog
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import com.jakewharton.rxbinding.view.clicks
@@ -25,9 +28,9 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.snack
-import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import kotlinx.android.synthetic.main.chapters_controller.*
@@ -232,10 +235,10 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
             initialFetchChapters()
 
         val mangaController = parentController as MangaController
-        if (mangaController.update
+        if (mangaController.update ||
                 // Auto-update old format galleries
-                || ((presenter.manga.source == EH_SOURCE_ID || presenter.manga.source == EXH_SOURCE_ID)
-                        && chapters.size == 1 && chapters.first().date_upload == 0L)) {
+                ((presenter.manga.source == EH_SOURCE_ID || presenter.manga.source == EXH_SOURCE_ID) &&
+                        chapters.size == 1 && chapters.first().date_upload == 0L)) {
             mangaController.update = false
             fetchChaptersFromSource()
         }
@@ -254,7 +257,6 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
             }
             actionMode?.invalidate()
         }
-
     }
 
     private fun initialFetchChapters() {
@@ -457,7 +459,6 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
         }
     }
 
-
     private fun showDeleteChaptersConfirmationDialog() {
         DeleteChaptersDialog(this).showDialog(router)
     }
@@ -490,7 +491,7 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
 
     fun onChaptersDeleted(chapters: List<ChapterItem>) {
         dismissDeletingDialog()
-        //this is needed so the downloaded text gets removed from the item
+        // this is needed so the downloaded text gets removed from the item
         chapters.forEach {
             adapter?.updateItem(it)
         }

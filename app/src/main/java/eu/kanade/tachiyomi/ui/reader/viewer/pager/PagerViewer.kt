@@ -369,5 +369,4 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         }
         return false
     }
-
 }

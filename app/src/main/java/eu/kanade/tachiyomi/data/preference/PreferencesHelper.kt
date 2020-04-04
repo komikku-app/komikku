@@ -8,16 +8,14 @@ import android.preference.PreferenceManager
 import com.f2prateek.rx.preferences.Preference
 import com.f2prateek.rx.preferences.RxSharedPreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.track.TrackService
-import eu.kanade.tachiyomi.source.Source
-import exh.ui.migration.MigrationStatus
-import java.io.File
-import java.util.Locale
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
+import eu.kanade.tachiyomi.data.track.TrackService
+import exh.ui.migration.MigrationStatus
+import java.io.File
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 fun <T> Preference<T>.getOrDefault(): T = get() ?: defaultValue()!!
 
@@ -225,7 +223,6 @@ class PreferencesHelper(val context: Context) {
 
     // <--
 
-
     // --> EH
     fun enableExhentai() = rxPrefs.getBoolean(Keys.eh_enableExHentai, false)
 
@@ -249,7 +246,7 @@ class PreferencesHelper(val context: Context) {
 
     fun hasPerformedURLMigration() = rxPrefs.getBoolean("performed_url_migration", false)
 
-    //EH Cookies
+    // EH Cookies
     fun memberIdVal() = rxPrefs.getString("eh_ipb_member_id", "")
 
     fun passHashVal() = rxPrefs.getString("eh_ipb_pass_hash", "")
@@ -260,7 +257,7 @@ class PreferencesHelper(val context: Context) {
     fun eh_sessionCookie() = rxPrefs.getString(Keys.eh_sessionCookie, "")
     fun eh_hathPerksCookies() = rxPrefs.getString(Keys.eh_hathPerksCookie, "")
 
-    //Lock
+    // Lock
     fun eh_lockHash() = rxPrefs.getString(Keys.eh_lock_hash, null)
 
     fun eh_lockSalt() = rxPrefs.getString(Keys.eh_lock_salt, null)

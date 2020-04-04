@@ -3,15 +3,22 @@ package eu.kanade.tachiyomi.source
 import android.content.Context
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.all.*
-import eu.kanade.tachiyomi.source.online.english.*
-import rx.Observable
+import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.Hitomi
+import eu.kanade.tachiyomi.source.online.all.MergedSource
+import eu.kanade.tachiyomi.source.online.all.NHentai
+import eu.kanade.tachiyomi.source.online.all.PervEden
+import eu.kanade.tachiyomi.source.online.english.EightMuses
+import eu.kanade.tachiyomi.source.online.english.HBrowse
+import eu.kanade.tachiyomi.source.online.english.HentaiCafe
+import eu.kanade.tachiyomi.source.online.english.Pururin
+import eu.kanade.tachiyomi.source.online.english.Tsumino
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.PERV_EDEN_EN_SOURCE_ID
@@ -20,8 +27,9 @@ import exh.metadata.metadata.PervEdenLang
 import exh.source.BlacklistedSources
 import exh.source.DelegatedHttpSource
 import exh.source.EnhancedHttpSource
-import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
+import rx.Observable
+import uy.kohesive.injekt.injectLazy
 
 open class SourceManager(private val context: Context) {
 
@@ -34,7 +42,7 @@ open class SourceManager(private val context: Context) {
     init {
         createInternalSources().forEach { registerSource(it) }
 
-        //Recreate sources when they change
+        // Recreate sources when they change
         val prefEntries = arrayOf(
                 prefs.enableExhentai(),
                 prefs.imageQuality(),
@@ -164,12 +172,13 @@ open class SourceManager(private val context: Context) {
                 )
         ).associateBy { it.originalSourceQualifiedClassName }
 
-        data class DelegatedSource(val sourceName: String,
-                                   val sourceId: Long,
-                                   val originalSourceQualifiedClassName: String,
-                                   val newSourceClass: KClass<out DelegatedHttpSource>)
+        data class DelegatedSource(
+            val sourceName: String,
+            val sourceId: Long,
+            val originalSourceQualifiedClassName: String,
+            val newSourceClass: KClass<out DelegatedHttpSource>
+        )
     }
 }
 
 class SourceNotFoundException(message: String, val id: Long) : Exception(message)
-

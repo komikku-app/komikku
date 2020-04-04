@@ -83,8 +83,8 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
     }
 
     private fun <T> Preference<T>.register(
-            valueAssignment: (T) -> Unit,
-            onChanged: (T) -> Unit = {}
+        valueAssignment: (T) -> Unit,
+        onChanged: (T) -> Unit = {}
     ) {
         asObservable()
                 .doOnNext(valueAssignment)
@@ -115,5 +115,4 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
     enum class ZoomType {
         Left, Center, Right
     }
-
 }

@@ -7,13 +7,13 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import java.util.TreeMap
+import java.util.concurrent.TimeUnit
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Presenter of [CatalogueController]
@@ -23,9 +23,9 @@ import java.util.concurrent.TimeUnit
  * @param preferences application preferences.
  */
 class CataloguePresenter(
-        val sourceManager: SourceManager = Injekt.get(),
-        private val preferences: PreferencesHelper = Injekt.get(),
-        private val controllerMode: CatalogueController.Mode
+    val sourceManager: SourceManager = Injekt.get(),
+    private val preferences: PreferencesHelper = Injekt.get(),
+    private val controllerMode: CatalogueController.Mode
 ) : BasePresenter<CatalogueController>() {
 
     /**

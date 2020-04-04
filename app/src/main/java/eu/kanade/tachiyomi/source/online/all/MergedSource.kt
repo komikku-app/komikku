@@ -5,19 +5,27 @@ import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import hu.akarnokd.rxjava.interop.RxJavaInterop
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.*
+import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.MERGED_SOURCE_ID
 import exh.util.await
+import hu.akarnokd.rxjava.interop.RxJavaInterop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.rx2.asFlowable
 import kotlinx.coroutines.rx2.asSingle
 import okhttp3.Response
@@ -131,10 +139,10 @@ class MergedSource : HttpSource() {
 
     data class LoadedMangaSource(val source: Source, val manga: Manga)
     data class MangaSource(
-            @SerializedName("s")
-            val source: Long,
-            @SerializedName("u")
-            val url: String
+        @SerializedName("s")
+        val source: Long,
+        @SerializedName("u")
+        val url: String
     ) {
         suspend fun load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource? {
             val manga = db.getManga(url, source).executeAsBlocking() ?: return null
@@ -144,8 +152,8 @@ class MergedSource : HttpSource() {
     }
 
     data class MangaConfig(
-            @SerializedName("c")
-            val children: List<MangaSource>
+        @SerializedName("c")
+        val children: List<MangaSource>
     ) {
         fun load(db: DatabaseHelper, sourceManager: SourceManager): Flow<LoadedMangaSource> {
             return children.asFlow().map { mangaSource ->
@@ -170,12 +178,12 @@ class MergedSource : HttpSource() {
     }
 
     data class UrlConfig(
-            @SerializedName("s")
-            val source: Long,
-            @SerializedName("u")
-            val url: String,
-            @SerializedName("m")
-            val mangaUrl: String
+        @SerializedName("s")
+        val source: Long,
+        @SerializedName("u")
+        val url: String,
+        @SerializedName("m")
+        val mangaUrl: String
     )
 
     fun Page.copyWithUrl(newUrl: String) = Page(

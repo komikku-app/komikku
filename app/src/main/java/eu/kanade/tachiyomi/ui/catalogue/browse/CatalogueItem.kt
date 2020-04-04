@@ -39,10 +39,12 @@ class CatalogueItem(val manga: Manga, private val catalogueAsList: Preference<Bo
         }
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
-                                holder: CatalogueHolder,
-                                position: Int,
-                                payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: CatalogueHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
 
         holder.onSetValues(manga)
     }
@@ -58,6 +60,4 @@ class CatalogueItem(val manga: Manga, private val catalogueAsList: Preference<Bo
     override fun hashCode(): Int {
         return manga.id!!.hashCode()
     }
-
-
 }

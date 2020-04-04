@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga.chapter
 
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -35,10 +34,12 @@ class ChapterItem(val chapter: Chapter, val manga: Manga) : AbstractFlexibleItem
         return ChapterHolder(view, adapter as ChaptersAdapter)
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
-                                holder: ChapterHolder,
-                                position: Int,
-                                payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: ChapterHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
 
         holder.bind(this, manga)
     }
@@ -54,5 +55,4 @@ class ChapterItem(val chapter: Chapter, val manga: Manga) : AbstractFlexibleItem
     override fun hashCode(): Int {
         return chapter.id!!.hashCode()
     }
-
 }

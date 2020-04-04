@@ -6,12 +6,12 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.ui.lock.LockActivityDelegate
 import uy.kohesive.injekt.injectLazy
-import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -50,5 +50,4 @@ abstract class BaseActivity : AppCompatActivity() {
 //    override fun onResume() {
 //        super.onResume()
 //    }
-
 }

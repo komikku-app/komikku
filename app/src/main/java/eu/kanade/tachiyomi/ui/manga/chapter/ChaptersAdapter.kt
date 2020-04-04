@@ -4,17 +4,17 @@ import android.content.Context
 import android.view.MenuItem
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import uy.kohesive.injekt.injectLazy
 
 class ChaptersAdapter(
-        controller: ChaptersController,
-        context: Context
+    controller: ChaptersController,
+    context: Context
 ) : FlexibleAdapter<ChapterItem>(null, controller, true) {
 
     val preferences: PreferencesHelper by injectLazy()
@@ -46,5 +46,4 @@ class ChaptersAdapter(
     interface OnMenuItemClickListener {
         fun onMenuItemClick(position: Int, item: MenuItem)
     }
-
 }

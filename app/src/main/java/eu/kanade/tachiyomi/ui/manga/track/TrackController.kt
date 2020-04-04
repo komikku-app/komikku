@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.manga.track
 
 import android.content.Intent
 import android.net.Uri
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -138,5 +137,4 @@ class TrackController : NucleusController<TrackPresenter>(),
     private companion object {
         const val TAG_SEARCH_CONTROLLER = "track_search_controller"
     }
-
 }

@@ -10,13 +10,16 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import android.net.Uri
-import androidx.browser.customtabs.CustomTabsIntent
 import com.afollestad.materialdialogs.MaterialDialog
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -25,8 +28,6 @@ import com.bumptech.glide.request.transition.Transition
 import com.bumptech.glide.signature.ObjectKey
 import com.elvishew.xlog.XLog
 import com.google.gson.Gson
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import com.jakewharton.rxbinding.view.clicks
 import com.jakewharton.rxbinding.view.longClicks
@@ -50,24 +51,30 @@ import eu.kanade.tachiyomi.ui.catalogue.global_search.CatalogueSearchController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
-import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import jp.wasabeef.glide.transformations.CropSquareTransformation
-import kotlinx.android.synthetic.main.manga_info_controller.*
-import kotlinx.coroutines.*
-import uy.kohesive.injekt.injectLazy
 import java.text.DateFormat
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Date
+import jp.wasabeef.glide.transformations.CropSquareTransformation
 import kotlin.coroutines.CoroutineContext
+import kotlinx.android.synthetic.main.manga_info_controller.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import uy.kohesive.injekt.injectLazy
 
 /**
  * Fragment that shows manga information.
@@ -138,7 +145,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         }
 
         manga_artist.clicks().subscribeUntilDestroy {
-            //EXH Special case E-Hentai/ExHentai to use tag based search
+            // EXH Special case E-Hentai/ExHentai to use tag based search
             var text = manga_artist.text.toString()
             if (isEHentaiBasedSource())
                 text = wrapTag("artist", text)
@@ -146,13 +153,13 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         }
 
         manga_author.longClicks().subscribeUntilDestroy {
-            //EXH Special case E-Hentai/ExHentai to ignore author field (unused)
+            // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
             if (!isEHentaiBasedSource())
                 copyToClipboard(manga_author.text.toString(), manga_author.text.toString())
         }
 
         manga_author.clicks().subscribeUntilDestroy {
-            //EXH Special case E-Hentai/ExHentai to ignore author field (unused)
+            // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
             if (!isEHentaiBasedSource())
                 performGlobalSearch(manga_author.text.toString())
         }
@@ -162,7 +169,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         }
 
         manga_genres_tags.setOnTagClickListener { tag ->
-            //EXH Special case E-Hentai/ExHentai to use tag based search
+            // EXH Special case E-Hentai/ExHentai to use tag based search
             var text = tag
             if (isEHentaiBasedSource() || presenter.source.id == NHENTAI_SOURCE_ID) {
                 val parsed = parseTag(text)
@@ -225,7 +232,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         return super.onOptionsItemSelected(item)
     }
 
-
     // EXH -->
     private fun openSmartSearch() {
         val smartSearchConfig = CatalogueController.SmartSearchConfig(presenter.manga.title, presenter.manga.id!!)
@@ -241,7 +247,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
      * If true update view with manga information,
      * if false fetch manga information
      *
-     * @param manga  manga object containing information about manga.
+     * @param manga manga object containing information about manga.
      * @param source the source of the manga.
      */
     fun onNextManga(manga: Manga, source: Source) {
@@ -267,7 +273,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
         // TODO Duplicated in MigrationProcedureAdapter
 
-        //update full title TextView.
+        // update full title TextView.
         manga_full_title.text = if (manga.title.isBlank()) {
             view.context.getString(R.string.unknown)
         } else {
@@ -461,7 +467,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         // Call presenter and start fetching manga information
         presenter.fetchMangaFromSource()
     }
-
 
     /**
      * Update swipe refresh to stop showing refresh in progress spinner.
@@ -661,8 +666,8 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
     private fun isEHentaiBasedSource(): Boolean {
         val sourceId = presenter.source.id
-        return sourceId == EH_SOURCE_ID
-                || sourceId == EXH_SOURCE_ID
+        return sourceId == EH_SOURCE_ID ||
+                sourceId == EXH_SOURCE_ID
     }
     // <-- EH
 
@@ -708,5 +713,4 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                     successCallback.intentSender)
         }
     }
-
 }

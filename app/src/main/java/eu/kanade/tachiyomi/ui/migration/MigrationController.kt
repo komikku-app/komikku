@@ -153,5 +153,4 @@ class MigrationController : NucleusController<MigrationPresenter>(),
     companion object {
         const val LOADING_DIALOG_TAG = "LoadingDialog"
     }
-
 }

@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -31,19 +29,21 @@ import eu.kanade.tachiyomi.ui.manga.chapter.ChaptersPresenter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoController
 import eu.kanade.tachiyomi.ui.manga.track.TrackController
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.main_activity.tabs
-import kotlinx.android.synthetic.main.manga_controller.manga_pager
+import java.util.Date
+import kotlinx.android.synthetic.main.main_activity.*
+import kotlinx.android.synthetic.main.manga_controller.*
 import rx.Subscription
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.*
 
 class MangaController : RxController, TabbedController {
 
-    constructor(manga: Manga?,
-                fromCatalogue: Boolean = false,
-                smartSearchConfig: CatalogueController.SmartSearchConfig? = null,
-                update: Boolean = false) : super(Bundle().apply {
+    constructor(
+        manga: Manga?,
+        fromCatalogue: Boolean = false,
+        smartSearchConfig: CatalogueController.SmartSearchConfig? = null,
+        update: Boolean = false
+    ) : super(Bundle().apply {
         putLong(MANGA_EXTRA, manga?.id ?: 0)
         putBoolean(FROM_CATALOGUE_EXTRA, fromCatalogue)
         putParcelable(SMART_SEARCH_CONFIG_EXTRA, smartSearchConfig)
@@ -197,7 +197,6 @@ class MangaController : RxController, TabbedController {
         override fun getPageTitle(position: Int): CharSequence {
             return tabTitles[position]
         }
-
     }
 
     companion object {
@@ -212,5 +211,4 @@ class MangaController : RxController, TabbedController {
         const val CHAPTERS_CONTROLLER = 1
         const val TRACK_CONTROLLER = 2
     }
-
 }

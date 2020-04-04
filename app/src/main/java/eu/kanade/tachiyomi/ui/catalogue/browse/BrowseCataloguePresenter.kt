@@ -1,8 +1,10 @@
 package eu.kanade.tachiyomi.ui.catalogue.browse
 
 import android.os.Bundle
-import com.github.salomonbrys.kotson.*
-import com.google.gson.JsonObject
+import com.github.salomonbrys.kotson.array
+import com.github.salomonbrys.kotson.jsonObject
+import com.github.salomonbrys.kotson.obj
+import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonParser
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.flexibleadapter.items.ISectionable
@@ -19,7 +21,20 @@ import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.ui.catalogue.filter.*
+import eu.kanade.tachiyomi.ui.catalogue.filter.CheckboxItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.CheckboxSectionItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.GroupItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.HeaderItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.HelpDialogItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.SelectItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.SelectSectionItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.SeparatorItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.SortGroup
+import eu.kanade.tachiyomi.ui.catalogue.filter.SortItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.TextItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.TextSectionItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.TriStateItem
+import eu.kanade.tachiyomi.ui.catalogue.filter.TriStateSectionItem
 import exh.EXHSavedSearch
 import rx.Observable
 import rx.Subscription
@@ -29,20 +44,18 @@ import rx.subjects.PublishSubject
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
-import java.lang.RuntimeException
 
 /**
  * Presenter of [BrowseCatalogueController].
  */
 open class BrowseCataloguePresenter(
-        sourceId: Long,
-        searchQuery: String? = null,
-        sourceManager: SourceManager = Injekt.get(),
-        private val db: DatabaseHelper = Injekt.get(),
-        private val prefs: PreferencesHelper = Injekt.get(),
-        private val coverCache: CoverCache = Injekt.get()
+    sourceId: Long,
+    searchQuery: String? = null,
+    sourceManager: SourceManager = Injekt.get(),
+    private val db: DatabaseHelper = Injekt.get(),
+    private val prefs: PreferencesHelper = Injekt.get(),
+    private val coverCache: CoverCache = Injekt.get()
 ) : BasePresenter<BrowseCatalogueController>() {
 
     /**

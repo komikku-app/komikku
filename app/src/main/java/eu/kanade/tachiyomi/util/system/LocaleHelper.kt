@@ -8,8 +8,8 @@ import android.os.LocaleList
 import android.view.ContextThemeWrapper
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import uy.kohesive.injekt.injectLazy
 import java.util.Locale
+import uy.kohesive.injekt.injectLazy
 
 /**
  * Utility class to change the application's language in runtime.
@@ -142,5 +142,4 @@ object LocaleHelper {
         }
         return newConfig
     }
-
 }

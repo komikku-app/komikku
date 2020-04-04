@@ -13,13 +13,13 @@ import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.plusAssign
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.track_search_dialog.view.*
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.concurrent.TimeUnit
 
 class TrackSearchDialog : DialogController {
 
@@ -146,5 +146,4 @@ class TrackSearchDialog : DialogController {
     private companion object {
         const val KEY_SERVICE = "service_id"
     }
-
 }

@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.manga.track
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.view.inflate
@@ -41,5 +40,4 @@ class TrackAdapter(controller: TrackController) : androidx.recyclerview.widget.R
         fun onChaptersClick(position: Int)
         fun onScoreClick(position: Int)
     }
-
 }

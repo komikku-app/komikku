@@ -62,7 +62,7 @@ fun getRecentMangasQuery(offset: Int = 0, search: String = "") = """
     ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = max_last_read.${Chapter.COL_MANGA_ID}
     WHERE ${History.TABLE}.${History.COL_LAST_READ} > ?
     AND max_last_read.${History.COL_CHAPTER_ID} = ${History.TABLE}.${History.COL_CHAPTER_ID}
-    AND lower(${Manga.TABLE}.${Manga.COL_TITLE}) LIKE '%${search}%'
+    AND lower(${Manga.TABLE}.${Manga.COL_TITLE}) LIKE '%$search%'
     ORDER BY max_last_read.${History.COL_LAST_READ} DESC
     LIMIT 25 OFFSET $offset
 """
@@ -88,7 +88,7 @@ fun getRecentMangasLimitQuery(limit: Int = 25, search: String = "") = """
     ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = max_last_read.${Chapter.COL_MANGA_ID}
     WHERE ${History.TABLE}.${History.COL_LAST_READ} > ?
     AND max_last_read.${History.COL_CHAPTER_ID} = ${History.TABLE}.${History.COL_CHAPTER_ID}
-    AND lower(${Manga.TABLE}.${Manga.COL_TITLE}) LIKE '%${search}%'
+    AND lower(${Manga.TABLE}.${Manga.COL_TITLE}) LIKE '%$search%'
     ORDER BY max_last_read.${History.COL_LAST_READ} DESC
     LIMIT $limit
 """

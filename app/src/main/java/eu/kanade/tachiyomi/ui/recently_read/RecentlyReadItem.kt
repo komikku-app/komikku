@@ -17,10 +17,12 @@ class RecentlyReadItem(val mch: MangaChapterHistory) : AbstractFlexibleItem<Rece
         return RecentlyReadHolder(view, adapter as RecentlyReadAdapter)
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
-                                holder: RecentlyReadHolder,
-                                position: Int,
-                                payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: RecentlyReadHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
 
         holder.bind(mch)
     }

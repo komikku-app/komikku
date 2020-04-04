@@ -4,7 +4,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
-import androidx.recyclerview.widget.RecyclerView
 import com.f2prateek.rx.preferences.Preference
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
@@ -42,10 +41,12 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
         }
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
-                                holder: LibraryHolder,
-                                position: Int,
-                                payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: LibraryHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
 
         holder.onSetValues(this)
     }
@@ -68,7 +69,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
                 (manga.author?.contains(constraint, true) ?: false) ||
                 if (constraint.contains(" ") || constraint.contains("\"")) {
                     val genres = manga.genre?.split(", ")?.map {
-                        it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() //tachiEH tag namespaces
+                        it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
                     }
                     var clean_constraint = ""
                     var ignorespace = false
@@ -87,7 +88,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
                     }
                     clean_constraint.split(",").all { containsGenre(it.trim(), genres) }
                 } else containsGenre(constraint, manga.genre?.split(", ")?.map {
-                    it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() //tachiEH tag namespaces
+                    it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
                 })
     }
 

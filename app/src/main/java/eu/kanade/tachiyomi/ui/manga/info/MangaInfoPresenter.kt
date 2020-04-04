@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import exh.MERGED_SOURCE_ID
 import exh.util.await
+import java.util.Date
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import rx.Observable
@@ -25,7 +26,6 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.*
 
 /**
  * Presenter of MangaInfoFragment.
@@ -33,16 +33,16 @@ import java.util.*
  * Observable updates should be called from here.
  */
 class MangaInfoPresenter(
-        val manga: Manga,
-        val source: Source,
-        val smartSearchConfig: CatalogueController.SmartSearchConfig?,
-        private val chapterCountRelay: BehaviorRelay<Float>,
-        private val lastUpdateRelay: BehaviorRelay<Date>,
-        private val mangaFavoriteRelay: PublishRelay<Boolean>,
-        private val db: DatabaseHelper = Injekt.get(),
-        private val downloadManager: DownloadManager = Injekt.get(),
-        private val coverCache: CoverCache = Injekt.get(),
-        private val gson: Gson = Injekt.get()
+    val manga: Manga,
+    val source: Source,
+    val smartSearchConfig: CatalogueController.SmartSearchConfig?,
+    private val chapterCountRelay: BehaviorRelay<Float>,
+    private val lastUpdateRelay: BehaviorRelay<Date>,
+    private val mangaFavoriteRelay: PublishRelay<Boolean>,
+    private val db: DatabaseHelper = Injekt.get(),
+    private val downloadManager: DownloadManager = Injekt.get(),
+    private val coverCache: CoverCache = Injekt.get(),
+    private val gson: Gson = Injekt.get()
 ) : BasePresenter<MangaInfoController>() {
 
     /**
@@ -68,7 +68,7 @@ class MangaInfoPresenter(
                 .subscribe { setFavorite(it) }
                 .apply { add(this) }
 
-        //update last update date
+        // update last update date
         lastUpdateRelay.observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(MangaInfoController::setLastUpdateDate)
     }
@@ -235,4 +235,3 @@ class MangaInfoPresenter(
         return toInsert
     }
 }
-

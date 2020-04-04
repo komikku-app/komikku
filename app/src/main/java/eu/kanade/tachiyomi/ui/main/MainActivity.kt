@@ -1,14 +1,9 @@
 package eu.kanade.tachiyomi.ui.main
 
 import android.animation.ObjectAnimator
-import android.app.ActivityManager
 import android.app.SearchManager
-import android.app.Service
-import android.app.usage.UsageStatsManager
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.text.TextUtils
@@ -19,14 +14,22 @@ import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import com.bluelinelabs.conductor.*
+import com.bluelinelabs.conductor.Conductor
+import com.bluelinelabs.conductor.Controller
+import com.bluelinelabs.conductor.ControllerChangeHandler
+import com.bluelinelabs.conductor.Router
+import com.bluelinelabs.conductor.RouterTransaction
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
-import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
-import eu.kanade.tachiyomi.ui.base.controller.*
+import eu.kanade.tachiyomi.ui.base.controller.DialogController
+import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
+import eu.kanade.tachiyomi.ui.base.controller.SecondaryDrawerController
+import eu.kanade.tachiyomi.ui.base.controller.TabbedController
+import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
 import eu.kanade.tachiyomi.ui.catalogue.global_search.CatalogueSearchController
 import eu.kanade.tachiyomi.ui.download.DownloadController
@@ -38,28 +41,24 @@ import eu.kanade.tachiyomi.ui.recently_read.RecentlyReadController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.util.view.visible
 import exh.EXHMigrations
 import exh.eh.EHentaiUpdateWorker
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.batchadd.BatchAddController
-import exh.ui.lock.LockChangeHandler
+import exh.ui.lock.LockActivityDelegate
 import exh.ui.lock.LockController
 import exh.ui.lock.lockEnabled
-import exh.ui.lock.notifyLockSecurity
-import exh.ui.lock.LockActivityDelegate
 import exh.ui.migration.MetadataFetchDialog
-import kotlinx.android.synthetic.main.main_activity.*
-import timber.log.Timber
-import uy.kohesive.injekt.injectLazy
-import java.util.*
-import kotlin.collections.ArrayList
 import java.util.Date
+import java.util.LinkedList
 import java.util.concurrent.TimeUnit
+import kotlinx.android.synthetic.main.main_activity.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import uy.kohesive.injekt.injectLazy
 
 class MainActivity : BaseActivity() {
 
@@ -107,7 +106,6 @@ class MainActivity : BaseActivity() {
                 }
             }, 1000)
         }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -175,22 +173,30 @@ class MainActivity : BaseActivity() {
         }
 
         router.addChangeListener(object : ControllerChangeHandler.ControllerChangeListener {
-            override fun onChangeStarted(to: Controller?, from: Controller?, isPush: Boolean,
-                                         container: ViewGroup, handler: ControllerChangeHandler) {
+            override fun onChangeStarted(
+                to: Controller?,
+                from: Controller?,
+                isPush: Boolean,
+                container: ViewGroup,
+                handler: ControllerChangeHandler
+            ) {
 
                 syncActivityViewWithController(to, from)
             }
 
-            override fun onChangeCompleted(to: Controller?, from: Controller?, isPush: Boolean,
-                                           container: ViewGroup, handler: ControllerChangeHandler) {
-
+            override fun onChangeCompleted(
+                to: Controller?,
+                from: Controller?,
+                isPush: Boolean,
+                container: ViewGroup,
+                handler: ControllerChangeHandler
+            ) {
             }
-
         })
 
         // --> EH
         initWhenIdle {
-            //Hook long press hamburger menu to lock
+            // Hook long press hamburger menu to lock
             getToolbarNavigationIcon(toolbar)?.setOnLongClickListener {
                 if (lockEnabled(preferences)) {
                     LockActivityDelegate.doLock(router, true)
@@ -200,10 +206,10 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        //Show lock
+        // Show lock
         if (savedInstanceState == null) {
             if (lockEnabled(preferences)) {
-                //Special case first lock
+                // Special case first lock
                 LockActivityDelegate.doLock(router)
             }
         }
@@ -231,8 +237,8 @@ class MainActivity : BaseActivity() {
                 }
 
                 // Upload settings
-                if (preferences.enableExhentai().getOrDefault()
-                        && preferences.eh_showSettingsUploadWarning().getOrDefault())
+                if (preferences.enableExhentai().getOrDefault() &&
+                        preferences.eh_showSettingsUploadWarning().getOrDefault())
                     WarnConfigureDialogController.uploadSettings(router)
 
                 // Scheduler uploader job if required
@@ -305,10 +311,10 @@ class MainActivity : BaseActivity() {
                 }
             }
             Intent.ACTION_SEARCH, "com.google.android.gms.actions.SEARCH_ACTION" -> {
-                //If the intent match the "standard" Android search intent
+                // If the intent match the "standard" Android search intent
                 // or the Google-specific search intent (triggered by saying or typing "search *query* on *Tachiyomi*" in Google Search/Google Assistant)
 
-                //Get the search query provided in extras, and if not null, perform a global search with it.
+                // Get the search query provided in extras, and if not null, perform a global search with it.
                 val query = intent.getStringExtra(SearchManager.QUERY)
                 if (query != null && query.isNotEmpty()) {
                     if (router.backstackSize > 1) {
@@ -362,20 +368,20 @@ class MainActivity : BaseActivity() {
 
     fun getToolbarNavigationIcon(toolbar: Toolbar): View? {
         try {
-            //check if contentDescription previously was set
+            // check if contentDescription previously was set
             val hadContentDescription = !TextUtils.isEmpty(toolbar.navigationContentDescription)
             val contentDescription = if (!hadContentDescription) toolbar.navigationContentDescription else "navigationIcon"
             toolbar.navigationContentDescription = contentDescription
 
             val potentialViews = ArrayList<View>()
 
-            //find the view based on it's content description, set programmatically or with android:contentDescription
+            // find the view based on it's content description, set programmatically or with android:contentDescription
             toolbar.findViewsWithText(potentialViews, contentDescription, View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION)
 
-            //Nav icon is always instantiated at this point because calling setNavigationContentDescription ensures its existence
+            // Nav icon is always instantiated at this point because calling setNavigationContentDescription ensures its existence
             val navIcon = potentialViews.firstOrNull()
 
-            //Clear content description if not previously present
+            // Clear content description if not previously present
             if (!hadContentDescription)
                 toolbar.navigationContentDescription = null
             return navIcon
@@ -398,7 +404,7 @@ class MainActivity : BaseActivity() {
         }
 
         // --> EH
-        //Special case and hide drawer arrow for lock controller
+        // Special case and hide drawer arrow for lock controller
         if (to is LockController) {
             supportActionBar?.setDisplayHomeAsUpEnabled(false)
             toolbar.navigationIcon = null
@@ -453,5 +459,4 @@ class MainActivity : BaseActivity() {
         const val INTENT_SEARCH_QUERY = "query"
         const val INTENT_SEARCH_FILTER = "filter"
     }
-
 }

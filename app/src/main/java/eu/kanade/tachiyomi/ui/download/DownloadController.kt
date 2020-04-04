@@ -1,18 +1,22 @@
 package eu.kanade.tachiyomi.ui.download
 
-import androidx.recyclerview.widget.LinearLayoutManager
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadService
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import java.util.HashMap
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.download_controller.*
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Controller that shows the currently active downloads.
@@ -255,5 +259,4 @@ class DownloadController : NucleusController<DownloadPresenter>(),
         val downloads = (0 until adapter.itemCount).mapNotNull { adapter.getItem(it)?.download }
         presenter.reorder(downloads)
     }
-
 }

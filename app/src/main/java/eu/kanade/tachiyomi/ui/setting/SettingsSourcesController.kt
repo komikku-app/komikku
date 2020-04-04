@@ -19,9 +19,9 @@ import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
+import java.util.TreeMap
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.TreeMap
 
 class SettingsSourcesController : SettingsController() {
 

@@ -42,10 +42,12 @@ class CategoryItem(val category: Category) : AbstractFlexibleItem<CategoryHolder
      * @param position The position of this item in the adapter.
      * @param payloads List of partial changes.
      */
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
-                                holder: CategoryHolder,
-                                position: Int,
-                                payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: CategoryHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
 
         holder.bind(category)
     }
@@ -68,5 +70,4 @@ class CategoryItem(val category: Category) : AbstractFlexibleItem<CategoryHolder
     override fun hashCode(): Int {
         return category.id!!
     }
-
 }

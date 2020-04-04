@@ -17,8 +17,6 @@ import eu.kanade.tachiyomi.util.lang.launchNow
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.async
 import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -33,8 +31,8 @@ import uy.kohesive.injekt.api.get
  * @param preferences The application preferences.
  */
 class ExtensionManager(
-        private val context: Context,
-        private val preferences: PreferencesHelper = Injekt.get()
+    private val context: Context,
+    private val preferences: PreferencesHelper = Injekt.get()
 ) {
 
     /**
@@ -136,8 +134,10 @@ class ExtensionManager(
         }
     }
 
-    fun Extension.isBlacklisted(blacklistEnabled: Boolean =
-                                        preferences.eh_enableSourceBlacklist().getOrDefault()): Boolean {
+    fun Extension.isBlacklisted(
+        blacklistEnabled: Boolean =
+                preferences.eh_enableSourceBlacklist().getOrDefault()
+    ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
     // EXH <--
@@ -379,5 +379,4 @@ class ExtensionManager(
         }
         return this
     }
-
 }

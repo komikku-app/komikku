@@ -110,5 +110,4 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         }
         setSelection(pref.getOrDefault() - offset, false)
     }
-
 }

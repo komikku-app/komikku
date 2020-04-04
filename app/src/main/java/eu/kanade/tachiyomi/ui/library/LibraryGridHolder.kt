@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.ui.library
 
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.source.LocalSource
@@ -19,8 +19,8 @@ import kotlinx.android.synthetic.main.catalogue_grid_item.*
  * @constructor creates a new library holder.
  */
 class LibraryGridHolder(
-        private val view: View,
-        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
+    private val view: View,
+    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 
 ) : LibraryHolder(view, adapter) {
 
@@ -44,7 +44,7 @@ class LibraryGridHolder(
             visibility = if (item.downloadCount > 0) View.VISIBLE else View.GONE
             text = item.downloadCount.toString()
         }
-        //set local visibility if its local manga
+        // set local visibility if its local manga
         local_text.visibility = if (item.manga.source == LocalSource.ID) View.VISIBLE else View.GONE
 
         // Update the cover.
@@ -55,5 +55,4 @@ class LibraryGridHolder(
                 .centerCrop()
                 .into(thumbnail)
     }
-
 }

@@ -70,5 +70,4 @@ class DownloadHolder(view: View, val adapter: DownloadAdapter) : BaseFlexibleVie
         super.onItemReleased(position)
         adapter.onItemReleaseListener.onItemReleased(position)
     }
-
 }

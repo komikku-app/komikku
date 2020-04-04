@@ -2,9 +2,9 @@ package eu.kanade.tachiyomi.network
 
 import android.content.Context
 import exh.log.maybeInjectEHLogger
+import java.io.File
 import okhttp3.Cache
 import okhttp3.OkHttpClient
-import java.io.File
 
 open class NetworkHelper(context: Context) {
 
@@ -24,5 +24,4 @@ open class NetworkHelper(context: Context) {
             .addInterceptor(CloudflareInterceptor(context))
             .maybeInjectEHLogger()
             .build()
-
 }

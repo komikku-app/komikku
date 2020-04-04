@@ -11,13 +11,13 @@ import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.setVectorCompat
+import java.util.Date
 import kotlinx.android.synthetic.main.chapters_item.*
 import uy.kohesive.injekt.injectLazy
-import java.util.*
 
 class ChapterHolder(
-        private val view: View,
-        private val adapter: ChaptersAdapter
+    private val view: View,
+    private val adapter: ChaptersAdapter
 ) : BaseFlexibleViewHolder(view, adapter) {
     private val prefs: PreferencesHelper by injectLazy()
 
@@ -53,9 +53,9 @@ class ChapterHolder(
             chapter_date.text = ""
         }
 
-        //add scanlator if exists
+        // add scanlator if exists
         chapter_scanlator.text = chapter.scanlator
-        //allow longer titles if there is no scanlator (most sources)
+        // allow longer titles if there is no scanlator (most sources)
         if (chapter_scanlator.text.isNullOrBlank()) {
             chapter_title.maxLines = 2
             chapter_scanlator.gone()
@@ -124,5 +124,4 @@ class ChapterHolder(
         // Finally show the PopupMenu
         popup.show()
     }
-
 }

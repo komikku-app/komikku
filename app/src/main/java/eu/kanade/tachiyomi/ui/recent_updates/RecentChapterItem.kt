@@ -34,10 +34,12 @@ class RecentChapterItem(val chapter: Chapter, val manga: Manga, header: DateItem
         return RecentChapterHolder(view, adapter as RecentChaptersAdapter)
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
-                                holder: RecentChapterHolder,
-                                position: Int,
-                                payloads: List<Any?>?) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        holder: RecentChapterHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
 
         holder.bind(this)
     }
@@ -53,5 +55,4 @@ class RecentChapterItem(val chapter: Chapter, val manga: Manga, header: DateItem
     override fun hashCode(): Int {
         return chapter.id!!.hashCode()
     }
-
 }

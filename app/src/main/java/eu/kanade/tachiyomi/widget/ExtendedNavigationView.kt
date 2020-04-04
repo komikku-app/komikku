@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.core.content.ContextCompat
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.getResourceColor
 
@@ -17,10 +16,11 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
  * inflation and allowing customizable items (multiple selections, custom views, etc).
  */
 open class ExtendedNavigationView @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0)
-    : SimpleNavigationView(context, attrs, defStyleAttr) {
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) :
+    SimpleNavigationView(context, attrs, defStyleAttr) {
 
     /**
      * Every item of the nav view. Generic items must belong to this list, custom items could be
@@ -46,15 +46,15 @@ open class ExtendedNavigationView @JvmOverloads constructor(
         /**
          * A checkbox belonging to a group. The group must handle selections and restrictions.
          */
-        class CheckboxGroup(resTitle: Int, override val group: Group, checked: Boolean = false)
-            : Checkbox(resTitle, checked), GroupedItem
+        class CheckboxGroup(resTitle: Int, override val group: Group, checked: Boolean = false) :
+            Checkbox(resTitle, checked), GroupedItem
 
         /**
          * A radio belonging to a group (a sole radio makes no sense). The group must handle
          * selections and restrictions.
          */
-        class Radio(val resTitle: Int, override val group: Group, var checked: Boolean = false)
-            : Item(), GroupedItem
+        class Radio(val resTitle: Int, override val group: Group, var checked: Boolean = false) :
+            Item(), GroupedItem
 
         /**
          * An item with which needs more than two states (selected/deselected).
@@ -95,8 +95,8 @@ open class ExtendedNavigationView @JvmOverloads constructor(
          * An item with which needs more than two states (selected/deselected) belonging to a group.
          * The group must handle selections and restrictions.
          */
-        abstract class MultiStateGroup(resTitle: Int, override val group: Group, state: Int = 0)
-            : MultiState(resTitle, state), GroupedItem
+        abstract class MultiStateGroup(resTitle: Int, override val group: Group, state: Int = 0) :
+            MultiState(resTitle, state), GroupedItem
 
         /**
          * A multistate item for sorting lists (unselected, ascending, descending).
@@ -117,7 +117,6 @@ open class ExtendedNavigationView @JvmOverloads constructor(
                     else -> null
                 }
             }
-
         }
 
         class TriStateGroup(resId: Int, group: Group) : MultiStateGroup(resId, group) {
@@ -184,7 +183,6 @@ open class ExtendedNavigationView @JvmOverloads constructor(
          * selections of its items.
          */
         fun onItemClicked(item: Item)
-
     }
 
     /**
@@ -263,7 +261,5 @@ open class ExtendedNavigationView @JvmOverloads constructor(
         }
 
         abstract fun onItemClicked(item: Item)
-
     }
-
 }

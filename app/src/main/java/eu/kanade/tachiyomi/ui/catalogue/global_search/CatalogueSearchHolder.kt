@@ -109,5 +109,4 @@ class CatalogueSearchHolder(view: View, val adapter: CatalogueSearchAdapter) :
         source_card.gone()
         more.gone() // EXH
     }
-
 }

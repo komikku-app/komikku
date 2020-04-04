@@ -57,5 +57,4 @@ class TrackLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle) {
     interface Listener {
         fun trackLoginDialogClosed(service: TrackService)
     }
-
 }

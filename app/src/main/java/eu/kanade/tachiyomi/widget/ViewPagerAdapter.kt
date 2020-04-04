@@ -29,5 +29,4 @@ abstract class ViewPagerAdapter : androidx.viewpager.widget.PagerAdapter() {
     interface PositionableView {
         val item: Any
     }
-
 }

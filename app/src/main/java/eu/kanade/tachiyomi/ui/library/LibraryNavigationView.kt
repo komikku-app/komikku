@@ -5,21 +5,20 @@ import android.util.AttributeSet
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
-import eu.kanade.tachiyomi.ui.catalogue.filter.TriStateItem
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companion.SORT_ASC
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companion.SORT_DESC
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companion.SORT_NONE
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_EXCLUDE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
-import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_EXCLUDE
 import uy.kohesive.injekt.injectLazy
 
 /**
  * The navigation view shown in a drawer with the different options to show the library.
  */
-class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null)
-    : ExtendedNavigationView(context, attrs) {
+class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+    ExtendedNavigationView(context, attrs) {
 
     /**
      * Preferences helper.
@@ -52,7 +51,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
      * Returns true if there's at least one filter from [FilterGroup] active.
      */
     fun hasActiveFilters(): Boolean {
-        return (groups[0] as FilterGroup).items.any { it.state != STATE_IGNORE } //j2k it.checked -> this
+        return (groups[0] as FilterGroup).items.any { it.state != STATE_IGNORE } // j2k it.checked -> this
     }
 
     /**
@@ -85,7 +84,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         override val footer = Item.Separator()
 
-        override fun initModels() { //j2k changes
+        override fun initModels() { // j2k changes
             try {
                 downloaded.state = preferences.filterDownloaded().getOrDefault()
                 unread.state = preferences.filterUnread().getOrDefault()
@@ -95,7 +94,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             }
         }
 
-        override fun onItemClicked(item: Item) { //j2k changes
+        override fun onItemClicked(item: Item) { // j2k changes
             item as Item.TriStateGroup
             val newState = when (item.state) {
                 STATE_IGNORE -> STATE_INCLUDE
@@ -186,7 +185,6 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
             item.group.items.forEach { adapter.notifyItemChanged(it) }
         }
-
     }
 
     inner class BadgeGroup : Group {

@@ -5,21 +5,26 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.f2prateek.rx.preferences.Preference
 import com.google.android.material.tabs.TabLayout
-import androidx.core.view.GravityCompat
 import com.jakewharton.rxbinding.support.v4.view.pageSelections
 import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
-import com.jakewharton.rxbinding.view.visible
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.R
@@ -35,12 +40,14 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.migration.MigrationController
-import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.inflate
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.ui.LoaderManager
 import exh.ui.migration.manga.design.MigrationDesignController
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.library_controller.*
 import kotlinx.android.synthetic.main.main_activity.*
 import rx.Subscription
@@ -48,13 +55,10 @@ import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.IOException
-import java.util.concurrent.TimeUnit
-
 
 class LibraryController(
-        bundle: Bundle? = null,
-        private val preferences: PreferencesHelper = Injekt.get()
+    bundle: Bundle? = null,
+    private val preferences: PreferencesHelper = Injekt.get()
 ) : NucleusController<LibraryPresenter>(bundle),
         TabbedController,
         SecondaryDrawerController,
@@ -135,11 +139,11 @@ class LibraryController(
     private var searchViewSubscription: Subscription? = null
 
     // --> EH
-    //Sync dialog
+    // Sync dialog
     private var favSyncDialog: MaterialDialog? = null
-    //Old sync status
+    // Old sync status
     private var oldSyncStatus: FavoritesSyncStatus? = null
-    //Favorites
+    // Favorites
     private var favoritesSyncSubscription: Subscription? = null
     val loaderManager = LoaderManager()
     // <-- EH
@@ -572,7 +576,7 @@ class LibraryController(
     override fun onDetach(view: View) {
         super.onDetach(view)
 
-        //EXH
+        // EXH
         cleanupSyncState()
     }
 
@@ -580,11 +584,11 @@ class LibraryController(
     private fun cleanupSyncState() {
         favoritesSyncSubscription?.unsubscribe()
         favoritesSyncSubscription = null
-        //Close sync status
+        // Close sync status
         favSyncDialog?.dismiss()
         favSyncDialog = null
         oldSyncStatus = null
-        //Clear flags
+        // Clear flags
         releaseSyncLocks()
     }
 
@@ -668,9 +672,9 @@ class LibraryController(
             is FavoritesSyncStatus.Initializing -> {
                 takeSyncLocks()
 
-                if (favSyncDialog == null || (oldSyncStatus != null
-                                && oldSyncStatus !is FavoritesSyncStatus.Initializing
-                                && oldSyncStatus !is FavoritesSyncStatus.Processing))
+                if (favSyncDialog == null || (oldSyncStatus != null &&
+                                oldSyncStatus !is FavoritesSyncStatus.Initializing &&
+                                oldSyncStatus !is FavoritesSyncStatus.Processing))
                     showSyncProgressDialog()
 
                 favSyncDialog?.setContent(status.message)
@@ -710,5 +714,4 @@ class LibraryController(
          */
         const val REQUEST_IMAGE_OPEN = 101
     }
-
 }
