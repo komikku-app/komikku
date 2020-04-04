@@ -53,7 +53,11 @@ import exh.ui.migration.MetadataFetchDialog
 import java.util.Date
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.main_activity.*
+import kotlinx.android.synthetic.main.main_activity.appbar
+import kotlinx.android.synthetic.main.main_activity.drawer
+import kotlinx.android.synthetic.main.main_activity.nav_view
+import kotlinx.android.synthetic.main.main_activity.tabs
+import kotlinx.android.synthetic.main.main_activity.toolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

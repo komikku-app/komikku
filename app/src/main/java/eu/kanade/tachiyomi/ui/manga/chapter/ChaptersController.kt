@@ -33,7 +33,11 @@ import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.snack
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import kotlinx.android.synthetic.main.chapters_controller.*
+import kotlinx.android.synthetic.main.chapters_controller.fab
+import kotlinx.android.synthetic.main.chapters_controller.fast_scroller
+import kotlinx.android.synthetic.main.chapters_controller.recycler
+import kotlinx.android.synthetic.main.chapters_controller.reveal_view
+import kotlinx.android.synthetic.main.chapters_controller.swipe_refresh
 import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 

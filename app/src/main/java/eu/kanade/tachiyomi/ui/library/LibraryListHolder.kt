@@ -7,7 +7,11 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.source.LocalSource
-import kotlinx.android.synthetic.main.catalogue_list_item.*
+import kotlinx.android.synthetic.main.catalogue_list_item.download_text
+import kotlinx.android.synthetic.main.catalogue_list_item.local_text
+import kotlinx.android.synthetic.main.catalogue_list_item.thumbnail
+import kotlinx.android.synthetic.main.catalogue_list_item.title
+import kotlinx.android.synthetic.main.catalogue_list_item.unread_text
 
 /**
  * Class used to hold the displayed data of a manga in the library, like the cover or the title.

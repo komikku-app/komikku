@@ -22,7 +22,8 @@ import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import kotlinx.android.synthetic.main.extension_controller.*
+import kotlinx.android.synthetic.main.extension_controller.ext_recycler
+import kotlinx.android.synthetic.main.extension_controller.ext_swipe_refresh
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

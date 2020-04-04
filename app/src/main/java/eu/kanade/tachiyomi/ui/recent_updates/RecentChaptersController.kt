@@ -24,7 +24,9 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.recent_chapters_controller.*
+import kotlinx.android.synthetic.main.recent_chapters_controller.empty_view
+import kotlinx.android.synthetic.main.recent_chapters_controller.recycler
+import kotlinx.android.synthetic.main.recent_chapters_controller.swipe_refresh
 import timber.log.Timber
 
 /**

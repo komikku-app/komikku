@@ -48,8 +48,11 @@ import exh.ui.LoaderManager
 import exh.ui.migration.manga.design.MigrationDesignController
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.library_controller.*
-import kotlinx.android.synthetic.main.main_activity.*
+import kotlinx.android.synthetic.main.library_controller.empty_view
+import kotlinx.android.synthetic.main.library_controller.library_pager
+import kotlinx.android.synthetic.main.library_controller.library_progress
+import kotlinx.android.synthetic.main.main_activity.drawer
+import kotlinx.android.synthetic.main.main_activity.tabs
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber

@@ -33,7 +33,15 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.extension_detail_controller.*
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_icon
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_lang
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_obsolete
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_pkg
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_prefs_empty_view
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_prefs_recycler
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_title
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_uninstall_button
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_version
 
 @SuppressLint("RestrictedApi")
 class ExtensionDetailsController(bundle: Bundle? = null) :

@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import eu.kanade.tachiyomi.R
-import kotlinx.android.synthetic.main.pref_widget_imageview.view.*
+import kotlinx.android.synthetic.main.pref_widget_imageview.view.image_view
 
 class LoginPreference @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
         Preference(context, attrs) {

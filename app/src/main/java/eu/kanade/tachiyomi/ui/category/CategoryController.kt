@@ -17,7 +17,9 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.categories_controller.*
+import kotlinx.android.synthetic.main.categories_controller.empty_view
+import kotlinx.android.synthetic.main.categories_controller.fab
+import kotlinx.android.synthetic.main.categories_controller.recycler
 
 /**
  * Controller to manage the categories for the users' library.

@@ -27,7 +27,8 @@ import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
-import kotlinx.android.synthetic.main.pref_library_columns.view.*
+import kotlinx.android.synthetic.main.pref_library_columns.view.landscape_columns
+import kotlinx.android.synthetic.main.pref_library_columns.view.portrait_columns
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

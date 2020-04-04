@@ -3,7 +3,11 @@ package eu.kanade.tachiyomi.ui.download
 import android.view.View
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.download_item.*
+import kotlinx.android.synthetic.main.download_item.chapter_title
+import kotlinx.android.synthetic.main.download_item.download_progress
+import kotlinx.android.synthetic.main.download_item.download_progress_text
+import kotlinx.android.synthetic.main.download_item.manga_title
+import kotlinx.android.synthetic.main.download_item.reorder
 
 /**
  * Class used to hold the data of a download.

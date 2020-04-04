@@ -13,7 +13,8 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import java.util.HashMap
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.download_controller.*
+import kotlinx.android.synthetic.main.download_controller.empty_view
+import kotlinx.android.synthetic.main.download_controller.recycler
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers

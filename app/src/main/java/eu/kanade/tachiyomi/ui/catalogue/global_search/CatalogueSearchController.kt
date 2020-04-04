@@ -17,7 +17,7 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.catalogue.browse.BrowseCatalogueController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import kotlinx.android.synthetic.main.catalogue_global_search_controller.*
+import kotlinx.android.synthetic.main.catalogue_global_search_controller.recycler
 import uy.kohesive.injekt.injectLazy
 
 /**

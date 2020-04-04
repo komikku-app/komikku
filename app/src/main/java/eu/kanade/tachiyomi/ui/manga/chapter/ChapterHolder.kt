@@ -10,7 +10,12 @@ import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.util.view.gone
 import java.util.Date
-import kotlinx.android.synthetic.main.chapters_item.*
+import kotlinx.android.synthetic.main.chapters_item.chapter_date
+import kotlinx.android.synthetic.main.chapters_item.chapter_menu
+import kotlinx.android.synthetic.main.chapters_item.chapter_pages
+import kotlinx.android.synthetic.main.chapters_item.chapter_scanlator
+import kotlinx.android.synthetic.main.chapters_item.chapter_title
+import kotlinx.android.synthetic.main.chapters_item.download_text
 import uy.kohesive.injekt.injectLazy
 
 class ChapterHolder(

@@ -52,7 +52,7 @@ class SettingsGeneralController : SettingsController() {
 
         preferenceCategory {
             titleRes = R.string.pref_category_display
-            
+
             listPreference {
                 key = Keys.lang
                 titleRes = R.string.pref_language

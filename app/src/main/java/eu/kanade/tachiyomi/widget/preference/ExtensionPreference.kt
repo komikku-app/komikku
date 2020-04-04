@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
-import kotlinx.android.synthetic.main.preference_update_text.view.*
+import kotlinx.android.synthetic.main.preference_update_text.view.textView
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

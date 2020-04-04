@@ -6,7 +6,11 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
-import kotlinx.android.synthetic.main.catalogue_global_search_controller_card.*
+import kotlinx.android.synthetic.main.catalogue_global_search_controller_card.more
+import kotlinx.android.synthetic.main.catalogue_global_search_controller_card.progress
+import kotlinx.android.synthetic.main.catalogue_global_search_controller_card.recycler
+import kotlinx.android.synthetic.main.catalogue_global_search_controller_card.source_card
+import kotlinx.android.synthetic.main.catalogue_global_search_controller_card.title
 
 /**
  * Holder that binds the [CatalogueSearchItem] containing catalogue cards.

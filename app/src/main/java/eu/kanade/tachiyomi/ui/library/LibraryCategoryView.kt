@@ -22,7 +22,7 @@ import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.ui.LoadingHandle
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.library_category.view.*
+import kotlinx.android.synthetic.main.library_category.view.swipe_refresh
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

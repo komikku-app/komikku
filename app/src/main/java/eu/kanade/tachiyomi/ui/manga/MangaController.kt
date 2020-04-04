@@ -30,8 +30,8 @@ import eu.kanade.tachiyomi.ui.manga.info.MangaInfoController
 import eu.kanade.tachiyomi.ui.manga.track.TrackController
 import eu.kanade.tachiyomi.util.system.toast
 import java.util.Date
-import kotlinx.android.synthetic.main.main_activity.*
-import kotlinx.android.synthetic.main.manga_controller.*
+import kotlinx.android.synthetic.main.main_activity.tabs
+import kotlinx.android.synthetic.main.manga_controller.manga_pager
 import rx.Subscription
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
