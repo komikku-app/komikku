@@ -12,6 +12,7 @@ buildscript {
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.22.0'
         classpath 'com.github.zellius:android-shortcut-gradle-plugin:0.1.2'
         classpath 'com.google.gms:google-services:4.3.3'
+        classpath 'org.jmailen.gradle:kotlinter-gradle:2.3.1'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
 
@@ -28,7 +29,8 @@ allprojects {
         google()
         maven { url "https://www.jitpack.io" }
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven { url  "https://dl.bintray.com/ibm-cloud-sdks/ibm-cloud-sdk-repo" }
+        maven { url "https://dl.bintray.com/ibm-cloud-sdks/ibm-cloud-sdk-repo" }
+        maven { url "https://plugins.gradle.org/m2/" }
         jcenter()
     }
 }
