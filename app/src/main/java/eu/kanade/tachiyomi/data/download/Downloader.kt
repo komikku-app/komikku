@@ -248,7 +248,7 @@ class Downloader(
     private fun downloadChapter(download: Download): Observable<Download> = Observable.defer {
         val chapterDirname = provider.getChapterDirName(download.chapter)
         val mangaDir = provider.getMangaDir(download.manga, download.source)
-        val tmpDir = mangaDir.createDirectory("${chapterDirname}_tmp")
+        val tmpDir = mangaDir.createDirectory(chapterDirname + TMP_DIR_SUFFIX)
 
         val pageListObservable = if (download.pages == null) {
             // Pull page list from network and add them to download object
@@ -452,6 +452,10 @@ class Downloader(
      */
     private fun areAllDownloadsFinished(): Boolean {
         return queue.none { it.status <= Download.DOWNLOADING }
+    }
+
+    companion object {
+        const val TMP_DIR_SUFFIX = "_tmp"
     }
 
 }
