@@ -237,6 +237,11 @@ class SettingsGeneralController : SettingsController() {
                 title = "Enable Secure Screen"
                 defaultValue = false
             }
+            switchPreference {
+                key = Keys.hideNotificationContent
+                titleRes = R.string.hide_notification_content
+                defaultValue = false
+            }
         }
         // <-- EXH
     }
