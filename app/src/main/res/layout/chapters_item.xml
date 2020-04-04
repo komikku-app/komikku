@@ -22,41 +22,17 @@
         android:layout_marginStart="16dp"/>
 
     <TextView
-        android:id="@+id/chapter_scanlator"
-        style="@style/TextAppearance.Regular.Caption.Hint"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        tools:text="Scanlator"
-        android:maxLines="1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chapter_title"
-        app:layout_constraintBottom_toTopOf="@+id/chapter_date"
-        app:layout_constraintEnd_toStartOf="@+id/chapter_menu"
-        android:layout_marginStart="16dp"/>
-
-    <TextView
-        android:id="@+id/chapter_date"
+        android:id="@+id/chapter_description"
         style="@style/TextAppearance.Regular.Caption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="22/02/2016"
-        android:ellipsize="marquee"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
         android:layout_marginStart="16dp"
-        android:singleLine="true" />
-
-    <TextView
-        android:id="@+id/chapter_pages"
-        style="@style/TextAppearance.Regular.Caption.Hint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="Pages: 45"
         android:ellipsize="marquee"
+        android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:singleLine="true" />
+        tools:text="22/02/2016 • Scanlator • Page: 45" />
 
     <ImageButton
         android:id="@+id/chapter_menu"
