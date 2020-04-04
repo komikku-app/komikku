@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
@@ -31,21 +32,21 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.util.system.isServiceRunning
-import eu.kanade.tachiyomi.util.system.notificationManager
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.chop
+import eu.kanade.tachiyomi.util.system.isServiceRunning
 import eu.kanade.tachiyomi.util.system.notification
 import eu.kanade.tachiyomi.util.system.notificationBuilder
+import eu.kanade.tachiyomi.util.system.notificationManager
+import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import rx.Observable
 import rx.Subscription
 import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.*
+import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -122,6 +123,8 @@ class LibraryUpdateService(
          * Key that defines what should be updated.
          */
         const val KEY_TARGET = "target"
+
+        private const val NOTIF_ICON_SIZE = 192
 
         /**
          * Returns the status of the service.
@@ -460,20 +463,21 @@ class LibraryUpdateService(
      * @param updates a list of manga with new updates.
      */
     private fun showUpdateNotifications(updates: List<Pair<Manga, Array<Chapter>>>) {
+        if (updates.isEmpty()) {
+            return
+        }
+
         NotificationManagerCompat.from(this).apply {
-            // Group notification
+            // Parent group notification
             notify(Notifications.ID_NEW_CHAPTERS, notification(Notifications.CHANNEL_NEW_CHAPTERS) {
                 setContentTitle(getString(R.string.notification_new_chapters))
-                if (updates.size > 1) {
-                    setContentText(resources.getQuantityString(R.plurals
-                        .notification_new_chapters_text,
-                        updates.size, updates.size))
+                if (updates.size == 1) {
+                    setContentText(updates.first().first.title)
+                } else {
+                    setContentText(resources.getQuantityString(R.plurals.notification_new_chapters_text, updates.size, updates.size))
                     setStyle(NotificationCompat.BigTextStyle().bigText(updates.joinToString("\n") {
-                        it.first.title.chop(45)
+                        it.first.title
                     }))
-                }
-                else {
-                    setContentText(updates.first().first.title.chop(45))
                 }
 
                 setSmallIcon(R.drawable.ic_tachi)
@@ -509,12 +513,10 @@ class LibraryUpdateService(
             setStyle(NotificationCompat.BigTextStyle().bigText(chaptersNames))
 
             setSmallIcon(R.drawable.ic_tachi)
-            try {
-                val icon = Glide.with(this@LibraryUpdateService)
-                        .asBitmap().load(manga).dontTransform().centerCrop().circleCrop()
-                        .override(256, 256).submit().get()
+
+            val icon = getMangaIcon(manga)
+            if (icon != null) {
                 setLargeIcon(icon)
-            } catch (e: Exception) {
             }
 
             setGroup(Notifications.GROUP_NEW_CHAPTERS)
@@ -537,6 +539,29 @@ class LibraryUpdateService(
     }
 
     /**
+     * Cancels the progress notification.
+     */
+    private fun cancelProgressNotification() {
+        notificationManager.cancel(Notifications.ID_LIBRARY_PROGRESS)
+    }
+
+    private fun getMangaIcon(manga: Manga): Bitmap? {
+        return try {
+            Glide.with(this)
+                    .asBitmap()
+                    .load(manga)
+                    .dontTransform()
+                    .centerCrop()
+                    .circleCrop()
+                    .override(NOTIF_ICON_SIZE, NOTIF_ICON_SIZE)
+                    .submit()
+                    .get()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
      * Returns an intent to open the main activity.
      */
     private fun getNotificationIntent(): PendingIntent {
@@ -547,11 +572,4 @@ class LibraryUpdateService(
         return PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-
-    /**
-     * Cancels the progress notification.
-     */
-    private fun cancelProgressNotification() {
-        notificationManager.cancel(Notifications.ID_LIBRARY_PROGRESS)
-    }
 }
