@@ -61,7 +61,6 @@ import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import jp.wasabeef.glide.transformations.CropSquareTransformation
-import jp.wasabeef.glide.transformations.MaskTransformation
 import kotlinx.android.synthetic.main.manga_info_controller.*
 import kotlinx.coroutines.*
 import uy.kohesive.injekt.injectLazy
@@ -574,8 +573,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val modes = intArrayOf(R.string.circular_icon,
                     R.string.rounded_icon,
-                    R.string.square_icon,
-                    R.string.star_icon)
+                    R.string.square_icon)
 
             return MaterialDialog.Builder(activity!!)
                     .title(R.string.icon_shape)
@@ -605,7 +603,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                         0 -> circleCrop()
                         1 -> transform(RoundedCorners(5))
                         2 -> transform(CropSquareTransformation())
-                        3 -> centerCrop().transform(MaskTransformation(R.drawable.mask_star))
                     }
                 }
                 .into(object : CustomTarget<Bitmap>(96, 96) {
