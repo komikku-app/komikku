@@ -6,8 +6,12 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.ui.lock.LockActivityDelegate
+import eu.kanade.tachiyomi.R
+import uy.kohesive.injekt.injectLazy
 
 abstract class BaseActivity : AppCompatActivity() {
+
+    val preferences: PreferencesHelper by injectLazy()
 
     init {
         @Suppress("LeakingThis")
@@ -15,6 +19,12 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(when (preferences.theme()) {
+            2 -> R.style.Theme_Tachiyomi_Dark
+            3 -> R.style.Theme_Tachiyomi_Amoled
+            4 -> R.style.Theme_Tachiyomi_DarkBlue
+            else -> R.style.Theme_Tachiyomi
+        })
         super.onCreate(savedInstanceState)
         LockActivityDelegate.onCreate(this)
     }

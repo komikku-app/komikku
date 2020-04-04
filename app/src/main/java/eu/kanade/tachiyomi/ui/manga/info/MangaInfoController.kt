@@ -61,7 +61,8 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
-import exh.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import exh.ui.webview.EhWebViewActivity
 import jp.wasabeef.glide.transformations.CropSquareTransformation
 import jp.wasabeef.glide.transformations.MaskTransformation
 import kotlinx.android.synthetic.main.manga_info_controller.*
@@ -420,7 +421,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
             val urlString = source.mangaDetailsRequest(presenter.manga).url.toString()
             if(preferences.eh_incogWebview().getOrDefault()) {
                 activity?.startActivity(Intent(activity, WebViewActivity::class.java).apply {
-                    putExtra(WebViewActivity.KEY_URL, urlString)
+                    putExtra(EhWebViewActivity.KEY_URL, urlString)
                 })
             } else {
                 context.openInBrowser(source.mangaDetailsRequest(presenter.manga).url.toString())
@@ -440,8 +441,9 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
             return
         }
 
-        parentController?.router?.pushController(MangaWebViewController(source.id, url)
-            .withFadeTransaction())
+        val activity = activity ?: return
+        val intent = WebViewActivity.newIntent(activity, source.id, url, presenter.manga.title)
+        startActivity(intent)
     }
 
     /**

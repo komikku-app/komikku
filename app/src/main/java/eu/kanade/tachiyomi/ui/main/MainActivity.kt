@@ -65,8 +65,6 @@ class MainActivity : BaseActivity() {
 
     private lateinit var router: Router
 
-    val preferences: PreferencesHelper by injectLazy()
-
     private var drawerArrow: DrawerArrowDrawable? = null
 
     private var secondaryDrawer: ViewGroup? = null
@@ -113,12 +111,6 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(when (preferences.theme()) {
-            2 -> R.style.Theme_Tachiyomi_Dark
-            3 -> R.style.Theme_Tachiyomi_Amoled
-            4 -> R.style.Theme_Tachiyomi_DarkBlue
-            else -> R.style.Theme_Tachiyomi
-        })
         super.onCreate(savedInstanceState)
 
         // Do not let the launcher create a new activity http://stackoverflow.com/questions/16283079

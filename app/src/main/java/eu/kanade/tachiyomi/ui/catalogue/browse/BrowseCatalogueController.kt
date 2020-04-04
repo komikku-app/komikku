@@ -27,7 +27,6 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.ui.manga.info.MangaWebViewController
 import eu.kanade.tachiyomi.util.system.connectivityManager
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
@@ -35,6 +34,7 @@ import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.EXHSavedSearch
 import kotlinx.android.synthetic.main.catalogue_controller.*
@@ -398,8 +398,9 @@ open class BrowseCatalogueController(bundle: Bundle) :
     private fun openInWebView() {
         val source = presenter.source as? HttpSource ?: return
 
-        router.pushController(MangaWebViewController(source.id, source.baseUrl)
-                .withFadeTransaction())
+        val activity = activity ?: return
+        val intent = WebViewActivity.newIntent(activity, source.id, source.baseUrl, presenter.source.name)
+        startActivity(intent)
     }
 
     /**
