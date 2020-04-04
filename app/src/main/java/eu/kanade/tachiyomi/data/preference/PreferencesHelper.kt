@@ -123,17 +123,6 @@ class PreferencesHelper(val context: Context) {
 
     fun sourceSorting() = rxPrefs.getInteger(Keys.sourcesSort, 0)
 
-    fun sourceUsername(source: Source) = prefs.getString(Keys.sourceUsername(source.id), "")
-
-    fun sourcePassword(source: Source) = prefs.getString(Keys.sourcePassword(source.id), "")
-
-    fun setSourceCredentials(source: Source, username: String, password: String) {
-        prefs.edit()
-                .putString(Keys.sourceUsername(source.id), username)
-                .putString(Keys.sourcePassword(source.id), password)
-                .apply()
-    }
-
     fun trackUsername(sync: TrackService) = prefs.getString(Keys.trackUsername(sync.id), "")
 
     fun trackPassword(sync: TrackService) = prefs.getString(Keys.trackPassword(sync.id), "")

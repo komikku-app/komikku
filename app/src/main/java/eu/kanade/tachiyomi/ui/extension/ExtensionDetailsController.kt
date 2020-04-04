@@ -19,21 +19,25 @@ import eu.kanade.tachiyomi.data.preference.EmptyPreferenceDataStore
 import eu.kanade.tachiyomi.data.preference.SharedPreferencesDataStore
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.widget.preference.LoginPreference
-import eu.kanade.tachiyomi.widget.preference.SourceLoginDialog
-import kotlinx.android.synthetic.main.extension_detail_controller.*
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_icon
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_lang
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_obsolete
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_pkg
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_prefs_empty_view
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_prefs_recycler
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_title
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_uninstall_button
+import kotlinx.android.synthetic.main.extension_detail_controller.extension_version
 
 @SuppressLint("RestrictedApi")
 class ExtensionDetailsController(bundle: Bundle? = null) :
         NucleusController<ExtensionDetailsPresenter>(bundle),
         PreferenceManager.OnDisplayPreferenceDialogListener,
-        DialogPreference.TargetFragment,
-        SourceLoginDialog.Listener {
+        DialogPreference.TargetFragment {
 
     // EXH -->
     private val logger = XLog.tag("ExtensionDetailsController")
@@ -199,11 +203,6 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
 
     override fun <T : Preference> findPreference(key: CharSequence): T? {
         return preferenceScreen!!.findPreference(key)
-    }
-
-    override fun loginDialogClosed(source: LoginSource) {
-        val lastOpen = lastOpenPreferencePosition ?: return
-        (preferenceScreen?.getPreference(lastOpen) as? LoginPreference)?.notifyChanged()
     }
 
     private companion object {

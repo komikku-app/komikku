@@ -3,8 +3,14 @@ package eu.kanade.tachiyomi.ui.catalogue
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.os.Bundle
 import android.os.Parcelable
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.bluelinelabs.conductor.RouterTransaction
@@ -15,7 +21,6 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -23,22 +28,19 @@ import eu.kanade.tachiyomi.ui.catalogue.browse.BrowseCatalogueController
 import eu.kanade.tachiyomi.ui.catalogue.global_search.CatalogueSearchController
 import eu.kanade.tachiyomi.ui.catalogue.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsSourcesController
-import eu.kanade.tachiyomi.widget.preference.SourceLoginDialog
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.catalogue_main_controller.*
+import kotlinx.android.synthetic.main.catalogue_main_controller.recycler
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
  * This controller shows and manages the different catalogues enabled by the user.
  * This controller should only handle UI actions, IO actions should be done by [CataloguePresenter]
- * [SourceLoginDialog.Listener] refreshes the adapter on successful login of catalogues.
  * [CatalogueAdapter.OnBrowseClickListener] call function data on browse item click.
  * [CatalogueAdapter.OnLatestClickListener] call function data on latest item click
  */
 class CatalogueController(bundle: Bundle? = null) : NucleusController<CataloguePresenter>(bundle),
-        SourceLoginDialog.Listener,
         FlexibleAdapter.OnItemClickListener,
         CatalogueAdapter.OnBrowseClickListener,
         CatalogueAdapter.OnLatestClickListener {
@@ -110,7 +112,7 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
         adapter = CatalogueAdapter(this)
 
         // Create recycler and set adapter.
-        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
+        recycler.layoutManager = LinearLayoutManager(view.context)
         recycler.adapter = adapter
         recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
 
@@ -130,38 +132,20 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
     }
 
     /**
-     * Called when login dialog is closed, refreshes the adapter.
-     *
-     * @param source clicked item containing source information.
-     */
-    override fun loginDialogClosed(source: LoginSource) {
-        if (source.isLogged()) {
-            adapter?.clear()
-            presenter.loadSources()
-        }
-    }
-
-    /**
      * Called when item is clicked
      */
     override fun onItemClick(view: View?, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
         val source = item.source
-        if (source is LoginSource && !source.isLogged()) {
-            val dialog = SourceLoginDialog(source)
-            dialog.targetController = this
-            dialog.showDialog(router)
-        } else {
-            when(mode) {
-                Mode.CATALOGUE -> {
-                    // Open the catalogue view.
-                    openCatalogue(source, BrowseCatalogueController(source))
-                }
-                Mode.SMART_SEARCH -> router.pushController(SmartSearchController(Bundle().apply {
-                    putLong(SmartSearchController.ARG_SOURCE_ID, source.id)
-                    putParcelable(SmartSearchController.ARG_SMART_SEARCH_CONFIG, smartSearchConfig)
-                }).withFadeTransaction())
+        when(mode) {
+            Mode.CATALOGUE -> {
+                // Open the catalogue view.
+                openCatalogue(source, BrowseCatalogueController(source))
             }
+            Mode.SMART_SEARCH -> router.pushController(SmartSearchController(Bundle().apply {
+                putLong(SmartSearchController.ARG_SOURCE_ID, source.id)
+                putParcelable(SmartSearchController.ARG_SMART_SEARCH_CONFIG, smartSearchConfig)
+            }).withFadeTransaction())
         }
         return false
     }

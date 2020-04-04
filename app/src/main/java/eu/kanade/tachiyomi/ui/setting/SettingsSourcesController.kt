@@ -13,21 +13,17 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.switchPreferenceCategory
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import eu.kanade.tachiyomi.widget.preference.LoginCheckBoxPreference
-import eu.kanade.tachiyomi.widget.preference.SourceLoginDialog
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.TreeMap
 
-class SettingsSourcesController : SettingsController(),
-        SourceLoginDialog.Listener {
+class SettingsSourcesController : SettingsController() {
 
     init {
         setHasOptionsMenu(true)
@@ -127,7 +123,7 @@ class SettingsSourcesController : SettingsController(),
         group.addPreference(selectAllPreference)
 
         sources.forEach { source ->
-            val sourcePreference = LoginCheckBoxPreference(group.context, source).apply {
+            val sourcePreference = CheckBoxPreference(group.context).apply {
                 val id = source.id.toString()
                 title = source.name
                 key = getSourceKey(source.id)
@@ -148,21 +144,10 @@ class SettingsSourcesController : SettingsController(),
                     addLanguageSources(group, sortedSources(sources))
                     true
                 }
-
-                setOnLoginClickListener {
-                    val dialog = SourceLoginDialog(source)
-                    dialog.targetController = this@SettingsSourcesController
-                    dialog.showDialog(router)
-                }
             }
 
             group.addPreference(sourcePreference)
         }
-    }
-
-    override fun loginDialogClosed(source: LoginSource) {
-        val pref = findPreference(getSourceKey(source.id)) as? LoginCheckBoxPreference
-        pref?.notifyChanged()
     }
 
     private fun getSourceKey(sourceId: Long): String {
