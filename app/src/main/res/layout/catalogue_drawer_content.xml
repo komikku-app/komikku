@@ -16,9 +16,8 @@
         android:elevation="2dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingLeft="?attr/listPreferredItemPaddingLeft"
-        android:paddingRight="?attr/listPreferredItemPaddingRight"
-        >
+        android:paddingStart="?attr/listPreferredItemPaddingStart"
+        android:paddingEnd="?attr/listPreferredItemPaddingEnd">
 
         <TextView
             android:id="@+id/title"
@@ -38,6 +37,7 @@
         android:layout_height="0dp"
         android:layout_weight="3"
         android:layout_gravity="top"/>
+
     <View
         android:id="@+id/divider"
         android:layout_width="match_parent"
