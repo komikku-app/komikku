@@ -28,10 +28,7 @@ import com.google.android.gms.security.ProviderInstaller
 import com.kizitonwose.time.days
 import com.ms_square.debugoverlay.DebugOverlay
 import com.ms_square.debugoverlay.modules.FpsModule
-import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
-import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.data.updater.UpdaterJob
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
@@ -52,6 +49,7 @@ import uy.kohesive.injekt.api.InjektScope
 import uy.kohesive.injekt.registry.default.DefaultRegistrar
 
 open class App : Application(), LifecycleObserver {
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
@@ -62,7 +60,6 @@ open class App : Application(), LifecycleObserver {
         Injekt = InjektScope(DefaultRegistrar())
         Injekt.importModule(AppModule(this))
 
-        setupJobManager()
         setupNotificationChannels()
         GlobalScope.launch { deleteOldMetadataRealm() } // Delete old metadata DB (EH)
         Reprint.initialize(this) // Setup fingerprint (EH)
@@ -71,6 +68,7 @@ open class App : Application(), LifecycleObserver {
         }
 
         LocaleHelper.updateConfiguration(this, resources.configuration)
+
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
@@ -106,21 +104,6 @@ open class App : Application(), LifecycleObserver {
             } catch (e: GooglePlayServicesNotAvailableException) {
                 XLog.e("Could not install Android 7 broken SSL workaround!", e)
             }
-        }
-    }
-
-    protected open fun setupJobManager() {
-        try {
-            JobManager.create(this).addJobCreator { tag ->
-                when (tag) {
-                    LibraryUpdateJob.TAG -> LibraryUpdateJob()
-                    UpdaterJob.TAG -> UpdaterJob()
-                    BackupCreatorJob.TAG -> BackupCreatorJob()
-                    else -> null
-                }
-            }
-        } catch (e: Exception) {
-            Timber.w("Can't initialize job manager")
         }
     }
 
