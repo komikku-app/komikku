@@ -6,6 +6,9 @@ import android.view.*
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.elvishew.xlog.XLog
@@ -37,8 +40,9 @@ import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.EXHSavedSearch
-import kotlinx.android.synthetic.main.catalogue_controller.*
-import kotlinx.android.synthetic.main.main_activity.*
+import kotlinx.android.synthetic.main.catalogue_controller.catalogue_view
+import kotlinx.android.synthetic.main.catalogue_controller.progress
+import kotlinx.android.synthetic.main.main_activity.drawer
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -93,7 +97,7 @@ open class BrowseCatalogueController(bundle: Bundle) :
     /**
      * Recycler view with the list of results.
      */
-    private var recycler: androidx.recyclerview.widget.RecyclerView? = null
+    private var recycler: RecyclerView? = null
 
     /**
      * Subscription for the search view.
@@ -150,13 +154,13 @@ open class BrowseCatalogueController(bundle: Bundle) :
         super.onDestroyView(view)
     }
 
-    override fun createSecondaryDrawer(drawer: androidx.drawerlayout.widget.DrawerLayout): ViewGroup? {
+    override fun createSecondaryDrawer(drawer: DrawerLayout): ViewGroup? {
         // Inflate and prepare drawer
         val navView = drawer.inflate(R.layout.catalogue_drawer) as CatalogueNavigationView //TODO whatever this is
         this.navView = navView
         navView.setFilters(presenter.filterItems)
 
-        drawer.setDrawerLockMode(androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END)
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END)
 
         // EXH -->
         navView.setSavedSearches(presenter.loadSearches())
@@ -259,28 +263,28 @@ open class BrowseCatalogueController(bundle: Bundle) :
         return navView as ViewGroup //TODO fix this bullshit
     }
 
-    override fun cleanupSecondaryDrawer(drawer: androidx.drawerlayout.widget.DrawerLayout) {
+    override fun cleanupSecondaryDrawer(drawer: DrawerLayout) {
         navView = null
     }
 
     private fun setupRecycler(view: View) {
         numColumnsSubscription?.unsubscribe()
 
-        var oldPosition = androidx.recyclerview.widget.RecyclerView.NO_POSITION
+        var oldPosition = RecyclerView.NO_POSITION
         val oldRecycler = catalogue_view?.getChildAt(1)
-        if (oldRecycler is androidx.recyclerview.widget.RecyclerView) {
-            oldPosition = (oldRecycler.layoutManager as androidx.recyclerview.widget.LinearLayoutManager).findFirstVisibleItemPosition()
+        if (oldRecycler is RecyclerView) {
+            oldPosition = (oldRecycler.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
             oldRecycler.adapter = null
 
             catalogue_view?.removeView(oldRecycler)
         }
 
         val recycler = if (presenter.isListMode) {
-            androidx.recyclerview.widget.RecyclerView(view.context).apply {
+            RecyclerView(view.context).apply {
                 id = R.id.recycler
-                layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
-                layoutParams = androidx.recyclerview.widget.RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(context, androidx.recyclerview.widget.DividerItemDecoration.VERTICAL))
+                layoutManager = LinearLayoutManager(context)
+                layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             }
         } else {
             (catalogue_view.inflate(R.layout.catalogue_recycler_autofit) as AutofitRecyclerView).apply {
@@ -290,7 +294,7 @@ open class BrowseCatalogueController(bundle: Bundle) :
                         // Set again the adapter to recalculate the covers height
                         .subscribe { adapter = this@BrowseCatalogueController.adapter }
 
-                (layoutManager as androidx.recyclerview.widget.GridLayoutManager).spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
+                (layoutManager as GridLayoutManager).spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
                         return when (adapter?.getItemViewType(position)) {
                             R.layout.catalogue_grid_item, null -> 1
@@ -305,7 +309,7 @@ open class BrowseCatalogueController(bundle: Bundle) :
 
         catalogue_view.addView(recycler, 1)
 
-        if (oldPosition != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
+        if (oldPosition != RecyclerView.NO_POSITION) {
             recycler.layoutManager?.scrollToPosition(oldPosition)
         }
         this.recycler = recycler
@@ -374,7 +378,6 @@ open class BrowseCatalogueController(bundle: Bundle) :
         super.onPrepareOptionsMenu(menu)
 
         val isHttpSource = presenter.source is HttpSource
-        menu.findItem(R.id.action_open_in_browser).isVisible = isHttpSource
         menu.findItem(R.id.action_open_in_web_view).isVisible = isHttpSource
     }
 
@@ -383,16 +386,9 @@ open class BrowseCatalogueController(bundle: Bundle) :
             R.id.action_search -> expandActionViewFromInteraction = true
             R.id.action_display_mode -> swapDisplayMode()
             R.id.action_set_filter -> navView?.let { activity?.drawer?.openDrawer(GravityCompat.END) }
-            R.id.action_open_in_browser -> openInBrowser()
             R.id.action_open_in_web_view -> openInWebView()
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun openInBrowser() {
-        val source = presenter.source as? HttpSource ?: return
-
-        activity?.openInBrowser(source.baseUrl)
     }
 
     private fun openInWebView() {

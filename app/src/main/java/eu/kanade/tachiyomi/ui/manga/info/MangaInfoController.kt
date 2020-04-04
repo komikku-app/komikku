@@ -60,7 +60,6 @@ import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import exh.ui.webview.EhWebViewActivity
 import jp.wasabeef.glide.transformations.CropSquareTransformation
 import jp.wasabeef.glide.transformations.MaskTransformation
 import kotlinx.android.synthetic.main.manga_info_controller.*
@@ -216,13 +215,11 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
             // EXH -->
             R.id.action_smart_search -> openSmartSearch()
             // EXH <--
-            R.id.action_open_in_browser -> openInBrowser()
             R.id.action_open_in_web_view -> openInWebView()
             R.id.action_share -> shareManga()
             R.id.action_add_to_home_screen -> addToHomeScreen()
-            else -> return super.onOptionsItemSelected(item)
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
 
@@ -404,29 +401,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                     presenter.deleteDownloads()
                 }
             }
-        }
-    }
-
-    /**
-     * Open the manga in browser.
-     */
-    private fun openInBrowser() {
-        val context = view?.context ?: return
-        val source = presenter.source as? HttpSource ?: return
-
-        try {
-            // --> EH
-            val urlString = source.mangaDetailsRequest(presenter.manga).url.toString()
-            if(preferences.eh_incogWebview().getOrDefault()) {
-                activity?.startActivity(Intent(activity, WebViewActivity::class.java).apply {
-                    putExtra(EhWebViewActivity.KEY_URL, urlString)
-                })
-            } else {
-                context.openInBrowser(source.mangaDetailsRequest(presenter.manga).url.toString())
-            }
-            // <-- EH
-        } catch (e: Exception) {
-            context.toast(e.message)
         }
     }
 
