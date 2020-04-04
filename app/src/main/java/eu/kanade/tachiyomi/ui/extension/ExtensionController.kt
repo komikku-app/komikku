@@ -94,11 +94,7 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
                 item.isChecked = !item.isChecked
                 val preferences: PreferencesHelper = Injekt.get()
                 preferences.automaticExtUpdates().set(item.isChecked)
-
-                if (item.isChecked)
-                    ExtensionUpdateJob.setupTask()
-                else
-                    ExtensionUpdateJob.cancelTask()
+                ExtensionUpdateJob.setupTask(activity!!, item.isChecked)
             }
             else -> return super.onOptionsItemSelected(item)
         }
