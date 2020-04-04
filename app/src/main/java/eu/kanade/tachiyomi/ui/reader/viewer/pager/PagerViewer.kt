@@ -71,14 +71,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         pager.adapter = adapter
         pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
-                val page = adapter.items.getOrNull(position)
-                if (page != null && currentPage != page) {
-                    currentPage = page
-                    when (page) {
-                        is ReaderPage -> onPageSelected(page, position)
-                        is ChapterTransition -> onTransitionSelected(page)
-                    }
-                }
+                onPageChange(position)
             }
 
             override fun onPageScrollStateChanged(state: Int) {
@@ -149,11 +142,25 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     }
 
     /**
-     * Called from the ViewPager listener when a [page] is marked as active. It notifies the
+     * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
+     */
+    private fun onPageChange(position: Int) {
+        val page = adapter.items.getOrNull(position)
+        if (page != null && currentPage != page) {
+            currentPage = page
+            when (page) {
+                is ReaderPage -> onReaderPageSelected(page)
+                is ChapterTransition -> onTransitionSelected(page)
+            }
+        }
+    }
+
+    /**
+     * Called when a [ReaderPage] is marked as active. It notifies the
      * activity of the change and requests the preload of the next chapter if this is the last page.
      */
-    private fun onPageSelected(page: ReaderPage, position: Int) {
-        val pages = page.chapter.pages // Won't be null because it's the loaded chapter
+    private fun onReaderPageSelected(page: ReaderPage) {
+        val pages = page.chapter.pages!! // Won't be null because it's the loaded chapter
         // EXH -->
         if(pages == null) {
             XLog.e("Pager reader chapter pages are null (position: %s," +
@@ -164,7 +171,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                     " page.chapter.pageLoader == null: %s," +
                     " page.chapter.requestedPage: %s" +
                     " page.chapter.references: %s)!",
-                    position,
                     page.index,
                     page.url,
                     page.imageUrl,
@@ -176,7 +182,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         }
         // EXH <--
 
-        Timber.d("onPageSelected: ${page.number}/${pages.size}")
+        Timber.d("onReaderPageSelected: ${page.number}/${pages.size}")
         activity.onPageSelected(page)
 
         val allowPreload = checkAllowPreload(page as? ReaderPage)
@@ -192,7 +198,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     }
 
     /**
-     * Called from the ViewPager listener when a [transition] is marked as active. It request the
+     * Called when a [ChapterTransition] is marked as active. It request the
      * preload of the destination chapter of the transition.
      */
     private fun onTransitionSelected(transition: ChapterTransition) {
@@ -240,10 +246,15 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      * Tells this viewer to move to the given [page].
      */
     override fun moveToPage(page: ReaderPage) {
-        Timber.d("moveToPage")
+        Timber.d("moveToPage ${page.number}")
         val position = adapter.items.indexOf(page)
         if (position != -1) {
+            val currentPosition = pager.currentItem
             pager.setCurrentItem(position, true)
+            // manually call onPageChange since ViewPager listener is not triggered in this case
+            if (currentPosition == position) {
+                onPageChange(position)
+            }
         } else {
             Timber.d("Page $page not found in adapter")
         }
