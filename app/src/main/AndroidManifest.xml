@@ -276,7 +276,6 @@
         <activity
             android:name="exh.ui.captcha.BrowserActionActivity"
             android:theme="@style/Theme.EHActivity" />
-        <activity android:name="exh.ui.webview.WebViewActivity" />
     </application>
 
 </manifest>
