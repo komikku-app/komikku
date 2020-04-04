@@ -17,6 +17,7 @@ import java.util.Locale
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
+import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 
 fun <T> Preference<T>.getOrDefault(): T = get() ?: defaultValue()!!
 
@@ -57,7 +58,9 @@ class PreferencesHelper(val context: Context) {
 
     fun clear() = prefs.edit().clear().apply()
 
-    fun theme() = prefs.getInt(Keys.theme, 1)
+    fun themeMode() = prefs.getString(Keys.themeMode, Values.THEME_MODE_LIGHT)
+
+    fun themeDark() = prefs.getString(Keys.themeDark, Values.THEME_DARK_DEFAULT)
 
     fun rotation() = rxPrefs.getInteger(Keys.rotation, 1)
 
