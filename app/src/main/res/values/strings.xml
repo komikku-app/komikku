@@ -508,6 +508,10 @@
         <item quantity="one">For %d title</item>
         <item quantity="other">For %d titles</item>
     </plurals>
+    <plurals name="notification_chapters">
+        <item quantity="one">Chapter %1$s</item>
+        <item quantity="other">Chapters %1$s</item>
+    </plurals>
     <string name="notification_and_n_more">and %1$d more</string>
 	<string name="notification_new_chapters_text_old">For %1$d titles</string>
     <string name="notification_cover_update_failed">Failed to update cover</string>
