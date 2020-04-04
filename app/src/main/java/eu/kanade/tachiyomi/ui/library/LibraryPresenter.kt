@@ -207,8 +207,10 @@ class LibraryPresenter(
                 }
                 LibrarySort.LAST_UPDATED -> i2.manga.last_update.compareTo(i1.manga.last_update)
                 LibrarySort.LATEST_CHAPTER -> {
-                    val manga1latestChapter = latestChapterManga[i1.manga.id!!] ?: 0
-                    val manga2latestChapter = latestChapterManga[i2.manga.id!!] ?: 0
+                    val manga1latestChapter = latestChapterManga[i1.manga.id!!]
+                            ?: latestChapterManga.size
+                    val manga2latestChapter = latestChapterManga[i2.manga.id!!]
+                            ?: latestChapterManga.size
                     manga1latestChapter.compareTo(manga2latestChapter)
                 }
                 LibrarySort.UNREAD -> i1.manga.unread.compareTo(i2.manga.unread)
