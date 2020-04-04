@@ -8,9 +8,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.setVectorCompat
 import java.util.Date
 import kotlinx.android.synthetic.main.chapters_item.*
 import uy.kohesive.injekt.injectLazy
@@ -38,9 +36,6 @@ class ChapterHolder(
             }
             else -> chapter.name
         }
-
-        // Set the correct drawable for dropdown and update the tint to match theme.
-        chapter_menu.setVectorCompat(R.drawable.ic_more_vert_black_24dp, view.context.getResourceColor(R.attr.icon_color))
 
         // Set correct text color
         chapter_title.setTextColor(if (chapter.read) adapter.readColor else adapter.unreadColor)
