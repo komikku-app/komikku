@@ -41,7 +41,6 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
         ChaptersAdapter.OnMenuItemClickListener,
         SetDisplayModeDialog.Listener,
         SetSortingDialog.Listener,
-        DownloadChaptersDialog.Listener,
         DownloadCustomChaptersDialog.Listener,
         DeleteChaptersDialog.Listener {
 
@@ -166,7 +165,11 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_display_mode -> showDisplayModeDialog()
-            R.id.manga_download -> showDownloadDialog()
+
+            R.id.download_next, R.id.download_next_5, R.id.download_next_10,
+            R.id.download_custom, R.id.download_unread, R.id.download_all
+            -> downloadChapters(item.itemId)
+
             R.id.action_sorting_mode -> showSortingDialog()
             R.id.action_filter_unread -> {
                 item.isChecked = !item.isChecked
@@ -495,10 +498,6 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
         presenter.setSorting(id)
     }
 
-    private fun showDownloadDialog() {
-        DownloadChaptersDialog(this).showDialog(router)
-    }
-
     private fun getUnreadChaptersSorted() = presenter.chapters
             .filter { !it.read && it.status == Download.NOT_DOWNLOADED }
             .distinctBy { it.name }
@@ -516,23 +515,17 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
     }
 
 
-    override fun downloadChapters(choice: Int) {
-        // i = 0: Download 1
-        // i = 1: Download 5
-        // i = 2: Download 10
-        // i = 3: Download x
-        // i = 4: Download unread
-        // i = 5: Download all
+    private fun downloadChapters(choice: Int) {
         val chaptersToDownload = when (choice) {
-            0 -> getUnreadChaptersSorted().take(1)
-            1 -> getUnreadChaptersSorted().take(5)
-            2 -> getUnreadChaptersSorted().take(10)
-            3 -> {
+            R.id.download_next -> getUnreadChaptersSorted().take(1)
+            R.id.download_next_5 -> getUnreadChaptersSorted().take(5)
+            R.id.download_next_10 -> getUnreadChaptersSorted().take(10)
+            R.id.download_custom -> {
                 showCustomDownloadDialog()
                 return
             }
-            4 -> presenter.chapters.filter { !it.read }
-            5 -> presenter.chapters
+            R.id.download_unread -> presenter.chapters.filter { !it.read }
+            R.id.download_all -> presenter.chapters
             else -> emptyList()
         }
         if (chaptersToDownload.isNotEmpty()) {
