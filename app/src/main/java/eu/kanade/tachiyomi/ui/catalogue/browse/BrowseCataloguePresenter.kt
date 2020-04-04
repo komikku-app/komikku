@@ -392,12 +392,7 @@ open class BrowseCataloguePresenter(
             changeMangaFavorite(manga)
         }
 
-        if (selectedCategories.isNotEmpty()) {
-            moveMangaToCategories(manga, selectedCategories.filter { it.id != 0 })
-        } else {
-            // Default category
-            moveMangaToCategories(manga, emptyList())
-        }
+        moveMangaToCategories(manga, selectedCategories)
     }
 
     // EXH -->
