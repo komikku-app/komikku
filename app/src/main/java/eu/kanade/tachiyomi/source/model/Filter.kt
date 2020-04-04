@@ -5,8 +5,10 @@ sealed class Filter<T>(val name: String, var state: T) {
     // --> EXH
     // name = button text
     open class HelpDialog(name: String, val dialogTitle: String = name, val markdown: String) : Filter<Any>(name, 0)
+
     // <-- EXH
     open class Separator(name: String = "") : Filter<Any>(name, 0)
+
     abstract class Select<V>(name: String, val values: Array<V>, state: Int = 0) : Filter<Int>(name, state)
     abstract class Text(name: String, state: String = "") : Filter<String>(name, state)
     abstract class CheckBox(name: String, state: Boolean = false) : Filter<Boolean>(name, state)
@@ -21,7 +23,8 @@ sealed class Filter<T>(val name: String, var state: T) {
             const val STATE_EXCLUDE = 2
         }
     }
-    abstract class Group<V>(name: String, state: List<V>): Filter<List<V>>(name, state)
+
+    abstract class Group<V>(name: String, state: List<V>) : Filter<List<V>>(name, state)
 
     abstract class Sort(name: String, val values: Array<String>, state: Selection? = null)
         : Filter<Sort.Selection?>(name, state) {

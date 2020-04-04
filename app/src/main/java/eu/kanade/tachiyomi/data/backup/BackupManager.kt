@@ -282,7 +282,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
      * @return [Observable] that contains manga
      */
     fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        return (if(source is EHentai) {
+        return (if (source is EHentai) {
             source.fetchChapterList(manga, throttleManager::throttle)
         } else {
             source.fetchChapterList(manga)
@@ -294,8 +294,9 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
                     }
                 }
     }
+
     suspend fun restoreChapterFetch(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager) {
-        val fetchChapters = if(source is EHentai) {
+        val fetchChapters = if (source is EHentai) {
             source.fetchChapterList(manga, throttleManager::throttle).toBlocking().single()
         } else {
             source.fetchChapterList(manga).toBlocking().single()

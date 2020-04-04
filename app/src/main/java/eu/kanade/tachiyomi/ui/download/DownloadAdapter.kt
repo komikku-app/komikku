@@ -8,7 +8,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
  * @param context the context of the fragment containing this adapter.
  */
 class DownloadAdapter(controller: DownloadController) : FlexibleAdapter<DownloadItem>(null, controller,
-    true) {
+        true) {
 
     /**
      * Listener called when an item of the list is released.

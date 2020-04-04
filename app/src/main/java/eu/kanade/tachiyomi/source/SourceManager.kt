@@ -73,7 +73,7 @@ open class SourceManager(private val context: Context) {
         // EXH -->
         val sourceQName = source::class.qualifiedName
         val delegate = DELEGATED_SOURCES[sourceQName]
-        val newSource = if(source is HttpSource && delegate != null) {
+        val newSource = if (source is HttpSource && delegate != null) {
             XLog.d("[EXH] Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
             EnhancedHttpSource(
                     source,
@@ -81,7 +81,7 @@ open class SourceManager(private val context: Context) {
             )
         } else source
 
-        if(source.id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
+        if (source.id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
             XLog.d("[EXH] Removing blacklisted source: (id: %s, name: %s, lang: %s)!", source.id, source.name, (source as? CatalogueSource)?.lang)
             return
         }
@@ -104,7 +104,7 @@ open class SourceManager(private val context: Context) {
         val exSrcs = mutableListOf<HttpSource>(
                 EHentai(EH_SOURCE_ID, false, context)
         )
-        if(prefs.enableExhentai().getOrDefault()) {
+        if (prefs.enableExhentai().getOrDefault()) {
             exSrcs += EHentai(EXH_SOURCE_ID, true, context)
         }
         exSrcs += PervEden(PERV_EDEN_EN_SOURCE_ID, PervEdenLang.en)

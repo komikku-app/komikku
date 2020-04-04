@@ -115,7 +115,7 @@ class ChaptersPresenter(
                             ?: 0))
 
                     // EXH -->
-                    if(chapters.isNotEmpty()
+                    if (chapters.isNotEmpty()
                             && (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID)
                             && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
                         // Check for gallery in library and accept manga with lowest id
@@ -124,7 +124,7 @@ class ChaptersPresenter(
                                 .subscribeOn(Schedulers.io())
                                 .subscribe { (acceptedChain, _) ->
                                     // Redirect if we are not the accepted root
-                                    if(manga.id != acceptedChain.manga.id) {
+                                    if (manga.id != acceptedChain.manga.id) {
                                         // Update if any of our chapters are not in accepted manga's chapters
                                         val ourChapterUrls = chapters.map { it.url }.toSet()
                                         val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
@@ -144,8 +144,8 @@ class ChaptersPresenter(
                 .observeOn(AndroidSchedulers.mainThread())
                 .filter { download -> download.manga.id == manga.id }
                 .doOnNext { onDownloadStatusChange(it) }
-                .subscribeLatestCache(ChaptersController::onChapterStatusChange) {
-                    _, error -> Timber.e(error)
+                .subscribeLatestCache(ChaptersController::onChapterStatusChange) { _, error ->
+                    Timber.e(error)
                 }
     }
 
@@ -211,8 +211,7 @@ class ChaptersPresenter(
         var observable = Observable.from(chapters).subscribeOn(Schedulers.io())
         if (onlyUnread()) {
             observable = observable.filter { !it.read }
-        }
-        else if (onlyRead()) {
+        } else if (onlyRead()) {
             observable = observable.filter { it.read }
         }
         if (onlyDownloaded()) {

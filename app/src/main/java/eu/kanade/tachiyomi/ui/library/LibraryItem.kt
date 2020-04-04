@@ -65,31 +65,30 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
      */
     override fun filter(constraint: String): Boolean {
         return manga.title.contains(constraint, true) ||
-            (manga.author?.contains(constraint, true) ?: false) ||
-            if (constraint.contains(" ") || constraint.contains("\"")) {
-                val genres = manga.genre?.split(", ")?.map {
-                    it.drop(it.indexOfFirst{it==':'}+1).toLowerCase().trim() //tachiEH tag namespaces
-                }
-                var clean_constraint = ""
-                var ignorespace = false
-                for (i in constraint.trim().toLowerCase()) {
-                    if (i==' ') {
-                       if (!ignorespace) {
-                           clean_constraint = clean_constraint + ","
-                       } else {
-                           clean_constraint = clean_constraint + " "
-                       }
-                    } else if (i=='"') {
-                        ignorespace = !ignorespace
-                    } else {
-                        clean_constraint = clean_constraint + Character.toString(i)
+                (manga.author?.contains(constraint, true) ?: false) ||
+                if (constraint.contains(" ") || constraint.contains("\"")) {
+                    val genres = manga.genre?.split(", ")?.map {
+                        it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() //tachiEH tag namespaces
                     }
-                }
-		clean_constraint.split(",").all { containsGenre(it.trim(), genres) }
-            }
-            else containsGenre(constraint, manga.genre?.split(", ")?.map {
-                it.drop(it.indexOfFirst{it==':'}+1).toLowerCase().trim() //tachiEH tag namespaces
-            })
+                    var clean_constraint = ""
+                    var ignorespace = false
+                    for (i in constraint.trim().toLowerCase()) {
+                        if (i == ' ') {
+                            if (!ignorespace) {
+                                clean_constraint = clean_constraint + ","
+                            } else {
+                                clean_constraint = clean_constraint + " "
+                            }
+                        } else if (i == '"') {
+                            ignorespace = !ignorespace
+                        } else {
+                            clean_constraint = clean_constraint + Character.toString(i)
+                        }
+                    }
+                    clean_constraint.split(",").all { containsGenre(it.trim(), genres) }
+                } else containsGenre(constraint, manga.genre?.split(", ")?.map {
+                    it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() //tachiEH tag namespaces
+                })
     }
 
     private fun containsGenre(tag: String, genres: List<String>?): Boolean {

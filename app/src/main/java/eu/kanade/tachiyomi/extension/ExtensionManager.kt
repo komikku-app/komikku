@@ -124,11 +124,12 @@ class ExtensionManager(
                 .map { it.extension }
                 .filterNotBlacklisted()
     }
+
     // EXH -->
     fun <T : Extension> Iterable<T>.filterNotBlacklisted(): List<T> {
         val blacklistEnabled = preferences.eh_enableSourceBlacklist().getOrDefault()
         return filter {
-            if(it.isBlacklisted(blacklistEnabled)) {
+            if (it.isBlacklisted(blacklistEnabled)) {
                 XLog.d("[EXH] Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
                 false
             } else true
@@ -230,7 +231,7 @@ class ExtensionManager(
      *
      * @param extension The extension to be updated.
      */
-    fun updateExtension(extension: Extension.Installed): Observable<InstallStep>  {
+    fun updateExtension(extension: Extension.Installed): Observable<InstallStep> {
         val availableExt = availableExtensions.find { it.pkgName == extension.pkgName }
                 ?: return Observable.empty()
         return installExtension(availableExt)
@@ -293,7 +294,7 @@ class ExtensionManager(
      * @param extension The extension to be registered.
      */
     private fun registerNewExtension(extension: Extension.Installed) {
-        if(extension.isBlacklisted()) {
+        if (extension.isBlacklisted()) {
             XLog.d("[EXH] Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }
@@ -309,7 +310,7 @@ class ExtensionManager(
      * @param extension The extension to be registered.
      */
     private fun registerUpdatedExtension(extension: Extension.Installed) {
-        if(extension.isBlacklisted()) {
+        if (extension.isBlacklisted()) {
             XLog.d("[EXH] Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }

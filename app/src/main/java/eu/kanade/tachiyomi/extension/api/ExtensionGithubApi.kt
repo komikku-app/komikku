@@ -28,7 +28,7 @@ internal class ExtensionGithubApi {
         val call = GET(EXT_URL)
 
         return withContext(Dispatchers.IO) {
-             parseResponse(network.client.newCall(call).await())
+            parseResponse(network.client.newCall(call).await())
         }
     }
 
@@ -42,8 +42,8 @@ internal class ExtensionGithubApi {
                 val extensionsWithUpdate = mutableListOf<Extension.Installed>()
 
                 val installedExtensions = ExtensionLoader.loadExtensions(context)
-                    .filterIsInstance<LoadResult.Success>()
-                    .map { it.extension }
+                        .filterIsInstance<LoadResult.Success>()
+                        .map { it.extension }
                 for (installedExt in installedExtensions) {
                     val pkgName = installedExt.pkgName
                     val availableExt = extensions.find { it.pkgName == pkgName } ?: continue

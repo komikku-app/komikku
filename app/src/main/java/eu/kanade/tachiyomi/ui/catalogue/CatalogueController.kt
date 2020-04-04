@@ -58,7 +58,7 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
     private val smartSearchConfig: SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG)
 
     // EXH -->
-    private val mode = if(smartSearchConfig == null) Mode.CATALOGUE else Mode.SMART_SEARCH
+    private val mode = if (smartSearchConfig == null) Mode.CATALOGUE else Mode.SMART_SEARCH
     // EXH <--
 
     /**
@@ -75,7 +75,7 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
      * @return title.
      */
     override fun getTitle(): String? {
-        return when(mode) {
+        return when (mode) {
             Mode.CATALOGUE -> applicationContext?.getString(R.string.label_catalogues)
             Mode.SMART_SEARCH -> "Find in another source"
         }
@@ -137,7 +137,7 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
     override fun onItemClick(view: View?, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
         val source = item.source
-        when(mode) {
+        when (mode) {
             Mode.CATALOGUE -> {
                 // Open the catalogue view.
                 openCatalogue(source, BrowseCatalogueController(source))
@@ -196,7 +196,7 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
                 .subscribeUntilDestroy { performGlobalSearch(it.queryText().toString()) }
     }
 
-    private fun performGlobalSearch(query: String){
+    private fun performGlobalSearch(query: String) {
         router.pushController(CatalogueSearchController(query).withFadeTransaction())
     }
 

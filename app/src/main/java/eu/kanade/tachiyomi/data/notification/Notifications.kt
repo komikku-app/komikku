@@ -74,7 +74,7 @@ object Notifications {
                         NotificationManager.IMPORTANCE_DEFAULT),
                 NotificationChannel(CHANNEL_UPDATES_TO_EXTS, context.getString(R.string.channel_ext_updates),
                         NotificationManager.IMPORTANCE_DEFAULT
-        )
+                )
         )
         context.notificationManager.createNotificationChannels(channels)
     }

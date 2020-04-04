@@ -48,28 +48,28 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
 
     init {
         preferences.readWithTapping()
-            .register({ tappingEnabled = it })
+                .register({ tappingEnabled = it })
 
         preferences.readWithLongTap()
-            .register({ longTapEnabled = it })
+                .register({ longTapEnabled = it })
 
         preferences.pageTransitions()
-            .register({ usePageTransitions = it })
+                .register({ usePageTransitions = it })
 
         preferences.imageScaleType()
-            .register({ imageScaleType = it }, { imagePropertyChangedListener?.invoke() })
+                .register({ imageScaleType = it }, { imagePropertyChangedListener?.invoke() })
 
         preferences.zoomStart()
-            .register({ zoomTypeFromPreference(it) }, { imagePropertyChangedListener?.invoke() })
+                .register({ zoomTypeFromPreference(it) }, { imagePropertyChangedListener?.invoke() })
 
         preferences.cropBorders()
-            .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
+                .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
 
         preferences.doubleTapAnimSpeed()
-            .register({ doubleTapAnimDuration = it })
+                .register({ doubleTapAnimDuration = it })
 
         preferences.readWithVolumeKeys()
-            .register({ volumeKeysEnabled = it })
+                .register({ volumeKeysEnabled = it })
 
         preferences.readWithVolumeKeysInverted()
                 .register({ volumeKeysInverted = it })
@@ -87,12 +87,12 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
             onChanged: (T) -> Unit = {}
     ) {
         asObservable()
-            .doOnNext(valueAssignment)
-            .skip(1)
-            .distinctUntilChanged()
-            .doOnNext(onChanged)
-            .subscribe()
-            .addTo(subscriptions)
+                .doOnNext(valueAssignment)
+                .skip(1)
+                .distinctUntilChanged()
+                .doOnNext(onChanged)
+                .subscribe()
+                .addTo(subscriptions)
     }
 
     private fun zoomTypeFromPreference(value: Int) {

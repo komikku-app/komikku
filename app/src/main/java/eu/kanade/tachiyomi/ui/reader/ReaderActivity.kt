@@ -174,7 +174,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
 
     // --> EH
     private fun setEhUtilsVisibility(visible: Boolean) {
-        if(visible) {
+        if (visible) {
             eh_utils.visible()
             expand_eh_button.setImageResource(R.drawable.ic_keyboard_arrow_up_white_32dp)
         } else {
@@ -189,7 +189,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         exhSubscriptions.remove(autoscrollSubscription)
         autoscrollSubscription = null
 
-        if(interval == -1f) return
+        if (interval == -1f) return
 
         val intervalMs = (interval * 1000).roundToLong()
         val sub = Observable.interval(intervalMs, intervalMs, TimeUnit.MILLISECONDS)
@@ -197,8 +197,8 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     viewer.let { v ->
-                        if(v is PagerViewer) v.moveToNext()
-                        else if(v is WebtoonViewer) v.scrollDown()
+                        if (v is PagerViewer) v.moveToNext()
+                        else if (v is WebtoonViewer) v.scrollDown()
                     }
                 }
 
@@ -335,7 +335,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         }
 
         eh_autoscroll_freq.setText(preferences.eh_utilAutoscrollInterval().getOrDefault().let {
-            if(it == -1f)
+            if (it == -1f)
                 ""
             else it.toString()
         })
@@ -343,7 +343,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         exhSubscriptions += eh_autoscroll.checkedChanges()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
-                    setupAutoscroll(if(it)
+                    setupAutoscroll(if (it)
                         preferences.eh_utilAutoscrollInterval().getOrDefault()
                     else -1f)
                 }
@@ -362,7 +362,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                         eh_autoscroll_freq.error = null
                         preferences.eh_utilAutoscrollInterval().set(parsed)
                         eh_autoscroll.isEnabled = true
-                        setupAutoscroll(if(eh_autoscroll.isChecked) parsed else -1f)
+                        setupAutoscroll(if (eh_autoscroll.isChecked) parsed else -1f)
                     }
                 }
 
@@ -382,14 +382,14 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                     .pages
                     ?.forEachIndexed { index, page ->
                         var shouldQueuePage = false
-                        if(page.status == Page.ERROR) {
+                        if (page.status == Page.ERROR) {
                             shouldQueuePage = true
-                        } else if(page.status == Page.LOAD_PAGE
+                        } else if (page.status == Page.LOAD_PAGE
                                 || page.status == Page.DOWNLOAD_IMAGE) {
                             // Do nothing
                         }
 
-                        if(shouldQueuePage) {
+                        if (shouldQueuePage) {
                             page.status = Page.QUEUE
                         } else {
                             return@forEachIndexed
@@ -398,12 +398,12 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                         //If we are using EHentai/ExHentai, get a new image URL
                         presenter.manga?.let { m ->
                             val src = sourceManager.get(m.source)
-                            if(src is EHentai)
+                            if (src is EHentai)
                                 page.imageUrl = null
                         }
 
                         val loader = page.chapter.pageLoader
-                        if(page.index == exh_currentPage()?.index && loader is HttpPageLoader) {
+                        if (page.index == exh_currentPage()?.index && loader is HttpPageLoader) {
                             loader.boostPage(page)
                         } else {
                             loader?.retryPage(page)
@@ -430,15 +430,15 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                     return@let
                 }
 
-                if(curPage.status == Page.ERROR) {
+                if (curPage.status == Page.ERROR) {
                     toast("Page failed to load, press the retry button instead!")
-                } else if(curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
+                } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
                     toast("This page is already downloading!")
-                } else if(curPage.status == Page.READY) {
+                } else if (curPage.status == Page.READY) {
                     toast("This page has already been downloaded!")
                 } else {
                     val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
-                    if(loader != null) {
+                    if (loader != null) {
                         loader.boostPage(curPage)
                         toast("Boosted current page!")
                     } else {
@@ -646,7 +646,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             // EXH <--
             ReaderPageSheet(this, page).show()
             // EXH -->
-        } catch(e: WindowManager.BadTokenException) {
+        } catch (e: WindowManager.BadTokenException) {
             logger.e("Caught and ignoring reader page sheet launch exception!", e)
         }
         // EXH <--
@@ -769,40 +769,40 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             val sharedRotation = preferences.rotation().asObservable().share()
             val initialRotation = sharedRotation.take(1)
             val rotationUpdates = sharedRotation.skip(1)
-                .delay(250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                    .delay(250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
 
             subscriptions += Observable.merge(initialRotation, rotationUpdates)
-                .subscribe { setOrientation(it) }
+                    .subscribe { setOrientation(it) }
 
             subscriptions += preferences.readerTheme().asObservable()
-                .skip(1) // We only care about updates
-                .subscribe { recreate() }
+                    .skip(1) // We only care about updates
+                    .subscribe { recreate() }
 
             subscriptions += preferences.showPageNumber().asObservable()
-                .subscribe { setPageNumberVisibility(it) }
+                    .subscribe { setPageNumberVisibility(it) }
 
             subscriptions += preferences.trueColor().asObservable()
-                .subscribe { setTrueColor(it) }
+                    .subscribe { setTrueColor(it) }
 
             subscriptions += preferences.fullscreen().asObservable()
-                .subscribe { setFullscreen(it) }
+                    .subscribe { setFullscreen(it) }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 subscriptions += preferences.cutoutShort().asObservable()
-                        .subscribe { setCutoutShort(it)}
+                        .subscribe { setCutoutShort(it) }
             }
 
             subscriptions += preferences.keepScreenOn().asObservable()
-                .subscribe { setKeepScreenOn(it) }
+                    .subscribe { setKeepScreenOn(it) }
 
             subscriptions += preferences.customBrightness().asObservable()
-                .subscribe { setCustomBrightness(it) }
+                    .subscribe { setCustomBrightness(it) }
 
             subscriptions += preferences.colorFilter().asObservable()
-                .subscribe { setColorFilter(it) }
+                    .subscribe { setColorFilter(it) }
 
             subscriptions += preferences.colorFilterMode().asObservable()
-                .subscribe { setColorFilter(preferences.colorFilter().getOrDefault()) }
+                    .subscribe { setColorFilter(preferences.colorFilter().getOrDefault()) }
         }
 
         /**
@@ -898,8 +898,8 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         private fun setCustomBrightness(enabled: Boolean) {
             if (enabled) {
                 customBrightnessSubscription = preferences.customBrightnessValue().asObservable()
-                    .sample(100, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                    .subscribe { setCustomBrightnessValue(it) }
+                        .sample(100, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                        .subscribe { setCustomBrightnessValue(it) }
 
                 subscriptions.add(customBrightnessSubscription)
             } else {
@@ -914,8 +914,8 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         private fun setColorFilter(enabled: Boolean) {
             if (enabled) {
                 customFilterColorSubscription = preferences.colorFilterValue().asObservable()
-                    .sample(100, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-                    .subscribe { setColorFilterValue(it) }
+                        .sample(100, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                        .subscribe { setColorFilterValue(it) }
 
                 subscriptions.add(customFilterColorSubscription)
             } else {

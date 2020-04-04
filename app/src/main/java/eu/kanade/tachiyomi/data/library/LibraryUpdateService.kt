@@ -303,7 +303,7 @@ class LibraryUpdateService(
                 .doOnNext { showProgressNotification(it, count.andIncrement, mangaToUpdate.size) }
                 // Update the chapters of the manga.
                 .concatMap { manga ->
-                    if(manga.source in LIBRARY_UPDATE_EXCLUDED_SOURCES) {
+                    if (manga.source in LIBRARY_UPDATE_EXCLUDED_SOURCES) {
                         // Ignore EXH manga, updating chapters for every manga will get you banned
                         Observable.empty()
                     } else {
@@ -323,12 +323,12 @@ class LibraryUpdateService(
                                         hasDownloads = true
                                     }
                                 }
-                            }
+                    }
                             // Convert to the manga that contains new chapters.
                             .map {
                                 Pair(
-                                    manga,
-                                    (it.first.sortedByDescending { ch -> ch.source_order }.toTypedArray())
+                                        manga,
+                                        (it.first.sortedByDescending { ch -> ch.source_order }.toTypedArray())
                                 )
                             }
                 }
@@ -579,7 +579,7 @@ class LibraryUpdateService(
 
         var description = resources.getQuantityString(R.plurals.notification_chapters, chapters.size, chaptersDescription)
         if (shouldTruncate) {
-           description += " ${resources.getString(R.string.notification_and_n_more, (chapterNumbers.size - (NOTIF_MAX_CHAPTERS - 1)))}"
+            description += " ${resources.getString(R.string.notification_and_n_more, (chapterNumbers.size - (NOTIF_MAX_CHAPTERS - 1)))}"
         }
 
         return description

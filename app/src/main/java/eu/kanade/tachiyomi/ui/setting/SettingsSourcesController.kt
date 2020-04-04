@@ -39,7 +39,7 @@ class SettingsSourcesController : SettingsController() {
 
     private var orderedLangs = listOf<String>()
     private var langPrefs = mutableListOf<Pair<String, SwitchPreferenceCategory>>()
-    private var sourcesByLang:TreeMap<String, MutableList<HttpSource>> = TreeMap()
+    private var sourcesByLang: TreeMap<String, MutableList<HttpSource>> = TreeMap()
     private var sorting = SourcesSort.Alpha
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
@@ -56,7 +56,7 @@ class SettingsSourcesController : SettingsController() {
 
         // Order first by active languages, then inactive ones
         orderedLangs = sourcesByLang.keys.filter { it in activeLangsCodes } + sourcesByLang.keys
-            .filterNot { it in activeLangsCodes }
+                .filterNot { it in activeLangsCodes }
 
         orderedLangs.forEach { lang ->
             val sources = sourcesByLang[lang].orEmpty().sortedBy { it.name }
@@ -136,8 +136,8 @@ class SettingsSourcesController : SettingsController() {
                     val current = preferences.hiddenCatalogues().getOrDefault()
 
                     preferences.hiddenCatalogues().set(
-                        if (checked) current - id
-                        else current + id
+                            if (checked) current - id
+                            else current + id
                     )
 
                     group.removeAll()
@@ -176,10 +176,10 @@ class SettingsSourcesController : SettingsController() {
         }
 
         searchView.queryTextChanges().filter { router.backstack.lastOrNull()?.controller() == this }
-            .subscribeUntilDestroy {
-                query = it.toString()
-                drawSources()
-            }
+                .subscribeUntilDestroy {
+                    query = it.toString()
+                    drawSources()
+                }
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
@@ -209,7 +209,7 @@ class SettingsSourcesController : SettingsController() {
         return if (sorting == SourcesSort.Enabled) {
             val hiddenCatalogues = preferences.hiddenCatalogues().getOrDefault()
             sourceAlpha.filter { it.id.toString() !in hiddenCatalogues } +
-                sourceAlpha.filterNot { it.id.toString() !in hiddenCatalogues }
+                    sourceAlpha.filterNot { it.id.toString() !in hiddenCatalogues }
         } else {
             sourceAlpha
         }

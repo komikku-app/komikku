@@ -86,7 +86,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 else -> activity.toggleMenu()
             }
         }
-        pager.longTapListener = f@ {
+        pager.longTapListener = f@{
             if (activity.menuVisible || config.longTapEnabled) {
                 val item = adapter.items.getOrNull(pager.currentItem)
                 if (item is ReaderPage) {
@@ -162,7 +162,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     private fun onReaderPageSelected(page: ReaderPage) {
         val pages = page.chapter.pages!! // Won't be null because it's the loaded chapter
         // EXH -->
-        if(pages == null) {
+        if (pages == null) {
             XLog.e("Pager reader chapter pages are null (position: %s," +
                     " page.index: %s," +
                     " page.url: %s," +

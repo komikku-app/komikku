@@ -92,7 +92,7 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Headers builder for requests. Implementations can override this method for custom headers.
      */
-    open protected fun headersBuilder() = Headers.Builder().apply {
+    protected open fun headersBuilder() = Headers.Builder().apply {
         add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)")
     }
 
@@ -120,14 +120,14 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page number to retrieve.
      */
-    abstract protected fun popularMangaRequest(page: Int): Request
+    protected abstract fun popularMangaRequest(page: Int): Request
 
     /**
      * Parses the response from the site and returns a [MangasPage] object.
      *
      * @param response the response from the site.
      */
-    abstract protected fun popularMangaParse(response: Response): MangasPage
+    protected abstract fun popularMangaParse(response: Response): MangasPage
 
     /**
      * Returns an observable containing a page with a list of manga. Normally it's not needed to
@@ -152,14 +152,14 @@ abstract class HttpSource : CatalogueSource {
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
-    abstract protected fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request
+    protected abstract fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request
 
     /**
      * Parses the response from the site and returns a [MangasPage] object.
      *
      * @param response the response from the site.
      */
-    abstract protected fun searchMangaParse(response: Response): MangasPage
+    protected abstract fun searchMangaParse(response: Response): MangasPage
 
     /**
      * Returns an observable containing a page with a list of latest manga updates.
@@ -179,14 +179,14 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page number to retrieve.
      */
-    abstract protected fun latestUpdatesRequest(page: Int): Request
+    protected abstract fun latestUpdatesRequest(page: Int): Request
 
     /**
      * Parses the response from the site and returns a [MangasPage] object.
      *
      * @param response the response from the site.
      */
-    abstract protected fun latestUpdatesParse(response: Response): MangasPage
+    protected abstract fun latestUpdatesParse(response: Response): MangasPage
 
     /**
      * Returns an observable with the updated details for a manga. Normally it's not needed to
@@ -217,7 +217,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param response the response from the site.
      */
-    abstract protected fun mangaDetailsParse(response: Response): SManga
+    protected abstract fun mangaDetailsParse(response: Response): SManga
 
     /**
      * Returns an observable with the updated chapter list for a manga. Normally it's not needed to
@@ -243,7 +243,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param manga the manga to look for chapters.
      */
-    open protected fun chapterListRequest(manga: SManga): Request {
+    protected open fun chapterListRequest(manga: SManga): Request {
         return GET(baseUrl + manga.url, headers)
     }
 
@@ -252,7 +252,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param response the response from the site.
      */
-    abstract protected fun chapterListParse(response: Response): List<SChapter>
+    protected abstract fun chapterListParse(response: Response): List<SChapter>
 
     /**
      * Returns an observable with the page list for a chapter.
@@ -273,7 +273,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
-    open protected fun pageListRequest(chapter: SChapter): Request {
+    protected open fun pageListRequest(chapter: SChapter): Request {
         return GET(baseUrl + chapter.url, headers)
     }
 
@@ -282,7 +282,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param response the response from the site.
      */
-    abstract protected fun pageListParse(response: Response): List<Page>
+    protected abstract fun pageListParse(response: Response): List<Page>
 
     /**
      * Returns an observable with the page containing the source url of the image. If there's any
@@ -302,7 +302,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the chapter whose page list has to be fetched
      */
-    open protected fun imageUrlRequest(page: Page): Request {
+    protected open fun imageUrlRequest(page: Page): Request {
         return GET(page.url, headers)
     }
 
@@ -311,7 +311,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param response the response from the site.
      */
-    abstract protected fun imageUrlParse(response: Response): String
+    protected abstract fun imageUrlParse(response: Response): String
 
     /**
      * Returns an observable with the response of the source image.
@@ -329,7 +329,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the chapter whose page list has to be fetched
      */
-    open protected fun imageRequest(page: Page): Request {
+    protected open fun imageRequest(page: Page): Request {
         return GET(page.imageUrl!!, headers)
     }
 
@@ -389,9 +389,10 @@ abstract class HttpSource : CatalogueSource {
 
     // EXH -->
     private var delegate: DelegatedHttpSource? = null
-        get() = if(Injekt.get<PreferencesHelper>().eh_delegateSources().getOrDefault())
+        get() = if (Injekt.get<PreferencesHelper>().eh_delegateSources().getOrDefault())
             field
         else null
+
     fun bindDelegate(delegate: DelegatedHttpSource) {
         this.delegate = delegate
     }

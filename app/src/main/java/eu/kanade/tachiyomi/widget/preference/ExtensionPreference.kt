@@ -14,7 +14,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class ExtensionPreference @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-    Preference(context, attrs) {
+        Preference(context, attrs) {
 
     init {
         widgetLayoutResource = R.layout.preference_update_text

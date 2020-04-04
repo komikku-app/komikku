@@ -32,12 +32,13 @@ internal class ExtensionInstallReceiver(private val listener: Listener) :
     /**
      * Returns the intent filter this receiver should subscribe to.
      */
-    private val filter get() = IntentFilter().apply {
-        addAction(Intent.ACTION_PACKAGE_ADDED)
-        addAction(Intent.ACTION_PACKAGE_REPLACED)
-        addAction(Intent.ACTION_PACKAGE_REMOVED)
-        addDataScheme("package")
-    }
+    private val filter
+        get() = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addDataScheme("package")
+        }
 
     /**
      * Called when one of the events of the [filter] is received. When the package is an extension,
@@ -62,7 +63,8 @@ internal class ExtensionInstallReceiver(private val listener: Listener) :
                     when (result) {
                         is LoadResult.Success -> listener.onExtensionUpdated(result.extension)
                         // Not needed as a package can't be upgraded if the signature is different
-                        is LoadResult.Untrusted -> {}
+                        is LoadResult.Untrusted -> {
+                        }
                     }
                 }
             }
@@ -93,8 +95,8 @@ internal class ExtensionInstallReceiver(private val listener: Listener) :
      * @param intent The intent containing the package name of the extension.
      */
     private suspend fun getExtensionFromIntent(context: Context, intent: Intent?): LoadResult {
-        val pkgName = getPackageNameFromIntent(intent) ?:
-                return LoadResult.Error("Package name not found")
+        val pkgName = getPackageNameFromIntent(intent)
+                ?: return LoadResult.Error("Package name not found")
         return GlobalScope.async(Dispatchers.Default, CoroutineStart.DEFAULT) { ExtensionLoader.loadExtensionFromPkgName(context, pkgName) }.await()
     }
 

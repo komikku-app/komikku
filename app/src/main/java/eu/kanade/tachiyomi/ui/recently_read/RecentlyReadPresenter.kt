@@ -40,9 +40,9 @@ class RecentlyReadPresenter : BasePresenter<RecentlyReadController>() {
         lastCount = offset
         lastSearch = search
         getRecentMangaObservable((offset), search)
-            .subscribeLatestCache({ view, mangas ->
-                view.onNextManga(mangas)
-            }, RecentlyReadController::onAddPageError)
+                .subscribeLatestCache({ view, mangas ->
+                    view.onNextManga(mangas)
+                }, RecentlyReadController::onAddPageError)
     }
 
     /**
@@ -71,8 +71,8 @@ class RecentlyReadPresenter : BasePresenter<RecentlyReadController>() {
         cal.add(Calendar.YEAR, -50)
 
         return db.getRecentMangaLimit(cal.time, lastCount, search).asRxObservable()
-            .map { recents -> recents.map(::RecentlyReadItem) }
-            .observeOn(AndroidSchedulers.mainThread())
+                .map { recents -> recents.map(::RecentlyReadItem) }
+                .observeOn(AndroidSchedulers.mainThread())
     }
 
     /**
@@ -86,11 +86,11 @@ class RecentlyReadPresenter : BasePresenter<RecentlyReadController>() {
     }
 
     fun updateList(search: String? = null) {
-        lastSearch = search?:lastSearch
+        lastSearch = search ?: lastSearch
         getRecentMangaLimitObservable(lastCount, lastSearch).take(1)
-            .subscribeLatestCache({ view, mangas ->
-                view.onNextManga(mangas, true)
-            }, RecentlyReadController::onAddPageError)
+                .subscribeLatestCache({ view, mangas ->
+                    view.onNextManga(mangas, true)
+                }, RecentlyReadController::onAddPageError)
     }
 
     /**
@@ -132,8 +132,9 @@ class RecentlyReadPresenter : BasePresenter<RecentlyReadController>() {
 
                 ((currChapterIndex + 1) until chapters.size)
                         .map { chapters[it] }
-                        .firstOrNull { it.chapter_number > chapterNumber &&
-                                it.chapter_number <= chapterNumber + 1
+                        .firstOrNull {
+                            it.chapter_number > chapterNumber &&
+                                    it.chapter_number <= chapterNumber + 1
                         }
             }
             else -> throw NotImplementedError("Unknown sorting method")

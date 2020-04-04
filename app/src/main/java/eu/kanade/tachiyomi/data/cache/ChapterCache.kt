@@ -50,6 +50,7 @@ class ChapterCache(private val context: Context) {
     /** Cache class used for cache management.  */
     // --> EH
     private var diskCache = setupDiskCache(prefs.eh_cacheSize().getOrDefault().toLong())
+
     init {
         prefs.eh_cacheSize().asObservable().skip(1).subscribe {
             // Save old cache for destruction later
@@ -82,9 +83,9 @@ class ChapterCache(private val context: Context) {
     // Cache size is in MB
     private fun setupDiskCache(cacheSize: Long): DiskLruCache {
         return DiskLruCache.open(File(context.cacheDir, PARAMETER_CACHE_DIRECTORY),
-            PARAMETER_APP_VERSION,
-            PARAMETER_VALUE_COUNT,
-            cacheSize * 1024 * 1024)
+                PARAMETER_APP_VERSION,
+                PARAMETER_VALUE_COUNT,
+                cacheSize * 1024 * 1024)
     }
     // <-- EH
 
@@ -190,7 +191,7 @@ class ChapterCache(private val context: Context) {
 
     /**
      * Add image to cache.
-     * 
+     *
      * @param imageUrl url of image.
      * @param response http response from page.
      * @throws IOException image error.

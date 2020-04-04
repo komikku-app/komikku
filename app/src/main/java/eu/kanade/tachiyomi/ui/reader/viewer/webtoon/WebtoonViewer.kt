@@ -99,7 +99,7 @@ class WebtoonViewer(val activity: ReaderActivity) : BaseViewer {
                 else -> activity.toggleMenu()
             }
         }
-        recycler.longTapListener = f@ { event ->
+        recycler.longTapListener = f@{ event ->
             if (activity.menuVisible || config.longTapEnabled) {
                 val child = recycler.findChildViewUnder(event.x, event.y)
                 if (child != null) {
@@ -142,7 +142,8 @@ class WebtoonViewer(val activity: ReaderActivity) : BaseViewer {
         currentPage == null ?: return true
 
         val nextItem = adapter.items.getOrNull(adapter.items.count() - 1)
-        val nextChapter = (nextItem as? ChapterTransition.Next)?.to ?: (nextItem as? ReaderPage)?.chapter
+        val nextChapter = (nextItem as? ChapterTransition.Next)?.to
+                ?: (nextItem as? ReaderPage)?.chapter
 
         // Allow preload for
         // 1. Going between pages of same chapter
@@ -161,7 +162,7 @@ class WebtoonViewer(val activity: ReaderActivity) : BaseViewer {
     private fun onPageSelected(page: ReaderPage, position: Int) {
         val pages = page.chapter.pages // Won't be null because it's the loaded chapter
         // EXH -->
-        if(pages == null) {
+        if (pages == null) {
             XLog.e("Webtoon reader chapter pages are null (position: %s," +
                     " page.index: %s," +
                     " page.url: %s," +
@@ -192,7 +193,8 @@ class WebtoonViewer(val activity: ReaderActivity) : BaseViewer {
         if (inPreloadRange && allowPreload) {
             Timber.d("Request preload next chapter because we're at page ${page.number} of ${pages.size}")
             val nextItem = adapter.items.getOrNull(adapter.items.size - 1)
-            val transitionChapter = (nextItem as? ChapterTransition.Next)?.to ?: (nextItem as?ReaderPage)?.chapter
+            val transitionChapter = (nextItem as? ChapterTransition.Next)?.to
+                    ?: (nextItem as? ReaderPage)?.chapter
             if (transitionChapter != null) {
                 Timber.d("Requesting to preload chapter ${transitionChapter.chapter.chapter_number}")
                 activity.requestPreloadChapter(transitionChapter)

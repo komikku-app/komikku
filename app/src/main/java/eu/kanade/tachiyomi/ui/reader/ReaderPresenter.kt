@@ -241,23 +241,23 @@ class ReaderPresenter(
             chapter: ReaderChapter
     ): Observable<ViewerChapters> {
         return loader.loadChapter(chapter)
-            .andThen(Observable.fromCallable {
-                val chapterPos = chapterList.indexOf(chapter)
+                .andThen(Observable.fromCallable {
+                    val chapterPos = chapterList.indexOf(chapter)
 
-                ViewerChapters(chapter,
-                        chapterList.getOrNull(chapterPos - 1),
-                        chapterList.getOrNull(chapterPos + 1))
-            })
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext { newChapters ->
-                val oldChapters = viewerChaptersRelay.value
+                    ViewerChapters(chapter,
+                            chapterList.getOrNull(chapterPos - 1),
+                            chapterList.getOrNull(chapterPos + 1))
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext { newChapters ->
+                    val oldChapters = viewerChaptersRelay.value
 
-                // Add new references first to avoid unnecessary recycling
-                newChapters.ref()
-                oldChapters?.unref()
+                    // Add new references first to avoid unnecessary recycling
+                    newChapters.ref()
+                    oldChapters?.unref()
 
-                viewerChaptersRelay.call(newChapters)
-            }
+                    viewerChaptersRelay.call(newChapters)
+                }
     }
 
     /**
@@ -271,10 +271,10 @@ class ReaderPresenter(
 
         activeChapterSubscription?.unsubscribe()
         activeChapterSubscription = getLoadObservable(loader, chapter)
-            .toCompletable()
-            .onErrorComplete()
-            .subscribe()
-            .also(::add)
+                .toCompletable()
+                .onErrorComplete()
+                .subscribe()
+                .also(::add)
     }
 
     /**

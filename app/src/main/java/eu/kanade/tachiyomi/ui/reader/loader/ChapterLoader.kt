@@ -34,48 +34,48 @@ class ChapterLoader(
         }
 
         return Observable.just(chapter)
-            .doOnNext { chapter.state = ReaderChapter.State.Loading }
-            .observeOn(Schedulers.io())
-            .flatMap {
-                Timber.d("Loading pages for ${chapter.chapter.name}")
+                .doOnNext { chapter.state = ReaderChapter.State.Loading }
+                .observeOn(Schedulers.io())
+                .flatMap {
+                    Timber.d("Loading pages for ${chapter.chapter.name}")
 
-                val loader = getPageLoader(it)
-                chapter.pageLoader = loader
+                    val loader = getPageLoader(it)
+                    chapter.pageLoader = loader
 
-                loader.getPages().take(1).doOnNext { pages ->
-                    pages.forEach { it.chapter = chapter }
+                    loader.getPages().take(1).doOnNext { pages ->
+                        pages.forEach { it.chapter = chapter }
+                    }
                 }
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext { pages ->
-                if (pages.isEmpty()) {
-                    throw Exception("Page list is empty")
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext { pages ->
+                    if (pages.isEmpty()) {
+                        throw Exception("Page list is empty")
+                    }
+
+                    chapter.state = ReaderChapter.State.Loaded(pages)
+
+                    // If the chapter is partially read, set the starting page to the last the user read
+                    // otherwise use the requested page.
+                    if (!chapter.chapter.read /* --> EH */ || prefs
+                                    .eh_preserveReadingPosition()
+                                    .getOrDefault() /* <-- EH */) {
+                        chapter.requestedPage = chapter.chapter.last_page_read
+                    }
                 }
+                .toCompletable()
+                .doOnError {
+                    // [EXH]
+                    XLog.w("> Failed to fetch page list!", it)
+                    XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapter.id: %s, chapter.url: %s)",
+                            source.id,
+                            source.name,
+                            manga.id,
+                            manga.url,
+                            chapter.chapter.id,
+                            chapter.chapter.url)
 
-                chapter.state = ReaderChapter.State.Loaded(pages)
-
-                // If the chapter is partially read, set the starting page to the last the user read
-                // otherwise use the requested page.
-                if (!chapter.chapter.read /* --> EH */ || prefs
-                                .eh_preserveReadingPosition()
-                                .getOrDefault() /* <-- EH */) {
-                    chapter.requestedPage = chapter.chapter.last_page_read
+                    chapter.state = ReaderChapter.State.Error(it)
                 }
-            }
-            .toCompletable()
-            .doOnError {
-                // [EXH]
-                XLog.w("> Failed to fetch page list!", it)
-                XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapter.id: %s, chapter.url: %s)",
-                        source.id,
-                        source.name,
-                        manga.id,
-                        manga.url,
-                        chapter.chapter.id,
-                        chapter.chapter.url)
-
-                chapter.state = ReaderChapter.State.Error(it)
-            }
     }
 
     /**

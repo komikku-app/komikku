@@ -38,14 +38,14 @@ interface HistoryQueries : DbProvider {
      * @offset offset the db by
      */
     fun getRecentMangaLimit(date: Date, limit: Int = 0, search: String = "") = db.get()
-        .listOfObjects(MangaChapterHistory::class.java)
-        .withQuery(RawQuery.builder()
-            .query(getRecentMangasLimitQuery(limit, search))
-            .args(date.time)
-            .observesTables(HistoryTable.TABLE)
-            .build())
-        .withGetResolver(MangaChapterHistoryGetResolver.INSTANCE)
-        .prepare()
+            .listOfObjects(MangaChapterHistory::class.java)
+            .withQuery(RawQuery.builder()
+                    .query(getRecentMangasLimitQuery(limit, search))
+                    .args(date.time)
+                    .observesTables(HistoryTable.TABLE)
+                    .build())
+            .withGetResolver(MangaChapterHistoryGetResolver.INSTANCE)
+            .prepare()
 
     fun getHistoryByMangaId(mangaId: Long) = db.get()
             .listOfObjects(History::class.java)

@@ -246,6 +246,7 @@ class PreferencesHelper(val context: Context) {
 
     //EH Cookies
     fun memberIdVal() = rxPrefs.getString("eh_ipb_member_id", "")
+
     fun passHashVal() = rxPrefs.getString("eh_ipb_pass_hash", "")
     fun igneousVal() = rxPrefs.getString("eh_igneous", "")
     fun eh_ehSettingsProfile() = rxPrefs.getInteger(Keys.eh_ehSettingsProfile, -1)

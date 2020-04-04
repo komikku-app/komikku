@@ -51,6 +51,7 @@ class MergedSource : HttpSource() {
             }
         }.asFlowable())
     }
+
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return RxJavaInterop.toV1Single(GlobalScope.async(Dispatchers.IO) {
             val loadedMangas = readMangaConfig(manga).load(db, sourceManager).buffer()
@@ -67,6 +68,7 @@ class MergedSource : HttpSource() {
             }.buffer().map { it.await() }.toList().flatten()
         }.asSingle(Dispatchers.IO)).toObservable()
     }
+
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
 
@@ -82,12 +84,14 @@ class MergedSource : HttpSource() {
             }
         }
     }
+
     override fun fetchImageUrl(page: Page): Observable<String> {
         val config = readUrlConfig(page.url)
         val source = sourceManager.getOrStub(config.source) as? HttpSource
                 ?: throw UnsupportedOperationException("This source does not support this operation!")
         return source.fetchImageUrl(page.copyWithUrl(config.url))
     }
+
     override fun pageListParse(response: Response) = throw UnsupportedOperationException()
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
@@ -97,6 +101,7 @@ class MergedSource : HttpSource() {
                 ?: throw UnsupportedOperationException("This source does not support this operation!")
         return source.fetchImage(page.copyWithUrl(config.url))
     }
+
     override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
         val chapterConfig = readUrlConfig(chapter.url)
         val source = sourceManager.getOrStub(chapterConfig.source) as? HttpSource
@@ -108,19 +113,22 @@ class MergedSource : HttpSource() {
         chapter.url = chapterConfig.url
         source.prepareNewChapter(chapter, copiedManga)
         chapter.url = writeUrlConfig(UrlConfig(source.id, chapter.url, chapterConfig.mangaUrl))
-        chapter.scanlator = if(chapter.scanlator.isNullOrBlank()) source.name
+        chapter.scanlator = if (chapter.scanlator.isNullOrBlank()) source.name
         else "$source: ${chapter.scanlator}"
     }
 
     fun readMangaConfig(manga: SManga): MangaConfig {
         return MangaConfig.readFromUrl(gson, manga.url)
     }
+
     fun readUrlConfig(url: String): UrlConfig {
         return gson.fromJson(url)
     }
+
     fun writeUrlConfig(urlConfig: UrlConfig): String {
         return gson.toJson(urlConfig)
     }
+
     data class LoadedMangaSource(val source: Source, val manga: Manga)
     data class MangaSource(
             @SerializedName("s")
@@ -134,6 +142,7 @@ class MergedSource : HttpSource() {
             return LoadedMangaSource(source, manga)
         }
     }
+
     data class MangaConfig(
             @SerializedName("c")
             val children: List<MangaSource>
@@ -143,7 +152,7 @@ class MergedSource : HttpSource() {
                 mangaSource.load(db, sourceManager)
                         ?: run {
                             XLog.w("> Missing source manga: $mangaSource")
-                            Log.d("MERGED","> Missing source manga: $mangaSource")
+                            Log.d("MERGED", "> Missing source manga: $mangaSource")
                             throw IllegalStateException("Missing source manga: $mangaSource")
                         }
             }
@@ -159,6 +168,7 @@ class MergedSource : HttpSource() {
             }
         }
     }
+
     data class UrlConfig(
             @SerializedName("s")
             val source: Long,

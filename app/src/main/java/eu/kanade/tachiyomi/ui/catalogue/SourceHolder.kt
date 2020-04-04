@@ -35,7 +35,7 @@ class SourceHolder(view: View, override val adapter: CatalogueAdapter, val showB
             adapter.latestClickListener.onLatestClick(adapterPosition)
         }
 
-        if(!showButtons) {
+        if (!showButtons) {
             source_browse.gone()
             source_latest.gone()
         }

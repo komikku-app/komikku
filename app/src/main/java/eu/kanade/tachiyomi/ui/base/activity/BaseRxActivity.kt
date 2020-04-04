@@ -13,6 +13,7 @@ abstract class BaseRxActivity<P : BasePresenter<*>> : NucleusAppCompatActivity<P
         @Suppress("LeakingThis")
         LocaleHelper.updateConfiguration(this)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LockActivityDelegate.onCreate(this)

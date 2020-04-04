@@ -22,8 +22,7 @@ import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
  */
 open class DatabaseHelper(context: Context)
     : MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQueries, HistoryQueries,
-        /* EXH --> */ SearchMetadataQueries, SearchTagQueries, SearchTitleQueries /* EXH <-- */
-{
+        /* EXH --> */ SearchMetadataQueries, SearchTagQueries, SearchTitleQueries /* EXH <-- */ {
     private val configuration = SupportSQLiteOpenHelper.Configuration.builder(context)
             .name(DbOpenCallback.DATABASE_NAME)
             .callback(DbOpenCallback())

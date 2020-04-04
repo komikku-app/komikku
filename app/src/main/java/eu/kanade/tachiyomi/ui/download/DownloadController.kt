@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
  * Uses R.layout.fragment_download_queue.
  */
 class DownloadController : NucleusController<DownloadPresenter>(),
-    DownloadAdapter.OnItemReleaseListener {
+        DownloadAdapter.OnItemReleaseListener {
 
     /**
      * Adapter containing the active downloads.

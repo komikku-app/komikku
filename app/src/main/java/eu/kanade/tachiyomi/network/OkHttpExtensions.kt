@@ -46,7 +46,7 @@ fun Call.asObservableWithAsyncStacktrace(): Observable<Pair<Exception, Response>
             }
 
             override fun unsubscribe() {
-                if(!executed.get())
+                if (!executed.get())
                     call.cancel()
             }
 

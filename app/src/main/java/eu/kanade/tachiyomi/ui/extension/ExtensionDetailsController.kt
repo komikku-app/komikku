@@ -101,7 +101,7 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
                     // EXH <--
                     addPreferencesForSource(screen, source, multiSource)
                     // EXH -->
-                } catch(e: Exception) {
+                } catch (e: Exception) {
                     logger.e("Failed to load preferences for source: ${source.name}!", e)
                     context.toast("Failed to load preferences for this source!")
                 }

@@ -120,7 +120,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         fab_favorite.clicks().subscribeUntilDestroy { onFabClick() }
 
         // Set onLongClickListener to manage categories when FAB is clicked.
-        fab_favorite.longClicks().subscribeUntilDestroy{ onFabLongClick() }
+        fab_favorite.longClicks().subscribeUntilDestroy { onFabLongClick() }
 
         // Set SwipeRefresh to refresh manga data.
         swipe_refresh.refreshes().subscribeUntilDestroy { fetchMangaFromSource() }
@@ -140,20 +140,20 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         manga_artist.clicks().subscribeUntilDestroy {
             //EXH Special case E-Hentai/ExHentai to use tag based search
             var text = manga_artist.text.toString()
-            if(isEHentaiBasedSource())
+            if (isEHentaiBasedSource())
                 text = wrapTag("artist", text)
             performGlobalSearch(text)
         }
 
         manga_author.longClicks().subscribeUntilDestroy {
             //EXH Special case E-Hentai/ExHentai to ignore author field (unused)
-            if(!isEHentaiBasedSource())
+            if (!isEHentaiBasedSource())
                 copyToClipboard(manga_author.text.toString(), manga_author.text.toString())
         }
 
         manga_author.clicks().subscribeUntilDestroy {
             //EXH Special case E-Hentai/ExHentai to ignore author field (unused)
-            if(!isEHentaiBasedSource())
+            if (!isEHentaiBasedSource())
                 performGlobalSearch(manga_author.text.toString())
         }
 
@@ -164,7 +164,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         manga_genres_tags.setOnTagClickListener { tag ->
             //EXH Special case E-Hentai/ExHentai to use tag based search
             var text = tag
-            if(isEHentaiBasedSource() || presenter.source.id == NHENTAI_SOURCE_ID) {
+            if (isEHentaiBasedSource() || presenter.source.id == NHENTAI_SOURCE_ID) {
                 val parsed = parseTag(text)
                 text = wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
             }
@@ -193,8 +193,8 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                                 true,
                                 update = true).withFadeTransaction())
                         applicationContext?.toast("Manga merged!")
-                    } catch(e: Exception) {
-                        if(e is CancellationException) throw e
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
                         else {
                             applicationContext?.toast("Failed to merge manga: ${e.message}")
                         }
@@ -249,7 +249,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
             // Update view.
             setMangaInfo(manga, source)
 
-            if((parentController as MangaController).update) fetchMangaFromSource()
+            if ((parentController as MangaController).update) fetchMangaFromSource()
         } else {
             // Initialize manga.
             fetchMangaFromSource()
@@ -292,7 +292,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         manga_source.text = if (source == null) {
             view.context.getString(R.string.unknown)
             // EXH -->
-        } else if(source.id == MERGED_SOURCE_ID) {
+        } else if (source.id == MERGED_SOURCE_ID) {
             MergedSource.MangaConfig.readFromUrl(gson, manga.url).children.map {
                 sourceManager.getOrStub(it.source).toString()
             }.distinct().joinToString()
@@ -302,7 +302,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         }
 
         // EXH -->
-        if(source?.id == MERGED_SOURCE_ID) {
+        if (source?.id == MERGED_SOURCE_ID) {
             manga_source_label.text = "Sources"
         } else {
             manga_source_label.setText(R.string.manga_info_source_label)
@@ -618,7 +618,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                         activity?.toast(R.string.icon_creation_fail)
                     }
 
-                    override fun onLoadCleared(placeholder: Drawable?) { }
+                    override fun onLoadCleared(placeholder: Drawable?) {}
                 })
     }
 
@@ -652,8 +652,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
     }
 
     // --> EH
-    private fun wrapTag(namespace: String, tag: String)
-            = if(tag.contains(' '))
+    private fun wrapTag(namespace: String, tag: String) = if (tag.contains(' '))
         "$namespace:\"$tag$\""
     else
         "$namespace:$tag$"

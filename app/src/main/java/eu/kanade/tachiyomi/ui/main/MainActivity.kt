@@ -85,10 +85,10 @@ class MainActivity : BaseActivity() {
 
     private fun initWhenIdle(task: () -> Unit) {
         // Avoid sync issues by enforcing main thread
-        if(Looper.myLooper() != Looper.getMainLooper())
+        if (Looper.myLooper() != Looper.getMainLooper())
             throw IllegalStateException("Can only be called on main thread!")
 
-        if(firstPaint) {
+        if (firstPaint) {
             task()
         } else {
             iuuQueue += task
@@ -99,9 +99,9 @@ class MainActivity : BaseActivity() {
         super.onResume()
         getExtensionUpdates()
         LockActivityDelegate.onResume(this, router)
-        if(!firstPaint) {
+        if (!firstPaint) {
             drawer.postDelayed({
-                if(!firstPaint) {
+                if (!firstPaint) {
                     firstPaint = true
                     iuuQueue.forEach { it() }
                 }
@@ -220,18 +220,18 @@ class MainActivity : BaseActivity() {
 
             // EXH -->
             // Perform EXH specific migrations
-            if(EXHMigrations.upgrade(preferences)) {
+            if (EXHMigrations.upgrade(preferences)) {
                 ChangelogDialogController().showDialog(router)
             }
 
             initWhenIdle {
                 // Migrate metadata if empty (EH)
-                if(!preferences.migrateLibraryAsked().getOrDefault()) {
+                if (!preferences.migrateLibraryAsked().getOrDefault()) {
                     MetadataFetchDialog().askMigration(this, false)
                 }
 
                 // Upload settings
-                if(preferences.enableExhentai().getOrDefault()
+                if (preferences.enableExhentai().getOrDefault()
                         && preferences.eh_showSettingsUploadWarning().getOrDefault())
                     WarnConfigureDialogController.uploadSettings(router)
 
@@ -261,8 +261,7 @@ class MainActivity : BaseActivity() {
         if (updates > 0) {
             extUpdateText.text = updates.toString()
             extUpdateText.visible()
-        }
-        else {
+        } else {
             extUpdateText.text = null
             extUpdateText.gone()
         }
@@ -270,7 +269,7 @@ class MainActivity : BaseActivity() {
 
     private fun getExtensionUpdates() {
         if (Date().time >= preferences.lastExtCheck().getOrDefault() +
-            TimeUnit.HOURS.toMillis(2)) {
+                TimeUnit.HOURS.toMillis(2)) {
             GlobalScope.launch(Dispatchers.IO) {
                 val preferences: PreferencesHelper by injectLazy()
                 try {
@@ -380,7 +379,7 @@ class MainActivity : BaseActivity() {
             if (!hadContentDescription)
                 toolbar.navigationContentDescription = null
             return navIcon
-        } catch(t: Throwable) {
+        } catch (t: Throwable) {
             Timber.w(t, "Could not find toolbar nav icon!")
             return null
         }
@@ -400,7 +399,7 @@ class MainActivity : BaseActivity() {
 
         // --> EH
         //Special case and hide drawer arrow for lock controller
-        if(to is LockController) {
+        if (to is LockController) {
             supportActionBar?.setDisplayHomeAsUpEnabled(false)
             toolbar.navigationIcon = null
         } else {

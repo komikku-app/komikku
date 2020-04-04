@@ -35,7 +35,7 @@ class CategoryHolder(view: View, val adapter: CategoryAdapter) : BaseFlexibleVie
 
         // Update circle letter image.
         itemView.post {
-            image.setImageDrawable(image.getRound(category.name.take(1).toUpperCase(),false))
+            image.setImageDrawable(image.getRound(category.name.take(1).toUpperCase(), false))
         }
     }
 

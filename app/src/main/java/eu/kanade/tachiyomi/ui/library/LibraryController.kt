@@ -183,7 +183,7 @@ class LibraryController(
 
         // EXH -->
         loaderManager.loadingChangeListener = {
-            library_progress.visibility = if(it) View.VISIBLE else View.GONE
+            library_progress.visibility = if (it) View.VISIBLE else View.GONE
         }
         // EXH <--
     }
@@ -402,7 +402,7 @@ class LibraryController(
             }
             // --> EXH
             R.id.action_sync_favorites -> {
-                if(preferences.eh_showSyncIntro().getOrDefault())
+                if (preferences.eh_showSyncIntro().getOrDefault())
                     activity?.let { FavoritesIntroDialog().show(it) }
                 else
                     presenter.favoritesSync.runSync()
@@ -564,8 +564,8 @@ class LibraryController(
                         .sample(100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe {
-                    updateSyncStatus(it)
-        }
+                            updateSyncStatus(it)
+                        }
         // <-- EXH
     }
 
@@ -610,7 +610,7 @@ class LibraryController(
     }
 
     private fun updateSyncStatus(status: FavoritesSyncStatus) {
-        when(status) {
+        when (status) {
             is FavoritesSyncStatus.Idle -> {
                 releaseSyncLocks()
 
@@ -668,9 +668,9 @@ class LibraryController(
             is FavoritesSyncStatus.Initializing -> {
                 takeSyncLocks()
 
-                if(favSyncDialog == null || (oldSyncStatus != null
-                        && oldSyncStatus !is FavoritesSyncStatus.Initializing
-                        && oldSyncStatus !is FavoritesSyncStatus.Processing))
+                if (favSyncDialog == null || (oldSyncStatus != null
+                                && oldSyncStatus !is FavoritesSyncStatus.Initializing
+                                && oldSyncStatus !is FavoritesSyncStatus.Processing))
                     showSyncProgressDialog()
 
                 favSyncDialog?.setContent(status.message)

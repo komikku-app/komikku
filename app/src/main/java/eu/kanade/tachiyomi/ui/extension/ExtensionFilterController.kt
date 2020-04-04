@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class ExtensionFilterController: SettingsController() {
+class ExtensionFilterController : SettingsController() {
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.action_filter
@@ -20,13 +20,13 @@ class ExtensionFilterController: SettingsController() {
         val activeLangs = preferences.enabledLanguages().getOrDefault()
 
         val availableLangs =
-            Injekt.get<ExtensionManager>().availableExtensions.groupBy {
-                it.lang
-            }.keys.minus("all").partition {
-                it in activeLangs
-            }.let {
-                it.first + it.second
-            }
+                Injekt.get<ExtensionManager>().availableExtensions.groupBy {
+                    it.lang
+                }.keys.minus("all").partition {
+                    it in activeLangs
+                }.let {
+                    it.first + it.second
+                }
 
         availableLangs.forEach {
             switchPreference {

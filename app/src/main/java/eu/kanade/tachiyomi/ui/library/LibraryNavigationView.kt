@@ -135,7 +135,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
         private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
 
         override val items = listOf(alphabetically, lastRead, lastUpdated, latestChapter, unread,
-            total, source, dragAndDrop)
+                total, source, dragAndDrop)
 
         override val header = Item.Header(R.string.action_sort)
 

@@ -37,7 +37,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         FlexibleAdapter.OnItemClickListener,
         FlexibleAdapter.OnItemLongClickListener,
         FlexibleAdapter.OnItemMoveListener,
-    CategoryAdapter.OnItemReleaseListener {
+        CategoryAdapter.OnItemReleaseListener {
 
     /**
      * Preferences.
@@ -188,23 +188,23 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         subscriptions += controller.reorganizeRelay
                 .subscribe {
                     if (it.first == category.id) {
-                        var items =  when (it.second) {
+                        var items = when (it.second) {
                             1, 2 -> adapter.currentItems.sortedBy {
-//                                if (preferences.removeArticles().getOrDefault())
-                                    it.manga.title.removeArticles()
+                                //                                if (preferences.removeArticles().getOrDefault())
+                                it.manga.title.removeArticles()
 //                                else
 //                                    it.manga.title
+                            }
+                            3, 4 -> adapter.currentItems.sortedBy { it.manga.last_update }
+                            else -> adapter.currentItems.sortedBy { it.manga.title }
                         }
-                        3, 4 -> adapter.currentItems.sortedBy { it.manga.last_update }
-                        else ->  adapter.currentItems.sortedBy { it.manga.title }
+                        if (it.second % 2 == 0)
+                            items = items.reversed()
+                        runBlocking { adapter.setItems(this, items) }
+                        adapter.notifyDataSetChanged()
+                        onItemReleased(0)
                     }
-                    if (it.second % 2 == 0)
-                        items = items.reversed()
-                    runBlocking { adapter.setItems(this, items) }
-                    adapter.notifyDataSetChanged()
-                    onItemReleased(0)
                 }
-            }
 //        }
     }
 
@@ -238,9 +238,11 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         if (sortingMode == LibrarySort.DRAG_AND_DROP) {
             if (category.name == "Default")
                 category.mangaOrder = preferences.defaultMangaOrder().getOrDefault().split("/")
-                    .mapNotNull { it.toLongOrNull() }
-            mangaForCategory = mangaForCategory.sortedBy { category.mangaOrder.indexOf(it.manga
-                .id) }
+                        .mapNotNull { it.toLongOrNull() }
+            mangaForCategory = mangaForCategory.sortedBy {
+                category.mangaOrder.indexOf(it.manga
+                        .id)
+            }
         }
         // Update the category with its manga.
         // EXH -->
@@ -279,7 +281,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 if (controller.selectedMangas.isEmpty()) {
                     adapter.mode = SelectableAdapter.Mode.SINGLE
                     adapter.isLongPressDragEnabled = preferences.librarySortingMode()
-                        .getOrDefault() == LibrarySort.DRAG_AND_DROP
+                            .getOrDefault() == LibrarySort.DRAG_AND_DROP
                 }
             }
             is LibrarySelectionEvent.Cleared -> {
@@ -287,7 +289,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 adapter.clearSelection()
                 lastClickPosition = -1
                 adapter.isLongPressDragEnabled = preferences.librarySortingMode()
-                    .getOrDefault() == LibrarySort.DRAG_AND_DROP
+                        .getOrDefault() == LibrarySort.DRAG_AND_DROP
             }
         }
     }
@@ -394,6 +396,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         controller.setSelection(item.manga, !adapter.isSelected(position))
         controller.invalidateActionMode()
     }
+
     /**
      * Tells the presenter to set the selection for the given position.
      *

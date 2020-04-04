@@ -202,16 +202,16 @@ class BackupRestoreService : Service() {
             val tmanga = backupManager.parser.fromJson<MangaImpl>(it.asJsonObject.get(MANGA))
             // EXH -->
             val migrated = EXHMigrations.migrateBackupEntry(
-                BackupEntry(
-                    tmanga,
-                    backupManager.parser.fromJson<List<ChapterImpl>>(JsonArray()),
-                    backupManager.parser.fromJson<List<String>>     (JsonArray()),
-                    backupManager.parser.fromJson<List<DHistory>>   (JsonArray()),
-                    backupManager.parser.fromJson<List<TrackImpl>>  (JsonArray())
-                )
+                    BackupEntry(
+                            tmanga,
+                            backupManager.parser.fromJson<List<ChapterImpl>>(JsonArray()),
+                            backupManager.parser.fromJson<List<String>>(JsonArray()),
+                            backupManager.parser.fromJson<List<DHistory>>(JsonArray()),
+                            backupManager.parser.fromJson<List<TrackImpl>>(JsonArray())
+                    )
             )
-            val (manga,_,_,_,_) = migrated
-            val sourced = backupManager.sourceManager.get(manga.source)!= null
+            val (manga, _, _, _, _) = migrated
+            val sourced = backupManager.sourceManager.get(manga.source) != null
             if (!sourced) {
                 restoreAmount -= 1
             }
@@ -223,7 +223,7 @@ class BackupRestoreService : Service() {
         restoreAmount = validManga.count() + 1
 
         errors.clear()
-	errorsMini.clear()
+        errorsMini.clear()
         cancelled = 0
         // Restore categories
         restoreCategories(json, backupManager)
@@ -263,19 +263,22 @@ class BackupRestoreService : Service() {
      */
     private suspend fun restoreManga(obj: JsonObject, backupManager: BackupManager) {
         val tmanga = backupManager.parser.fromJson<MangaImpl>(obj.get(MANGA))
-        val tchapters = backupManager.parser.fromJson<List<ChapterImpl>>(obj.get(CHAPTERS) ?: JsonArray())
-        val tcategories = backupManager.parser.fromJson<List<String>>(obj.get(CATEGORIES) ?: JsonArray())
-        val thistory = backupManager.parser.fromJson<List<DHistory>>(obj.get(HISTORY) ?: JsonArray())
+        val tchapters = backupManager.parser.fromJson<List<ChapterImpl>>(obj.get(CHAPTERS)
+                ?: JsonArray())
+        val tcategories = backupManager.parser.fromJson<List<String>>(obj.get(CATEGORIES)
+                ?: JsonArray())
+        val thistory = backupManager.parser.fromJson<List<DHistory>>(obj.get(HISTORY)
+                ?: JsonArray())
         val ttracks = backupManager.parser.fromJson<List<TrackImpl>>(obj.get(TRACK) ?: JsonArray())
         // EXH -->
         val migrated = EXHMigrations.migrateBackupEntry(
-            BackupEntry(
-                tmanga,
-                tchapters,
-                tcategories,
-                thistory,
-                ttracks
-            )
+                BackupEntry(
+                        tmanga,
+                        tchapters,
+                        tcategories,
+                        thistory,
+                        ttracks
+                )
         )
         val (manga, chapters, categories, history, tracks) = migrated
         val source = backupManager.sourceManager.getOrStub(manga.source)
@@ -421,6 +424,7 @@ class BackupRestoreService : Service() {
                 .setColor(ContextCompat.getColor(this, R.color.md_red_500))
         notificationManager.notify(Notifications.ID_RESTORE_ERROR, resultNotification.build())
     }
+
     /**Get the PendingIntent for the error log
      *
      */

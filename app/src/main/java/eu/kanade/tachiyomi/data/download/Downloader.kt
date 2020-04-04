@@ -83,7 +83,8 @@ class Downloader(
     /**
      * Whether the downloader is running.
      */
-    @Volatile private var isRunning: Boolean = false
+    @Volatile
+    private var isRunning: Boolean = false
 
     init {
         launchNow {
@@ -176,7 +177,8 @@ class Downloader(
                 .concatMap { downloadChapter(it).subscribeOn(Schedulers.io()) }
                 .onBackpressureBuffer()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ completeDownload(it)
+                .subscribe({
+                    completeDownload(it)
                 }, { error ->
                     DownloadService.stop(context)
                     Timber.e(error)
@@ -396,10 +398,10 @@ class Downloader(
     private fun getImageExtension(response: Response, file: UniFile): String {
         // Read content type if available.
         val mime = response.body?.contentType()?.let { ct -> "${ct.type}/${ct.subtype}" }
-            // Else guess from the uri.
-            ?: context.contentResolver.getType(file.uri)
-            // Else read magic numbers.
-            ?: ImageUtil.findImageType { file.openInputStream() }?.mime
+        // Else guess from the uri.
+                ?: context.contentResolver.getType(file.uri)
+                // Else read magic numbers.
+                ?: ImageUtil.findImageType { file.openInputStream() }?.mime
 
         return MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "jpg"
     }

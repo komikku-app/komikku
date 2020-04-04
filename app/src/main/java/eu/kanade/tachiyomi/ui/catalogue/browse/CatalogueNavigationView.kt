@@ -65,7 +65,7 @@ class CatalogueNavigationView @JvmOverloads constructor(context: Context, attrs:
         val outValue = TypedValue()
         context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
 
-        save_search_btn.visibility = if(searches.size < 5) View.VISIBLE else View.GONE
+        save_search_btn.visibility = if (searches.size < 5) View.VISIBLE else View.GONE
 
         searches.withIndex().sortedBy { it.value.name }.forEach { (index, search) ->
             val restoreBtn = TextView(context)

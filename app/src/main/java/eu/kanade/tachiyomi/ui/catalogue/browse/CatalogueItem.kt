@@ -60,5 +60,4 @@ class CatalogueItem(val manga: Manga, private val catalogueAsList: Preference<Bo
     }
 
 
-
 }

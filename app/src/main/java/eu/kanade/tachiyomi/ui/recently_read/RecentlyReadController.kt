@@ -37,6 +37,7 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
     init {
         setHasOptionsMenu(true)
     }
+
     /**
      * Adapter containing the recent manga.
      */
@@ -125,7 +126,7 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
         presenter.requestNext(adapter.itemCount, query)
     }
 
-    override fun noMoreLoad(newItemsSize: Int) { }
+    override fun noMoreLoad(newItemsSize: Int) {}
 
     override fun onResumeClick(position: Int) {
         val activity = activity ?: return
@@ -168,6 +169,7 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
             presenter.removeFromHistory(history)
         }
     }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.recently_read, menu)
         val searchItem = menu.findItem(R.id.action_search)
@@ -179,10 +181,10 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
             searchView.clearFocus()
         }
         searchView.queryTextChanges().filter { router.backstack.lastOrNull()?.controller() == this }
-            .subscribeUntilDestroy {
-                query = it.toString()
-                presenter.updateList(query)
-            }
+                .subscribeUntilDestroy {
+                    query = it.toString()
+                    presenter.updateList(query)
+                }
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
