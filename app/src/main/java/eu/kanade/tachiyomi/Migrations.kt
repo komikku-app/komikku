@@ -67,7 +67,7 @@ object Migrations {
             }
 
             // ===========[ ALL MIGRATIONS ABOVE HERE HAVE BEEN ALREADY REWRITTEN ]===========
-            
+
             if (oldVersion < 43) {
                 // Restore jobs after migrating from Evernote's job scheduler to WorkManager.
                 if (BuildConfig.INCLUDE_UPDATER && preferences.automaticUpdates()) {
