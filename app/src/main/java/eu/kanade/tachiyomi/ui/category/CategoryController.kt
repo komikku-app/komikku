@@ -119,7 +119,7 @@ class CategoryController : NucleusController<CategoryPresenter>(),
                 selected.forEach { onItemLongClick(categories.indexOf(it)) }
             }
         } else {
-            empty_view.show(R.drawable.ic_shape_black_128dp, R.string.information_empty_category)
+            empty_view.show(R.string.information_empty_category)
         }
     }
 
