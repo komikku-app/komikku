@@ -53,7 +53,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
-            android:background="?colorPrimary">
+            android:background="?attr/colorPrimary" >
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -153,7 +153,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:layout_gravity="bottom"
-            android:background="?colorPrimary"
+            android:background="?attr/colorPrimary"
             android:descendantFocusability="blocksDescendants"
             android:gravity="center"
             android:orientation="horizontal">
