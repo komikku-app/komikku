@@ -98,7 +98,7 @@ class SettingsMainController : SettingsController() {
             onClick { navigateTo(SettingsAdvancedController()) }
         }
         preference {
-            iconRes = R.drawable.ic_info_black_24dp
+            iconRes = R.drawable.ic_info_24dp
             iconTint = tintColor
             titleRes = R.string.pref_category_about
             onClick { navigateTo(SettingsAboutController()) }

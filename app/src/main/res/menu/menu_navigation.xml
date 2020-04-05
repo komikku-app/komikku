@@ -18,7 +18,7 @@
             android:title="@string/label_recent_manga" />
         <item
             android:id="@+id/nav_drawer_catalogues"
-            android:icon="@drawable/ic_explore_black_24dp"
+            android:icon="@drawable/ic_explore_24dp"
             android:title="@string/label_catalogues" />
         <item
             android:id="@+id/nav_drawer_batch_add"
@@ -26,7 +26,7 @@
             android:title="Batch Add" />
         <item
             android:id="@+id/nav_drawer_extensions"
-            android:icon="@drawable/ic_extension_black_24dp"
+            android:icon="@drawable/ic_extension_24dp"
             android:title="@string/label_extensions" />
         <item
             android:id="@+id/nav_drawer_downloads"
@@ -40,7 +40,7 @@
         <item
             android:id="@+id/nav_drawer_settings"
             android:checkable="false"
-            android:icon="@drawable/ic_settings_black_24dp"
+            android:icon="@drawable/ic_settings_24dp"
             android:title="@string/label_settings" />
     </group>
 </menu>
