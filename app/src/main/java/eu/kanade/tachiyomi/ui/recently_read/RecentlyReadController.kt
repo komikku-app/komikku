@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.catalogue.browse.ProgressItem
 import eu.kanade.tachiyomi.ui.manga.MangaController
@@ -28,6 +29,7 @@ import kotlinx.android.synthetic.main.recently_read_controller.recycler
  * UI related actions should be called from here.
  */
 class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
+        RootController,
         FlexibleAdapter.OnUpdateListener,
         FlexibleAdapter.EndlessScrollListener,
         RecentlyReadAdapter.OnRemoveClickListener,
