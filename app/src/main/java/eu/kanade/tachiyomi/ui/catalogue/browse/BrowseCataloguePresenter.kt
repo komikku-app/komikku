@@ -396,7 +396,6 @@ open class BrowseCataloguePresenter(
     }
 
     // EXH -->
-    private val jsonParser = JsonParser()
     private val filterSerializer = FilterSerializer()
     fun saveSearches(searches: List<EXHSavedSearch>) {
         val otherSerialized = prefs.eh_savedSearches().getOrDefault().filter {
@@ -418,7 +417,7 @@ open class BrowseCataloguePresenter(
             try {
                 val id = it.substringBefore(':').toLong()
                 if (id != source.id) return@map null
-                val content = jsonParser.parse(it.substringAfter(':')).obj
+                val content = JsonParser.parseString(it.substringAfter(':')).obj
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content["filters"].array)
                 EXHSavedSearch(content["name"].string,
