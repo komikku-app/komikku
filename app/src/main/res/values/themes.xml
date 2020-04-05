@@ -22,6 +22,7 @@
         <item name="colorOnSecondary">@color/textColorPrimaryDark</item>
         <item name="colorSurface">@color/dialogLight</item>
         <item name="colorOnSurface">@color/textColorPrimaryLight</item>
+        <item name="colorOnBackground">@color/textColorPrimaryLight</item>
         <item name="colorAccent">@color/colorAccentLight</item>
 
         <!-- Base background/text colors -->
@@ -54,6 +55,7 @@
         <item name="dialogTheme">@style/Theme.AlertDialog.Light</item>
         <item name="alertDialogTheme">@style/Theme.AlertDialog.Dark</item>
         <item name="textAppearanceButton">@style/TextAppearance.Widget.Button</item>
+        <item name="android:itemTextAppearance">@style/TextAppearance.Widget.Menu</item>
 
         <!-- Custom Attributes-->
         <item name="selectable_library_drawable">@drawable/library_item_selector_light</item>
@@ -84,6 +86,7 @@
         <item name="colorOnSecondary">@color/textColorPrimaryDark</item>
         <item name="colorSurface">@color/dialogDark</item>
         <item name="colorOnSurface">@color/textColorPrimaryDark</item>
+        <item name="colorOnBackground">@color/textColorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccentDark</item>
 
         <!-- Handles RTL text -->
@@ -108,7 +111,7 @@
         <item name="android:navigationBarColor">@color/colorDarkPrimaryDark</item>
 
         <!-- Themes -->
-        <item name="android:forceDarkAllowed">false</item>
+        <!--<item name="android:forceDarkAllowed">false</item>-->
         <item name="windowActionModeOverlay">true</item>
         <item name="actionBarTheme">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
         <item name="actionBarPopupTheme">@style/ThemeOverlay.MaterialComponents</item>
@@ -116,6 +119,7 @@
         <item name="dialogTheme">@style/Theme.AlertDialog.Dark</item>
         <item name="alertDialogTheme">@style/Theme.AlertDialog.Dark</item>
         <item name="textAppearanceButton">@style/TextAppearance.Widget.Button</item>
+        <item name="android:itemTextAppearance">@style/TextAppearance.Widget.Menu</item>
 
         <item name="md_background_color">?attr/colorSurface</item>
 
