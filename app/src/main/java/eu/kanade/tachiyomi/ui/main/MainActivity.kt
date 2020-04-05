@@ -36,8 +36,8 @@ import eu.kanade.tachiyomi.ui.download.DownloadController
 import eu.kanade.tachiyomi.ui.extension.ExtensionController
 import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.ui.recent_updates.RecentChaptersController
-import eu.kanade.tachiyomi.ui.recently_read.RecentlyReadController
+import eu.kanade.tachiyomi.ui.recent.history.HistoryController
+import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
@@ -139,8 +139,8 @@ class MainActivity : BaseActivity() {
             if (currentRoot?.tag()?.toIntOrNull() != id) {
                 when (id) {
                     R.id.nav_drawer_library -> setRoot(LibraryController(), id)
-                    R.id.nav_drawer_recent_updates -> setRoot(RecentChaptersController(), id)
-                    R.id.nav_drawer_recently_read -> setRoot(RecentlyReadController(), id)
+                    R.id.nav_drawer_recent_updates -> setRoot(UpdatesController(), id)
+                    R.id.nav_drawer_recently_read -> setRoot(HistoryController(), id)
                     R.id.nav_drawer_catalogues -> setRoot(CatalogueController(), id)
                     R.id.nav_drawer_extensions -> setRoot(ExtensionController(), id)
                     // --> EXH

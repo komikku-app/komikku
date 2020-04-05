@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.recently_read
+package eu.kanade.tachiyomi.ui.recent.history
 
 import android.view.LayoutInflater
 import android.view.Menu
@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
@@ -20,21 +21,21 @@ import eu.kanade.tachiyomi.ui.catalogue.browse.ProgressItem
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.recently_read_controller.empty_view
-import kotlinx.android.synthetic.main.recently_read_controller.recycler
+import kotlinx.android.synthetic.main.history_controller.empty_view
+import kotlinx.android.synthetic.main.history_controller.recycler
 
 /**
  * Fragment that shows recently read manga.
  * Uses R.layout.fragment_recently_read.
  * UI related actions should be called from here.
  */
-class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
+class HistoryController : NucleusController<HistoryPresenter>(),
         RootController,
         FlexibleAdapter.OnUpdateListener,
         FlexibleAdapter.EndlessScrollListener,
-        RecentlyReadAdapter.OnRemoveClickListener,
-        RecentlyReadAdapter.OnResumeClickListener,
-        RecentlyReadAdapter.OnCoverClickListener,
+        HistoryAdapter.OnRemoveClickListener,
+        HistoryAdapter.OnResumeClickListener,
+        HistoryAdapter.OnCoverClickListener,
         RemoveHistoryDialog.Listener {
 
     init {
@@ -44,7 +45,7 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
     /**
      * Adapter containing the recent manga.
      */
-    var adapter: RecentlyReadAdapter? = null
+    var adapter: HistoryAdapter? = null
         private set
 
     /**
@@ -57,12 +58,12 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
         return resources?.getString(R.string.label_recent_manga)
     }
 
-    override fun createPresenter(): RecentlyReadPresenter {
-        return RecentlyReadPresenter()
+    override fun createPresenter(): HistoryPresenter {
+        return HistoryPresenter()
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.recently_read_controller, container, false)
+        return inflater.inflate(R.layout.history_controller, container, false)
     }
 
     /**
@@ -74,8 +75,8 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
         super.onViewCreated(view)
 
         // Initialize adapter
-        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
-        adapter = RecentlyReadAdapter(this@RecentlyReadController)
+        recycler.layoutManager = LinearLayoutManager(view.context)
+        adapter = HistoryAdapter(this@HistoryController)
         recycler.setHasFixedSize(true)
         recycler.adapter = adapter
     }
@@ -90,7 +91,7 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
      *
      * @param mangaHistory list of manga history
      */
-    fun onNextManga(mangaHistory: List<RecentlyReadItem>, cleanBatch: Boolean = false) {
+    fun onNextManga(mangaHistory: List<HistoryItem>, cleanBatch: Boolean = false) {
         if (adapter?.itemCount ?: 0 == 0 || cleanBatch)
             resetProgressItem()
         if (cleanBatch) adapter?.updateDataSet(mangaHistory)
@@ -133,7 +134,7 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
 
     override fun onResumeClick(position: Int) {
         val activity = activity ?: return
-        val (manga, chapter, _) = (adapter?.getItem(position) as? RecentlyReadItem)?.mch ?: return
+        val (manga, chapter, _) = (adapter?.getItem(position) as? HistoryItem)?.mch ?: return
 
         val nextChapter = presenter.getNextChapter(chapter, manga)
         if (nextChapter != null) {
@@ -145,12 +146,12 @@ class RecentlyReadController : NucleusController<RecentlyReadPresenter>(),
     }
 
     override fun onRemoveClick(position: Int) {
-        val (manga, _, history) = (adapter?.getItem(position) as? RecentlyReadItem)?.mch ?: return
+        val (manga, _, history) = (adapter?.getItem(position) as? HistoryItem)?.mch ?: return
         RemoveHistoryDialog(this, manga, history).showDialog(router)
     }
 
     override fun onCoverClick(position: Int) {
-        val manga = (adapter?.getItem(position) as? RecentlyReadItem)?.mch?.manga ?: return
+        val manga = (adapter?.getItem(position) as? HistoryItem)?.mch?.manga ?: return
         router.pushController(MangaController(manga).withFadeTransaction())
     }
 
