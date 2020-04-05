@@ -27,10 +27,9 @@
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabs"
+                style="@style/Widget.MaterialComponents.TabLayout.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:theme="@style/Theme.ActionBar.Tab"
-                app:tabIndicatorColor="@android:color/white"
                 app:tabInlineLabel="true"
                 app:tabGravity="center"
                 app:tabMode="scrollable"

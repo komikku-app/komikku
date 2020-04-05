@@ -17,10 +17,10 @@
             android:id="@+id/thumbnail"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?android:attr/colorBackground"
-            tools:background="?android:attr/colorBackground"
-            tools:src="@mipmap/ic_launcher"
-            tools:ignore="ContentDescription" />
+            android:background="?attr/colorSurface"
+            tools:background="?attr/colorSurface"
+            tools:src="@mipmap/ic_launcher"/>
+            tools:ignore="ContentDescription"/>
 
         <View
             android:id="@+id/gradient"
