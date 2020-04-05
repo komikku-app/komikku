@@ -390,6 +390,17 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
             destroyActionModeIfNeeded()
         } else {
             mode.title = count.toString()
+
+            val chapters = getSelectedChapters()
+            menu.findItem(R.id.action_download)?.isVisible = chapters.any { !it.isDownloaded }
+            menu.findItem(R.id.action_delete)?.isVisible = chapters.any { it.isDownloaded }
+            menu.findItem(R.id.action_bookmark)?.isVisible = chapters.any { !it.chapter.bookmark }
+            menu.findItem(R.id.action_remove_bookmark)?.isVisible = chapters.all { it.chapter.bookmark }
+            menu.findItem(R.id.action_mark_as_read)?.isVisible = chapters.any { !it.chapter.read }
+            menu.findItem(R.id.action_mark_as_unread)?.isVisible = chapters.all { it.chapter.read }
+
+            // Hide FAB to avoid interfering with the bottom action toolbar
+            fab.hide()
         }
         return false
     }
