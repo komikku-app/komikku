@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.library
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -41,6 +40,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.migration.MigrationController
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
 import exh.favorites.FavoritesIntroDialog
@@ -393,8 +393,10 @@ class LibraryController(
         val filterItem = menu.findItem(R.id.action_filter)
 
         // Tint icon if there's a filter active
-        val filterColor = if (navView.hasActiveFilters()) Color.rgb(255, 238, 7) else Color.WHITE
-        DrawableCompat.setTint(filterItem.icon, filterColor)
+        if (navView.hasActiveFilters()) {
+            val filterColor = activity!!.getResourceColor(R.attr.colorFilterActive)
+            DrawableCompat.setTint(filterItem.icon, filterColor)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
