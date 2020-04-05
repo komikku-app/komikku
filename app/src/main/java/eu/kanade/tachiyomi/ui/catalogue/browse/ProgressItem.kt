@@ -3,11 +3,14 @@ package eu.kanade.tachiyomi.ui.catalogue.browse
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.util.view.gone
+import eu.kanade.tachiyomi.util.view.visible
 
 class ProgressItem : AbstractFlexibleItem<ProgressItem.Holder>() {
 
@@ -17,22 +20,22 @@ class ProgressItem : AbstractFlexibleItem<ProgressItem.Holder>() {
         return R.layout.catalogue_progress_item
     }
 
-    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>): Holder {
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): Holder {
         return Holder(view, adapter)
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>, holder: Holder, position: Int, payloads: List<Any?>) {
-        holder.progressBar.visibility = View.GONE
-        holder.progressMessage.visibility = View.GONE
+    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>, holder: Holder, position: Int, payloads: List<Any?>) {
+        holder.progressBar.gone()
+        holder.progressMessage.gone()
 
         if (!adapter.isEndlessScrollEnabled) {
             loadMore = false
         }
 
         if (loadMore) {
-            holder.progressBar.visibility = View.VISIBLE
+            holder.progressBar.visible()
         } else {
-            holder.progressMessage.visibility = View.VISIBLE
+            holder.progressMessage.visible()
         }
     }
 
