@@ -20,7 +20,7 @@ import uy.kohesive.injekt.injectLazy
  *
  * @param context the application context.
  */
-class DownloadManager(context: Context) {
+class DownloadManager(private val context: Context) {
 
     /**
      * The sources manager.
@@ -99,10 +99,21 @@ class DownloadManager(context: Context) {
      * @param downloads value to set the download queue to
      */
     fun reorderQueue(downloads: List<Download>) {
+        val wasRunning = downloader.isRunning
+
+        if (downloads.isEmpty()) {
+            DownloadService.stop(context)
+            downloader.queue.clear()
+            return
+        }
+
         downloader.pause()
         downloader.queue.clear()
         downloader.queue.addAll(downloads)
-        downloader.start()
+
+        if (wasRunning) {
+            downloader.start()
+        }
     }
 
     /**
@@ -168,6 +179,15 @@ class DownloadManager(context: Context) {
      */
     fun getDownloadCount(manga: Manga): Int {
         return cache.getDownloadCount(manga)
+    }
+
+    /**
+     * Calls delete chapter, which deletes a temp download.
+     *
+     * @param download the download to cancel.
+     */
+    fun deletePendingDownload(download: Download) {
+        deleteChapters(listOf(download.chapter), download.manga, download.source)
     }
 
     /**

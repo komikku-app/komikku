@@ -6,6 +6,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadService
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -24,7 +25,7 @@ import rx.android.schedulers.AndroidSchedulers
  * Uses R.layout.fragment_download_queue.
  */
 class DownloadController : NucleusController<DownloadPresenter>(),
-        DownloadAdapter.OnItemReleaseListener {
+    DownloadAdapter.DownloadItemListener {
 
     /**
      * Adapter containing the active downloads.
@@ -69,10 +70,10 @@ class DownloadController : NucleusController<DownloadPresenter>(),
         adapter?.isHandleDragEnabled = true
 
         // Set the layout manager for the recycler and fixed size.
-        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
+        recycler.layoutManager = LinearLayoutManager(view.context)
         recycler.setHasFixedSize(true)
 
-        // Suscribe to changes
+        // Subscribe to changes
         DownloadService.runningRelay
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeUntilDestroy { onQueueStatusChange(it) }
@@ -100,14 +101,10 @@ class DownloadController : NucleusController<DownloadPresenter>(),
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        // Set start button visibility.
         menu.findItem(R.id.start_queue).isVisible = !isRunning && !presenter.downloadQueue.isEmpty()
-
-        // Set pause button visibility.
         menu.findItem(R.id.pause_queue).isVisible = isRunning
-
-        // Set clear button visibility.
         menu.findItem(R.id.clear_queue).isVisible = !presenter.downloadQueue.isEmpty()
+        menu.findItem(R.id.reorder).isVisible = !presenter.downloadQueue.isEmpty()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -121,6 +118,16 @@ class DownloadController : NucleusController<DownloadPresenter>(),
             R.id.clear_queue -> {
                 DownloadService.stop(context)
                 presenter.clearQueue()
+            }
+            R.id.newest, R.id.oldest -> {
+                val adapter = adapter ?: return false
+                val items = adapter.currentItems.sortedBy { it.download.chapter.date_upload }
+                    .toMutableList()
+                if (item.itemId == R.id.newest)
+                    items.reverse()
+                adapter.updateDataSet(items)
+                val downloads = items.mapNotNull { it.download }
+                presenter.reorder(downloads)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -215,7 +222,7 @@ class DownloadController : NucleusController<DownloadPresenter>(),
      *
      * @param download the download whose progress has changed.
      */
-    fun onUpdateProgress(download: Download) {
+    private fun onUpdateProgress(download: Download) {
         getHolder(download)?.notifyProgress()
     }
 
@@ -224,7 +231,7 @@ class DownloadController : NucleusController<DownloadPresenter>(),
      *
      * @param download the download whose page has been downloaded.
      */
-    fun onUpdateDownloadedPages(download: Download) {
+    private fun onUpdateDownloadedPages(download: Download) {
         getHolder(download)?.notifyDownloadedPages()
     }
 
@@ -258,5 +265,38 @@ class DownloadController : NucleusController<DownloadPresenter>(),
         val adapter = adapter ?: return
         val downloads = (0 until adapter.itemCount).mapNotNull { adapter.getItem(it)?.download }
         presenter.reorder(downloads)
+    }
+
+    /**
+     * Called when the menu item of a download is pressed
+     *
+     * @param position The position of the item
+     * @param menuItem The menu Item pressed
+     */
+    override fun onMenuItemClick(position: Int, menuItem: MenuItem) {
+        when (menuItem.itemId) {
+            R.id.move_to_top, R.id.move_to_bottom -> {
+                val items = adapter?.currentItems?.toMutableList() ?: return
+                val item = items[position]
+                items.remove(item)
+                if (menuItem.itemId == R.id.move_to_top)
+                    items.add(0, item)
+                else
+                    items.add(item)
+                adapter?.updateDataSet(items)
+                val downloads = items.mapNotNull { it.download }
+                presenter.reorder(downloads)
+            }
+            R.id.cancel_download -> {
+                val download = adapter?.getItem(position)?.download ?: return
+                presenter.cancelDownload(download)
+
+                adapter?.removeItem(position)
+                val adapter = adapter ?: return
+                val downloads =
+                    (0 until adapter.itemCount).mapNotNull { adapter.getItem(it)?.download }
+                presenter.reorder(downloads)
+            }
+        }
     }
 }

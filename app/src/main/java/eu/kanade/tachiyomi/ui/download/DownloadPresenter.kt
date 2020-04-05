@@ -15,9 +15,6 @@ import uy.kohesive.injekt.injectLazy
  */
 class DownloadPresenter : BasePresenter<DownloadController>() {
 
-    /**
-     * Download manager.
-     */
     val downloadManager: DownloadManager by injectLazy()
 
     /**
@@ -63,5 +60,9 @@ class DownloadPresenter : BasePresenter<DownloadController>() {
 
     fun reorder(downloads: List<Download>) {
         downloadManager.reorderQueue(downloads)
+    }
+
+    fun cancelDownload(download: Download) {
+        downloadManager.deletePendingDownload(download)
     }
 }
