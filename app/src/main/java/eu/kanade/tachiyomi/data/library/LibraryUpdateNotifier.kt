@@ -47,7 +47,7 @@ class LibraryUpdateNotifier(private val context: Context) {
         }
 
         context.notificationManager.notify(Notifications.ID_LIBRARY_RESULT, context.notification(Notifications.CHANNEL_LIBRARY) {
-            setSmallIcon(R.drawable.ic_book_white_24dp)
+            setSmallIcon(R.drawable.ic_book_24dp)
             setLargeIcon(notificationBitmap)
             setContentTitle(context.getString(R.string.notification_new_chapters))
             if (newUpdates.size > 1) {

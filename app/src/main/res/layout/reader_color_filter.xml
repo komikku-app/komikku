@@ -211,10 +211,10 @@
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.Regular.SubHeading.Secondary"
         android:tint="?android:attr/textColorSecondary"
-        app:srcCompat="@drawable/ic_brightness_5_black_24dp"
         app:layout_constraintTop_toTopOf="@id/brightness_seekbar"
         app:layout_constraintBottom_toBottomOf="@id/brightness_seekbar"
         app:layout_constraintStart_toStartOf="parent"/>
+        app:srcCompat="@drawable/ic_brightness_5_24dp" />
 
     <TextView
         android:id="@+id/txt_brightness_seekbar_value"
