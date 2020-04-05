@@ -5,7 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
-    android:background="?attr/selectable_list_drawable">
+    android:background="?attr/selectable_list_drawable"
+    android:paddingEnd="16dp"
+    android:paddingStart="16dp">
 
     <TextView
         android:id="@+id/chapter_title"
@@ -18,8 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/chapter_menu"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="16dp"/>
+        android:layout_marginTop="12dp" />
 
     <TextView
         android:id="@+id/chapter_description"
@@ -27,7 +28,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginStart="16dp"
         android:ellipsize="end"
         android:singleLine="true"
         app:layout_constraintEnd_toStartOf="@+id/download_text"
@@ -57,7 +57,6 @@
         tools:text="DOWNLOADED"
         android:textAllCaps="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginEnd="16dp"/>
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
