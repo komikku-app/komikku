@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -26,11 +27,12 @@ import kotlinx.android.synthetic.main.history_controller.recycler
 
 /**
  * Fragment that shows recently read manga.
- * Uses R.layout.fragment_recently_read.
+ * Uses [R.layout.history_controller].
  * UI related actions should be called from here.
  */
 class HistoryController : NucleusController<HistoryPresenter>(),
         RootController,
+        NoToolbarElevationController,
         FlexibleAdapter.OnUpdateListener,
         FlexibleAdapter.EndlessScrollListener,
         HistoryAdapter.OnRemoveClickListener,
