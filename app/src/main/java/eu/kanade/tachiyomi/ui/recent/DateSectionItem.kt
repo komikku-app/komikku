@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.recent.updates
+package eu.kanade.tachiyomi.ui.recent
 
 import android.text.format.DateUtils
 import android.view.View
@@ -10,10 +10,10 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import java.util.Date
 
-class DateItem(val date: Date) : AbstractHeaderItem<DateItem.Holder>() {
+class DateSectionItem(val date: Date) : AbstractHeaderItem<DateSectionItem.Holder>() {
 
     override fun getLayoutRes(): Int {
-        return R.layout.updates_section_item
+        return R.layout.recent_section_item
     }
 
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>): Holder {
@@ -26,7 +26,7 @@ class DateItem(val date: Date) : AbstractHeaderItem<DateItem.Holder>() {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other is DateItem) {
+        if (other is DateSectionItem) {
             return date == other.date
         }
         return false
@@ -42,7 +42,7 @@ class DateItem(val date: Date) : AbstractHeaderItem<DateItem.Holder>() {
 
         val section_text: TextView = view.findViewById(R.id.section_text)
 
-        fun bind(item: DateItem) {
+        fun bind(item: DateSectionItem) {
             section_text.text = DateUtils.getRelativeTimeSpanString(item.date.time, now, DateUtils.DAY_IN_MILLIS)
         }
     }

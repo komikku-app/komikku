@@ -5,10 +5,14 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.MangaChapterHistory
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.ui.recent.DateSectionItem
+import eu.kanade.tachiyomi.util.lang.toDateKey
 import java.util.Calendar
 import java.util.Comparator
 import java.util.Date
+import java.util.TreeMap
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.injectLazy
@@ -54,8 +58,16 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
         cal.add(Calendar.YEAR, -50)
 
         return db.getRecentManga(cal.time, offset, search).asRxObservable()
-                .map { recents -> recents.map(::HistoryItem) }
-                .observeOn(AndroidSchedulers.mainThread())
+            .map { recents ->
+                val map = TreeMap<Date, MutableList<MangaChapterHistory>> { d1, d2 -> d2.compareTo(d1) }
+                val byDay = recents
+                    .groupByTo(map, { it.history.last_read.toDateKey() })
+                byDay.flatMap {
+                    val dateItem = DateSectionItem(it.key)
+                    it.value.map { HistoryItem(it, dateItem) }
+                }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     /**
@@ -63,13 +75,21 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
      * @return list of history
      */
     private fun getRecentMangaLimitObservable(offset: Int = 0, search: String = ""): Observable<List<HistoryItem>> {
-        // Set date for recent manga
+        // Set limit for recent manga
         val cal = Calendar.getInstance()
         cal.time = Date()
         cal.add(Calendar.YEAR, -50)
 
         return db.getRecentMangaLimit(cal.time, lastCount, search).asRxObservable()
-                .map { recents -> recents.map(::HistoryItem) }
+                .map { recents ->
+                    val map = TreeMap<Date, MutableList<MangaChapterHistory>> { d1, d2 -> d2.compareTo(d1) }
+                    val byDay = recents
+                            .groupByTo(map, { it.history.last_read.toDateKey() })
+                    byDay.flatMap {
+                        val dateItem = DateSectionItem(it.key)
+                        it.value.map { HistoryItem(it, dateItem) }
+                    }
+                }
                 .observeOn(AndroidSchedulers.mainThread())
     }
 
