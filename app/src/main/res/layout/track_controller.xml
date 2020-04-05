@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    <eu.kanade.tachiyomi.widget.ThemedSwipeRefreshLayout
         android:id="@+id/swipe_refresh"
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -20,6 +20,6 @@
             android:layout_height="match_parent"
             tools:listitem="@layout/track_item"/>
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </eu.kanade.tachiyomi.widget.ThemedSwipeRefreshLayout>
 
 </LinearLayout>
