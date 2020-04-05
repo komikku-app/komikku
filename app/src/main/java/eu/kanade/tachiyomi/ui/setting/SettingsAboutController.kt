@@ -55,7 +55,7 @@ class SettingsAboutController : SettingsController() {
             key = Keys.automaticUpdates
             titleRes = R.string.pref_enable_automatic_updates
             summaryRes = R.string.pref_enable_automatic_updates_summary
-            defaultValue = false
+            defaultValue = true
 
             if (isUpdaterEnabled) {
                 onChange { newValue ->
