@@ -324,6 +324,8 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
         // Update genres list
         if (!manga.genre.isNullOrBlank()) {
+            manga_genres_tags.removeAllViews()
+
             manga.genre?.split(", ")?.forEach { genre ->
                 val chip = Chip(view.context).apply {
                     text = genre
