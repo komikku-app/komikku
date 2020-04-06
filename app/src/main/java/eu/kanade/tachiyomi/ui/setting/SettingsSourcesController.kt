@@ -12,6 +12,7 @@ import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.switchPreferenceCategory
@@ -130,6 +131,11 @@ class SettingsSourcesController : SettingsController() {
                 isPersistent = false
                 isChecked = id !in hiddenCatalogues
                 isVisible = query.isEmpty() || source.name.contains(query, ignoreCase = true)
+
+                val sourceIcon = source.icon()
+                if (sourceIcon != null) {
+                    icon = sourceIcon
+                }
 
                 onChange { newValue ->
                     val checked = newValue as Boolean
