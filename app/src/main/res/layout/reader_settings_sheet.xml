@@ -8,7 +8,28 @@
     android:background="?attr/colorSurface"
     android:clipToPadding="false"
     android:orientation="vertical"
-    android:padding="@dimen/material_component_dialogs_padding_around_content_area">
+    android:paddingStart="24dp"
+    android:paddingTop="0dp"
+    android:paddingEnd="24dp"
+    android:paddingBottom="24dp">
+
+    <ImageView
+        android:id="@id/pull_up_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:alpha="0.5"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_drag_pill_24dp"
+        android:tint="?attr/colorOnBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <android.widget.Space
+        android:id="@+id/spinner_end"
+        android:layout_width="16dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toEndOf="parent" />
 
     <!-- General preferences -->
 
@@ -20,32 +41,16 @@
         android:textColor="?attr/colorAccent"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/pull_up_for_more"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="@string/reader_pull_up_for_more_options"
-        android:textColor="?android:attr/textColorHint"
-        app:layout_constraintStart_toEndOf="@id/general_prefs"
-        app:layout_constraintTop_toTopOf="@id/general_prefs" />
-
-    <android.widget.Space
-        android:id="@+id/spinner_end"
-        android:layout_width="16dp"
-        android:layout_height="0dp"
-        app:layout_constraintStart_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/pull_up_bar" />
 
     <TextView
         android:id="@+id/viewer_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/viewer_for_this_series"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/viewer"
         app:layout_constraintEnd_toStartOf="@id/verticalcenter"
-        app:layout_constraintBaseline_toBaselineOf="@id/viewer" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/viewer"
@@ -53,9 +58,9 @@
         android:layout_height="24dp"
         android:layout_marginTop="20dp"
         android:entries="@array/viewers_selector"
-        app:layout_constraintTop_toBottomOf="@id/pull_up_for_more"
+        app:layout_constraintEnd_toEndOf="@id/spinner_end"
         app:layout_constraintStart_toEndOf="@id/verticalcenter"
-        app:layout_constraintEnd_toEndOf="@id/spinner_end" />
+        app:layout_constraintTop_toBottomOf="@id/general_prefs" />
 
     <TextView
         android:id="@+id/rotation_mode_text"
@@ -63,9 +68,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="@string/pref_rotation_type"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/rotation_mode"
         app:layout_constraintEnd_toStartOf="@id/verticalcenter"
-        app:layout_constraintBaseline_toBaselineOf="@id/rotation_mode" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/rotation_mode"
@@ -73,18 +78,18 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:entries="@array/rotation_type"
-        app:layout_constraintTop_toBottomOf="@id/viewer"
+        app:layout_constraintEnd_toEndOf="@id/spinner_end"
         app:layout_constraintStart_toEndOf="@id/verticalcenter"
-        app:layout_constraintEnd_toEndOf="@id/spinner_end" />
+        app:layout_constraintTop_toBottomOf="@id/viewer" />
 
     <TextView
         android:id="@+id/background_color_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/pref_reader_theme"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/background_color"
         app:layout_constraintEnd_toStartOf="@id/background_color"
-        app:layout_constraintBaseline_toBaselineOf="@id/background_color"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/background_color"
@@ -92,9 +97,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:entries="@array/reader_themes"
-        app:layout_constraintTop_toBottomOf="@id/rotation_mode"
+        app:layout_constraintEnd_toEndOf="@id/spinner_end"
         app:layout_constraintStart_toEndOf="@id/verticalcenter"
-        app:layout_constraintEnd_toEndOf="@id/spinner_end" />
+        app:layout_constraintTop_toBottomOf="@id/rotation_mode" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/show_page_number"
@@ -112,8 +117,8 @@
         android:text="@string/pref_true_color"
         android:textColor="?android:attr/textColorSecondary"
         android:visibility="gone"
-        tools:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/show_page_number" />
+        app:layout_constraintTop_toBottomOf="@id/show_page_number"
+        tools:visibility="visible" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/fullscreen"
@@ -180,9 +185,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/pref_image_scale_type"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/scale_type"
         app:layout_constraintEnd_toStartOf="@id/verticalcenter"
-        app:layout_constraintBaseline_toBaselineOf="@id/scale_type"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/scale_type"
@@ -190,18 +195,18 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:entries="@array/image_scale_type"
-        app:layout_constraintStart_toEndOf="@id/verticalcenter"
         app:layout_constraintEnd_toEndOf="@id/spinner_end"
-        app:layout_constraintTop_toBottomOf="@id/pager_prefs"/>
+        app:layout_constraintStart_toEndOf="@id/verticalcenter"
+        app:layout_constraintTop_toBottomOf="@id/pager_prefs" />
 
     <TextView
         android:id="@+id/zoom_start_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/pref_zoom_start"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/zoom_start"
         app:layout_constraintEnd_toStartOf="@id/verticalcenter"
-        app:layout_constraintBaseline_toBaselineOf="@id/zoom_start"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/zoom_start"
@@ -209,9 +214,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:entries="@array/zoom_start"
-        app:layout_constraintTop_toBottomOf="@id/scale_type"
+        app:layout_constraintEnd_toEndOf="@id/spinner_end"
         app:layout_constraintStart_toEndOf="@id/verticalcenter"
-        app:layout_constraintEnd_toEndOf="@id/spinner_end" />
+        app:layout_constraintTop_toBottomOf="@id/scale_type" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/crop_borders"
