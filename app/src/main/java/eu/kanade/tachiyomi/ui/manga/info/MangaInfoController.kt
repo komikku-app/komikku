@@ -91,6 +91,8 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -302,16 +304,23 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         }
 
         // If manga source is known update source TextView.
-        manga_source.text = if (source == null) {
-            view.context.getString(R.string.unknown)
+        if (source == null) {
+            manga_source.text = view.context.getString(R.string.unknown)
             // EXH -->
         } else if (source.id == MERGED_SOURCE_ID) {
-            MergedSource.MangaConfig.readFromUrl(gson, manga.url).children.map {
+            manga_source.text = MergedSource.MangaConfig.readFromUrl(gson, manga.url).children.map {
                 sourceManager.getOrStub(it.source).toString()
             }.distinct().joinToString()
             // EXH <--
         } else {
-            source.toString()
+            val mangaSource = source?.toString()
+            with(manga_source) {
+                text = mangaSource
+                setOnClickListener {
+                    val sourceManager = Injekt.get<SourceManager>()
+                    performLocalSearch(sourceManager.getOrStub(source.id).name)
+                }
+            }
         }
 
         // EXH -->
