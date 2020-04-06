@@ -72,8 +72,8 @@ class MainActivity : BaseActivity() {
 
     private val startScreenId by lazy {
         when (preferences.startScreen()) {
-            2 -> R.id.nav_drawer_recently_read
-            3 -> R.id.nav_drawer_recent_updates
+            2 -> R.id.nav_drawer_history
+            3 -> R.id.nav_drawer_updates
             else -> R.id.nav_drawer_library
         }
     }
@@ -137,9 +137,9 @@ class MainActivity : BaseActivity() {
             if (currentRoot?.tag()?.toIntOrNull() != id) {
                 when (id) {
                     R.id.nav_drawer_library -> setRoot(LibraryController(), id)
-                    R.id.nav_drawer_recent_updates -> setRoot(UpdatesController(), id)
-                    R.id.nav_drawer_recently_read -> setRoot(HistoryController(), id)
-                    R.id.nav_drawer_catalogues -> setRoot(CatalogueController(), id)
+                    R.id.nav_drawer_updates -> setRoot(UpdatesController(), id)
+                    R.id.nav_drawer_history -> setRoot(HistoryController(), id)
+                    R.id.nav_drawer_sources -> setRoot(CatalogueController(), id)
                     R.id.nav_drawer_extensions -> setRoot(ExtensionController(), id)
                     // --> EXH
                     R.id.nav_drawer_batch_add -> setRoot(BatchAddController(), id)
@@ -300,9 +300,9 @@ class MainActivity : BaseActivity() {
 
         when (intent.action) {
             SHORTCUT_LIBRARY -> setSelectedDrawerItem(R.id.nav_drawer_library)
-            SHORTCUT_RECENTLY_UPDATED -> setSelectedDrawerItem(R.id.nav_drawer_recent_updates)
-            SHORTCUT_RECENTLY_READ -> setSelectedDrawerItem(R.id.nav_drawer_recently_read)
-            SHORTCUT_CATALOGUES -> setSelectedDrawerItem(R.id.nav_drawer_catalogues)
+            SHORTCUT_RECENTLY_UPDATED -> setSelectedDrawerItem(R.id.nav_drawer_updates)
+            SHORTCUT_RECENTLY_READ -> setSelectedDrawerItem(R.id.nav_drawer_history)
+            SHORTCUT_CATALOGUES -> setSelectedDrawerItem(R.id.nav_drawer_sources)
             SHORTCUT_EXTENSIONS -> setSelectedDrawerItem(R.id.nav_drawer_extensions)
             SHORTCUT_MANGA -> {
                 val extras = intent.extras ?: return false

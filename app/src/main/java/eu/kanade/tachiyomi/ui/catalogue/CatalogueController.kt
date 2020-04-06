@@ -83,7 +83,7 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
      */
     override fun getTitle(): String? {
         return when (mode) {
-            Mode.CATALOGUE -> applicationContext?.getString(R.string.label_catalogues)
+            Mode.CATALOGUE -> applicationContext?.getString(R.string.label_sources)
             Mode.SMART_SEARCH -> "Find in another source"
         }
     }

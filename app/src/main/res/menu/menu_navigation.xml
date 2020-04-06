@@ -9,17 +9,17 @@
             android:icon="@drawable/ic_collections_bookmark_24dp"
             android:title="@string/label_library" />
         <item
-            android:id="@+id/nav_drawer_recent_updates"
+            android:id="@+id/nav_drawer_updates"
             android:icon="@drawable/ic_update_black_24dp"
             android:title="@string/label_recent_updates" />
         <item
-            android:id="@+id/nav_drawer_recently_read"
+            android:id="@+id/nav_drawer_history"
             android:icon="@drawable/ic_glasses_black_24dp"
             android:title="@string/label_recent_manga" />
         <item
-            android:id="@+id/nav_drawer_catalogues"
+            android:id="@+id/nav_drawer_sources"
             android:icon="@drawable/ic_explore_24dp"
-            android:title="@string/label_catalogues" />
+            android:title="@string/label_sources" />
         <item
             android:id="@+id/nav_drawer_batch_add"
             android:icon="@drawable/ic_playlist_add_black_24dp"
