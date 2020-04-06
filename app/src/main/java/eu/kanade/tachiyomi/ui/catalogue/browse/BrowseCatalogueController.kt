@@ -457,7 +457,6 @@ open class BrowseCatalogueController(bundle: Bundle) :
         if (catalogue_view != null) {
             val message = getErrorMessage(error)
             val retryAction = View.OnClickListener {
-                empty_view.hide()
 
                 // If not the first page, show bottom progress bar.
                 if (adapter.mainItemCount > 0 && progressItem != null) {
@@ -479,8 +478,6 @@ open class BrowseCatalogueController(bundle: Bundle) :
 
                 empty_view.show(message, actions)
             } else {
-                empty_view.hide()
-
                 snack = catalogue_view.snack(message, Snackbar.LENGTH_INDEFINITE) {
                     setAction(R.string.action_retry, retryAction)
                 }
@@ -597,6 +594,7 @@ open class BrowseCatalogueController(bundle: Bundle) :
      * Hides active progress bars.
      */
     private fun hideProgressBar() {
+        empty_view.hide()
         progress?.gone()
     }
 
