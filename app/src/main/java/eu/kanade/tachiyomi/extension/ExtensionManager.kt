@@ -210,7 +210,7 @@ class ExtensionManager(
         if (changed) {
             installedExtensions = mutInstalledExtensions.filterNotBlacklisted()
         }
-        preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
+        updatePendingUpdatesCount()
     }
 
     /**
@@ -351,12 +351,12 @@ class ExtensionManager(
 
         override fun onExtensionInstalled(extension: Extension.Installed) {
             registerNewExtension(extension.withUpdateCheck())
-            preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
+            updatePendingUpdatesCount()
         }
 
         override fun onExtensionUpdated(extension: Extension.Installed) {
             registerUpdatedExtension(extension.withUpdateCheck())
-            preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
+            updatePendingUpdatesCount()
         }
 
         override fun onExtensionUntrusted(extension: Extension.Untrusted) {
@@ -365,7 +365,7 @@ class ExtensionManager(
 
         override fun onPackageUninstalled(pkgName: String) {
             unregisterExtension(pkgName)
-            preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
+            updatePendingUpdatesCount()
         }
     }
 
@@ -378,5 +378,9 @@ class ExtensionManager(
             return copy(hasUpdate = true)
         }
         return this
+    }
+
+    private fun updatePendingUpdatesCount() {
+        preferences.extensionUpdatesCount().set(installedExtensions.count { it.hasUpdate })
     }
 }
