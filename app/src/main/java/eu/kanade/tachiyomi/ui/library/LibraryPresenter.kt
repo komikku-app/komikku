@@ -208,19 +208,19 @@ class LibraryPresenter(
                     val manga2LastRead = lastReadManga[i2.manga.id!!] ?: lastReadManga.size
                     manga1LastRead.compareTo(manga2LastRead)
                 }
-                LibrarySort.LAST_UPDATED -> i2.manga.last_update.compareTo(i1.manga.last_update)
+                LibrarySort.LAST_CHECKED -> i2.manga.last_update.compareTo(i1.manga.last_update)
+                LibrarySort.UNREAD -> i1.manga.unread.compareTo(i2.manga.unread)
+                LibrarySort.TOTAL -> {
+                    val manga1TotalChapter = totalChapterManga[i1.manga.id!!] ?: 0
+                    val mange2TotalChapter = totalChapterManga[i2.manga.id!!] ?: 0
+                    manga1TotalChapter.compareTo(mange2TotalChapter)
+                }
                 LibrarySort.LATEST_CHAPTER -> {
                     val manga1latestChapter = latestChapterManga[i1.manga.id!!]
                             ?: latestChapterManga.size
                     val manga2latestChapter = latestChapterManga[i2.manga.id!!]
                             ?: latestChapterManga.size
                     manga1latestChapter.compareTo(manga2latestChapter)
-                }
-                LibrarySort.UNREAD -> i1.manga.unread.compareTo(i2.manga.unread)
-                LibrarySort.TOTAL -> {
-                    val manga1TotalChapter = totalChapterManga[i1.manga.id!!] ?: 0
-                    val mange2TotalChapter = totalChapterManga[i2.manga.id!!] ?: 0
-                    manga1TotalChapter.compareTo(mange2TotalChapter)
                 }
                 LibrarySort.SOURCE -> {
                     val source1Name = sourceManager.getOrStub(i1.manga.source).name

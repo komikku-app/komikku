@@ -123,9 +123,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val lastRead = Item.MultiSort(R.string.action_sort_last_read, this)
 
-        private val lastUpdated = Item.MultiSort(R.string.action_sort_last_updated, this)
-
-        private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
+        private val lastChecked = Item.MultiSort(R.string.action_sort_last_checked, this)
 
         private val unread = Item.MultiSort(R.string.action_filter_unread, this)
 
@@ -133,8 +131,9 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
 
-        override val items = listOf(alphabetically, lastRead, lastUpdated, latestChapter, unread,
-                total, source, dragAndDrop)
+        private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
+
+        override val items = listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, source, dragAndDrop)
 
         override val header = Item.Header(R.string.action_sort)
 
@@ -147,10 +146,10 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
             alphabetically.state = if (sorting == LibrarySort.ALPHA) order else SORT_NONE
             lastRead.state = if (sorting == LibrarySort.LAST_READ) order else SORT_NONE
-            lastUpdated.state = if (sorting == LibrarySort.LAST_UPDATED) order else SORT_NONE
-            latestChapter.state = if (sorting == LibrarySort.LATEST_CHAPTER) order else SORT_NONE
+            lastChecked.state = if (sorting == LibrarySort.LAST_CHECKED) order else SORT_NONE
             unread.state = if (sorting == LibrarySort.UNREAD) order else SORT_NONE
             total.state = if (sorting == LibrarySort.TOTAL) order else SORT_NONE
+            latestChapter.state = if (sorting == LibrarySort.LATEST_CHAPTER) order else SORT_NONE
             source.state = if (sorting == LibrarySort.SOURCE) order else SORT_NONE
             dragAndDrop.state = if (sorting == LibrarySort.DRAG_AND_DROP) order else SORT_NONE
         }
@@ -173,10 +172,10 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             preferences.librarySortingMode().set(when (item) {
                 alphabetically -> LibrarySort.ALPHA
                 lastRead -> LibrarySort.LAST_READ
-                lastUpdated -> LibrarySort.LAST_UPDATED
-                latestChapter -> LibrarySort.LATEST_CHAPTER
+                lastChecked -> LibrarySort.LAST_CHECKED
                 unread -> LibrarySort.UNREAD
                 total -> LibrarySort.TOTAL
+                latestChapter -> LibrarySort.LATEST_CHAPTER
                 source -> LibrarySort.SOURCE
                 dragAndDrop -> LibrarySort.DRAG_AND_DROP
                 else -> throw Exception("Unknown sorting")
