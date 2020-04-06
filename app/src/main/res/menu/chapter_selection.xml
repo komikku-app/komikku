@@ -19,13 +19,13 @@
         android:id="@+id/action_bookmark"
         android:icon="@drawable/ic_bookmark_border_white_24dp"
         android:title="@string/action_bookmark"
-        android:visible="true" />
+        android:visible="ifRoom" />
 
     <item
         android:id="@+id/action_remove_bookmark"
         android:icon="@drawable/ic_bookmark_white_24dp"
         android:title="@string/action_remove_bookmark"
-        android:visible="true" />
+        android:visible="ifRoom" />
 
     <item
         android:id="@+id/action_mark_as_read"
@@ -37,12 +37,18 @@
         android:id="@+id/action_mark_as_unread"
         android:icon="@drawable/ic_done_all_grey_24dp"
         android:title="@string/action_mark_as_unread"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_mark_previous_as_read"
+        android:title="@string/action_mark_previous_as_read"
+        app:showAsAction="never" />
+		
     <item
         android:id="@+id/action_select_all"
         android:icon="@drawable/ic_select_all_24dp"
         android:title="@string/action_select_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+
 
 </menu>
