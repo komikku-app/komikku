@@ -123,11 +123,10 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = true
             }
         }
-        
+
         // EXH -->
         preferenceCategory {
             titleRes = R.string.eh_settings_category
-
 
             intListPreference {
                 key = Keys.eh_readerThreads
