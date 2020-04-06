@@ -273,17 +273,20 @@
                     android:focusable="true"
                     android:longClickable="true"/>
 
-                <me.gujun.android.taggroup.TagGroup
+                <com.google.android.material.chip.ChipGroup
                     android:id="@+id/manga_genres_tags"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/TagGroup"
-                    app:atg_borderStrokeWidth="1dp"
-                    app:atg_backgroundColor="@android:color/transparent"
-                    app:atg_borderColor="@color/md_blue_A400"
-                    app:atg_textColor="@color/md_blue_A400" >
-
-                </me.gujun.android.taggroup.TagGroup>
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    app:chipSpacingHorizontal="4dp"
+                    app:layout_constrainedHeight="true"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/smartsearch_buttons" />
 
                 <LinearLayout
                     android:id="@+id/smartsearch_buttons"

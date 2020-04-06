@@ -27,6 +27,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.bumptech.glide.signature.ObjectKey
 import com.elvishew.xlog.XLog
+import com.google.android.material.chip.Chip
 import com.google.gson.Gson
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import com.jakewharton.rxbinding.view.clicks
@@ -49,6 +50,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
 import eu.kanade.tachiyomi.ui.catalogue.global_search.CatalogueSearchController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
+import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
@@ -59,7 +61,6 @@ import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
-import exh.NHENTAI_SOURCE_ID
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
@@ -182,16 +183,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
         manga_summary.longClicks().subscribeUntilDestroy {
             copyToClipboard(view.context.getString(R.string.description), manga_summary.text.toString())
-        }
-
-        manga_genres_tags.setOnTagClickListener { tag ->
-            // EXH Special case E-Hentai/ExHentai to use tag based search
-            var text = tag
-            if (isEHentaiBasedSource() || presenter.source.id == NHENTAI_SOURCE_ID) {
-                val parsed = parseTag(text)
-                text = wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
-            }
-            performGlobalSearch(text)
         }
 
         manga_cover.longClicks().subscribeUntilDestroy {
@@ -332,8 +323,15 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         // EXH <--
 
         // Update genres list
-        if (manga.genre.isNullOrBlank().not()) {
-            manga_genres_tags.setTags(manga.genre?.split(", "))
+        if (!manga.genre.isNullOrBlank()) {
+            manga.genre?.split(", ")?.forEach { genre ->
+                val chip = Chip(view.context).apply {
+                    text = genre
+                    setOnClickListener { performLocalSearch(genre) }
+                }
+
+                manga_genres_tags.addView(chip)
+            }
         }
 
         // Update description TextView.
@@ -378,17 +376,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                         .into(backdrop)
             }
         }
-    }
-
-    override fun onDestroyView(view: View) {
-        manga_genres_tags.setOnTagClickListener(null)
-        super.onDestroyView(view)
-    }
-
-    // EXH -->
-    override fun onDestroy() {
-        super.onDestroy()
-        cancel()
     }
 
     /**
@@ -681,6 +668,20 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
     fun performGlobalSearch(query: String) {
         val router = parentController?.router ?: return
         router.pushController(CatalogueSearchController(query).withFadeTransaction())
+    }
+
+    /**
+     * Perform a local search using the provided query.
+     *
+     * @param query the search query to pass to the library controller
+     */
+    private fun performLocalSearch(query: String) {
+        val router = parentController?.router ?: return
+        val firstController = router.backstack.first()?.controller()
+        if (firstController is LibraryController && router.backstack.size == 2) {
+            router.handleBack()
+            firstController.search(query)
+        }
     }
 
     // --> EH

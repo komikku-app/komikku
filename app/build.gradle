@@ -232,15 +232,14 @@ dependencies {
     // UI
     implementation 'com.dmitrymalkovich.android:material-design-dimens:1.4'
     implementation 'com.github.dmytrodanylyk.android-process-button:library:1.0.4'
-    implementation 'eu.davidea:flexible-adapter:5.1.0' // Cannot upgrade to 5.1.0 as it uses AndroidX
+    implementation 'eu.davidea:flexible-adapter:5.1.0'
     implementation 'eu.davidea:flexible-adapter-ui:1.0.0'
     implementation 'com.nononsenseapps:filepicker:2.5.2'
     implementation 'com.github.amulyakhare:TextDrawable:558677e'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0' // Cannot upgrade to 2.x, AndroidX and API changes
     implementation 'com.nightlynexus.viewstatepageradapter:viewstatepageradapter:1.1.0'
     implementation 'com.github.mthli:Slice:v1.3'
-    implementation 'me.gujun.android.taggroup:library:1.4@aar'
-    implementation 'com.github.chrisbanes:PhotoView:2.3.0' // Cannot upgrade to 2.2.x+ as it uses AndroidX
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'com.github.carlosesco:DirectionalViewPager:a844dbca0a'
 
     // Conductor
