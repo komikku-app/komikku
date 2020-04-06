@@ -410,7 +410,11 @@ class LibraryController(
                 navView?.let { activity?.drawer?.openDrawer(GravityCompat.END) }
             }
             R.id.action_update_library -> {
-                activity?.let { LibraryUpdateService.start(it) }
+                activity?.let {
+                    if (LibraryUpdateService.start(it)) {
+                        it.toast(R.string.updating_library)
+                    }
+                }
             }
             R.id.action_source_migration -> {
                 router.pushController(MigrationController().withFadeTransaction())

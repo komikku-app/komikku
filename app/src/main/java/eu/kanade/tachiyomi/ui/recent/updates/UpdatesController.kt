@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.recent.updates
 
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -56,6 +57,10 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
     var adapter: UpdatesAdapter? = null
         private set
 
+    init {
+        setHasOptionsMenu(true)
+    }
+
     override fun getTitle(): String? {
         return resources?.getString(R.string.label_recent_updates)
     }
@@ -91,10 +96,8 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
 
         swipe_refresh.setDistanceToTriggerSync((2 * 64 * view.resources.displayMetrics.density).toInt())
         swipe_refresh.refreshes().subscribeUntilDestroy {
-            if (!LibraryUpdateService.isRunning(view.context)) {
-                LibraryUpdateService.start(view.context)
-                view.context.toast(R.string.action_update_library)
-            }
+            updateLibrary()
+
             // It can be a very long operation, so we disable swipe refresh and show a toast.
             swipe_refresh.isRefreshing = false
         }
@@ -104,6 +107,26 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
         adapter = null
         actionMode = null
         super.onDestroyView(view)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.updates, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_update_library -> updateLibrary()
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun updateLibrary() {
+        activity?.let {
+            if (LibraryUpdateService.start(it)) {
+                it.toast(R.string.updating_library)
+            }
+        }
     }
 
     /**
