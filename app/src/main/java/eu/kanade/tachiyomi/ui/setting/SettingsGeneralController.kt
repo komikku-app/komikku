@@ -176,7 +176,7 @@ class SettingsGeneralController : SettingsController() {
                         .subscribeUntilDestroy { isVisible = it != Values.THEME_MODE_DARK }
 
                 onChange {
-                    if (preferences.themeMode().getOrDefault() == Values.THEME_MODE_LIGHT) {
+                    if (preferences.themeMode().getOrDefault() != Values.THEME_MODE_DARK) {
                         activity?.recreate()
                     }
                     true
