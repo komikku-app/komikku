@@ -5,7 +5,7 @@ import android.view.View
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import eu.kanade.tachiyomi.util.view.getRound
+import eu.kanade.tachiyomi.util.view.roundTextIcon
 import kotlinx.android.synthetic.main.eh_source_item.image
 import kotlinx.android.synthetic.main.eh_source_item.reorder
 import kotlinx.android.synthetic.main.eh_source_item.title
@@ -22,7 +22,7 @@ class MigrationSourceHolder(view: View, val adapter: FlexibleAdapter<MigrationSo
 
         // Update circle letter image.
         itemView.post {
-            image.setImageDrawable(image.getRound(source.name.take(1).toUpperCase(), false))
+            image.roundTextIcon(source.name)
         }
 
         if (sourceEnabled) {

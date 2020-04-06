@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.extension
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -12,6 +13,7 @@ import eu.kanade.tachiyomi.extension.model.LoadResult
 import eu.kanade.tachiyomi.extension.util.ExtensionInstallReceiver
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.lang.launchNow
 import exh.source.BlacklistedSources
@@ -58,6 +60,12 @@ class ExtensionManager(
             field = value
             installedExtensionsRelay.call(value)
         }
+
+    fun getAppIconForSource(source: Source): Drawable? {
+        val pkgName = installedExtensions.find { ext -> ext.sources.any { it.id == source.id } }?.pkgName
+        return if (pkgName != null) context.packageManager.getApplicationIcon(pkgName)
+        else null
+    }
 
     /**
      * Relay used to notify the available extensions.
