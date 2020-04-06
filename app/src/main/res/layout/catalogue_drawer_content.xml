@@ -53,7 +53,7 @@
 
         <ImageButton
             android:id="@+id/save_search_btn"
-            style="@style/Theme.Widget.Button.Borderless"
+            style="@style/Theme.Widget.Button"
             android:layout_width="1dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.25"
