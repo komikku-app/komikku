@@ -11,7 +11,8 @@
 
     <item android:id="@+id/action_smart_search"
         android:icon="@drawable/eh_ic_find_replace_white_24dp"
-        android:title="Find in another source"
+        android:title="@string/eh_find_in_another_source"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 
     <item

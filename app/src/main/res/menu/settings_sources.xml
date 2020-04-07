@@ -6,12 +6,14 @@
         android:title="@string/action_search"
         android:icon="@drawable/ic_search_24dp"
         app:showAsAction="collapseActionView|ifRoom"
+        app:iconTint="?attr/colorOnPrimary"
         app:actionViewClass="androidx.appcompat.widget.SearchView"/>
 
     <item
         android:id="@+id/action_sort"
         android:title="@string/action_sort"
         android:icon="@drawable/ic_sort_white_24dp"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom">
         <menu>
             <group android:id="@+id/group"

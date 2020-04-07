@@ -6,12 +6,6 @@
         android:id="@+id/action_help"
         android:icon="@drawable/ic_help_white_24dp"
         android:title="@string/label_help"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_select_inverse"
-        android:icon="@drawable/ic_flip_to_back_24dp"
-        android:title="@string/action_select_inverse"
         app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 

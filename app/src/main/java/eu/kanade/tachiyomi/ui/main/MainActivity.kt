@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.main
 import android.animation.ObjectAnimator
 import android.app.SearchManager
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Looper
 import android.text.TextUtils
@@ -38,6 +37,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
@@ -124,7 +124,7 @@ class MainActivity : BaseActivity() {
         setSupportActionBar(toolbar)
 
         drawerArrow = DrawerArrowDrawable(this)
-        drawerArrow?.color = Color.WHITE
+        drawerArrow?.color = getResourceColor(R.attr.colorOnPrimary)
         toolbar.navigationIcon = drawerArrow
 
         tabAnimator = TabsAnimator(tabs)
@@ -401,9 +401,9 @@ class MainActivity : BaseActivity() {
 
         val showHamburger = router.backstackSize == 1
         if (showHamburger) {
-            drawer.setDrawerLockMode(androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNLOCKED)
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
         } else {
-            drawer.setDrawerLockMode(androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         }
 
         // --> EH
