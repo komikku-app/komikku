@@ -18,7 +18,18 @@
 # === Keep RxAndroid, https://github.com/ReactiveX/RxAndroid/issues/350
 -keep class rx.android.** { *; }
 
-# === RxJava 1.3.8
+# Design library
+-dontwarn com.google.android.material.**
+-keep class com.google.android.material.** { *; }
+-keep interface com.google.android.material.** { *; }
+-keep public class com.google.android.material.R$* { *; }
+
+-keep class com.hippo.image.** { *; }
+-keep interface com.hippo.image.** { *; }
+-dontwarn nucleus.view.NucleusActionBarActivity
+
+
+# RxJava 1.1.0
 -dontwarn sun.misc.**
 
 -keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
