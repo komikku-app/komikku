@@ -211,7 +211,15 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                         onItemReleased(0)
                     }
                 }
-//        }
+
+        subscriptions += controller.selectInverseRelay
+            .filter { it == category.id }
+            .subscribe {
+                adapter.currentItems.forEach { item ->
+                    controller.toggleSelection(item.manga)
+                }
+                controller.invalidateActionMode()
+            }
     }
 
     fun onRecycle() {

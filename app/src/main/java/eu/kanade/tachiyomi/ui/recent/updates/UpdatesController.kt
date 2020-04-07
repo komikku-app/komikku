@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import com.jakewharton.rxbinding.support.v7.widget.scrollStateChanges
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -81,9 +83,9 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
         super.onViewCreated(view)
         view.context.notificationManager.cancel(Notifications.ID_NEW_CHAPTERS)
         // Init RecyclerView and adapter
-        val layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context)
+        val layoutManager = LinearLayoutManager(view.context)
         recycler.layoutManager = layoutManager
-        recycler.addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(view.context, androidx.recyclerview.widget.DividerItemDecoration.VERTICAL))
+        recycler.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
         recycler.setHasFixedSize(true)
         adapter = UpdatesAdapter(this@UpdatesController)
         recycler.adapter = adapter
@@ -240,12 +242,6 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
         }
     }
 
-    override fun deleteChapters(chaptersToDelete: List<UpdatesItem>) {
-        destroyActionModeIfNeeded()
-        DeletingChaptersDialog().showDialog(router)
-        presenter.deleteChapters(chaptersToDelete)
-    }
-
     /**
      * Destory [ActionMode] if it's shown
      */
@@ -259,6 +255,12 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
      */
     fun markAsUnread(chapters: List<UpdatesItem>) {
         presenter.markChapterRead(chapters, false)
+    }
+
+    override fun deleteChapters(chaptersToDelete: List<UpdatesItem>) {
+        destroyActionModeIfNeeded()
+        DeletingChaptersDialog().showDialog(router)
+        presenter.deleteChapters(chaptersToDelete)
     }
 
     /**
@@ -347,6 +349,8 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
      */
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_select_all -> selectAll()
+            R.id.action_select_inverse -> selectInverse()
             R.id.action_download -> downloadChapters(getSelectedChapters())
             R.id.action_delete -> ConfirmDeleteChaptersDialog(this, getSelectedChapters())
                     .showDialog(router)
@@ -365,5 +369,20 @@ class UpdatesController : NucleusController<UpdatesPresenter>(),
         adapter?.mode = SelectableAdapter.Mode.IDLE
         adapter?.clearSelection()
         actionMode = null
+    }
+
+    private fun selectAll() {
+        val adapter = adapter ?: return
+        adapter.selectAll()
+        actionMode?.invalidate()
+    }
+
+    private fun selectInverse() {
+        val adapter = adapter ?: return
+        for (i in 0..adapter.itemCount) {
+            adapter.toggleSelection(i)
+        }
+        actionMode?.invalidate()
+        adapter.notifyDataSetChanged()
     }
 }

@@ -117,6 +117,11 @@ class LibraryController(
     val reorganizeRelay: PublishRelay<Pair<Int, Int>> = PublishRelay.create()
 
     /**
+     * Relay to notify the library's viewpager to select the inverse
+     */
+    val selectInverseRelay: PublishRelay<Int> = PublishRelay.create()
+
+    /**
      * Number of manga per row in grid mode.
      */
     var mangaPerRow = 0
@@ -475,11 +480,8 @@ class LibraryController(
             }
             R.id.action_move_to_category -> showChangeMangaCategoriesDialog()
             R.id.action_delete -> showDeleteMangaDialog()
-            R.id.action_select_all -> {
-                adapter?.categories?.getOrNull(library_pager.currentItem)?.id?.let {
-                    selectAllRelay.call(it)
-                }
-            }
+            R.id.action_select_all -> selectAllCategoryManga()
+            R.id.action_select_inverse -> selectInverseCategoryManga()
             R.id.action_auto_source_migration -> {
                 router.pushController(MigrationDesignController.create(
                         selectedMangas.mapNotNull { it.id }
@@ -520,6 +522,19 @@ class LibraryController(
             if (selectedMangas.remove(manga)) {
                 selectionRelay.call(LibrarySelectionEvent.Unselected(manga))
             }
+        }
+    }
+
+    /**
+     * Toggles the current selection state for a given manga.
+     *
+     * @param manga the manga whose selection to change.
+     */
+    fun toggleSelection(manga: Manga) {
+        if (selectedMangas.add(manga)) {
+            selectionRelay.call(LibrarySelectionEvent.Selected(manga))
+        } else if (selectedMangas.remove(manga)) {
+            selectionRelay.call(LibrarySelectionEvent.Unselected(manga))
         }
     }
 
@@ -698,6 +713,18 @@ class LibraryController(
         oldSyncStatus = status
     }
     // <-- EXH
+
+    private fun selectAllCategoryManga() {
+        adapter?.categories?.getOrNull(library_pager.currentItem)?.id?.let {
+            selectAllRelay.call(it)
+        }
+    }
+
+    private fun selectInverseCategoryManga() {
+        adapter?.categories?.getOrNull(library_pager.currentItem)?.id?.let {
+            selectInverseRelay.call(it)
+        }
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_IMAGE_OPEN) {
