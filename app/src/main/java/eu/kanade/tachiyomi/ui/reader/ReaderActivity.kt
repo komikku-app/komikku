@@ -608,7 +608,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             RIGHT_TO_LEFT -> R2LPagerViewer(this)
             VERTICAL -> VerticalPagerViewer(this)
             WEBTOON -> WebtoonViewer(this)
-            VERTICAL_PLUS -> WebtoonViewer(this, true)
+            VERTICAL_PLUS -> WebtoonViewer(this, isContinuous = false)
             else -> L2RPagerViewer(this)
         }
 
