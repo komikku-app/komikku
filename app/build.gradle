@@ -274,7 +274,7 @@ dependencies {
     implementation 'info.debatty:java-string-similarity:1.2.1'
 
     // Pin lock view (EH)
-    implementation 'com.andrognito.pinlockview:pinlockview:2.1.0'
+    implementation 'com.github.jawnnypoo:pinlockview:2.2.0'
 
     // Reprint (EH)
     implementation 'com.github.ajalt.reprint:core:3.2.1@aar'
