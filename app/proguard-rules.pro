@@ -134,6 +134,7 @@
 
 # === Humanize + Guava: https://github.com/google/guava/wiki/UsingProGuardWithGuava
 -dontwarn javax.lang.model.element.Modifier
+-keep class org.ocpsoft.prettytime.i18n.**
 
 # Note: We intentionally don't add the flags we'd need to make Enums work.
 # That's because the Proguard configuration required to make it work on
