@@ -14,3 +14,6 @@ TODO.md
 CHANGELOG.md
 /captures
 build.sh
+
+# Hebrew assets are copied on build
+app/src/main/res/values-iw/
