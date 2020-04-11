@@ -124,6 +124,8 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
 
         frame.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         frame.addView(recycler)
+
+        config.imagePropertyChangedListener = { adapter.notifyDataSetChanged() }
     }
 
     /**
