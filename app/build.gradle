@@ -34,7 +34,7 @@ ext {
 
 android {
     compileSdkVersion 28
-    buildToolsVersion '29.0.2'
+    buildToolsVersion '29.0.3'
     publishNonDefault true
 
     defaultConfig {
@@ -57,6 +57,10 @@ android {
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86"
         }
+    }
+
+    viewBinding {
+        enabled = true
     }
 
     buildTypes {

@@ -22,6 +22,7 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.databinding.CatalogueMainControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -34,8 +35,6 @@ import eu.kanade.tachiyomi.ui.catalogue.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsSourcesController
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.catalogue_main_controller.fast_scroller
-import kotlinx.android.synthetic.main.catalogue_main_controller.recycler
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -52,15 +51,14 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
         CatalogueAdapter.OnBrowseClickListener,
         CatalogueAdapter.OnLatestClickListener {
 
-    /**
-     * Application preferences.
-     */
     private val preferences: PreferencesHelper = Injekt.get()
 
     /**
      * Adapter containing sources.
      */
     private var adapter: CatalogueAdapter? = null
+
+    private lateinit var binding: CatalogueMainControllerBinding
 
     private val smartSearchConfig: SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG)
 
@@ -105,7 +103,8 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
      * @return inflated view.
      */
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.catalogue_main_controller, container, false)
+        binding = CatalogueMainControllerBinding.inflate(inflater)
+        return binding.root
     }
 
     /**
@@ -119,10 +118,10 @@ class CatalogueController(bundle: Bundle? = null) : NucleusController<CatalogueP
         adapter = CatalogueAdapter(this)
 
         // Create recycler and set adapter.
-        recycler.layoutManager = LinearLayoutManager(view.context)
-        recycler.adapter = adapter
-        recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
-        adapter?.fastScroller = fast_scroller
+        binding.recycler.layoutManager = LinearLayoutManager(view.context)
+        binding.recycler.adapter = adapter
+        binding.recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
+        adapter?.fastScroller = binding.fastScroller
 
         requestPermissionsSafe(arrayOf(WRITE_EXTERNAL_STORAGE), 301)
     }

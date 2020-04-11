@@ -5,14 +5,14 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding.support.v4.widget.refreshes
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import eu.kanade.tachiyomi.databinding.TrackControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.track_controller.swipe_refresh
-import kotlinx.android.synthetic.main.track_controller.track_recycler
 import timber.log.Timber
 
 class TrackController : NucleusController<TrackPresenter>(),
@@ -22,6 +22,8 @@ class TrackController : NucleusController<TrackPresenter>(),
         SetTrackScoreDialog.Listener {
 
     private var adapter: TrackAdapter? = null
+
+    private lateinit var binding: TrackControllerBinding
 
     init {
         // There's no menu, but this avoids a bug when coming from the catalogue, where the menu
@@ -34,19 +36,18 @@ class TrackController : NucleusController<TrackPresenter>(),
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.track_controller, container, false)
+        binding = TrackControllerBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
         adapter = TrackAdapter(this)
-        with(view) {
-            track_recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
-            track_recycler.adapter = adapter
-            swipe_refresh.isEnabled = false
-            swipe_refresh.refreshes().subscribeUntilDestroy { presenter.refresh() }
-        }
+        binding.trackRecycler.layoutManager = LinearLayoutManager(view.context)
+        binding.trackRecycler.adapter = adapter
+        binding.swipeRefresh.isEnabled = false
+        binding.swipeRefresh.refreshes().subscribeUntilDestroy { presenter.refresh() }
     }
 
     override fun onDestroyView(view: View) {
@@ -57,7 +58,7 @@ class TrackController : NucleusController<TrackPresenter>(),
     fun onNextTrackings(trackings: List<TrackItem>) {
         val atLeastOneLink = trackings.any { it.track != null }
         adapter?.items = trackings
-        swipe_refresh?.isEnabled = atLeastOneLink
+        binding.swipeRefresh.isEnabled = atLeastOneLink
         (parentController as? MangaController)?.setTrackingIcon(atLeastOneLink)
     }
 
@@ -76,11 +77,11 @@ class TrackController : NucleusController<TrackPresenter>(),
     }
 
     fun onRefreshDone() {
-        swipe_refresh?.isRefreshing = false
+        binding.swipeRefresh.isRefreshing = false
     }
 
     fun onRefreshError(error: Throwable) {
-        swipe_refresh?.isRefreshing = false
+        binding.swipeRefresh.isRefreshing = false
         activity?.toast(error.message)
     }
 
@@ -122,17 +123,17 @@ class TrackController : NucleusController<TrackPresenter>(),
 
     override fun setStatus(item: TrackItem, selection: Int) {
         presenter.setStatus(item, selection)
-        swipe_refresh?.isRefreshing = true
+        binding.swipeRefresh.isRefreshing = true
     }
 
     override fun setScore(item: TrackItem, score: Int) {
         presenter.setScore(item, score)
-        swipe_refresh?.isRefreshing = true
+        binding.swipeRefresh.isRefreshing = true
     }
 
     override fun setChaptersRead(item: TrackItem, chaptersRead: Int) {
         presenter.setLastChapterRead(item, chaptersRead)
-        swipe_refresh?.isRefreshing = true
+        binding.swipeRefresh.isRefreshing = true
     }
 
     private companion object {

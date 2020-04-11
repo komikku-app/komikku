@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.databinding.ChaptersControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.manga.MangaController
@@ -37,11 +38,6 @@ import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.snack
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import kotlinx.android.synthetic.main.chapters_controller.fab
-import kotlinx.android.synthetic.main.chapters_controller.fast_scroller
-import kotlinx.android.synthetic.main.chapters_controller.recycler
-import kotlinx.android.synthetic.main.chapters_controller.reveal_view
-import kotlinx.android.synthetic.main.chapters_controller.swipe_refresh
 import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 
@@ -69,6 +65,8 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
 
     private var lastClickPosition = -1
 
+    private lateinit var binding: ChaptersControllerBinding
+
     init {
         setHasOptionsMenu(true)
         setOptionsMenuHidden(true)
@@ -81,7 +79,8 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.chapters_controller, container, false)
+        binding = ChaptersControllerBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onViewCreated(view: View) {
@@ -90,15 +89,15 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
         // Init RecyclerView and adapter
         adapter = ChaptersAdapter(this, view.context)
 
-        recycler.adapter = adapter
-        recycler.layoutManager = LinearLayoutManager(view.context)
-        recycler.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
-        recycler.setHasFixedSize(true)
-        adapter?.fastScroller = fast_scroller
+        binding.recycler.adapter = adapter
+        binding.recycler.layoutManager = LinearLayoutManager(view.context)
+        binding.recycler.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
+        binding.recycler.setHasFixedSize(true)
+        adapter?.fastScroller = binding.fastScroller
 
-        swipe_refresh.refreshes().subscribeUntilDestroy { fetchChaptersFromSource() }
+        binding.swipeRefresh.refreshes().subscribeUntilDestroy { fetchChaptersFromSource() }
 
-        fab.clicks().subscribeUntilDestroy {
+        binding.fab.clicks().subscribeUntilDestroy {
             val item = presenter.getNextUnreadChapter()
             if (item != null) {
                 // Create animation listener
@@ -109,8 +108,8 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
                 }
 
                 // Get coordinates and start animation
-                val coordinates = fab.getCoordinates()
-                if (!reveal_view.showRevealEffect(coordinates.x, coordinates.y, revealAnimationListener)) {
+                val coordinates = binding.fab.getCoordinates()
+                if (!binding.revealView.showRevealEffect(coordinates.x, coordinates.y, revealAnimationListener)) {
                     openChapter(item.chapter)
                 }
             } else {
@@ -137,10 +136,10 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
         if (view == null) return
 
         // Check if animation view is visible
-        if (reveal_view.visibility == View.VISIBLE) {
-            // Show the unReveal effect
-            val coordinates = fab.getCoordinates()
-            reveal_view.hideRevealEffect(coordinates.x, coordinates.y, 1920)
+        if (binding.revealView.visibility == View.VISIBLE) {
+            // Show the unreveal effect
+            val coordinates = binding.fab.getCoordinates()
+            binding.revealView.hideRevealEffect(coordinates.x, coordinates.y, 1920)
         }
         super.onActivityResumed(activity)
     }
@@ -287,16 +286,16 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
     }
 
     private fun fetchChaptersFromSource() {
-        swipe_refresh?.isRefreshing = true
+        binding.swipeRefresh.isRefreshing = true
         presenter.fetchChaptersFromSource()
     }
 
     fun onFetchChaptersDone() {
-        swipe_refresh?.isRefreshing = false
+        binding.swipeRefresh.isRefreshing = false
     }
 
     fun onFetchChaptersError(error: Throwable) {
-        swipe_refresh?.isRefreshing = false
+        binding.swipeRefresh.isRefreshing = false
         activity?.toast(error.message)
         // [EXH]
         XLog.w("> Failed to fetch chapters!", error)
@@ -312,7 +311,7 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
     }
 
     private fun getHolder(chapter: Chapter): ChapterHolder? {
-        return recycler?.findViewHolderForItemId(chapter.id!!) as? ChapterHolder
+        return binding.recycler.findViewHolderForItemId(chapter.id!!) as? ChapterHolder
     }
 
     fun openChapter(chapter: Chapter, hasAnimation: Boolean = false) {
@@ -417,7 +416,7 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
             menu.findItem(R.id.action_mark_previous_as_read).isVisible = count == 1
 
             // Hide FAB to avoid interfering with the bottom action toolbar
-            fab.hide()
+            binding.fab.hide()
         }
         return false
     }
@@ -483,7 +482,7 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
         val view = view
         presenter.downloadChapters(chapters)
         if (view != null && !presenter.manga.favorite) {
-            recycler?.snack(view.context.getString(R.string.snack_add_to_library), Snackbar.LENGTH_INDEFINITE) {
+            binding.recycler.snack(view.context.getString(R.string.snack_add_to_library), Snackbar.LENGTH_INDEFINITE) {
                 setAction(R.string.action_add) {
                     presenter.addToLibrary()
                 }

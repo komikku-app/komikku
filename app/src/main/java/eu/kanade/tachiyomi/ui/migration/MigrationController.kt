@@ -8,11 +8,11 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import exh.ui.migration.manga.design.MigrationDesignController
 import exh.util.await
-import kotlinx.android.synthetic.main.migration_controller.migration_recycler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,20 +34,23 @@ class MigrationController : NucleusController<MigrationPresenter>(),
             setTitle()
         }
 
+    private lateinit var binding: MigrationControllerBinding
+
     override fun createPresenter(): MigrationPresenter {
         return MigrationPresenter()
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.migration_controller, container, false)
+        binding = MigrationControllerBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
         adapter = FlexibleAdapter(null, this)
-        migration_recycler.layoutManager = LinearLayoutManager(view.context)
-        migration_recycler.adapter = adapter
+        binding.migrationRecycler.layoutManager = LinearLayoutManager(view.context)
+        binding.migrationRecycler.adapter = adapter
     }
 
     override fun onDestroyView(view: View) {
@@ -73,14 +76,14 @@ class MigrationController : NucleusController<MigrationPresenter>(),
             title = resources?.getString(R.string.label_migration)
             if (adapter !is SourceAdapter) {
                 adapter = SourceAdapter(this)
-                migration_recycler.adapter = adapter
+                binding.migrationRecycler.adapter = adapter
             }
             adapter?.updateDataSet(state.sourcesWithManga)
         } else {
             title = state.selectedSource.toString()
             if (adapter !is MangaAdapter) {
                 adapter = MangaAdapter(this)
-                migration_recycler.adapter = adapter
+                binding.migrationRecycler.adapter = adapter
             }
             adapter?.updateDataSet(state.mangaForSource)
         }

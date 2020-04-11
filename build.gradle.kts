@@ -10,8 +10,8 @@ buildscript {
         maven { setUrl("https://maven.fabric.io/public") }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:3.5.3")
-        classpath("com.github.ben-manes:gradle-versions-plugin:0.22.0")
+        classpath("com.android.tools.build:gradle:3.6.2")
+        classpath("com.github.ben-manes:gradle-versions-plugin:0.28.0")
         classpath("com.github.zellius:android-shortcut-gradle-plugin:0.1.2")
         classpath("com.google.gms:google-services:4.3.3")
         classpath("org.jmailen.gradle:kotlinter-gradle:2.3.1")

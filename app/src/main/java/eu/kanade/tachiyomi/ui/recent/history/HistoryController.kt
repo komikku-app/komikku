@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.databinding.HistoryControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
@@ -22,8 +23,6 @@ import eu.kanade.tachiyomi.ui.catalogue.browse.ProgressItem
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.history_controller.empty_view
-import kotlinx.android.synthetic.main.history_controller.recycler
 
 /**
  * Fragment that shows recently read manga.
@@ -50,6 +49,8 @@ class HistoryController : NucleusController<HistoryPresenter>(),
     var adapter: HistoryAdapter? = null
         private set
 
+    private lateinit var binding: HistoryControllerBinding
+
     /**
      * Endless loading item.
      */
@@ -65,7 +66,8 @@ class HistoryController : NucleusController<HistoryPresenter>(),
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.history_controller, container, false)
+        binding = HistoryControllerBinding.inflate(inflater)
+        return binding.root
     }
 
     /**
@@ -77,10 +79,10 @@ class HistoryController : NucleusController<HistoryPresenter>(),
         super.onViewCreated(view)
 
         // Initialize adapter
-        recycler.layoutManager = LinearLayoutManager(view.context)
+        binding.recycler.layoutManager = LinearLayoutManager(view.context)
         adapter = HistoryAdapter(this@HistoryController)
-        recycler.setHasFixedSize(true)
-        recycler.adapter = adapter
+        binding.recycler.setHasFixedSize(true)
+        binding.recycler.adapter = adapter
     }
 
     override fun onDestroyView(view: View) {
@@ -107,9 +109,9 @@ class HistoryController : NucleusController<HistoryPresenter>(),
 
     override fun onUpdateEmptyView(size: Int) {
         if (size > 0) {
-            empty_view.hide()
+            binding.emptyView.hide()
         } else {
-            empty_view.show(R.string.information_no_recent_manga)
+            binding.emptyView.show(R.string.information_no_recent_manga)
         }
     }
 
