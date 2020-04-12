@@ -4,6 +4,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.recyclerview.widget.RecyclerView
 import com.f2prateek.rx.preferences.Preference
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
@@ -13,8 +14,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
-import kotlinx.android.synthetic.main.catalogue_grid_item.view.card
-import kotlinx.android.synthetic.main.catalogue_grid_item.view.gradient
+import kotlinx.android.synthetic.main.source_grid_item.view.card
+import kotlinx.android.synthetic.main.source_grid_item.view.gradient
 
 class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference<Boolean>) :
         AbstractFlexibleItem<LibraryHolder>(), IFilterable<String> {
@@ -22,12 +23,12 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
 
     override fun getLayoutRes(): Int {
         return if (libraryAsList.getOrDefault())
-            R.layout.catalogue_list_item
+            R.layout.source_list_item
         else
-            R.layout.catalogue_grid_item
+            R.layout.source_grid_item
     }
 
-    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>): LibraryHolder {
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): LibraryHolder {
         val parent = adapter.recyclerView
         return if (parent is AutofitRecyclerView) {
             view.apply {
@@ -43,7 +44,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
     }
 
     override fun bindViewHolder(
-        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: LibraryHolder,
         position: Int,
         payloads: List<Any?>?

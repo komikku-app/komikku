@@ -24,11 +24,11 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.RxController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
-import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
 import eu.kanade.tachiyomi.ui.manga.chapter.ChaptersController
 import eu.kanade.tachiyomi.ui.manga.chapter.ChaptersPresenter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoController
 import eu.kanade.tachiyomi.ui.manga.track.TrackController
+import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.util.system.toast
 import java.util.Date
 import kotlinx.android.synthetic.main.main_activity.tabs
@@ -41,7 +41,7 @@ class MangaController : RxController, TabbedController {
     constructor(
         manga: Manga?,
         fromCatalogue: Boolean = false,
-        smartSearchConfig: CatalogueController.SmartSearchConfig? = null,
+        smartSearchConfig: SourceController.SmartSearchConfig? = null,
         update: Boolean = false
     ) : super(Bundle().apply {
         putLong(MANGA_EXTRA, manga?.id ?: 0)
@@ -86,7 +86,7 @@ class MangaController : RxController, TabbedController {
     var update = args.getBoolean(UPDATE_EXTRA, false)
 
     // EXH -->
-    val smartSearchConfig: CatalogueController.SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG_EXTRA)
+    val smartSearchConfig: SourceController.SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG_EXTRA)
     // EXH <--
 
     val lastUpdateRelay: BehaviorRelay<Date> = BehaviorRelay.create()

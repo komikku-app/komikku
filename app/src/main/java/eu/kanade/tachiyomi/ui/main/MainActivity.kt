@@ -28,8 +28,6 @@ import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.SecondaryDrawerController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
-import eu.kanade.tachiyomi.ui.catalogue.global_search.CatalogueSearchController
 import eu.kanade.tachiyomi.ui.download.DownloadController
 import eu.kanade.tachiyomi.ui.extension.ExtensionController
 import eu.kanade.tachiyomi.ui.library.LibraryController
@@ -37,6 +35,8 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
+import eu.kanade.tachiyomi.ui.source.SourceController
+import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
@@ -139,7 +139,7 @@ class MainActivity : BaseActivity() {
                     R.id.nav_drawer_library -> setRoot(LibraryController(), id)
                     R.id.nav_drawer_updates -> setRoot(UpdatesController(), id)
                     R.id.nav_drawer_history -> setRoot(HistoryController(), id)
-                    R.id.nav_drawer_sources -> setRoot(CatalogueController(), id)
+                    R.id.nav_drawer_sources -> setRoot(SourceController(), id)
                     R.id.nav_drawer_extensions -> setRoot(ExtensionController(), id)
                     // --> EXH
                     R.id.nav_drawer_batch_add -> setRoot(BatchAddController(), id)
@@ -323,7 +323,7 @@ class MainActivity : BaseActivity() {
                     if (router.backstackSize > 1) {
                         router.popToRoot()
                     }
-                    router.pushController(CatalogueSearchController(query).withFadeTransaction())
+                    router.pushController(GlobalSearchController(query).withFadeTransaction())
                 }
             }
             INTENT_SEARCH -> {
@@ -333,7 +333,7 @@ class MainActivity : BaseActivity() {
                     if (router.backstackSize > 1) {
                         router.popToRoot()
                     }
-                    router.pushController(CatalogueSearchController(query, filter).withFadeTransaction())
+                    router.pushController(GlobalSearchController(query, filter).withFadeTransaction())
                 }
             }
             else -> return false

@@ -48,13 +48,13 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
-import eu.kanade.tachiyomi.ui.catalogue.browse.BrowseCatalogueController
-import eu.kanade.tachiyomi.ui.catalogue.global_search.CatalogueSearchController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.source.SourceController
+import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
+import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.util.system.toast
@@ -228,10 +228,10 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
     // EXH -->
     private fun openSmartSearch() {
-        val smartSearchConfig = CatalogueController.SmartSearchConfig(presenter.manga.title, presenter.manga.id!!)
+        val smartSearchConfig = SourceController.SmartSearchConfig(presenter.manga.title, presenter.manga.id!!)
 
-        parentController?.router?.pushController(CatalogueController(Bundle().apply {
-            putParcelable(CatalogueController.SMART_SEARCH_CONFIG, smartSearchConfig)
+        parentController?.router?.pushController(SourceController(Bundle().apply {
+            putParcelable(SourceController.SMART_SEARCH_CONFIG, smartSearchConfig)
         }).withFadeTransaction())
     }
     // EXH <--
@@ -650,7 +650,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         val view = view ?: return
 
         val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.primaryClip = ClipData.newPlainText(label, content)
+        clipboard.setPrimaryClip(ClipData.newPlainText(label, content))
 
         activity.toast(view.context.getString(R.string.copied_to_clipboard, content.truncateCenter(20)),
                 Toast.LENGTH_SHORT)
@@ -663,7 +663,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
      */
     fun performGlobalSearch(query: String) {
         val router = parentController?.router ?: return
-        router.pushController(CatalogueSearchController(query).withFadeTransaction())
+        router.pushController(GlobalSearchController(query).withFadeTransaction())
     }
 
     /**
@@ -684,7 +684,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                 router.handleBack()
                 previousController.search(query)
             }
-            is BrowseCatalogueController -> {
+            is BrowseSourceController -> {
                 router.handleBack()
                 previousController.searchWithQuery(query)
             }

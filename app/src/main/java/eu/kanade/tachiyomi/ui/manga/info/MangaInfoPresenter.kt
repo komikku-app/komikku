@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.ui.catalogue.CatalogueController
+import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import exh.MERGED_SOURCE_ID
 import exh.util.await
@@ -35,7 +35,7 @@ import uy.kohesive.injekt.api.get
 class MangaInfoPresenter(
     val manga: Manga,
     val source: Source,
-    val smartSearchConfig: CatalogueController.SmartSearchConfig?,
+    val smartSearchConfig: SourceController.SmartSearchConfig?,
     private val chapterCountRelay: BehaviorRelay<Float>,
     private val lastUpdateRelay: BehaviorRelay<Date>,
     private val mangaFavoriteRelay: PublishRelay<Boolean>,
