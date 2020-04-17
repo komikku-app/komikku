@@ -2,14 +2,21 @@ package eu.kanade.tachiyomi.ui.migration
 
 import android.app.Dialog
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.appcompat.widget.SearchView
 import com.afollestad.materialdialogs.MaterialDialog
+import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchPresenter
 import uy.kohesive.injekt.injectLazy
@@ -21,6 +28,13 @@ class SearchController(
     private var newManga: Manga? = null
     private var progress = 1
     var totalProgress = 0
+
+    /**
+     * Called when controller is initialized.
+     */
+    init {
+        setHasOptionsMenu(true)
+    }
 
     override fun getTitle(): String? {
         if (totalProgress > 1) {
@@ -45,6 +59,25 @@ class SearchController(
         newManga = savedInstanceState.getSerializable(::newManga.name) as? Manga
     }
 
+    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        if (totalProgress > 1) {
+            val menuItem = menu.add(Menu.NONE, 1, Menu.NONE, R.string.action_skip_manga)
+            menuItem.icon = VectorDrawableCompat.create(resources!!, R.drawable
+                .baseline_skip_next_white_24, null)
+            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            1 -> {
+                newManga = manga
+                migrateManga()
+            }
+        }
+        return true
+    }*/
+
     fun migrateManga() {
         val target = targetController as? MigrationInterface ?: return
         val manga = manga ?: return
@@ -64,6 +97,14 @@ class SearchController(
     }
 
     override fun onMangaClick(manga: Manga) {
+        if (targetController is MigrationListController) {
+            val migrationListController = targetController as? MigrationListController
+            val sourceManager: SourceManager by injectLazy()
+            val source = sourceManager.get(manga.source) ?: return
+            migrationListController?.useMangaForMigration(manga, source)
+            router.popCurrentController()
+            return
+        }
         newManga = manga
         val dialog = MigrationDialog()
         dialog.targetController = this
@@ -128,6 +169,41 @@ class SearchController(
                     }
                     .build()
         }
+    }
+
+    /**
+     * Adds items to the options menu.
+     *
+     * @param menu menu containing options.
+     * @param inflater used to load the menu xml.
+     */
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        // Inflate menu.
+        inflater.inflate(R.menu.source_browse, menu)
+
+        // Initialize search menu
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView as SearchView
+
+        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
+                searchView.onActionViewExpanded() // Required to show the query in the view
+                searchView.setQuery(presenter.query, false)
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
+                return true
+            }
+        })
+
+        searchView.queryTextChangeEvents()
+            .filter { it.isSubmitted }
+            .subscribeUntilDestroy {
+                presenter.search(it.queryText().toString())
+                searchItem.collapseActionView()
+                setTitle() // Update toolbar title
+            }
     }
 
     class LoadingController : DialogController() {
