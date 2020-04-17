@@ -32,7 +32,6 @@ import eu.kanade.tachiyomi.ui.download.DownloadController
 import eu.kanade.tachiyomi.ui.extension.ExtensionController
 import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.ui.migration.MetadataFetchDialog
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
@@ -233,11 +232,6 @@ class MainActivity : BaseActivity() {
             }
 
             initWhenIdle {
-                // Migrate metadata if empty (EH)
-                if (!preferences.migrateLibraryAsked().getOrDefault()) {
-                    MetadataFetchDialog().askMigration(this, false)
-                }
-
                 // Upload settings
                 if (preferences.enableExhentai().getOrDefault() &&
                         preferences.eh_showSettingsUploadWarning().getOrDefault())

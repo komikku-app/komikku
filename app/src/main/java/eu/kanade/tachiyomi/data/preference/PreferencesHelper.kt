@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 import eu.kanade.tachiyomi.data.track.TrackService
-import eu.kanade.tachiyomi.ui.migration.MigrationStatus
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -255,10 +254,6 @@ class PreferencesHelper(val context: Context) {
     fun ehSearchSize() = rxPrefs.getString("ex_search_size", "rc_0")
 
     fun thumbnailRows() = rxPrefs.getString("ex_thumb_rows", "tr_2")
-
-    fun migrateLibraryAsked() = rxPrefs.getBoolean("ex_migrate_library3", false)
-
-    fun migrationStatus() = rxPrefs.getInteger("migration_status", MigrationStatus.NOT_INITIALIZED)
 
     fun hasPerformedURLMigration() = rxPrefs.getBoolean("performed_url_migration", false)
 
