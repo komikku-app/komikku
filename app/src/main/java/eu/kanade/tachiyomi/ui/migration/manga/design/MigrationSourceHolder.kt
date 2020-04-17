@@ -2,6 +2,8 @@ package eu.kanade.tachiyomi.ui.migration.manga.design
 
 import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.view.View
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
@@ -9,6 +11,7 @@ import eu.kanade.tachiyomi.util.view.roundTextIcon
 import kotlinx.android.synthetic.main.migration_source_item.image
 import kotlinx.android.synthetic.main.migration_source_item.reorder
 import kotlinx.android.synthetic.main.migration_source_item.title
+import uy.kohesive.injekt.injectLazy
 
 class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
         BaseFlexibleViewHolder(view, adapter) {
@@ -17,9 +20,11 @@ class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
     }
 
     fun bind(source: HttpSource, sourceEnabled: Boolean) {
+        val preferences by injectLazy<PreferencesHelper>()
+        val isMultiLanguage = preferences.enabledLanguages().getOrDefault().size > 1
         // Set capitalized title.
-        title.text = source.name.capitalize()
-
+        val sourceName = if (isMultiLanguage) source.toString() else source.name.capitalize()
+        title.text = sourceName
         // Update circle letter image.
         itemView.post {
             val icon = source.icon()
