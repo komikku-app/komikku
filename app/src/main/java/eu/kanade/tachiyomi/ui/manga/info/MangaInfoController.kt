@@ -179,9 +179,9 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
         // EXH -->
         smartSearchConfig?.let { smartSearchConfig ->
-            binding.smartsearchButtons.visible()
+            binding.mergeBtn.visible()
 
-            binding.smartsearchMergeBtn.clicks().subscribeUntilDestroy {
+            binding.mergeBtn.clicks().subscribeUntilDestroy {
                 // Init presenter here to avoid threading issues
                 presenter
 
@@ -192,8 +192,8 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                         }
 
                         parentController?.router?.pushController(MangaController(mergedManga,
-                                true,
-                                update = true).withFadeTransaction())
+                            true,
+                            update = true).withFadeTransaction())
                         applicationContext?.toast("Manga merged!")
                     } catch (e: Exception) {
                         if (e is CancellationException) throw e
@@ -218,7 +218,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             // EXH -->
-            R.id.action_smart_search -> openSmartSearch()
+            R.id.action_merge -> openSmartSearch()
             // EXH <--
             R.id.action_open_in_web_view -> openInWebView()
             R.id.action_share -> shareManga()

@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.migration
 
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractHeaderItem
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -23,7 +24,7 @@ class SelectionHeader : AbstractHeaderItem<SelectionHeader.Holder>() {
     /**
      * Creates a new view holder for this item.
      */
-    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>): Holder {
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): Holder {
         return SelectionHeader.Holder(view, adapter)
     }
 
@@ -31,17 +32,17 @@ class SelectionHeader : AbstractHeaderItem<SelectionHeader.Holder>() {
      * Binds this item to the given view holder.
      */
     override fun bindViewHolder(
-        adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>,
+        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: Holder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: MutableList<Any?>?
     ) {
         // Intentionally empty
     }
 
-    class Holder(view: View, adapter: FlexibleAdapter<*>) : BaseFlexibleViewHolder(view, adapter) {
+    class Holder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>) : BaseFlexibleViewHolder(view, adapter) {
         init {
-            title.text = view.context.getString(R.string.migration_selection_prompt)
+            title.text = view.context.getString(R.string.select_a_source_to_migrate_from)
         }
     }
 
