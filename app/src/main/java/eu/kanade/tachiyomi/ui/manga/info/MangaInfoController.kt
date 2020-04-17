@@ -52,6 +52,7 @@ import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
@@ -222,6 +223,11 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
             R.id.action_open_in_web_view -> openInWebView()
             R.id.action_share -> shareManga()
             R.id.action_add_to_home_screen -> addToHomeScreen()
+            R.id.action_migrate ->
+                PreMigrationController.navigateToMigration(
+                    preferences.skipPreMigration().getOrDefault(),
+                    router,
+                    listOf(presenter.manga.id!!))
         }
         return super.onOptionsItemSelected(item)
     }

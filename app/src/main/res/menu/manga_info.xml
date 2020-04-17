@@ -16,6 +16,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_migrate"
+        android:icon="@drawable/baseline_swap_calls_24"
+        android:title="@string/migrate"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_open_in_web_view"
         android:icon="@drawable/ic_public_24dp"
         android:title="@string/action_open_in_web_view"

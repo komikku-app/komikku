@@ -18,10 +18,7 @@ import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
-import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
-import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationProcedureConfig
 import eu.kanade.tachiyomi.util.await
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.view.RecyclerWindowInsetsListener
@@ -122,10 +119,9 @@ class MigrationController : NucleusController<MigrationPresenter>(),
         val item = adapter?.getItem(position) ?: return false
 
         if (item is MangaItem) {
-            val controller = SearchController(item.manga)
-            controller.targetController = this
-
-            router.pushController(controller.withFadeTransaction())
+            PreMigrationController.navigateToMigration(Injekt.get<PreferencesHelper>().skipPreMigration().getOrDefault(),
+                router,
+                listOf(item.manga.id!!))
         } else if (item is SourceItem) {
             presenter.setSelectedSource(item.source)
         }
@@ -141,16 +137,16 @@ class MigrationController : NucleusController<MigrationPresenter>(),
 
         launchUI {
             val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().asRxSingle().await(
-                Schedulers.io())
-            val sourceMangas = manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
+                Schedulers.io()
+            )
+            val sourceMangas =
+                manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
             withContext(Dispatchers.Main) {
-                router.pushController(
-                    if (Injekt.get<PreferencesHelper>().skipPreMigration().getOrDefault()) {
-                        MigrationListController.create(
-                            MigrationProcedureConfig(sourceMangas, null)
-                        )
-                    } else { PreMigrationController.create(sourceMangas) }
-                    .withFadeTransaction())
+                PreMigrationController.navigateToMigration(
+                    Injekt.get<PreferencesHelper>().skipPreMigration().getOrDefault(),
+                    router,
+                    sourceMangas
+                )
             }
         }
     }

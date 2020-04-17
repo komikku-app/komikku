@@ -42,10 +42,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.migration.MigrationController
-import eu.kanade.tachiyomi.ui.migration.MigrationInterface
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
-import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
-import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationProcedureConfig
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
@@ -71,8 +68,7 @@ class LibraryController(
         SecondaryDrawerController,
         ActionMode.Callback,
         ChangeMangaCategoriesDialog.Listener,
-        DeleteLibraryMangasDialog.Listener,
-        MigrationInterface {
+        DeleteLibraryMangasDialog.Listener {
 
     /**
      * Position of the active category.
@@ -498,30 +494,13 @@ class LibraryController(
             R.id.action_select_all -> selectAllCategoryManga()
             R.id.action_select_inverse -> selectInverseCategoryManga()
             R.id.action_migrate -> {
-                router.pushController(
-                    if (preferences.skipPreMigration().getOrDefault()) {
-                        MigrationListController.create(
-                            MigrationProcedureConfig(
-                                selectedMangas.mapNotNull { it.id }, null)
-                        )
-                    } else {
-                        PreMigrationController.create(selectedMangas.mapNotNull { it.id })
-                    }
-                    .withFadeTransaction())
+                val skipPre = preferences.skipPreMigration().getOrDefault()
+                PreMigrationController.navigateToMigration(skipPre, router, selectedMangas.mapNotNull { it.id })
                 destroyActionModeIfNeeded()
             }
             else -> return false
         }
         return true
-    }
-
-    override fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean): Manga? {
-        if (manga.id != prevManga.id) {
-            presenter.migrateManga(prevManga, manga, replace = replace)
-        }
-        val nextManga = migratingMangas.firstOrNull() ?: return null
-        migratingMangas.remove(nextManga)
-        return nextManga
     }
 
     override fun onDestroyActionMode(mode: ActionMode?) {
