@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.migration.manga.design
 
 import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.view.View
-import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
@@ -11,7 +10,7 @@ import kotlinx.android.synthetic.main.migration_source_item.image
 import kotlinx.android.synthetic.main.migration_source_item.reorder
 import kotlinx.android.synthetic.main.migration_source_item.title
 
-class MigrationSourceHolder(view: View, val adapter: FlexibleAdapter<MigrationSourceItem>) :
+class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
         BaseFlexibleViewHolder(view, adapter) {
     init {
         setDragHandleView(reorder)
@@ -37,6 +36,16 @@ class MigrationSourceHolder(view: View, val adapter: FlexibleAdapter<MigrationSo
             image.alpha = DISABLED_ALPHA
             title.paintFlags = title.paintFlags or STRIKE_THRU_TEXT_FLAG
         }
+    }
+
+    /**
+     * Called when an item is released.
+     *
+     * @param position The position of the released item.
+     */
+    override fun onItemReleased(position: Int) {
+        super.onItemReleased(position)
+        adapter.updateItems()
     }
 
     companion object {
