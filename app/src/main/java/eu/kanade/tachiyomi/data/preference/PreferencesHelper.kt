@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 import eu.kanade.tachiyomi.data.track.TrackService
-import exh.ui.migration.MigrationStatus
+import eu.kanade.tachiyomi.ui.migration.MigrationStatus
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat

@@ -203,10 +203,10 @@ class MangaController : RxController, TabbedController {
     }
 
     companion object {
-        // EXH -->
+
         const val UPDATE_EXTRA = "update"
         const val SMART_SEARCH_CONFIG_EXTRA = "smartSearchConfig"
-        // EXH <--
+
         const val FROM_CATALOGUE_EXTRA = "from_catalogue"
         const val MANGA_EXTRA = "manga"
 

@@ -1,14 +1,15 @@
-package exh.ui.migration.manga.design
+package eu.kanade.tachiyomi.ui.migration.manga.design
 
 import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.view.View
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.util.view.roundTextIcon
-import kotlinx.android.synthetic.main.eh_source_item.image
-import kotlinx.android.synthetic.main.eh_source_item.reorder
-import kotlinx.android.synthetic.main.eh_source_item.title
+import kotlinx.android.synthetic.main.migration_source_item.image
+import kotlinx.android.synthetic.main.migration_source_item.reorder
+import kotlinx.android.synthetic.main.migration_source_item.title
 
 class MigrationSourceHolder(view: View, val adapter: FlexibleAdapter<MigrationSourceItem>) :
         BaseFlexibleViewHolder(view, adapter) {
@@ -22,7 +23,9 @@ class MigrationSourceHolder(view: View, val adapter: FlexibleAdapter<MigrationSo
 
         // Update circle letter image.
         itemView.post {
-            image.roundTextIcon(source.name)
+            val icon = source.icon()
+            if (icon != null) image.setImageDrawable(icon)
+            else image.roundTextIcon(source.name)
         }
 
         if (sourceEnabled) {

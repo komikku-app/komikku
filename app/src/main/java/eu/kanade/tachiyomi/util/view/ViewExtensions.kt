@@ -9,9 +9,11 @@ import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowInsets
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.MenuRes
+import androidx.annotation.Px
 import androidx.appcompat.widget.PopupMenu
 import com.amulyakhare.textdrawable.TextDrawable
 import com.amulyakhare.textdrawable.util.ColorGenerator
@@ -93,4 +95,21 @@ fun ImageView.roundTextIcon(text: String) {
                 letter, ColorGenerator.MATERIAL.getColor(letter)
             )
     )
+}
+
+inline fun View.updatePaddingRelative(
+    @Px start: Int = paddingStart,
+    @Px top: Int = paddingTop,
+    @Px end: Int = paddingEnd,
+    @Px bottom: Int = paddingBottom
+) {
+    setPaddingRelative(start, top, end, bottom)
+}
+
+object RecyclerWindowInsetsListener : View.OnApplyWindowInsetsListener {
+    override fun onApplyWindowInsets(v: View, insets: WindowInsets): WindowInsets {
+        v.updatePaddingRelative(bottom = insets.systemWindowInsetBottom)
+        // v.updatePaddingRelative(bottom = v.paddingBottom + insets.systemWindowInsetBottom)
+        return insets
+    }
 }

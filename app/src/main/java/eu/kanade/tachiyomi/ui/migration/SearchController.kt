@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
+import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchPresenter
 import uy.kohesive.injekt.injectLazy
@@ -18,6 +19,15 @@ class SearchController(
 ) : GlobalSearchController(manga?.title) {
 
     private var newManga: Manga? = null
+    private var progress = 1
+    var totalProgress = 0
+
+    override fun getTitle(): String? {
+        if (totalProgress > 1) {
+            return "($progress/$totalProgress) ${super.getTitle()}"
+        } else
+            return super.getTitle()
+    }
 
     override fun createPresenter(): GlobalSearchPresenter {
         return SearchPresenter(initialQuery, manga!!)
@@ -36,17 +46,21 @@ class SearchController(
     }
 
     fun migrateManga() {
+        val target = targetController as? MigrationInterface ?: return
         val manga = manga ?: return
         val newManga = newManga ?: return
 
-        (presenter as? SearchPresenter)?.migrateManga(manga, newManga, true)
+        val nextManga = target.migrateManga(manga, newManga, true)
+        replaceWithNewSearchController(nextManga)
     }
 
     fun copyManga() {
+        val target = targetController as? MigrationInterface ?: return
         val manga = manga ?: return
         val newManga = newManga ?: return
 
-        (presenter as? SearchPresenter)?.migrateManga(manga, newManga, false)
+        val nextManga = target.migrateManga(manga, newManga, false)
+        replaceWithNewSearchController(nextManga)
     }
 
     override fun onMangaClick(manga: Manga) {
@@ -70,6 +84,17 @@ class SearchController(
             router.popControllerWithTag(LOADING_DIALOG_TAG)
             router.popController(this)
         }
+    }
+
+    private fun replaceWithNewSearchController(manga: Manga?) {
+        if (manga != null) {
+            router.popCurrentController()
+            val searchController = SearchController(manga)
+            searchController.targetController = targetController
+            searchController.progress = progress + 1
+            searchController.totalProgress = totalProgress
+            router.replaceTopController(searchController.withFadeTransaction())
+        } else router.popController(this)
     }
 
     class MigrationDialog : DialogController() {

@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.ui.download.DownloadController
 import eu.kanade.tachiyomi.ui.extension.ExtensionController
 import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.migration.MetadataFetchDialog
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
@@ -48,7 +49,6 @@ import exh.ui.batchadd.BatchAddController
 import exh.ui.lock.LockActivityDelegate
 import exh.ui.lock.LockController
 import exh.ui.lock.lockEnabled
-import exh.ui.migration.MetadataFetchDialog
 import java.util.Date
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit

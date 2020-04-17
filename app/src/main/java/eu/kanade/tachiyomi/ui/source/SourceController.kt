@@ -30,10 +30,10 @@ import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.setting.SettingsSourcesController
+import eu.kanade.tachiyomi.ui.smartsearch.SmartSearchController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.latest.LatestUpdatesController
-import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -267,10 +267,8 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresent
 
     class SettingsSourcesFadeChangeHandler : FadeChangeHandler()
 
-    // EXH -->
     @Parcelize
     data class SmartSearchConfig(val origTitle: String, val origMangaId: Long) : Parcelable
-    // EXH <--
 
     enum class Mode {
         CATALOGUE,

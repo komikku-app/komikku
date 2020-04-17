@@ -1,8 +1,7 @@
-package exh.ui.migration
+package eu.kanade.tachiyomi.ui.migration
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import android.os.Build
 import android.text.Html
 import com.afollestad.materialdialogs.MaterialDialog
 import eu.kanade.tachiyomi.R
@@ -88,7 +87,7 @@ class MetadataFetchDialog {
 
             context.runOnUiThread {
                 // Ensure activity still exists before we do anything to the activity
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1 || !context.isDestroyed) {
+                if (!context.isDestroyed) {
                     progressDialog.dismiss()
 
                     // Enable orientation changes again
@@ -111,24 +110,29 @@ class MetadataFetchDialog {
                 // Not logged in but have ExHentai galleries
                 if (!preferenceHelper.enableExhentai().getOrDefault()) {
                     it.find { it.source == EXH_SOURCE_ID }?.let {
-                        extra = "<b><font color='red'>If you use ExHentai, please log in first before fetching your library metadata!</font></b><br><br>"
+                        extra =
+                            "<b><font color='red'>If you use ExHentai, please log in first before fetching your library metadata!</font></b><br><br>"
                     }
                 }
                 activity.runOnUiThread {
                     MaterialDialog.Builder(activity)
-                            .title("Fetch library metadata")
-                            .content(Html.fromHtml("You need to fetch your library's metadata before tag searching in the library will function.<br><br>" +
+                        .title("Fetch library metadata")
+                        .content(
+                            Html.fromHtml(
+                                "You need to fetch your library's metadata before tag searching in the library will function.<br><br>" +
                                     "This process may take a long time depending on your library size and will also use up a significant amount of internet bandwidth but can be stopped and started whenever you wish.<br><br>" +
                                     extra +
-                                    "This process can be done later if required."))
-                            .positiveText("Migrate")
-                            .negativeText("Later")
-                            .onPositive { _, _ -> show(activity) }
-                            .onNegative { _, _ -> adviseMigrationLater(activity) }
-                            .onAny { _, _ -> preferenceHelper.migrateLibraryAsked().set(true) }
-                            .cancelable(false)
-                            .canceledOnTouchOutside(false)
-                            .show()
+                                    "This process can be done later if required."
+                            )
+                        )
+                        .positiveText("Migrate")
+                        .negativeText("Later")
+                        .onPositive { _, _ -> show(activity) }
+                        .onNegative { _, _ -> adviseMigrationLater(activity) }
+                        .onAny { _, _ -> preferenceHelper.migrateLibraryAsked().set(true) }
+                        .cancelable(false)
+                        .canceledOnTouchOutside(false)
+                        .show()
                 }
             }
         }

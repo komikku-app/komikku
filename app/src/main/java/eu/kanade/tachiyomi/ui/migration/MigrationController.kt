@@ -1,21 +1,27 @@
 package eu.kanade.tachiyomi.ui.migration
 
+import android.app.Dialog
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.afollestad.materialdialogs.MaterialDialog
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
+import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import exh.ui.migration.manga.design.MigrationDesignController
-import exh.util.await
+import eu.kanade.tachiyomi.ui.migration.manga.design.MigrationDesignController
+import eu.kanade.tachiyomi.util.await
+import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.view.RecyclerWindowInsetsListener
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
@@ -24,7 +30,8 @@ import uy.kohesive.injekt.api.get
 class MigrationController : NucleusController<MigrationPresenter>(),
         FlexibleAdapter.OnItemClickListener,
         SourceAdapter.OnSelectClickListener,
-        SourceAdapter.OnAutoClickListener {
+        SourceAdapter.OnAutoClickListener,
+        MigrationInterface {
 
     private var adapter: FlexibleAdapter<IFlexible<*>>? = null
 
@@ -45,12 +52,20 @@ class MigrationController : NucleusController<MigrationPresenter>(),
         return binding.root
     }
 
+    fun searchController(manga: Manga): SearchController {
+        val controller = SearchController(manga)
+        controller.targetController = this
+
+        return controller
+    }
+
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
         adapter = FlexibleAdapter(null, this)
         binding.migrationRecycler.layoutManager = LinearLayoutManager(view.context)
         binding.migrationRecycler.adapter = adapter
+        binding.migrationRecycler.setOnApplyWindowInsetsListener(RecyclerWindowInsetsListener)
     }
 
     override fun onDestroyView(view: View) {
@@ -89,6 +104,16 @@ class MigrationController : NucleusController<MigrationPresenter>(),
         }
     }
 
+    fun renderIsReplacingManga(state: ViewState) {
+        if (state.isReplacingManga) {
+            if (router.getControllerWithTag(LOADING_DIALOG_TAG) == null) {
+                LoadingController().showDialog(router, LOADING_DIALOG_TAG)
+            }
+        } else {
+            router.popControllerWithTag(LOADING_DIALOG_TAG)
+        }
+    }
+
     override fun onItemClick(view: View?, position: Int): Boolean {
         val item = adapter?.getItem(position) ?: return false
 
@@ -110,12 +135,37 @@ class MigrationController : NucleusController<MigrationPresenter>(),
     override fun onAutoClick(position: Int) {
         val item = adapter?.getItem(position) as? SourceItem ?: return
 
-        GlobalScope.launch {
-            val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().asRxSingle().await(Schedulers.io())
+        launchUI {
+            val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().asRxSingle().await(
+                Schedulers.io())
             val sourceMangas = manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
             withContext(Dispatchers.Main) {
                 router.pushController(MigrationDesignController.create(sourceMangas).withFadeTransaction())
             }
         }
     }
+
+    override fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean): Manga? {
+        presenter.migrateManga(prevManga, manga, replace)
+        return null
+    }
+
+    class LoadingController : DialogController() {
+
+        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+            return MaterialDialog.Builder(activity!!)
+                    .progress(true, 0)
+                    .content(R.string.migrating)
+                    .cancelable(false)
+                    .build()
+        }
+    }
+
+    companion object {
+        const val LOADING_DIALOG_TAG = "LoadingDialog"
+    }
+}
+
+interface MigrationInterface {
+    fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean): Manga?
 }
