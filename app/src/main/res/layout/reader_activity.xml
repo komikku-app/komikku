@@ -48,14 +48,14 @@
         android:visibility="invisible"
         tools:visibility="visible">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
             android:background="?attr/colorPrimary" >
 
-            <androidx.appcompat.widget.Toolbar
+            <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
@@ -146,7 +146,7 @@
                 android:layout_height="wrap_content"
                 android:padding="0dp"
                 app:srcCompat="@drawable/ic_keyboard_arrow_down_white_32dp" />
-        </com.google.android.material.appbar.MaterialToolbar>
+        </com.google.android.material.appbar.AppBarLayout>
 
         <LinearLayout
             android:id="@+id/reader_menu_bottom"
