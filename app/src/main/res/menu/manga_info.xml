@@ -3,13 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_share"
-        android:icon="@drawable/ic_share_24dp"
-        android:title="@string/action_share"
-        app:iconTint="?attr/colorOnPrimary"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_migrate"
         android:icon="@drawable/baseline_swap_calls_24"
         android:title="@string/migrate"
@@ -18,13 +11,6 @@
     <item android:id="@+id/action_merge"
         android:icon="@drawable/eh_ic_find_replace_white_24dp"
         android:title="@string/eh_merge_with_another_source"
-        app:iconTint="?attr/colorOnPrimary"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_open_in_web_view"
-        android:icon="@drawable/ic_public_24dp"
-        android:title="@string/action_open_in_web_view"
         app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 

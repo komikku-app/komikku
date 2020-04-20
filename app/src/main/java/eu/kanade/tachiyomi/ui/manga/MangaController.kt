@@ -30,7 +30,6 @@ import eu.kanade.tachiyomi.ui.manga.info.MangaInfoController
 import eu.kanade.tachiyomi.ui.manga.track.TrackController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.util.system.toast
-import java.util.Date
 import kotlinx.android.synthetic.main.main_activity.tabs
 import rx.Subscription
 import uy.kohesive.injekt.Injekt
@@ -88,10 +87,6 @@ class MangaController : RxController, TabbedController {
     // EXH -->
     val smartSearchConfig: SourceController.SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG_EXTRA)
     // EXH <--
-
-    val lastUpdateRelay: BehaviorRelay<Date> = BehaviorRelay.create()
-
-    val chapterCountRelay: BehaviorRelay<Float> = BehaviorRelay.create()
 
     val mangaFavoriteRelay: PublishRelay<Boolean> = PublishRelay.create()
 
