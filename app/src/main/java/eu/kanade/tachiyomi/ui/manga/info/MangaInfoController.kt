@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
@@ -59,7 +60,9 @@ import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.snack
+import eu.kanade.tachiyomi.util.view.toggle
 import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
@@ -86,8 +89,9 @@ import uy.kohesive.injekt.injectLazy
  * Uses R.layout.manga_info_controller.
  * UI related actions should be called from here.
  */
-class MangaInfoController : NucleusController<MangaInfoPresenter>(),
-        ChangeMangaCategoriesDialog.Listener, CoroutineScope {
+class MangaInfoController(private val fromSource: Boolean = false) :
+    NucleusController<MangaInfoPresenter>(),
+    ChangeMangaCategoriesDialog.Listener, CoroutineScope {
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -347,27 +351,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         }
         // EXH <--
 
-        // Update genres list
-        if (!manga.genre.isNullOrBlank()) {
-            binding.mangaGenresTags.removeAllViews()
-
-            manga.getGenres()?.forEach { genre ->
-                val chip = Chip(view.context).apply {
-                    text = genre
-                    setOnClickListener { performSearch(genre) }
-                }
-
-                binding.mangaGenresTags.addView(chip)
-            }
-        }
-
-        // Update description TextView.
-        binding.mangaSummary.text = if (manga.description.isNullOrBlank()) {
-            view.context.getString(R.string.unknown)
-        } else {
-            manga.description
-        }
-
         // Update status TextView.
         binding.mangaStatus.setText(when (manga.status) {
             SManga.ONGOING -> R.string.ongoing
@@ -409,6 +392,76 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                         .into(binding.backdrop!!)
             }
         }
+
+        // Manga info section
+        if (manga.description.isNullOrBlank() && manga.genre.isNullOrBlank()) {
+            hideMangaInfo()
+        } else {
+            // Update description TextView.
+            binding.mangaSummary.text = if (manga.description.isNullOrBlank()) {
+                view.context.getString(R.string.unknown)
+            } else {
+                manga.description
+            }
+
+            // Update genres list
+            if (!manga.genre.isNullOrBlank()) {
+                binding.mangaGenresTags.removeAllViews()
+
+                manga.getGenres()?.forEach { genre ->
+                    val chip = Chip(view.context).apply {
+                        text = genre
+                        setOnClickListener { performSearch(genre) }
+                    }
+
+                    binding.mangaGenresTags.addView(chip)
+                }
+            }
+
+            // Handle showing more or less info
+            binding.mangaSummary.clicks()
+                .onEach { toggleMangaInfo(view.context) }
+                .launchInUI()
+            binding.mangaInfoToggle.clicks()
+                .onEach { toggleMangaInfo(view.context) }
+                .launchInUI()
+
+            // Expand manga info if navigated from source listing
+            if (fromSource) {
+                toggleMangaInfo(view.context)
+            }
+        }
+    }
+
+    private fun hideMangaInfo() {
+        binding.mangaSummaryLabel.gone()
+        binding.mangaSummary.gone()
+        binding.mangaGenresTags.gone()
+        binding.mangaInfoToggle.gone()
+    }
+
+    private fun toggleMangaInfo(context: Context) {
+        binding.mangaInfoToggle.text =
+            if (binding.mangaInfoToggle.text == context.getString(R.string.manga_info_expand))
+                context.getString(R.string.manga_info_collapse)
+            else
+                context.getString(R.string.manga_info_expand)
+
+        with(binding.mangaSummary) {
+            maxLines =
+                if (maxLines == Int.MAX_VALUE)
+                    3
+                else
+                    Int.MAX_VALUE
+
+            ellipsize =
+                if (ellipsize == TextUtils.TruncateAt.END)
+                    null
+                else
+                    TextUtils.TruncateAt.END
+        }
+
+        binding.mangaGenresTags.toggle()
     }
 
     /**
