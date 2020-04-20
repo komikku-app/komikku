@@ -8,7 +8,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.preference.CheckBoxPreference
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
@@ -21,6 +20,12 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
 import java.util.TreeMap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -37,6 +42,8 @@ class SettingsSourcesController : SettingsController() {
     }
 
     private var query = ""
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private var orderedLangs = listOf<String>()
     private var langPrefs = mutableListOf<Pair<String, SwitchPreferenceCategory>>()
@@ -181,11 +188,13 @@ class SettingsSourcesController : SettingsController() {
             searchView.clearFocus()
         }
 
-        searchView.queryTextChanges().filter { router.backstack.lastOrNull()?.controller() == this }
-                .subscribeUntilDestroy {
-                    query = it.toString()
-                    drawSources()
-                }
+        searchView.queryTextEvents()
+            .filter { router.backstack.lastOrNull()?.controller() == this }
+            .onEach {
+                query = it.toString()
+                drawSources()
+            }
+            .launchIn(uiScope)
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {

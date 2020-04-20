@@ -7,7 +7,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import com.afollestad.materialdialogs.MaterialDialog
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -18,6 +17,13 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchPresenter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.QueryTextEvent
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.injectLazy
 
 class SearchController(
@@ -27,6 +33,8 @@ class SearchController(
     private var newManga: Manga? = null
     private var progress = 1
     var totalProgress = 0
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     /**
      * Called when controller is initialized.
@@ -184,12 +192,13 @@ class SearchController(
             }
         })
 
-        searchView.queryTextChangeEvents()
-            .filter { it.isSubmitted }
-            .subscribeUntilDestroy {
-                presenter.search(it.queryText().toString())
+        searchView.queryTextEvents()
+            .filter { it is QueryTextEvent.QuerySubmitted }
+            .onEach {
+                presenter.search(it.queryText.toString())
                 searchItem.collapseActionView()
                 setTitle() // Update toolbar title
             }
+            .launchIn(uiScope)
     }
 }

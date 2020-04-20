@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
@@ -23,6 +22,12 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.source.browse.ProgressItem
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 
 /**
  * Fragment that shows recently read manga.
@@ -50,6 +55,8 @@ class HistoryController : NucleusController<HistoryPresenter>(),
         private set
 
     private lateinit var binding: HistoryControllerBinding
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     /**
      * Endless loading item.
@@ -188,11 +195,13 @@ class HistoryController : NucleusController<HistoryPresenter>(),
             searchView.setQuery(query, true)
             searchView.clearFocus()
         }
-        searchView.queryTextChanges().filter { router.backstack.lastOrNull()?.controller() == this }
-                .subscribeUntilDestroy {
-                    query = it.toString()
-                    presenter.updateList(query)
-                }
+        searchView.queryTextEvents()
+            .filter { router.backstack.lastOrNull()?.controller() == this }
+            .onEach {
+                query = it.toString()
+                presenter.updateList(query)
+            }
+            .launchIn(uiScope)
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {

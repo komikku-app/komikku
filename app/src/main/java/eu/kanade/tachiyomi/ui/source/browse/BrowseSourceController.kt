@@ -19,7 +19,6 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.elvishew.xlog.XLog
 import com.f2prateek.rx.preferences.Preference
 import com.google.android.material.snackbar.Snackbar
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
@@ -46,11 +45,15 @@ import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
 import exh.EXHSavedSearch
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.drawer
-import rx.Observable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.QueryTextEvent
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -101,11 +104,6 @@ open class BrowseSourceController(bundle: Bundle) :
     private var recycler: RecyclerView? = null
 
     /**
-     * Subscription for the search view.
-     */
-    private var searchViewSubscription: Subscription? = null
-
-    /**
      * Subscription for the number of manga per row.
      */
     private var numColumnsSubscription: Subscription? = null
@@ -114,6 +112,8 @@ open class BrowseSourceController(bundle: Bundle) :
      * Endless loading item.
      */
     private var progressItem: ProgressItem? = null
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var binding: SourceControllerBinding
 
@@ -150,8 +150,6 @@ open class BrowseSourceController(bundle: Bundle) :
     override fun onDestroyView(view: View) {
         numColumnsSubscription?.unsubscribe()
         numColumnsSubscription = null
-        searchViewSubscription?.unsubscribe()
-        searchViewSubscription = null
         adapter = null
         snack = null
         recycler = null
@@ -333,20 +331,11 @@ open class BrowseSourceController(bundle: Bundle) :
             searchView.clearFocus()
         }
 
-        val searchEventsObservable = searchView.queryTextChangeEvents()
-                .skip(1)
-                .filter { router.backstack.lastOrNull()?.controller() == this@BrowseSourceController }
-                .share()
-        val writingObservable = searchEventsObservable
-                .filter { !it.isSubmitted }
-                .debounce(1250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-        val submitObservable = searchEventsObservable
-                .filter { it.isSubmitted }
-
-        searchViewSubscription?.unsubscribe()
-        searchViewSubscription = Observable.merge(writingObservable, submitObservable)
-                .map { it.queryText().toString() }
-                .subscribeUntilDestroy { searchWithQuery(it) }
+        searchView.queryTextEvents()
+            .filter { router.backstack.lastOrNull()?.controller() == this@BrowseSourceController }
+            .filter { it is QueryTextEvent.QuerySubmitted }
+            .onEach { searchWithQuery(it.queryText.toString()) }
+            .launchIn(uiScope)
 
         searchItem.fixExpand(
                 onExpand = { invalidateMenuOnExpand() },
