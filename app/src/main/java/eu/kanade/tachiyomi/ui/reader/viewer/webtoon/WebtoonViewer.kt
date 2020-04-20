@@ -71,8 +71,8 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
         recycler.itemAnimator = null
         recycler.layoutManager = layoutManager
         recycler.adapter = adapter
-        recycler.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+        recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val position = layoutManager.findLastEndVisibleItemPosition()
                 val item = adapter.items.getOrNull(position)
                 if (item != null && currentPage != item) {
@@ -96,10 +96,10 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             val positionX = event.rawX
             val positionY = event.rawY
             when {
-                positionY < recycler.height * 0.25 -> if (config.tappingEnabled) scrollUp()
-                positionY > recycler.height * 0.75 -> if (config.tappingEnabled) scrollDown()
-                positionX < recycler.width * 0.33 -> if (config.tappingEnabled) scrollUp()
-                positionX > recycler.width * 0.66 -> if (config.tappingEnabled) scrollDown()
+                positionY < recycler.height * 0.25 -> if (config.tappingEnabled) scrollUp() else activity.toggleMenu()
+                positionY > recycler.height * 0.75 -> if (config.tappingEnabled) scrollDown() else activity.toggleMenu()
+                positionX < recycler.width * 0.33 -> if (config.tappingEnabled) scrollUp() else activity.toggleMenu()
+                positionX > recycler.width * 0.66 -> if (config.tappingEnabled) scrollDown() else activity.toggleMenu()
                 else -> activity.toggleMenu()
             }
         }
