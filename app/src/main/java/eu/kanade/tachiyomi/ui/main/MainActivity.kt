@@ -245,9 +245,8 @@ class MainActivity : BaseActivity() {
             // EXH <--
         }
 
-        setExtensionsBadge()
         preferences.extensionUpdatesCount().asFlow()
-            .onEach { setExtensionsBadge() }
+            .onEach { setExtensionsBadge(it) }
             .launchInUI()
     }
 
@@ -257,12 +256,11 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private fun setExtensionsBadge() {
+    private fun setExtensionsBadge(updates: Int) {
         val extUpdateText: TextView = binding.navView.menu.findItem(
                 R.id.nav_drawer_extensions
         )?.actionView as? TextView ?: return
 
-        val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
             extUpdateText.text = updates.toString()
             extUpdateText.visible()
