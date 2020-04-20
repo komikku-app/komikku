@@ -360,7 +360,7 @@
     <string name="information_empty_library">المكتبة فارغة، يمكنك إضافة سلسلة إلى المكتبة الخاصة بك من القوائم.</string>
     <string name="download_notifier_downloader_title">مدير التحميل</string>
     <string name="download_notifier_title_error">خطأ</string>
-    <string name="download_notifier_unkown_error">حدث خطأ غير متوقع أثناء تحميل الفصل</string>
+    <string name="download_notifier_unknown_error">حدث خطأ غير متوقع أثناء تحميل الفصل</string>
     <string name="download_notifier_page_error">هناك صفحة مفقودة في المجلد</string>
     <string name="download_notifier_page_ready_error">لم يتم تحميل الصفحة</string>
     <string name="download_notifier_text_only_wifi">لا يتوفر اتصال واي فاي</string>

@@ -108,7 +108,7 @@
     <string name="download_notifier_page_ready_error">Страница не загружена</string>
     <string name="download_notifier_text_only_wifi">Нет Wi-Fi соединения</string>
     <string name="download_notifier_title_error">Ошибка</string>
-    <string name="download_notifier_unkown_error">Неожиданная ошибка при загрузке главы</string>
+    <string name="download_notifier_unknown_error">Неожиданная ошибка при загрузке главы</string>
     <string name="download_progress">Загружено %1$d%%</string>
     <string name="download_queue_error">Произошла ошибка при загрузке глав. Попробуйте еще раз в разделе загрузки</string>
     <string name="download_unread">Загрузить непрочитанные</string>

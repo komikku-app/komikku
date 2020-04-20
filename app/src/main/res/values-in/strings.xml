@@ -351,7 +351,7 @@
     <string name="information_empty_library">Perpustakaan Anda kosong, Anda bisa menambahkan seri ke perpustakaan Anda dari katalog.</string>
     <string name="download_notifier_downloader_title">Pengunduh</string>
     <string name="download_notifier_title_error">Gagal</string>
-    <string name="download_notifier_unkown_error">Terjadi kesalahan tak terduga saat mengunduh bab</string>
+    <string name="download_notifier_unknown_error">Terjadi kesalahan tak terduga saat mengunduh bab</string>
     <string name="download_notifier_page_error">Sebuah halaman tidak dapat ditemukan di folder</string>
     <string name="download_notifier_page_ready_error">Halaman tidak dimuat</string>
     <string name="download_notifier_text_only_wifi">Tidak ada koneksi wifi yang tersedia</string>

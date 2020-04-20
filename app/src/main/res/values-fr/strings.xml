@@ -321,7 +321,7 @@
     <string name="confirm_delete_chapters">Êtes-vous sûr de vouloir supprimer les chapitres sélectionnés ?</string>
     <string name="custom_dir">Répertoire personnalisé</string>
     <string name="download_10">Télécharger les 10 chapitres suivants</string>
-    <string name="download_notifier_unkown_error">Une erreur inattendue s\'est produite lors du téléchargement du chapitre</string>
+    <string name="download_notifier_unknown_error">Une erreur inattendue s\'est produite lors du téléchargement du chapitre</string>
     <string name="fifth_to_last">Du cinquième au dernier chapitre</string>
     <string name="login_success">Connexion réussie</string>
     <string name="manga_chapter_no_title">Pas de titre</string>
