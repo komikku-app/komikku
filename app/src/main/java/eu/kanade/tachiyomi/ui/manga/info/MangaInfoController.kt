@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -385,6 +386,12 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
             lastMangaThumbnail = manga.thumbnail_url
 
             val coverSig = ObjectKey(manga.thumbnail_url ?: "")
+
+            binding.mangaCoverCard.radius = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                preferences.eh_library_corner_radius().getOrDefault().toFloat(),
+                view.context.resources.displayMetrics
+            )
 
             GlideApp.with(view.context)
                     .load(manga)
