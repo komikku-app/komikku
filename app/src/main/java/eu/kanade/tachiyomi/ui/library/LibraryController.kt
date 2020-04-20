@@ -42,6 +42,7 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.migration.MigrationController
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
@@ -53,7 +54,6 @@ import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.drawer
 import kotlinx.android.synthetic.main.main_activity.tabs
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextChanges
 import rx.Subscription
@@ -398,7 +398,7 @@ class LibraryController(
                 query = it.toString()
                 searchRelay.call(query)
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         searchItem.fixExpand(onExpand = { invalidateMenuOnExpand() })
     }

@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.switchPreferenceCategory
 import eu.kanade.tachiyomi.util.preference.titleRes
@@ -21,7 +22,6 @@ import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
 import java.util.TreeMap
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
@@ -190,7 +190,7 @@ class SettingsSourcesController : SettingsController() {
                 query = it.toString()
                 drawSources()
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {

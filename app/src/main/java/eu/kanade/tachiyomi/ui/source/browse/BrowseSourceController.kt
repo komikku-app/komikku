@@ -36,6 +36,7 @@ import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.system.connectivityManager
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.gone
@@ -47,7 +48,6 @@ import eu.kanade.tachiyomi.widget.EmptyView
 import exh.EXHSavedSearch
 import kotlinx.android.synthetic.main.main_activity.drawer
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
@@ -331,7 +331,7 @@ open class BrowseSourceController(bundle: Bundle) :
             .filter { router.backstack.lastOrNull()?.controller() == this@BrowseSourceController }
             .filter { it is QueryTextEvent.QuerySubmitted }
             .onEach { searchWithQuery(it.queryText.toString()) }
-            .launchIn(uiScope)
+            .launchInUI()
 
         searchItem.fixExpand(
                 onExpand = { invalidateMenuOnExpand() },

@@ -33,9 +33,9 @@ import eu.kanade.tachiyomi.ui.smartsearch.SmartSearchController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.latest.LatestUpdatesController
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
@@ -228,7 +228,7 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresent
         searchView.queryTextEvents()
             .filter { it is QueryTextEvent.QuerySubmitted }
             .onEach { performGlobalSearch(it.queryText.toString()) }
-            .launchIn(uiScope)
+            .launchInUI()
     }
 
     private fun performGlobalSearch(query: String) {

@@ -55,6 +55,7 @@ import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.snack
@@ -69,8 +70,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -127,12 +126,12 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         // Set onclickListener to toggle favorite when favorite button clicked.
         binding.btnFavorite.clicks()
             .onEach { onFavoriteClick() }
-            .launchIn(uiScope)
+            .launchInUI()
 
         // Set onLongClickListener to manage categories when favorite button is clicked.
         binding.btnFavorite.longClicks()
             .onEach { onFavoriteLongClick() }
-            .launchIn(uiScope)
+            .launchInUI()
 
         if (presenter.source is HttpSource) {
             binding.btnWebview.visible()
@@ -140,34 +139,34 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
             binding.btnWebview.clicks()
                 .onEach { openInWebView() }
-                .launchIn(uiScope)
+                .launchInUI()
             binding.btnShare.clicks()
                 .onEach { shareManga() }
-                .launchIn(uiScope)
+                .launchInUI()
         }
 
         // Set SwipeRefresh to refresh manga data.
         binding.swipeRefresh.refreshes()
             .onEach { fetchMangaFromSource() }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaFullTitle.longClicks()
             .onEach {
                 copyToClipboard(view.context.getString(R.string.title), binding.mangaFullTitle.text.toString())
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaFullTitle.clicks()
             .onEach {
                 performGlobalSearch(binding.mangaFullTitle.text.toString())
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaArtist.longClicks()
             .onEach {
                 copyToClipboard(binding.mangaArtistLabel.text.toString(), binding.mangaArtist.text.toString())
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaArtist.clicks()
             .onEach {
@@ -176,7 +175,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                     text = wrapTag("artist", text)
                 performGlobalSearch(text)
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaAuthor.longClicks()
             .onEach {
@@ -184,7 +183,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                 if (!isEHentaiBasedSource())
                     copyToClipboard(binding.mangaAuthor.text.toString(), binding.mangaAuthor.text.toString())
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaAuthor.clicks()
             .onEach {
@@ -192,19 +191,19 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                 if (!isEHentaiBasedSource())
                     performGlobalSearch(binding.mangaAuthor.text.toString())
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaSummary.longClicks()
             .onEach {
                 copyToClipboard(view.context.getString(R.string.description), binding.mangaSummary.text.toString())
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         binding.mangaCover.longClicks()
             .onEach {
                 copyToClipboard(view.context.getString(R.string.title), presenter.manga.title)
             }
-            .launchIn(uiScope)
+            .launchInUI()
 
         // EXH -->
         smartSearchConfig?.let { smartSearchConfig ->
@@ -212,28 +211,28 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
             binding.mergeBtn.clicks()
                 .onEach {
-                // Init presenter here to avoid threading issues
-                presenter
+                    // Init presenter here to avoid threading issues
+                    presenter
 
-                launch {
-                    try {
-                        val mergedManga = withContext(Dispatchers.IO + NonCancellable) {
-                            presenter.smartSearchMerge(presenter.manga, smartSearchConfig.origMangaId)
-                        }
+                    launch {
+                        try {
+                            val mergedManga = withContext(Dispatchers.IO + NonCancellable) {
+                                presenter.smartSearchMerge(presenter.manga, smartSearchConfig.origMangaId)
+                            }
 
-                        parentController?.router?.pushController(MangaController(mergedManga,
-                            true,
-                            update = true).withFadeTransaction())
-                        applicationContext?.toast("Manga merged!")
-                    } catch (e: Exception) {
-                        if (e is CancellationException) throw e
-                        else {
-                            applicationContext?.toast("Failed to merge manga: ${e.message}")
+                            parentController?.router?.pushController(MangaController(mergedManga,
+                                true,
+                                update = true).withFadeTransaction())
+                            applicationContext?.toast("Manga merged!")
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                            else {
+                                applicationContext?.toast("Failed to merge manga: ${e.message}")
+                            }
                         }
                     }
                 }
-            }
-                .launchIn(uiScope)
+                .launchInUI()
         }
         // EXH <--
     }
