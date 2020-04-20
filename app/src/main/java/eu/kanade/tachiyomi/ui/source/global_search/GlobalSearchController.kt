@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -19,6 +18,13 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.QueryTextEvent
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -41,6 +47,8 @@ open class GlobalSearchController(
      * Adapter containing search results grouped by lang.
      */
     protected var adapter: GlobalSearchAdapter? = null
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var binding: GlobalSearchControllerBinding
 
@@ -127,13 +135,14 @@ open class GlobalSearchController(
             }
         })
 
-        searchView.queryTextChangeEvents()
-                .filter { it.isSubmitted }
-                .subscribeUntilDestroy {
-                    presenter.search(it.queryText().toString())
-                    searchItem.collapseActionView()
-                    setTitle() // Update toolbar title
-                }
+        searchView.queryTextEvents()
+            .filter { it is QueryTextEvent.QuerySubmitted }
+            .onEach {
+                presenter.search(it.queryText.toString())
+                searchItem.collapseActionView()
+                setTitle() // Update toolbar title
+            }
+            .launchIn(uiScope)
     }
 
     /**

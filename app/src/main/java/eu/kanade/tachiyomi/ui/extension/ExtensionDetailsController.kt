@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.elvishew.xlog.XLog
-import com.jakewharton.rxbinding.view.clicks
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.EmptyPreferenceDataStore
 import eu.kanade.tachiyomi.data.preference.SharedPreferencesDataStore
@@ -35,6 +34,11 @@ import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.visible
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 
 @SuppressLint("RestrictedApi")
 class ExtensionDetailsController(bundle: Bundle? = null) :
@@ -49,6 +53,8 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
     private var lastOpenPreferencePosition: Int? = null
 
     private var preferenceScreen: PreferenceScreen? = null
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var binding: ExtensionDetailControllerBinding
 
@@ -82,9 +88,9 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
         binding.extensionLang.text = context.getString(R.string.ext_language_info, LocaleHelper.getDisplayName(extension.lang, context))
         binding.extensionPkg.text = extension.pkgName
         extension.getApplicationIcon(context)?.let { binding.extensionIcon.setImageDrawable(it) }
-        binding.extensionUninstallButton.clicks().subscribeUntilDestroy {
-            presenter.uninstallExtension()
-        }
+        binding.extensionUninstallButton.clicks()
+            .onEach { presenter.uninstallExtension() }
+            .launchIn(uiScope)
 
         if (extension.isObsolete) {
             binding.extensionObsolete.visible()

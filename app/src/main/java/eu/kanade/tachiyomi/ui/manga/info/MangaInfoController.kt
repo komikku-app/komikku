@@ -30,9 +30,6 @@ import com.bumptech.glide.signature.ObjectKey
 import com.elvishew.xlog.XLog
 import com.google.android.material.chip.Chip
 import com.google.gson.Gson
-import com.jakewharton.rxbinding.support.v4.widget.refreshes
-import com.jakewharton.rxbinding.view.clicks
-import com.jakewharton.rxbinding.view.longClicks
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -73,8 +70,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
+import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -88,6 +90,8 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         ChangeMangaCategoriesDialog.Listener, CoroutineScope {
 
     private val preferences: PreferencesHelper by injectLazy()
+
+    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var binding: MangaInfoControllerBinding
 
@@ -123,67 +127,93 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
         super.onViewCreated(view)
 
         // Set onclickListener to toggle favorite when favorite button clicked.
-        binding.btnFavorite.clicks().subscribeUntilDestroy { onFavoriteClick() }
+        binding.btnFavorite.clicks()
+            .onEach { onFavoriteClick() }
+            .launchIn(uiScope)
 
         // Set onLongClickListener to manage categories when favorite button is clicked.
-        binding.btnFavorite.longClicks().subscribeUntilDestroy { onFavoriteLongClick() }
+        binding.btnFavorite.longClicks()
+            .onEach { onFavoriteLongClick() }
+            .launchIn(uiScope)
 
         if (presenter.source is HttpSource) {
             binding.btnWebview.visible()
             binding.btnShare.visible()
 
-            binding.btnWebview.clicks().subscribeUntilDestroy { openInWebView() }
-            binding.btnShare.clicks().subscribeUntilDestroy { shareManga() }
+            binding.btnWebview.clicks()
+                .onEach { openInWebView() }
+                .launchIn(uiScope)
+            binding.btnShare.clicks()
+                .onEach { shareManga() }
+                .launchIn(uiScope)
         }
 
         // Set SwipeRefresh to refresh manga data.
-        binding.swipeRefresh.refreshes().subscribeUntilDestroy { fetchMangaFromSource() }
+        binding.swipeRefresh.refreshes()
+            .onEach { fetchMangaFromSource() }
+            .launchIn(uiScope)
 
-        binding.mangaFullTitle.longClicks().subscribeUntilDestroy {
-            copyToClipboard(view.context.getString(R.string.title), binding.mangaFullTitle.text.toString())
-        }
+        binding.mangaFullTitle.longClicks()
+            .onEach {
+                copyToClipboard(view.context.getString(R.string.title), binding.mangaFullTitle.text.toString())
+            }
+            .launchIn(uiScope)
 
-        binding.mangaFullTitle.clicks().subscribeUntilDestroy {
-            performGlobalSearch(binding.mangaFullTitle.text.toString())
-        }
+        binding.mangaFullTitle.clicks()
+            .onEach {
+                performGlobalSearch(binding.mangaFullTitle.text.toString())
+            }
+            .launchIn(uiScope)
 
-        binding.mangaArtist.longClicks().subscribeUntilDestroy {
-            copyToClipboard(binding.mangaArtistLabel.text.toString(), binding.mangaArtist.text.toString())
-        }
+        binding.mangaArtist.longClicks()
+            .onEach {
+                copyToClipboard(binding.mangaArtistLabel.text.toString(), binding.mangaArtist.text.toString())
+            }
+            .launchIn(uiScope)
 
-        binding.mangaArtist.clicks().subscribeUntilDestroy {
-            // EXH Special case E-Hentai/ExHentai to use tag based search
-            var text = binding.mangaArtist.text.toString()
-            if (isEHentaiBasedSource())
-                text = wrapTag("artist", text)
-            performGlobalSearch(text)
-        }
+        binding.mangaArtist.clicks()
+            .onEach {
+                var text = binding.mangaArtist.text.toString()
+                if (isEHentaiBasedSource())
+                    text = wrapTag("artist", text)
+                performGlobalSearch(text)
+            }
+            .launchIn(uiScope)
 
-        binding.mangaAuthor.longClicks().subscribeUntilDestroy {
-            // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
-            if (!isEHentaiBasedSource())
-                copyToClipboard(binding.mangaArtist.text.toString(), binding.mangaAuthor.text.toString())
-        }
+        binding.mangaAuthor.longClicks()
+            .onEach {
+                // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
+                if (!isEHentaiBasedSource())
+                    copyToClipboard(binding.mangaAuthor.text.toString(), binding.mangaAuthor.text.toString())
+            }
+            .launchIn(uiScope)
 
-        binding.mangaAuthor.clicks().subscribeUntilDestroy {
-            // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
-            if (!isEHentaiBasedSource())
-                performGlobalSearch(binding.mangaAuthor.text.toString())
-        }
+        binding.mangaAuthor.clicks()
+            .onEach {
+                // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
+                if (!isEHentaiBasedSource())
+                    performGlobalSearch(binding.mangaAuthor.text.toString())
+            }
+            .launchIn(uiScope)
 
-        binding.mangaSummary.longClicks().subscribeUntilDestroy {
-            copyToClipboard(view.context.getString(R.string.description), binding.mangaSummary.text.toString())
-        }
+        binding.mangaSummary.longClicks()
+            .onEach {
+                copyToClipboard(view.context.getString(R.string.description), binding.mangaSummary.text.toString())
+            }
+            .launchIn(uiScope)
 
-        binding.mangaCover.longClicks().subscribeUntilDestroy {
-            copyToClipboard(view.context.getString(R.string.title), presenter.manga.title)
-        }
+        binding.mangaCover.longClicks()
+            .onEach {
+                copyToClipboard(view.context.getString(R.string.title), presenter.manga.title)
+            }
+            .launchIn(uiScope)
 
         // EXH -->
         smartSearchConfig?.let { smartSearchConfig ->
             binding.mergeBtn.visible()
 
-            binding.mergeBtn.clicks().subscribeUntilDestroy {
+            binding.mergeBtn.clicks()
+                .onEach {
                 // Init presenter here to avoid threading issues
                 presenter
 
@@ -205,6 +235,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                     }
                 }
             }
+                .launchIn(uiScope)
         }
         // EXH <--
     }
