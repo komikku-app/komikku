@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
@@ -54,6 +55,7 @@ import java.util.LinkedList
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -234,7 +236,7 @@ class MainActivity : BaseActivity() {
             initWhenIdle {
                 // Upload settings
                 if (preferences.enableExhentai().getOrDefault() &&
-                        preferences.eh_showSettingsUploadWarning().getOrDefault())
+                        preferences.eh_showSettingsUploadWarning().get())
                     WarnConfigureDialogController.uploadSettings(router)
 
                 // Scheduler uploader job if required
@@ -242,10 +244,11 @@ class MainActivity : BaseActivity() {
             }
             // EXH <--
         }
-        preferences.extensionUpdatesCount().asObservable().subscribe {
-            setExtensionsBadge()
-        }
+
         setExtensionsBadge()
+        preferences.extensionUpdatesCount().asFlow()
+            .onEach { setExtensionsBadge() }
+            .launchInUI()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -259,7 +262,7 @@ class MainActivity : BaseActivity() {
                 R.id.nav_drawer_extensions
         )?.actionView as? TextView ?: return
 
-        val updates = preferences.extensionUpdatesCount().getOrDefault()
+        val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
             extUpdateText.text = updates.toString()
             extUpdateText.visible()

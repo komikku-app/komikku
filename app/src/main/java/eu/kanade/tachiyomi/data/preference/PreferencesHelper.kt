@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 import eu.kanade.tachiyomi.data.track.TrackService
+import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -125,7 +126,7 @@ class PreferencesHelper(val context: Context) {
 
     fun lastUsedCategory() = rxPrefs.getInteger(Keys.lastUsedCategory, 0)
 
-    fun lastVersionCode() = rxPrefs.getInteger("last_version_code", 0)
+    fun lastVersionCode() = flowPrefs.getInt("last_version_code", 0)
 
     fun catalogueAsList() = rxPrefs.getBoolean(Keys.catalogueAsList, false)
 
@@ -146,7 +147,7 @@ class PreferencesHelper(val context: Context) {
 
     fun trackToken(sync: TrackService) = rxPrefs.getString(Keys.trackToken(sync.id), "")
 
-    fun anilistScoreType() = rxPrefs.getString("anilist_score_type", "POINT_10")
+    fun anilistScoreType() = rxPrefs.getString("anilist_score_type", Anilist.POINT_10)
 
     fun backupsDirectory() = rxPrefs.getString(Keys.backupDirectory, defaultBackupDir.toString())
 
@@ -195,7 +196,7 @@ class PreferencesHelper(val context: Context) {
 
     fun automaticExtUpdates() = flowPrefs.getBoolean(Keys.automaticExtUpdates, true)
 
-    fun extensionUpdatesCount() = rxPrefs.getInteger("ext_updates_count", 0)
+    fun extensionUpdatesCount() = flowPrefs.getInt("ext_updates_count", 0)
 
     fun lastExtCheck() = flowPrefs.getLong("last_ext_check", 0)
 
@@ -291,7 +292,7 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_ts_aspNetCookie() = rxPrefs.getString(Keys.eh_ts_aspNetCookie, "")
 
-    fun eh_showSettingsUploadWarning() = rxPrefs.getBoolean(Keys.eh_showSettingsUploadWarning, true)
+    fun eh_showSettingsUploadWarning() = flowPrefs.getBoolean(Keys.eh_showSettingsUploadWarning, true)
 
     fun eh_expandFilters() = rxPrefs.getBoolean(Keys.eh_expandFilters, false)
 
