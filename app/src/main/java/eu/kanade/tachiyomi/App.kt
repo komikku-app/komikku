@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Environment
+import android.webkit.WebView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -69,6 +70,14 @@ open class App : Application(), LifecycleObserver {
         LocaleHelper.updateConfiguration(this, resources.configuration)
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
+        // Avoid sharing WebView instance across multiple processes
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val processName = getProcessName()
+            if (packageName != processName) {
+                WebView.setDataDirectorySuffix(processName)
+            }
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
