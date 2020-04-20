@@ -22,8 +22,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.source.browse.ProgressItem
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -55,8 +53,6 @@ class HistoryController : NucleusController<HistoryPresenter>(),
         private set
 
     private lateinit var binding: HistoryControllerBinding
-
-    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     /**
      * Endless loading item.

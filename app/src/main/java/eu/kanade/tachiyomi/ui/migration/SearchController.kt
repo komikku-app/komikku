@@ -10,15 +10,12 @@ import com.afollestad.materialdialogs.MaterialDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchPresenter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -33,8 +30,6 @@ class SearchController(
     private var newManga: Manga? = null
     private var progress = 1
     var totalProgress = 0
-
-    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     /**
      * Called when controller is initialized.
@@ -138,7 +133,7 @@ class SearchController(
         private val preferences: PreferencesHelper by injectLazy()
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            val prefValue = preferences.migrateFlags().getOrDefault()
+            val prefValue = preferences.migrateFlags().get()
 
             val preselected = MigrationFlags.getEnabledFlagsPositions(prefValue)
 

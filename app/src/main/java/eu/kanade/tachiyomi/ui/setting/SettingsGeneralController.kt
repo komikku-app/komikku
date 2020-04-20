@@ -7,7 +7,6 @@ import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -21,6 +20,8 @@ import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.ui.lock.FingerLockPreference
 import exh.ui.lock.LockPreference
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class SettingsGeneralController : SettingsController() {
 
@@ -145,11 +146,13 @@ class SettingsGeneralController : SettingsController() {
                 defaultValue = Values.THEME_LIGHT_DEFAULT
                 summary = "%s"
 
-                preferences.themeMode().asObservable()
-                        .subscribeUntilDestroy { isVisible = it != Values.THEME_MODE_DARK }
+                isVisible = preferences.themeMode().get() != Values.THEME_MODE_DARK
+                preferences.themeMode().asFlow()
+                    .onEach { isVisible = it != Values.THEME_MODE_DARK }
+                    .launchIn(uiScope)
 
                 onChange {
-                    if (preferences.themeMode().getOrDefault() != Values.THEME_MODE_DARK) {
+                    if (preferences.themeMode().get() != Values.THEME_MODE_DARK) {
                         activity?.recreate()
                     }
                     true
@@ -171,11 +174,13 @@ class SettingsGeneralController : SettingsController() {
                 defaultValue = Values.THEME_DARK_DEFAULT
                 summary = "%s"
 
-                preferences.themeMode().asObservable()
-                    .subscribeUntilDestroy { isVisible = it != Values.THEME_MODE_LIGHT }
+                isVisible = preferences.themeMode().get() != Values.THEME_MODE_LIGHT
+                preferences.themeMode().asFlow()
+                    .onEach { isVisible = it != Values.THEME_MODE_LIGHT }
+                    .launchIn(uiScope)
 
                 onChange {
-                    if (preferences.themeMode().getOrDefault() != Values.THEME_MODE_LIGHT) {
+                    if (preferences.themeMode().get() != Values.THEME_MODE_LIGHT) {
                         activity?.recreate()
                     }
                     true

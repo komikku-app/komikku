@@ -405,7 +405,7 @@ class LibraryPresenter(
         replace: Boolean
     ) {
 
-        val flags = preferences.migrateFlags().getOrDefault()
+        val flags = preferences.migrateFlags().get()
         val migrateChapters = MigrationFlags.hasChapters(flags)
         val migrateCategories = MigrationFlags.hasCategories(flags)
         val migrateTracks = MigrationFlags.hasTracks(flags)

@@ -20,8 +20,6 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
 import java.util.TreeMap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -42,8 +40,6 @@ class SettingsSourcesController : SettingsController() {
     }
 
     private var query = ""
-
-    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private var orderedLangs = listOf<String>()
     private var langPrefs = mutableListOf<Pair<String, SwitchPreferenceCategory>>()

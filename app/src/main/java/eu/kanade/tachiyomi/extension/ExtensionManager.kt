@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable
 import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
@@ -138,7 +137,7 @@ class ExtensionManager(
 
     // EXH -->
     fun <T : Extension> Iterable<T>.filterNotBlacklisted(): List<T> {
-        val blacklistEnabled = preferences.eh_enableSourceBlacklist().getOrDefault()
+        val blacklistEnabled = preferences.eh_enableSourceBlacklist().get()
         return filter {
             if (it.isBlacklisted(blacklistEnabled)) {
                 XLog.d("[EXH] Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
@@ -149,7 +148,7 @@ class ExtensionManager(
 
     fun Extension.isBlacklisted(
         blacklistEnabled: Boolean =
-                preferences.eh_enableSourceBlacklist().getOrDefault()
+                preferences.eh_enableSourceBlacklist().get()
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
@@ -282,7 +281,7 @@ class ExtensionManager(
 
         ExtensionLoader.trustedSignatures += signature
         val preference = preferences.trustedSignatures()
-        preference.set(preference.getOrDefault() + signature)
+        preference.set(preference.get() + signature)
 
         val nowTrustedExtensions = untrustedExtensions.filter { it.signatureHash == signature }
         untrustedExtensions -= nowTrustedExtensions

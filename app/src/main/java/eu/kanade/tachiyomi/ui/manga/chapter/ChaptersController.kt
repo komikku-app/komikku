@@ -36,8 +36,6 @@ import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.snack
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -68,8 +66,6 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
     private val selectedItems = mutableSetOf<ChapterItem>()
 
     private var lastClickPosition = -1
-
-    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var binding: ChaptersControllerBinding
 
@@ -124,6 +120,7 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
                     view.context.toast(R.string.no_next_chapter)
                 }
             }
+            .launchIn(uiScope)
 
         presenter.redirectUserRelay
                 .observeOn(AndroidSchedulers.mainThread())
@@ -258,8 +255,9 @@ class ChaptersController : NucleusController<ChaptersPresenter>(),
     fun onNextChapters(chapters: List<ChapterItem>) {
         // If the list is empty, fetch chapters from source if the conditions are met
         // We use presenter chapters instead because they are always unfiltered
-        if (presenter.chapters.isEmpty())
+        if (presenter.chapters.isEmpty()) {
             initialFetchChapters()
+        }
 
         val mangaController = parentController as MangaController
         if (mangaController.update ||

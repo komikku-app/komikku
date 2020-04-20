@@ -91,8 +91,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
 
     private val preferences: PreferencesHelper by injectLazy()
 
-    private val uiScope = CoroutineScope(Dispatchers.Main)
-
     private lateinit var binding: MangaInfoControllerBinding
 
     // EXH -->

@@ -34,8 +34,6 @@ import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.latest.LatestUpdatesController
 import kotlinx.android.parcel.Parcelize
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -63,8 +61,6 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresent
      * Adapter containing sources.
      */
     private var adapter: SourceAdapter? = null
-
-    private val uiScope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var binding: SourceMainControllerBinding
 
