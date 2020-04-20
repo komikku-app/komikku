@@ -65,8 +65,6 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import java.text.DateFormat
-import java.text.DecimalFormat
-import java.util.Date
 import jp.wasabeef.glide.transformations.CropSquareTransformation
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
@@ -117,7 +115,7 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
     override fun createPresenter(): MangaInfoPresenter {
         val ctrl = parentController as MangaController
         return MangaInfoPresenter(ctrl.manga!!, ctrl.source!!, ctrl.smartSearchConfig,
-                ctrl.chapterCountRelay, ctrl.lastUpdateRelay, ctrl.mangaFavoriteRelay)
+                ctrl.mangaFavoriteRelay)
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
@@ -377,27 +375,6 @@ class MangaInfoController : NucleusController<MangaInfoPresenter>(),
                         .centerCrop()
                         .into(binding.backdrop!!)
             }
-        }
-    }
-
-    /**
-     * Update chapter count TextView.
-     *
-     * @param count number of chapters.
-     */
-    fun setChapterCount(count: Float) {
-        if (count > 0f) {
-            binding.mangaChapters.text = DecimalFormat("#.#").format(count)
-        } else {
-            binding.mangaChapters.text = resources?.getString(R.string.unknown)
-        }
-    }
-
-    fun setLastUpdateDate(date: Date) {
-        if (date.time != 0L) {
-            binding.mangaLastUpdate.text = dateFormat.format(date)
-        } else {
-            binding.mangaLastUpdate.text = resources?.getString(R.string.unknown)
         }
     }
 
