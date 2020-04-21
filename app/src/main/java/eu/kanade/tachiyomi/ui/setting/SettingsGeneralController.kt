@@ -7,7 +7,7 @@ import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
-import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.ui.lock.FingerLockPreference
 import exh.ui.lock.LockPreference
+import kotlinx.coroutines.flow.onEach
 
 class SettingsGeneralController : SettingsController() {
 
@@ -37,6 +38,11 @@ class SettingsGeneralController : SettingsController() {
             entryValues = arrayOf("1", "2", "3")
             defaultValue = "1"
             summary = "%s"
+        }
+        switchPreference {
+            key = Keys.confirmExit
+            titleRes = R.string.pref_confirm_exit
+            defaultValue = false
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             preference {
@@ -58,15 +64,14 @@ class SettingsGeneralController : SettingsController() {
                 titleRes = R.string.pref_language
 
                 val langs = mutableListOf<Pair<String, String>>()
-                langs += Pair("", context.getString(R.string.system_default))
+                langs += Pair("", "${context.getString(R.string.system_default)} (${LocaleHelper.getDisplayName("")})")
                 langs += arrayOf(
                     "ar", "bg", "bn", "ca", "cs", "de", "el", "en-US", "en-GB", "es", "fr", "he",
                     "hi", "hu", "in", "it", "ja", "ko", "lv", "ms", "nb-rNO", "nl", "pl", "pt",
                     "pt-BR", "ro", "ru", "sc", "sr", "sv", "th", "tl", "tr", "uk", "vi", "zh-rCN"
                 )
                     .map {
-                        val locale = LocaleHelper.getLocaleFromString(it)
-                        Pair(it, locale!!.getDisplayName(locale).capitalize())
+                        Pair(it, LocaleHelper.getDisplayName(it))
                     }
                     .sortedBy { it.second }
 
@@ -145,11 +150,13 @@ class SettingsGeneralController : SettingsController() {
                 defaultValue = Values.THEME_LIGHT_DEFAULT
                 summary = "%s"
 
-                preferences.themeMode().asObservable()
-                        .subscribeUntilDestroy { isVisible = it != Values.THEME_MODE_DARK }
+                isVisible = preferences.themeMode().get() != Values.THEME_MODE_DARK
+                preferences.themeMode().asFlow()
+                    .onEach { isVisible = it != Values.THEME_MODE_DARK }
+                    .launchInUI()
 
                 onChange {
-                    if (preferences.themeMode().getOrDefault() != Values.THEME_MODE_DARK) {
+                    if (preferences.themeMode().get() != Values.THEME_MODE_DARK) {
                         activity?.recreate()
                     }
                     true
@@ -171,11 +178,13 @@ class SettingsGeneralController : SettingsController() {
                 defaultValue = Values.THEME_DARK_DEFAULT
                 summary = "%s"
 
-                preferences.themeMode().asObservable()
-                    .subscribeUntilDestroy { isVisible = it != Values.THEME_MODE_LIGHT }
+                isVisible = preferences.themeMode().get() != Values.THEME_MODE_LIGHT
+                preferences.themeMode().asFlow()
+                    .onEach { isVisible = it != Values.THEME_MODE_LIGHT }
+                    .launchInUI()
 
                 onChange {
-                    if (preferences.themeMode().getOrDefault() != Values.THEME_MODE_LIGHT) {
+                    if (preferences.themeMode().get() != Values.THEME_MODE_LIGHT) {
                         activity?.recreate()
                     }
                     true

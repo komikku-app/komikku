@@ -8,12 +8,12 @@ import androidx.appcompat.widget.SearchView
 import androidx.preference.CheckBoxPreference
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.switchPreferenceCategory
 import eu.kanade.tachiyomi.util.preference.titleRes
@@ -21,6 +21,9 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
 import java.util.TreeMap
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -65,7 +68,7 @@ class SettingsSourcesController : SettingsController() {
             // Create a preference group and set initial state and change listener
             switchPreferenceCategory {
                 preferenceScreen.addPreference(this)
-                title = LocaleHelper.getDisplayName(lang, context)
+                title = LocaleHelper.getSourceDisplayName(lang, context)
                 isPersistent = false
                 if (lang in activeLangsCodes) {
                     setChecked(true)
@@ -181,11 +184,13 @@ class SettingsSourcesController : SettingsController() {
             searchView.clearFocus()
         }
 
-        searchView.queryTextChanges().filter { router.backstack.lastOrNull()?.controller() == this }
-                .subscribeUntilDestroy {
-                    query = it.toString()
-                    drawSources()
-                }
+        searchView.queryTextEvents()
+            .filter { router.backstack.lastOrNull()?.controller() == this }
+            .onEach {
+                query = it.toString()
+                drawSources()
+            }
+            .launchInUI()
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {

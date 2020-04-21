@@ -125,9 +125,8 @@ class LibraryPresenter(
      */
     private fun applyFilters(map: LibraryMap): LibraryMap {
         val filterDownloaded = preferences.filterDownloaded().getOrDefault()
-
+        val filterDownloadedOnly = preferences.downloadedOnly().get()
         val filterUnread = preferences.filterUnread().getOrDefault()
-
         val filterCompleted = preferences.filterCompleted().getOrDefault()
 
         val filterFn: (LibraryItem) -> Boolean = f@{ item ->
@@ -145,7 +144,7 @@ class LibraryPresenter(
                 return@f false
             }
             // Filter when there are no downloads.
-            if (filterDownloaded != STATE_IGNORE) {
+            if (filterDownloaded != STATE_IGNORE || filterDownloadedOnly) {
                 val isDownloaded = when {
                     item.manga.source == LocalSource.ID -> true
                     item.downloadCount != -1 -> item.downloadCount > 0
@@ -330,7 +329,7 @@ class LibraryPresenter(
         if (mangas.isEmpty()) return emptyList()
         return mangas.toSet()
                 .map { db.getCategoriesForManga(it).executeAsBlocking() }
-                .reduce { set1: Iterable<Category>, set2 -> set1.intersect(set2) }
+                .reduce { set1: Iterable<Category>, set2 -> set1.intersect(set2).toMutableList() }
     }
 
     /**
@@ -405,7 +404,7 @@ class LibraryPresenter(
         replace: Boolean
     ) {
 
-        val flags = preferences.migrateFlags().getOrDefault()
+        val flags = preferences.migrateFlags().get()
         val migrateChapters = MigrationFlags.hasChapters(flags)
         val migrateCategories = MigrationFlags.hasCategories(flags)
         val migrateTracks = MigrationFlags.hasTracks(flags)

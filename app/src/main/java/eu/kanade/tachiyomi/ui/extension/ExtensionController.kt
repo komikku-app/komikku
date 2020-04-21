@@ -12,29 +12,31 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
-import com.jakewharton.rxbinding.support.v4.widget.refreshes
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.ExtensionControllerBinding
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.util.lang.launchInUI
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.queryTextChanges
+import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
  * Controller to manage the catalogues available in the app.
  */
-open class ExtensionController : NucleusController<ExtensionPresenter>(),
-    ExtensionAdapter.OnButtonClickListener,
-    FlexibleAdapter.OnItemClickListener,
-    FlexibleAdapter.OnItemLongClickListener,
-    ExtensionTrustDialog.Listener {
+open class ExtensionController : NucleusController<ExtensionControllerBinding, ExtensionPresenter>(),
+        ExtensionAdapter.OnButtonClickListener,
+        FlexibleAdapter.OnItemClickListener,
+        FlexibleAdapter.OnItemLongClickListener,
+        ExtensionTrustDialog.Listener {
 
     private val preferences: PreferencesHelper = Injekt.get()
 
@@ -46,8 +48,6 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
     private var extensions: List<ExtensionItem> = emptyList()
 
     private var query = ""
-
-    private lateinit var binding: ExtensionControllerBinding
 
     init {
         setHasOptionsMenu(true)
@@ -70,9 +70,9 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
         super.onViewCreated(view)
 
         binding.extSwipeRefresh.isRefreshing = true
-        binding.extSwipeRefresh.refreshes().subscribeUntilDestroy {
-            presenter.findAvailableExtensions()
-        }
+        binding.extSwipeRefresh.refreshes()
+            .onEach { presenter.findAvailableExtensions() }
+            .launchInUI()
 
         // Initialize adapter, scroll listener and recycler views
         adapter = ExtensionAdapter(this)
@@ -93,8 +93,8 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
             R.id.action_search -> expandActionViewFromInteraction = true
             R.id.action_settings -> {
                 router.pushController((RouterTransaction.with(ExtensionFilterController()))
-                    .popChangeHandler(SettingsExtensionsFadeChangeHandler())
-                    .pushChangeHandler(FadeChangeHandler()))
+                        .popChangeHandler(SettingsExtensionsFadeChangeHandler())
+                        .pushChangeHandler(FadeChangeHandler()))
             }
             R.id.action_auto_check -> {
                 item.isChecked = !item.isChecked
@@ -147,15 +147,16 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
 
         searchView.queryTextChanges()
             .filter { router.backstack.lastOrNull()?.controller() == this }
-            .subscribeUntilDestroy {
+            .onEach {
                 query = it.toString()
                 drawExtensions()
             }
+            .launchInUI()
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.fixExpand(onExpand = { invalidateMenuOnExpand() })
 
-        menu.findItem(R.id.action_auto_check).isChecked = preferences.automaticExtUpdates().getOrDefault()
+        menu.findItem(R.id.action_auto_check).isChecked = preferences.automaticExtUpdates().get()
     }
 
     override fun onItemClick(view: View, position: Int): Boolean {
@@ -183,7 +184,7 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
 
     private fun openTrustDialog(extension: Extension.Untrusted) {
         ExtensionTrustDialog(this, extension.signatureHash, extension.pkgName)
-            .showDialog(router)
+                .showDialog(router)
     }
 
     fun setExtensions(extensions: List<ExtensionItem>) {
@@ -195,9 +196,9 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
     fun drawExtensions() {
         if (!query.isBlank()) {
             adapter?.updateDataSet(
-                extensions.filter {
-                    it.extension.name.contains(query, ignoreCase = true)
-                })
+                    extensions.filter {
+                        it.extension.name.contains(query, ignoreCase = true)
+                    })
         } else {
             adapter?.updateDataSet(extensions)
         }

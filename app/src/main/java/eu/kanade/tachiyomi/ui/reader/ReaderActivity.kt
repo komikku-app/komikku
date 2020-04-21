@@ -24,9 +24,6 @@ import androidx.core.view.ViewCompat
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.elvishew.xlog.XLog
-import com.jakewharton.rxbinding.view.clicks
-import com.jakewharton.rxbinding.widget.checkedChanges
-import com.jakewharton.rxbinding.widget.textChanges
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -52,6 +49,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.GLUtil
@@ -68,7 +66,12 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.roundToLong
+import kotlinx.coroutines.flow.observeOn
+import kotlinx.coroutines.flow.onEach
 import nucleus.factory.RequiresPresenter
+import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.widget.checkedChanges
+import reactivecircus.flowbinding.android.widget.textChanges
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -81,7 +84,7 @@ import uy.kohesive.injekt.injectLazy
  * viewers, to which calls from the presenter or UI events are delegated.
  */
 @RequiresPresenter(ReaderPresenter::class)
-class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
+class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() {
 
     private val preferences by injectLazy<PreferencesHelper>()
 
@@ -124,8 +127,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
      */
     @Suppress("DEPRECATION")
     private var progressDialog: ProgressDialog? = null
-
-    private lateinit var binding: ReaderActivityBinding
 
     companion object {
         @Suppress("unused")
@@ -249,8 +250,17 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
     }
 
     /**
+     * Set menu visibility again on activity resume to apply immersive mode again if needed.
+     * Helps with rotations.
+     */
+    override fun onResume() {
+        super.onResume()
+        setMenuVisibility(menuVisible, animate = false)
+    }
+
+    /**
      * Called when the window focus changes. It sets the menu visibility to the last known state
-     * to apply again System UI (for immersive mode).
+     * to apply immersive mode again if needed.
      */
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
@@ -366,10 +376,12 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         }
 
         // --> EH
-        exhSubscriptions += binding.expandEhButton.clicks().subscribe {
-            ehUtilsVisible = !ehUtilsVisible
-            setEhUtilsVisibility(ehUtilsVisible)
-        }
+        binding.expandEhButton.clicks()
+            .onEach {
+                ehUtilsVisible = !ehUtilsVisible
+                setEhUtilsVisibility(ehUtilsVisible)
+            }
+            .launchInUI()
 
         binding.ehAutoscrollFreq.setText(preferences.eh_utilAutoscrollInterval().getOrDefault().let {
             if (it == -1f)
@@ -377,121 +389,133 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             else it.toString()
         })
 
-        exhSubscriptions += binding.ehAutoscroll.checkedChanges()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    setupAutoscroll(if (it)
-                        preferences.eh_utilAutoscrollInterval().getOrDefault()
-                    else -1f)
+        binding.ehAutoscroll.checkedChanges()
+            // .observeOn(AndroidSchedulers.mainThread())
+            .onEach {
+                setupAutoscroll(if (it)
+                    preferences.eh_utilAutoscrollInterval().getOrDefault()
+                else -1f)
+            }
+            .launchInUI()
+
+        binding.ehAutoscrollFreq.textChanges()
+            // .observeOn(AndroidSchedulers.mainThread())
+            .onEach {
+                val parsed = it?.toString()?.toFloatOrNull()
+
+                if (parsed == null || parsed <= 0 || parsed > 9999) {
+                    binding.ehAutoscrollFreq.error = "Invalid frequency"
+                    preferences.eh_utilAutoscrollInterval().set(-1f)
+                    binding.ehAutoscroll.isEnabled = false
+                    setupAutoscroll(-1f)
+                } else {
+                    binding.ehAutoscrollFreq.error = null
+                    preferences.eh_utilAutoscrollInterval().set(parsed)
+                    binding.ehAutoscroll.isEnabled = true
+                    setupAutoscroll(if (binding.ehAutoscroll.isChecked) parsed else -1f)
                 }
+            }
+            .launchInUI()
 
-        exhSubscriptions += binding.ehAutoscrollFreq.textChanges()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    val parsed = it?.toString()?.toFloatOrNull()
-
-                    if (parsed == null || parsed <= 0 || parsed > 9999) {
-                        binding.ehAutoscrollFreq.error = "Invalid frequency"
-                        preferences.eh_utilAutoscrollInterval().set(-1f)
-                        binding.ehAutoscroll.isEnabled = false
-                        setupAutoscroll(-1f)
-                    } else {
-                        binding.ehAutoscrollFreq.error = null
-                        preferences.eh_utilAutoscrollInterval().set(parsed)
-                        binding.ehAutoscroll.isEnabled = true
-                        setupAutoscroll(if (binding.ehAutoscroll.isChecked) parsed else -1f)
-                    }
-                }
-
-        exhSubscriptions += binding.ehAutoscrollHelp.clicks().subscribe {
-            MaterialDialog.Builder(this)
+        binding.ehAutoscrollHelp.clicks()
+            .onEach {
+                MaterialDialog.Builder(this)
                     .title("Autoscroll help")
                     .content("Automatically scroll to the next page in the specified interval. Interval is specified in seconds.")
                     .positiveText("Ok")
                     .show()
-        }
+            }
+            .launchInUI()
 
-        exhSubscriptions += binding.ehRetryAll.clicks().subscribe {
-            var retried = 0
+        binding.ehRetryAll.clicks()
+            .onEach {
+                var retried = 0
 
-            presenter.viewerChaptersRelay.value
-                    .currChapter
-                    .pages
-                    ?.forEachIndexed { index, page ->
-                        var shouldQueuePage = false
-                        if (page.status == Page.ERROR) {
-                            shouldQueuePage = true
-                        } else if (page.status == Page.LOAD_PAGE ||
-                                page.status == Page.DOWNLOAD_IMAGE) {
-                            // Do nothing
-                        }
+                presenter.viewerChaptersRelay.value
+                        .currChapter
+                        .pages
+                        ?.forEachIndexed { index, page ->
+                            var shouldQueuePage = false
+                            if (page.status == Page.ERROR) {
+                                shouldQueuePage = true
+                            } else if (page.status == Page.LOAD_PAGE ||
+                                    page.status == Page.DOWNLOAD_IMAGE) {
+                                // Do nothing
+                            }
 
-                        if (shouldQueuePage) {
-                            page.status = Page.QUEUE
-                        } else {
-                            return@forEachIndexed
-                        }
+                            if (shouldQueuePage) {
+                                page.status = Page.QUEUE
+                            } else {
+                                return@forEachIndexed
+                            }
 
-                        // If we are using EHentai/ExHentai, get a new image URL
-                        presenter.manga?.let { m ->
-                            val src = sourceManager.get(m.source)
-                            if (src is EHentai)
-                                page.imageUrl = null
-                        }
+                            // If we are using EHentai/ExHentai, get a new image URL
+                            presenter.manga?.let { m ->
+                                val src = sourceManager.get(m.source)
+                                if (src is EHentai)
+                                    page.imageUrl = null
+                            }
 
-                        val loader = page.chapter.pageLoader
-                        if (page.index == exh_currentPage()?.index && loader is HttpPageLoader) {
+                            val loader = page.chapter.pageLoader
+                            if (page.index == exh_currentPage()?.index && loader is HttpPageLoader) {
                             loader.boostPage(page)
-                        } else {
-                            loader?.retryPage(page)
+                            } else {
+                                loader?.retryPage(page)
+                            }
+
+                            retried++
                         }
 
-                        retried++
-                    }
+                toast("Retrying $retried failed pages...")
+            }
+            .launchInUI()
 
-            toast("Retrying $retried failed pages...")
-        }
-
-        exhSubscriptions += binding.ehRetryAllHelp.clicks().subscribe {
-            MaterialDialog.Builder(this)
+        binding.ehRetryAllHelp.clicks()
+            .onEach {
+                MaterialDialog.Builder(this)
                     .title("Retry all help")
                     .content("Re-add all failed pages to the download queue.")
                     .positiveText("Ok")
                     .show()
-        }
+            }
+            .launchInUI()
 
-        exhSubscriptions += binding.ehBoostPage.clicks().subscribe {
-            viewer?.let { viewer ->
-                val curPage = exh_currentPage() ?: run {
-                    toast("This page cannot be boosted (invalid page)!")
-                    return@let
-                }
+        binding.ehBoostPage.clicks()
+            .onEach {
+                viewer?.let { viewer ->
+                    val curPage = exh_currentPage() ?: run {
+                        toast("This page cannot be boosted (invalid page)!")
+                        return@let
+                    }
 
-                if (curPage.status == Page.ERROR) {
-                    toast("Page failed to load, press the retry button instead!")
-                } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
-                    toast("This page is already downloading!")
-                } else if (curPage.status == Page.READY) {
-                    toast("This page has already been downloaded!")
-                } else {
-                    val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
-                    if (loader != null) {
-                        loader.boostPage(curPage)
-                        toast("Boosted current page!")
+                    if (curPage.status == Page.ERROR) {
+                        toast("Page failed to load, press the retry button instead!")
+                    } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
+                        toast("This page is already downloading!")
+                    } else if (curPage.status == Page.READY) {
+                        toast("This page has already been downloaded!")
                     } else {
-                        toast("This page cannot be boosted (invalid page loader)!")
+                        val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
+                        if (loader != null) {
+                            loader.boostPage(curPage)
+                            toast("Boosted current page!")
+                        } else {
+                            toast("This page cannot be boosted (invalid page loader)!")
+                        }
                     }
                 }
             }
-        }
+            .launchInUI()
 
-        exhSubscriptions += binding.ehBoostPageHelp.clicks().subscribe {
-            MaterialDialog.Builder(this)
+        binding.ehBoostPageHelp.clicks()
+            .onEach {
+                MaterialDialog.Builder(this)
                     .title("Boost page help")
                     .content("Normally the downloader can only download a specific amount of pages at the same time. This means you can be waiting for a page to download but the downloader will not start downloading the page until it has a free download slot. Pressing 'Boost page' will force the downloader to begin downloading the current page, regardless of whether or not there is an available slot.")
                     .positiveText("Ok")
                     .show()
-        }
+            }
+            .launchInUI()
         // <-- EH
 
         // Set initial visibility

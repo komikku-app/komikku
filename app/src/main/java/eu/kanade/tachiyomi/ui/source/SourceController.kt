@@ -16,7 +16,6 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
@@ -34,7 +33,12 @@ import eu.kanade.tachiyomi.ui.smartsearch.SmartSearchController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.latest.LatestUpdatesController
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import kotlinx.android.parcel.Parcelize
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.QueryTextEvent
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -44,7 +48,7 @@ import uy.kohesive.injekt.api.get
  * [SourceAdapter.OnBrowseClickListener] call function data on browse item click.
  * [SourceAdapter.OnLatestClickListener] call function data on latest item click
  */
-class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresenter>(bundle),
+class SourceController(bundle: Bundle? = null) : NucleusController<SourceMainControllerBinding, SourcePresenter>(bundle),
         RootController,
         FlexibleAdapter.OnItemClickListener,
         FlexibleAdapter.OnItemLongClickListener,
@@ -57,8 +61,6 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresent
      * Adapter containing sources.
      */
     private var adapter: SourceAdapter? = null
-
-    private lateinit var binding: SourceMainControllerBinding
 
     private val smartSearchConfig: SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG)
 
@@ -221,9 +223,10 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresent
         searchView.queryHint = applicationContext?.getString(R.string.action_global_search_hint)
 
         // Create query listener which opens the global search view.
-        searchView.queryTextChangeEvents()
-                .filter { it.isSubmitted }
-                .subscribeUntilDestroy { performGlobalSearch(it.queryText().toString()) }
+        searchView.queryTextEvents()
+            .filter { it is QueryTextEvent.QuerySubmitted }
+            .onEach { performGlobalSearch(it.queryText.toString()) }
+            .launchInUI()
     }
 
     private fun performGlobalSearch(query: String) {

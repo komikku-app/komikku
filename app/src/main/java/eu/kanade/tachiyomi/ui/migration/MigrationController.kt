@@ -10,20 +10,20 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import exh.util.RecyclerWindowInsetsListener
 import exh.util.applyWindowInsetsForController
 import exh.util.await
-import kotlinx.android.synthetic.main.migration_controller.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MigrationController : NucleusController<MigrationPresenter>(),
+class MigrationController : NucleusController<MigrationControllerBinding, MigrationPresenter>(),
     FlexibleAdapter.OnItemClickListener,
     SourceAdapter.OnSelectClickListener,
     SourceAdapter.OnAutoClickListener,
@@ -57,10 +57,10 @@ class MigrationController : NucleusController<MigrationPresenter>(),
         view.applyWindowInsetsForController()
 
         adapter = FlexibleAdapter(null, this)
-        migration_recycler.layoutManager =
+        binding.migrationRecycler.layoutManager =
             androidx.recyclerview.widget.LinearLayoutManager(view.context)
-        migration_recycler.adapter = adapter
-        migration_recycler.setOnApplyWindowInsetsListener(RecyclerWindowInsetsListener)
+        binding.migrationRecycler.adapter = adapter
+        binding.migrationRecycler.setOnApplyWindowInsetsListener(RecyclerWindowInsetsListener)
     }
 
     override fun onDestroyView(view: View) {
@@ -86,7 +86,7 @@ class MigrationController : NucleusController<MigrationPresenter>(),
             title = resources?.getString(R.string.source_migration)
             if (adapter !is SourceAdapter) {
                 adapter = SourceAdapter(this)
-                migration_recycler.adapter = adapter
+                binding.migrationRecycler.adapter = adapter
             }
             adapter?.updateDataSet(state.sourcesWithManga)
         } else {
@@ -94,7 +94,7 @@ class MigrationController : NucleusController<MigrationPresenter>(),
             title = state.selectedSource.toString()
             if (adapter !is MangaAdapter) {
                 adapter = MangaAdapter(this)
-                migration_recycler.adapter = adapter
+                binding.migrationRecycler.adapter = adapter
             }
             adapter?.updateDataSet(state.mangaForSource, true)
             /*if (switching) launchUI {

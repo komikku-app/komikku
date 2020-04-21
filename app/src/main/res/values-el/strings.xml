@@ -424,7 +424,7 @@
     <string name="information_empty_category">Δεν έχετε κατηγορίες. Χτυπήστε το πλήκτρο συν για να δημιουργήσετε ένα για την οργάνωση της βιβλιοθήκης σας.</string>
     <string name="download_notifier_downloader_title">Downloader</string>
     <string name="download_notifier_title_error">Σφάλμα</string>
-    <string name="download_notifier_unkown_error">Παρουσιάστηκε μη αναμενόμενο σφάλμα κατά τη λήψη του κεφαλαίου</string>
+    <string name="download_notifier_unknown_error">Παρουσιάστηκε μη αναμενόμενο σφάλμα κατά τη λήψη του κεφαλαίου</string>
     <string name="download_notifier_page_error">Μια σελίδα λείπει από τον κατάλογο</string>
     <string name="download_notifier_page_ready_error">Δεν φορτώνεται μια σελίδα</string>
     <string name="download_notifier_text_only_wifi">Δεν υπάρχει διαθέσιμη σύνδεση wifi</string>

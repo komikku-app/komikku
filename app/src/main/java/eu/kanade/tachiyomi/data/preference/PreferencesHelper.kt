@@ -5,22 +5,23 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Environment
 import androidx.preference.PreferenceManager
-import com.f2prateek.rx.preferences.Preference
+import com.f2prateek.rx.preferences.Preference as RxPreference
 import com.f2prateek.rx.preferences.RxSharedPreferences
+import com.tfcporciuncula.flow.FlowSharedPreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 import eu.kanade.tachiyomi.data.track.TrackService
+import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-fun <T> Preference<T>.getOrDefault(): T = get() ?: defaultValue()!!
+fun <T> RxPreference<T>.getOrDefault(): T = get() ?: defaultValue()!!
 
-fun Preference<Boolean>.invert(): Boolean = getOrDefault().let { set(!it); !it }
-
-private class DateFormatConverter : Preference.Adapter<DateFormat> {
+private class DateFormatConverter : RxPreference.Adapter<DateFormat> {
     override fun get(key: String, preferences: SharedPreferences): DateFormat {
         val dateFormat = preferences.getString(Keys.dateFormat, "")!!
 
@@ -36,10 +37,12 @@ private class DateFormatConverter : Preference.Adapter<DateFormat> {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PreferencesHelper(val context: Context) {
 
     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
     val rxPrefs = RxSharedPreferences.create(prefs)
+    val flowPrefs = FlowSharedPreferences(prefs)
 
     private val defaultDownloadsDir = Uri.fromFile(
             File(Environment.getExternalStorageDirectory().absolutePath + File.separator +
@@ -51,17 +54,19 @@ class PreferencesHelper(val context: Context) {
 
     fun startScreen() = prefs.getInt(Keys.startScreen, 1)
 
-    fun secureScreen() = rxPrefs.getBoolean(Keys.secureScreen, false)
+    fun confirmExit() = prefs.getBoolean(Keys.confirmExit, false)
+
+    fun secureScreen() = flowPrefs.getBoolean(Keys.secureScreen, false)
 
     fun hideNotificationContent() = prefs.getBoolean(Keys.hideNotificationContent, false)
 
     fun clear() = prefs.edit().clear().apply()
 
-    fun themeMode() = rxPrefs.getString(Keys.themeMode, Values.THEME_MODE_SYSTEM)
+    fun themeMode() = flowPrefs.getString(Keys.themeMode, Values.THEME_MODE_SYSTEM)
 
-    fun themeLight() = prefs.getString(Keys.themeLight, Values.THEME_DARK_DEFAULT)
+    fun themeLight() = flowPrefs.getString(Keys.themeLight, Values.THEME_DARK_DEFAULT)
 
-    fun themeDark() = prefs.getString(Keys.themeDark, Values.THEME_LIGHT_DEFAULT)
+    fun themeDark() = flowPrefs.getString(Keys.themeDark, Values.THEME_LIGHT_DEFAULT)
 
     fun rotation() = rxPrefs.getInteger(Keys.rotation, 1)
 
@@ -123,7 +128,7 @@ class PreferencesHelper(val context: Context) {
 
     fun lastUsedCategory() = rxPrefs.getInteger(Keys.lastUsedCategory, 0)
 
-    fun lastVersionCode() = rxPrefs.getInteger("last_version_code", 0)
+    fun lastVersionCode() = flowPrefs.getInt("last_version_code", 0)
 
     fun catalogueAsList() = rxPrefs.getBoolean(Keys.catalogueAsList, false)
 
@@ -144,7 +149,7 @@ class PreferencesHelper(val context: Context) {
 
     fun trackToken(sync: TrackService) = rxPrefs.getString(Keys.trackToken(sync.id), "")
 
-    fun anilistScoreType() = rxPrefs.getString("anilist_score_type", "POINT_10")
+    fun anilistScoreType() = rxPrefs.getString("anilist_score_type", Anilist.POINT_10)
 
     fun backupsDirectory() = rxPrefs.getString(Keys.backupDirectory, defaultBackupDir.toString())
 
@@ -174,6 +179,8 @@ class PreferencesHelper(val context: Context) {
 
     fun downloadBadge() = rxPrefs.getBoolean(Keys.downloadBadge, false)
 
+    fun downloadedOnly() = flowPrefs.getBoolean(Keys.downloadedOnly, false)
+
     // J2K converted from boolean to integer
     fun filterDownloaded() = rxPrefs.getInteger(Keys.filterDownloaded, 0)
 
@@ -191,11 +198,11 @@ class PreferencesHelper(val context: Context) {
 
     fun pinnedCatalogues() = rxPrefs.getStringSet("pinned_catalogues", emptySet())
 
-    fun automaticExtUpdates() = rxPrefs.getBoolean(Keys.automaticExtUpdates, true)
+    fun automaticExtUpdates() = flowPrefs.getBoolean(Keys.automaticExtUpdates, true)
 
-    fun extensionUpdatesCount() = rxPrefs.getInteger("ext_updates_count", 0)
+    fun extensionUpdatesCount() = flowPrefs.getInt("ext_updates_count", 0)
 
-    fun lastExtCheck() = rxPrefs.getLong("last_ext_check", 0)
+    fun lastExtCheck() = flowPrefs.getLong("last_ext_check", 0)
 
     fun downloadNew() = rxPrefs.getBoolean(Keys.downloadNew, false)
 
@@ -207,11 +214,11 @@ class PreferencesHelper(val context: Context) {
 
     fun skipRead() = prefs.getBoolean(Keys.skipRead, false)
 
-    fun skipFiltered() = prefs.getBoolean(Keys.skipFiltered, false)
+    fun skipFiltered() = prefs.getBoolean(Keys.skipFiltered, true)
 
-    fun migrateFlags() = rxPrefs.getInteger("migrate_flags", Int.MAX_VALUE)
+    fun migrateFlags() = flowPrefs.getInt("migrate_flags", Int.MAX_VALUE)
 
-    fun trustedSignatures() = rxPrefs.getStringSet("trusted_signatures", emptySet())
+    fun trustedSignatures() = flowPrefs.getStringSet("trusted_signatures", emptySet())
 
     fun alwaysShowChapterTransition() = rxPrefs.getBoolean(Keys.alwaysShowChapterTransition, true)
 
@@ -289,7 +296,7 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_ts_aspNetCookie() = rxPrefs.getString(Keys.eh_ts_aspNetCookie, "")
 
-    fun eh_showSettingsUploadWarning() = rxPrefs.getBoolean(Keys.eh_showSettingsUploadWarning, true)
+    fun eh_showSettingsUploadWarning() = flowPrefs.getBoolean(Keys.eh_showSettingsUploadWarning, true)
 
     fun eh_expandFilters() = rxPrefs.getBoolean(Keys.eh_expandFilters, false)
 
@@ -313,7 +320,7 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_logLevel() = rxPrefs.getInteger(Keys.eh_logLevel, 0)
 
-    fun eh_enableSourceBlacklist() = rxPrefs.getBoolean(Keys.eh_enableSourceBlacklist, true)
+    fun eh_enableSourceBlacklist() = flowPrefs.getBoolean(Keys.eh_enableSourceBlacklist, true)
 
     fun eh_autoUpdateFrequency() = rxPrefs.getInteger(Keys.eh_autoUpdateFrequency, 1)
 

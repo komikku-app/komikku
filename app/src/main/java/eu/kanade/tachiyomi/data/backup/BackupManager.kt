@@ -130,7 +130,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
         val categoryEntries = JsonArray()
 
         // Add value's to root
-        root[Backup.VERSION] = Backup.CURRENT_VERSION
+        root[Backup.VERSION] = CURRENT_VERSION
         root[Backup.MANGAS] = mangaEntries
         root[CATEGORIES] = categoryEntries
 
@@ -306,8 +306,8 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
         } else {
             source.fetchChapterList(manga)
         }).map { syncChaptersWithSource(databaseHelper, it, manga, source) }
-                .doOnNext {
-                    if (it.first.isNotEmpty()) {
+                .doOnNext { pair ->
+                    if (pair.first.isNotEmpty()) {
                         chapters.forEach { it.manga_id = manga.id }
                         insertChapters(chapters)
                     }

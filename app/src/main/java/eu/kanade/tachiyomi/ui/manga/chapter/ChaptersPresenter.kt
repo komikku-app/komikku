@@ -85,8 +85,7 @@ class ChaptersPresenter(
         // Prepare the relay.
         chaptersRelay.flatMap { applyChapterFilters(it) }
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeLatestCache(ChaptersController::onNextChapters,
-                        { _, error -> Timber.e(error) })
+                .subscribeLatestCache(ChaptersController::onNextChapters) { _, error -> Timber.e(error) }
 
         // Add the subscription that retrieves the chapters from the database, keeps subscribed to
         // changes, and sends the list of chapters to the relay.
@@ -417,10 +416,17 @@ class ChaptersPresenter(
     }
 
     /**
+     * Whether downloaded only mode is enabled.
+     */
+    fun forceDownloaded(): Boolean {
+        return preferences.downloadedOnly().get()
+    }
+
+    /**
      * Whether the display only downloaded filter is enabled.
      */
     fun onlyDownloaded(): Boolean {
-        return manga.downloadedFilter == Manga.SHOW_DOWNLOADED
+        return forceDownloaded() || manga.downloadedFilter == Manga.SHOW_DOWNLOADED
     }
 
     /**

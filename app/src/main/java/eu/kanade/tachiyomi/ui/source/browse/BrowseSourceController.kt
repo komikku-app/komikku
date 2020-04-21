@@ -19,7 +19,6 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.elvishew.xlog.XLog
 import com.f2prateek.rx.preferences.Preference
 import com.google.android.material.snackbar.Snackbar
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChangeEvents
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
@@ -37,6 +36,7 @@ import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.system.connectivityManager
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.gone
@@ -46,18 +46,19 @@ import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
 import exh.EXHSavedSearch
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.drawer
-import rx.Observable
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.QueryTextEvent
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.injectLazy
 
 /**
  * Controller to manage the catalogues available in the app.
  */
 open class BrowseSourceController(bundle: Bundle) :
-        NucleusController<BrowseSourcePresenter>(bundle),
+        NucleusController<SourceControllerBinding, BrowseSourcePresenter>(bundle),
         SecondaryDrawerController,
         FlexibleAdapter.OnItemClickListener,
         FlexibleAdapter.OnItemLongClickListener,
@@ -101,11 +102,6 @@ open class BrowseSourceController(bundle: Bundle) :
     private var recycler: RecyclerView? = null
 
     /**
-     * Subscription for the search view.
-     */
-    private var searchViewSubscription: Subscription? = null
-
-    /**
      * Subscription for the number of manga per row.
      */
     private var numColumnsSubscription: Subscription? = null
@@ -114,8 +110,6 @@ open class BrowseSourceController(bundle: Bundle) :
      * Endless loading item.
      */
     private var progressItem: ProgressItem? = null
-
-    private lateinit var binding: SourceControllerBinding
 
     init {
         setHasOptionsMenu(true)
@@ -150,8 +144,6 @@ open class BrowseSourceController(bundle: Bundle) :
     override fun onDestroyView(view: View) {
         numColumnsSubscription?.unsubscribe()
         numColumnsSubscription = null
-        searchViewSubscription?.unsubscribe()
-        searchViewSubscription = null
         adapter = null
         snack = null
         recycler = null
@@ -333,20 +325,11 @@ open class BrowseSourceController(bundle: Bundle) :
             searchView.clearFocus()
         }
 
-        val searchEventsObservable = searchView.queryTextChangeEvents()
-                .skip(1)
-                .filter { router.backstack.lastOrNull()?.controller() == this@BrowseSourceController }
-                .share()
-        val writingObservable = searchEventsObservable
-                .filter { !it.isSubmitted }
-                .debounce(1250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
-        val submitObservable = searchEventsObservable
-                .filter { it.isSubmitted }
-
-        searchViewSubscription?.unsubscribe()
-        searchViewSubscription = Observable.merge(writingObservable, submitObservable)
-                .map { it.queryText().toString() }
-                .subscribeUntilDestroy { searchWithQuery(it) }
+        searchView.queryTextEvents()
+            .filter { router.backstack.lastOrNull()?.controller() == this@BrowseSourceController }
+            .filter { it is QueryTextEvent.QuerySubmitted }
+            .onEach { searchWithQuery(it.queryText.toString()) }
+            .launchInUI()
 
         searchItem.fixExpand(
                 onExpand = { invalidateMenuOnExpand() },

@@ -83,8 +83,8 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         pager.tapListener = { event ->
             val positionX = event.x
             when {
-                positionX < pager.width * 0.33f -> if (config.tappingEnabled) moveLeft()
-                positionX > pager.width * 0.66f -> if (config.tappingEnabled) moveRight()
+                positionX < pager.width * 0.33f -> if (config.tappingEnabled) moveLeft() else activity.toggleMenu()
+                positionX > pager.width * 0.66f -> if (config.tappingEnabled) moveRight() else activity.toggleMenu()
                 else -> activity.toggleMenu()
             }
         }
@@ -191,7 +191,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
 
         // Preload next chapter once we're within the last 3 pages of the current chapter
         val inPreloadRange = pages.size - page.number < 3
-        if (inPreloadRange && allowPreload) {
+        if (inPreloadRange && allowPreload && page.chapter == adapter.currentChapter) {
             Timber.d("Request preload next chapter because we're at page ${page.number} of ${pages.size}")
             adapter.nextTransition?.to?.let {
                 activity.requestPreloadChapter(it)
@@ -232,7 +232,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      */
     private fun setChaptersInternal(chapters: ViewerChapters) {
         Timber.d("setChaptersInternal")
-        var forceTransition = config.alwaysShowChapterTransition || adapter.items.getOrNull(pager.currentItem) is ChapterTransition
+        val forceTransition = config.alwaysShowChapterTransition || adapter.items.getOrNull(pager.currentItem) is ChapterTransition
         adapter.setChapters(chapters, forceTransition)
 
         // Layout the pager once a chapter is being set

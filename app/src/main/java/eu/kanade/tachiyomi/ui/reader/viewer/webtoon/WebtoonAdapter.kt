@@ -20,6 +20,7 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : androidx.recyclerview.widget.R
     var items: List<Any> = emptyList()
         private set
 
+    var currentChapter: ReaderChapter? = null
     /**
      * Updates this adapter with the given [chapters]. It handles setting a few pages of the
      * next/previous chapter to allow seamless transitions.
@@ -47,6 +48,8 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : androidx.recyclerview.widget.R
         if (currPages != null) {
             newItems.addAll(currPages)
         }
+
+        currentChapter = chapters.currChapter
 
         // Add next chapter transition and pages.
         if (forceTransition || chapters.nextChapter?.state !is ReaderChapter.State.Loaded) {
@@ -78,8 +81,7 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : androidx.recyclerview.widget.R
      * Returns the view type for the item at the given [position].
      */
     override fun getItemViewType(position: Int): Int {
-        val item = items[position]
-        return when (item) {
+        return when (val item = items[position]) {
             is ReaderPage -> PAGE_VIEW
             is ChapterTransition -> TRANSITION_VIEW
             else -> error("Unknown view type for ${item.javaClass}")

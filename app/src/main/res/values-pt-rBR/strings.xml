@@ -350,7 +350,7 @@ Além disso, verifique se as fontes que requerem uma conta foram configuradas co
     <string name="information_empty_library">A sua biblioteca está vazia. Você pode adicionar séries à biblioteca pelo menu Catálogos.</string>
     <string name="download_notifier_downloader_title">Gerenciador de downloads</string>
     <string name="download_notifier_title_error">Erro</string>
-    <string name="download_notifier_unkown_error">Ocorreu um erro inesperado ao fazer download do capítulo</string>
+    <string name="download_notifier_unknown_error">Ocorreu um erro inesperado ao fazer download do capítulo</string>
     <string name="download_notifier_page_error">Uma página está faltando na pasta</string>
     <string name="download_notifier_page_ready_error">Página não carregada</string>
     <string name="download_notifier_text_only_wifi">Nenhuma conexão Wi-Fi disponível</string>

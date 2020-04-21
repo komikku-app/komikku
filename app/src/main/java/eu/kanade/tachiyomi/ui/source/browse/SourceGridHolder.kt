@@ -6,6 +6,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
+import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.widget.StateImageViewTarget
@@ -55,7 +56,7 @@ class SourceGridHolder(private val view: View, private val adapter: FlexibleAdap
         GlideApp.with(view.context).clear(thumbnail)
         if (!manga.thumbnail_url.isNullOrEmpty()) {
             GlideApp.with(view.context)
-                    .load(manga)
+                    .load(manga.toMangaThumbnail())
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
                     .centerCrop()
                     .placeholder(android.R.color.transparent)

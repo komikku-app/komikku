@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -91,7 +90,7 @@ class MigrationPresenter(
         replace: Boolean
     ) {
 
-        val flags = preferences.migrateFlags().getOrDefault()
+        val flags = preferences.migrateFlags().get()
         val migrateChapters = MigrationFlags.hasChapters(flags)
         val migrateCategories = MigrationFlags.hasCategories(flags)
         val migrateTracks = MigrationFlags.hasTracks(flags)

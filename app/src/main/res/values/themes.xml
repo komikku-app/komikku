@@ -17,7 +17,7 @@
         <!-- Theme colors -->
         <item name="colorPrimary">@color/md_white_1000</item>
         <item name="colorOnPrimary">@color/md_black_1000</item>
-        <item name="colorPrimaryDark">@color/md_white_1000</item>
+        <item name="colorPrimaryVariant">@color/md_white_1000</item>
         <item name="colorSecondary">@color/colorAccentLight</item>
         <item name="colorOnSecondary">@color/md_white_1000</item>
         <item name="colorSurface">@color/dialogLight</item>
@@ -60,7 +60,8 @@
         <item name="android:itemTextAppearance">@style/TextAppearance.Widget.Menu</item>
 
         <!-- Custom Attributes-->
-        <item name="selectable_library_drawable">@drawable/library_item_selector_light</item>
+        <item name="colorLibrarySelection">?attr/colorAccent</item>
+        <item name="colorLibrarySelectionActive">@color/selectorColorLight</item>
         <item name="colorFilterActive">@color/filterColorDark</item>
     </style>
 
@@ -83,7 +84,7 @@
 
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorOnPrimary">@color/textColorPrimaryDark</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
 
         <item name="actionBarTheme">@style/Theme.Toolbar.Light</item>
         <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.Blue</item>
@@ -100,7 +101,7 @@
         <!-- Theme colors -->
         <item name="colorPrimary">@color/colorDarkPrimary</item>
         <item name="colorOnPrimary">@color/textColorPrimaryDark</item>
-        <item name="colorPrimaryDark">@color/colorDarkPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorDarkPrimary</item>
         <item name="colorSecondary">@color/colorAccentDark</item>
         <item name="colorOnSecondary">@color/textColorPrimaryDark</item>
         <item name="colorSurface">@color/dialogDark</item>
@@ -151,10 +152,10 @@
 
         <item name="md_background_color">?attr/colorSurface</item>
 
-
         <!-- Custom Attributes-->
         <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.Dark</item>
-        <item name="selectable_library_drawable">@drawable/library_item_selector_dark</item>
+        <item name="colorLibrarySelection">?attr/colorAccent</item>
+        <item name="colorLibrarySelectionActive">@color/selectorColorDark</item>
         <item name="colorFilterActive">@color/filterColorDark</item>
     </style>
 
@@ -164,7 +165,7 @@
 
     <style name="Theme.Tachiyomi.DarkBlue" parent="Theme.Base.Dark">
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimary</item>
 
         <item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
@@ -174,7 +175,7 @@
     <!--==============-->
     <style name="Theme.Base.Amoled" parent="Theme.Base.Dark">
         <item name="colorPrimary">@color/colorAmoledPrimary</item>
-        <item name="colorPrimaryDark">@color/colorAmoledPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorAmoledPrimary</item>
         <item name="colorSurface">@color/colorAmoledPrimary</item>
 
         <item name="android:colorBackground">@color/colorAmoledPrimary</item>
@@ -185,7 +186,8 @@
         <item name="md_background_color">@color/colorAmoledPrimary</item>
 
         <!-- Custom Attributes-->
-        <item name="selectable_library_drawable">@drawable/library_item_selector_amoled</item>
+        <item name="colorLibrarySelection">@color/selectorColorDark</item>
+        <item name="colorLibrarySelectionActive">@color/selectorColorDark</item>
         <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.Amoled</item>
     </style>
 
@@ -199,12 +201,12 @@
     <style name="Theme.Base.Reader.Dark" parent="Theme.Base.Dark">
         <item name="colorPrimary">@color/readerColorDarkPrimary</item>
         <item name="colorOnPrimary">@color/textColorPrimaryDark</item>
-        <item name="colorPrimaryDark">@color/readerColorDarkPrimary</item>
+        <item name="colorPrimaryVariant">@color/readerColorDarkPrimary</item>
         <item name="colorSurface">@color/md_black_1000</item>
 
         <item name="android:colorBackground">@color/md_black_1000</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryDark</item>
-        <item name="android:navigationBarColor">?attr/colorPrimaryDark</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:navigationBarColor">?attr/colorPrimaryVariant</item>
 
         <item name="actionBarTheme">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
         <item name="actionBarPopupTheme">@style/ThemeOverlay.MaterialComponents</item>
@@ -214,12 +216,12 @@
     <style name="Theme.Base.Reader.Light" parent="Theme.Base">
         <item name="colorPrimary">@color/readerColorDarkPrimary</item>
         <item name="colorOnPrimary">@color/textColorPrimaryDark</item>
-        <item name="colorPrimaryDark">@color/readerColorDarkPrimary</item>
+        <item name="colorPrimaryVariant">@color/readerColorDarkPrimary</item>
         <item name="colorSurface">@color/md_white_1000</item>
 
         <item name="android:colorBackground">@color/md_white_1000</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryDark</item>
-        <item name="android:navigationBarColor">?attr/colorPrimaryDark</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:navigationBarColor">?attr/colorPrimaryVariant</item>
 
         <item name="actionBarTheme">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
         <item name="actionBarPopupTheme">@style/ThemeOverlay.MaterialComponents</item>

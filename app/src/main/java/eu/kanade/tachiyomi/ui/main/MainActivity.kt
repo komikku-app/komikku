@@ -9,10 +9,12 @@ import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
@@ -21,6 +23,7 @@ import com.bluelinelabs.conductor.RouterTransaction
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.preference.getOrDefault
+import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
@@ -37,7 +40,10 @@ import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
+import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
@@ -51,17 +57,15 @@ import exh.ui.lock.lockEnabled
 import java.util.Date
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.main_activity.appbar
-import kotlinx.android.synthetic.main.main_activity.drawer
-import kotlinx.android.synthetic.main.main_activity.nav_view
-import kotlinx.android.synthetic.main.main_activity.tabs
-import kotlinx.android.synthetic.main.main_activity.toolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity<MainActivityBinding>() {
 
     private lateinit var router: Router
 
@@ -78,6 +82,8 @@ class MainActivity : BaseActivity() {
     }
 
     lateinit var tabAnimator: TabsAnimator
+
+    private var isConfirmingExit: Boolean = false
 
     // Idle-until-urgent
     private var firstPaint = false
@@ -100,7 +106,7 @@ class MainActivity : BaseActivity() {
         getExtensionUpdates()
         LockActivityDelegate.onResume(this, router)
         if (!firstPaint) {
-            drawer.postDelayed({
+            binding.drawer.postDelayed({
                 if (!firstPaint) {
                     firstPaint = true
                     iuuQueue.forEach { it() }
@@ -112,24 +118,32 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding = MainActivityBinding.inflate(layoutInflater)
+
+        // Enforce WebView availability
+        if (!WebViewUtil.supportsWebView(this)) {
+            toast(R.string.information_webview_required, Toast.LENGTH_LONG)
+            finishAndRemoveTask()
+        }
+
         // Do not let the launcher create a new activity http://stackoverflow.com/questions/16283079
         if (!isTaskRoot) {
             finish()
             return
         }
 
-        setContentView(R.layout.main_activity)
+        setContentView(binding.root)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
 
         drawerArrow = DrawerArrowDrawable(this)
         drawerArrow?.color = getResourceColor(R.attr.colorOnPrimary)
-        toolbar.navigationIcon = drawerArrow
+        binding.toolbar.navigationIcon = drawerArrow
 
-        tabAnimator = TabsAnimator(tabs)
+        tabAnimator = TabsAnimator(binding.tabs)
 
         // Set behavior of Navigation drawer
-        nav_view.setNavigationItemSelectedListener { item ->
+        binding.navView.setNavigationItemSelectedListener { item ->
             val id = item.itemId
 
             val currentRoot = router.backstack.firstOrNull()
@@ -151,7 +165,7 @@ class MainActivity : BaseActivity() {
                     }
                 }
             }
-            drawer.closeDrawer(GravityCompat.START)
+            binding.drawer.closeDrawer(GravityCompat.START)
             true
         }
 
@@ -165,9 +179,9 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        toolbar.setNavigationOnClickListener {
+        binding.toolbar.setNavigationOnClickListener {
             if (router.backstackSize == 1) {
-                drawer.openDrawer(GravityCompat.START)
+                binding.drawer.openDrawer(GravityCompat.START)
             } else {
                 onBackPressed()
             }
@@ -198,7 +212,7 @@ class MainActivity : BaseActivity() {
         // --> EH
         initWhenIdle {
             // Hook long press hamburger menu to lock
-            getToolbarNavigationIcon(toolbar)?.setOnLongClickListener {
+            getToolbarNavigationIcon(binding.toolbar)?.setOnLongClickListener {
                 if (lockEnabled(preferences)) {
                     LockActivityDelegate.doLock(router, true)
                     vibrate(50)
@@ -234,7 +248,7 @@ class MainActivity : BaseActivity() {
             initWhenIdle {
                 // Upload settings
                 if (preferences.enableExhentai().getOrDefault() &&
-                        preferences.eh_showSettingsUploadWarning().getOrDefault())
+                        preferences.eh_showSettingsUploadWarning().get())
                     WarnConfigureDialogController.uploadSettings(router)
 
                 // Scheduler uploader job if required
@@ -242,10 +256,11 @@ class MainActivity : BaseActivity() {
             }
             // EXH <--
         }
-        preferences.extensionUpdatesCount().asObservable().subscribe {
-            setExtensionsBadge()
-        }
+
         setExtensionsBadge()
+        preferences.extensionUpdatesCount().asFlow()
+            .onEach { setExtensionsBadge() }
+            .launchIn(lifecycleScope)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -255,11 +270,11 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setExtensionsBadge() {
-        val extUpdateText: TextView = nav_view.menu.findItem(
+        val extUpdateText: TextView = binding.navView.menu.findItem(
                 R.id.nav_drawer_extensions
         )?.actionView as? TextView ?: return
 
-        val updates = preferences.extensionUpdatesCount().getOrDefault()
+        val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
             extUpdateText.text = updates.toString()
             extUpdateText.visible()
@@ -272,7 +287,7 @@ class MainActivity : BaseActivity() {
     private fun getExtensionUpdates() {
         // Limit checks to once a day at most
         val now = Date().time
-        if (now < preferences.lastExtCheck().getOrDefault() + TimeUnit.DAYS.toMillis(1)) {
+        if (now < preferences.lastExtCheck().get() + TimeUnit.DAYS.toMillis(1)) {
             return
         }
 
@@ -337,25 +352,47 @@ class MainActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        nav_view?.setNavigationItemSelectedListener(null)
-        toolbar?.setNavigationOnClickListener(null)
+        binding.navView?.setNavigationItemSelectedListener(null)
+        binding.toolbar?.setNavigationOnClickListener(null)
     }
 
     override fun onBackPressed() {
         val backstackSize = router.backstackSize
-        if (drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END)) {
-            drawer.closeDrawers()
+        if (binding.drawer.isDrawerOpen(GravityCompat.START) || binding.drawer.isDrawerOpen(GravityCompat.END)) {
+            binding.drawer.closeDrawers()
         } else if (backstackSize == 1 && router.getControllerWithTag("$startScreenId") == null) {
             setSelectedDrawerItem(startScreenId)
+        } else if (shouldHandleExitConfirmation()) {
+            // Exit confirmation (resets after 2 seconds)
+            launchUI { resetExitConfirmation() }
         } else if (backstackSize == 1 || !router.handleBack()) {
+            // Regular back
             super.onBackPressed()
         }
     }
 
-    private fun setSelectedDrawerItem(itemId: Int) {
+    private suspend fun resetExitConfirmation() {
+        isConfirmingExit = true
+        val toast = Toast.makeText(this, R.string.confirm_exit, Toast.LENGTH_LONG)
+        toast.show()
+
+        delay(2000)
+
+        toast.cancel()
+        isConfirmingExit = false
+    }
+
+    private fun shouldHandleExitConfirmation(): Boolean {
+        return router.backstackSize == 1 &&
+            router.getControllerWithTag("$startScreenId") != null &&
+            preferences.confirmExit() &&
+            !isConfirmingExit
+    }
+
+    fun setSelectedDrawerItem(itemId: Int) {
         if (!isFinishing) {
-            nav_view.setCheckedItem(itemId)
-            nav_view.menu.performIdentifierAction(itemId, 0)
+            binding.navView.setCheckedItem(itemId)
+            binding.navView.menu.performIdentifierAction(itemId, 0)
         }
     }
 
@@ -395,50 +432,50 @@ class MainActivity : BaseActivity() {
 
         val showHamburger = router.backstackSize == 1
         if (showHamburger) {
-            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
+            binding.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
         } else {
-            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            binding.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         }
 
         // --> EH
         // Special case and hide drawer arrow for lock controller
         if (to is LockController) {
             supportActionBar?.setDisplayHomeAsUpEnabled(false)
-            toolbar.navigationIcon = null
+            binding.toolbar.navigationIcon = null
         } else {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            toolbar.navigationIcon = drawerArrow
+            binding.toolbar.navigationIcon = drawerArrow
         }
         // <-- EH
 
         ObjectAnimator.ofFloat(drawerArrow, "progress", if (showHamburger) 0f else 1f).start()
 
         if (from is TabbedController) {
-            from.cleanupTabs(tabs)
+            from.cleanupTabs(binding.tabs)
         }
         if (to is TabbedController) {
             tabAnimator.expand()
-            to.configureTabs(tabs)
+            to.configureTabs(binding.tabs)
         } else {
             tabAnimator.collapse()
-            tabs.setupWithViewPager(null)
+            binding.tabs.setupWithViewPager(null)
         }
 
         if (from is SecondaryDrawerController) {
             if (secondaryDrawer != null) {
-                from.cleanupSecondaryDrawer(drawer)
-                drawer.removeView(secondaryDrawer)
+                from.cleanupSecondaryDrawer(binding.drawer)
+                binding.drawer.removeView(secondaryDrawer)
                 secondaryDrawer = null
             }
         }
         if (to is SecondaryDrawerController) {
-            secondaryDrawer = to.createSecondaryDrawer(drawer)?.also { drawer.addView(it) }
+            secondaryDrawer = to.createSecondaryDrawer(binding.drawer)?.also { binding.drawer.addView(it) }
         }
 
         if (to is NoToolbarElevationController) {
-            appbar.disableElevation()
+            binding.appbar.disableElevation()
         } else {
-            appbar.enableElevation()
+            binding.appbar.enableElevation()
         }
     }
 

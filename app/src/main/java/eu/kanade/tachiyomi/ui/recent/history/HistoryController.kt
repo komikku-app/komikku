@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.jakewharton.rxbinding.support.v7.widget.queryTextChanges
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
@@ -22,14 +21,18 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.source.browse.ProgressItem
+import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.queryTextEvents
 
 /**
  * Fragment that shows recently read manga.
  * Uses [R.layout.history_controller].
  * UI related actions should be called from here.
  */
-class HistoryController : NucleusController<HistoryPresenter>(),
+class HistoryController : NucleusController<HistoryControllerBinding, HistoryPresenter>(),
         RootController,
         NoToolbarElevationController,
         FlexibleAdapter.OnUpdateListener,
@@ -48,8 +51,6 @@ class HistoryController : NucleusController<HistoryPresenter>(),
      */
     var adapter: HistoryAdapter? = null
         private set
-
-    private lateinit var binding: HistoryControllerBinding
 
     /**
      * Endless loading item.
@@ -188,11 +189,13 @@ class HistoryController : NucleusController<HistoryPresenter>(),
             searchView.setQuery(query, true)
             searchView.clearFocus()
         }
-        searchView.queryTextChanges().filter { router.backstack.lastOrNull()?.controller() == this }
-                .subscribeUntilDestroy {
-                    query = it.toString()
-                    presenter.updateList(query)
-                }
+        searchView.queryTextEvents()
+            .filter { router.backstack.lastOrNull()?.controller() == this }
+            .onEach {
+                query = it.toString()
+                presenter.updateList(query)
+            }
+            .launchInUI()
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {

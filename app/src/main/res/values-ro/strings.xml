@@ -422,7 +422,7 @@
     <string name="information_empty_category">Nu aveți categorii. Apăsați butonul plus pentru a crea una pentru a vă organiza biblioteca.</string>
     <string name="download_notifier_downloader_title">Client de descărcare</string>
     <string name="download_notifier_title_error">Eroare</string>
-    <string name="download_notifier_unkown_error">O eroare neașteptată s-a intamplat in timpul descărcării capitolului</string>
+    <string name="download_notifier_unknown_error">O eroare neașteptată s-a intamplat in timpul descărcării capitolului</string>
     <string name="download_notifier_page_error">O pagină lipsește din director</string>
     <string name="download_notifier_page_ready_error">O pagină nu este încărcată</string>
     <string name="download_notifier_text_only_wifi">Nici o conexiune wifi valabilă</string>

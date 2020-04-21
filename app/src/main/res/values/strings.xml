@@ -11,6 +11,7 @@
     <string name="history">History</string>
 
     <!-- Activities and fragments labels (toolbar title) -->
+    <string name="label_downloaded_only">Downloaded only</string>
     <string name="label_settings">Settings</string>
     <string name="label_download_queue">Download queue</string>
     <string name="label_library">Library</string>
@@ -28,6 +29,7 @@
     <string name="label_extension_info">Extension info</string>
     <string name="label_help">Help</string>
 
+    <string name="confirm_exit">Press back again to exit</string>
 
     <!-- Actions -->
     <string name="action_settings">Settings</string>
@@ -84,7 +86,6 @@
     <string name="action_move">Move</string>
     <string name="action_open_in_browser">Open in browser</string>
     <string name="action_open_in_web_view">Open in WebView</string>
-    <string name="action_add_to_home_screen">Add to home screen</string>
     <string name="action_display_mode">Display mode</string>
     <string name="action_display">Display</string>
     <string name="action_display_grid">Grid</string>
@@ -121,7 +122,6 @@
     <string name="action_copy_now">Copy now</string>
 
     <!-- Operations -->
-    <string name="deleting">Deleting…</string>
     <string name="loading">Loading…</string>
 
     <!-- Shortcuts-->
@@ -153,8 +153,9 @@
     <string name="theme_dark_amoled">AMOLED black</string>
     <string name="pref_start_screen">Start screen</string>
     <string name="pref_language">Language</string>
-    <string name="system_default">System default</string>
+    <string name="system_default">Default</string>
     <string name="pref_date_format">Date format</string>
+    <string name="pref_confirm_exit">Confirm exit</string>
     <string name="pref_manage_notifications">Manage notifications</string>
     <string name="hide_notification_content">Hide notification content</string>
 
@@ -356,10 +357,12 @@
     <string name="battery_optimization_disabled">Battery optimization is already disabled</string>
 
     <!-- About section -->
+    <string name="website">Website</string>
     <string name="version">Version</string>
     <string name="build_time">Build time</string>
     <string name="notices">Notices</string>
     <string name="changelog">Changelog</string>
+    <string name="licenses">Open source licenses</string>
     <string name="pref_enable_automatic_updates">Check for updates</string>
     <string name="pref_enable_automatic_updates_summary">Automatically check for new app versions</string>
     <!-- ACRA -->
@@ -396,7 +399,7 @@
     <string name="no_more_results">No more results</string>
     <string name="no_results_found">No results found</string>
     <string name="http_error_hint">Check website in WebView</string>
-    <string name="local_source">Local manga</string>
+    <string name="local_source">Local source</string>
     <string name="other_source">Other</string>
     <string name="pinned_sources">Pinned</string>
     <string name="invalid_combination">Default can\'t be selected with other categories</string>
@@ -426,13 +429,6 @@
     <string name="manga_info_status_label">Status</string>
     <string name="manga_info_source_label">Source</string>
     <string name="manga_info_genres_label">Genres</string>
-    <string name="circular_icon">Circular</string>
-    <string name="rounded_icon">Rounded</string>
-    <string name="square_icon">Square</string>
-    <string name="shortcut_title">Shortcut title</string>
-    <string name="shortcut_created">Shortcut was added to home screen.</string>
-    <string name="icon_shape">Icon shape</string>
-    <string name="icon_creation_fail">Could not create shortcut</string>
     <string name="delete_downloads_for_manga">Delete downloaded chapters?</string>
     <string name="copied_to_clipboard">%1$s copied to clipboard</string>
     <string name="source_not_installed">Source not installed: %1$s</string>
@@ -597,12 +593,13 @@
     <string name="information_empty_library">Your library is empty, add series to your library from the sources.</string>
     <string name="information_empty_category">You have no categories. Hit the plus button to create one for organizing your library.</string>
     <string name="information_cloudflare_bypass_failure">Failed to bypass Cloudflare</string>
+    <string name="information_webview_required">WebView is required for Tachiyomi</string>
     <string name="information_webview_outdated">Please update the WebView app for better compatibility</string>
 
     <!-- Download Notification -->
     <string name="download_notifier_downloader_title">Downloader</string>
     <string name="download_notifier_title_error">Error</string>
-    <string name="download_notifier_unkown_error">Could not download chapter due to unexpected error</string>
+    <string name="download_notifier_unknown_error">Could not download chapter due to unexpected error</string>
     <string name="download_notifier_page_error">A page is missing in directory</string>
     <string name="download_notifier_page_ready_error">A page has not been loaded</string>
     <string name="download_notifier_text_only_wifi">No Wi-Fi connection available</string>
