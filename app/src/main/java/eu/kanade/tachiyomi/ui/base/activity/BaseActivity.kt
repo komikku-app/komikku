@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.viewbinding.ViewBinding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -11,9 +12,11 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.ui.lock.LockActivityDelegate
 import uy.kohesive.injekt.injectLazy
 
-abstract class BaseActivity : AppCompatActivity() {
+abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
 
     val preferences: PreferencesHelper by injectLazy()
+
+    lateinit var binding: VB
 
     private val lightTheme: Int by lazy {
         when (preferences.themeLight().get()) {

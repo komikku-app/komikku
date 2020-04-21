@@ -35,7 +35,7 @@ import rx.Subscription
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MangaController : RxController, TabbedController {
+class MangaController : RxController<MangaControllerBinding>, TabbedController {
 
     constructor(
         manga: Manga?,
@@ -89,8 +89,6 @@ class MangaController : RxController, TabbedController {
     // EXH <--
 
     val mangaFavoriteRelay: PublishRelay<Boolean> = PublishRelay.create()
-
-    private lateinit var binding: MangaControllerBinding
 
     private val trackingIconRelay: BehaviorRelay<Boolean> = BehaviorRelay.create()
 

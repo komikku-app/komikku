@@ -48,7 +48,7 @@ import uy.kohesive.injekt.api.get
  * [SourceAdapter.OnBrowseClickListener] call function data on browse item click.
  * [SourceAdapter.OnLatestClickListener] call function data on latest item click
  */
-class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresenter>(bundle),
+class SourceController(bundle: Bundle? = null) : NucleusController<SourceMainControllerBinding, SourcePresenter>(bundle),
         RootController,
         FlexibleAdapter.OnItemClickListener,
         FlexibleAdapter.OnItemLongClickListener,
@@ -61,8 +61,6 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourcePresent
      * Adapter containing sources.
      */
     private var adapter: SourceAdapter? = null
-
-    private lateinit var binding: SourceMainControllerBinding
 
     private val smartSearchConfig: SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG)
 

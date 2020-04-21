@@ -90,12 +90,10 @@ import uy.kohesive.injekt.injectLazy
  * UI related actions should be called from here.
  */
 class MangaInfoController(private val fromSource: Boolean = false) :
-    NucleusController<MangaInfoPresenter>(),
+    NucleusController<MangaInfoControllerBinding, MangaInfoPresenter>(),
     ChangeMangaCategoriesDialog.Listener, CoroutineScope {
 
     private val preferences: PreferencesHelper by injectLazy()
-
-    private lateinit var binding: MangaInfoControllerBinding
 
     // EXH -->
     private var lastMangaThumbnail: String? = null

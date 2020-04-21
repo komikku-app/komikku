@@ -32,11 +32,11 @@ import uy.kohesive.injekt.api.get
 /**
  * Controller to manage the catalogues available in the app.
  */
-open class ExtensionController : NucleusController<ExtensionPresenter>(),
-    ExtensionAdapter.OnButtonClickListener,
-    FlexibleAdapter.OnItemClickListener,
-    FlexibleAdapter.OnItemLongClickListener,
-    ExtensionTrustDialog.Listener {
+open class ExtensionController : NucleusController<ExtensionControllerBinding, ExtensionPresenter>(),
+        ExtensionAdapter.OnButtonClickListener,
+        FlexibleAdapter.OnItemClickListener,
+        FlexibleAdapter.OnItemLongClickListener,
+        ExtensionTrustDialog.Listener {
 
     private val preferences: PreferencesHelper = Injekt.get()
 
@@ -48,8 +48,6 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
     private var extensions: List<ExtensionItem> = emptyList()
 
     private var query = ""
-
-    private lateinit var binding: ExtensionControllerBinding
 
     init {
         setHasOptionsMenu(true)
@@ -95,8 +93,8 @@ open class ExtensionController : NucleusController<ExtensionPresenter>(),
             R.id.action_search -> expandActionViewFromInteraction = true
             R.id.action_settings -> {
                 router.pushController((RouterTransaction.with(ExtensionFilterController()))
-                    .popChangeHandler(SettingsExtensionsFadeChangeHandler())
-                    .pushChangeHandler(FadeChangeHandler()))
+                        .popChangeHandler(SettingsExtensionsFadeChangeHandler())
+                        .pushChangeHandler(FadeChangeHandler()))
             }
             R.id.action_auto_check -> {
                 item.isChecked = !item.isChecked

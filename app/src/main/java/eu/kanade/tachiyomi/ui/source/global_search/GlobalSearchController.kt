@@ -33,7 +33,7 @@ import uy.kohesive.injekt.injectLazy
 open class GlobalSearchController(
     protected val initialQuery: String? = null,
     protected val extensionFilter: String? = null
-) : NucleusController<GlobalSearchPresenter>(),
+) : NucleusController<GlobalSearchControllerBinding, GlobalSearchPresenter>(),
         GlobalSearchCardAdapter.OnMangaClickListener, GlobalSearchAdapter.OnMoreClickListener {
 
     /**
@@ -46,11 +46,6 @@ open class GlobalSearchController(
      */
     protected var adapter: GlobalSearchAdapter? = null
 
-    private lateinit var binding: GlobalSearchControllerBinding
-
-    /**
-     * Called when controller is initialized.
-     */
     init {
         setHasOptionsMenu(true)
     }
@@ -67,11 +62,6 @@ open class GlobalSearchController(
         return binding.root
     }
 
-    /**
-     * Set the title of controller.
-     *
-     * @return title.
-     */
     override fun getTitle(): String? {
         return presenter.query
     }
