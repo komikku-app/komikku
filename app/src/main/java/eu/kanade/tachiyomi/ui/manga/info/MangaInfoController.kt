@@ -381,14 +381,12 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                     .centerCrop()
                     .into(binding.mangaCover)
 
-            if (binding.backdrop != null) {
-                GlideApp.with(view.context)
-                        .load(manga)
-                        .signature(coverSig)
-                        .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                        .centerCrop()
-                        .into(binding.backdrop!!)
-            }
+            GlideApp.with(view.context)
+                    .load(manga)
+                    .signature(coverSig)
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                    .centerCrop()
+                    .into(binding.backdrop)
         }
 
         // Manga info section
@@ -746,8 +744,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             return
         }
 
-        val previousController = router.backstack[router.backstackSize - 2].controller()
-        when (previousController) {
+        when (val previousController = router.backstack[router.backstackSize - 2].controller()) {
             is LibraryController -> {
                 router.handleBack()
                 previousController.search(query)

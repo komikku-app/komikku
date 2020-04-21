@@ -81,8 +81,7 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : androidx.recyclerview.widget.R
      * Returns the view type for the item at the given [position].
      */
     override fun getItemViewType(position: Int): Int {
-        val item = items[position]
-        return when (item) {
+        return when (val item = items[position]) {
             is ReaderPage -> PAGE_VIEW
             is ChapterTransition -> TRANSITION_VIEW
             else -> error("Unknown view type for ${item.javaClass}")
