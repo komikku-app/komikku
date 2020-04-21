@@ -125,9 +125,8 @@ class LibraryPresenter(
      */
     private fun applyFilters(map: LibraryMap): LibraryMap {
         val filterDownloaded = preferences.filterDownloaded().getOrDefault()
-
+        val filterDownloadedOnly = preferences.offlineMode().get()
         val filterUnread = preferences.filterUnread().getOrDefault()
-
         val filterCompleted = preferences.filterCompleted().getOrDefault()
 
         val filterFn: (LibraryItem) -> Boolean = f@{ item ->
@@ -145,7 +144,7 @@ class LibraryPresenter(
                 return@f false
             }
             // Filter when there are no downloads.
-            if (filterDownloaded != STATE_IGNORE) {
+            if (filterDownloaded != STATE_IGNORE || filterDownloadedOnly) {
                 val isDownloaded = when {
                     item.manga.source == LocalSource.ID -> true
                     item.downloadCount != -1 -> item.downloadCount > 0

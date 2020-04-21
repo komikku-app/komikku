@@ -187,6 +187,8 @@ class PreferencesHelper(val context: Context) {
 
     fun downloadBadge() = rxPrefs.getBoolean(Keys.downloadBadge, false)
 
+    fun offlineMode() = flowPrefs.getBoolean(Keys.offlineMode, false)
+
     // J2K converted from boolean to integer
     fun filterDownloaded() = rxPrefs.getInteger(Keys.filterDownloaded, 0)
 
