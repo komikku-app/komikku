@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.manga.info
 
 import android.os.Bundle
 import com.google.gson.Gson
+import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -16,6 +17,7 @@ import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import exh.MERGED_SOURCE_ID
 import exh.util.await
+import java.util.Date
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import rx.Observable
@@ -34,6 +36,8 @@ class MangaInfoPresenter(
     val manga: Manga,
     val source: Source,
     val smartSearchConfig: SourceController.SmartSearchConfig?,
+    private val chapterCountRelay: BehaviorRelay<Float>,
+    private val lastUpdateRelay: BehaviorRelay<Date>,
     private val mangaFavoriteRelay: PublishRelay<Boolean>,
     private val db: DatabaseHelper = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
@@ -55,10 +59,18 @@ class MangaInfoPresenter(
         super.onCreate(savedState)
         sendMangaToView()
 
+        // Update chapter count
+        chapterCountRelay.observeOn(AndroidSchedulers.mainThread())
+                .subscribeLatestCache(MangaInfoController::setChapterCount)
+
         // Update favorite status
         mangaFavoriteRelay.observeOn(AndroidSchedulers.mainThread())
                 .subscribe { setFavorite(it) }
                 .apply { add(this) }
+
+        // update last update date
+        lastUpdateRelay.observeOn(AndroidSchedulers.mainThread())
+                .subscribeLatestCache(MangaInfoController::setLastUpdateDate)
     }
 
     /**

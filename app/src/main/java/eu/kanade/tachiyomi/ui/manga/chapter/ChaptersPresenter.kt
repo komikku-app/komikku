@@ -104,6 +104,14 @@ class ChaptersPresenter(
                     // Listen for download status changes
                     observeDownloads()
 
+                    // Emit the number of chapters to the info tab.
+                    chapterCountRelay.call(chapters.maxBy { it.chapter_number }?.chapter_number
+                            ?: 0f)
+
+                    // Emit the upload date of the most recent chapter
+                    lastUpdateRelay.call(Date(chapters.maxBy { it.date_upload }?.date_upload
+                            ?: 0))
+
                     // EXH -->
                     if (chapters.isNotEmpty() &&
                             (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) &&
