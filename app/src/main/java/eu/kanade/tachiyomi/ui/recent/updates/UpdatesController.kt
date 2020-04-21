@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.databinding.UpdatesControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
-import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -265,7 +264,6 @@ class UpdatesController : NucleusController<UpdatesControllerBinding, UpdatesPre
 
     override fun deleteChapters(chaptersToDelete: List<UpdatesItem>) {
         destroyActionModeIfNeeded()
-        DeletingChaptersDialog().showDialog(router)
         presenter.deleteChapters(chaptersToDelete)
     }
 
@@ -282,7 +280,6 @@ class UpdatesController : NucleusController<UpdatesControllerBinding, UpdatesPre
      * @param chapter selected chapter with manga
      */
     fun deleteChapter(chapter: UpdatesItem) {
-        DeletingChaptersDialog().showDialog(router)
         presenter.deleteChapters(listOf(chapter))
     }
 
@@ -299,7 +296,6 @@ class UpdatesController : NucleusController<UpdatesControllerBinding, UpdatesPre
      * Called when chapters are deleted
      */
     fun onChaptersDeleted() {
-        dismissDeletingDialog()
         adapter?.notifyDataSetChanged()
     }
 
@@ -308,15 +304,7 @@ class UpdatesController : NucleusController<UpdatesControllerBinding, UpdatesPre
      * @param error error message
      */
     fun onChaptersDeletedError(error: Throwable) {
-        dismissDeletingDialog()
         Timber.e(error)
-    }
-
-    /**
-     * Called to dismiss deleting dialog
-     */
-    fun dismissDeletingDialog() {
-        router.popControllerWithTag(DeletingChaptersDialog.TAG)
     }
 
     /**
