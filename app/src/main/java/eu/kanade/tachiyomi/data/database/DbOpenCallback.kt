@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.HistoryTable
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
+import eu.kanade.tachiyomi.data.database.tables.MergedTable
 import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable
 import eu.kanade.tachiyomi.data.database.tables.TrackTable
 import exh.metadata.sql.tables.SearchTagTable
@@ -23,7 +24,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = 10 // [EXH + J2K DRAGNDROP]
+        const val DATABASE_VERSION = 11 // [EXH + J2K DRAGNDROP + AZ MERGEDSOURES]
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -38,6 +39,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         execSQL(SearchTagTable.createTableQuery)
         execSQL(SearchTitleTable.createTableQuery)
         // EXH <--
+        // AZ -->
+        execSQL(MergedTable.createTableQuery)
+        // AZ <--
 
         // DB indexes
         execSQL(MangaTable.createUrlIndexQuery)
@@ -53,6 +57,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         db.execSQL(SearchTitleTable.createMangaIdIndexQuery)
         db.execSQL(SearchTitleTable.createTitleIndexQuery)
         // EXH <--
+        // AZ -->
+        execSQL(MergedTable.createIndexQuery)
+        // AZ <--
     }
 
     override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -102,8 +109,12 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         // EXH <--
 
         // AZ -->
-        if (oldVersion < 10) {
+        if (oldVersion < 10) { // j2k drag and drop
             db.execSQL(CategoryTable.addMangaOrder)
+        }
+        if (oldVersion < 11) { // merged sources update
+            db.execSQL(MergedTable.createTableQuery)
+            db.execSQL(MergedTable.createIndexQuery)
         }
         // AZ <--
     }
