@@ -36,7 +36,10 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.library.LibraryController
+import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.recent.history.HistoryController
+import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
@@ -662,6 +665,14 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             is LibraryController -> {
                 router.handleBack()
                 previousController.search(query)
+            }
+            is UpdatesController,
+            is HistoryController -> {
+                // Manually navigate to LibraryController
+                router.handleBack()
+                (router.activity as MainActivity).setSelectedDrawerItem(R.id.nav_drawer_library)
+                val controller = router.getControllerWithTag(R.id.nav_drawer_library.toString()) as LibraryController
+                controller.search(query)
             }
             is BrowseSourceController -> {
                 router.handleBack()

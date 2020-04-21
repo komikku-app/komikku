@@ -351,7 +351,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         }
     }
 
-    private fun setSelectedDrawerItem(itemId: Int) {
+    fun setSelectedDrawerItem(itemId: Int) {
         if (!isFinishing) {
             binding.navView.setCheckedItem(itemId)
             binding.navView.menu.performIdentifierAction(itemId, 0)
