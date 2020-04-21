@@ -64,7 +64,9 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-        <activity android:name=".ui.reader.ReaderActivity" />
+        <activity
+            android:name=".ui.reader.ReaderActivity"
+            android:launchMode="singleTask" />
         <activity
             android:name=".ui.webview.WebViewActivity"
             android:configChanges="uiMode|orientation|screenSize" />
