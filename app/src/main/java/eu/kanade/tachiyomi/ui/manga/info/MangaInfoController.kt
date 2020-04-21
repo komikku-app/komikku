@@ -329,7 +329,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
         // EXH -->
         if (source?.id == MERGED_SOURCE_ID) {
-            binding.mangaSourceLabel.text = "Sources"
+            binding.mangaSourceLabel.setText(R.string.label_sources)
         } else {
             binding.mangaSourceLabel.setText(R.string.manga_info_source_label)
         }
