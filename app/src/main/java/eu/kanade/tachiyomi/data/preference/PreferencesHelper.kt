@@ -54,6 +54,8 @@ class PreferencesHelper(val context: Context) {
 
     fun startScreen() = prefs.getInt(Keys.startScreen, 1)
 
+    fun confirmExit() = prefs.getBoolean(Keys.confirmExit, false)
+
     fun secureScreen() = flowPrefs.getBoolean(Keys.secureScreen, false)
 
     fun hideNotificationContent() = prefs.getBoolean(Keys.hideNotificationContent, false)

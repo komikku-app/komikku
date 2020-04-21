@@ -28,6 +28,7 @@
     <string name="label_extension_info">Extension info</string>
     <string name="label_help">Help</string>
 
+    <string name="confirm_exit">Press back again to exit</string>
 
     <!-- Actions -->
     <string name="action_settings">Settings</string>
@@ -154,6 +155,7 @@
     <string name="pref_language">Language</string>
     <string name="system_default">System default</string>
     <string name="pref_date_format">Date format</string>
+    <string name="pref_confirm_exit">Confirm exit</string>
     <string name="pref_manage_notifications">Manage notifications</string>
     <string name="hide_notification_content">Hide notification content</string>
 

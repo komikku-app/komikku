@@ -39,6 +39,11 @@ class SettingsGeneralController : SettingsController() {
             defaultValue = "1"
             summary = "%s"
         }
+        switchPreference {
+            key = Keys.confirmExit
+            titleRes = R.string.pref_confirm_exit
+            defaultValue = false
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             preference {
                 titleRes = R.string.pref_manage_notifications
