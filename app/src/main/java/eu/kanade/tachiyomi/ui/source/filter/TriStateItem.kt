@@ -2,6 +2,8 @@ package eu.kanade.tachiyomi.ui.source.filter
 
 import android.view.View
 import android.widget.CheckedTextView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.google.android.material.R
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -23,11 +25,11 @@ open class TriStateItem(val filter: Filter.TriState) : AbstractFlexibleItem<TriS
         return 103
     }
 
-    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>): Holder {
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): Holder {
         return Holder(view, adapter)
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>, holder: Holder, position: Int, payloads: List<Any?>?) {
+    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>, holder: Holder, position: Int, payloads: List<Any?>?) {
         val view = holder.text
         view.text = filter.name
 
@@ -38,11 +40,11 @@ open class TriStateItem(val filter: Filter.TriState) : AbstractFlexibleItem<TriS
             else -> throw Exception("Unknown state")
         }, null)?.apply {
             val color = if (filter.state == Filter.TriState.STATE_INCLUDE)
-                R.attr.colorAccent
+                view.context.getResourceColor(R.attr.colorAccent)
             else
-                android.R.attr.textColorSecondary
+                ContextCompat.getColor(view.context, R.color.material_on_background_disabled)
 
-            setTint(view.context.getResourceColor(color))
+            setTint(color)
         }
 
         view.setCompoundDrawablesWithIntrinsicBounds(getIcon(), null, null, null)
