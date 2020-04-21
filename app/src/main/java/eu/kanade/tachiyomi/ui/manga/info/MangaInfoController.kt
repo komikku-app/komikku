@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
+import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MangaInfoControllerBinding
@@ -101,6 +102,8 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         setHasOptionsMenu(true)
         setOptionsMenuHidden(true)
     }
+
+    private var thumbnailUrl: String? = null
 
     override fun createPresenter(): MangaInfoPresenter {
         val ctrl = parentController as MangaController
@@ -378,19 +381,24 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                 view.context.resources.displayMetrics
             )
 
-            GlideApp.with(view.context)
-                    .load(manga)
+            if (binding.mangaCover.drawable == null || manga.thumbnail_url != thumbnailUrl) {
+                thumbnailUrl = manga.thumbnail_url
+                val mangaThumbnail = manga.toMangaThumbnail()
+
+                GlideApp.with(view.context)
+                    .load(mangaThumbnail)
                     .signature(coverSig)
                     .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .centerCrop()
                     .into(binding.mangaCover)
 
-            GlideApp.with(view.context)
-                    .load(manga)
+                GlideApp.with(view.context)
+                    .load(mangaThumbnail)
                     .signature(coverSig)
                     .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .centerCrop()
                     .into(binding.backdrop)
+            }
         }
     }
 
