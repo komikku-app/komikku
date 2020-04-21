@@ -401,7 +401,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.ehAutoscrollFreq.textChanges()
             // .observeOn(AndroidSchedulers.mainThread())
             .onEach {
-                val parsed = it?.toString()?.toFloatOrNull()
+                val parsed = it.toString().toFloatOrNull()
 
                 if (parsed == null || parsed <= 0 || parsed > 9999) {
                     binding.ehAutoscrollFreq.error = "Invalid frequency"
@@ -434,14 +434,14 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 presenter.viewerChaptersRelay.value
                         .currChapter
                         .pages
-                        ?.forEachIndexed { index, page ->
+                        ?.forEachIndexed { _, page ->
                             var shouldQueuePage = false
                             if (page.status == Page.ERROR) {
                                 shouldQueuePage = true
-                            } else if (page.status == Page.LOAD_PAGE ||
+                            } /*else if (page.status == Page.LOAD_PAGE ||
                                     page.status == Page.DOWNLOAD_IMAGE) {
                                 // Do nothing
-                            }
+                            }*/
 
                             if (shouldQueuePage) {
                                 page.status = Page.QUEUE
@@ -482,7 +482,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehBoostPage.clicks()
             .onEach {
-                viewer?.let { viewer ->
+                viewer?.let { _ ->
                     val curPage = exh_currentPage() ?: run {
                         toast("This page cannot be boosted (invalid page)!")
                         return@let

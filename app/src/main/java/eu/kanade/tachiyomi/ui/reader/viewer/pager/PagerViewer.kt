@@ -163,26 +163,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      */
     private fun onReaderPageSelected(page: ReaderPage) {
         val pages = page.chapter.pages!! // Won't be null because it's the loaded chapter
-        // EXH -->
-        if (pages == null) {
-            XLog.e("Pager reader chapter pages are null (position: %s," +
-                    " page.index: %s," +
-                    " page.url: %s," +
-                    " page.imageUrl: %s," +
-                    " page.chapter.state: %s," +
-                    " page.chapter.pageLoader == null: %s," +
-                    " page.chapter.requestedPage: %s" +
-                    " page.chapter.references: %s)!",
-                    page.index,
-                    page.url,
-                    page.imageUrl,
-                    page.chapter.state::class.simpleName,
-                    page.chapter.pageLoader == null,
-                    page.chapter.requestedPage,
-                    page.chapter.references)
-            return
-        }
-        // EXH <--
 
         Timber.d("onReaderPageSelected: ${page.number}/${pages.size}")
         activity.onPageSelected(page)

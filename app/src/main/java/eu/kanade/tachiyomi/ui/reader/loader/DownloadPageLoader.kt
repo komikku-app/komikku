@@ -33,7 +33,7 @@ class DownloadPageLoader(
                 .map { pages ->
                     pages.map { page ->
                         ReaderPage(page.index, page.url, page.imageUrl) {
-                            context.contentResolver.openInputStream(page.uri)
+                            context.contentResolver.openInputStream(page.uri!!)!!
                         }.apply {
                             status = Page.READY
                         }

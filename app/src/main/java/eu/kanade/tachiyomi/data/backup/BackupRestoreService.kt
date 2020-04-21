@@ -166,7 +166,7 @@ class BackupRestoreService : Service() {
             stopSelf(startId)
         }
         job = GlobalScope.launch(handler) {
-            restoreBackup(uri!!)
+            restoreBackup(uri)
         }
         job?.invokeOnCompletion { stopSelf(startId) }
 
@@ -225,7 +225,7 @@ class BackupRestoreService : Service() {
         notificationManager.cancel(Notifications.ID_RESTORE_PROGRESS)
 
         cancelled = errors.count { it -> it.contains("standalonecoroutine", true) }
-        var tmpErrors = errors.filter { it -> !it.contains("standalonecoroutine", true) }
+        val tmpErrors = errors.filter { it -> !it.contains("standalonecoroutine", true) }
         errors.clear()
         errors.addAll(tmpErrors)
 
@@ -329,8 +329,6 @@ class BackupRestoreService : Service() {
         try {
             if (errors.isNotEmpty()) {
                 val destFile = File(externalCacheDir, "tachiyomi_restore.txt")
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
-
                 destFile.bufferedWriter().use { out ->
                     errors.forEach { message ->
                         out.write("$message\n")
@@ -418,7 +416,7 @@ class BackupRestoreService : Service() {
      *
      */
     private fun getErrorLogIntent(path: String, file: String): PendingIntent {
-        val destFile = File(path, file!!)
+        val destFile = File(path, file)
         val uri = destFile.getUriCompat(applicationContext)
         return NotificationReceiver.openFileExplorerPendingActivity(this@BackupRestoreService, uri)
     }
