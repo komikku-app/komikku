@@ -21,7 +21,6 @@ import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
-import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
@@ -257,8 +256,9 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             // EXH <--
         }
 
-        preferences.extensionUpdatesCount().asImmediateFlow()
-            .onEach { setExtensionsBadge(it) }
+        setExtensionsBadge()
+        preferences.extensionUpdatesCount().asFlow()
+            .onEach { setExtensionsBadge() }
             .launchInUI()
     }
 
@@ -268,11 +268,12 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         }
     }
 
-    private fun setExtensionsBadge(updates: Int) {
+    private fun setExtensionsBadge() {
         val extUpdateText: TextView = binding.navView.menu.findItem(
                 R.id.nav_drawer_extensions
         )?.actionView as? TextView ?: return
 
+        val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
             extUpdateText.text = updates.toString()
             extUpdateText.visible()
