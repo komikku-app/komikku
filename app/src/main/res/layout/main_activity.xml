@@ -27,16 +27,9 @@
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabs"
-                style="@style/Widget.MaterialComponents.TabLayout.Colored"
+                style="@style/Theme.Widget.Tabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:tabIndicator="@drawable/tab_indicator"
-                app:tabIndicatorFullWidth="false"
-                app:tabIndicatorHeight="3dp"
-                app:tabInlineLabel="true"
-                app:tabGravity="center"
-                app:tabMode="scrollable"
-                app:tabMinWidth="75dp"/>
+                android:layout_height="wrap_content" />
 
         </eu.kanade.tachiyomi.widget.ElevationAppBarLayout>
 
