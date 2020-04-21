@@ -13,7 +13,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.signature.ObjectKey
 import com.elvishew.xlog.XLog
@@ -52,6 +51,7 @@ import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
+import java.text.DateFormat
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -78,6 +78,10 @@ class MangaInfoController(private val fromSource: Boolean = false) :
     ChangeMangaCategoriesDialog.Listener, CoroutineScope {
 
     private val preferences: PreferencesHelper by injectLazy()
+
+    private val dateFormat: DateFormat by lazy {
+        preferences.dateFormat().getOrDefault()
+    }
 
     // EXH -->
     private var lastMangaThumbnail: String? = null
@@ -110,27 +114,15 @@ class MangaInfoController(private val fromSource: Boolean = false) :
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        // Set onclickListener to toggle favorite when favorite button clicked.
-        binding.btnFavorite.clicks()
-            .onEach { onFavoriteClick() }
+        // Set onclickListener to toggle favorite when FAB clicked.
+        binding.fabFavorite.clicks()
+            .onEach { onFabClick() }
             .launchInUI()
 
-        // Set onLongClickListener to manage categories when favorite button is clicked.
-        binding.btnFavorite.longClicks()
-            .onEach { onFavoriteLongClick() }
+        // Set onLongClickListener to manage categories when FAB is clicked.
+        binding.fabFavorite.longClicks()
+            .onEach { onFabLongClick() }
             .launchInUI()
-
-        if (presenter.source is HttpSource) {
-            binding.btnWebview.visible()
-            binding.btnShare.visible()
-
-            binding.btnWebview.clicks()
-                .onEach { openInWebView() }
-                .launchInUI()
-            binding.btnShare.clicks()
-                .onEach { shareManga() }
-                .launchInUI()
-        }
 
         // Set SwipeRefresh to refresh manga data.
         binding.swipeRefresh.refreshes()
@@ -226,6 +218,10 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.manga_info, menu)
+
+        if (presenter.source !is HttpSource) {
+            menu.findItem(R.id.action_share).isVisible = false
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -233,6 +229,8 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             // EXH -->
             R.id.action_merge -> openSmartSearch()
             // EXH <--
+            R.id.action_open_in_web_view -> openInWebView()
+            R.id.action_share -> shareManga()
             R.id.action_migrate ->
                 PreMigrationController.navigateToMigration(
                     preferences.skipPreMigration().getOrDefault(),
@@ -362,7 +360,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         })
 
         // Set the favorite drawable to the correct one.
-        setFavoriteButtonState(manga.favorite)
+        setFavoriteDrawable(manga.favorite)
 
         // Set cover if it matches
         val tagMatches = lastMangaThumbnail == manga.thumbnail_url
@@ -444,18 +442,17 @@ class MangaInfoController(private val fromSource: Boolean = false) :
     }
 
     /**
-     * Update favorite button with correct drawable and text.
+     * Update FAB with correct drawable.
      *
      * @param isFavorite determines if manga is favorite or not.
      */
-    private fun setFavoriteButtonState(isFavorite: Boolean) {
+    private fun setFavoriteDrawable(isFavorite: Boolean) {
         // Set the Favorite drawable to the correct one.
         // Border drawable if false, filled drawable if true.
-        binding.btnFavorite.apply {
-            icon = ContextCompat.getDrawable(context, if (isFavorite) R.drawable.ic_bookmark_24dp else R.drawable.ic_add_to_library_24dp)
-            text = context.getString(if (isFavorite) R.string.in_library else R.string.add_to_library)
-            isChecked = isFavorite
-        }
+        binding.fabFavorite.setImageResource(if (isFavorite)
+            R.drawable.ic_bookmark_24dp
+        else
+            R.drawable.ic_add_to_library_24dp)
     }
 
     /**
@@ -499,7 +496,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         binding.swipeRefresh.isRefreshing = value
     }
 
-    private fun onFavoriteClick() {
+    private fun onFabClick() {
         val manga = presenter.manga
 
         if (manga.favorite) {
@@ -539,7 +536,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         }
     }
 
-    private fun onFavoriteLongClick() {
+    private fun onFabLongClick() {
         val manga = presenter.manga
 
         if (manga.favorite && presenter.getCategories().isNotEmpty()) {
@@ -553,7 +550,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             ChangeMangaCategoriesDialog(this, listOf(manga), categories, preselected)
                     .showDialog(router)
         } else {
-            onFavoriteClick()
+            onFabClick()
         }
     }
 
