@@ -41,7 +41,7 @@ import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.system.WebviewUtil
+import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.vibrate
@@ -119,8 +119,8 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
         binding = MainActivityBinding.inflate(layoutInflater)
 
-        // Enforce Webview availability
-        if (!WebviewUtil.supportsWebview(this)) {
+        // Enforce WebView availability
+        if (!WebViewUtil.supportsWebView(this)) {
             toast(R.string.information_webview_required, Toast.LENGTH_LONG)
             finishAndRemoveTask()
         }
