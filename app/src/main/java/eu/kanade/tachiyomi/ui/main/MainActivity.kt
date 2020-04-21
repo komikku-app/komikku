@@ -21,6 +21,7 @@ import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
@@ -256,7 +257,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             // EXH <--
         }
 
-        preferences.extensionUpdatesCount().asFlow()
+        preferences.extensionUpdatesCount().asImmediateFlow()
             .onEach { setExtensionsBadge(it) }
             .launchInUI()
     }
