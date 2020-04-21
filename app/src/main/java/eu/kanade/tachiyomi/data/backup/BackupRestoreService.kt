@@ -40,8 +40,6 @@ import exh.BackupEntry
 import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job

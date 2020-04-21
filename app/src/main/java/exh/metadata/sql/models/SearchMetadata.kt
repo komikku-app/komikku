@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.data.database.models
+package exh.metadata.sql.models
 
 data class SearchMetadata(
     // Manga ID this gallery is linked to

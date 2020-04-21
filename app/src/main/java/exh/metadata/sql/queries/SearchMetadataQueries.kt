@@ -1,10 +1,10 @@
-package eu.kanade.tachiyomi.data.database.queries
+package exh.metadata.sql.queries
 
 import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.Query
 import eu.kanade.tachiyomi.data.database.DbProvider
-import eu.kanade.tachiyomi.data.database.models.SearchMetadata
-import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable
+import exh.metadata.sql.models.SearchMetadata
+import exh.metadata.sql.tables.SearchMetadataTable
 
 interface SearchMetadataQueries : DbProvider {
 

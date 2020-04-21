@@ -1,4 +1,6 @@
-package eu.kanade.tachiyomi.data.database.tables
+package exh.metadata.sql.tables
+
+import eu.kanade.tachiyomi.data.database.tables.MangaTable
 
 object SearchMetadataTable {
     const val TABLE = "search_metadata"

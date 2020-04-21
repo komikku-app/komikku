@@ -29,11 +29,11 @@ import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.setting.SettingsSourcesController
-import eu.kanade.tachiyomi.ui.smartsearch.SmartSearchController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.util.lang.launchInUI
+import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.onEach

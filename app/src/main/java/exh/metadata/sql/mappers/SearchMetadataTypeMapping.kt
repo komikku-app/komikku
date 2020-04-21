@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.data.database.mappers
+package exh.metadata.sql.mappers
 
 import android.content.ContentValues
 import android.database.Cursor
@@ -9,13 +9,13 @@ import com.pushtorefresh.storio.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio.sqlite.queries.UpdateQuery
-import eu.kanade.tachiyomi.data.database.models.SearchMetadata
-import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable.COL_EXTRA
-import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable.COL_EXTRA_VERSION
-import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable.COL_INDEXED_EXTRA
-import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable.COL_MANGA_ID
-import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable.COL_UPLOADER
-import eu.kanade.tachiyomi.data.database.tables.SearchMetadataTable.TABLE
+import exh.metadata.sql.models.SearchMetadata
+import exh.metadata.sql.tables.SearchMetadataTable.COL_EXTRA
+import exh.metadata.sql.tables.SearchMetadataTable.COL_EXTRA_VERSION
+import exh.metadata.sql.tables.SearchMetadataTable.COL_INDEXED_EXTRA
+import exh.metadata.sql.tables.SearchMetadataTable.COL_MANGA_ID
+import exh.metadata.sql.tables.SearchMetadataTable.COL_UPLOADER
+import exh.metadata.sql.tables.SearchMetadataTable.TABLE
 
 class SearchMetadataTypeMapping : SQLiteTypeMapping<SearchMetadata>(
     SearchMetadataPutResolver(),
@@ -46,13 +46,14 @@ class SearchMetadataPutResolver : DefaultPutResolver<SearchMetadata>() {
 
 class SearchMetadataGetResolver : DefaultGetResolver<SearchMetadata>() {
 
-    override fun mapFromCursor(cursor: Cursor): SearchMetadata = SearchMetadata(
-        mangaId = cursor.getLong(cursor.getColumnIndex(COL_MANGA_ID)),
-        uploader = cursor.getString(cursor.getColumnIndex(COL_UPLOADER)),
-        extra = cursor.getString(cursor.getColumnIndex(COL_EXTRA)),
-        indexedExtra = cursor.getString(cursor.getColumnIndex(COL_INDEXED_EXTRA)),
-        extraVersion = cursor.getInt(cursor.getColumnIndex(COL_EXTRA_VERSION))
-    )
+    override fun mapFromCursor(cursor: Cursor): SearchMetadata =
+        SearchMetadata(
+            mangaId = cursor.getLong(cursor.getColumnIndex(COL_MANGA_ID)),
+            uploader = cursor.getString(cursor.getColumnIndex(COL_UPLOADER)),
+            extra = cursor.getString(cursor.getColumnIndex(COL_EXTRA)),
+            indexedExtra = cursor.getString(cursor.getColumnIndex(COL_INDEXED_EXTRA)),
+            extraVersion = cursor.getInt(cursor.getColumnIndex(COL_EXTRA_VERSION))
+        )
 }
 
 class SearchMetadataDeleteResolver : DefaultDeleteResolver<SearchMetadata>() {
