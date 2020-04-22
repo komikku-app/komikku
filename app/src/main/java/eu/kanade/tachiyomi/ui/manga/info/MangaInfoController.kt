@@ -317,7 +317,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             }.distinct().joinToString()
             // EXH <--
         } else {
-            val mangaSource = source?.toString()
+            val mangaSource = source.toString()
             with(binding.mangaSource) {
                 text = mangaSource
                 setOnClickListener {

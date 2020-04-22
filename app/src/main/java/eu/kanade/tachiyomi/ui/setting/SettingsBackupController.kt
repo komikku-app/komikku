@@ -361,8 +361,8 @@ class SettingsBackupController : SettingsController() {
             val activity = activity!!
             val time = args.getLong(KEY_TIME)
             val errors = args.getInt(KEY_ERROR_COUNT)
-            val path = args.getString(KEY_PATH)
-            val file = args.getString(KEY_FILE)
+            val path = args.getString(KEY_PATH)!!
+            val file = args.getString(KEY_FILE)!!
             val timeString = String.format("%02d min, %02d sec",
                     TimeUnit.MILLISECONDS.toMinutes(time),
                     TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(
@@ -377,7 +377,7 @@ class SettingsBackupController : SettingsController() {
                     .negativeText(R.string.action_open_log)
                     .onNegative { _, _ ->
                         val context = applicationContext ?: return@onNegative
-                        if (!path.isNullOrEmpty()) {
+                        if (path.isNotEmpty()) {
                             val destFile = File(path, file)
                             val uri = destFile.getUriCompat(context)
                             val sendIntent = Intent(Intent.ACTION_VIEW).apply {
@@ -420,8 +420,8 @@ class SettingsBackupController : SettingsController() {
                     router.popControllerWithTag(TAG_RESTORING_BACKUP_DIALOG)
                     val time = intent.getLongExtra(BackupConst.EXTRA_TIME, 0)
                     val errors = intent.getIntExtra(BackupConst.EXTRA_ERRORS, 0)
-                    val path = intent.getStringExtra(BackupConst.EXTRA_ERROR_FILE_PATH)
-                    val file = intent.getStringExtra(BackupConst.EXTRA_ERROR_FILE)
+                    val path = intent.getStringExtra(BackupConst.EXTRA_ERROR_FILE_PATH)!!
+                    val file = intent.getStringExtra(BackupConst.EXTRA_ERROR_FILE)!!
                     if (errors > 0) {
                         RestoredBackupDialog(time, errors, path, file).showDialog(router)
                     }

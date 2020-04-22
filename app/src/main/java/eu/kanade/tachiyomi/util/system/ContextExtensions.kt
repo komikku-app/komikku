@@ -159,7 +159,6 @@ val Context.clipboardManager: ClipboardManager
     get() = applicationContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
 val Context.jobScheduler: JobScheduler
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     get() = applicationContext.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
 // <-- EH
 

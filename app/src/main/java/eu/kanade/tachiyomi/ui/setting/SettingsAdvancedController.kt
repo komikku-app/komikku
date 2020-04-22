@@ -9,7 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.text.Html
+import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.RouterTransaction
@@ -144,7 +144,7 @@ class SettingsAdvancedController : SettingsController() {
 
             preference {
                 title = "Open debug menu"
-                summary = Html.fromHtml("DO NOT TOUCH THIS MENU UNLESS YOU KNOW WHAT YOU ARE DOING! <font color='red'>IT CAN CORRUPT YOUR LIBRARY!</font>")
+                summary = HtmlCompat.fromHtml("DO NOT TOUCH THIS MENU UNLESS YOU KNOW WHAT YOU ARE DOING! <font color='red'>IT CAN CORRUPT YOUR LIBRARY!</font>", HtmlCompat.FROM_HTML_MODE_LEGACY)
                 onClick { router.pushController(SettingsDebugController().withFadeTransaction()) }
             }
         }

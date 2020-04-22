@@ -352,8 +352,8 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
-        binding.navView?.setNavigationItemSelectedListener(null)
-        binding.toolbar?.setNavigationOnClickListener(null)
+        binding.navView.setNavigationItemSelectedListener(null)
+        binding.toolbar.setNavigationOnClickListener(null)
     }
 
     override fun onBackPressed() {
