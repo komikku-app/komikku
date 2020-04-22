@@ -29,7 +29,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             val preferences = Injekt.get<PreferencesHelper>()
             val interval = prefInterval ?: preferences.libraryUpdateInterval().getOrDefault()
             if (interval > 0) {
-                val restrictions = preferences.libraryUpdateRestriction()
+                val restrictions = preferences.libraryUpdateRestriction()!!
                 val acRestriction = "ac" in restrictions
                 val wifiRestriction = if ("wifi" in restrictions)
                     NetworkType.UNMETERED

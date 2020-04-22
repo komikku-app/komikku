@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.library
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -748,9 +749,9 @@ class LibraryController(
 
             try {
                 // Get the file's input stream from the incoming Intent
-                activity.contentResolver.openInputStream(data.data).use {
+                activity.contentResolver.openInputStream(data.data ?: Uri.EMPTY).use {
                     // Update cover to selected file, show error if something went wrong
-                    if (presenter.editCoverWithStream(it, manga)) {
+                    if (it != null && presenter.editCoverWithStream(it, manga)) {
                         // TODO refresh cover
                     } else {
                         activity.toast(R.string.notification_cover_update_failed)
