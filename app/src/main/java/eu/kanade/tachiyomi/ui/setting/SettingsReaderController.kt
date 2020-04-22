@@ -151,6 +151,37 @@ class SettingsReaderController : SettingsController() {
                     "Normally, pressing the retry button on a failed download will wait until the downloader has finished downloading the last page before beginning to re-download the failed page. Enabling this will force the downloader to begin re-downloading the failed page as soon as you press the retry button."
                 defaultValue = true
             }
+            intListPreference {
+                key = Keys.eh_preload_size
+                title = "Reader Preload amount"
+                entryValues = arrayOf(
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "6",
+                    "8",
+                    "10",
+                    "12",
+                    "14",
+                    "16"
+                )
+                entries = arrayOf(
+                    "1 Page",
+                    "2 Pages",
+                    "3 Pages",
+                    "4 Pages",
+                    "6 Pages",
+                    "8 Pages",
+                    "10 Pages",
+                    "12 Pages",
+                    "14 Pages",
+                    "16 Pages"
+                )
+                defaultValue = "4"
+                summary =
+                    "The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to iincreasethe ammount of cache you allocate in the next option"
+            }
             listPreference {
                 key = Keys.eh_cacheSize
                 title = "Reader cache size"

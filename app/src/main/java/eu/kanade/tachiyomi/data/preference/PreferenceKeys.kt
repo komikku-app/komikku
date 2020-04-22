@@ -216,4 +216,6 @@ object PreferenceKeys {
     const val eh_hl_useHighQualityThumbs = "eh_hl_hq_thumbs"
 
     const val eh_library_rounded_corners = "eh_library_corners"
+
+    const val eh_preload_size = "eh_preload_size"
 }
