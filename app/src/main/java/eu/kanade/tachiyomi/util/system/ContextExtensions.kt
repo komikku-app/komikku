@@ -21,7 +21,6 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.widget.Toast
 import androidx.annotation.AttrRes
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
