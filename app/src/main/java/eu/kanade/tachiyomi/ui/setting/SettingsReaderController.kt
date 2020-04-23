@@ -180,7 +180,7 @@ class SettingsReaderController : SettingsController() {
                 )
                 defaultValue = "4"
                 summary =
-                    "The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to iincreasethe ammount of cache you allocate in the next option"
+                    "The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to increase the amount of cache you allocate when using larger values"
             }
             listPreference {
                 key = Keys.eh_cacheSize
