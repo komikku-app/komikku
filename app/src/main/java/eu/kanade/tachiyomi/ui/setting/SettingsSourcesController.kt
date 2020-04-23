@@ -23,7 +23,7 @@ import exh.source.BlacklistedSources
 import java.util.TreeMap
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.appcompat.queryTextEvents
+import reactivecircus.flowbinding.appcompat.queryTextChanges
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -184,7 +184,7 @@ class SettingsSourcesController : SettingsController() {
             searchView.clearFocus()
         }
 
-        searchView.queryTextEvents()
+        searchView.queryTextChanges()
             .filter { router.backstack.lastOrNull()?.controller() == this }
             .onEach {
                 query = it.toString()
