@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.customview.customView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractHeaderItem
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -36,10 +37,10 @@ class HelpDialogItem(val filter: Filter.HelpDialog) : AbstractHeaderItem<HelpDia
             val rendered = markwon.render(parsed)
             markwon.setParsedMarkdown(v, rendered)
 
-            MaterialDialog.Builder(view.context)
-                    .title(filter.dialogTitle)
-                    .customView(v, true)
-                    .positiveText("Ok")
+            MaterialDialog(view.context)
+                    .title(text = filter.dialogTitle)
+                    .customView(view = v, scrollable = true)
+                    .positiveButton(android.R.string.ok)
                     .show()
         }
     }
