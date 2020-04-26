@@ -3,6 +3,8 @@ package eu.kanade.tachiyomi.ui.main
 import android.animation.ObjectAnimator
 import android.app.SearchManager
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Looper
 import android.text.TextUtils
@@ -22,6 +24,7 @@ import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
+import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
@@ -42,7 +45,6 @@ import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.WebViewUtil
-import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
@@ -137,7 +139,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         setSupportActionBar(binding.toolbar)
 
         drawerArrow = DrawerArrowDrawable(this)
-        drawerArrow?.color = getResourceColor(R.attr.colorOnPrimary)
+        drawerArrow?.color = if ((preferences.themeMode().get() == PreferenceValues.THEME_MODE_LIGHT || (preferences.themeMode().get() == PreferenceValues.THEME_MODE_SYSTEM && resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_YES)) && preferences.themeLight().get() == PreferenceValues.THEME_LIGHT_DEFAULT) Color.BLACK else Color.WHITE
         binding.toolbar.navigationIcon = drawerArrow
 
         tabAnimator = TabsAnimator(binding.tabs)
