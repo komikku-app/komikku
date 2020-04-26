@@ -419,10 +419,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehAutoscrollHelp.clicks()
             .onEach {
-                MaterialDialog.Builder(this)
-                    .title("Autoscroll help")
-                    .content("Automatically scroll to the next page in the specified interval. Interval is specified in seconds.")
-                    .positiveText("Ok")
+                MaterialDialog(this)
+                    .title(R.string.eh_autoscroll_help)
+                    .message(R.string.eh_autoscroll_help_message)
+                    .positiveButton(android.R.string.ok)
                     .show()
             }
             .launchInUI()
@@ -472,10 +472,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehRetryAllHelp.clicks()
             .onEach {
-                MaterialDialog.Builder(this)
-                    .title("Retry all help")
-                    .content("Re-add all failed pages to the download queue.")
-                    .positiveText("Ok")
+                MaterialDialog(this)
+                    .title(R.string.eh_retry_all_help)
+                    .message(R.string.eh_retry_all_help_message)
+                    .positiveButton(android.R.string.ok)
                     .show()
             }
             .launchInUI()
@@ -509,10 +509,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehBoostPageHelp.clicks()
             .onEach {
-                MaterialDialog.Builder(this)
-                    .title("Boost page help")
-                    .content("Normally the downloader can only download a specific amount of pages at the same time. This means you can be waiting for a page to download but the downloader will not start downloading the page until it has a free download slot. Pressing 'Boost page' will force the downloader to begin downloading the current page, regardless of whether or not there is an available slot.")
-                    .positiveText("Ok")
+                MaterialDialog(this)
+                    .title(R.string.eh_boost_page_help)
+                    .message(R.string.eh_boost_page_help_message)
+                    .positiveButton(android.R.string.ok)
                     .show()
             }
             .launchInUI()
