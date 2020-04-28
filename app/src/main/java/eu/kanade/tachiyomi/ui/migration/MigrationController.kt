@@ -42,7 +42,8 @@ class MigrationController : NucleusController<MigrationControllerBinding, Migrat
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        return inflater.inflate(R.layout.migration_controller, container, false)
+        binding = MigrationControllerBinding.inflate(inflater)
+        return binding.root
     }
 
     fun searchController(manga: Manga): SearchController {
