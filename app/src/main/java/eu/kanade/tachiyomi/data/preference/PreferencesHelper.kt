@@ -161,7 +161,7 @@ class PreferencesHelper(val context: Context) {
 
     fun downloadOnlyOverWifi() = prefs.getBoolean(Keys.downloadOnlyOverWifi, true)
 
-    fun numberOfBackups() = rxPrefs.getInteger(Keys.numberOfBackups, 1)
+    fun numberOfBackups() = flowPrefs.getInt(Keys.numberOfBackups, 1)
 
     fun backupInterval() = flowPrefs.getInt(Keys.backupInterval, 0)
 
@@ -169,30 +169,30 @@ class PreferencesHelper(val context: Context) {
 
     fun removeAfterMarkedAsRead() = prefs.getBoolean(Keys.removeAfterMarkedAsRead, false)
 
-    fun libraryUpdateInterval() = rxPrefs.getInteger(Keys.libraryUpdateInterval, 0)
+    fun libraryUpdateInterval() = flowPrefs.getInt(Keys.libraryUpdateInterval, 0)
 
     fun libraryUpdateRestriction() = prefs.getStringSet(Keys.libraryUpdateRestriction, emptySet())
 
-    fun libraryUpdateCategories() = rxPrefs.getStringSet(Keys.libraryUpdateCategories, emptySet())
+    fun libraryUpdateCategories() = flowPrefs.getStringSet(Keys.libraryUpdateCategories, emptySet())
 
-    fun libraryUpdatePrioritization() = rxPrefs.getInteger(Keys.libraryUpdatePrioritization, 0)
+    fun libraryUpdatePrioritization() = flowPrefs.getInt(Keys.libraryUpdatePrioritization, 0)
 
-    fun libraryAsList() = rxPrefs.getBoolean(Keys.libraryAsList, false)
+    fun libraryAsList() = flowPrefs.getBoolean(Keys.libraryAsList, false)
 
-    fun downloadBadge() = rxPrefs.getBoolean(Keys.downloadBadge, false)
+    fun downloadBadge() = flowPrefs.getBoolean(Keys.downloadBadge, false)
 
     fun downloadedOnly() = flowPrefs.getBoolean(Keys.downloadedOnly, false)
 
     // J2K converted from boolean to integer
-    fun filterDownloaded() = rxPrefs.getInteger(Keys.filterDownloaded, 0)
+    fun filterDownloaded() = flowPrefs.getInt(Keys.filterDownloaded, 0)
 
-    fun filterUnread() = rxPrefs.getInteger(Keys.filterUnread, 0)
+    fun filterUnread() = flowPrefs.getInt(Keys.filterUnread, 0)
 
-    fun filterCompleted() = rxPrefs.getInteger(Keys.filterCompleted, 0)
+    fun filterCompleted() = flowPrefs.getInt(Keys.filterCompleted, 0)
 
-    fun librarySortingMode() = rxPrefs.getInteger(Keys.librarySortingMode, 0)
+    fun librarySortingMode() = flowPrefs.getInt(Keys.librarySortingMode, 0)
 
-    fun librarySortingAscending() = rxPrefs.getBoolean("library_sorting_ascending", true)
+    fun librarySortingAscending() = flowPrefs.getBoolean("library_sorting_ascending", true)
 
     fun automaticExtUpdates() = flowPrefs.getBoolean(Keys.automaticExtUpdates, true)
 
@@ -204,9 +204,9 @@ class PreferencesHelper(val context: Context) {
 
     fun pinnedCatalogues() = flowPrefs.getStringSet("pinned_catalogues", emptySet())
 
-    fun downloadNew() = rxPrefs.getBoolean(Keys.downloadNew, false)
+    fun downloadNew() = flowPrefs.getBoolean(Keys.downloadNew, false)
 
-    fun downloadNewCategories() = rxPrefs.getStringSet(Keys.downloadNewCategories, emptySet())
+    fun downloadNewCategories() = flowPrefs.getStringSet(Keys.downloadNewCategories, emptySet())
 
     fun lang() = prefs.getString(Keys.lang, "")
 
@@ -222,7 +222,7 @@ class PreferencesHelper(val context: Context) {
 
     // --> AZ J2K CHERRYPICKING
 
-    fun defaultMangaOrder() = rxPrefs.getString("default_manga_order", "")
+    fun defaultMangaOrder() = flowPrefs.getString("default_manga_order", "")
 
     fun migrationSources() = rxPrefs.getString("migrate_sources", "")
 

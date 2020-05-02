@@ -100,20 +100,22 @@ class SettingsDownloadController : SettingsController() {
                 entries = categories.map { it.name }.toTypedArray()
                 entryValues = categories.map { it.id.toString() }.toTypedArray()
 
-                preferences.downloadNew().asObservable()
-                        .subscribeUntilDestroy { isVisible = it }
+                preferences.downloadNew().asFlow()
+                    .onEach { isVisible = it }
+                    .launchIn(scope)
 
-                preferences.downloadNewCategories().asObservable()
-                        .subscribeUntilDestroy { mutableSet ->
-                            val selectedCategories = mutableSet
-                                    .mapNotNull { id -> categories.find { it.id == id.toInt() } }
-                                    .sortedBy { it.order }
+                preferences.downloadNewCategories().asFlow()
+                    .onEach { mutableSet ->
+                        val selectedCategories = mutableSet
+                                .mapNotNull { id -> categories.find { it.id == id.toInt() } }
+                                .sortedBy { it.order }
 
-                            summary = if (selectedCategories.isEmpty())
-                                resources?.getString(R.string.all)
-                            else
-                                selectedCategories.joinToString { it.name }
-                        }
+                        summary = if (selectedCategories.isEmpty())
+                            resources?.getString(R.string.all)
+                        else
+                            selectedCategories.joinToString { it.name }
+                    }
+                    .launchIn(scope)
             }
         }
     }

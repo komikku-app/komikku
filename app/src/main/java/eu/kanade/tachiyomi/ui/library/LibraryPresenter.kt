@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -124,10 +123,10 @@ class LibraryPresenter(
      * @param map the map to filter.
      */
     private fun applyFilters(map: LibraryMap): LibraryMap {
-        val filterDownloaded = preferences.filterDownloaded().getOrDefault()
+        val filterDownloaded = preferences.filterDownloaded().get()
         val filterDownloadedOnly = preferences.downloadedOnly().get()
-        val filterUnread = preferences.filterUnread().getOrDefault()
-        val filterCompleted = preferences.filterCompleted().getOrDefault()
+        val filterUnread = preferences.filterUnread().get()
+        val filterCompleted = preferences.filterCompleted().get()
 
         val filterFn: (LibraryItem) -> Boolean = f@{ item ->
             // Filter when there isn't unread chapters.
@@ -164,7 +163,7 @@ class LibraryPresenter(
      * @param map the map of manga.
      */
     private fun setDownloadCount(map: LibraryMap) {
-        if (!preferences.downloadBadge().getOrDefault()) {
+        if (!preferences.downloadBadge().get()) {
             // Unset download count if the preference is not enabled.
             for ((_, itemList) in map) {
                 for (item in itemList) {
@@ -187,7 +186,7 @@ class LibraryPresenter(
      * @param map the map to sort.
      */
     private fun applySort(map: LibraryMap): LibraryMap {
-        val sortingMode = preferences.librarySortingMode().getOrDefault()
+        val sortingMode = preferences.librarySortingMode().get()
 
         val lastReadManga by lazy {
             var counter = 0
@@ -237,7 +236,7 @@ class LibraryPresenter(
             }
         }
 
-        val comparator = if (preferences.librarySortingAscending().getOrDefault())
+        val comparator = if (preferences.librarySortingAscending().get())
             Comparator(sortFn)
         else
             Collections.reverseOrder(sortFn)

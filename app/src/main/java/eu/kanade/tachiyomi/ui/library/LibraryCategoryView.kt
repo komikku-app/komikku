@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
@@ -13,7 +14,6 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.lang.removeArticles
@@ -62,7 +62,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     /**
      * Recycler view of the list of manga.
      */
-    private lateinit var recycler: androidx.recyclerview.widget.RecyclerView
+    private lateinit var recycler: RecyclerView
 
     /**
      * Adapter to hold the manga in this category.
@@ -88,9 +88,9 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     fun onCreate(controller: LibraryController) {
         this.controller = controller
 
-        recycler = if (preferences.libraryAsList().getOrDefault()) {
-            (swipe_refresh.inflate(R.layout.library_list_recycler) as androidx.recyclerview.widget.RecyclerView).apply {
-                layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+        recycler = if (preferences.libraryAsList().get()) {
+            (swipe_refresh.inflate(R.layout.library_list_recycler) as RecyclerView).apply {
+                layoutManager = LinearLayoutManager(context)
             }
         } else {
             (swipe_refresh.inflate(R.layout.library_grid_recycler) as AutofitRecyclerView).apply {
@@ -104,10 +104,10 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         recycler.adapter = adapter
         swipe_refresh.addView(recycler)
 
-        recycler.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recycler: androidx.recyclerview.widget.RecyclerView, newState: Int) {
+        recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recycler: RecyclerView, newState: Int) {
                 // Disable swipe refresh when view is not at the top
-                val firstPos = (recycler.layoutManager as androidx.recyclerview.widget.LinearLayoutManager)
+                val firstPos = (recycler.layoutManager as LinearLayoutManager)
                         .findFirstCompletelyVisibleItemPosition()
                 swipe_refresh.isEnabled = firstPos <= 0
             }
@@ -133,7 +133,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         } else {
             SelectableAdapter.Mode.SINGLE
         }
-        val sortingMode = preferences.librarySortingMode().getOrDefault()
+        val sortingMode = preferences.librarySortingMode().get()
         adapter.isLongPressDragEnabled = sortingMode == LibrarySort.DRAG_AND_DROP
 
         // EXH -->
@@ -243,12 +243,12 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     suspend fun onNextLibraryManga(cScope: CoroutineScope, event: LibraryMangaEvent) {
         // Get the manga list for this category.
 
-        val sortingMode = preferences.librarySortingMode().getOrDefault()
+        val sortingMode = preferences.librarySortingMode().get()
         adapter.isLongPressDragEnabled = sortingMode == LibrarySort.DRAG_AND_DROP
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
         if (sortingMode == LibrarySort.DRAG_AND_DROP) {
             if (category.name == "Default")
-                category.mangaOrder = preferences.defaultMangaOrder().getOrDefault().split("/")
+                category.mangaOrder = preferences.defaultMangaOrder().get().split("/")
                         .mapNotNull { it.toLongOrNull() }
             mangaForCategory = mangaForCategory.sortedBy {
                 category.mangaOrder.indexOf(it.manga
@@ -292,7 +292,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 if (controller.selectedMangas.isEmpty()) {
                     adapter.mode = SelectableAdapter.Mode.SINGLE
                     adapter.isLongPressDragEnabled = preferences.librarySortingMode()
-                            .getOrDefault() == LibrarySort.DRAG_AND_DROP
+                            .get() == LibrarySort.DRAG_AND_DROP
                 }
             }
             is LibrarySelectionEvent.Cleared -> {
@@ -300,7 +300,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 adapter.clearSelection()
                 lastClickPosition = -1
                 adapter.isLongPressDragEnabled = preferences.librarySortingMode()
-                        .getOrDefault() == LibrarySort.DRAG_AND_DROP
+                        .get() == LibrarySort.DRAG_AND_DROP
             }
         }
     }

@@ -152,11 +152,11 @@ class SettingsBackupController : SettingsController() {
             }
 
             preferences.backupInterval().asFlow()
-                    .onEach {
-                        backupDir.isVisible = it > 0
-                        backupNumber.isVisible = it > 0
-                    }
-                    .launchIn(scope)
+                .onEach {
+                    backupDir.isVisible = it > 0
+                    backupNumber.isVisible = it > 0
+                }
+                .launchIn(scope)
         }
     }
 

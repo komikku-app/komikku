@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companion.SORT_ASC
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companion.SORT_DESC
@@ -86,9 +85,9 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         override fun initModels() { // j2k changes
             try {
-                downloaded.state = preferences.filterDownloaded().getOrDefault()
-                unread.state = preferences.filterUnread().getOrDefault()
-                completed.state = preferences.filterCompleted().getOrDefault()
+                downloaded.state = preferences.filterDownloaded().get()
+                unread.state = preferences.filterUnread().get()
+                completed.state = preferences.filterCompleted().get()
             } catch (e: Exception) {
                 preferences.upgradeFilters()
             }
@@ -140,8 +139,8 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
         override val footer = Item.Separator()
 
         override fun initModels() {
-            val sorting = preferences.librarySortingMode().getOrDefault()
-            val order = if (preferences.librarySortingAscending().getOrDefault())
+            val sorting = preferences.librarySortingMode().get()
+            val order = if (preferences.librarySortingAscending().get())
                 SORT_ASC else SORT_DESC
 
             alphabetically.state = if (sorting == LibrarySort.ALPHA) order else SORT_NONE
@@ -192,7 +191,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
         override val footer = null
         override val items = listOf(downloadBadge)
         override fun initModels() {
-            downloadBadge.checked = preferences.downloadBadge().getOrDefault()
+            downloadBadge.checked = preferences.downloadBadge().get()
         }
 
         override fun onItemClicked(item: Item) {
@@ -219,7 +218,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
         override val footer = null
 
         override fun initModels() {
-            val asList = preferences.libraryAsList().getOrDefault()
+            val asList = preferences.libraryAsList().get()
             grid.checked = !asList
             list.checked = asList
         }
