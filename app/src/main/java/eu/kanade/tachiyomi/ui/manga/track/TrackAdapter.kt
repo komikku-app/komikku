@@ -39,5 +39,7 @@ class TrackAdapter(controller: TrackController) : androidx.recyclerview.widget.R
         fun onStatusClick(position: Int)
         fun onChaptersClick(position: Int)
         fun onScoreClick(position: Int)
+        fun onStartDateClick(position: Int)
+        fun onFinishDateClick(position: Int)
     }
 }
