@@ -244,7 +244,7 @@ class PreferencesHelper(val context: Context) {
 
     fun defaultMangaOrder() = flowPrefs.getString("default_manga_order", "")
 
-    fun migrationSources() = rxPrefs.getString("migrate_sources", "")
+    fun migrationSources() = flowPrefs.getString("migrate_sources", "")
 
     fun smartMigration() = rxPrefs.getBoolean("smart_migrate", false)
 
