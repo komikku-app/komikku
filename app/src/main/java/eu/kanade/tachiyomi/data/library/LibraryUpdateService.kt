@@ -323,7 +323,8 @@ class LibraryUpdateService(
                             failedUpdates.add(manga)
                             Pair(emptyList(), emptyList())
                         }
-                        // Filter out mangas without new chapters (or failed).                    .filter { pair -> pair.first.isNotEmpty() }
+                        // Filter out mangas without new chapters (or failed).
+                        .filter { pair -> pair.first.isNotEmpty() }
                         .doOnNext {
                             if (downloadNew && (
                                 categoriesToDownload.isEmpty() ||
