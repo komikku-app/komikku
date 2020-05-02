@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.setting
 
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -67,7 +66,7 @@ class SettingsSourcesController : SettingsController() {
             val sources = sourcesByLang[lang].orEmpty().sortedBy { it.name }
 
             // Create a preference group and set initial state and change listener
-            switchPreferenceCategory {
+            langPrefs.add(Pair(lang, switchPreferenceCategory {
                 preferenceScreen.addPreference(this)
                 title = LocaleHelper.getSourceDisplayName(lang, context)
                 isPersistent = false
@@ -88,7 +87,7 @@ class SettingsSourcesController : SettingsController() {
                     }
                     true
                 }
-            }
+            }))
         }
     }
 
@@ -179,7 +178,7 @@ class SettingsSourcesController : SettingsController() {
         val searchView = searchItem.actionView as SearchView
         searchView.maxWidth = Int.MAX_VALUE
 
-        if (query.isNotEmpty()) {
+        if (this.query.isNotEmpty()) {
             searchItem.expandActionView()
             searchView.setQuery(query, true)
             searchView.clearFocus()
@@ -188,7 +187,7 @@ class SettingsSourcesController : SettingsController() {
         searchView.queryTextChanges()
             .filter { router.backstack.lastOrNull()?.controller() == this }
             .onEach {
-                query = it.toString()
+                this.query = it.toString()
                 drawSources()
             }
             .launchInUI()
@@ -207,7 +206,6 @@ class SettingsSourcesController : SettingsController() {
     }
 
     private fun drawSources() {
-        Log.d("FILTER", "DRAWING SOURCES")
         val activeLangsCodes = preferences.enabledLanguages().getOrDefault()
         langPrefs.forEach { group ->
             if (group.first in activeLangsCodes) {
