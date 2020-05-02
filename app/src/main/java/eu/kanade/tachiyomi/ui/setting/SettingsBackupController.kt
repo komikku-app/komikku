@@ -74,9 +74,13 @@ class SettingsBackupController : SettingsController() {
             summaryRes = R.string.pref_create_backup_summ
 
             onClick {
-                val ctrl = CreateBackupDialog()
-                ctrl.targetController = this@SettingsBackupController
-                ctrl.showDialog(router)
+                if (!isBackupStarted) {
+                    val ctrl = CreateBackupDialog()
+                    ctrl.targetController = this@SettingsBackupController
+                    ctrl.showDialog(router)
+                } else {
+                    context.toast(R.string.backup_in_progress)
+                }
             }
         }
         preference {
@@ -84,12 +88,16 @@ class SettingsBackupController : SettingsController() {
             summaryRes = R.string.pref_restore_backup_summ
 
             onClick {
-                val intent = Intent(Intent.ACTION_GET_CONTENT)
-                intent.addCategory(Intent.CATEGORY_OPENABLE)
-                intent.type = "application/*"
-                val title = resources?.getString(R.string.file_select_backup)
-                val chooser = Intent.createChooser(intent, title)
-                startActivityForResult(chooser, CODE_BACKUP_RESTORE)
+                if (!isRestoreStarted) {
+                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                    intent.addCategory(Intent.CATEGORY_OPENABLE)
+                    intent.type = "application/*"
+                    val title = resources?.getString(R.string.file_select_backup)
+                    val chooser = Intent.createChooser(intent, title)
+                    startActivityForResult(chooser, CODE_BACKUP_RESTORE)
+                } else {
+                    context.toast(R.string.restore_in_progress)
+                }
             }
         }
         preferenceCategory {
@@ -180,8 +188,10 @@ class SettingsBackupController : SettingsController() {
 
                 val file = UniFile.fromUri(activity, uri)
 
-                CreatingBackupDialog().showDialog(router, TAG_CREATING_BACKUP_DIALOG)
+                CreatingBackupDialog().showDialog(router, TAG_CREATING_BACKUP)
                 BackupCreateService.makeBackup(activity, file.uri, backupFlags)
+
+                isBackupStarted = true
             }
             CODE_BACKUP_RESTORE -> if (data != null && resultCode == Activity.RESULT_OK) {
                 val uri = data.data
@@ -300,6 +310,8 @@ class SettingsBackupController : SettingsController() {
                         if (context != null) {
 //                          RestoringBackupDialog().showDialog(router, TAG_RESTORING_BACKUP_DIALOG)
                             BackupRestoreService.start(context, args.getParcelable(KEY_URI)!!)
+
+                            isRestoreStarted = true
                         }
                     }
         }
@@ -362,13 +374,15 @@ class SettingsBackupController : SettingsController() {
     inner class BackupBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.getStringExtra(BackupConst.ACTION)) {
-                BackupConst.ACTION_BACKUP_COMPLETED_DIALOG -> {
-                    router.popControllerWithTag(TAG_CREATING_BACKUP_DIALOG)
+                BackupConst.ACTION_BACKUP_COMPLETED -> {
+                    router.popControllerWithTag(TAG_CREATING_BACKUP)
                     val uri = Uri.parse(intent.getStringExtra(BackupConst.EXTRA_URI))
                     CreatedBackupDialog(uri).showDialog(router)
                 }
-                BackupConst.ACTION_RESTORE_COMPLETED_DIALOG -> {
-                    router.popControllerWithTag(TAG_RESTORING_BACKUP_DIALOG)
+                BackupConst.ACTION_RESTORE_COMPLETED -> {
+                    isRestoreStarted = false
+
+                    router.popControllerWithTag(TAG_RESTORING_BACKUP)
                     val time = intent.getLongExtra(BackupConst.EXTRA_TIME, 0)
                     val errors = intent.getIntExtra(BackupConst.EXTRA_ERRORS, 0)
                     val path = intent.getStringExtra(BackupConst.EXTRA_ERROR_FILE_PATH)!!
@@ -377,12 +391,14 @@ class SettingsBackupController : SettingsController() {
                         RestoredBackupDialog(time, errors, path, file).showDialog(router)
                     }
                 }
-                BackupConst.ACTION_ERROR_BACKUP_DIALOG -> {
-                    router.popControllerWithTag(TAG_CREATING_BACKUP_DIALOG)
+                BackupConst.ACTION_BACKUP_ERROR -> {
+                    router.popControllerWithTag(TAG_CREATING_BACKUP)
                     context.toast(intent.getStringExtra(BackupConst.EXTRA_ERROR_MESSAGE))
                 }
-                BackupConst.ACTION_ERROR_RESTORE_DIALOG -> {
-                    router.popControllerWithTag(TAG_RESTORING_BACKUP_DIALOG)
+                BackupConst.ACTION_RESTORE_ERROR -> {
+                    isRestoreStarted = false
+
+                    router.popControllerWithTag(TAG_RESTORING_BACKUP)
                     context.toast(intent.getStringExtra(BackupConst.EXTRA_ERROR_MESSAGE))
                 }
             }
@@ -394,7 +410,10 @@ class SettingsBackupController : SettingsController() {
         const val CODE_BACKUP_RESTORE = 502
         const val CODE_BACKUP_DIR = 503
 
-        const val TAG_CREATING_BACKUP_DIALOG = "CreatingBackupDialog"
-        const val TAG_RESTORING_BACKUP_DIALOG = "RestoringBackupDialog"
+        const val TAG_CREATING_BACKUP = "CreatingBackupDialog"
+        const val TAG_RESTORING_BACKUP = "RestoringBackupDialog"
+
+        var isBackupStarted = false
+        var isRestoreStarted = false
     }
 }
