@@ -375,6 +375,8 @@ class SettingsBackupController : SettingsController() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.getStringExtra(BackupConst.ACTION)) {
                 BackupConst.ACTION_BACKUP_COMPLETED -> {
+                    isBackupStarted = false
+
                     router.popControllerWithTag(TAG_CREATING_BACKUP)
                     val uri = Uri.parse(intent.getStringExtra(BackupConst.EXTRA_URI))
                     CreatedBackupDialog(uri).showDialog(router)
@@ -392,6 +394,8 @@ class SettingsBackupController : SettingsController() {
                     }
                 }
                 BackupConst.ACTION_BACKUP_ERROR -> {
+                    isBackupStarted = false
+
                     router.popControllerWithTag(TAG_CREATING_BACKUP)
                     context.toast(intent.getStringExtra(BackupConst.EXTRA_ERROR_MESSAGE))
                 }
