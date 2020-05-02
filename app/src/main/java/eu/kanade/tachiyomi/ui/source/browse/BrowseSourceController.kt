@@ -19,14 +19,15 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItems
 import com.elvishew.xlog.XLog
-import com.f2prateek.rx.preferences.Preference
 import com.google.android.material.snackbar.Snackbar
+import com.tfcporciuncula.flow.Preference
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.SourceControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
@@ -50,12 +51,15 @@ import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
 import exh.EXHSavedSearch
 import kotlinx.android.synthetic.main.main_activity.drawer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
-import rx.Subscription
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -110,9 +114,9 @@ open class BrowseSourceController(bundle: Bundle) :
     private var recycler: RecyclerView? = null
 
     /**
-     * Subscription for the number of manga per row.
+     * Scope for the number of manga per row flow.
      */
-    private var numColumnsSubscription: Subscription? = null
+    private var numColumnsScope: CoroutineScope? = null
 
     /**
      * Endless loading item.
@@ -152,8 +156,7 @@ open class BrowseSourceController(bundle: Bundle) :
     }
 
     override fun onDestroyView(view: View) {
-        numColumnsSubscription?.unsubscribe()
-        numColumnsSubscription = null
+        numColumnsScope?.cancel()
         adapter = null
         snack = null
         recycler = null
@@ -274,7 +277,7 @@ open class BrowseSourceController(bundle: Bundle) :
     }
 
     private fun setupRecycler(view: View) {
-        numColumnsSubscription?.unsubscribe()
+        numColumnsScope?.cancel()
 
         var oldPosition = RecyclerView.NO_POSITION
         val oldRecycler = binding.catalogueView.getChildAt(1)
@@ -294,11 +297,14 @@ open class BrowseSourceController(bundle: Bundle) :
             }
         } else {
             (binding.catalogueView.inflate(R.layout.source_recycler_autofit) as AutofitRecyclerView).apply {
-                numColumnsSubscription = getColumnsPreferenceForCurrentOrientation().asObservable()
-                    .doOnNext { spanCount = it }
-                    .skip(1)
-                    // Set again the adapter to recalculate the covers height
-                    .subscribe { adapter = this@BrowseSourceController.adapter }
+                numColumnsScope = CoroutineScope(Job() + Dispatchers.Main)
+                getColumnsPreferenceForCurrentOrientation().asImmediateFlow {
+                    spanCount = it
+
+                    // Set the adapter again to recalculate the covers height
+                    adapter = this@BrowseSourceController.adapter
+                }
+                    .launchIn(numColumnsScope!!)
 
                 (layoutManager as GridLayoutManager).spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
