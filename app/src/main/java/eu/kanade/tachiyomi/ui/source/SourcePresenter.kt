@@ -114,5 +114,6 @@ class SourcePresenter(
 
     companion object {
         const val PINNED_KEY = "pinned"
+        const val LAST_USED_KEY = "last_used"
     }
 }

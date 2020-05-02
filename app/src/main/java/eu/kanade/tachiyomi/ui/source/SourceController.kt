@@ -269,6 +269,7 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourceMainCon
         adapter?.removeAllScrollableHeaders()
         if (item != null) {
             adapter?.addScrollableHeader(item)
+            adapter?.addScrollableHeader(LangItem(SourcePresenter.LAST_USED_KEY))
         }
     }
 
