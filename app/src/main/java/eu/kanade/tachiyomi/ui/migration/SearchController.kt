@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -137,27 +138,23 @@ class SearchController(
 
             val preselected = MigrationFlags.getEnabledFlagsPositions(prefValue)
 
-            return MaterialDialog.Builder(activity!!)
-                .content(R.string.data_to_include_in_migration)
-                .items(MigrationFlags.titles.map { resources?.getString(it) })
-                .alwaysCallMultiChoiceCallback()
-                .itemsCallbackMultiChoice(preselected.toTypedArray()) { _, positions, _ ->
-                    // Save current settings for the next time
-                    val newValue = MigrationFlags.getFlagsFromPositions(positions)
-                    preferences.migrateFlags().set(newValue)
-
-                    true
-                }
-                .positiveText(R.string.migrate)
-                .negativeText(R.string.copy)
-                .neutralText(android.R.string.cancel)
-                .onPositive { _, _ ->
-                    (targetController as? SearchController)?.migrateManga()
-                }
-                .onNegative { _, _ ->
-                    (targetController as? SearchController)?.copyManga()
-                }
-                .build()
+            return MaterialDialog(activity!!)
+                    .message(R.string.data_to_include_in_migration)
+                    .listItemsMultiChoice(
+                        items = MigrationFlags.titles.map { resources?.getString(it) as CharSequence },
+                        initialSelection = preselected.toIntArray()
+                    ) { _, positions, _ ->
+                        // Save current settings for the next time
+                        val newValue = MigrationFlags.getFlagsFromPositions(positions.toTypedArray())
+                        preferences.migrateFlags().set(newValue)
+                    }
+                    .positiveButton(R.string.migrate) {
+                        (targetController as? SearchController)?.migrateManga()
+                    }
+                    .negativeButton(R.string.copy) {
+                        (targetController as? SearchController)?.copyManga()
+                    }
+                    .neutralButton(android.R.string.cancel)
         }
     }
 

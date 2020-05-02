@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.input.input
+import com.afollestad.materialdialogs.list.listItems
 import com.elvishew.xlog.XLog
 import com.f2prateek.rx.preferences.Preference
 import com.google.android.material.snackbar.Snackbar
@@ -161,9 +163,9 @@ open class BrowseSourceController(bundle: Bundle) :
         // EXH -->
         navView.setSavedSearches(presenter.loadSearches())
         navView.onSaveClicked = {
-            MaterialDialog.Builder(navView.context)
-                    .title("Save current search query?")
-                    .input("My search name", "") { _, searchName ->
+            MaterialDialog(navView.context)
+                    .title(text = "Save current search query?")
+                    .input("My search name", hintRes = null) { _, searchName ->
                         val oldSavedSearches = presenter.loadSearches()
                         if (searchName.isNotBlank() &&
                                 oldSavedSearches.size < SourceFilterSheet.MAX_SAVED_SEARCHES) {
@@ -176,10 +178,10 @@ open class BrowseSourceController(bundle: Bundle) :
                             navView.setSavedSearches(newSearches)
                         }
                     }
-                    .positiveText("Save")
-                    .negativeText("Cancel")
+                    .positiveButton(R.string.action_save)
+                    .negativeButton(R.string.action_cancel)
                     .cancelable(true)
-                    .canceledOnTouchOutside(true)
+                    .cancelOnTouchOutside(true)
                     .show()
         }
 
@@ -189,11 +191,11 @@ open class BrowseSourceController(bundle: Bundle) :
             val search = savedSearches.getOrNull(indexToSearch)
 
             if (search == null) {
-                MaterialDialog.Builder(navView.context)
-                        .title("Failed to load saved searches!")
-                        .content("An error occurred while loading your saved searches.")
+                MaterialDialog(navView.context)
+                        .title(text = "Failed to load saved searches!")
+                        .message(text = "An error occurred while loading your saved searches.")
                         .cancelable(true)
-                        .canceledOnTouchOutside(true)
+                        .cancelOnTouchOutside(true)
                         .show()
                 return@cb
             }
@@ -215,21 +217,20 @@ open class BrowseSourceController(bundle: Bundle) :
             val search = savedSearches.getOrNull(indexToDelete)
 
             if (search == null || search.name != name) {
-                MaterialDialog.Builder(navView.context)
-                        .title("Failed to delete saved search!")
-                        .content("An error occurred while deleting the search.")
+                MaterialDialog(navView.context)
+                        .title(text = "Failed to delete saved search!")
+                        .message(text = "An error occurred while deleting the search.")
                         .cancelable(true)
-                        .canceledOnTouchOutside(true)
+                        .cancelOnTouchOutside(true)
                         .show()
                 return@cb
             }
 
-            MaterialDialog.Builder(navView.context)
-                    .title("Delete saved search query?")
-                    .content("Are you sure you wish to delete your saved search query: '${search.name}'?")
-                    .positiveText("Cancel")
-                    .negativeText("Confirm")
-                    .onNegative { _, _ ->
+            MaterialDialog(navView.context)
+                    .title(text = "Delete saved search query?")
+                    .message(text = "Are you sure you wish to delete your saved search query: '${search.name}'?")
+                    .positiveButton(R.string.action_cancel)
+                    .negativeButton(text = "Confirm") {
                         val newSearches = savedSearches.filterIndexed { index, _ ->
                             index != indexToDelete
                         }
@@ -237,7 +238,7 @@ open class BrowseSourceController(bundle: Bundle) :
                         navView.setSavedSearches(newSearches)
                     }
                     .cancelable(true)
-                    .canceledOnTouchOutside(true)
+                    .cancelOnTouchOutside(true)
                     .show()
         }
         // EXH <--
@@ -606,9 +607,11 @@ open class BrowseSourceController(bundle: Bundle) :
         val manga = (adapter?.getItem(position) as? SourceItem?)?.manga ?: return
 
         if (manga.favorite) {
-            MaterialDialog.Builder(activity)
-                    .items(activity.getString(R.string.remove_from_library))
-                    .itemsCallback { _, _, which, _ ->
+            MaterialDialog(activity)
+                    .listItems(
+                        items = listOf(activity.getString(R.string.remove_from_library)),
+                        waitForPositiveButton = false
+                    ) { _, which, _ ->
                         when (which) {
                             0 -> {
                                 presenter.changeMangaFavorite(manga)
@@ -616,7 +619,8 @@ open class BrowseSourceController(bundle: Bundle) :
                                 activity.toast(activity.getString(R.string.manga_removed_library))
                             }
                         }
-                    }.show()
+                    }
+                    .show()
         } else {
             val categories = presenter.getCategories()
             val defaultCategoryId = preferences.defaultCategory()

@@ -59,6 +59,13 @@
         <item name="textAppearanceButton">@style/TextAppearance.Widget.Button</item>
         <item name="android:itemTextAppearance">@style/TextAppearance.Widget.Menu</item>
 
+        <!-- Material Dialogs -->
+        <item name="md_background_color">?attr/colorSurface</item>
+        <item name="md_color_title">?attr/colorOnSurface</item>
+        <item name="md_color_content">?attr/colorOnSurface</item>
+        <item name="md_color_button_text">?attr/colorAccent</item>
+        <item name="md_corner_radius">@dimen/card_radius</item>
+
         <!-- Custom Attributes-->
         <item name="colorLibrarySelection">?attr/colorAccent</item>
         <item name="colorLibrarySelectionActive">@color/selectorColorLight</item>
@@ -150,7 +157,12 @@
         <item name="textAppearanceButton">@style/TextAppearance.Widget.Button</item>
         <item name="android:itemTextAppearance">@style/TextAppearance.Widget.Menu</item>
 
+        <!-- Material Dialogs -->
         <item name="md_background_color">?attr/colorSurface</item>
+        <item name="md_color_title">?attr/colorOnSurface</item>
+        <item name="md_color_content">?attr/colorOnSurface</item>
+        <item name="md_color_button_text">?attr/colorAccent</item>
+        <item name="md_corner_radius">@dimen/card_radius</item>
 
         <!-- Custom Attributes-->
         <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.Dark</item>
@@ -181,9 +193,6 @@
         <item name="android:colorBackground">@color/colorAmoledPrimary</item>
 
         <item name="android:navigationBarColor">@android:color/transparent</item>
-
-        <!-- Themes -->
-        <item name="md_background_color">@color/colorAmoledPrimary</item>
 
         <!-- Custom Attributes-->
         <item name="colorLibrarySelection">@color/selectorColorDark</item>
