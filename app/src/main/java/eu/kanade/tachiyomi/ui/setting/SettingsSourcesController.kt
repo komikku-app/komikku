@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.setting
 
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -206,6 +207,7 @@ class SettingsSourcesController : SettingsController() {
     }
 
     private fun drawSources() {
+        Log.d("FILTER", "DRAWING SOURCES")
         val activeLangsCodes = preferences.enabledLanguages().getOrDefault()
         langPrefs.forEach { group ->
             if (group.first in activeLangsCodes) {

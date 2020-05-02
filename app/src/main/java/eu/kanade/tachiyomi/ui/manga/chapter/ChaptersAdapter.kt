@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.manga.chapter
 
 import android.content.Context
+import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
@@ -23,6 +24,7 @@ class ChaptersAdapter(
 
     val readColor = ContextCompat.getColor(context, R.color.material_on_surface_disabled)
     val unreadColor = context.getResourceColor(R.attr.colorOnSurface)
+    val menuItemListener: OnMenuItemClickListener = controller
 
     val bookmarkedColor = context.getResourceColor(R.attr.colorAccent)
 
@@ -38,5 +40,9 @@ class ChaptersAdapter(
 
     fun indexOf(item: ChapterItem): Int {
         return items.indexOf(item)
+    }
+
+    interface OnMenuItemClickListener {
+        fun onMenuItemClick(position: Int, item: MenuItem)
     }
 }
