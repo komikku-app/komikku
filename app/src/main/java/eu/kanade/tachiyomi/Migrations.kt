@@ -35,9 +35,7 @@ object Migrations {
                 if (BuildConfig.INCLUDE_UPDATER) {
                     UpdaterJob.setupTask(context)
                 }
-                if (preferences.automaticExtUpdates().get()) {
-                    ExtensionUpdateJob.setupTask(context)
-                }
+                ExtensionUpdateJob.setupTask(context)
                 return false
             }
 
@@ -86,9 +84,7 @@ object Migrations {
                 BackupCreatorJob.setupTask(context)
 
                 // New extension update check job
-                if (preferences.automaticExtUpdates().get()) {
-                    ExtensionUpdateJob.setupTask(context)
-                }
+                ExtensionUpdateJob.setupTask(context)
             }
             return true
         }
