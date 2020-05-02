@@ -117,7 +117,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
             db.execSQL(MergedTable.createIndexQuery)
         }
         // AZ <--
-        
+
         if (oldVersion < 12) {
             db.execSQL(TrackTable.addStartDate)
             db.execSQL(TrackTable.addFinishDate)
