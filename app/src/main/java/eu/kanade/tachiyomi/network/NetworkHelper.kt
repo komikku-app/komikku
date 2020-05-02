@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.network
 import android.content.Context
 import exh.log.maybeInjectEHLogger
 import java.io.File
+import java.util.concurrent.TimeUnit
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 
@@ -17,6 +18,8 @@ open class NetworkHelper(context: Context) {
     open val client = OkHttpClient.Builder()
         .cookieJar(cookieManager)
         .cache(Cache(cacheDir, cacheSize))
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
         .maybeInjectEHLogger()
         .build()
 
