@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.5.0-AZ" changeDate="">
+        <changelogtext>Added merged sources</changelogtext>
+        <changelogtext>Splash screen</changelogtext>
+        <changelogtext>New themes</changelogtext>
+        <changelogtext>Download queue management</changelogtext>
+        <changelogtext>Continuous vertical reader mode</changelogtext>
+        <changelogtext>Hiding transition page fixed</changelogtext>
+        <changelogtext>Added J2K Automigration</changelogtext>
+        <changelogtext>Now nearly up to date with tachiyomi Dev, thanks syer</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.4.9-AZ" changeDate="">
         <changelogtext>Such a good update it had to skip a version number</changelogtext>
         <changelogtext>Fixed hitomi.la again</changelogtext>
