@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.source.filter
 
 import android.view.View
 import android.widget.EditText
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
@@ -9,31 +10,31 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.Filter
-import eu.kanade.tachiyomi.widget.SimpleTextWatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.widget.textChanges
 
 open class TextItem(val filter: Filter.Text) : AbstractFlexibleItem<TextItem.Holder>() {
-    private val textWatcher = object : SimpleTextWatcher() {
-        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            filter.state = s.toString()
-        }
-    }
+
+    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     override fun getLayoutRes(): Int {
         return R.layout.navigation_view_text
     }
 
-    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>): Holder {
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): Holder {
         return Holder(view, adapter)
     }
 
-    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>, holder: Holder, position: Int, payloads: List<Any?>?) {
+    override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>, holder: Holder, position: Int, payloads: List<Any?>?) {
         holder.wrapper.hint = filter.name
         holder.edit.setText(filter.state)
-        holder.edit.addTextChangedListener(textWatcher)
-    }
-
-    override fun unbindViewHolder(adapter: FlexibleAdapter<IFlexible<androidx.recyclerview.widget.RecyclerView.ViewHolder>>, holder: Holder, position: Int) {
-        holder.edit.removeTextChangedListener(textWatcher)
+        holder.edit.textChanges()
+            .onEach { filter.state = it.toString() }
+            .launchIn(scope)
     }
 
     override fun equals(other: Any?): Boolean {
