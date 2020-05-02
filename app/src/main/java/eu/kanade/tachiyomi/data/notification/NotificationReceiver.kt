@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.ui.setting.SettingsBackupController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.getUriCompat
@@ -170,6 +171,7 @@ class NotificationReceiver : BroadcastReceiver() {
     private fun cancelRestoreUpdate(context: Context) {
         BackupRestoreService.stop(context)
         Handler().post { dismissNotification(context, Notifications.ID_RESTORE_PROGRESS) }
+        SettingsBackupController.isRestoreStarted = false
     }
 
     /**

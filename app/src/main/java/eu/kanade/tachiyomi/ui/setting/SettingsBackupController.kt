@@ -409,7 +409,7 @@ class SettingsBackupController : SettingsController() {
         }
     }
 
-    private companion object {
+    companion object {
         const val CODE_BACKUP_CREATE = 501
         const val CODE_BACKUP_RESTORE = 502
         const val CODE_BACKUP_DIR = 503
