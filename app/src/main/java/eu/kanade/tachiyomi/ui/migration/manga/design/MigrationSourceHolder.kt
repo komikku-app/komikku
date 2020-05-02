@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.migration.manga.design
 import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.view.View
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
@@ -21,7 +20,7 @@ class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
 
     fun bind(source: HttpSource, sourceEnabled: Boolean) {
         val preferences by injectLazy<PreferencesHelper>()
-        val isMultiLanguage = preferences.enabledLanguages().getOrDefault().size > 1
+        val isMultiLanguage = preferences.enabledLanguages().get().size > 1
         // Set capitalized title.
         val sourceName = if (isMultiLanguage) source.toString() else source.name.capitalize()
         title.text = sourceName

@@ -31,7 +31,6 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.LibraryControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
@@ -42,7 +41,6 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.migration.MigrationController
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
-import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
@@ -54,6 +52,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.drawer
 import kotlinx.android.synthetic.main.main_activity.tabs
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextChanges
 import reactivecircus.flowbinding.viewpager.pageSelections
@@ -77,8 +76,7 @@ class LibraryController(
     /**
      * Position of the active category.
      */
-    var activeCategory: Int = preferences.lastUsedCategory().getOrDefault()
-        private set
+    private var activeCategory: Int = preferences.lastUsedCategory().get()
 
     /**
      * Action mode for selections.
@@ -195,7 +193,7 @@ class LibraryController(
                 preferences.lastUsedCategory().set(it)
                 activeCategory = it
             }
-            .launchInUI()
+            .launchIn(scope)
 
         getColumnsPreferenceForCurrentOrientation().asObservable()
                 .doOnNext { mangaPerRow = it }
@@ -378,7 +376,7 @@ class LibraryController(
         inflater.inflate(R.menu.library, menu)
 
         val reorganizeItem = menu.findItem(R.id.action_reorganize)
-        reorganizeItem.isVisible = preferences.librarySortingMode().getOrDefault() == LibrarySort.DRAG_AND_DROP
+        reorganizeItem.isVisible = preferences.librarySortingMode().get() == LibrarySort.DRAG_AND_DROP
 
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
@@ -390,7 +388,7 @@ class LibraryController(
                 query = it.toString()
                 searchRelay.call(query)
             }
-            .launchInUI()
+            .launchIn(scope)
 
         if (query.isNotEmpty()) {
             searchItem.expandActionView()
@@ -441,7 +439,7 @@ class LibraryController(
             }
             // --> EXH
             R.id.action_sync_favorites -> {
-                if (preferences.eh_showSyncIntro().getOrDefault())
+                if (preferences.eh_showSyncIntro().get())
                     activity?.let { FavoritesIntroDialog().show(it) }
                 else
                     presenter.favoritesSync.runSync()
@@ -499,7 +497,7 @@ class LibraryController(
             R.id.action_select_all -> selectAllCategoryManga()
             R.id.action_select_inverse -> selectInverseCategoryManga()
             R.id.action_migrate -> {
-                val skipPre = preferences.skipPreMigration().getOrDefault()
+                val skipPre = preferences.skipPreMigration().get()
                 PreMigrationController.navigateToMigration(skipPre, router, selectedMangas.mapNotNull { it.id })
                 destroyActionModeIfNeeded()
             }

@@ -70,51 +70,53 @@ class PreferencesHelper(val context: Context) {
 
     fun rotation() = rxPrefs.getInteger(Keys.rotation, 1)
 
-    fun pageTransitions() = rxPrefs.getBoolean(Keys.enableTransitions, true)
+    fun pageTransitions() = flowPrefs.getBoolean(Keys.enableTransitions, true)
 
-    fun doubleTapAnimSpeed() = rxPrefs.getInteger(Keys.doubleTapAnimationSpeed, 500)
+    fun doubleTapAnimSpeed() = flowPrefs.getInt(Keys.doubleTapAnimationSpeed, 500)
 
-    fun showPageNumber() = rxPrefs.getBoolean(Keys.showPageNumber, true)
+    fun showPageNumber() = flowPrefs.getBoolean(Keys.showPageNumber, true)
 
-    fun trueColor() = rxPrefs.getBoolean(Keys.trueColor, false)
+    fun trueColor() = flowPrefs.getBoolean(Keys.trueColor, false)
 
-    fun fullscreen() = rxPrefs.getBoolean(Keys.fullscreen, true)
+    fun fullscreen() = flowPrefs.getBoolean(Keys.fullscreen, true)
 
-    fun cutoutShort() = rxPrefs.getBoolean(Keys.cutoutShort, true)
+    fun cutoutShort() = flowPrefs.getBoolean(Keys.cutoutShort, true)
 
-    fun keepScreenOn() = rxPrefs.getBoolean(Keys.keepScreenOn, true)
+    fun keepScreenOn() = flowPrefs.getBoolean(Keys.keepScreenOn, true)
 
-    fun customBrightness() = rxPrefs.getBoolean(Keys.customBrightness, false)
+    fun customBrightness() = flowPrefs.getBoolean(Keys.customBrightness, false)
 
-    fun customBrightnessValue() = rxPrefs.getInteger(Keys.customBrightnessValue, 0)
+    fun customBrightnessValue() = flowPrefs.getInt(Keys.customBrightnessValue, 0)
 
-    fun colorFilter() = rxPrefs.getBoolean(Keys.colorFilter, false)
+    fun colorFilter() = flowPrefs.getBoolean(Keys.colorFilter, false)
 
-    fun colorFilterValue() = rxPrefs.getInteger(Keys.colorFilterValue, 0)
+    fun colorFilterValue() = flowPrefs.getInt(Keys.colorFilterValue, 0)
 
-    fun colorFilterMode() = rxPrefs.getInteger(Keys.colorFilterMode, 0)
+    fun colorFilterMode() = flowPrefs.getInt(Keys.colorFilterMode, 0)
 
     fun defaultViewer() = prefs.getInt(Keys.defaultViewer, 1)
 
-    fun imageScaleType() = rxPrefs.getInteger(Keys.imageScaleType, 1)
+    fun imageScaleType() = flowPrefs.getInt(Keys.imageScaleType, 1)
 
-    fun zoomStart() = rxPrefs.getInteger(Keys.zoomStart, 1)
+    fun zoomStart() = flowPrefs.getInt(Keys.zoomStart, 1)
 
-    fun readerTheme() = rxPrefs.getInteger(Keys.readerTheme, 1)
+    fun readerTheme() = flowPrefs.getInt(Keys.readerTheme, 1)
 
-    fun cropBorders() = rxPrefs.getBoolean(Keys.cropBorders, false)
+    fun alwaysShowChapterTransition() = flowPrefs.getBoolean(Keys.alwaysShowChapterTransition, true)
 
-    fun cropBordersWebtoon() = rxPrefs.getBoolean(Keys.cropBordersWebtoon, false)
+    fun cropBorders() = flowPrefs.getBoolean(Keys.cropBorders, false)
 
-    fun webtoonSidePadding() = rxPrefs.getInteger(Keys.webtoonSidePadding, 0)
+    fun cropBordersWebtoon() = flowPrefs.getBoolean(Keys.cropBordersWebtoon, false)
 
-    fun readWithTapping() = rxPrefs.getBoolean(Keys.readWithTapping, true)
+    fun webtoonSidePadding() = flowPrefs.getInt(Keys.webtoonSidePadding, 0)
 
-    fun readWithLongTap() = rxPrefs.getBoolean(Keys.readWithLongTap, true)
+    fun readWithTapping() = flowPrefs.getBoolean(Keys.readWithTapping, true)
 
-    fun readWithVolumeKeys() = rxPrefs.getBoolean(Keys.readWithVolumeKeys, false)
+    fun readWithLongTap() = flowPrefs.getBoolean(Keys.readWithLongTap, true)
 
-    fun readWithVolumeKeysInverted() = rxPrefs.getBoolean(Keys.readWithVolumeKeysInverted, false)
+    fun readWithVolumeKeys() = flowPrefs.getBoolean(Keys.readWithVolumeKeys, false)
+
+    fun readWithVolumeKeysInverted() = flowPrefs.getBoolean(Keys.readWithVolumeKeysInverted, false)
 
     fun portraitColumns() = rxPrefs.getInteger(Keys.portraitColumns, 0)
 
@@ -126,15 +128,15 @@ class PreferencesHelper(val context: Context) {
 
     fun lastUsedCatalogueSource() = rxPrefs.getLong(Keys.lastUsedCatalogueSource, -1)
 
-    fun lastUsedCategory() = rxPrefs.getInteger(Keys.lastUsedCategory, 0)
+    fun lastUsedCategory() = flowPrefs.getInt(Keys.lastUsedCategory, 0)
 
     fun lastVersionCode() = flowPrefs.getInt("last_version_code", 0)
 
     fun catalogueAsList() = rxPrefs.getBoolean(Keys.catalogueAsList, false)
 
-    fun enabledLanguages() = rxPrefs.getStringSet(Keys.enabledLanguages, setOf("all", "en", Locale.getDefault().language))
+    fun enabledLanguages() = flowPrefs.getStringSet(Keys.enabledLanguages, setOf("all", "en", Locale.getDefault().language))
 
-    fun sourceSorting() = rxPrefs.getInteger(Keys.sourcesSort, 0)
+    fun sourceSorting() = flowPrefs.getInt(Keys.sourcesSort, 0)
 
     fun trackUsername(sync: TrackService) = prefs.getString(Keys.trackUsername(sync.id), "")
 
@@ -194,15 +196,15 @@ class PreferencesHelper(val context: Context) {
 
     fun automaticUpdates() = prefs.getBoolean(Keys.automaticUpdates, true)
 
-    fun hiddenCatalogues() = rxPrefs.getStringSet("hidden_catalogues", mutableSetOf())
-
-    fun pinnedCatalogues() = rxPrefs.getStringSet("pinned_catalogues", emptySet())
-
     fun automaticExtUpdates() = flowPrefs.getBoolean(Keys.automaticExtUpdates, true)
 
     fun extensionUpdatesCount() = flowPrefs.getInt("ext_updates_count", 0)
 
     fun lastExtCheck() = flowPrefs.getLong("last_ext_check", 0)
+
+    fun hiddenCatalogues() = flowPrefs.getStringSet("hidden_catalogues", mutableSetOf())
+
+    fun pinnedCatalogues() = flowPrefs.getStringSet("pinned_catalogues", emptySet())
 
     fun downloadNew() = rxPrefs.getBoolean(Keys.downloadNew, false)
 
@@ -220,8 +222,6 @@ class PreferencesHelper(val context: Context) {
 
     fun trustedSignatures() = flowPrefs.getStringSet("trusted_signatures", emptySet())
 
-    fun alwaysShowChapterTransition() = rxPrefs.getBoolean(Keys.alwaysShowChapterTransition, true)
-
     // --> AZ J2K CHERRYPICKING
 
     fun defaultMangaOrder() = rxPrefs.getString("default_manga_order", "")
@@ -232,7 +232,7 @@ class PreferencesHelper(val context: Context) {
 
     fun useSourceWithMost() = rxPrefs.getBoolean("use_source_with_most", false)
 
-    fun skipPreMigration() = rxPrefs.getBoolean(Keys.skipPreMigration, false)
+    fun skipPreMigration() = flowPrefs.getBoolean(Keys.skipPreMigration, false)
 
     fun upgradeFilters() {
         val filterDl = rxPrefs.getBoolean(Keys.filterDownloaded, false).getOrDefault()
@@ -288,7 +288,7 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_nh_useHighQualityThumbs() = rxPrefs.getBoolean(Keys.eh_nh_useHighQualityThumbs, false)
 
-    fun eh_showSyncIntro() = rxPrefs.getBoolean(Keys.eh_showSyncIntro, true)
+    fun eh_showSyncIntro() = flowPrefs.getBoolean(Keys.eh_showSyncIntro, true)
 
     fun eh_readOnlySync() = rxPrefs.getBoolean(Keys.eh_readOnlySync, false)
 
@@ -304,7 +304,7 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_readerInstantRetry() = rxPrefs.getBoolean(Keys.eh_readerInstantRetry, true)
 
-    fun eh_utilAutoscrollInterval() = rxPrefs.getFloat(Keys.eh_utilAutoscrollInterval, 3f)
+    fun eh_utilAutoscrollInterval() = flowPrefs.getFloat(Keys.eh_utilAutoscrollInterval, 3f)
 
     fun eh_cacheSize() = rxPrefs.getString(Keys.eh_cacheSize, "75")
 

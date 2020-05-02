@@ -9,11 +9,9 @@ import androidx.preference.CheckBoxPreference
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.switchPreferenceCategory
 import eu.kanade.tachiyomi.util.preference.titleRes
@@ -22,6 +20,7 @@ import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
 import exh.source.BlacklistedSources
 import java.util.TreeMap
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextChanges
 import uy.kohesive.injekt.Injekt
@@ -49,11 +48,11 @@ class SettingsSourcesController : SettingsController() {
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.action_filter
 
-        sorting = SourcesSort.from(preferences.sourceSorting().getOrDefault()) ?: SourcesSort.Alpha
+        sorting = SourcesSort.from(preferences.sourceSorting().get()) ?: SourcesSort.Alpha
         activity?.invalidateOptionsMenu()
 
         // Get the list of active language codes.
-        val activeLangsCodes = preferences.enabledLanguages().getOrDefault()
+        val activeLangsCodes = preferences.enabledLanguages().get()
 
         // Get a map of sources grouped by language.
         sourcesByLang = onlineSources.groupByTo(TreeMap(), { it.lang })
@@ -77,7 +76,7 @@ class SettingsSourcesController : SettingsController() {
 
                 onChange { newValue ->
                     val checked = newValue as Boolean
-                    val current = preferences.enabledLanguages().getOrDefault()
+                    val current = preferences.enabledLanguages().get()
                     if (!checked) {
                         preferences.enabledLanguages().set(current - lang)
                         removeAll()
@@ -101,7 +100,7 @@ class SettingsSourcesController : SettingsController() {
      * @param group the language category.
      */
     private fun addLanguageSources(group: PreferenceGroup, sources: List<HttpSource>) {
-        val hiddenCatalogues = preferences.hiddenCatalogues().getOrDefault()
+        val hiddenCatalogues = preferences.hiddenCatalogues().get()
 
         val selectAllPreference = CheckBoxPreference(group.context).apply {
 
@@ -115,9 +114,9 @@ class SettingsSourcesController : SettingsController() {
                 val checked = newValue as Boolean
                 val current = preferences.hiddenCatalogues().get() ?: mutableSetOf()
                 if (checked)
-                    current.removeAll(sources.map { it.id.toString() })
+                    current.minus(sources.map { it.id.toString() })
                 else
-                    current.addAll(sources.map { it.id.toString() })
+                    current.plus(sources.map { it.id.toString() })
                 preferences.hiddenCatalogues().set(current)
                 group.removeAll()
                 addLanguageSources(group, sortedSources(sources))
@@ -142,7 +141,7 @@ class SettingsSourcesController : SettingsController() {
 
                 onChange { newValue ->
                     val checked = newValue as Boolean
-                    val current = preferences.hiddenCatalogues().getOrDefault()
+                    val current = preferences.hiddenCatalogues().get()
 
                     preferences.hiddenCatalogues().set(
                             if (checked) current - id
@@ -190,7 +189,7 @@ class SettingsSourcesController : SettingsController() {
                 this.query = it.toString()
                 drawSources()
             }
-            .launchInUI()
+            .launchIn(scope)
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
@@ -206,7 +205,7 @@ class SettingsSourcesController : SettingsController() {
     }
 
     private fun drawSources() {
-        val activeLangsCodes = preferences.enabledLanguages().getOrDefault()
+        val activeLangsCodes = preferences.enabledLanguages().get()
         langPrefs.forEach { group ->
             if (group.first in activeLangsCodes) {
                 group.second.removeAll()
@@ -218,7 +217,7 @@ class SettingsSourcesController : SettingsController() {
     private fun sortedSources(sources: List<HttpSource>?): List<HttpSource> {
         val sourceAlpha = sources.orEmpty().sortedBy { it.name }
         return if (sorting == SourcesSort.Enabled) {
-            val hiddenCatalogues = preferences.hiddenCatalogues().getOrDefault()
+            val hiddenCatalogues = preferences.hiddenCatalogues().get()
             sourceAlpha.filter { it.id.toString() !in hiddenCatalogues } +
                     sourceAlpha.filterNot { it.id.toString() !in hiddenCatalogues }
         } else {

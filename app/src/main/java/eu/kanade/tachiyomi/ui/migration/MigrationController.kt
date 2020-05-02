@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
@@ -109,7 +108,7 @@ class MigrationController : NucleusController<MigrationControllerBinding, Migrat
         val item = adapter?.getItem(position) ?: return false
 
         if (item is MangaItem) {
-            PreMigrationController.navigateToMigration(Injekt.get<PreferencesHelper>().skipPreMigration().getOrDefault(),
+            PreMigrationController.navigateToMigration(Injekt.get<PreferencesHelper>().skipPreMigration().get(),
                 router,
                 listOf(item.manga.id!!))
         } else if (item is SourceItem) {
@@ -132,7 +131,7 @@ class MigrationController : NucleusController<MigrationControllerBinding, Migrat
             val sourceMangas =
                 manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
             withContext(Dispatchers.Main) {
-                PreMigrationController.navigateToMigration(Injekt.get<PreferencesHelper>().skipPreMigration().getOrDefault(),
+                PreMigrationController.navigateToMigration(Injekt.get<PreferencesHelper>().skipPreMigration().get(),
                     router,
                     sourceMangas)
             }

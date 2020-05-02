@@ -70,13 +70,13 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         pager.offscreenPageLimit = 1
         pager.id = R.id.reader_pager
         pager.adapter = adapter
-        pager.addOnPageChangeListener(object : androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener() {
+        pager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
                 onPageChange(position)
             }
 
             override fun onPageScrollStateChanged(state: Int) {
-                isIdle = state == androidx.viewpager.widget.ViewPager.SCROLL_STATE_IDLE
+                isIdle = state == ViewPager.SCROLL_STATE_IDLE
             }
         })
         pager.tapListener = { event ->
@@ -116,11 +116,18 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     }
 
     /**
-     * Destroys this viewer. Called when leaving the reader or swapping viewers.
+     * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
      */
-    override fun destroy() {
-        super.destroy()
-        config.unsubscribe()
+    private fun onPageChange(position: Int) {
+        val page = adapter.items.getOrNull(position)
+        if (page != null && currentPage != page) {
+            val allowPreload = checkAllowPreload(page as? ReaderPage)
+            currentPage = page
+            when (page) {
+                is ReaderPage -> onReaderPageSelected(page, allowPreload)
+                is ChapterTransition -> onTransitionSelected(page)
+            }
+        }
     }
 
     private fun checkAllowPreload(page: ReaderPage?): Boolean {
@@ -143,30 +150,13 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     }
 
     /**
-     * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
-     */
-    private fun onPageChange(position: Int) {
-        val page = adapter.items.getOrNull(position)
-        if (page != null && currentPage != page) {
-            currentPage = page
-            when (page) {
-                is ReaderPage -> onReaderPageSelected(page)
-                is ChapterTransition -> onTransitionSelected(page)
-            }
-        }
-    }
-
-    /**
      * Called when a [ReaderPage] is marked as active. It notifies the
      * activity of the change and requests the preload of the next chapter if this is the last page.
      */
-    private fun onReaderPageSelected(page: ReaderPage) {
+    private fun onReaderPageSelected(page: ReaderPage, allowPreload: Boolean) {
         val pages = page.chapter.pages!! // Won't be null because it's the loaded chapter
-
         Timber.d("onReaderPageSelected: ${page.number}/${pages.size}")
         activity.onPageSelected(page)
-
-        val allowPreload = checkAllowPreload(page as? ReaderPage)
 
         // Preload next chapter once we're within the last 3 pages of the current chapter
         val inPreloadRange = pages.size - page.number < 3

@@ -21,7 +21,6 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.SourceMainControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
@@ -33,10 +32,10 @@ import eu.kanade.tachiyomi.ui.setting.SettingsSourcesController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.source.latest.LatestUpdatesController
-import eu.kanade.tachiyomi.util.lang.launchInUI
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
@@ -170,14 +169,14 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourceMainCon
     }
 
     private fun hideCatalogue(source: Source) {
-        val current = preferences.hiddenCatalogues().getOrDefault()
+        val current = preferences.hiddenCatalogues().get()
         preferences.hiddenCatalogues().set(current + source.id.toString())
 
         presenter.updateSources()
     }
 
     private fun pinCatalogue(source: Source, isPinned: Boolean) {
-        val current = preferences.pinnedCatalogues().getOrDefault()
+        val current = preferences.pinnedCatalogues().get()
         if (isPinned) {
             preferences.pinnedCatalogues().set(current - source.id.toString())
         } else {
@@ -231,7 +230,7 @@ class SourceController(bundle: Bundle? = null) : NucleusController<SourceMainCon
         searchView.queryTextEvents()
             .filter { it is QueryTextEvent.QuerySubmitted }
             .onEach { performGlobalSearch(it.queryText.toString()) }
-            .launchInUI()
+            .launchIn(scope)
     }
 
     private fun performGlobalSearch(query: String) {

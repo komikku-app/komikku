@@ -44,7 +44,6 @@ import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.lang.launchInUI
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.snack
@@ -61,6 +60,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -122,35 +122,35 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         // Set onclickListener to toggle favorite when FAB clicked.
         binding.fabFavorite.clicks()
             .onEach { onFabClick() }
-            .launchInUI()
+            .launchIn(scope)
 
         // Set onLongClickListener to manage categories when FAB is clicked.
         binding.fabFavorite.longClicks()
             .onEach { onFabLongClick() }
-            .launchInUI()
+            .launchIn(scope)
 
         // Set SwipeRefresh to refresh manga data.
         binding.swipeRefresh.refreshes()
             .onEach { fetchMangaFromSource() }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaFullTitle.longClicks()
             .onEach {
                 copyToClipboard(view.context.getString(R.string.title), binding.mangaFullTitle.text.toString())
             }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaFullTitle.clicks()
             .onEach {
                 performGlobalSearch(binding.mangaFullTitle.text.toString())
             }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaArtist.longClicks()
             .onEach {
                 copyToClipboard(binding.mangaArtistLabel.text.toString(), binding.mangaArtist.text.toString())
             }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaArtist.clicks()
             .onEach {
@@ -159,7 +159,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                     text = wrapTag("artist", text)
                 performGlobalSearch(text)
             }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaAuthor.longClicks()
             .onEach {
@@ -167,7 +167,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                 if (!isEHentaiBasedSource())
                     copyToClipboard(binding.mangaAuthor.text.toString(), binding.mangaAuthor.text.toString())
             }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaAuthor.clicks()
             .onEach {
@@ -175,19 +175,19 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                 if (!isEHentaiBasedSource())
                     performGlobalSearch(binding.mangaAuthor.text.toString())
             }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaSummary.longClicks()
             .onEach {
                 copyToClipboard(view.context.getString(R.string.description), binding.mangaSummary.text.toString())
             }
-            .launchInUI()
+            .launchIn(scope)
 
         binding.mangaCover.longClicks()
             .onEach {
                 copyToClipboard(view.context.getString(R.string.title), presenter.manga.title)
             }
-            .launchInUI()
+            .launchIn(scope)
 
         // EXH -->
         smartSearchConfig?.let { smartSearchConfig ->
@@ -216,7 +216,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                         }
                     }
                 }
-                .launchInUI()
+                .launchIn(scope)
         }
         // EXH <--
     }
@@ -238,7 +238,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             R.id.action_share -> shareManga()
             R.id.action_migrate ->
                 PreMigrationController.navigateToMigration(
-                    preferences.skipPreMigration().getOrDefault(),
+                    preferences.skipPreMigration().get(),
                     router,
                     listOf(presenter.manga.id!!))
         }

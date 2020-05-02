@@ -18,8 +18,8 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
-import eu.kanade.tachiyomi.util.lang.launchInUI
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
@@ -128,7 +128,7 @@ open class GlobalSearchController(
                 searchItem.collapseActionView()
                 setTitle() // Update toolbar title
             }
-            .launchInUI()
+            .launchIn(scope)
     }
 
     /**
