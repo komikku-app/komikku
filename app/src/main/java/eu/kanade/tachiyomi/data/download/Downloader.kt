@@ -108,10 +108,10 @@ class Downloader(
     fun start(): Boolean {
         if (isRunning || queue.isEmpty()) {
             return false
-            notifier.paused = false
-            if (!subscriptions.hasSubscriptions()) {
-                initializeSubscriptions()
-            }
+        }
+        notifier.paused = false
+        if (!subscriptions.hasSubscriptions()) {
+            initializeSubscriptions()
         }
 
         val pending = queue.filter { it.status != Download.DOWNLOADED }
