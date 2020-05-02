@@ -218,6 +218,8 @@ class PreferencesHelper(val context: Context) {
 
     fun lastExtCheck() = flowPrefs.getLong("last_ext_check", 0)
 
+    fun searchPinnedSourcesOnly() = prefs.getBoolean(Keys.searchPinnedSourcesOnly, false)
+
     fun hiddenCatalogues() = flowPrefs.getStringSet("hidden_catalogues", mutableSetOf())
 
     fun pinnedCatalogues() = flowPrefs.getStringSet("pinned_catalogues", emptySet())
