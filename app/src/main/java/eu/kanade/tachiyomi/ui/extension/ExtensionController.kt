@@ -15,9 +15,7 @@ import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.ExtensionControllerBinding
-import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -26,7 +24,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextChanges
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
@@ -38,8 +35,6 @@ open class ExtensionController :
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     ExtensionTrustDialog.Listener {
-
-    private val preferences: PreferencesHelper = Injekt.get()
 
     /**
      * Adapter containing the list of manga from the catalogue.
@@ -99,11 +94,6 @@ open class ExtensionController :
                         .pushChangeHandler(FadeChangeHandler())
                 )
             }
-            R.id.action_auto_check -> {
-                item.isChecked = !item.isChecked
-                preferences.automaticExtUpdates().set(item.isChecked)
-                ExtensionUpdateJob.setupTask(activity!!, item.isChecked)
-            }
             else -> return super.onOptionsItemSelected(item)
         }
         return super.onOptionsItemSelected(item)
@@ -158,8 +148,6 @@ open class ExtensionController :
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.fixExpand(onExpand = { invalidateMenuOnExpand() })
-
-        menu.findItem(R.id.action_auto_check).isChecked = preferences.automaticExtUpdates().get()
     }
 
     override fun onItemClick(view: View, position: Int): Boolean {
