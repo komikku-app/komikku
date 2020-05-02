@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
@@ -122,7 +123,7 @@ class SettingsBackupController : SettingsController() {
                     true
                 }
             }
-            val backupDir = preference {
+            preference {
                 key = Keys.backupDirectory
                 titleRes = R.string.pref_backup_directory
 
@@ -137,6 +138,9 @@ class SettingsBackupController : SettingsController() {
                     }
                 }
 
+                preferences.backupInterval().asImmediateFlow { isVisible = it > 0 }
+                    .launchIn(scope)
+
                 preferences.backupsDirectory().asFlow()
                     .onEach { path ->
                         val dir = UniFile.fromUri(context, Uri.parse(path))
@@ -144,21 +148,17 @@ class SettingsBackupController : SettingsController() {
                     }
                     .launchIn(scope)
             }
-            val backupNumber = intListPreference {
+            intListPreference {
                 key = Keys.numberOfBackups
                 titleRes = R.string.pref_backup_slots
                 entries = arrayOf("1", "2", "3", "4", "5")
                 entryValues = entries
                 defaultValue = "1"
                 summary = "%s"
-            }
 
-            preferences.backupInterval().asFlow()
-                .onEach {
-                    backupDir.isVisible = it > 0
-                    backupNumber.isVisible = it > 0
-                }
-                .launchIn(scope)
+                preferences.backupInterval().asImmediateFlow { isVisible = it > 0 }
+                    .launchIn(scope)
+            }
         }
     }
 

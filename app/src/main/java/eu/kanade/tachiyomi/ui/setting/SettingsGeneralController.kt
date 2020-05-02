@@ -7,6 +7,7 @@ import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -21,7 +22,6 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import exh.ui.lock.FingerLockPreference
 import exh.ui.lock.LockPreference
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 class SettingsGeneralController : SettingsController() {
 
@@ -153,9 +153,7 @@ class SettingsGeneralController : SettingsController() {
                 defaultValue = Values.THEME_LIGHT_DEFAULT
                 summary = "%s"
 
-                isVisible = preferences.themeMode().get() != Values.THEME_MODE_DARK
-                preferences.themeMode().asFlow()
-                    .onEach { isVisible = it != Values.THEME_MODE_DARK }
+                preferences.themeMode().asImmediateFlow { isVisible = it != Values.THEME_MODE_DARK }
                     .launchIn(scope)
 
                 onChange {
@@ -181,9 +179,7 @@ class SettingsGeneralController : SettingsController() {
                 defaultValue = Values.THEME_DARK_DEFAULT
                 summary = "%s"
 
-                isVisible = preferences.themeMode().get() != Values.THEME_MODE_LIGHT
-                preferences.themeMode().asFlow()
-                    .onEach { isVisible = it != Values.THEME_MODE_LIGHT }
+                preferences.themeMode().asImmediateFlow { isVisible = it != Values.THEME_MODE_LIGHT }
                     .launchIn(scope)
 
                 onChange {
