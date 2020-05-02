@@ -22,7 +22,6 @@ import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
@@ -42,6 +41,8 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.unregisterLocalReceiver
 import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class SettingsBackupController : SettingsController() {
 
@@ -124,7 +125,7 @@ class SettingsBackupController : SettingsController() {
                 titleRes = R.string.pref_backup_directory
 
                 onClick {
-                    val currentDir = preferences.backupsDirectory().getOrDefault()
+                    val currentDir = preferences.backupsDirectory().get()
                     try {
                         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
                         startActivityForResult(intent, CODE_BACKUP_DIR)
@@ -134,11 +135,12 @@ class SettingsBackupController : SettingsController() {
                     }
                 }
 
-                preferences.backupsDirectory().asObservable()
-                        .subscribeUntilDestroy { path ->
-                            val dir = UniFile.fromUri(context, Uri.parse(path))
-                            summary = dir.filePath + "/automatic"
-                        }
+                preferences.backupsDirectory().asFlow()
+                    .onEach { path ->
+                        val dir = UniFile.fromUri(context, Uri.parse(path))
+                        summary = dir.filePath + "/automatic"
+                    }
+                    .launchIn(scope)
             }
             val backupNumber = intListPreference {
                 key = Keys.numberOfBackups
@@ -149,11 +151,12 @@ class SettingsBackupController : SettingsController() {
                 summary = "%s"
             }
 
-            preferences.backupInterval().asObservable()
-                    .subscribeUntilDestroy {
+            preferences.backupInterval().asFlow()
+                    .onEach {
                         backupDir.isVisible = it > 0
                         backupNumber.isVisible = it > 0
                     }
+                    .launchIn(scope)
         }
     }
 
@@ -207,7 +210,7 @@ class SettingsBackupController : SettingsController() {
 
         // Setup custom file picker intent
         // Get dirs
-        val currentDir = preferences.backupsDirectory().getOrDefault()
+        val currentDir = preferences.backupsDirectory().get()
 
         try {
             // Use Android's built-in file creator

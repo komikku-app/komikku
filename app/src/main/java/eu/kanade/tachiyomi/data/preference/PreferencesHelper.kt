@@ -149,21 +149,21 @@ class PreferencesHelper(val context: Context) {
                 .apply()
     }
 
-    fun trackToken(sync: TrackService) = rxPrefs.getString(Keys.trackToken(sync.id), "")
+    fun trackToken(sync: TrackService) = flowPrefs.getString(Keys.trackToken(sync.id), "")
 
-    fun anilistScoreType() = rxPrefs.getString("anilist_score_type", Anilist.POINT_10)
+    fun anilistScoreType() = flowPrefs.getString("anilist_score_type", Anilist.POINT_10)
 
-    fun backupsDirectory() = rxPrefs.getString(Keys.backupDirectory, defaultBackupDir.toString())
+    fun backupsDirectory() = flowPrefs.getString(Keys.backupDirectory, defaultBackupDir.toString())
 
     fun dateFormat() = rxPrefs.getObject(Keys.dateFormat, DateFormat.getDateInstance(DateFormat.SHORT), DateFormatConverter())
 
-    fun downloadsDirectory() = rxPrefs.getString(Keys.downloadsDirectory, defaultDownloadsDir.toString())
+    fun downloadsDirectory() = flowPrefs.getString(Keys.downloadsDirectory, defaultDownloadsDir.toString())
 
     fun downloadOnlyOverWifi() = prefs.getBoolean(Keys.downloadOnlyOverWifi, true)
 
     fun numberOfBackups() = rxPrefs.getInteger(Keys.numberOfBackups, 1)
 
-    fun backupInterval() = rxPrefs.getInteger(Keys.backupInterval, 0)
+    fun backupInterval() = flowPrefs.getInt(Keys.backupInterval, 0)
 
     fun removeAfterReadSlots() = prefs.getInt(Keys.removeAfterReadSlots, -1)
 
