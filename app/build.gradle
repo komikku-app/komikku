@@ -51,8 +51,6 @@ android {
         buildConfigField "String", "BUILD_TIME", "\"${getBuildTime()}\""
         buildConfigField "boolean", "INCLUDE_UPDATER", "true"
 
-        vectorDrawables.useSupportLibrary = true
-
         multiDexEnabled true
 
         ndk {
