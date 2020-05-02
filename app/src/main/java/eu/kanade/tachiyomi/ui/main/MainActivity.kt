@@ -43,7 +43,6 @@ import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
@@ -124,12 +123,6 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         super.onCreate(savedInstanceState)
 
         binding = MainActivityBinding.inflate(layoutInflater)
-
-        // Enforce WebView availability
-        if (!WebViewUtil.supportsWebView(this)) {
-            toast(R.string.information_webview_required, Toast.LENGTH_LONG)
-            finishAndRemoveTask()
-        }
 
         // Do not let the launcher create a new activity http://stackoverflow.com/questions/16283079
         if (!isTaskRoot) {

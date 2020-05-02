@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Environment
+import android.widget.Toast
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -28,7 +29,10 @@ import com.kizitonwose.time.days
 import com.ms_square.debugoverlay.DebugOverlay
 import com.ms_square.debugoverlay.modules.FpsModule
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.ui.main.ForceCloseActivity
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import eu.kanade.tachiyomi.util.system.WebViewUtil
+import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
@@ -55,6 +59,12 @@ open class App : Application(), LifecycleObserver {
         setupExhLogging() // EXH logging
 
         workaroundAndroid7BrokenSSL()
+
+        // Enforce WebView availability
+        if (!WebViewUtil.supportsWebView(this)) {
+            toast(R.string.information_webview_required, Toast.LENGTH_LONG)
+            ForceCloseActivity.closeApp(this)
+        }
 
         Injekt = InjektScope(DefaultRegistrar())
         Injekt.importModule(AppModule(this))
