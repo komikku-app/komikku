@@ -213,8 +213,8 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                     }
                     runBlocking { adapter.setItems(this, items) }
                     adapter.notifyDataSetChanged()
+                    onItemReleased(0)
                 }
-                controller.invalidateActionMode()
             }
 
         subscriptions += controller.selectInverseRelay
