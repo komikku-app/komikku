@@ -16,6 +16,7 @@
         android:layout_height="64dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="@dimen/navigation_drawer_header_margin"
+        android:background="#00000000"
         android:scaleType="centerCrop"
         android:src="@drawable/tachiyomi_circle"/>
 

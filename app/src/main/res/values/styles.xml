@@ -56,6 +56,7 @@
     <style name="Theme.Widget.NavigationView.Dark">
         <item name="colorControlHighlight">@color/md_grey_900</item>
         <item name="colorPrimary">?colorAccent</item>
+        <item name="android:background">?colorSurface</item>
     </style>
 
     <style name="Theme.Widget.NavigationView.Amoled">
