@@ -76,7 +76,7 @@ class SourcePresenter(
         }
 
         sourceSubscription = Observable.just(sourceItems)
-                .subscribeLatestCache(SourceController::setSources)
+            .subscribeLatestCache(SourceController::setSources)
     }
 
     private fun loadLastUsedSource() {
@@ -84,11 +84,12 @@ class SourcePresenter(
 
         // Emit the first item immediately but delay subsequent emissions by 500ms.
         Observable.merge(
-                sharedObs.take(1),
-                sharedObs.skip(1).delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread()))
-                .distinctUntilChanged()
-                .map { item -> (sourceManager.get(item) as? CatalogueSource)?.let { SourceItem(it, showButtons = controllerMode == SourceController.Mode.CATALOGUE) } }
-                .subscribeLatestCache(SourceController::setLastUsedSource)
+            sharedObs.take(1),
+            sharedObs.skip(1).delay(500, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+        )
+            .distinctUntilChanged()
+            .map { item -> (sourceManager.get(item) as? CatalogueSource)?.let { SourceItem(it, showButtons = controllerMode == SourceController.Mode.CATALOGUE) } }
+            .subscribeLatestCache(SourceController::setLastUsedSource)
     }
 
     fun updateSources() {
@@ -106,10 +107,10 @@ class SourcePresenter(
         val hiddenCatalogues = preferences.hiddenCatalogues().get()
 
         return sourceManager.getVisibleCatalogueSources()
-                .filter { it.lang in languages }
-                .filterNot { it.id.toString() in hiddenCatalogues }
-                .sortedBy { "(${it.lang}) ${it.name}" } +
-                sourceManager.get(LocalSource.ID) as LocalSource
+            .filter { it.lang in languages }
+            .filterNot { it.id.toString() in hiddenCatalogues }
+            .sortedBy { "(${it.lang}) ${it.name}" } +
+            sourceManager.get(LocalSource.ID) as LocalSource
     }
 
     companion object {

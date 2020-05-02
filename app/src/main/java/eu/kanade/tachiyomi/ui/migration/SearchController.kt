@@ -15,8 +15,8 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.migration.manga.process.MigrationListController
-import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchController
-import eu.kanade.tachiyomi.ui.source.global_search.GlobalSearchPresenter
+import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchController
+import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchPresenter
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -139,22 +139,22 @@ class SearchController(
             val preselected = MigrationFlags.getEnabledFlagsPositions(prefValue)
 
             return MaterialDialog(activity!!)
-                    .message(R.string.data_to_include_in_migration)
-                    .listItemsMultiChoice(
-                        items = MigrationFlags.titles.map { resources?.getString(it) as CharSequence },
-                        initialSelection = preselected.toIntArray()
-                    ) { _, positions, _ ->
-                        // Save current settings for the next time
-                        val newValue = MigrationFlags.getFlagsFromPositions(positions.toTypedArray())
-                        preferences.migrateFlags().set(newValue)
-                    }
-                    .positiveButton(R.string.migrate) {
-                        (targetController as? SearchController)?.migrateManga()
-                    }
-                    .negativeButton(R.string.copy) {
-                        (targetController as? SearchController)?.copyManga()
-                    }
-                    .neutralButton(android.R.string.cancel)
+                .message(R.string.data_to_include_in_migration)
+                .listItemsMultiChoice(
+                    items = MigrationFlags.titles.map { resources?.getString(it) as CharSequence },
+                    initialSelection = preselected.toIntArray()
+                ) { _, positions, _ ->
+                    // Save current settings for the next time
+                    val newValue = MigrationFlags.getFlagsFromPositions(positions.toTypedArray())
+                    preferences.migrateFlags().set(newValue)
+                }
+                .positiveButton(R.string.migrate) {
+                    (targetController as? SearchController)?.migrateManga()
+                }
+                .negativeButton(R.string.copy) {
+                    (targetController as? SearchController)?.copyManga()
+                }
+                .neutralButton(android.R.string.cancel)
         }
     }
 

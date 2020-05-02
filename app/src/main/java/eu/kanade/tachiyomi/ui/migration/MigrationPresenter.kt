@@ -36,14 +36,20 @@ class MigrationPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        db.getFavoriteMangas().asRxObservable().observeOn(AndroidSchedulers.mainThread())
+        db.getFavoriteMangas()
+            .asRxObservable()
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnNext { state = state.copy(sourcesWithManga = findSourcesWithManga(it)) }
-            .combineLatest(stateRelay.map { it.selectedSource }
-                .distinctUntilChanged()) { library, source -> library to source }
-            .filter { (_, source) -> source != null }.observeOn(Schedulers.io())
+            .combineLatest(
+                stateRelay.map { it.selectedSource }
+                    .distinctUntilChanged()
+            ) { library, source -> library to source }
+            .filter { (_, source) -> source != null }
+            .observeOn(Schedulers.io())
             .map { (library, source) -> libraryToMigrationItem(library, source!!.id) }
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext { state = state.copy(mangaForSource = it) }.subscribe()
+            .doOnNext { state = state.copy(mangaForSource = it) }
+            .subscribe()
 
         stateRelay
             // Render the view when any field other than isReplacingManga changes

@@ -7,10 +7,11 @@ import kotlin.math.floor
  * If [replacement] is longer than [count] an exception will be thrown when `length > count`.
  */
 fun String.chop(count: Int, replacement: String = "..."): String {
-    return if (length > count)
+    return if (length > count) {
         take(count - replacement.length) + replacement
-    else
+    } else {
         this
+    }
 }
 
 fun String.removeArticles(): String {
@@ -22,8 +23,9 @@ fun String.removeArticles(): String {
  * If [replacement] is longer than [count] an exception will be thrown when `length > count`.
  */
 fun String.truncateCenter(count: Int, replacement: String = "..."): String {
-    if (length <= count)
+    if (length <= count) {
         return this
+    }
 
     val pieceLength: Int = floor((count - replacement.length).div(2.0)).toInt()
 

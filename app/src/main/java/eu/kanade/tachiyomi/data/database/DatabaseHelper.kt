@@ -45,20 +45,17 @@ MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQuerie
         .build()
 
     override val db = DefaultStorIOSQLite.builder()
-            .sqliteOpenHelper(RequerySQLiteOpenHelperFactory().create(configuration))
-            .addTypeMapping(Manga::class.java, MangaTypeMapping())
-            .addTypeMapping(Chapter::class.java, ChapterTypeMapping())
-            .addTypeMapping(Track::class.java, TrackTypeMapping())
-            .addTypeMapping(Category::class.java, CategoryTypeMapping())
-            .addTypeMapping(MangaCategory::class.java, MangaCategoryTypeMapping())
-            .addTypeMapping(
-                SearchMetadata::class.java,
-                SearchMetadataTypeMapping()
-            )
-            .addTypeMapping(History::class.java, HistoryTypeMapping())
-            .addTypeMapping(SearchTag::class.java, SearchTagTypeMapping())
-            .addTypeMapping(SearchTitle::class.java, SearchTitleTypeMapping())
-            .build()
+        .sqliteOpenHelper(RequerySQLiteOpenHelperFactory().create(configuration))
+        .addTypeMapping(Manga::class.java, MangaTypeMapping())
+        .addTypeMapping(Chapter::class.java, ChapterTypeMapping())
+        .addTypeMapping(Track::class.java, TrackTypeMapping())
+        .addTypeMapping(Category::class.java, CategoryTypeMapping())
+        .addTypeMapping(MangaCategory::class.java, MangaCategoryTypeMapping())
+        .addTypeMapping(SearchMetadata::class.java, SearchMetadataTypeMapping())
+        .addTypeMapping(History::class.java, HistoryTypeMapping())
+        .addTypeMapping(SearchTag::class.java, SearchTagTypeMapping())
+        .addTypeMapping(SearchTitle::class.java, SearchTitleTypeMapping())
+        .build()
 
     inline fun inTransaction(block: () -> Unit) = db.inTransaction(block)
 

@@ -48,7 +48,6 @@ class CategoryItem(val category: Category) : AbstractFlexibleItem<CategoryHolder
         position: Int,
         payloads: List<Any?>?
     ) {
-
         holder.bind(category)
     }
 

@@ -55,8 +55,11 @@ class NotificationReceiver : BroadcastReceiver() {
             // Clear the download queue
             ACTION_CLEAR_DOWNLOADS -> downloadManager.clearQueue(true)
             // Launch share activity and dismiss notification
-            ACTION_SHARE_IMAGE -> shareImage(context, intent.getStringExtra(EXTRA_FILE_LOCATION),
-                    intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1))
+            ACTION_SHARE_IMAGE ->
+                shareImage(
+                    context, intent.getStringExtra(EXTRA_FILE_LOCATION),
+                    intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
+                )
             // Delete image from path and dismiss notification
             ACTION_DELETE_IMAGE -> deleteImage(context, intent.getStringExtra(EXTRA_FILE_LOCATION),
                     intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1))
@@ -65,8 +68,10 @@ class NotificationReceiver : BroadcastReceiver() {
             ACTION_CANCEL_RESTORE -> cancelRestoreUpdate(context)
             // Open reader activity
             ACTION_OPEN_CHAPTER -> {
-                openChapter(context, intent.getLongExtra(EXTRA_MANGA_ID, -1),
-                        intent.getLongExtra(EXTRA_CHAPTER_ID, -1))
+                openChapter(
+                    context, intent.getLongExtra(EXTRA_MANGA_ID, -1),
+                    intent.getLongExtra(EXTRA_CHAPTER_ID, -1)
+                )
             }
             // Mark updated manga chapters as read
             ACTION_MARK_AS_READ -> {
@@ -187,19 +192,19 @@ class NotificationReceiver : BroadcastReceiver() {
 
         launchIO {
             chapterUrls.mapNotNull { db.getChapter(it, mangaId).executeAsBlocking() }
-                    .forEach {
-                        it.read = true
-                        db.updateChapterProgress(it).executeAsBlocking()
-                        if (preferences.removeAfterMarkedAsRead()) {
-                            val manga = db.getManga(mangaId).executeAsBlocking()
-                            if (manga != null) {
-                                val source = sourceManager.get(manga.source)
-                                if (source != null) {
-                                    downloadManager.deleteChapters(listOf(it), manga, source)
-                                }
+                .forEach {
+                    it.read = true
+                    db.updateChapterProgress(it).executeAsBlocking()
+                    if (preferences.removeAfterMarkedAsRead()) {
+                        val manga = db.getManga(mangaId).executeAsBlocking()
+                        if (manga != null) {
+                            val source = sourceManager.get(manga.source)
+                            if (source != null) {
+                                downloadManager.deleteChapters(listOf(it), manga, source)
                             }
                         }
                     }
+                }
         }
     }
 
@@ -412,11 +417,11 @@ class NotificationReceiver : BroadcastReceiver() {
          */
         internal fun openChapterPendingActivity(context: Context, manga: Manga, groupId: Int): PendingIntent {
             val newIntent =
-                    Intent(context, MainActivity::class.java).setAction(MainActivity.SHORTCUT_MANGA)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            .putExtra(MangaController.MANGA_EXTRA, manga.id)
-                            .putExtra("notificationId", manga.id.hashCode())
-                            .putExtra("groupId", groupId)
+                Intent(context, MainActivity::class.java).setAction(MainActivity.SHORTCUT_MANGA)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    .putExtra(MangaController.MANGA_EXTRA, manga.id)
+                    .putExtra("notificationId", manga.id.hashCode())
+                    .putExtra("groupId", groupId)
             return PendingIntent.getActivity(context, manga.id.hashCode(), newIntent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
 

@@ -101,19 +101,19 @@ class LibraryPresenter(
     fun subscribeLibrary() {
         if (librarySubscription.isNullOrUnsubscribed()) {
             librarySubscription = getLibraryObservable()
-                    .combineLatest(downloadTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
-                        lib.apply { setDownloadCount(mangaMap) }
-                    }
-                    .combineLatest(filterTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
-                        lib.copy(mangaMap = applyFilters(lib.mangaMap))
-                    }
-                    .combineLatest(sortTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
-                        lib.copy(mangaMap = applySort(lib.mangaMap))
-                    }
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeLatestCache({ view, (categories, mangaMap) ->
-                        view.onNextLibraryUpdate(categories, mangaMap)
-                    })
+                .combineLatest(downloadTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
+                    lib.apply { setDownloadCount(mangaMap) }
+                }
+                .combineLatest(filterTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
+                    lib.copy(mangaMap = applyFilters(lib.mangaMap))
+                }
+                .combineLatest(sortTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
+                    lib.copy(mangaMap = applySort(lib.mangaMap))
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeLatestCache({ view, (categories, mangaMap) ->
+                    view.onNextLibraryUpdate(categories, mangaMap)
+                })
         }
     }
 
@@ -219,9 +219,9 @@ class LibraryPresenter(
                 }
                 LibrarySort.LATEST_CHAPTER -> {
                     val manga1latestChapter = latestChapterManga[i1.manga.id!!]
-                            ?: latestChapterManga.size
+                        ?: latestChapterManga.size
                     val manga2latestChapter = latestChapterManga[i2.manga.id!!]
-                            ?: latestChapterManga.size
+                        ?: latestChapterManga.size
                     manga1latestChapter.compareTo(manga2latestChapter)
                 }
                 LibrarySort.SOURCE -> {
@@ -236,10 +236,11 @@ class LibraryPresenter(
             }
         }
 
-        val comparator = if (preferences.librarySortingAscending().get())
+        val comparator = if (preferences.librarySortingAscending().get()) {
             Comparator(sortFn)
-        else
+        } else {
             Collections.reverseOrder(sortFn)
+        }
 
         return map.mapValues { entry -> entry.value.sortedWith(comparator) }
     }
@@ -257,10 +258,11 @@ class LibraryPresenter(
      */
     private fun getLibraryObservable(): Observable<Library> {
         return Observable.combineLatest(getCategoriesObservable(), getLibraryMangasObservable()) { dbCategories, libraryManga ->
-            val categories = if (libraryManga.containsKey(0))
+            val categories = if (libraryManga.containsKey(0)) {
                 arrayListOf(Category.createDefault()) + dbCategories
-            else
+            } else {
                 dbCategories
+            }
 
             this.categories = categories
             Library(categories, libraryManga)
@@ -285,9 +287,9 @@ class LibraryPresenter(
     private fun getLibraryMangasObservable(): Observable<LibraryMap> {
         val libraryAsList = preferences.libraryAsList()
         return db.getLibraryMangas().asRxObservable()
-                .map { list ->
-                    list.map { LibraryItem(it, libraryAsList) }.groupBy { it.manga.category }
-                }
+            .map { list ->
+                list.map { LibraryItem(it, libraryAsList) }.groupBy { it.manga.category }
+            }
     }
 
     /**
@@ -327,8 +329,8 @@ class LibraryPresenter(
     fun getCommonCategories(mangas: List<Manga>): Collection<Category> {
         if (mangas.isEmpty()) return emptyList()
         return mangas.toSet()
-                .map { db.getCategoriesForManga(it).executeAsBlocking() }
-                .reduce { set1: Iterable<Category>, set2 -> set1.intersect(set2).toMutableList() }
+            .map { db.getCategoriesForManga(it).executeAsBlocking() }
+            .reduce { set1: Iterable<Category>, set2 -> set1.intersect(set2).toMutableList() }
     }
 
     /**
@@ -343,9 +345,9 @@ class LibraryPresenter(
         mangaToDelete.forEach { it.favorite = false }
 
         Observable.fromCallable { db.insertMangas(mangaToDelete).executeAsBlocking() }
-                .onErrorResumeNext { Observable.empty() }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            .onErrorResumeNext { Observable.empty() }
+            .subscribeOn(Schedulers.io())
+            .subscribe()
 
         Observable.fromCallable {
             mangaToDelete.forEach { manga ->
@@ -358,8 +360,8 @@ class LibraryPresenter(
                 }
             }
         }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            .subscribeOn(Schedulers.io())
+            .subscribe()
     }
 
     /**

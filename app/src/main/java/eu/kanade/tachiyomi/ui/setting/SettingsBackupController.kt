@@ -107,9 +107,11 @@ class SettingsBackupController : SettingsController() {
             intListPreference {
                 key = Keys.backupInterval
                 titleRes = R.string.pref_backup_interval
-                entriesRes = arrayOf(R.string.update_never, R.string.update_6hour,
-                        R.string.update_12hour, R.string.update_24hour,
-                        R.string.update_48hour, R.string.update_weekly)
+                entriesRes = arrayOf(
+                    R.string.update_never, R.string.update_6hour,
+                    R.string.update_12hour, R.string.update_24hour,
+                    R.string.update_48hour, R.string.update_weekly
+                )
                 entryValues = arrayOf("0", "6", "12", "24", "48", "168")
                 defaultValue = "0"
                 summary = "%s"
@@ -169,7 +171,7 @@ class SettingsBackupController : SettingsController() {
 
                 // Get UriPermission so it's possible to write files
                 val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 
                 if (uri != null) {
                     activity.contentResolver.takePersistableUriPermission(uri, flags)
@@ -183,7 +185,7 @@ class SettingsBackupController : SettingsController() {
 
                 val uri = data.data
                 val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 
                 if (uri != null) {
                     activity.contentResolver.takePersistableUriPermission(uri, flags)
@@ -215,9 +217,9 @@ class SettingsBackupController : SettingsController() {
         try {
             // Use Android's built-in file creator
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                    .addCategory(Intent.CATEGORY_OPENABLE)
-                    .setType("application/*")
-                    .putExtra(Intent.EXTRA_TITLE, Backup.getDefaultFilename())
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("application/*")
+                .putExtra(Intent.EXTRA_TITLE, Backup.getDefaultFilename())
 
             startActivityForResult(intent, CODE_BACKUP_CREATE)
         } catch (e: ActivityNotFoundException) {
@@ -229,32 +231,34 @@ class SettingsBackupController : SettingsController() {
     class CreateBackupDialog : DialogController() {
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val activity = activity!!
-            val options = arrayOf(R.string.manga, R.string.categories, R.string.chapters,
-                    R.string.track, R.string.history)
-                    .map { activity.getString(it) }
+            val options = arrayOf(
+                R.string.manga, R.string.categories, R.string.chapters,
+                R.string.track, R.string.history
+            )
+                .map { activity.getString(it) }
 
             return MaterialDialog(activity)
-                    .title(R.string.pref_create_backup)
-                    .message(R.string.backup_choice)
-                    .listItemsMultiChoice(
-                        items = options,
-                        disabledIndices = intArrayOf(0),
-                        initialSelection = intArrayOf(0, 1, 2, 3, 4)
-                    ) { _, positions, _ ->
-                        var flags = 0
-                        for (i in 1 until positions.size) {
-                            when (positions[i]) {
-                                1 -> flags = flags or BackupCreateService.BACKUP_CATEGORY
-                                2 -> flags = flags or BackupCreateService.BACKUP_CHAPTER
-                                3 -> flags = flags or BackupCreateService.BACKUP_TRACK
-                                4 -> flags = flags or BackupCreateService.BACKUP_HISTORY
-                            }
+                .title(R.string.pref_create_backup)
+                .message(R.string.backup_choice)
+                .listItemsMultiChoice(
+                    items = options,
+                    disabledIndices = intArrayOf(0),
+                    initialSelection = intArrayOf(0, 1, 2, 3, 4)
+                ) { _, positions, _ ->
+                    var flags = 0
+                    for (i in 1 until positions.size) {
+                        when (positions[i]) {
+                            1 -> flags = flags or BackupCreateService.BACKUP_CATEGORY
+                            2 -> flags = flags or BackupCreateService.BACKUP_CHAPTER
+                            3 -> flags = flags or BackupCreateService.BACKUP_TRACK
+                            4 -> flags = flags or BackupCreateService.BACKUP_HISTORY
                         }
-
-                        (targetController as? SettingsBackupController)?.createBackup(flags)
                     }
-                    .positiveButton(R.string.action_create)
-                    .negativeButton(android.R.string.cancel)
+
+                    (targetController as? SettingsBackupController)?.createBackup(flags)
+                }
+                .positiveButton(R.string.action_create)
+                .negativeButton(android.R.string.cancel)
         }
     }
 
@@ -300,23 +304,24 @@ class SettingsBackupController : SettingsController() {
     }
 
     class RestoreBackupDialog(bundle: Bundle? = null) : DialogController(bundle) {
-        constructor(uri: Uri) : this(Bundle().apply {
-            putParcelable(KEY_URI, uri)
-        })
+        constructor(uri: Uri) : this(
+            Bundle().apply {
+                putParcelable(KEY_URI, uri)
+            }
+        )
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             return MaterialDialog(activity!!)
-                    .title(R.string.pref_restore_backup)
-                    .message(text = activity!!.getString(R.string.backup_restore_content) + "\n\nThe app will throttle when restoring EHentai/ExHentai backups. This may cause the app to appear frozen when it is actually still working. Report an issue if the app remains frozen for more than 30 minutes however.")
-                    .positiveButton(R.string.action_restore) {
-                        val context = applicationContext
-                        if (context != null) {
-//                          RestoringBackupDialog().showDialog(router, TAG_RESTORING_BACKUP_DIALOG)
-                            BackupRestoreService.start(context, args.getParcelable(KEY_URI)!!)
-
-                            isRestoreStarted = true
-                        }
+                .title(R.string.pref_restore_backup)
+                .message(text = activity!!.getString(R.string.backup_restore_content) + "\n\nThe app will throttle when restoring EHentai/ExHentai backups. This may cause the app to appear frozen when it is actually still working. Report an issue if the app remains frozen for more than 30 minutes however.")
+                .positiveButton(R.string.action_restore) {
+                    val context = applicationContext
+                    if (context != null) {
+//                      RestoringBackupDialog().showDialog(router, TAG_RESTORING_BACKUP_DIALOG)
+                        BackupRestoreService.start(context, args.getParcelable(KEY_URI)!!)
+                        isRestoreStarted = true
                     }
+                }
         }
 
         private companion object {

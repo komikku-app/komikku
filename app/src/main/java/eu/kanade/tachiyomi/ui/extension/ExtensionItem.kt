@@ -20,7 +20,7 @@ data class ExtensionItem(
     val header: ExtensionGroupItem? = null,
     val installStep: InstallStep? = null
 ) :
-        AbstractSectionableItem<ExtensionHolder, ExtensionGroupItem>(header) {
+    AbstractSectionableItem<ExtensionHolder, ExtensionGroupItem>(header) {
 
     /**
      * Returns the layout resource of this item.
@@ -45,7 +45,6 @@ data class ExtensionItem(
         position: Int,
         payloads: List<Any?>?
     ) {
-
         if (payloads == null || payloads.isEmpty()) {
             holder.bind(this)
         } else {

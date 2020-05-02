@@ -17,14 +17,15 @@ import kotlinx.android.synthetic.main.source_grid_item.view.card
 import kotlinx.android.synthetic.main.source_grid_item.view.gradient
 
 class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference<Boolean>) :
-        AbstractFlexibleItem<LibraryHolder>(), IFilterable<String> {
+    AbstractFlexibleItem<LibraryHolder>(), IFilterable<String> {
     var downloadCount = -1
 
     override fun getLayoutRes(): Int {
-        return if (libraryAsList.get())
+        return if (libraryAsList.get()) {
             R.layout.source_list_item
-        else
+        } else {
             R.layout.source_grid_item
+        }
     }
 
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): LibraryHolder {
@@ -34,7 +35,8 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
                 val coverHeight = parent.itemWidth / 3 * 4
                 card.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, coverHeight)
                 gradient.layoutParams = FrameLayout.LayoutParams(
-                        MATCH_PARENT, coverHeight / 2, Gravity.BOTTOM)
+                    MATCH_PARENT, coverHeight / 2, Gravity.BOTTOM
+                )
             }
             LibraryGridHolder(view, adapter)
         } else {
@@ -67,41 +69,43 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
      */
     override fun filter(constraint: String): Boolean {
         return manga.title.contains(constraint, true) ||
-                (manga.author?.contains(constraint, true) ?: false) ||
-                if (constraint.contains(" ") || constraint.contains("\"")) {
-                    val genres = manga.genre?.split(", ")?.map {
-                        it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
-                    }
-                    var clean_constraint = ""
-                    var ignorespace = false
-                    for (i in constraint.trim().toLowerCase()) {
-                        if (i == ' ') {
-                            if (!ignorespace) {
-                                clean_constraint = clean_constraint + ","
-                            } else {
-                                clean_constraint = clean_constraint + " "
-                            }
-                        } else if (i == '"') {
-                            ignorespace = !ignorespace
-                        } else {
-                            clean_constraint = clean_constraint + Character.toString(i)
-                        }
-                    }
-                    clean_constraint.split(",").all { containsGenre(it.trim(), genres) }
-                } else containsGenre(constraint, manga.genre?.split(", ")?.map {
+            (manga.author?.contains(constraint, true) ?: false) ||
+            if (constraint.contains(" ") || constraint.contains("\"")) {
+                val genres = manga.genre?.split(", ")?.map {
                     it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
-                })
+                }
+                var clean_constraint = ""
+                var ignorespace = false
+                for (i in constraint.trim().toLowerCase()) {
+                    if (i == ' ') {
+                        if (!ignorespace) {
+                            clean_constraint = clean_constraint + ","
+                        } else {
+                            clean_constraint = clean_constraint + " "
+                        }
+                    } else if (i == '"') {
+                        ignorespace = !ignorespace
+                    } else {
+                        clean_constraint = clean_constraint + Character.toString(i)
+                    }
+                }
+                clean_constraint.split(",").all { containsGenre(it.trim(), genres) }
+            } else containsGenre(constraint, manga.genre?.split(", ")?.map {
+                it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
+            }
+        )
     }
 
     private fun containsGenre(tag: String, genres: List<String>?): Boolean {
-        return if (tag.startsWith("-"))
+        return if (tag.startsWith("-")) {
             genres?.find {
                 it.trim().toLowerCase() == tag.substringAfter("-").toLowerCase()
             } == null
-        else
+        } else {
             genres?.find {
                 it.trim().toLowerCase() == tag.toLowerCase()
             } != null
+        }
     }
 
     override fun equals(other: Any?): Boolean {

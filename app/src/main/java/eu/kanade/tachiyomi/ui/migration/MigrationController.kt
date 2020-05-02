@@ -22,7 +22,8 @@ import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MigrationController : NucleusController<MigrationControllerBinding, MigrationPresenter>(),
+class MigrationController :
+    NucleusController<MigrationControllerBinding, MigrationPresenter>(),
     FlexibleAdapter.OnItemClickListener,
     SourceAdapter.OnSelectClickListener,
     SourceAdapter.OnAutoClickListener,

@@ -5,8 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 
-class SourceDividerItemDecoration(context: Context) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
+class SourceDividerItemDecoration(context: Context) : RecyclerView.ItemDecoration() {
 
     private val divider: Drawable
 
@@ -16,14 +17,15 @@ class SourceDividerItemDecoration(context: Context) : androidx.recyclerview.widg
         a.recycle()
     }
 
-    override fun onDraw(c: Canvas, parent: androidx.recyclerview.widget.RecyclerView, state: androidx.recyclerview.widget.RecyclerView.State) {
+    override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         val childCount = parent.childCount
         for (i in 0 until childCount - 1) {
             val child = parent.getChildAt(i)
             val holder = parent.getChildViewHolder(child)
             if (holder is SourceHolder &&
-                    parent.getChildViewHolder(parent.getChildAt(i + 1)) is SourceHolder) {
-                val params = child.layoutParams as androidx.recyclerview.widget.RecyclerView.LayoutParams
+                parent.getChildViewHolder(parent.getChildAt(i + 1)) is SourceHolder
+            ) {
+                val params = child.layoutParams as RecyclerView.LayoutParams
                 val top = child.bottom + params.bottomMargin
                 val bottom = top + divider.intrinsicHeight
                 val left = parent.paddingStart + holder.margin
@@ -38,8 +40,8 @@ class SourceDividerItemDecoration(context: Context) : androidx.recyclerview.widg
     override fun getItemOffsets(
         outRect: Rect,
         view: View,
-        parent: androidx.recyclerview.widget.RecyclerView,
-        state: androidx.recyclerview.widget.RecyclerView.State
+        parent: RecyclerView,
+        state: RecyclerView.State
     ) {
         outRect.set(0, 0, 0, divider.intrinsicHeight)
     }

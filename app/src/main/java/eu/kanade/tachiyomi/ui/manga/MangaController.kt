@@ -68,7 +68,8 @@ class MangaController : RxController<MangaControllerBinding>, TabbedController {
     // EXH <--
 
     constructor(mangaId: Long) : this(
-            Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking())
+        Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking()
+    )
 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(bundle.getLong(MANGA_EXTRA))
@@ -119,8 +120,9 @@ class MangaController : RxController<MangaControllerBinding>, TabbedController {
         binding.mangaPager.offscreenPageLimit = 3
         binding.mangaPager.adapter = adapter
 
-        if (!fromSource)
+        if (!fromSource) {
             binding.mangaPager.currentItem = CHAPTERS_CONTROLLER
+        }
     }
 
     override fun onDestroyView(view: View) {
@@ -162,9 +164,11 @@ class MangaController : RxController<MangaControllerBinding>, TabbedController {
 
     private fun setTrackingIconInternal(visible: Boolean) {
         val tab = activity?.tabs?.getTabAt(TRACK_CONTROLLER) ?: return
-        val drawable = if (visible)
+        val drawable = if (visible) {
             VectorDrawableCompat.create(resources!!, R.drawable.ic_done_white_18dp, null)
-        else null
+        } else {
+            null
+        }
 
         tab.icon = drawable
     }
@@ -174,10 +178,11 @@ class MangaController : RxController<MangaControllerBinding>, TabbedController {
         private val tabCount = if (Injekt.get<TrackManager>().hasLoggedServices()) 3 else 2
 
         private val tabTitles = listOf(
-                R.string.manga_detail_tab,
-                R.string.manga_chapters_tab,
-                R.string.manga_tracking_tab)
-                .map { resources!!.getString(it) }
+            R.string.manga_detail_tab,
+            R.string.manga_chapters_tab,
+            R.string.manga_tracking_tab
+        )
+            .map { resources!!.getString(it) }
 
         override fun getCount(): Int {
             return tabCount

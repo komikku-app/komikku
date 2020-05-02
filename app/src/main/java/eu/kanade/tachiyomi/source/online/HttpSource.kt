@@ -115,10 +115,10 @@ abstract class HttpSource : CatalogueSource {
      */
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return client.newCall(popularMangaRequest(page))
-                .asObservableSuccess()
-                .map { response ->
-                    popularMangaParse(response)
-                }
+            .asObservableSuccess()
+            .map { response ->
+                popularMangaParse(response)
+            }
     }
 
     /**
@@ -145,10 +145,10 @@ abstract class HttpSource : CatalogueSource {
      */
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
-                .asObservableSuccess()
-                .map { response ->
-                    searchMangaParse(response)
-                }
+            .asObservableSuccess()
+            .map { response ->
+                searchMangaParse(response)
+            }
     }
 
     /**
@@ -174,10 +174,10 @@ abstract class HttpSource : CatalogueSource {
      */
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         return client.newCall(latestUpdatesRequest(page))
-                .asObservableSuccess()
-                .map { response ->
-                    latestUpdatesParse(response)
-                }
+            .asObservableSuccess()
+            .map { response ->
+                latestUpdatesParse(response)
+            }
     }
 
     /**
@@ -202,10 +202,10 @@ abstract class HttpSource : CatalogueSource {
      */
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
-                .asObservableSuccess()
-                .map { response ->
-                    mangaDetailsParse(response).apply { initialized = true }
-                }
+            .asObservableSuccess()
+            .map { response ->
+                mangaDetailsParse(response).apply { initialized = true }
+            }
     }
 
     /**
@@ -234,10 +234,10 @@ abstract class HttpSource : CatalogueSource {
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return if (manga.status != SManga.LICENSED) {
             client.newCall(chapterListRequest(manga))
-                    .asObservableSuccess()
-                    .map { response ->
-                        chapterListParse(response)
-                    }
+                .asObservableSuccess()
+                .map { response ->
+                    chapterListParse(response)
+                }
         } else {
             Observable.error(Exception("Licensed - No chapters to show"))
         }
@@ -267,10 +267,10 @@ abstract class HttpSource : CatalogueSource {
      */
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return client.newCall(pageListRequest(chapter))
-                .asObservableSuccess()
-                .map { response ->
-                    pageListParse(response)
-                }
+            .asObservableSuccess()
+            .map { response ->
+                pageListParse(response)
+            }
     }
 
     /**
@@ -298,8 +298,8 @@ abstract class HttpSource : CatalogueSource {
      */
     open fun fetchImageUrl(page: Page): Observable<String> {
         return client.newCall(imageUrlRequest(page))
-                .asObservableSuccess()
-                .map { imageUrlParse(it) }
+            .asObservableSuccess()
+            .map { imageUrlParse(it) }
     }
 
     /**
@@ -326,7 +326,7 @@ abstract class HttpSource : CatalogueSource {
      */
     open fun fetchImage(page: Page): Observable<Response> {
         return client.newCallWithProgress(imageRequest(page), page)
-                .asObservableSuccess()
+            .asObservableSuccess()
     }
 
     /**
@@ -368,10 +368,12 @@ abstract class HttpSource : CatalogueSource {
         return try {
             val uri = URI(orig)
             var out = uri.path
-            if (uri.query != null)
+            if (uri.query != null) {
                 out += "?" + uri.query
-            if (uri.fragment != null)
+            }
+            if (uri.fragment != null) {
                 out += "#" + uri.fragment
+            }
             out
         } catch (e: URISyntaxException) {
             orig

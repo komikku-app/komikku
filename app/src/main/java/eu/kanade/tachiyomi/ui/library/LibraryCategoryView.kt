@@ -42,11 +42,11 @@ import uy.kohesive.injekt.injectLazy
  * Fragment containing the library manga for a certain category.
  */
 class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-        FrameLayout(context, attrs),
-        FlexibleAdapter.OnItemClickListener,
-        FlexibleAdapter.OnItemLongClickListener,
-        FlexibleAdapter.OnItemMoveListener,
-        CategoryAdapter.OnItemReleaseListener {
+    FrameLayout(context, attrs),
+    FlexibleAdapter.OnItemClickListener,
+    FlexibleAdapter.OnItemLongClickListener,
+    FlexibleAdapter.OnItemMoveListener,
+    CategoryAdapter.OnItemReleaseListener {
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
@@ -148,73 +148,73 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         // EXH <--
 
         subscriptions += controller.searchRelay
-                .doOnNext { adapter.searchText = it }
-                .skip(1)
-                .debounce(500, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    // EXH -->
-                    scope2.launch {
-                        val handle = controller.loaderManager.openProgressBar()
-                        try {
-                            // EXH <--
-                            adapter.performFilter(this)
-                            // EXH -->
-                        } finally {
-                            controller.loaderManager.closeProgressBar(handle)
-                        }
+            .doOnNext { adapter.searchText = it }
+            .skip(1)
+            .debounce(500, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                // EXH -->
+                scope2.launch {
+                    val handle = controller.loaderManager.openProgressBar()
+                    try {
+                        // EXH <--
+                        adapter.performFilter(this)
+                        // EXH -->
+                    } finally {
+                        controller.loaderManager.closeProgressBar(handle)
                     }
-                    // EXH <--
                 }
+                // EXH <--
+            }
 
         subscriptions += controller.libraryMangaRelay
-                .subscribe {
-                    // EXH -->
-                    scope2.launch {
-                        try {
-                            // EXH <--
-                            onNextLibraryManga(this, it)
-                            // EXH -->
-                        } finally {
-                            controller.loaderManager.closeProgressBar(initialLoadHandle)
-                        }
+            .subscribe {
+                // EXH -->
+                scope2.launch {
+                    try {
+                        // EXH <--
+                        onNextLibraryManga(this, it)
+                        // EXH -->
+                    } finally {
+                        controller.loaderManager.closeProgressBar(initialLoadHandle)
                     }
-                    // EXH <--
                 }
+                // EXH <--
+            }
 
         subscriptions += controller.selectionRelay
-                .subscribe { onSelectionChanged(it) }
+            .subscribe { onSelectionChanged(it) }
 
         subscriptions += controller.selectAllRelay
-                .subscribe {
-                    if (it == category.id) {
-                        adapter.currentItems.forEach { item ->
-                            controller.setSelection(item.manga, true)
-                        }
-                        controller.invalidateActionMode()
+            .subscribe {
+                if (it == category.id) {
+                    adapter.currentItems.forEach { item ->
+                        controller.setSelection(item.manga, true)
                     }
+                    controller.invalidateActionMode()
                 }
+            }
 
         subscriptions += controller.reorganizeRelay
-                .subscribe {
-                    if (it.first == category.id) {
-                        var items = when (it.second) {
-                            1, 2 -> adapter.currentItems.sortedBy {
-                                //                                if (preferences.removeArticles().getOrDefault())
-                                it.manga.title.removeArticles()
-//                                else
-//                                    it.manga.title
-                            }
-                            3, 4 -> adapter.currentItems.sortedBy { it.manga.last_update }
-                            else -> adapter.currentItems.sortedBy { it.manga.title }
+            .subscribe {
+                if (it.first == category.id) {
+                    var items = when (it.second) {
+                        1, 2 -> adapter.currentItems.sortedBy {
+                            //                                if (preferences.removeArticles().getOrDefault())
+                            it.manga.title.removeArticles()
+//                            else
+//                                it.manga.title
                         }
-                        if (it.second % 2 == 0)
-                            items = items.reversed()
-                        runBlocking { adapter.setItems(this, items) }
-                        adapter.notifyDataSetChanged()
-                        onItemReleased(0)
+                        3, 4 -> adapter.currentItems.sortedBy { it.manga.last_update }
+                        else -> adapter.currentItems.sortedBy { it.manga.title }
                     }
-                }
+                    if (it.second % 2 == 0)
+                        items = items.reversed()
+                    runBlocking { adapter.setItems(this, items) }
+                    adapter.notifyDataSetChanged()
+            }
+            controller.invalidateActionMode()
+        }
 
         subscriptions += controller.selectInverseRelay
             .filter { it == category.id }
@@ -353,10 +353,12 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         adapter.isLongPressDragEnabled = false
         when {
             lastClickPosition == -1 -> setSelection(position)
-            lastClickPosition > position -> for (i in position until lastClickPosition)
-                setSelection(i)
-            lastClickPosition < position -> for (i in lastClickPosition + 1..position)
-                setSelection(i)
+            lastClickPosition > position ->
+                for (i in position until lastClickPosition)
+                    setSelection(i)
+            lastClickPosition < position ->
+                for (i in lastClickPosition + 1..position)
+                    setSelection(i)
             else -> setSelection(position)
         }
         lastClickPosition = position

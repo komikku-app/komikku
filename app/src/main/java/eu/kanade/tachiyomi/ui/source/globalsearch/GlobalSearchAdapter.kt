@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.source.global_search
+package eu.kanade.tachiyomi.ui.source.globalsearch
 
 import android.os.Bundle
 import android.os.Parcelable
@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
  * @param controller instance of [GlobalSearchController].
  */
 class GlobalSearchAdapter(val controller: GlobalSearchController) :
-        FlexibleAdapter<GlobalSearchItem>(null, controller, true) {
+    FlexibleAdapter<GlobalSearchItem>(null, controller, true) {
 
     /**
      * Listen for more button clicks.

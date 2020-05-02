@@ -27,8 +27,11 @@ class HistoryAdapter(controller: HistoryController) :
     /**
      * DecimalFormat used to display correct chapter number
      */
-    val decimalFormat = DecimalFormat("#.###", DecimalFormatSymbols()
-            .apply { decimalSeparator = '.' })
+    val decimalFormat = DecimalFormat(
+        "#.###",
+        DecimalFormatSymbols()
+            .apply { decimalSeparator = '.' }
+    )
 
     init {
         setDisplayHeadersAtStartUp(true)

@@ -33,14 +33,14 @@ import reactivecircus.flowbinding.appcompat.queryTextEvents
  * UI related actions should be called from here.
  */
 class HistoryController : NucleusController<HistoryControllerBinding, HistoryPresenter>(),
-        RootController,
-        NoToolbarElevationController,
-        FlexibleAdapter.OnUpdateListener,
-        FlexibleAdapter.EndlessScrollListener,
-        HistoryAdapter.OnRemoveClickListener,
-        HistoryAdapter.OnResumeClickListener,
-        HistoryAdapter.OnItemClickListener,
-        RemoveHistoryDialog.Listener {
+    RootController,
+    NoToolbarElevationController,
+    FlexibleAdapter.OnUpdateListener,
+    FlexibleAdapter.EndlessScrollListener,
+    HistoryAdapter.OnRemoveClickListener,
+    HistoryAdapter.OnResumeClickListener,
+    HistoryAdapter.OnItemClickListener,
+    RemoveHistoryDialog.Listener {
 
     init {
         setHasOptionsMenu(true)

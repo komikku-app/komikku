@@ -16,8 +16,8 @@ import kotlinx.android.synthetic.main.source_main_controller_card_item.source_la
 import kotlinx.android.synthetic.main.source_main_controller_card_item.title
 
 class SourceHolder(view: View, override val adapter: SourceAdapter, val showButtons: Boolean) :
-        BaseFlexibleViewHolder(view, adapter),
-        SlicedHolder {
+    BaseFlexibleViewHolder(view, adapter),
+    SlicedHolder {
 
     override val slice = Slice(card).apply {
         setColor(adapter.cardBackground)

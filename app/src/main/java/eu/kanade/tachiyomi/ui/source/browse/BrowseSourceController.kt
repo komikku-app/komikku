@@ -62,12 +62,12 @@ import uy.kohesive.injekt.injectLazy
  * Controller to manage the catalogues available in the app.
  */
 open class BrowseSourceController(bundle: Bundle) :
-        NucleusController<SourceControllerBinding, BrowseSourcePresenter>(bundle),
-        SecondaryDrawerController,
-        FlexibleAdapter.OnItemClickListener,
-        FlexibleAdapter.OnItemLongClickListener,
-        FlexibleAdapter.EndlessScrollListener,
-        ChangeMangaCategoriesDialog.Listener {
+    NucleusController<SourceControllerBinding, BrowseSourcePresenter>(bundle),
+    SecondaryDrawerController,
+    FlexibleAdapter.OnItemClickListener,
+    FlexibleAdapter.OnItemLongClickListener,
+    FlexibleAdapter.EndlessScrollListener,
+    ChangeMangaCategoriesDialog.Listener {
 
     constructor(
         source: CatalogueSource,
@@ -288,10 +288,10 @@ open class BrowseSourceController(bundle: Bundle) :
         } else {
             (binding.catalogueView.inflate(R.layout.source_recycler_autofit) as AutofitRecyclerView).apply {
                 numColumnsSubscription = getColumnsPreferenceForCurrentOrientation().asObservable()
-                        .doOnNext { spanCount = it }
-                        .skip(1)
-                        // Set again the adapter to recalculate the covers height
-                        .subscribe { adapter = this@BrowseSourceController.adapter }
+                    .doOnNext { spanCount = it }
+                    .skip(1)
+                    // Set again the adapter to recalculate the covers height
+                    .subscribe { adapter = this@BrowseSourceController.adapter }
 
                 (layoutManager as GridLayoutManager).spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                     override fun getSpanSize(position: Int): Int {
@@ -335,11 +335,11 @@ open class BrowseSourceController(bundle: Bundle) :
             .launchIn(scope)
 
         searchItem.fixExpand(
-                onExpand = { invalidateMenuOnExpand() },
-                onCollapse = {
-                    searchWithQuery("")
-                    true
-                }
+            onExpand = { invalidateMenuOnExpand() },
+            onCollapse = {
+                searchWithQuery("")
+                true
+            }
         )
 
         // Setup filters button
@@ -356,10 +356,11 @@ open class BrowseSourceController(bundle: Bundle) :
 
         // Show next display mode
         menu.findItem(R.id.action_display_mode).apply {
-            val icon = if (presenter.isListMode)
+            val icon = if (presenter.isListMode) {
                 R.drawable.ic_view_module_24dp
-            else
+            } else {
                 R.drawable.ic_view_list_24dp
+            }
             setIcon(icon)
         }
     }
@@ -404,8 +405,9 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     fun searchWithQuery(newQuery: String) {
         // If text didn't change, do nothing
-        if (presenter.query == newQuery)
+        if (presenter.query == newQuery) {
             return
+        }
 
         showProgressBar()
         adapter?.clear()
@@ -448,7 +450,6 @@ open class BrowseSourceController(bundle: Bundle) :
 
         val message = getErrorMessage(error)
         val retryAction = View.OnClickListener {
-
             // If not the first page, show bottom progress bar.
             if (adapter.mainItemCount > 0 && progressItem != null) {
                 adapter.addScrollableFooterWithDelay(progressItem!!, 0, true)
@@ -550,10 +551,11 @@ open class BrowseSourceController(bundle: Bundle) :
      * @return the preference.
      */
     fun getColumnsPreferenceForCurrentOrientation(): Preference<Int> {
-        return if (resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT)
+        return if (resources?.configuration?.orientation == Configuration.ORIENTATION_PORTRAIT) {
             preferences.portraitColumns()
-        else
+        } else {
             preferences.landscapeColumns()
+        }
     }
 
     /**
@@ -622,19 +624,19 @@ open class BrowseSourceController(bundle: Bundle) :
 
         if (manga.favorite) {
             MaterialDialog(activity)
-                    .listItems(
-                        items = listOf(activity.getString(R.string.remove_from_library)),
-                        waitForPositiveButton = false
-                    ) { _, which, _ ->
-                        when (which) {
-                            0 -> {
-                                presenter.changeMangaFavorite(manga)
-                                adapter?.notifyItemChanged(position)
-                                activity.toast(activity.getString(R.string.manga_removed_library))
-                            }
+                .listItems(
+                    items = listOf(activity.getString(R.string.remove_from_library)),
+                    waitForPositiveButton = false
+                ) { _, which, _ ->
+                    when (which) {
+                        0 -> {
+                            presenter.changeMangaFavorite(manga)
+                            adapter?.notifyItemChanged(position)
+                            activity.toast(activity.getString(R.string.manga_removed_library))
                         }
                     }
-                    .show()
+                }
+                .show()
         } else {
             val categories = presenter.getCategories()
             val defaultCategoryId = preferences.defaultCategory()
@@ -667,7 +669,7 @@ open class BrowseSourceController(bundle: Bundle) :
                     }.toTypedArray()
 
                     ChangeMangaCategoriesDialog(this, listOf(manga), categories, preselected)
-                            .showDialog(router)
+                        .showDialog(router)
                 }
             }
         }

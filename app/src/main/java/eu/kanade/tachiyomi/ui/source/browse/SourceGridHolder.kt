@@ -26,7 +26,7 @@ import uy.kohesive.injekt.api.get
  * @constructor creates a new catalogue holder.
  */
 class SourceGridHolder(private val view: View, private val adapter: FlexibleAdapter<*>) :
-        SourceHolder(view, adapter) {
+    SourceHolder(view, adapter) {
 
     private val preferences: PreferencesHelper = Injekt.get()
 
@@ -56,11 +56,11 @@ class SourceGridHolder(private val view: View, private val adapter: FlexibleAdap
         GlideApp.with(view.context).clear(thumbnail)
         if (!manga.thumbnail_url.isNullOrEmpty()) {
             GlideApp.with(view.context)
-                    .load(manga.toMangaThumbnail())
-                    .diskCacheStrategy(DiskCacheStrategy.DATA)
-                    .centerCrop()
-                    .placeholder(android.R.color.transparent)
-                    .into(StateImageViewTarget(thumbnail, progress))
+                .load(manga.toMangaThumbnail())
+                .diskCacheStrategy(DiskCacheStrategy.DATA)
+                .centerCrop()
+                .placeholder(android.R.color.transparent)
+                .into(StateImageViewTarget(thumbnail, progress))
         }
     }
 }

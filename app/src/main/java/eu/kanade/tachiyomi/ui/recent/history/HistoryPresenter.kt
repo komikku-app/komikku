@@ -42,9 +42,10 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
         lastCount = offset
         lastSearch = search
         getRecentMangaObservable((offset), search)
-                .subscribeLatestCache({ view, mangas ->
-                    view.onNextManga(mangas)
-                }, HistoryController::onAddPageError)
+            .subscribeLatestCache({ view, mangas ->
+                view.onNextManga(mangas)
+            }, HistoryController::onAddPageError
+        )
     }
 
     /**
@@ -81,16 +82,16 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
         cal.add(Calendar.YEAR, -50)
 
         return db.getRecentMangaLimit(cal.time, lastCount, search).asRxObservable()
-                .map { recents ->
-                    val map = TreeMap<Date, MutableList<MangaChapterHistory>> { d1, d2 -> d2.compareTo(d1) }
-                    val byDay = recents
-                            .groupByTo(map, { it.history.last_read.toDateKey() })
-                    byDay.flatMap { entry ->
-                        val dateItem = DateSectionItem(entry.key)
-                        entry.value.map { HistoryItem(it, dateItem) }
-                    }
+            .map { recents ->
+                val map = TreeMap<Date, MutableList<MangaChapterHistory>> { d1, d2 -> d2.compareTo(d1) }
+                val byDay = recents
+                    .groupByTo(map, { it.history.last_read.toDateKey() })
+                byDay.flatMap { entry ->
+                    val dateItem = DateSectionItem(entry.key)
+                    entry.value.map { HistoryItem(it, dateItem) }
                 }
-                .observeOn(AndroidSchedulers.mainThread())
+            }
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     /**
@@ -106,9 +107,9 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
     fun updateList(search: String? = null) {
         lastSearch = search ?: lastSearch
         getRecentMangaLimitObservable(lastCount, lastSearch).take(1)
-                .subscribeLatestCache({ view, mangas ->
-                    view.onNextManga(mangas, true)
-                }, HistoryController::onAddPageError)
+            .subscribeLatestCache({ view, mangas ->
+                view.onNextManga(mangas, true)
+            }, HistoryController::onAddPageError)
     }
 
     /**
@@ -140,7 +141,7 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
         }
 
         val chapters = db.getChapters(manga).executeAsBlocking()
-                .sortedWith(Comparator { c1, c2 -> sortFunction(c1, c2) })
+            .sortedWith(Comparator { c1, c2 -> sortFunction(c1, c2) })
 
         val currChapterIndex = chapters.indexOfFirst { chapter.id == it.id }
         return when (manga.sorting) {
@@ -149,11 +150,11 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
                 val chapterNumber = chapter.chapter_number
 
                 ((currChapterIndex + 1) until chapters.size)
-                        .map { chapters[it] }
-                        .firstOrNull {
-                            it.chapter_number > chapterNumber &&
-                                    it.chapter_number <= chapterNumber + 1
-                        }
+                    .map { chapters[it] }
+                    .firstOrNull {
+                        it.chapter_number > chapterNumber &&
+                            it.chapter_number <= chapterNumber + 1
+                    }
             }
             else -> throw NotImplementedError("Unknown sorting method")
         }

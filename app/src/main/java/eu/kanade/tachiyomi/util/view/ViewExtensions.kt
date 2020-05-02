@@ -13,6 +13,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.MenuRes
 import androidx.appcompat.widget.PopupMenu
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.kennyc.textdrawable.ColorGenerator
 import com.kennyc.textdrawable.TextDrawable
@@ -78,6 +82,10 @@ inline fun View.visibleIf(block: () -> Boolean) {
     visibility = if (block()) View.VISIBLE else View.GONE
 }
 
+inline fun View.toggle() {
+    visibleIf { visibility == View.GONE }
+}
+
 /**
  * Sets a round TextDrawable into an ImageView determined by input.
  *
@@ -87,7 +95,8 @@ fun ImageView.roundTextIcon(text: String) {
     val letter = text.take(1).toUpperCase()
     val size = min(this.width, this.height)
 
-    setImageDrawable(TextDrawable(
+    setImageDrawable(
+        TextDrawable(
             shape = TextDrawable.DRAWABLE_SHAPE_OVAL,
             desiredWidth = size,
             desiredHeight = size,
@@ -95,5 +104,42 @@ fun ImageView.roundTextIcon(text: String) {
             textColor = Color.WHITE,
             text = letter,
             color = ColorGenerator.MATERIAL.getColor(letter)
-    ))
+        )
+    )
+}
+
+/**
+ * Shrink an ExtendedFloatingActionButton when the associated RecyclerView is scrolled down.
+ *
+ * @param recycler [RecyclerView] that the FAB should shrink/extend in response to.
+ */
+fun ExtendedFloatingActionButton.shrinkOnScroll(recycler: RecyclerView) {
+    recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            if (dy <= 0) {
+                extend()
+            } else {
+                shrink()
+            }
+        }
+    })
+}
+
+/**
+ * Replaces chips in a ChipGroup.
+ *
+ * @param items List of strings that are shown as individual chips.
+ * @param onClick Optional on click listener for each chip.
+ */
+fun ChipGroup.setChips(items: List<String>?, onClick: (item: String) -> Unit = {}) {
+    removeAllViews()
+
+    items?.forEach { item ->
+        val chip = Chip(context).apply {
+            text = item
+            setOnClickListener { onClick(item) }
+        }
+
+        addView(chip)
+    }
 }

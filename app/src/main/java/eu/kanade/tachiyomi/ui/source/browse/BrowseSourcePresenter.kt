@@ -125,8 +125,10 @@ open class BrowseSourcePresenter(
             query = savedState.getString(::query.name, "")
         }
 
-        add(prefs.catalogueAsList().asObservable()
-                .subscribe { setDisplayMode(it) })
+        add(
+            prefs.catalogueAsList().asObservable()
+                .subscribe { setDisplayMode(it) }
+        )
 
         restartPager()
     }
@@ -158,16 +160,19 @@ open class BrowseSourcePresenter(
         // Prepare the pager.
         pagerSubscription?.let { remove(it) }
         pagerSubscription = pager.results()
-                .observeOn(Schedulers.io())
-                .map { pair -> pair.first to pair.second.map { networkToLocalManga(it, sourceId) } }
-                .doOnNext { initializeMangas(it.second) }
-                .map { pair -> pair.first to pair.second.map { SourceItem(it, catalogueAsList) } }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeReplay({ view, (page, mangas) ->
+            .observeOn(Schedulers.io())
+            .map { pair -> pair.first to pair.second.map { networkToLocalManga(it, sourceId) } }
+            .doOnNext { initializeMangas(it.second) }
+            .map { pair -> pair.first to pair.second.map { SourceItem(it, catalogueAsList) } }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeReplay(
+                { view, (page, mangas) ->
                     view.onAddPage(page, mangas)
-                }, { _, error ->
+                },
+                { _, error ->
                     Timber.e(error)
-                })
+                }
+            )
 
         // Request first page.
         requestNext()
@@ -181,9 +186,12 @@ open class BrowseSourcePresenter(
 
         pageSubscription?.let { remove(it) }
         pageSubscription = Observable.defer { pager.requestNext() }
-                .subscribeFirst({ _, _ ->
+            .subscribeFirst(
+                { _, _ ->
                     // Nothing to do when onNext is emitted.
-                }, BrowseSourceController::onAddPageError)
+                },
+                BrowseSourceController::onAddPageError
+            )
     }
 
     /**
@@ -209,18 +217,21 @@ open class BrowseSourcePresenter(
     private fun subscribeToMangaInitializer() {
         initializerSubscription?.let { remove(it) }
         initializerSubscription = mangaDetailSubject.observeOn(Schedulers.io())
-                .flatMap { Observable.from(it) }
-                .filter { it.thumbnail_url == null && !it.initialized }
-                .concatMap { getMangaDetailsObservable(it) }
-                .onBackpressureBuffer()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ manga ->
+            .flatMap { Observable.from(it) }
+            .filter { it.thumbnail_url == null && !it.initialized }
+            .concatMap { getMangaDetailsObservable(it) }
+            .onBackpressureBuffer()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { manga ->
                     @Suppress("DEPRECATION")
                     view?.onMangaInitialized(manga)
-                }, { error ->
+                },
+                { error ->
                     Timber.e(error)
-                })
-                .apply { add(this) }
+                }
+            )
+            .apply { add(this) }
     }
 
     /**
@@ -259,13 +270,13 @@ open class BrowseSourcePresenter(
      */
     private fun getMangaDetailsObservable(manga: Manga): Observable<Manga> {
         return source.fetchMangaDetails(manga)
-                .flatMap { networkManga ->
-                    manga.copyFrom(networkManga)
-                    manga.initialized = true
-                    db.insertManga(manga).executeAsBlocking()
-                    Observable.just(manga)
-                }
-                .onErrorResumeNext { Observable.just(manga) }
+            .flatMap { networkManga ->
+                manga.copyFrom(networkManga)
+                manga.initialized = true
+                db.insertManga(manga).executeAsBlocking()
+                Observable.just(manga)
+            }
+            .onErrorResumeNext { Observable.just(manga) }
     }
 
     /**
