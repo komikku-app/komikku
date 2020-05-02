@@ -30,11 +30,11 @@ class GlobalSearchHolder(view: View, val adapter: GlobalSearchAdapter) :
 
     init {
         // Set layout horizontal.
-        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(view.context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false)
+        recycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
         recycler.adapter = mangaAdapter
 
         more.setOnClickListener {
-            val item = adapter.getItem(adapterPosition)
+            val item = adapter.getItem(bindingAdapterPosition)
             if (item != null) {
                 adapter.moreClickListener.onMoreClick(item.source)
             }
@@ -93,7 +93,7 @@ class GlobalSearchHolder(view: View, val adapter: GlobalSearchAdapter) :
      */
     private fun getHolder(manga: Manga): GlobalSearchCardHolder? {
         mangaAdapter.allBoundViewHolders.forEach { holder ->
-            val item = mangaAdapter.getItem(holder.adapterPosition)
+            val item = mangaAdapter.getItem(holder.bindingAdapterPosition)
             if (item != null && item.manga.id!! == manga.id!!) {
                 return holder as GlobalSearchCardHolder
             }
