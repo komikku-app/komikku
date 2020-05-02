@@ -25,10 +25,15 @@ import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.library_category.view.swipe_refresh
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import reactivecircus.flowbinding.recyclerview.scrollStateChanges
+import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
 import uy.kohesive.injekt.injectLazy
@@ -43,9 +48,8 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         FlexibleAdapter.OnItemMoveListener,
         CategoryAdapter.OnItemReleaseListener {
 
-    /**
-     * Preferences.
-     */
+    private val scope = CoroutineScope(Job() + Dispatchers.Main)
+
     private val preferences: PreferencesHelper by injectLazy()
 
     /**
@@ -78,7 +82,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
 
     // EXH -->
     private var initialLoadHandle: LoadingHandle? = null
-    lateinit var scope: CoroutineScope
+    lateinit var scope2: CoroutineScope
 
     private fun newScope() = object : CoroutineScope {
         override val coroutineContext = SupervisorJob() + Dispatchers.Main
@@ -104,25 +108,27 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         recycler.adapter = adapter
         swipe_refresh.addView(recycler)
 
-        recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recycler: RecyclerView, newState: Int) {
+        recycler.scrollStateChanges()
+            .onEach {
                 // Disable swipe refresh when view is not at the top
                 val firstPos = (recycler.layoutManager as LinearLayoutManager)
-                        .findFirstCompletelyVisibleItemPosition()
+                    .findFirstCompletelyVisibleItemPosition()
                 swipe_refresh.isEnabled = firstPos <= 0
             }
-        })
+            .launchIn(scope)
 
         // Double the distance required to trigger sync
         swipe_refresh.setDistanceToTriggerSync((2 * 64 * resources.displayMetrics.density).toInt())
-        swipe_refresh.setOnRefreshListener {
-            if (LibraryUpdateService.start(context, category)) {
-                context.toast(R.string.updating_category)
-            }
+        swipe_refresh.refreshes()
+            .onEach {
+                if (LibraryUpdateService.start(context, category)) {
+                    context.toast(R.string.updating_category)
+                }
 
-            // It can be a very long operation, so we disable swipe refresh and show a toast.
-            swipe_refresh.isRefreshing = false
-        }
+                // It can be a very long operation, so we disable swipe refresh and show a toast.
+                swipe_refresh.isRefreshing = false
+            }
+            .launchIn(scope)
     }
 
     fun onBind(category: Category) {
@@ -137,7 +143,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         adapter.isLongPressDragEnabled = sortingMode == LibrarySort.DRAG_AND_DROP
 
         // EXH -->
-        scope = newScope()
+        scope2 = newScope()
         initialLoadHandle = controller.loaderManager.openProgressBar()
         // EXH <--
 
@@ -148,7 +154,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     // EXH -->
-                    scope.launch {
+                    scope2.launch {
                         val handle = controller.loaderManager.openProgressBar()
                         try {
                             // EXH <--
@@ -164,7 +170,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         subscriptions += controller.libraryMangaRelay
                 .subscribe {
                     // EXH -->
-                    scope.launch {
+                    scope2.launch {
                         try {
                             // EXH <--
                             onNextLibraryManga(this, it)
@@ -229,7 +235,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     fun unsubscribe() {
         subscriptions.clear()
         // EXH -->
-        scope.cancel()
+        scope2.cancel()
         controller.loaderManager.closeProgressBar(initialLoadHandle)
         // EXH <--
     }
