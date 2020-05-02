@@ -210,14 +210,14 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         val intervalMs = (interval * 1000).roundToLong()
         val sub = Observable.interval(intervalMs, intervalMs, TimeUnit.MILLISECONDS)
-                .onBackpressureDrop()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    viewer.let { v ->
-                        if (v is PagerViewer) v.moveToNext()
-                        else if (v is WebtoonViewer) v.scrollDown()
-                    }
+            .onBackpressureDrop()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                viewer.let { v ->
+                    if (v is PagerViewer) v.moveToNext()
+                    else if (v is WebtoonViewer) v.scrollDown()
                 }
+            }
 
         autoscrollSubscription = sub
         exhSubscriptions += sub
@@ -389,18 +389,26 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
             .launchIn(scope)
 
-        binding.ehAutoscrollFreq.setText(preferences.eh_utilAutoscrollInterval().get().let {
-            if (it == -1f)
-                ""
-            else it.toString()
-        })
+        binding.ehAutoscrollFreq.setText(
+            preferences.eh_utilAutoscrollInterval().get().let {
+                if (it == -1f) {
+                    ""
+                } else {
+                    it.toString()
+                }
+            }
+        )
 
         binding.ehAutoscroll.checkedChanges()
             // .observeOn(AndroidSchedulers.mainThread())
             .onEach {
-                setupAutoscroll(if (it)
-                    preferences.eh_utilAutoscrollInterval().get()
-                else -1f)
+                setupAutoscroll(
+                    if (it) {
+                        preferences.eh_utilAutoscrollInterval().get()
+                    } else {
+                        -1f
+                    }
+                )
             }
             .launchIn(scope)
 
@@ -438,39 +446,40 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 var retried = 0
 
                 presenter.viewerChaptersRelay.value
-                        .currChapter
-                        .pages
-                        ?.forEachIndexed { _, page ->
-                            var shouldQueuePage = false
-                            if (page.status == Page.ERROR) {
-                                shouldQueuePage = true
-                            } /*else if (page.status == Page.LOAD_PAGE ||
+                    .currChapter
+                    .pages
+                    ?.forEachIndexed { _, page ->
+                        var shouldQueuePage = false
+                        if (page.status == Page.ERROR) {
+                            shouldQueuePage = true
+                        } /*else if (page.status == Page.LOAD_PAGE ||
                                     page.status == Page.DOWNLOAD_IMAGE) {
                                 // Do nothing
                             }*/
 
-                            if (shouldQueuePage) {
-                                page.status = Page.QUEUE
-                            } else {
-                                return@forEachIndexed
-                            }
-
-                            // If we are using EHentai/ExHentai, get a new image URL
-                            presenter.manga?.let { m ->
-                                val src = sourceManager.get(m.source)
-                                if (src is EHentai)
-                                    page.imageUrl = null
-                            }
-
-                            val loader = page.chapter.pageLoader
-                            if (page.index == exh_currentPage()?.index && loader is HttpPageLoader) {
-                            loader.boostPage(page)
-                            } else {
-                                loader?.retryPage(page)
-                            }
-
-                            retried++
+                        if (shouldQueuePage) {
+                            page.status = Page.QUEUE
+                        } else {
+                            return@forEachIndexed
                         }
+
+                        // If we are using EHentai/ExHentai, get a new image URL
+                        presenter.manga?.let { m ->
+                            val src = sourceManager.get(m.source)
+                            if (src is EHentai) {
+                                page.imageUrl = null
+                            }
+                        }
+
+                        val loader = page.chapter.pageLoader
+                        if (page.index == exh_currentPage()?.index && loader is HttpPageLoader) {
+                            loader.boostPage(page)
+                        } else {
+                            loader?.retryPage(page)
+                        }
+
+                        retried++
+                    }
 
                 toast("Retrying $retried failed pages...")
             }
@@ -534,8 +543,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
     // EXH -->
     private fun exh_currentPage(): ReaderPage? {
-        val currentPage = (((viewer as? PagerViewer)?.currentPage
-                ?: (viewer as? WebtoonViewer)?.currentPage) as? ReaderPage)?.index
+        val currentPage = (
+            (
+                (viewer as? PagerViewer)?.currentPage
+                    ?: (viewer as? WebtoonViewer)?.currentPage
+                ) as? ReaderPage
+            )?.index
         return currentPage?.let { presenter.viewerChaptersRelay.value.currChapter.pages?.getOrNull(it) }
     }
     // EXH <--
@@ -844,13 +857,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      */
     private fun setNotchCutoutMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-
             val currentOrientation = resources.configuration.orientation
 
             if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
                 val params = window.attributes
                 params.layoutInDisplayCutoutMode =
-                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
             }
         }
     }

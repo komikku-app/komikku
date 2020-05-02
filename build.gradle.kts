@@ -52,6 +52,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        maven { setUrl("https://maven.fabric.io/public") }
     }
 }
 

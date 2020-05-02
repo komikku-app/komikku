@@ -38,10 +38,10 @@ class HelpDialogItem(val filter: Filter.HelpDialog) : AbstractHeaderItem<HelpDia
             markwon.setParsedMarkdown(v, rendered)
 
             MaterialDialog(view.context)
-                    .title(text = filter.dialogTitle)
-                    .customView(view = v, scrollable = true)
-                    .positiveButton(android.R.string.ok)
-                    .show()
+                .title(text = filter.dialogTitle)
+                .customView(view = v, scrollable = true)
+                .positiveButton(android.R.string.ok)
+                .show()
         }
     }
 

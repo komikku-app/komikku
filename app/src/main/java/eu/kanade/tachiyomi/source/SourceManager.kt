@@ -44,12 +44,12 @@ open class SourceManager(private val context: Context) {
 
         // Recreate sources when they change
         val prefEntries = arrayOf(
-                prefs.enableExhentai(),
-                prefs.imageQuality(),
-                prefs.useHentaiAtHome(),
-                prefs.useJapaneseTitle(),
-                prefs.ehSearchSize(),
-                prefs.thumbnailRows()
+            prefs.enableExhentai(),
+            prefs.imageQuality(),
+            prefs.useHentaiAtHome(),
+            prefs.useJapaneseTitle(),
+            prefs.ehSearchSize(),
+            prefs.thumbnailRows()
         ).map { it.asObservable() }
 
         Observable.merge(prefEntries).skip(prefEntries.size - 1).subscribe {
@@ -84,8 +84,8 @@ open class SourceManager(private val context: Context) {
         val newSource = if (source is HttpSource && delegate != null) {
             XLog.d("[EXH] Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
             EnhancedHttpSource(
-                    source,
-                    delegate.newSourceClass.constructors.find { it.parameters.size == 1 }!!.call(source)
+                source,
+                delegate.newSourceClass.constructors.find { it.parameters.size == 1 }!!.call(source)
             )
         } else source
 
@@ -110,7 +110,7 @@ open class SourceManager(private val context: Context) {
 
     private fun createEHSources(): List<Source> {
         val exSrcs = mutableListOf<HttpSource>(
-                EHentai(EH_SOURCE_ID, false, context)
+            EHentai(EH_SOURCE_ID, false, context)
         )
         if (prefs.enableExhentai().getOrDefault()) {
             exSrcs += EHentai(EXH_SOURCE_ID, true, context)
@@ -152,24 +152,24 @@ open class SourceManager(private val context: Context) {
 
     companion object {
         val DELEGATED_SOURCES = listOf(
-                DelegatedSource(
-                        "Hentai Cafe",
-                        260868874183818481,
-                        "eu.kanade.tachiyomi.extension.all.foolslide.HentaiCafe",
-                        HentaiCafe::class
-                ),
-                DelegatedSource(
-                        "Pururin",
-                        2221515250486218861,
-                        "eu.kanade.tachiyomi.extension.en.pururin.Pururin",
-                        Pururin::class
-                ),
-                DelegatedSource(
-                        "Tsumino",
-                        6707338697138388238,
-                        "eu.kanade.tachiyomi.extension.en.tsumino.Tsumino",
-                        Tsumino::class
-                )
+            DelegatedSource(
+                "Hentai Cafe",
+                260868874183818481,
+                "eu.kanade.tachiyomi.extension.all.foolslide.HentaiCafe",
+                HentaiCafe::class
+            ),
+            DelegatedSource(
+                "Pururin",
+                2221515250486218861,
+                "eu.kanade.tachiyomi.extension.en.pururin.Pururin",
+                Pururin::class
+            ),
+            DelegatedSource(
+                "Tsumino",
+                6707338697138388238,
+                "eu.kanade.tachiyomi.extension.en.tsumino.Tsumino",
+                Tsumino::class
+            )
         ).associateBy { it.originalSourceQualifiedClassName }
 
         data class DelegatedSource(

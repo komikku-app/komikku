@@ -40,15 +40,15 @@ abstract class HttpSource : CatalogueSource {
         object : NetworkHelper(Injekt.get<Application>()) {
             override val client: OkHttpClient
                 get() = delegate?.networkHttpClient ?: original.client
-                        .newBuilder()
-                        .injectPatches { id }
-                        .build()
+                    .newBuilder()
+                    .injectPatches { id }
+                    .build()
 
             override val cloudflareClient: OkHttpClient
                 get() = delegate?.networkCloudflareClient ?: original.cloudflareClient
-                        .newBuilder()
-                        .injectPatches { id }
-                        .build()
+                    .newBuilder()
+                    .injectPatches { id }
+                    .build()
 
             override val cookieManager: AndroidCookieJar
                 get() = original.cookieManager
@@ -397,9 +397,11 @@ abstract class HttpSource : CatalogueSource {
 
     // EXH -->
     private var delegate: DelegatedHttpSource? = null
-        get() = if (Injekt.get<PreferencesHelper>().eh_delegateSources().getOrDefault())
+        get() = if (Injekt.get<PreferencesHelper>().eh_delegateSources().getOrDefault()) {
             field
-        else null
+        } else {
+            null
+        }
 
     fun bindDelegate(delegate: DelegatedHttpSource) {
         this.delegate = delegate

@@ -36,7 +36,6 @@ data class LangItem(val code: String) : AbstractHeaderItem<LangHolder>() {
         position: Int,
         payloads: List<Any?>?
     ) {
-
         holder.bind(this)
     }
 }

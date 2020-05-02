@@ -50,7 +50,6 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
         position: Int,
         payloads: List<Any?>?
     ) {
-
         holder.onSetValues(this)
     }
 
@@ -90,10 +89,12 @@ class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference
                     }
                 }
                 clean_constraint.split(",").all { containsGenre(it.trim(), genres) }
-            } else containsGenre(constraint, manga.genre?.split(", ")?.map {
-                it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
-            }
-        )
+            } else containsGenre(
+                constraint,
+                manga.genre?.split(", ")?.map {
+                    it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
+                }
+            )
     }
 
     private fun containsGenre(tag: String, genres: List<String>?): Boolean {

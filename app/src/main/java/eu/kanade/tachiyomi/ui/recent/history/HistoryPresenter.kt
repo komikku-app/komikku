@@ -42,10 +42,12 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
         lastCount = offset
         lastSearch = search
         getRecentMangaObservable((offset), search)
-            .subscribeLatestCache({ view, mangas ->
-                view.onNextManga(mangas)
-            }, HistoryController::onAddPageError
-        )
+            .subscribeLatestCache(
+                { view, mangas ->
+                    view.onNextManga(mangas)
+                },
+                HistoryController::onAddPageError
+            )
     }
 
     /**
@@ -107,9 +109,12 @@ class HistoryPresenter : BasePresenter<HistoryController>() {
     fun updateList(search: String? = null) {
         lastSearch = search ?: lastSearch
         getRecentMangaLimitObservable(lastCount, lastSearch).take(1)
-            .subscribeLatestCache({ view, mangas ->
-                view.onNextManga(mangas, true)
-            }, HistoryController::onAddPageError)
+            .subscribeLatestCache(
+                { view, mangas ->
+                    view.onNextManga(mangas, true)
+                },
+                HistoryController::onAddPageError
+            )
     }
 
     /**

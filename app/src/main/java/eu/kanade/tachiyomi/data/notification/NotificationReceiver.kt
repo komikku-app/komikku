@@ -61,8 +61,11 @@ class NotificationReceiver : BroadcastReceiver() {
                     intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
                 )
             // Delete image from path and dismiss notification
-            ACTION_DELETE_IMAGE -> deleteImage(context, intent.getStringExtra(EXTRA_FILE_LOCATION),
-                    intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1))
+            ACTION_DELETE_IMAGE ->
+                deleteImage(
+                    context, intent.getStringExtra(EXTRA_FILE_LOCATION),
+                    intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
+                )
             // Cancel library update and dismiss notification
             ACTION_CANCEL_LIBRARY_UPDATE -> cancelLibraryUpdate(context, Notifications.ID_LIBRARY_PROGRESS)
             ACTION_CANCEL_RESTORE -> cancelRestoreUpdate(context)
@@ -279,7 +282,7 @@ class NotificationReceiver : BroadcastReceiver() {
             val toLaunch = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "text/plain")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
             return PendingIntent.getActivity(context, 0, toLaunch, 0)
         }

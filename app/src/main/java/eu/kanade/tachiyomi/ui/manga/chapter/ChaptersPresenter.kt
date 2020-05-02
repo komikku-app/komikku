@@ -106,20 +106,28 @@ class ChaptersPresenter(
                     observeDownloads()
 
                     // Emit the number of chapters to the info tab.
-                    chapterCountRelay.call(chapters.maxBy { it.chapter_number }?.chapter_number
-                            ?: 0f)
+                    chapterCountRelay.call(
+                        chapters.maxBy { it.chapter_number }?.chapter_number
+                            ?: 0f
+                    )
 
                     // Emit the upload date of the most recent chapter
-                    lastUpdateRelay.call(Date(chapters.maxBy { it.date_upload }?.date_upload
-                            ?: 0))
+                    lastUpdateRelay.call(
+                        Date(
+                            chapters.maxBy { it.date_upload }?.date_upload
+                                ?: 0
+                        )
+                    )
 
                     // EXH -->
                     if (chapters.isNotEmpty() &&
-                            (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) &&
-                            DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
+                        (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) &&
+                        DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled
+                    ) {
                         // Check for gallery in library and accept manga with lowest id
                         // Find chapters sharing same root
-                        add(updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
+                        add(
+                            updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
                                 .subscribeOn(Schedulers.io())
                                 .subscribe { (acceptedChain, _) ->
                                     // Redirect if we are not the accepted root
@@ -130,7 +138,8 @@ class ChaptersPresenter(
                                         val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
                                         redirectUserRelay.call(EXHRedirect(acceptedChain.manga, update))
                                     }
-                                })
+                                }
+                        )
                     }
                     // EXH <--
                 }
@@ -274,8 +283,9 @@ class ChaptersPresenter(
             .doOnNext { chapter ->
                 chapter.read = read
                 if (!read /* --> EH */ && !preferences
-                                .eh_preserveReadingPosition()
-                                .getOrDefault() /* <-- EH */) {
+                    .eh_preserveReadingPosition()
+                    .getOrDefault() /* <-- EH */
+                ) {
                     chapter.last_page_read = 0
                 }
             }

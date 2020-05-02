@@ -34,7 +34,8 @@ open class GlobalSearchController(
     protected val initialQuery: String? = null,
     protected val extensionFilter: String? = null
 ) : NucleusController<GlobalSearchControllerBinding, GlobalSearchPresenter>(),
-    GlobalSearchCardAdapter.OnMangaClickListener, GlobalSearchAdapter.OnMoreClickListener {
+    GlobalSearchCardAdapter.OnMangaClickListener,
+    GlobalSearchAdapter.OnMoreClickListener {
 
     /**
      * Application preferences.

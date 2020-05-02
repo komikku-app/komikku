@@ -42,8 +42,9 @@ class SearchController(
     override fun getTitle(): String? {
         if (totalProgress > 1) {
             return "($progress/$totalProgress) ${super.getTitle()}"
-        } else
+        } else {
             return super.getTitle()
+        }
     }
 
     override fun createPresenter(): GlobalSearchPresenter {

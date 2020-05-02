@@ -169,8 +169,9 @@ class UpdatesController :
      * @param position position of clicked item
      */
     override fun onItemLongClick(position: Int) {
-        if (actionMode == null)
+        if (actionMode == null) {
             actionMode = (activity as AppCompatActivity).startSupportActionMode(this)
+        }
 
         toggleSelection(position)
     }

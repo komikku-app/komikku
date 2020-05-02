@@ -62,9 +62,12 @@ inline fun PreferenceGroup.badgePreference(block: (@DSL BadgePreference).() -> U
 }
 
 inline fun PreferenceScreen.preferenceCategory(block: (@DSL PreferenceCategory).() -> Unit): PreferenceCategory {
-    return addThenInit(PreferenceCategory(context).apply {
-        isIconSpaceReserved = false
-    }, block)
+    return addThenInit(
+        PreferenceCategory(context).apply {
+            isIconSpaceReserved = false
+        },
+        block
+    )
 }
 
 inline fun PreferenceScreen.preferenceScreen(block: (@DSL PreferenceScreen).() -> Unit): PreferenceScreen {

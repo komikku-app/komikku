@@ -43,12 +43,14 @@ class MangaController : RxController<MangaControllerBinding>, TabbedController {
         fromSource: Boolean = false,
         smartSearchConfig: SourceController.SmartSearchConfig? = null,
         update: Boolean = false
-    ) : super(Bundle().apply {
-        putLong(MANGA_EXTRA, manga?.id ?: 0)
-        putBoolean(FROM_SOURCE_EXTRA, fromSource)
-        putParcelable(SMART_SEARCH_CONFIG_EXTRA, smartSearchConfig)
-        putBoolean(UPDATE_EXTRA, update)
-    }) {
+    ) : super(
+        Bundle().apply {
+            putLong(MANGA_EXTRA, manga?.id ?: 0)
+            putBoolean(FROM_SOURCE_EXTRA, fromSource)
+            putParcelable(SMART_SEARCH_CONFIG_EXTRA, smartSearchConfig)
+            putBoolean(UPDATE_EXTRA, update)
+        }
+    ) {
         this.manga = manga
         if (manga != null) {
             source = Injekt.get<SourceManager>().getOrStub(manga.source)
@@ -56,10 +58,12 @@ class MangaController : RxController<MangaControllerBinding>, TabbedController {
     }
 
     // EXH -->
-    constructor(redirect: ChaptersPresenter.EXHRedirect) : super(Bundle().apply {
-        putLong(MANGA_EXTRA, redirect.manga.id!!)
-        putBoolean(UPDATE_EXTRA, redirect.update)
-    }) {
+    constructor(redirect: ChaptersPresenter.EXHRedirect) : super(
+        Bundle().apply {
+            putLong(MANGA_EXTRA, redirect.manga.id!!)
+            putBoolean(UPDATE_EXTRA, redirect.update)
+        }
+    ) {
         this.manga = redirect.manga
         if (manga != null) {
             source = Injekt.get<SourceManager>().getOrStub(redirect.manga.source)

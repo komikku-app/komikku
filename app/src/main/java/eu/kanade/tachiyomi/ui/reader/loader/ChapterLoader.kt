@@ -57,8 +57,9 @@ class ChapterLoader(
                 // If the chapter is partially read, set the starting page to the last the user read
                 // otherwise use the requested page.
                 if (!chapter.chapter.read /* --> EH */ || prefs
-                        .eh_preserveReadingPosition()
-                        .getOrDefault() /* <-- EH */) {
+                    .eh_preserveReadingPosition()
+                    .getOrDefault() /* <-- EH */
+                ) {
                     chapter.requestedPage = chapter.chapter.last_page_read
                 }
             }
@@ -66,13 +67,15 @@ class ChapterLoader(
             .doOnError {
                 // [EXH]
                 XLog.w("> Failed to fetch page list!", it)
-                XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapter.id: %s, chapter.url: %s)",
-                        source.id,
-                        source.name,
-                        manga.id,
-                        manga.url,
-                        chapter.chapter.id,
-                        chapter.chapter.url)
+                XLog.w(
+                    "> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapter.id: %s, chapter.url: %s)",
+                    source.id,
+                    source.name,
+                    manga.id,
+                    manga.url,
+                    chapter.chapter.id,
+                    chapter.chapter.url
+                )
 
                 chapter.state = ReaderChapter.State.Error(it)
             }

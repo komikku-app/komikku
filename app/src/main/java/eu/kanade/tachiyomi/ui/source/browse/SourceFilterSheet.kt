@@ -26,8 +26,8 @@ class SourceFilterSheet @JvmOverloads constructor(context: Context, attrs: Attri
     SimpleNavigationView(context, attrs) {
 
     val adapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter<IFlexible<*>>(null)
-            .setDisplayHeadersAtStartUp(true)
-            .setStickyHeaders(true)
+        .setDisplayHeadersAtStartUp(true)
+        .setStickyHeaders(true)
 
     var onSearchClicked = {}
 

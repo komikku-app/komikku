@@ -11,12 +11,14 @@ fun HttpSource.getImageUrl(page: Page): Observable<Page> {
         .onErrorReturn {
             // [EXH]
             XLog.w("> Failed to fetch image URL!", it)
-            XLog.w("> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s)",
-                    id,
-                    name,
-                    page.index,
-                    page.url,
-                    page.imageUrl)
+            XLog.w(
+                "> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s)",
+                id,
+                name,
+                page.index,
+                page.url,
+                page.imageUrl
+            )
 
             null
         }

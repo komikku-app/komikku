@@ -78,7 +78,8 @@ import uy.kohesive.injekt.injectLazy
  */
 class MangaInfoController(private val fromSource: Boolean = false) :
     NucleusController<MangaInfoControllerBinding, MangaInfoPresenter>(),
-    ChangeMangaCategoriesDialog.Listener, CoroutineScope {
+    ChangeMangaCategoriesDialog.Listener,
+    CoroutineScope {
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -107,8 +108,10 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
     override fun createPresenter(): MangaInfoPresenter {
         val ctrl = parentController as MangaController
-        return MangaInfoPresenter(ctrl.manga!!, ctrl.source!!, ctrl.smartSearchConfig,
-                ctrl.chapterCountRelay, ctrl.lastUpdateRelay, ctrl.mangaFavoriteRelay)
+        return MangaInfoPresenter(
+            ctrl.manga!!, ctrl.source!!, ctrl.smartSearchConfig,
+            ctrl.chapterCountRelay, ctrl.lastUpdateRelay, ctrl.mangaFavoriteRelay
+        )
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
@@ -155,8 +158,9 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         binding.mangaArtist.clicks()
             .onEach {
                 var text = binding.mangaArtist.text.toString()
-                if (isEHentaiBasedSource())
+                if (isEHentaiBasedSource()) {
                     text = wrapTag("artist", text)
+                }
                 performGlobalSearch(text)
             }
             .launchIn(scope)
@@ -164,16 +168,18 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         binding.mangaAuthor.longClicks()
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
-                if (!isEHentaiBasedSource())
+                if (!isEHentaiBasedSource()) {
                     copyToClipboard(binding.mangaAuthor.text.toString(), binding.mangaAuthor.text.toString())
+                }
             }
             .launchIn(scope)
 
         binding.mangaAuthor.clicks()
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
-                if (!isEHentaiBasedSource())
+                if (!isEHentaiBasedSource()) {
                     performGlobalSearch(binding.mangaAuthor.text.toString())
+                }
             }
             .launchIn(scope)
 
@@ -204,9 +210,13 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                                 presenter.smartSearchMerge(presenter.manga, smartSearchConfig.origMangaId)
                             }
 
-                            parentController?.router?.pushController(MangaController(mergedManga,
-                                true,
-                                update = true).withFadeTransaction())
+                            parentController?.router?.pushController(
+                                MangaController(
+                                    mergedManga,
+                                    true,
+                                    update = true
+                                ).withFadeTransaction()
+                            )
                             applicationContext?.toast("Manga merged!")
                         } catch (e: Exception) {
                             if (e is CancellationException) throw e
@@ -240,7 +250,8 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                 PreMigrationController.navigateToMigration(
                     preferences.skipPreMigration().get(),
                     router,
-                    listOf(presenter.manga.id!!))
+                    listOf(presenter.manga.id!!)
+                )
         }
         return super.onOptionsItemSelected(item)
     }
@@ -249,9 +260,13 @@ class MangaInfoController(private val fromSource: Boolean = false) :
     private fun openSmartSearch() {
         val smartSearchConfig = SourceController.SmartSearchConfig(presenter.manga.title, presenter.manga.id!!)
 
-        parentController?.router?.pushController(SourceController(Bundle().apply {
-            putParcelable(SourceController.SMART_SEARCH_CONFIG, smartSearchConfig)
-        }).withFadeTransaction())
+        parentController?.router?.pushController(
+            SourceController(
+                Bundle().apply {
+                    putParcelable(SourceController.SMART_SEARCH_CONFIG, smartSearchConfig)
+                }
+            ).withFadeTransaction()
+        )
     }
     // EXH <--
 
@@ -482,10 +497,13 @@ class MangaInfoController(private val fromSource: Boolean = false) :
     private fun setFavoriteDrawable(isFavorite: Boolean) {
         // Set the Favorite drawable to the correct one.
         // Border drawable if false, filled drawable if true.
-        binding.fabFavorite.setImageResource(if (isFavorite)
-            R.drawable.ic_bookmark_24dp
-        else
-            R.drawable.ic_add_to_library_24dp)
+        binding.fabFavorite.setImageResource(
+            if (isFavorite) {
+                R.drawable.ic_bookmark_24dp
+            } else {
+                R.drawable.ic_add_to_library_24dp
+            }
+        )
     }
 
     /**
@@ -513,11 +531,13 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
         // [EXH]
         XLog.w("> Failed to fetch manga details!", error)
-        XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s)",
-                presenter.source.id,
-                presenter.source.name,
-                presenter.manga.id,
-                presenter.manga.url)
+        XLog.w(
+            "> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s)",
+            presenter.source.id,
+            presenter.source.name,
+            presenter.manga.id,
+            presenter.manga.url
+        )
     }
 
     /**
@@ -581,7 +601,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             }.toTypedArray()
 
             ChangeMangaCategoriesDialog(this, listOf(manga), categories, preselected)
-                    .showDialog(router)
+                .showDialog(router)
         } else {
             onFabClick()
         }
@@ -662,17 +682,18 @@ class MangaInfoController(private val fromSource: Boolean = false) :
     }
 
     // --> EH
-    private fun wrapTag(namespace: String, tag: String) = if (tag.contains(' '))
+    private fun wrapTag(namespace: String, tag: String) = if (tag.contains(' ')) {
         "$namespace:\"$tag$\""
-    else
+    } else {
         "$namespace:$tag$"
+    }
 
     private fun parseTag(tag: String) = tag.substringBefore(':').trim() to tag.substringAfter(':').trim()
 
     private fun isEHentaiBasedSource(): Boolean {
         val sourceId = presenter.source.id
         return sourceId == EH_SOURCE_ID ||
-                sourceId == EXH_SOURCE_ID
+            sourceId == EXH_SOURCE_ID
     }
     // <-- EH
 }

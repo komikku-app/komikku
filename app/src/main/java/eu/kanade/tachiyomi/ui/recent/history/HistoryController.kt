@@ -32,7 +32,8 @@ import reactivecircus.flowbinding.appcompat.queryTextEvents
  * Uses [R.layout.history_controller].
  * UI related actions should be called from here.
  */
-class HistoryController : NucleusController<HistoryControllerBinding, HistoryPresenter>(),
+class HistoryController :
+    NucleusController<HistoryControllerBinding, HistoryPresenter>(),
     RootController,
     NoToolbarElevationController,
     FlexibleAdapter.OnUpdateListener,
@@ -97,10 +98,14 @@ class HistoryController : NucleusController<HistoryControllerBinding, HistoryPre
      * @param mangaHistory list of manga history
      */
     fun onNextManga(mangaHistory: List<HistoryItem>, cleanBatch: Boolean = false) {
-        if (adapter?.itemCount ?: 0 == 0 || cleanBatch)
+        if (adapter?.itemCount ?: 0 == 0 || cleanBatch) {
             resetProgressItem()
-        if (cleanBatch) adapter?.updateDataSet(mangaHistory)
-        else adapter?.onLoadMoreComplete(mangaHistory)
+        }
+        if (cleanBatch) {
+            adapter?.updateDataSet(mangaHistory)
+        } else {
+            adapter?.onLoadMoreComplete(mangaHistory)
+        }
     }
 
     fun onAddPageError(error: Throwable) {

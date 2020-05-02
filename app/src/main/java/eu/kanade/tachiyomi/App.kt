@@ -89,7 +89,8 @@ open class App : Application(), LifecycleObserver {
 
     private fun workaroundAndroid7BrokenSSL() {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N ||
-                Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1) {
+            Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1
+        ) {
             try {
                 SSLContext.getInstance("TLSv1.2")
             } catch (e: NoSuchAlgorithmException) {
@@ -114,17 +115,17 @@ open class App : Application(), LifecycleObserver {
     private fun deleteOldMetadataRealm() {
         Realm.init(this)
         val config = RealmConfiguration.Builder()
-                .name("gallery-metadata.realm")
-                .schemaVersion(3)
-                .deleteRealmIfMigrationNeeded()
-                .build()
+            .name("gallery-metadata.realm")
+            .schemaVersion(3)
+            .deleteRealmIfMigrationNeeded()
+            .build()
         Realm.deleteRealm(config)
 
         // Delete old paper db files
         listOf(
-                File(filesDir, "gallery-ex"),
-                File(filesDir, "gallery-perveden"),
-                File(filesDir, "gallery-nhentai")
+            File(filesDir, "gallery-ex"),
+            File(filesDir, "gallery-perveden"),
+            File(filesDir, "gallery-nhentai")
         ).forEach {
             if (it.exists()) {
                 thread {
@@ -145,27 +146,30 @@ open class App : Application(), LifecycleObserver {
         }
 
         val logConfig = LogConfiguration.Builder()
-                .logLevel(logLevel)
-                .t()
-                .st(2)
-                .nb()
-                .build()
+            .logLevel(logLevel)
+            .t()
+            .st(2)
+            .nb()
+            .build()
 
         val printers = mutableListOf<Printer>(AndroidPrinter())
 
-        val logFolder = File(Environment.getExternalStorageDirectory().absolutePath + File.separator +
-                getString(R.string.app_name), "logs")
+        val logFolder = File(
+            Environment.getExternalStorageDirectory().absolutePath + File.separator +
+                getString(R.string.app_name),
+            "logs"
+        )
 
         printers += FilePrinter
-                .Builder(logFolder.absolutePath)
-                .fileNameGenerator(object : DateFileNameGenerator() {
-                    override fun generateFileName(logLevel: Int, timestamp: Long): String {
-                        return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}"
-                    }
-                })
-                .cleanStrategy(FileLastModifiedCleanStrategy(7.days.inMilliseconds.longValue))
-                .backupStrategy(NeverBackupStrategy())
-                .build()
+            .Builder(logFolder.absolutePath)
+            .fileNameGenerator(object : DateFileNameGenerator() {
+                override fun generateFileName(logLevel: Int, timestamp: Long): String {
+                    return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}"
+                }
+            })
+            .cleanStrategy(FileLastModifiedCleanStrategy(7.days.inMilliseconds.longValue))
+            .backupStrategy(NeverBackupStrategy())
+            .build()
 
         // Install Crashlytics in prod
         if (!BuildConfig.DEBUG) {
@@ -173,8 +177,8 @@ open class App : Application(), LifecycleObserver {
         }
 
         XLog.init(
-                logConfig,
-                *printers.toTypedArray()
+            logConfig,
+            *printers.toTypedArray()
         )
 
         XLog.d("Application booting...")
@@ -184,12 +188,12 @@ open class App : Application(), LifecycleObserver {
     private fun setupDebugOverlay() {
         try {
             DebugOverlay.Builder(this)
-                    .modules(FpsModule(), EHDebugModeOverlay(this))
-                    .bgColor(Color.parseColor("#7F000000"))
-                    .notification(false)
-                    .allowSystemLayer(false)
-                    .build()
-                    .install()
+                .modules(FpsModule(), EHDebugModeOverlay(this))
+                .bgColor(Color.parseColor("#7F000000"))
+                .notification(false)
+                .allowSystemLayer(false)
+                .build()
+                .install()
         } catch (e: IllegalStateException) {
             // Crashes if app is in background
             XLog.e("Failed to initialize debug overlay, app in background?", e)

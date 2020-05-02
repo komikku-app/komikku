@@ -32,10 +32,10 @@ class TabsAnimator(val tabs: TabLayout) {
             object : ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     if (tabs.height > 0) {
-                            tabs.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        tabs.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
                         // Save the tabs default height.
-                            tabsHeight = tabs.height
+                        tabsHeight = tabs.height
 
                         // Now that we know the height, set the initial height.
                         if (isLastStateShown) {

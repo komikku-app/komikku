@@ -41,7 +41,6 @@ class ChapterItem(val chapter: Chapter, val manga: Manga) :
         position: Int,
         payloads: List<Any?>?
     ) {
-
         holder.bind(this, manga)
     }
 

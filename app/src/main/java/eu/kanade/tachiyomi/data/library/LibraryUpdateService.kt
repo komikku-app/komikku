@@ -318,24 +318,23 @@ class LibraryUpdateService(
                     Observable.empty()
                 } else {
                     updateManga(manga)
-                            // If there's any error, return empty update and continue.
-                    .onErrorReturn {
-                        failedUpdates.add(manga)
-                        Pair(emptyList(), emptyList())
-                    }
-                    // Filter out mangas without new chapters (or failed).                    .filter { pair -> pair.first.isNotEmpty() }
-                    .doOnNext {
-                        if (downloadNew && (
-                            categoriesToDownload.isEmpty() ||
-                                manga.category in categoriesToDownload
-                            )
-                        ) {
-
-                            downloadChapters(manga, it.first)
-                            hasDownloads = true
+                        // If there's any error, return empty update and continue.
+                        .onErrorReturn {
+                            failedUpdates.add(manga)
+                            Pair(emptyList(), emptyList())
                         }
+                        // Filter out mangas without new chapters (or failed).                    .filter { pair -> pair.first.isNotEmpty() }
+                        .doOnNext {
+                            if (downloadNew && (
+                                categoriesToDownload.isEmpty() ||
+                                    manga.category in categoriesToDownload
+                                )
+                            ) {
+                                downloadChapters(manga, it.first)
+                                hasDownloads = true
+                            }
                         }
-                    }
+                }
                     // Convert to the manga that contains new chapters.
                     .map {
                         Pair(

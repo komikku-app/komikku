@@ -109,9 +109,11 @@ class MigrationController :
         val item = adapter?.getItem(position) ?: return false
 
         if (item is MangaItem) {
-            PreMigrationController.navigateToMigration(Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+            PreMigrationController.navigateToMigration(
+                Injekt.get<PreferencesHelper>().skipPreMigration().get(),
                 router,
-                listOf(item.manga.id!!))
+                listOf(item.manga.id!!)
+            )
         } else if (item is SourceItem) {
             presenter.setSelectedSource(item.source)
         }
@@ -132,9 +134,11 @@ class MigrationController :
             val sourceMangas =
                 manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
             withContext(Dispatchers.Main) {
-                PreMigrationController.navigateToMigration(Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+                PreMigrationController.navigateToMigration(
+                    Injekt.get<PreferencesHelper>().skipPreMigration().get(),
                     router,
-                    sourceMangas)
+                    sourceMangas
+                )
             }
         }
     }

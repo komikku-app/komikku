@@ -54,20 +54,23 @@ class HttpPageLoader(
         repeat(prefs.eh_readerThreads().getOrDefault()) {
             // EXH <--
             subscriptions += Observable.defer { Observable.just(queue.take().page) }
-                    .filter { it.status == Page.QUEUE }
-                    .concatMap {
-                        source.fetchImageFromCacheThenNet(it).doOnNext {
-                            XLog.d("Downloaded page: ${it.number}!")
-                        }
+                .filter { it.status == Page.QUEUE }
+                .concatMap {
+                    source.fetchImageFromCacheThenNet(it).doOnNext {
+                        XLog.d("Downloaded page: ${it.number}!")
                     }
-                    .repeat()
-                    .subscribeOn(Schedulers.io())
-                    .subscribe({
-                    }, { error ->
+                }
+                .repeat()
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                    {
+                    },
+                    { error ->
                         if (error !is InterruptedException) {
                             Timber.e(error)
                         }
-                    })
+                    }
+                )
             // EXH -->
         }
         // EXH <--
@@ -187,12 +190,16 @@ class HttpPageLoader(
         }
         // EXH -->
         // Grab a new image URL on EXH sources
-        if (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID)
+        if (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID) {
             page.imageUrl = null
+        }
 
-        if (prefs.eh_readerInstantRetry().getOrDefault()) boostPage(page)
-        else // EXH <--
+        if (prefs.eh_readerInstantRetry().getOrDefault()) {
+            boostPage(page) // EXH <--
+        } else {
+            // EXH <--
             queue.offer(PriorityPage(page, 2))
+        }
     }
 
     /**
@@ -235,14 +242,16 @@ class HttpPageLoader(
             .onErrorReturn {
                 // [EXH]
                 XLog.w("> Failed to fetch image URL!", it)
-                XLog.w("> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s, chapter.id: %s, chapter.url: %s)",
-                        source.id,
-                        source.name,
-                        page.index,
-                        page.url,
-                        page.imageUrl,
-                        page.chapter.chapter.id,
-                        page.chapter.chapter.url)
+                XLog.w(
+                    "> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s, chapter.id: %s, chapter.url: %s)",
+                    source.id,
+                    source.name,
+                    page.index,
+                    page.url,
+                    page.imageUrl,
+                    page.chapter.chapter.id,
+                    page.chapter.chapter.url
+                )
 
                 null
             }
@@ -274,14 +283,16 @@ class HttpPageLoader(
             .doOnError {
                 // [EXH]
                 XLog.w("> Failed to fetch image!", it)
-                XLog.w("> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s, chapter.id: %s, chapter.url: %s)",
-                        source.id,
-                        source.name,
-                        page.index,
-                        page.url,
-                        page.imageUrl,
-                        page.chapter.chapter.id,
-                        page.chapter.chapter.url)
+                XLog.w(
+                    "> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s, chapter.id: %s, chapter.url: %s)",
+                    source.id,
+                    source.name,
+                    page.index,
+                    page.url,
+                    page.imageUrl,
+                    page.chapter.chapter.id,
+                    page.chapter.chapter.url
+                )
 
                 page.status = Page.ERROR
             }
@@ -304,14 +315,17 @@ class HttpPageLoader(
     fun boostPage(page: ReaderPage) {
         if (page.status == Page.QUEUE) {
             subscriptions += Observable.just(page)
-                    .concatMap { source.fetchImageFromCacheThenNet(it) }
-                    .subscribeOn(Schedulers.io())
-                    .subscribe({
-                    }, { error ->
+                .concatMap { source.fetchImageFromCacheThenNet(it) }
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                    {
+                    },
+                    { error ->
                         if (error !is InterruptedException) {
                             Timber.e(error)
                         }
-                    })
+                    }
+                )
         }
     }
     // EXH <--

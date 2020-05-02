@@ -301,11 +301,13 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
      * @return [Observable] that contains manga
      */
     fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        return (if (source is EHentai) {
-            source.fetchChapterList(manga, throttleManager::throttle)
-        } else {
-            source.fetchChapterList(manga)
-        }).map { syncChaptersWithSource(databaseHelper, it, manga, source) }
+        return (
+            if (source is EHentai) {
+                source.fetchChapterList(manga, throttleManager::throttle)
+            } else {
+                source.fetchChapterList(manga)
+            }
+            ).map { syncChaptersWithSource(databaseHelper, it, manga, source) }
             .doOnNext { pair ->
                 if (pair.first.isNotEmpty()) {
                     chapters.forEach { it.manga_id = manga.id }

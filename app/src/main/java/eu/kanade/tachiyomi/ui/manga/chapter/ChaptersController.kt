@@ -75,8 +75,10 @@ class ChaptersController :
 
     override fun createPresenter(): ChaptersPresenter {
         val ctrl = parentController as MangaController
-        return ChaptersPresenter(ctrl.manga!!, ctrl.source!!,
-                ctrl.chapterCountRelay, ctrl.lastUpdateRelay, ctrl.mangaFavoriteRelay)
+        return ChaptersPresenter(
+            ctrl.manga!!, ctrl.source!!,
+            ctrl.chapterCountRelay, ctrl.lastUpdateRelay, ctrl.mangaFavoriteRelay
+        )
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
@@ -123,12 +125,12 @@ class ChaptersController :
             .launchIn(scope)
 
         presenter.redirectUserRelay
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeUntilDestroy { redirect ->
-                    XLog.d("Redirecting to updated manga (manga.id: %s, manga.title: %s, update: %s)!", redirect.manga.id, redirect.manga.title, redirect.update)
-                    // Replace self
-                    parentController?.router?.replaceTopController(RouterTransaction.with(MangaController(redirect)))
-                }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeUntilDestroy { redirect ->
+                XLog.d("Redirecting to updated manga (manga.id: %s, manga.title: %s, update: %s)!", redirect.manga.id, redirect.manga.title, redirect.update)
+                // Replace self
+                parentController?.router?.replaceTopController(RouterTransaction.with(MangaController(redirect)))
+            }
     }
 
     override fun onDestroyView(view: View) {
@@ -264,9 +266,12 @@ class ChaptersController :
 
         val mangaController = parentController as MangaController
         if (mangaController.update ||
-                // Auto-update old format galleries
-                ((presenter.manga.source == EH_SOURCE_ID || presenter.manga.source == EXH_SOURCE_ID) &&
-                        chapters.size == 1 && chapters.first().date_upload == 0L)) {
+            // Auto-update old format galleries
+            (
+                (presenter.manga.source == EH_SOURCE_ID || presenter.manga.source == EXH_SOURCE_ID) &&
+                    chapters.size == 1 && chapters.first().date_upload == 0L
+                )
+        ) {
             mangaController.update = false
             fetchChaptersFromSource()
         }
@@ -308,11 +313,13 @@ class ChaptersController :
         activity?.toast(error.message)
         // [EXH]
         XLog.w("> Failed to fetch chapters!", error)
-        XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s)",
-                presenter.source.id,
-                presenter.source.name,
-                presenter.manga.id,
-                presenter.manga.url)
+        XLog.w(
+            "> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s)",
+            presenter.source.id,
+            presenter.source.name,
+            presenter.manga.id,
+            presenter.manga.url
+        )
     }
 
     fun onChapterStatusChange(download: Download) {

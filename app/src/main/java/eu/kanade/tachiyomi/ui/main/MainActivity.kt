@@ -92,8 +92,9 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
     private fun initWhenIdle(task: () -> Unit) {
         // Avoid sync issues by enforcing main thread
-        if (Looper.myLooper() != Looper.getMainLooper())
+        if (Looper.myLooper() != Looper.getMainLooper()) {
             throw IllegalStateException("Can only be called on main thread!")
+        }
 
         if (firstPaint) {
             task()
@@ -107,12 +108,15 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         getExtensionUpdates()
         LockActivityDelegate.onResume(this, router)
         if (!firstPaint) {
-            binding.drawer.postDelayed({
-                if (!firstPaint) {
-                    firstPaint = true
-                    iuuQueue.forEach { it() }
-                }
-            }, 1000)
+            binding.drawer.postDelayed(
+                {
+                    if (!firstPaint) {
+                        firstPaint = true
+                        iuuQueue.forEach { it() }
+                    }
+                },
+                1000
+            )
         }
     }
 
@@ -196,7 +200,6 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
                 container: ViewGroup,
                 handler: ControllerChangeHandler
             ) {
-
                 syncActivityViewWithController(to, from)
             }
 
@@ -249,10 +252,12 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             initWhenIdle {
                 // Upload settings
                 if (preferences.enableExhentai().getOrDefault() &&
-                        preferences.eh_showSettingsUploadWarning().get())
+                    preferences.eh_showSettingsUploadWarning().get()
+                ) {
                     WarnConfigureDialogController.uploadSettings(router)
-
+                }
                 // Scheduler uploader job if required
+
                 EHentaiUpdateWorker.scheduleBackground(this)
             }
             // EXH <--
@@ -272,7 +277,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
     private fun setExtensionsBadge() {
         val extUpdateText: TextView = binding.navView.menu.findItem(
-                R.id.nav_drawer_extensions
+            R.id.nav_drawer_extensions
         )?.actionView as? TextView ?: return
 
         val updates = preferences.extensionUpdatesCount().get()
@@ -417,8 +422,9 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             val navIcon = potentialViews.firstOrNull()
 
             // Clear content description if not previously present
-            if (!hadContentDescription)
+            if (!hadContentDescription) {
                 toolbar.navigationContentDescription = null
+            }
             return navIcon
         } catch (t: Throwable) {
             Timber.w(t, "Could not find toolbar nav icon!")

@@ -52,29 +52,33 @@ class MergedSource : HttpSource() {
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return RxJavaInterop.toV1Observable(readMangaConfig(manga).load(db, sourceManager).take(1).map { loaded ->
-            SManga.create().apply {
-                this.copyFrom(loaded.manga)
-                url = manga.url
-            }
-        }.asFlowable())
+        return RxJavaInterop.toV1Observable(
+            readMangaConfig(manga).load(db, sourceManager).take(1).map { loaded ->
+                SManga.create().apply {
+                    this.copyFrom(loaded.manga)
+                    url = manga.url
+                }
+            }.asFlowable()
+        )
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return RxJavaInterop.toV1Single(GlobalScope.async(Dispatchers.IO) {
-            val loadedMangas = readMangaConfig(manga).load(db, sourceManager).buffer()
-            loadedMangas.map { loadedManga ->
-                async(Dispatchers.IO) {
-                    loadedManga.source.fetchChapterList(loadedManga.manga).map { chapterList ->
-                        chapterList.map { chapter ->
-                            chapter.apply {
-                                url = writeUrlConfig(UrlConfig(loadedManga.source.id, url, loadedManga.manga.url))
+        return RxJavaInterop.toV1Single(
+            GlobalScope.async(Dispatchers.IO) {
+                val loadedMangas = readMangaConfig(manga).load(db, sourceManager).buffer()
+                loadedMangas.map { loadedManga ->
+                    async(Dispatchers.IO) {
+                        loadedManga.source.fetchChapterList(loadedManga.manga).map { chapterList ->
+                            chapterList.map { chapter ->
+                                chapter.apply {
+                                    url = writeUrlConfig(UrlConfig(loadedManga.source.id, url, loadedManga.manga.url))
+                                }
                             }
-                        }
-                    }.toSingle().await(Schedulers.io())
-                }
-            }.buffer().map { it.await() }.toList().flatten()
-        }.asSingle(Dispatchers.IO)).toObservable()
+                        }.toSingle().await(Schedulers.io())
+                    }
+                }.buffer().map { it.await() }.toList().flatten()
+            }.asSingle(Dispatchers.IO)
+        ).toObservable()
     }
 
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
@@ -83,10 +87,12 @@ class MergedSource : HttpSource() {
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         val config = readUrlConfig(chapter.url)
         val source = sourceManager.getOrStub(config.source)
-        return source.fetchPageList(SChapter.create().apply {
-            copyFrom(chapter)
-            url = config.url
-        }).map { pages ->
+        return source.fetchPageList(
+            SChapter.create().apply {
+                copyFrom(chapter)
+                url = config.url
+            }
+        ).map { pages ->
             pages.map { page ->
                 page.copyWithUrl(writeUrlConfig(UrlConfig(config.source, page.url, config.mangaUrl)))
             }
@@ -96,7 +102,7 @@ class MergedSource : HttpSource() {
     override fun fetchImageUrl(page: Page): Observable<String> {
         val config = readUrlConfig(page.url)
         val source = sourceManager.getOrStub(config.source) as? HttpSource
-                ?: throw UnsupportedOperationException("This source does not support this operation!")
+            ?: throw UnsupportedOperationException("This source does not support this operation!")
         return source.fetchImageUrl(page.copyWithUrl(config.url))
     }
 
@@ -106,14 +112,14 @@ class MergedSource : HttpSource() {
     override fun fetchImage(page: Page): Observable<Response> {
         val config = readUrlConfig(page.url)
         val source = sourceManager.getOrStub(config.source) as? HttpSource
-                ?: throw UnsupportedOperationException("This source does not support this operation!")
+            ?: throw UnsupportedOperationException("This source does not support this operation!")
         return source.fetchImage(page.copyWithUrl(config.url))
     }
 
     override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
         val chapterConfig = readUrlConfig(chapter.url)
         val source = sourceManager.getOrStub(chapterConfig.source) as? HttpSource
-                ?: throw UnsupportedOperationException("This source does not support this operation!")
+            ?: throw UnsupportedOperationException("This source does not support this operation!")
         val copiedManga = SManga.create().apply {
             this.copyFrom(manga)
             url = chapterConfig.mangaUrl
@@ -158,11 +164,11 @@ class MergedSource : HttpSource() {
         fun load(db: DatabaseHelper, sourceManager: SourceManager): Flow<LoadedMangaSource> {
             return children.asFlow().map { mangaSource ->
                 mangaSource.load(db, sourceManager)
-                        ?: run {
-                            XLog.w("> Missing source manga: $mangaSource")
-                            Log.d("MERGED", "> Missing source manga: $mangaSource")
-                            throw IllegalStateException("Missing source manga: $mangaSource")
-                        }
+                    ?: run {
+                        XLog.w("> Missing source manga: $mangaSource")
+                        Log.d("MERGED", "> Missing source manga: $mangaSource")
+                        throw IllegalStateException("Missing source manga: $mangaSource")
+                    }
             }
         }
 
@@ -187,10 +193,10 @@ class MergedSource : HttpSource() {
     )
 
     fun Page.copyWithUrl(newUrl: String) = Page(
-            index,
-            newUrl,
-            imageUrl,
-            uri
+        index,
+        newUrl,
+        imageUrl,
+        uri
     )
 
     override val lang = "all"

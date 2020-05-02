@@ -73,15 +73,19 @@ open class BrowseSourceController(bundle: Bundle) :
         source: CatalogueSource,
         searchQuery: String? = null,
         smartSearchConfig: SourceController.SmartSearchConfig? = null
-    ) : this(Bundle().apply {
-        putLong(SOURCE_ID_KEY, source.id)
+    ) : this(
+        Bundle().apply {
+            putLong(SOURCE_ID_KEY, source.id)
 
-        if (searchQuery != null)
-            putString(SEARCH_QUERY_KEY, searchQuery)
+            if (searchQuery != null) {
+                putString(SEARCH_QUERY_KEY, searchQuery)
+            }
 
-        if (smartSearchConfig != null)
-            putParcelable(SMART_SEARCH_CONFIG_KEY, smartSearchConfig)
-    })
+            if (smartSearchConfig != null) {
+                putParcelable(SMART_SEARCH_CONFIG_KEY, smartSearchConfig)
+            }
+        }
+    )
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -124,8 +128,10 @@ open class BrowseSourceController(bundle: Bundle) :
     }
 
     override fun createPresenter(): BrowseSourcePresenter {
-        return BrowseSourcePresenter(args.getLong(SOURCE_ID_KEY),
-                args.getString(SEARCH_QUERY_KEY))
+        return BrowseSourcePresenter(
+            args.getLong(SOURCE_ID_KEY),
+            args.getString(SEARCH_QUERY_KEY)
+        )
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
@@ -166,25 +172,26 @@ open class BrowseSourceController(bundle: Bundle) :
         navView.setSavedSearches(presenter.loadSearches())
         navView.onSaveClicked = {
             MaterialDialog(navView.context)
-                    .title(text = "Save current search query?")
-                    .input("My search name", hintRes = null) { _, searchName ->
-                        val oldSavedSearches = presenter.loadSearches()
-                        if (searchName.isNotBlank() &&
-                                oldSavedSearches.size < SourceFilterSheet.MAX_SAVED_SEARCHES) {
-                            val newSearches = oldSavedSearches + EXHSavedSearch(
-                                    searchName.toString().trim(),
-                                    presenter.query,
-                                    presenter.sourceFilters
-                            )
-                            presenter.saveSearches(newSearches)
-                            navView.setSavedSearches(newSearches)
-                        }
+                .title(text = "Save current search query?")
+                .input("My search name", hintRes = null) { _, searchName ->
+                    val oldSavedSearches = presenter.loadSearches()
+                    if (searchName.isNotBlank() &&
+                        oldSavedSearches.size < SourceFilterSheet.MAX_SAVED_SEARCHES
+                    ) {
+                        val newSearches = oldSavedSearches + EXHSavedSearch(
+                            searchName.toString().trim(),
+                            presenter.query,
+                            presenter.sourceFilters
+                        )
+                        presenter.saveSearches(newSearches)
+                        navView.setSavedSearches(newSearches)
                     }
-                    .positiveButton(R.string.action_save)
-                    .negativeButton(R.string.action_cancel)
-                    .cancelable(true)
-                    .cancelOnTouchOutside(true)
-                    .show()
+                }
+                .positiveButton(R.string.action_save)
+                .negativeButton(R.string.action_cancel)
+                .cancelable(true)
+                .cancelOnTouchOutside(true)
+                .show()
         }
 
         navView.onSavedSearchClicked = cb@{ indexToSearch ->
@@ -194,11 +201,11 @@ open class BrowseSourceController(bundle: Bundle) :
 
             if (search == null) {
                 MaterialDialog(navView.context)
-                        .title(text = "Failed to load saved searches!")
-                        .message(text = "An error occurred while loading your saved searches.")
-                        .cancelable(true)
-                        .cancelOnTouchOutside(true)
-                        .show()
+                    .title(text = "Failed to load saved searches!")
+                    .message(text = "An error occurred while loading your saved searches.")
+                    .cancelable(true)
+                    .cancelOnTouchOutside(true)
+                    .show()
                 return@cb
             }
 
@@ -220,28 +227,28 @@ open class BrowseSourceController(bundle: Bundle) :
 
             if (search == null || search.name != name) {
                 MaterialDialog(navView.context)
-                        .title(text = "Failed to delete saved search!")
-                        .message(text = "An error occurred while deleting the search.")
-                        .cancelable(true)
-                        .cancelOnTouchOutside(true)
-                        .show()
+                    .title(text = "Failed to delete saved search!")
+                    .message(text = "An error occurred while deleting the search.")
+                    .cancelable(true)
+                    .cancelOnTouchOutside(true)
+                    .show()
                 return@cb
             }
 
             MaterialDialog(navView.context)
-                    .title(text = "Delete saved search query?")
-                    .message(text = "Are you sure you wish to delete your saved search query: '${search.name}'?")
-                    .positiveButton(R.string.action_cancel)
-                    .negativeButton(text = "Confirm") {
-                        val newSearches = savedSearches.filterIndexed { index, _ ->
-                            index != indexToDelete
-                        }
-                        presenter.saveSearches(newSearches)
-                        navView.setSavedSearches(newSearches)
+                .title(text = "Delete saved search query?")
+                .message(text = "Are you sure you wish to delete your saved search query: '${search.name}'?")
+                .positiveButton(R.string.action_cancel)
+                .negativeButton(text = "Confirm") {
+                    val newSearches = savedSearches.filterIndexed { index, _ ->
+                        index != indexToDelete
                     }
-                    .cancelable(true)
-                    .cancelOnTouchOutside(true)
-                    .show()
+                    presenter.saveSearches(newSearches)
+                    navView.setSavedSearches(newSearches)
+                }
+                .cancelable(true)
+                .cancelOnTouchOutside(true)
+                .show()
         }
         // EXH <--
 
@@ -438,9 +445,11 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     fun onAddPageError(error: Throwable) {
         XLog.w("> Failed to load next catalogue page!", error)
-        XLog.w("> (source.id: %s, source.name: %s)",
-                presenter.source.id,
-                presenter.source.name)
+        XLog.w(
+            "> (source.id: %s, source.name: %s)",
+            presenter.source.id,
+            presenter.source.name
+        )
 
         val adapter = adapter ?: return
         adapter.onLoadMoreComplete(null)
@@ -602,9 +611,13 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     override fun onItemClick(view: View, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
-        router.pushController(MangaController(item.manga,
+        router.pushController(
+            MangaController(
+                item.manga,
                 true,
-                args.getParcelable(SMART_SEARCH_CONFIG_KEY)).withFadeTransaction())
+                args.getParcelable(SMART_SEARCH_CONFIG_KEY)
+            ).withFadeTransaction()
+        )
 
         return false
     }

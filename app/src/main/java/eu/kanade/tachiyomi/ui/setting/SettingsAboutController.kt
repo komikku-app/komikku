@@ -66,10 +66,11 @@ class SettingsAboutController : SettingsController() {
         }
         preference {
             titleRes = R.string.version
-            summary = if (BuildConfig.DEBUG)
+            summary = if (BuildConfig.DEBUG) {
                 "r" + BuildConfig.COMMIT_COUNT
-            else
+            } else {
                 BuildConfig.VERSION_NAME
+            }
 
             if (isUpdaterEnabled) {
                 onClick { checkVersion() }

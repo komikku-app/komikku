@@ -107,8 +107,11 @@ class ChapterHolder(
         popup.menu.findItem(R.id.action_remove_bookmark).isVisible = chapter.bookmark
 
         // Hide mark as unread when the chapter is unread
-        if (!chapter.read && (chapter.last_page_read == 0 /* --> EH */ || prefs.eh_preserveReadingPosition()
-                        .getOrDefault()) /* <-- EH */) {
+        if (!chapter.read && (
+            chapter.last_page_read == 0 /* --> EH */ || prefs.eh_preserveReadingPosition()
+                .getOrDefault()
+            ) /* <-- EH */
+        ) {
             popup.menu.findItem(R.id.action_mark_as_unread).isVisible = false
         }
 

@@ -208,13 +208,14 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                         3, 4 -> adapter.currentItems.sortedBy { it.manga.last_update }
                         else -> adapter.currentItems.sortedBy { it.manga.title }
                     }
-                    if (it.second % 2 == 0)
+                    if (it.second % 2 == 0) {
                         items = items.reversed()
+                    }
                     runBlocking { adapter.setItems(this, items) }
                     adapter.notifyDataSetChanged()
+                }
+                controller.invalidateActionMode()
             }
-            controller.invalidateActionMode()
-        }
 
         subscriptions += controller.selectInverseRelay
             .filter { it == category.id }
@@ -253,12 +254,15 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         adapter.isLongPressDragEnabled = sortingMode == LibrarySort.DRAG_AND_DROP
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
         if (sortingMode == LibrarySort.DRAG_AND_DROP) {
-            if (category.name == "Default")
+            if (category.name == "Default") {
                 category.mangaOrder = preferences.defaultMangaOrder().get().split("/")
-                        .mapNotNull { it.toLongOrNull() }
+                    .mapNotNull { it.toLongOrNull() }
+            }
             mangaForCategory = mangaForCategory.sortedBy {
-                category.mangaOrder.indexOf(it.manga
-                        .id)
+                category.mangaOrder.indexOf(
+                    it.manga
+                        .id
+                )
             }
         }
         // Update the category with its manga.
@@ -298,7 +302,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 if (controller.selectedMangas.isEmpty()) {
                     adapter.mode = SelectableAdapter.Mode.SINGLE
                     adapter.isLongPressDragEnabled = preferences.librarySortingMode()
-                            .get() == LibrarySort.DRAG_AND_DROP
+                        .get() == LibrarySort.DRAG_AND_DROP
                 }
             }
             is LibrarySelectionEvent.Cleared -> {
@@ -306,7 +310,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 adapter.clearSelection()
                 lastClickPosition = -1
                 adapter.isLongPressDragEnabled = preferences.librarySortingMode()
-                        .get() == LibrarySort.DRAG_AND_DROP
+                    .get() == LibrarySort.DRAG_AND_DROP
             }
         }
     }
@@ -372,25 +376,29 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             val mangaIds = adapter.currentItems.mapNotNull { it.manga.id }
             category.mangaOrder = mangaIds
             val db: DatabaseHelper by injectLazy()
-            if (category.name == "Default")
+            if (category.name == "Default") {
                 preferences.defaultMangaOrder().set(mangaIds.joinToString("/"))
-            else
+            } else {
                 db.insertCategory(category).asRxObservable().subscribe()
+            }
         }
     }
 
     override fun shouldMoveItem(fromPosition: Int, toPosition: Int): Boolean {
-        if (adapter.selectedItemCount > 1)
+        if (adapter.selectedItemCount > 1) {
             return false
-        if (adapter.isSelected(fromPosition))
+        }
+        if (adapter.isSelected(fromPosition)) {
             toggleSelection(fromPosition)
+        }
         return true
     }
 
     override fun onActionStateChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         val position = viewHolder?.adapterPosition ?: return
-        if (actionState == 2)
+        if (actionState == 2) {
             onItemLongClick(position)
+        }
     }
 
     /**

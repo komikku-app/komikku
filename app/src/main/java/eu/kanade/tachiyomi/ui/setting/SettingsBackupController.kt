@@ -265,8 +265,8 @@ class SettingsBackupController : SettingsController() {
     class CreatingBackupDialog : DialogController() {
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             return MaterialDialog(activity!!)
-                    .title(R.string.backup)
-                    .message(R.string.creating_backup)
+                .title(R.string.backup)
+                .message(R.string.creating_backup)
         }
 
         override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -276,9 +276,11 @@ class SettingsBackupController : SettingsController() {
     }
 
     class CreatedBackupDialog(bundle: Bundle? = null) : DialogController(bundle) {
-        constructor(uri: Uri) : this(Bundle().apply {
-            putParcelable(KEY_URI, uri)
-        })
+        constructor(uri: Uri) : this(
+            Bundle().apply {
+                putParcelable(KEY_URI, uri)
+            }
+        )
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val activity = activity!!
@@ -330,12 +332,14 @@ class SettingsBackupController : SettingsController() {
     }
 
     class RestoredBackupDialog(bundle: Bundle? = null) : DialogController(bundle) {
-        constructor(time: Long, errorCount: Int, path: String, file: String) : this(Bundle().apply {
-            putLong(KEY_TIME, time)
-            putInt(KEY_ERROR_COUNT, errorCount)
-            putString(KEY_PATH, path)
-            putString(KEY_FILE, file)
-        })
+        constructor(time: Long, errorCount: Int, path: String, file: String) : this(
+            Bundle().apply {
+                putLong(KEY_TIME, time)
+                putInt(KEY_ERROR_COUNT, errorCount)
+                putString(KEY_PATH, path)
+                putString(KEY_FILE, file)
+            }
+        )
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val activity = activity!!
@@ -343,32 +347,38 @@ class SettingsBackupController : SettingsController() {
             val errors = args.getInt(KEY_ERROR_COUNT)
             val path = args.getString(KEY_PATH)!!
             val file = args.getString(KEY_FILE)!!
-            val timeString = String.format("%02d min, %02d sec",
-                    TimeUnit.MILLISECONDS.toMinutes(time),
-                    TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(
-                            TimeUnit.MILLISECONDS.toMinutes(time))
+            val timeString = String.format(
+                "%02d min, %02d sec",
+                TimeUnit.MILLISECONDS.toMinutes(time),
+                TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(
+                    TimeUnit.MILLISECONDS.toMinutes(time)
+                )
             )
 
             return MaterialDialog(activity)
-                    .title(R.string.restore_completed)
-                    .message(text = activity.getString(R.string.restore_completed_content, timeString,
-                            if (errors > 0) "$errors" else activity.getString(android.R.string.cancel)))
-                    .positiveButton(R.string.action_close)
-                    .negativeButton(R.string.action_open_log) {
-                        val context = applicationContext!!
-                        if (path.isNotEmpty()) {
-                            val destFile = File(path, file)
-                            val uri = destFile.getUriCompat(context)
-                            val sendIntent = Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, "text/plain")
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            }
-                            startActivity(sendIntent)
-                        } else {
-                            context.toast(context.getString(R.string.error_opening_log))
+                .title(R.string.restore_completed)
+                .message(
+                    text = activity.getString(
+                        R.string.restore_completed_content, timeString,
+                        if (errors > 0) "$errors" else activity.getString(android.R.string.cancel)
+                    )
+                )
+                .positiveButton(R.string.action_close)
+                .negativeButton(R.string.action_open_log) {
+                    val context = applicationContext!!
+                    if (path.isNotEmpty()) {
+                        val destFile = File(path, file)
+                        val uri = destFile.getUriCompat(context)
+                        val sendIntent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "text/plain")
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
                         }
+                        startActivity(sendIntent)
+                    } else {
+                        context.toast(context.getString(R.string.error_opening_log))
                     }
+                }
         }
 
         private companion object {

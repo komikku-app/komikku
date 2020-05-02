@@ -103,9 +103,10 @@ class Downloader(
     fun start(): Boolean {
         if (isRunning || queue.isEmpty()) {
             return false
-        notifier.paused = false
-        if (!subscriptions.hasSubscriptions())
-            initializeSubscriptions()
+            notifier.paused = false
+            if (!subscriptions.hasSubscriptions()) {
+                initializeSubscriptions()
+            }
         }
 
         val pending = queue.filter { it.status != Download.DOWNLOADED }
@@ -295,13 +296,15 @@ class Downloader(
             .onErrorReturn { error ->
                 // [EXH]
                 XLog.w("> Download error!", error)
-                XLog.w("> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapter.id: %s, chapter.url: %s)",
-                        download.source.id,
-                        download.source.name,
-                        download.manga.id,
-                        download.manga.url,
-                        download.chapter.id,
-                        download.chapter.url)
+                XLog.w(
+                    "> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapter.id: %s, chapter.url: %s)",
+                    download.source.id,
+                    download.source.name,
+                    download.manga.id,
+                    download.manga.url,
+                    download.chapter.id,
+                    download.chapter.url
+                )
 
                 download.status = Download.ERROR
                 notifier.onError(error.message, download.chapter.name)
@@ -377,12 +380,14 @@ class Downloader(
                 } catch (e: Exception) {
                     // [EXH]
                     XLog.w("> Failed to fetch image!", e)
-                    XLog.w("> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s)",
-                            source.id,
-                            source.name,
-                            page.index,
-                            page.url,
-                            page.imageUrl)
+                    XLog.w(
+                        "> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s)",
+                        source.id,
+                        source.name,
+                        page.index,
+                        page.url,
+                        page.imageUrl
+                    )
 
                     response.close()
                     file.delete()

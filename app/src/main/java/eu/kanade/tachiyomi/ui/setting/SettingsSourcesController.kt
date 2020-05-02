@@ -65,28 +65,33 @@ class SettingsSourcesController : SettingsController() {
             val sources = sourcesByLang[lang].orEmpty().sortedBy { it.name }
 
             // Create a preference group and set initial state and change listener
-            langPrefs.add(Pair(lang, switchPreferenceCategory {
-                preferenceScreen.addPreference(this)
-                title = LocaleHelper.getSourceDisplayName(lang, context)
-                isPersistent = false
-                if (lang in activeLangsCodes) {
-                    setChecked(true)
-                    addLanguageSources(this, sortedSources(sourcesByLang[lang]))
-                }
+            langPrefs.add(
+                Pair(
+                    lang,
+                    switchPreferenceCategory {
+                        preferenceScreen.addPreference(this)
+                        title = LocaleHelper.getSourceDisplayName(lang, context)
+                        isPersistent = false
+                        if (lang in activeLangsCodes) {
+                            setChecked(true)
+                            addLanguageSources(this, sortedSources(sourcesByLang[lang]))
+                        }
 
-                onChange { newValue ->
-                    val checked = newValue as Boolean
-                    val current = preferences.enabledLanguages().get()
-                    if (!checked) {
-                        preferences.enabledLanguages().set(current - lang)
-                        removeAll()
-                    } else {
-                        preferences.enabledLanguages().set(current + lang)
-                        addLanguageSources(this, sortedSources(sourcesByLang[lang]))
+                        onChange { newValue ->
+                            val checked = newValue as Boolean
+                            val current = preferences.enabledLanguages().get()
+                            if (!checked) {
+                                preferences.enabledLanguages().set(current - lang)
+                                removeAll()
+                            } else {
+                                preferences.enabledLanguages().set(current + lang)
+                                addLanguageSources(this, sortedSources(sourcesByLang[lang]))
+                            }
+                            true
+                        }
                     }
-                    true
-                }
-            }))
+                )
+            )
         }
     }
 
@@ -103,7 +108,6 @@ class SettingsSourcesController : SettingsController() {
         val hiddenCatalogues = preferences.hiddenCatalogues().get()
 
         val selectAllPreference = CheckBoxPreference(group.context).apply {
-
             title = "\t\t${context.getString(R.string.pref_category_all_sources)}"
             key = "all_${sources.first().lang}"
             isPersistent = false
@@ -113,10 +117,11 @@ class SettingsSourcesController : SettingsController() {
             onChange { newValue ->
                 val checked = newValue as Boolean
                 val current = preferences.hiddenCatalogues().get() ?: mutableSetOf()
-                if (checked)
+                if (checked) {
                     current.minus(sources.map { it.id.toString() })
-                else
+                } else {
                     current.plus(sources.map { it.id.toString() })
+                }
                 preferences.hiddenCatalogues().set(current)
                 group.removeAll()
                 addLanguageSources(group, sortedSources(sources))
@@ -222,7 +227,7 @@ class SettingsSourcesController : SettingsController() {
         return if (sorting == SourcesSort.Enabled) {
             val hiddenCatalogues = preferences.hiddenCatalogues().get()
             sourceAlpha.filter { it.id.toString() !in hiddenCatalogues } +
-                    sourceAlpha.filterNot { it.id.toString() !in hiddenCatalogues }
+                sourceAlpha.filterNot { it.id.toString() !in hiddenCatalogues }
         } else {
             sourceAlpha
         }

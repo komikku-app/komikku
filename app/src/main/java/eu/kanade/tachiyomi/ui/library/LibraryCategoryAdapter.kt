@@ -30,7 +30,7 @@ import uy.kohesive.injekt.injectLazy
  * @param view the fragment containing this adapter.
  */
 class LibraryCategoryAdapter(val view: LibraryCategoryView) :
-        FlexibleAdapter<LibraryItem>(null, view, true) {
+    FlexibleAdapter<LibraryItem>(null, view, true) {
     // EXH -->
     private val db: DatabaseHelper by injectLazy()
     private val searchEngine = SearchEngine()
@@ -86,10 +86,12 @@ class LibraryCategoryAdapter(val view: LibraryCategoryView) :
                     // Prepare filter object
                     val parsedQuery = searchEngine.parseQuery(savedSearchText)
                     val sqlQuery = searchEngine.queryToSql(parsedQuery)
-                    val queryResult = db.lowLevel().rawQuery(RawQuery.builder()
+                    val queryResult = db.lowLevel().rawQuery(
+                        RawQuery.builder()
                             .query(sqlQuery.first)
                             .args(*sqlQuery.second.toTypedArray())
-                            .build())
+                            .build()
+                    )
 
                     ensureActive() // Fail early when cancelled
 

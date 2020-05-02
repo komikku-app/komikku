@@ -140,8 +140,11 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         override fun initModels() {
             val sorting = preferences.librarySortingMode().get()
-            val order = if (preferences.librarySortingAscending().get())
-                SORT_ASC else SORT_DESC
+            val order = if (preferences.librarySortingAscending().get()) {
+                SORT_ASC
+            } else {
+                SORT_DESC
+            }
 
             alphabetically.state = if (sorting == LibrarySort.ALPHA) order else SORT_NONE
             lastRead.state = if (sorting == LibrarySort.LAST_READ) order else SORT_NONE
@@ -158,27 +161,30 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             val prevState = item.state
 
             item.group.items.forEach { (it as Item.MultiStateGroup).state = SORT_NONE }
-            if (item == dragAndDrop)
+            if (item == dragAndDrop) {
                 item.state = SORT_ASC
-            else
+            } else {
                 item.state = when (prevState) {
                     SORT_NONE -> SORT_ASC
                     SORT_ASC -> SORT_DESC
                     SORT_DESC -> SORT_ASC
                     else -> throw Exception("Unknown state")
                 }
+            }
 
-            preferences.librarySortingMode().set(when (item) {
-                alphabetically -> LibrarySort.ALPHA
-                lastRead -> LibrarySort.LAST_READ
-                lastChecked -> LibrarySort.LAST_CHECKED
-                unread -> LibrarySort.UNREAD
-                total -> LibrarySort.TOTAL
-                latestChapter -> LibrarySort.LATEST_CHAPTER
-                source -> LibrarySort.SOURCE
-                dragAndDrop -> LibrarySort.DRAG_AND_DROP
-                else -> throw Exception("Unknown sorting")
-            })
+            preferences.librarySortingMode().set(
+                when (item) {
+                    alphabetically -> LibrarySort.ALPHA
+                    lastRead -> LibrarySort.LAST_READ
+                    lastChecked -> LibrarySort.LAST_CHECKED
+                    unread -> LibrarySort.UNREAD
+                    total -> LibrarySort.TOTAL
+                    latestChapter -> LibrarySort.LATEST_CHAPTER
+                    source -> LibrarySort.SOURCE
+                    dragAndDrop -> LibrarySort.DRAG_AND_DROP
+                    else -> throw Exception("Unknown sorting")
+                }
+            )
             preferences.librarySortingAscending().set(item.state == SORT_ASC)
 
             item.group.items.forEach { adapter.notifyItemChanged(it) }

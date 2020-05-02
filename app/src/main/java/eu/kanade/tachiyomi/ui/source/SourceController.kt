@@ -137,10 +137,14 @@ class SourceController(bundle: Bundle? = null) :
                 // Open the catalogue view.
                 openCatalogue(source, BrowseSourceController(source))
             }
-            Mode.SMART_SEARCH -> router.pushController(SmartSearchController(Bundle().apply {
-                putLong(SmartSearchController.ARG_SOURCE_ID, source.id)
-                putParcelable(SmartSearchController.ARG_SMART_SEARCH_CONFIG, smartSearchConfig)
-            }).withFadeTransaction())
+            Mode.SMART_SEARCH -> router.pushController(
+                SmartSearchController(
+                    Bundle().apply {
+                        putLong(SmartSearchController.ARG_SOURCE_ID, source.id)
+                        putParcelable(SmartSearchController.ARG_SMART_SEARCH_CONFIG, smartSearchConfig)
+                    }
+                ).withFadeTransaction()
+            )
         }
         return false
     }
