@@ -61,7 +61,7 @@ open class BrowseSourcePresenter(
     /**
      * Selected source.
      */
-    val source = sourceManager.get(sourceId) as CatalogueSource
+    lateinit var source: CatalogueSource
 
     /**
      * Query from the view.
@@ -118,6 +118,8 @@ open class BrowseSourcePresenter(
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
+
+        source = sourceManager.get(sourceId) as? CatalogueSource ?: return
 
         sourceFilters = source.getFilterList()
 

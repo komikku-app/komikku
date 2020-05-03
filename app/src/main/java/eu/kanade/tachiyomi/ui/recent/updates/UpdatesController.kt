@@ -344,6 +344,10 @@ class UpdatesController :
      * @param item item from ActionMode.
      */
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        return onActionItemClicked(item)
+    }
+
+    private fun onActionItemClicked(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_select_all -> selectAll()
             R.id.action_select_inverse -> selectInverse()
