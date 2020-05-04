@@ -49,7 +49,7 @@ import uy.kohesive.injekt.api.get
  * [SourceAdapter.OnLatestClickListener] call function data on latest item click
  */
 class SourceController(bundle: Bundle? = null) :
-    NucleusController<SourceMainControllerBinding, SourcePresenter>(),
+    NucleusController<SourceMainControllerBinding, SourcePresenter>(bundle),
     RootController,
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
