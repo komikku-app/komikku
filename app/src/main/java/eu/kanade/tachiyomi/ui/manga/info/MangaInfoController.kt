@@ -45,6 +45,7 @@ import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
@@ -52,6 +53,7 @@ import exh.EXH_SOURCE_ID
 import exh.HITOMI_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
+import exh.util.setChipsExtended
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
@@ -370,33 +372,10 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
         // Update genres list
         if (!manga.genre.isNullOrBlank()) {
-            binding.mangaGenresTags.removeAllViews()
-
-            manga.getGenres()?.forEach { genre ->
-                val chip = Chip(view.context).apply {
-                    text = genre
-                    setOnClickListener {
-                        var text = genre
-                        if (isEHentaiBasedSource() || presenter.source.id == NHENTAI_SOURCE_ID || presenter.source.id == HITOMI_SOURCE_ID) {
-                            val parsed = parseTag(text)
-                            text = wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
-                        }
-                        performSearch(text)
-                    }
-
-                    setOnLongClickListener {
-                        var text = genre
-                        if (isEHentaiBasedSource() || presenter.source.id == NHENTAI_SOURCE_ID || presenter.source.id == HITOMI_SOURCE_ID) {
-                            val parsed = parseTag(text)
-                            text = wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
-                        }
-                        performGlobalSearch(text)
-                        false
-                    }
-                }
-
-                binding.mangaGenresTags.addView(chip)
-            }
+            binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
+            binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
+        } else {
+            binding.mangaGenresTagsWrapper.gone()
         }
 
         // Update description TextView.
