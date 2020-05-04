@@ -116,11 +116,11 @@ class SettingsSourcesController : SettingsController() {
 
             onChange { newValue ->
                 val checked = newValue as Boolean
-                val current = preferences.hiddenCatalogues().get() ?: mutableSetOf()
+                val current = preferences.hiddenCatalogues().get() as MutableSet? ?: mutableSetOf()
                 if (checked) {
-                    current.minus(sources.map { it.id.toString() })
+                    current.removeAll(sources.map { it.id.toString() })
                 } else {
-                    current.plus(sources.map { it.id.toString() })
+                    current.addAll(sources.map { it.id.toString() })
                 }
                 preferences.hiddenCatalogues().set(current)
                 group.removeAll()
