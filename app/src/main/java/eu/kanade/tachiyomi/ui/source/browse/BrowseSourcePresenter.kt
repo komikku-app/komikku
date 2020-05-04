@@ -50,9 +50,9 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * Presenter of [BrowseSourceController].
  */
 open class BrowseSourcePresenter(
-    sourceId: Long,
-    searchQuery: String? = null,
-    sourceManager: SourceManager = Injekt.get(),
+    private val sourceId: Long,
+    private val searchQuery: String? = null,
+    private val sourceManager: SourceManager = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get(),
     private val prefs: PreferencesHelper = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get()
