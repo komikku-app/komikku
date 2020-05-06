@@ -49,7 +49,7 @@ class SourceFilterSheet @JvmOverloads constructor(context: Context, attrs: Attri
         recycler.adapter = adapter
         recycler.setHasFixedSize(true)
         val view = inflate(R.layout.source_filter_sheet)
-        ((view as ViewGroup).getChildAt(1) as ViewGroup).addView(recycler)
+        ((view as ViewGroup).findViewById(R.id.source_filter_content) as ViewGroup).addView(recycler)
         addView(view)
         save_search_btn.setOnClickListener { onSaveClicked() }
         search_btn.setOnClickListener { onSearchClicked() }
@@ -67,7 +67,7 @@ class SourceFilterSheet @JvmOverloads constructor(context: Context, attrs: Attri
         val outValue = TypedValue()
         context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
 
-        save_search_btn.visibility = if (searches.size < 5) View.VISIBLE else View.GONE
+        save_search_btn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
 
         searches.withIndex().sortedBy { it.value.name }.forEach { (index, search) ->
             val restoreBtn = TextView(context)
@@ -85,7 +85,7 @@ class SourceFilterSheet @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     companion object {
-        const val MAX_SAVED_SEARCHES = 5
+        const val MAX_SAVED_SEARCHES = 500 // if you want more than this, fuck you, i guess
     }
     // EXH <--
 }
