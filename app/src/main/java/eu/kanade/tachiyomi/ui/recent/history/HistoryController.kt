@@ -25,7 +25,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.appcompat.queryTextEvents
+import reactivecircus.flowbinding.appcompat.queryTextChanges
 
 /**
  * Fragment that shows recently read manga.
@@ -194,7 +194,7 @@ class HistoryController :
             searchView.setQuery(query, true)
             searchView.clearFocus()
         }
-        searchView.queryTextEvents()
+        searchView.queryTextChanges()
             .filter { router.backstack.lastOrNull()?.controller() == this }
             .onEach {
                 query = it.toString()
