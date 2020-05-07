@@ -507,10 +507,12 @@ class ChaptersController :
         if (presenter.preferences.removeAfterMarkedAsRead()) {
             deleteChapters(chapters)
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun markAsUnread(chapters: List<ChapterItem>) {
         presenter.markChaptersRead(chapters, false)
+        destroyActionModeIfNeeded()
     }
 
     private fun downloadChapters(chapters: List<ChapterItem>) {
@@ -524,6 +526,7 @@ class ChaptersController :
                 }
             }
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun showDeleteChaptersConfirmationDialog() {
@@ -541,11 +544,13 @@ class ChaptersController :
         if (chapterPos != -1) {
             markAsRead(chapters.take(chapterPos))
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun bookmarkChapters(chapters: List<ChapterItem>, bookmarked: Boolean) {
         destroyActionModeIfNeeded()
         presenter.bookmarkChapters(chapters, bookmarked)
+        destroyActionModeIfNeeded()
     }
 
     fun deleteChapters(chapters: List<ChapterItem>) {
@@ -553,6 +558,7 @@ class ChaptersController :
         if (chapters.isEmpty()) return
 
         presenter.deleteChapters(chapters)
+        destroyActionModeIfNeeded()
     }
 
     fun onChaptersDeleted(chapters: List<ChapterItem>) {
@@ -595,6 +601,7 @@ class ChaptersController :
         if (chaptersToDownload.isNotEmpty()) {
             downloadChapters(chaptersToDownload)
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun showCustomDownloadDialog() {
