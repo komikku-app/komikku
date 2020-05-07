@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.util.storage.getUriCompat
+import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import eu.kanade.tachiyomi.util.system.notificationManager
 import exh.BackupEntry
@@ -118,11 +119,10 @@ class BackupRestoreService : Service() {
      */
     override fun onCreate() {
         super.onCreate()
+
         startForeground(Notifications.ID_RESTORE_PROGRESS, progressNotification.build())
-        wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK, "BackupRestoreService:WakeLock"
-        )
-        wakeLock.acquire(60 * 60 * 1000L /*1 hour*/)
+
+        wakeLock = acquireWakeLock(javaClass.name)
     }
 
     /**
