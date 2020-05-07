@@ -699,7 +699,7 @@
     <string name="eh_rounded_corner_9">Radius of 9</string>
     <string name="eh_rounded_corner_10">Radius of 10</string>
     <string name="eh_rounded_corners_desc">The level of radius that the corners are rounded to. Current value is: %s</string>
-    <string name="merge">Merge with current</string>
+    <string name="eh_merge_with_current">Merge with current</string>
     <string name="eh_merge_with_another_source">Merge With Another</string>
     <string name="eh_autoscroll_help">Autoscroll help</string>
     <string name="eh_autoscroll_help_message">Automatically scroll to the next page in the specified interval. Interval is specified in seconds.</string>
@@ -710,5 +710,8 @@
     <string name="eh_force_sync_reset_title">Are you sure?</string>
     <string name="eh_force_sync_reset_message">Resetting the sync state can cause your next sync to be extremely slow.</string>
     <string name="eh_show_update_statistics_dialog">Collecting statistics…</string>
+
+    <!-- AZ -->
+    <string name="az_recommends">See Recommendations</string>
 
 </resources>
