@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.source.browse
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -394,7 +395,7 @@ open class BrowseSourceController(bundle: Bundle) :
         super.onPrepareOptionsMenu(menu)
 
         val isHttpSource = presenter.source is HttpSource
-        menu.findItem(R.id.action_open_in_web_view).isVisible = isHttpSource && mode == Mode.CATALOGUE
+        menu.findItem(R.id.action_open_in_web_view).isVisible = isHttpSource
 
         val isLocalSource = presenter.source is LocalSource
         menu.findItem(R.id.action_local_source_help).isVisible = isLocalSource && mode == Mode.CATALOGUE
@@ -463,11 +464,16 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     fun onAddPageError(error: Throwable) {
         XLog.w("> Failed to load next catalogue page!", error)
-        XLog.w(
-            "> (source.id: %s, source.name: %s)",
-            presenter.source.id,
-            presenter.source.name
-        )
+
+        if (mode == Mode.CATALOGUE) {
+            XLog.w(
+                "> (source.id: %s, source.name: %s)",
+                presenter.source.id,
+                presenter.source.name
+            )
+        } else {
+            XLog.w("> Recommendations")
+        }
 
         val adapter = adapter ?: return
         adapter.onLoadMoreComplete(null)
@@ -487,6 +493,7 @@ open class BrowseSourceController(bundle: Bundle) :
         }
 
         if (adapter.isEmpty) {
+            Log.d("Adapter", "empty")
             val actions = emptyList<EmptyView.Action>().toMutableList()
 
             if (presenter.source is LocalSource && mode == Mode.CATALOGUE) {
@@ -630,17 +637,33 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     override fun onItemClick(view: View, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
-        router.pushController(
-            MangaController(
-                item.manga,
-                true,
-                args.getParcelable(SMART_SEARCH_CONFIG_KEY)
-            ).withFadeTransaction()
-        )
 
+        when (mode) {
+            Mode.CATALOGUE -> router.pushController(
+                MangaController(
+                    item.manga,
+                    true,
+                    args.getParcelable(SMART_SEARCH_CONFIG_KEY)
+                ).withFadeTransaction()
+            )
+            Mode.RECOMMENDS -> openSmartSearch(item.manga.title)
+        }
         return false
     }
 
+    // AZ -->
+    private fun openSmartSearch(title: String) {
+        val smartSearchConfig = SourceController.SmartSearchConfig(title)
+        router.pushController(
+            SourceController(
+                Bundle().apply {
+                    putParcelable(SourceController.SMART_SEARCH_CONFIG, smartSearchConfig)
+                }
+            ).withFadeTransaction()
+        )
+    }
+
+    // AZ <--
     /**
      * Called when a manga is long clicked.
      *
@@ -651,6 +674,7 @@ open class BrowseSourceController(bundle: Bundle) :
      * @param position the position of the element clicked.
      */
     override fun onItemLongClick(position: Int) {
+        if (mode == Mode.RECOMMENDS) { return }
         val activity = activity ?: return
         val manga = (adapter?.getItem(position) as? SourceItem?)?.manga ?: return
 

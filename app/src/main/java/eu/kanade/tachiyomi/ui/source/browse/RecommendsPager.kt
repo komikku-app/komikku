@@ -82,11 +82,7 @@ open class RecommendsPager(val title: String) : Pager() {
             }.map {
                 MangasPage(it, false)
             }.doOnNext {
-                if (it.mangas.isNotEmpty()) {
-                    onPageReceived(it)
-                } else {
-                    throw NoResultsException()
-                }
+                onPageReceived(it)
             }
     }
     companion object {

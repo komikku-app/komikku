@@ -205,7 +205,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                 .launchIn(scope)
         }
         smartSearchConfig?.let { smartSearchConfig ->
-            binding.mergeBtn.visible()
+            if (smartSearchConfig.origMangaId != null) { binding.mergeBtn.visible() }
             binding.mergeBtn.clicks()
                 .onEach {
                     // Init presenter here to avoid threading issues
@@ -214,7 +214,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
                     launch {
                         try {
                             val mergedManga = withContext(Dispatchers.IO + NonCancellable) {
-                                presenter.smartSearchMerge(presenter.manga, smartSearchConfig.origMangaId)
+                                presenter.smartSearchMerge(presenter.manga, smartSearchConfig.origMangaId!!)
                             }
 
                             parentController?.router?.pushController(
