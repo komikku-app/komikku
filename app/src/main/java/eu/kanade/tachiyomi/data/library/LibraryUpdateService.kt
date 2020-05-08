@@ -309,6 +309,12 @@ class LibraryUpdateService(
 
         // Emit each manga and update it sequentially.
         return Observable.from(mangaToUpdate)
+            // Update the chapters of the manga concurrently from 5 different sources
+            .groupBy { it.source }
+            .flatMap(
+                { bySource ->
+                    bySource
+
             // Notify manga that will update.
             .doOnNext { showProgressNotification(it, count.andIncrement, mangaToUpdate.size) }
             // Update the chapters of the manga.
@@ -344,6 +350,10 @@ class LibraryUpdateService(
                         )
                     }
             }
+
+                },
+                5
+            )
             // Add manga with new chapters to the list.
             .doOnNext { manga ->
                 // Add to the list
@@ -403,21 +413,28 @@ class LibraryUpdateService(
 
         // Emit each manga and update it sequentially.
         return Observable.from(mangaToUpdate)
-            // Notify manga that will update.
-            .doOnNext { showProgressNotification(it, count.andIncrement, mangaToUpdate.size) }
-            // Update the details of the manga.
-            .concatMap { manga ->
-                val source = sourceManager.get(manga.source) as? HttpSource
-                    ?: return@concatMap Observable.empty<LibraryManga>()
+            // Update the details of the manga concurrently from 5 different sources
+            .groupBy { it.source }
+            .flatMap(
+                { bySource ->
+                    bySource
+                        // Notify manga that will update.
+                        .doOnNext { showProgressNotification(it, count.andIncrement, mangaToUpdate.size) }
+                        .concatMap { manga ->
+                            val source = sourceManager.get(manga.source) as? HttpSource
+                                ?: return@concatMap Observable.empty<LibraryManga>()
 
-                source.fetchMangaDetails(manga)
-                    .map { networkManga ->
-                        manga.copyFrom(networkManga)
-                        db.insertManga(manga).executeAsBlocking()
-                        manga
-                    }
-                    .onErrorReturn { manga }
-            }
+                            source.fetchMangaDetails(manga)
+                                .map { networkManga ->
+                                    manga.copyFrom(networkManga)
+                                    db.insertManga(manga).executeAsBlocking()
+                                    manga
+                                }
+                                .onErrorReturn { manga }
+                        }
+                },
+                5
+            )
             .doOnCompleted {
                 cancelProgressNotification()
             }
