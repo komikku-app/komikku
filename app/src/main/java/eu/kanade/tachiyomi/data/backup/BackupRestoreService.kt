@@ -223,8 +223,8 @@ class BackupRestoreService : Service() {
 
         notificationManager.cancel(Notifications.ID_RESTORE_PROGRESS)
 
-        cancelled = errors.count { it -> it.contains("standalonecoroutine", true) }
-        val tmpErrors = errors.filter { it -> !it.contains("standalonecoroutine", true) }
+        cancelled = errors.count { it -> it.contains("cancelled", true) }
+        val tmpErrors = errors.filter { it -> !it.contains("cancelled", true) }
         errors.clear()
         errors.addAll(tmpErrors)
 
@@ -278,6 +278,12 @@ class BackupRestoreService : Service() {
         val source = backupManager.sourceManager.getOrStub(manga.source)
         // <-- EXH
         try {
+            if (job?.isCancelled == false) {
+                showProgressNotification(restoreProgress, totalAmount, manga.title)
+                restoreProgress += 1
+            } else {
+                throw java.lang.Exception("Job was cancelled")
+            }
             val dbManga = backupManager.getMangaFromDatabase(manga)
             val dbMangaExists = dbManga != null
             if (dbMangaExists) {
@@ -298,8 +304,6 @@ class BackupRestoreService : Service() {
             // Restore tracking
             backupManager.restoreTrackForManga(manga, tracks)
             trackingFetch(manga, tracks)
-            restoreProgress += 1
-            showProgressNotification(restoreProgress, restoreAmount, manga.title)
         } catch (e: Exception) {
             Timber.e(e)
             errors.add("${manga.title} - ${e.message}")
