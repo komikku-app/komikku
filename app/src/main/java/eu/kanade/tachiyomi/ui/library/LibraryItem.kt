@@ -19,6 +19,7 @@ import kotlinx.android.synthetic.main.source_grid_item.view.gradient
 class LibraryItem(val manga: LibraryManga, private val libraryAsList: Preference<Boolean>) :
     AbstractFlexibleItem<LibraryHolder>(), IFilterable<String> {
     var downloadCount = -1
+    var unreadCount = -1
 
     override fun getLayoutRes(): Int {
         return if (libraryAsList.get()) {

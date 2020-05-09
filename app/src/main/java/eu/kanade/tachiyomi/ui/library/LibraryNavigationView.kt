@@ -193,17 +193,22 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
     inner class BadgeGroup : Group {
         private val downloadBadge = Item.CheckboxGroup(R.string.action_display_download_badge, this)
+        private val unreadBadge = Item.CheckboxGroup(R.string.action_display_unread_badge, this)
         override val header = null
         override val footer = null
-        override val items = listOf(downloadBadge)
+        override val items = listOf(downloadBadge, unreadBadge)
         override fun initModels() {
             downloadBadge.checked = preferences.downloadBadge().get()
+            unreadBadge.checked = preferences.unreadBadge().get()
         }
 
         override fun onItemClicked(item: Item) {
             item as Item.CheckboxGroup
             item.checked = !item.checked
-            preferences.downloadBadge().set((item.checked))
+            when (item) {
+                downloadBadge -> preferences.downloadBadge().set((item.checked))
+                unreadBadge -> preferences.unreadBadge().set((item.checked))
+            }
             adapter.notifyItemChanged(item)
         }
     }
