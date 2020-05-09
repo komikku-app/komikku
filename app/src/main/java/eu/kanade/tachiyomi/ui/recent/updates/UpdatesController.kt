@@ -327,14 +327,7 @@ class UpdatesController :
             destroyActionModeIfNeeded()
         } else {
             mode.title = count.toString()
-
-            val chapters = getSelectedChapters()
-            menu.findItem(R.id.action_download).isVisible = chapters.any { !it.isDownloaded }
-            menu.findItem(R.id.action_delete).isVisible = chapters.any { it.isDownloaded }
-            menu.findItem(R.id.action_mark_as_read).isVisible = chapters.any { !it.chapter.read }
-            menu.findItem(R.id.action_mark_as_unread).isVisible = chapters.any { it.chapter.read }
         }
-
         return false
     }
 
