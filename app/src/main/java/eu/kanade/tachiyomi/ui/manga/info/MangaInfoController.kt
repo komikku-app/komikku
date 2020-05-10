@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.signature.ObjectKey
 import com.elvishew.xlog.XLog
 import com.google.android.material.chip.Chip
 import com.google.gson.Gson
@@ -106,8 +105,6 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         setOptionsMenuHidden(true)
     }
 
-    private var thumbnailUrl: String? = null
-
     override fun createPresenter(): MangaInfoPresenter {
         val ctrl = parentController as MangaController
         return MangaInfoPresenter(
@@ -136,7 +133,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
         // Set SwipeRefresh to refresh manga data.
         binding.swipeRefresh.refreshes()
-            .onEach { fetchMangaFromSource() }
+            .onEach { fetchMangaFromSource(manualFetch = true) }
             .launchIn(scope)
 
         binding.mangaFullTitle.longClicks()
@@ -422,38 +419,27 @@ class MangaInfoController(private val fromSource: Boolean = false) :
         // Set the favorite drawable to the correct one.
         setFavoriteDrawable(manga.favorite)
 
-        // Set cover if it matches
-        val tagMatches = lastMangaThumbnail == manga.thumbnail_url
-        val coverLoaded = binding.mangaCover.drawable != null
-        if ((!tagMatches || !coverLoaded) && !manga.thumbnail_url.isNullOrEmpty()) {
-            lastMangaThumbnail = manga.thumbnail_url
+        binding.mangaCoverCard.radius = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            preferences.eh_library_corner_radius().getOrDefault().toFloat(),
+            view.context.resources.displayMetrics
+        )
 
-            val coverSig = ObjectKey(manga.thumbnail_url ?: "")
+        // Set cover if it wasn't already.
+        val mangaThumbnail = manga.toMangaThumbnail()
 
-            binding.mangaCoverCard.radius = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                preferences.eh_library_corner_radius().getOrDefault().toFloat(),
-                view.context.resources.displayMetrics
-            )
+        GlideApp.with(view.context)
+            .load(mangaThumbnail)
+            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+            .centerCrop()
+            .into(binding.mangaCover)
 
-            if (binding.mangaCover.drawable == null || manga.thumbnail_url != thumbnailUrl) {
-                thumbnailUrl = manga.thumbnail_url
-                val mangaThumbnail = manga.toMangaThumbnail()
-
-                GlideApp.with(view.context)
-                    .load(mangaThumbnail)
-                    .signature(coverSig)
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    .centerCrop()
-                    .into(binding.mangaCover)
-
-                GlideApp.with(view.context)
-                    .load(mangaThumbnail)
-                    .signature(coverSig)
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                    .centerCrop()
-                    .into(binding.backdrop)
-            }
+        binding.backdrop?.let {
+            GlideApp.with(view.context)
+                .load(mangaThumbnail)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .centerCrop()
+                .into(it)
         }
     }
 
@@ -547,10 +533,10 @@ class MangaInfoController(private val fromSource: Boolean = false) :
     /**
      * Start fetching manga information from source.
      */
-    private fun fetchMangaFromSource() {
+    private fun fetchMangaFromSource(manualFetch: Boolean = false) {
         setRefreshing(true)
         // Call presenter and start fetching manga information
-        presenter.fetchMangaFromSource()
+        presenter.fetchMangaFromSource(manualFetch)
     }
 
     /**

@@ -289,7 +289,7 @@ open class BrowseSourcePresenter(
     fun changeMangaFavorite(manga: Manga) {
         manga.favorite = !manga.favorite
         if (!manga.favorite) {
-            coverCache.deleteFromCache(manga.thumbnail_url)
+            manga.removeCovers(coverCache)
         }
         db.insertManga(manga).executeAsBlocking()
     }

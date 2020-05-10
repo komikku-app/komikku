@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.library
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -27,6 +26,7 @@ import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
@@ -44,10 +44,10 @@ import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
+import eu.kanade.tachiyomi.util.view.visible
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.ui.LoaderManager
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.drawer
 import kotlinx.android.synthetic.main.main_activity.tabs
@@ -64,12 +64,14 @@ import uy.kohesive.injekt.api.get
 
 class LibraryController(
     bundle: Bundle? = null,
-    private val preferences: PreferencesHelper = Injekt.get()
+    private val preferences: PreferencesHelper = Injekt.get(),
+    private val coverCache: CoverCache = Injekt.get()
 ) : NucleusController<LibraryControllerBinding, LibraryPresenter>(bundle),
     RootController,
     TabbedController,
     SecondaryDrawerController,
     ActionMode.Callback,
+    ChangeMangaCoverDialog.Listener,
     ChangeMangaCategoriesDialog.Listener,
     DeleteLibraryMangasDialog.Listener {
 
@@ -496,10 +498,7 @@ class LibraryController(
 
     private fun onActionItemClicked(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_edit_cover -> {
-                changeSelectedCover()
-                destroyActionModeIfNeeded()
-            }
+            R.id.action_edit_cover -> handleChangeCover()
             R.id.action_move_to_category -> showChangeMangaCategoriesDialog()
             R.id.action_delete -> showDeleteMangaDialog()
             R.id.action_select_all -> selectAllCategoryManga()
@@ -559,6 +558,23 @@ class LibraryController(
         }
     }
 
+    private fun handleChangeCover() {
+        val manga = selectedMangas.firstOrNull() ?: return
+
+        if (coverCache.getCustomCoverFile(manga).exists()) {
+            showEditCoverDialog(manga)
+        } else {
+            openMangaCoverPicker(manga)
+        }
+    }
+
+    /**
+     * Edit custom cover for selected manga.
+     */
+    private fun showEditCoverDialog(manga: Manga) {
+        ChangeMangaCoverDialog(this, manga).showDialog(router)
+    }
+
     /**
      * Move the selected manga to a list of categories.
      */
@@ -582,21 +598,7 @@ class LibraryController(
         DeleteLibraryMangasDialog(this, selectedMangas.toList()).showDialog(router)
     }
 
-    override fun updateCategoriesForMangas(mangas: List<Manga>, categories: List<Category>) {
-        presenter.moveMangasToCategories(categories, mangas)
-        destroyActionModeIfNeeded()
-    }
-
-    override fun deleteMangasFromLibrary(mangas: List<Manga>, deleteChapters: Boolean) {
-        presenter.removeMangaFromLibrary(mangas, deleteChapters)
-        destroyActionModeIfNeeded()
-    }
-
-    /**
-     * Changes the cover for the selected manga.
-     */
-    private fun changeSelectedCover() {
-        val manga = selectedMangas.firstOrNull() ?: return
+    override fun openMangaCoverPicker(manga: Manga) {
         selectedCoverManga = manga
 
         if (manga.favorite) {
@@ -612,6 +614,23 @@ class LibraryController(
         } else {
             activity?.toast(R.string.notification_first_add_to_library)
         }
+
+        destroyActionModeIfNeeded()
+    }
+
+    override fun deleteMangaCover(manga: Manga) {
+        presenter.deleteCustomCover(manga)
+        destroyActionModeIfNeeded()
+    }
+
+    override fun updateCategoriesForMangas(mangas: List<Manga>, categories: List<Category>) {
+        presenter.moveMangasToCategories(categories, mangas)
+        destroyActionModeIfNeeded()
+    }
+
+    override fun deleteMangasFromLibrary(mangas: List<Manga>, deleteChapters: Boolean) {
+        presenter.removeMangaFromLibrary(mangas, deleteChapters)
+        destroyActionModeIfNeeded()
     }
 
     override fun onAttach(view: View) {
@@ -754,26 +773,23 @@ class LibraryController(
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_IMAGE_OPEN) {
-            if (data == null || resultCode != Activity.RESULT_OK) return
+            val dataUri = data?.data
+            if (dataUri == null || resultCode != Activity.RESULT_OK) return
             val activity = activity ?: return
             val manga = selectedCoverManga ?: return
 
-            try {
-                // Get the file's input stream from the incoming Intent
-                activity.contentResolver.openInputStream(data.data ?: Uri.EMPTY).use {
-                    // Update cover to selected file, show error if something went wrong
-                    if (it != null && presenter.editCoverWithStream(it, manga)) {
-                        // TODO refresh cover
-                    } else {
-                        activity.toast(R.string.notification_cover_update_failed)
-                    }
-                }
-            } catch (error: IOException) {
-                activity.toast(R.string.notification_cover_update_failed)
-                Timber.e(error)
-            }
             selectedCoverManga = null
+            presenter.editCover(manga, activity, dataUri)
         }
+    }
+
+    fun onSetCoverSuccess() {
+        activity?.toast(R.string.cover_updated)
+    }
+
+    fun onSetCoverError(error: Throwable) {
+        activity?.toast(R.string.notification_cover_update_failed)
+        Timber.e(error)
     }
 
     private companion object {

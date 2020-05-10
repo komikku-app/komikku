@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
-import eu.kanade.tachiyomi.source.LocalSource
+import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.view.visibleIf
 import kotlinx.android.synthetic.main.source_grid_item.card
 import kotlinx.android.synthetic.main.source_grid_item.download_text
@@ -57,7 +57,7 @@ class LibraryGridHolder(
             text = item.downloadCount.toString()
         }
         // set local visibility if its local manga
-        local_text.visibleIf { item.manga.source == LocalSource.ID }
+        local_text.visibleIf { item.manga.isLocal() }
 
         card.radius = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,

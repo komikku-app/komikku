@@ -24,7 +24,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = 12 // [EXH + J2K DRAGNDROP + AZ MERGEDSOURES]
+        const val DATABASE_VERSION = 13 // [EXH + J2K DRAGNDROP + AZ MERGEDSOURES]
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -123,6 +123,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         if (oldVersion < 12) {
             db.execSQL(TrackTable.addStartDate)
             db.execSQL(TrackTable.addFinishDate)
+        }
+        if (oldVersion < 10) {
+            db.execSQL(MangaTable.addCoverLastModified)
         }
     }
 
