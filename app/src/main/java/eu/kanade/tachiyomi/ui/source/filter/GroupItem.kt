@@ -10,7 +10,6 @@ import eu.davidea.flexibleadapter.items.ISectionable
 import eu.davidea.viewholders.ExpandableViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import uy.kohesive.injekt.Injekt
@@ -20,7 +19,7 @@ class GroupItem(val filter: Filter.Group<*>) : AbstractExpandableHeaderItem<Grou
 
     init {
         // --> EH
-        isExpanded = Injekt.get<PreferencesHelper>().eh_expandFilters().getOrDefault()
+        isExpanded = Injekt.get<PreferencesHelper>().eh_expandFilters().get()
         // <-- EH
     }
 

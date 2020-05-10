@@ -15,7 +15,6 @@ import eu.kanade.tachiyomi.data.database.resolvers.MangaUrlPutResolver
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.util.system.jobScheduler
@@ -38,7 +37,7 @@ object EXHMigrations {
      */
     fun upgrade(preferences: PreferencesHelper): Boolean {
         val context = preferences.context
-        val oldVersion = preferences.eh_lastVersionCode().getOrDefault()
+        val oldVersion = preferences.eh_lastVersionCode().get()
         try {
             if (oldVersion < BuildConfig.VERSION_CODE) {
                 if (oldVersion < 1) {

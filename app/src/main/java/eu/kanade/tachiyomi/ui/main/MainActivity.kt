@@ -244,7 +244,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
             initWhenIdle {
                 // Upload settings
-                if (preferences.enableExhentai().getOrDefault() &&
+                if (preferences.enableExhentai().get() &&
                     preferences.eh_showSettingsUploadWarning().get()
                 ) {
                     WarnConfigureDialogController.uploadSettings(router)

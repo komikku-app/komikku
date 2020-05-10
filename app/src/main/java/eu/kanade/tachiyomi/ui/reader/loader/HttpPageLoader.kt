@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.reader.loader
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
@@ -47,11 +46,11 @@ class HttpPageLoader(
      */
     private val subscriptions = CompositeSubscription()
 
-    private val preloadSize = prefs.eh_preload_size().getOrDefault()
+    private val preloadSize = prefs.eh_preload_size().get()
 
     init {
         // EXH -->
-        repeat(prefs.eh_readerThreads().getOrDefault()) {
+        repeat(prefs.eh_readerThreads().get()) {
             // EXH <--
             subscriptions += Observable.defer { Observable.just(queue.take().page) }
                 .filter { it.status == Page.QUEUE }
@@ -112,7 +111,7 @@ class HttpPageLoader(
                     // Don't trust sources and use our own indexing
                     ReaderPage(index, page.url, page.imageUrl)
                 }
-                if (prefs.eh_aggressivePageLoading().getOrDefault()) {
+                if (prefs.eh_aggressivePageLoading().get()) {
                     rp.mapNotNull {
                         if (it.status == Page.QUEUE) {
                             PriorityPage(it, 0)
@@ -194,8 +193,9 @@ class HttpPageLoader(
             page.imageUrl = null
         }
 
-        if (prefs.eh_readerInstantRetry().getOrDefault()) {
-            boostPage(page) // EXH <--
+        if (prefs.eh_readerInstantRetry().get()) // EXH <--
+        {
+            boostPage(page)
         } else {
             // EXH <--
             queue.offer(PriorityPage(page, 2))
