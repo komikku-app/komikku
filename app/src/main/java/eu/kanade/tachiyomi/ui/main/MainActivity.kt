@@ -48,7 +48,16 @@ import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
 import exh.EXHMigrations
+import exh.EH_SOURCE_ID
+import exh.EIGHTMUSES_SOURCE_ID
+import exh.EXH_SOURCE_ID
+import exh.HBROWSE_SOURCE_ID
+import exh.HITOMI_SOURCE_ID
+import exh.NHENTAI_SOURCE_ID
+import exh.PERV_EDEN_EN_SOURCE_ID
+import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.eh.EHentaiUpdateWorker
+import exh.source.BlacklistedSources
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.batchadd.BatchAddController
 import exh.ui.lock.LockActivityDelegate
@@ -253,8 +262,34 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
                 EHentaiUpdateWorker.scheduleBackground(this)
             }
-            // EXH <--
         }
+        if (!preferences.eh_isHentaiEnabled().get()) {
+            if (EH_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
+            }
+            if (EXH_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += EXH_SOURCE_ID
+            }
+            if (PERV_EDEN_EN_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += PERV_EDEN_EN_SOURCE_ID
+            }
+            if (PERV_EDEN_IT_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += PERV_EDEN_IT_SOURCE_ID
+            }
+            if (NHENTAI_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += NHENTAI_SOURCE_ID
+            }
+            if (HITOMI_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += HITOMI_SOURCE_ID
+            }
+            if (EIGHTMUSES_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += EIGHTMUSES_SOURCE_ID
+            }
+            if (HBROWSE_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
+                BlacklistedSources.HIDDEN_SOURCES += HBROWSE_SOURCE_ID
+            }
+        }
+        // EXH <--
 
         setExtensionsBadge()
         preferences.extensionUpdatesCount().asFlow()
