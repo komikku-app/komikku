@@ -36,6 +36,7 @@ class TrackAdapter(controller: TrackController) : androidx.recyclerview.widget.R
     interface OnClickListener {
         fun onLogoClick(position: Int)
         fun onSetClick(position: Int)
+        fun onTitleLongClick(position: Int)
         fun onStatusClick(position: Int)
         fun onChaptersClick(position: Int)
         fun onScoreClick(position: Int)

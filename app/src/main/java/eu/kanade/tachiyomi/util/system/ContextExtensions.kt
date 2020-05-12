@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.job.JobScheduler
 import android.content.BroadcastReceiver
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.VIBRATOR_SERVICE
@@ -30,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.nononsenseapps.filepicker.FilePickerActivity
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.widget.CustomLayoutPickerActivity
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +60,21 @@ fun Context.toast(text: String?, duration: Int = Toast.LENGTH_SHORT) {
     GlobalScope.launch(Dispatchers.Main) {
         Toast.makeText(this@toast, text.orEmpty(), duration).show()
     }
+}
+
+/**
+ * Copies a string to clipboard
+ *
+ * @param label Label to show to the user describing the content
+ * @param content the actual text to copy to the board
+ */
+fun Context.copyToClipboard(label: String, content: String) {
+    if (content.isBlank()) return
+
+    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText(label, content))
+
+    toast(getString(R.string.copied_to_clipboard, content.truncateCenter(50)))
 }
 
 /**
