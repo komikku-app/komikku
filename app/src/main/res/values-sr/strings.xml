@@ -230,12 +230,10 @@
 \n%1$s izvor nije pronađen</string>
     <string name="backup_created">Rezerna kopija napravljena</string>
     <string name="restore_completed">Vraćanje završeno</string>
-    <string name="error_opening_log">Ne mogu otvoriti zapisnik</string>
-    <string name="restore_completed_content">Vraćanju trebalo %1$s.
-\n%2$s grešaka pronađeno.</string>
-    <string name="backup_restore_content">Vraćanja koriste izvore da dobiju podatke, troškovi prenošenja se mogu primijeniti.
-\nTakođe budite sigurni da se tačno prijavljeni na izvorima koji je to potrebno prije vraćanja.</string>
-    <string name="file_saved">Fajl sačuvan na %1$s</string>
+    <string name="backup_restore_content">Vraćanja koriste izvore da preuzima podatke, troškovi prenošenja se mogu primeniti.
+\n
+\nProvjerite jeste li instalirali sva potrebna proširenja i prijavljeni ste u izvore i usluge praćenja prije vraćanja.</string>
+
     <string name="backup_choice">\?Šta želite da stavite u rezernu kopiju\?</string>
     <string name="restoring_backup">Vraćanje rezerne kopije</string>
     <string name="creating_backup">Pravljenje rezerne kopije</string>
@@ -250,8 +248,6 @@
     <string name="pref_clear_database_summary">Izbriši mange i poglavlja koji nisu u vašoj biblioteci</string>
     <string name="clear_database_confirmation">Da li ste sigurni\? Pročitana poglavlja i progres manga koje nisu u biblioteci će biti izgubljen</string>
     <string name="clear_database_completed">Unosi izbrisani</string>
-    <string name="pref_refresh_library_metadata">Osvježi metada biblioteke</string>
-    <string name="pref_refresh_library_metadata_summary">Ažuriraj naslovnice, žanrove, deskripcije i status informacije o mangama</string>
     <string name="pref_refresh_library_tracking">Osvježi metadatu praćenja</string>
     <string name="pref_refresh_library_tracking_summary">Ažuriraj status, ocenu i poslednje poglavlje pročitano na izvorima praćenja</string>
     <string name="version">Verzija</string>

@@ -191,12 +191,8 @@
 \n%1$s لم يتم إيجاد المصدر</string>
     <string name="backup_created">تم إنشاء النسخة الاحتياطية</string>
     <string name="restore_completed">اكتملت الاستعادة</string>
-    <string name="error_opening_log">لا يمكن فتح السجل</string>
-    <string name="restore_completed_content">استغرقت الاستعادة %1$s.
-\n%2$s خطأ وجد.</string>
-    <string name="backup_restore_content">عملية الاستعادة تستخدم المصدر لجلب البيانات، قد يتم تطبيق تكاليف مزود الخدمة.
-\nأيضا تأكد من تسجيل الدخول للمصادر المطلوبة قبل عملية الاستعادة.</string>
-    <string name="file_saved">تم حفظ الملف خلال %1$s</string>
+    <string name="backup_restore_content">عملية الاستعادة تستخدم المصادر لجلب البيانات، قد يتم تطبيق تكاليف مزود الخدمة. 
+\nتأكد من تثبيت كافة اﻹضافات الضرورية وتسجيل الدخول لخدمات التتبع المطلوبة قبل عملية الاستعادة.</string>
     <string name="backup_choice">ما الذي تريد نسخه احتياطيا؟</string>
     <string name="restoring_backup">جار استعادة النسخة الاحتياطية</string>
     <string name="creating_backup">جار إنشاء النسخة الاحتياطية</string>
@@ -218,8 +214,6 @@
     <string name="pref_clear_database_summary">مسح المانجا والفصول التى ليست فى مكتبتك</string>
     <string name="clear_database_confirmation">هل أنت متأكد؟ الفصول المقروءة ومستوي التقدم للمانجا الغير موجودة فى مكتبتك سيتم فقده</string>
     <string name="clear_database_completed">تم حذف المدخلات</string>
-    <string name="pref_refresh_library_metadata">تحديث البيانات الوصفية للمكتبة</string>
-    <string name="pref_refresh_library_metadata_summary">تحديث اﻷغلفة، التصنيفات، الوصف ومعلومات حالة المانجا</string>
     <string name="pref_refresh_library_tracking">تحديث البيانات الوصفية للتتبع</string>
     <string name="pref_refresh_library_tracking_summary">تحديث الحالة، والتقييم وآخر فصل عن طريق خدمات التتبع</string>
     <string name="version">اﻹصدار</string>
