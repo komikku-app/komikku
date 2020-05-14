@@ -25,6 +25,7 @@ object Notifications {
     const val CHANNEL_LIBRARY = "library_channel"
     const val ID_LIBRARY_PROGRESS = -101
     const val ID_LIBRARY_RESULT = -102
+    const val ID_LIBRARY_ERROR = -103
 
     /**
      * Notification channel and ids used by the downloader.
@@ -49,7 +50,7 @@ object Notifications {
      * Notification channel and ids used by the library updater.
      */
     const val CHANNEL_UPDATES_TO_EXTS = "updates_ext_channel"
-    const val ID_UPDATES_TO_EXTS = -501
+    const val ID_UPDATES_TO_EXTS = -401
 
     /**
      * Creates the notification channels introduced in Android Oreo.
