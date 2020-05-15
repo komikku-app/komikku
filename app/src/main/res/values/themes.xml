@@ -184,10 +184,7 @@
         <item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
 
-    <!--==============-->
-    <!-- Amoled Theme -->
-    <!--==============-->
-    <style name="Theme.Base.Amoled" parent="Theme.Base.Dark">
+    <style name="Theme.Tachiyomi.Amoled" parent="Theme.Base.Dark">
         <item name="colorPrimary">@color/colorAmoledPrimary</item>
         <item name="colorPrimaryVariant">@color/colorAmoledPrimary</item>
         <item name="colorSurface">@color/colorAmoledPrimary</item>
@@ -200,10 +197,6 @@
         <item name="colorLibrarySelection">@color/selectorColorDark</item>
         <item name="colorLibrarySelectionActive">@color/selectorColorDark</item>
         <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.Amoled</item>
-    </style>
-
-    <style name="Theme.Tachiyomi.Amoled" parent="Theme.Base.Amoled">
-        <!-- Attributes specific for SDK 16 to SDK 20 -->
     </style>
 
     <!--==============-->
