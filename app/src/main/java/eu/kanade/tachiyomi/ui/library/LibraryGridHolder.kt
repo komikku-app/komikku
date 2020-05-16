@@ -65,6 +65,9 @@ class LibraryGridHolder(
             view.context.resources.displayMetrics
         )
 
+        // Setting this via XML doesn't work
+        card.clipToOutline = true
+
         // Update the cover.
         GlideApp.with(view.context).clear(thumbnail)
         GlideApp.with(view.context)

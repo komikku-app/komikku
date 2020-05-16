@@ -37,6 +37,9 @@ class SourceGridHolder(private val view: View, private val adapter: FlexibleAdap
      * @param manga the manga to bind.
      */
     override fun onSetValues(manga: Manga) {
+        // Set manga title
+        title.text = manga.title
+
         // Set alpha of thumbnail.
         thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
 
@@ -44,8 +47,8 @@ class SourceGridHolder(private val view: View, private val adapter: FlexibleAdap
     }
 
     override fun setImage(manga: Manga) {
-        // Set manga title
-        title.text = manga.title
+        // Setting this via XML doesn't work
+        card.clipToOutline = true
 
         card.radius = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
