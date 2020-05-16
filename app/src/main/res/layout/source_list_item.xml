@@ -10,18 +10,16 @@
     tools:layout_editor_absoluteX="0dp"
     tools:layout_editor_absoluteY="25dp">
 
-   <ImageView
-       android:id="@+id/thumbnail"
-       android:layout_width="@dimen/material_component_lists_single_line_with_avatar_height"
-       android:layout_height="@dimen/material_component_lists_single_line_with_avatar_height"
-       android:layout_gravity="center_vertical"
-       tools:src="@mipmap/ic_launcher"
-       app:layout_constraintStart_toStartOf="parent"
-       app:layout_constraintBottom_toBottomOf="parent"
-       app:layout_constraintTop_toTopOf="parent"
-       android:paddingTop="8dp"
-       android:paddingBottom="8dp"
-       android:layout_marginStart="8dp"/>
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="@dimen/material_component_lists_single_line_with_avatar_height"
+        android:layout_height="@dimen/material_component_lists_single_line_with_avatar_height"
+        android:layout_gravity="center_vertical"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@mipmap/ic_launcher" />
 
     <TextView
         android:id="@+id/title"
