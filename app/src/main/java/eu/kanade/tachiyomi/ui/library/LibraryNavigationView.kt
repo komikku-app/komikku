@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companion.SORT_ASC
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companion.SORT_DESC
@@ -11,6 +12,8 @@ import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.MultiSort.Companio
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_EXCLUDE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -79,7 +82,13 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val tracked = Item.TriStateGroup(R.string.action_filter_tracked, this)
 
-        override val items = listOf(downloaded, unread, completed, tracked)
+        override val items = (
+            if (Injekt.get<TrackManager>().hasLoggedServices()) {
+                listOf(downloaded, unread, completed, tracked)
+            } else {
+                listOf(downloaded, unread, completed)
+            }
+        )
 
         override val header = Item.Header(R.string.action_filter)
 
@@ -90,7 +99,11 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
                 downloaded.state = preferences.filterDownloaded().get()
                 unread.state = preferences.filterUnread().get()
                 completed.state = preferences.filterCompleted().get()
-                tracked.state = preferences.filterTracked().get()
+                if (Injekt.get<TrackManager>().hasLoggedServices()) {
+                    tracked.state = preferences.filterTracked().get()
+                } else {
+                    tracked.state = STATE_IGNORE
+                }
             } catch (e: Exception) {
                 preferences.upgradeFilters()
             }
