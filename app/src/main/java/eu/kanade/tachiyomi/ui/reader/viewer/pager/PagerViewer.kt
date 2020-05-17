@@ -83,10 +83,10 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             val positionX = event.x
             val positionY = event.y
             when {
-                positionX < pager.width * 0.33f && config.tappingEnabled -> moveLeft()
-                positionX > pager.width * 0.66f && config.tappingEnabled -> moveRight()
                 positionY < pager.height * 0.33f && config.tappingEnabled && !pager.isHorizontal() -> moveUp()
                 positionY > pager.height * 0.66f && config.tappingEnabled && !pager.isHorizontal() -> moveDown()
+                positionX < pager.width * 0.33f && config.tappingEnabled -> moveLeft()
+                positionX > pager.width * 0.66f && config.tappingEnabled -> moveRight()
                 else -> activity.toggleMenu()
             }
         }
