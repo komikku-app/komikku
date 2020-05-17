@@ -102,7 +102,7 @@ class ChaptersController :
         adapter?.fastScroller = binding.fastScroller
 
         binding.swipeRefresh.refreshes()
-            .onEach { fetchChaptersFromSource() }
+            .onEach { fetchChaptersFromSource(manualFetch = true) }
             .launchIn(scope)
 
         binding.fab.clicks()
@@ -267,10 +267,10 @@ class ChaptersController :
     }
 
     fun onNextChapters(chapters: List<ChapterItem>) {
-        // If the list is empty, fetch chapters from source if the conditions are met
+        // If the list is empty and it hasn't requested previously, fetch chapters from source
         // We use presenter chapters instead because they are always unfiltered
-        if (presenter.chapters.isEmpty()) {
-            initialFetchChapters()
+        if (!presenter.hasRequested && presenter.chapters.isEmpty()) {
+            fetchChaptersFromSource()
         }
 
         val mangaController = parentController as MangaController
@@ -301,16 +301,9 @@ class ChaptersController :
         }
     }
 
-    private fun initialFetchChapters() {
-        // Only fetch if this view is from the catalog and it hasn't requested previously
-        if ((parentController as MangaController).fromSource && !presenter.hasRequested) {
-            fetchChaptersFromSource()
-        }
-    }
-
-    private fun fetchChaptersFromSource() {
+    private fun fetchChaptersFromSource(manualFetch: Boolean = false) {
         binding.swipeRefresh.isRefreshing = true
-        presenter.fetchChaptersFromSource()
+        presenter.fetchChaptersFromSource(manualFetch)
     }
 
     fun onFetchChaptersDone() {
