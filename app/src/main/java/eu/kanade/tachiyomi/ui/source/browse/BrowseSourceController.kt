@@ -54,6 +54,7 @@ import exh.EXHSavedSearch
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.main_activity.drawer
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
@@ -357,7 +358,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
         searchView.queryTextEvents()
             .filter { router.backstack.lastOrNull()?.controller() == this@BrowseSourceController }
-            .filter { it is QueryTextEvent.QuerySubmitted }
+            .filterIsInstance<QueryTextEvent.QuerySubmitted>()
             .onEach { searchWithQuery(it.queryText.toString()) }
             .launchIn(scope)
 

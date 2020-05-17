@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.source.browse.BrowseSourceController
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
@@ -124,7 +125,7 @@ open class GlobalSearchController(
         })
 
         searchView.queryTextEvents()
-            .filter { it is QueryTextEvent.QuerySubmitted }
+            .filterIsInstance<QueryTextEvent.QuerySubmitted>()
             .onEach {
                 presenter.search(it.queryText.toString())
                 searchItem.collapseActionView()
