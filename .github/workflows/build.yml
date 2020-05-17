@@ -1,0 +1,50 @@
+name: Android Master CI
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+     
+  apk:
+    name: Generate APK
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Get NDK 
+        run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;20.0.5594570"
+      - name: Write google-services.json
+        uses: DamianReeves/write-file-action@v1.0
+        with:
+          # The path to the file to write
+          path: app/google-services.json
+          # The contents of the file
+          contents: ${{ secrets.GOOGLE_SERVICES_TEXT }}
+          # The mode of writing to use: `overwrite`, `append`, or `preserve`.
+          write-mode: overwrite # optional, default is preserve
+      - name: Build Release APK
+        run: bash ./gradlew assembleRelease --stacktrace
+      - name: Sign Android release
+        uses: r0adkll/sign-android-release@v1
+        with:
+          # The directory to find your release to sign
+          releaseDirectory: app/build/outputs/apk/standard/release
+          # The key used to sign your release in base64 encoded format
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          # The key alias
+          alias: ${{ secrets.ALIAS }}
+          # The password to the keystore
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          # The password for the key
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: TachiyomiAZ-${{ github.sha }}.apk
+          path: ${{ env.SIGNED_RELEASE_FILE }}
