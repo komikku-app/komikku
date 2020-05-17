@@ -35,6 +35,7 @@ import eu.kanade.tachiyomi.ui.source.filter.TextItem
 import eu.kanade.tachiyomi.ui.source.filter.TextSectionItem
 import eu.kanade.tachiyomi.ui.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.source.filter.TriStateSectionItem
+import eu.kanade.tachiyomi.util.removeCovers
 import exh.EXHSavedSearch
 import rx.Observable
 import rx.Subscription
