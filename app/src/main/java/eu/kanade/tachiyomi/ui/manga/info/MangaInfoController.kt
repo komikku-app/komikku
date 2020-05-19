@@ -278,7 +278,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
     // AZ -->
     private fun openRecommends() {
-        val recommendsConfig = BrowseSourceController.RecommendsConfig(presenter.manga.title, presenter.manga.source)
+        val recommendsConfig = BrowseSourceController.RecommendsConfig(presenter.manga)
 
         parentController?.router?.pushController(
             BrowseSourceController(
