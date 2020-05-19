@@ -82,11 +82,13 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val tracked = Item.TriStateGroup(R.string.action_filter_tracked, this)
 
+        private val lewd = Item.TriStateGroup(R.string.lewd, this)
+
         override val items = (
             if (Injekt.get<TrackManager>().hasLoggedServices()) {
-                listOf(downloaded, unread, completed, tracked)
+                listOf(downloaded, unread, completed, tracked, lewd)
             } else {
-                listOf(downloaded, unread, completed)
+                listOf(downloaded, unread, completed, lewd)
             }
         )
 
@@ -104,6 +106,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
                 } else {
                     tracked.state = STATE_IGNORE
                 }
+                lewd.state = preferences.filterLewd().get()
             } catch (e: Exception) {
                 preferences.upgradeFilters()
             }
@@ -122,6 +125,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
                 unread -> preferences.filterUnread().set(item.state)
                 completed -> preferences.filterCompleted().set(item.state)
                 tracked -> preferences.filterTracked().set(item.state)
+                lewd -> preferences.filterLewd().set(item.state)
             }
 
             adapter.notifyItemChanged(item)
