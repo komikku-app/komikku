@@ -352,4 +352,6 @@ class PreferencesHelper(val context: Context) {
     fun eh_library_corner_radius() = flowPrefs.getInt(Keys.eh_library_rounded_corners, 4)
 
     fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, 4)
+
+    fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
 }
