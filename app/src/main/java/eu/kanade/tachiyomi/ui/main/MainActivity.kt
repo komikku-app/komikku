@@ -42,6 +42,7 @@ import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.setting.SettingsMainController
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchController
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.vibrate
@@ -66,12 +67,9 @@ import exh.ui.lock.lockEnabled
 import java.util.Date
 import java.util.LinkedList
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainActivity : BaseActivity<MainActivityBinding>() {
@@ -320,12 +318,11 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
     private fun getExtensionUpdates() {
         // Limit checks to once a day at most
-        val now = Date().time
-        if (now < preferences.lastExtCheck().get() + TimeUnit.DAYS.toMillis(1)) {
+        if (Date().time < preferences.lastExtCheck().get() + TimeUnit.DAYS.toMillis(1)) {
             return
         }
 
-        GlobalScope.launch(Dispatchers.IO) {
+        launchIO {
             try {
                 val pendingUpdates = ExtensionGithubApi().checkForUpdates(this@MainActivity)
                 preferences.extensionUpdatesCount().set(pendingUpdates.size)
