@@ -178,6 +178,12 @@ class SettingsLibraryController : SettingsController() {
                 }
             }
             switchPreference {
+                key = Keys.autoUpdateMetadata
+                titleRes = R.string.pref_library_update_refresh_metadata
+                summaryRes = R.string.pref_library_update_refresh_metadata_summary
+                defaultValue = false
+            }
+            switchPreference {
                 key = Keys.showLibraryUpdateErrors
                 titleRes = R.string.pref_library_update_error_notification
                 defaultValue = false
