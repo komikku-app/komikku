@@ -113,7 +113,7 @@ class MigrationController :
         if (item is MangaItem) {
             PreMigrationController.navigateToMigration(
                 Injekt.get<PreferencesHelper>().skipPreMigration().get(),
-                router,
+                parentController!!.router,
                 listOf(item.manga.id!!)
             )
         } else if (item is SourceItem) {
@@ -138,7 +138,7 @@ class MigrationController :
             withContext(Dispatchers.Main) {
                 PreMigrationController.navigateToMigration(
                     Injekt.get<PreferencesHelper>().skipPreMigration().get(),
-                    router,
+                    parentController!!.router,
                     sourceMangas
                 )
             }
