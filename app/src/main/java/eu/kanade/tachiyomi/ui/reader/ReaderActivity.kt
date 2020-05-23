@@ -861,11 +861,9 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         val manga = presenter.manga ?: return
         val chapter = page.chapter.chapter
 
-        val text = "${manga.title}: ${chapter.name}, ${getString(R.string.chapter_progress, page.number)}"
-
         val stream = file.getUriCompat(this)
         val intent = Intent(Intent.ACTION_SEND).apply {
-            putExtra(Intent.EXTRA_TEXT, text)
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_page_info, manga.title, chapter.name, page.number))
             putExtra(Intent.EXTRA_STREAM, stream)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
             type = "image/*"
