@@ -241,18 +241,21 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val grid = Item.Radio(R.string.action_display_grid, this)
 
+        private val comfortableGrid = Item.Radio(R.string.action_display_comfortable_grid, this)
+
         private val list = Item.Radio(R.string.action_display_list, this)
 
-        override val items = listOf(grid, list)
+        override val items = listOf(grid, comfortableGrid, list)
 
         override val header = Item.Header(R.string.action_display)
 
         override val footer = null
 
         override fun initModels() {
-            val asList = preferences.libraryAsList().get()
-            grid.checked = !asList
-            list.checked = asList
+            val mode = preferences.libraryViewSetting().get()
+            grid.checked = mode == 0
+            list.checked = mode == 1
+            comfortableGrid.checked = mode == 2
         }
 
         override fun onItemClicked(item: Item) {
@@ -262,7 +265,13 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             item.group.items.forEach { (it as Item.Radio).checked = false }
             item.checked = true
 
-            preferences.libraryAsList().set(item == list)
+            preferences.libraryViewSetting().set(
+                when (item) {
+                    grid -> 0
+                    list -> 1
+                    else -> 2
+                }
+            )
 
             item.group.items.forEach { adapter.notifyItemChanged(it) }
         }
