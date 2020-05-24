@@ -53,7 +53,7 @@ class SourceItem(val manga: Manga, private val catalogueAsList: Preference<Int>)
                         MATCH_PARENT, coverHeight / 2, Gravity.BOTTOM
                     )
                     outside.layoutParams = FrameLayout.LayoutParams(
-                        MATCH_PARENT, coverHeight + 200
+                        MATCH_PARENT, (coverHeight * 1.2).toInt()
                     )
                 }
                 SourceComfortableGridHolder(view, adapter)
