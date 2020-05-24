@@ -37,11 +37,6 @@ import eu.kanade.tachiyomi.ui.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.EXHSavedSearch
 import java.lang.RuntimeException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.subscribe
 import rx.Observable
 import rx.Subscription
@@ -124,11 +119,6 @@ open class BrowseSourcePresenter(
      */
     private var initializerSubscription: Subscription? = null
 
-    /**
-     * Scope to watch the view setting
-     */
-    private val scope = CoroutineScope(Job() + Dispatchers.Default)
-
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
@@ -140,9 +130,8 @@ open class BrowseSourcePresenter(
             query = savedState.getString(::query.name, "")
         }
 
-        prefs.catalogueViewSetting().asFlow()
-            .onEach { setDisplayMode(it) }
-            .launchIn(scope)
+        prefs.catalogueViewSetting().asObservable()
+            .subscribe { setDisplayMode(it) }
 
         restartPager()
     }
@@ -171,7 +160,7 @@ open class BrowseSourcePresenter(
 
         val sourceId = source.id
 
-        val catalogueAsList = prefs.catalogueViewSetting()
+        val catalogueViewSetting = prefs.catalogueViewSetting()
 
         // Prepare the pager.
         pagerSubscription?.let { remove(it) }
@@ -179,7 +168,7 @@ open class BrowseSourcePresenter(
             .observeOn(Schedulers.io())
             .map { pair -> pair.first to pair.second.map { networkToLocalManga(it, sourceId) } }
             .doOnNext { initializeMangas(it.second) }
-            .map { pair -> pair.first to pair.second.map { SourceItem(it, catalogueAsList) } }
+            .map { pair -> pair.first to pair.second.map { SourceItem(it, catalogueViewSetting) } }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeReplay(
                 { view, (page, mangas) ->

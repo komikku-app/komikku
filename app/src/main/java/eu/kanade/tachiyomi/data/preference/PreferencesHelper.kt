@@ -137,7 +137,7 @@ class PreferencesHelper(val context: Context) {
 
     fun lastVersionCode() = flowPrefs.getInt("last_version_code", 0)
 
-    fun catalogueViewSetting() = flowPrefs.getInt(Keys.catalogueViewSetting, 0)
+    fun catalogueViewSetting() = rxPrefs.getInteger(Keys.catalogueViewSetting, 0)
 
     fun enabledLanguages() = flowPrefs.getStringSet(Keys.enabledLanguages, setOf("all", "en", Locale.getDefault().language))
 
