@@ -18,7 +18,6 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
-import exh.util.updateLayoutParams
 import kotlinx.android.synthetic.main.source_comfortable_grid_item.view.title
 import kotlinx.android.synthetic.main.source_grid_item.view.card
 import kotlinx.android.synthetic.main.source_grid_item.view.gradient
@@ -46,9 +45,9 @@ class LibraryItem(val manga: LibraryManga, private val libraryViewSetting: Prefe
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): LibraryHolder {
         val parent = adapter.recyclerView
         return if (parent is AutofitRecyclerView) {
+            val coverHeight = parent.itemWidth / 3 * 4
             if (libraryViewSetting.get() == 0) {
                 view.apply {
-                    val coverHeight = parent.itemWidth / 3 * 4
                     card.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, coverHeight)
                     gradient.layoutParams = FrameLayout.LayoutParams(
                         MATCH_PARENT, coverHeight / 2, Gravity.BOTTOM
@@ -57,10 +56,9 @@ class LibraryItem(val manga: LibraryManga, private val libraryViewSetting: Prefe
                 LibraryGridHolder(view, adapter)
             } else {
                 view.apply {
-                    val coverHeight = parent.itemWidth / 3 * 4
-                    card.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                        height = coverHeight
-                    }
+                    card.layoutParams = ConstraintLayout.LayoutParams(
+                        MATCH_PARENT, coverHeight
+                    )
                     gradient.layoutParams = FrameLayout.LayoutParams(
                         MATCH_PARENT, coverHeight / 2, Gravity.BOTTOM
                     )
