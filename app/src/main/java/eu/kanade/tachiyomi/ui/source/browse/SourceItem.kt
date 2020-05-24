@@ -13,15 +13,14 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
-import exh.util.updateLayoutParams
 import kotlinx.android.synthetic.main.source_grid_item.view.card
 import kotlinx.android.synthetic.main.source_grid_item.view.gradient
 
-class SourceItem(val manga: Manga, private val catalogueAsList: Preference<Int>) :
+class SourceItem(val manga: Manga, private val catalogueViewSetting: Preference<Int>) :
     AbstractFlexibleItem<SourceHolder>() {
 
     override fun getLayoutRes(): Int {
-        return when (catalogueAsList.get()) {
+        return when (catalogueViewSetting.get()) {
             0 -> R.layout.source_grid_item
             1 -> R.layout.source_list_item
             else -> R.layout.source_comfortable_grid_item
@@ -35,7 +34,7 @@ class SourceItem(val manga: Manga, private val catalogueAsList: Preference<Int>)
         val parent = adapter.recyclerView
         return if (parent is AutofitRecyclerView) {
             val coverHeight = parent.itemWidth / 3 * 4
-            if (catalogueAsList.get() == 0) {
+            if (catalogueViewSetting.get() == 0) {
                 view.apply {
                     card.layoutParams = FrameLayout.LayoutParams(
                         MATCH_PARENT, coverHeight
@@ -47,9 +46,9 @@ class SourceItem(val manga: Manga, private val catalogueAsList: Preference<Int>)
                 SourceGridHolder(view, adapter)
             } else {
                 view.apply {
-                    card.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                        height = coverHeight
-                    }
+                    card.layoutParams = ConstraintLayout.LayoutParams(
+                        MATCH_PARENT, coverHeight
+                    )
                     gradient.layoutParams = FrameLayout.LayoutParams(
                         MATCH_PARENT, coverHeight / 2, Gravity.BOTTOM
                     )

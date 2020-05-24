@@ -130,8 +130,10 @@ open class BrowseSourcePresenter(
             query = savedState.getString(::query.name, "")
         }
 
-        prefs.catalogueViewSetting().asObservable()
-            .subscribe { setDisplayMode(it) }
+        add(
+            prefs.catalogueViewSetting().asObservable()
+                .subscribe { setDisplayMode(it) }
+        )
 
         restartPager()
     }
