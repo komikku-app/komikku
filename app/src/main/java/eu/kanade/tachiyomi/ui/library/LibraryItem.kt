@@ -60,7 +60,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryViewSetting: Prefe
                     gradient.layoutParams = FrameLayout.LayoutParams(
                         MATCH_PARENT, coverHeight / 2, Gravity.BOTTOM
                     )
-                    outside.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, coverHeight + 200)
+                    outside.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, (coverHeight * 1.2).toInt())
                 }
                 LibraryComfortableGridHolder(view, adapter)
             }
