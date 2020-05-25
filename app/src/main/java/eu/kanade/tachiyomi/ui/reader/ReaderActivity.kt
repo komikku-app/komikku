@@ -24,6 +24,7 @@ import androidx.core.view.ViewCompat
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.elvishew.xlog.XLog
+import com.google.android.material.snackbar.Snackbar
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -58,9 +59,11 @@ import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.hideBar
 import eu.kanade.tachiyomi.util.view.isDefaultBar
 import eu.kanade.tachiyomi.util.view.showBar
+import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
+import exh.util.defaultReaderType
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -645,6 +648,13 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.pleaseWait.visible()
         binding.pleaseWait.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_long))
+
+        if (preferences.eh_useAutoWebtoon().get()) {
+            val defaultReaderType = manga.defaultReaderType()
+            if (manga.viewer == 0 && defaultReaderType != null && defaultReaderType == WEBTOON) {
+                binding.readerLayout.snack(resources.getString(R.string.eh_auto_webtoon_snack), Snackbar.LENGTH_LONG) {}
+            }
+        }
     }
 
     /**
