@@ -317,7 +317,7 @@ open class BrowseSourceController(bundle: Bundle) :
             binding.catalogueView.removeView(oldRecycler)
         }
 
-        val recycler = if (preferences.catalogueDisplayMode().get() == DisplayMode.LIST.value) {
+        val recycler = if (preferences.catalogueDisplayMode().get() == DisplayMode.LIST) {
             RecyclerView(view.context).apply {
                 id = R.id.recycler
                 layoutManager = LinearLayoutManager(context)
@@ -401,10 +401,9 @@ open class BrowseSourceController(bundle: Bundle) :
         )
 
         val displayItem = when (preferences.catalogueDisplayMode().get()) {
-            DisplayMode.COMPACT_GRID.value -> R.id.action_compact_grid
-            DisplayMode.COMFORTABLE_GRID.value -> R.id.action_comfortable_grid
-            DisplayMode.LIST.value -> R.id.action_list
-            else -> throw NotImplementedError("Unknown display mode")
+            DisplayMode.COMPACT_GRID -> R.id.action_compact_grid
+            DisplayMode.COMFORTABLE_GRID -> R.id.action_comfortable_grid
+            DisplayMode.LIST -> R.id.action_list
         }
         menu.findItem(displayItem).isChecked = true
     }
@@ -587,7 +586,7 @@ open class BrowseSourceController(bundle: Bundle) :
         val view = view ?: return
         val adapter = adapter ?: return
 
-        preferences.catalogueDisplayMode().set(mode.value)
+        preferences.catalogueDisplayMode().set(mode)
         presenter.refreshDisplayMode()
         activity?.invalidateOptionsMenu()
         setupRecycler(view)

@@ -230,9 +230,9 @@ class LibrarySettingsSheet(
 
             override fun initModels() {
                 val mode = preferences.libraryDisplayMode().get()
-                compactGrid.checked = mode == DisplayMode.COMPACT_GRID.value
-                comfortableGrid.checked = mode == DisplayMode.COMFORTABLE_GRID.value
-                list.checked = mode == DisplayMode.LIST.value
+                compactGrid.checked = mode == DisplayMode.COMPACT_GRID
+                comfortableGrid.checked = mode == DisplayMode.COMFORTABLE_GRID
+                list.checked = mode == DisplayMode.LIST
             }
 
             override fun onItemClicked(item: Item) {
@@ -244,9 +244,9 @@ class LibrarySettingsSheet(
 
                 preferences.libraryDisplayMode().set(
                     when (item) {
-                        compactGrid -> DisplayMode.COMPACT_GRID.value
-                        comfortableGrid -> DisplayMode.COMFORTABLE_GRID.value
-                        list -> DisplayMode.LIST.value
+                        compactGrid -> DisplayMode.COMPACT_GRID
+                        comfortableGrid -> DisplayMode.COMFORTABLE_GRID
+                        list -> DisplayMode.LIST
                         else -> throw NotImplementedError("Unknown display mode")
                     }
                 )

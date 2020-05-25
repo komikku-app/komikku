@@ -16,9 +16,9 @@ object PreferenceValues {
     const val THEME_DARK_BLUE = "blue"
     const val THEME_DARK_AMOLED = "amoled"
 
-    enum class DisplayMode(val value: Int) {
-        COMPACT_GRID(0),
-        COMFORTABLE_GRID(1),
-        LIST(2),
+    enum class DisplayMode {
+        COMPACT_GRID,
+        COMFORTABLE_GRID,
+        LIST,
     }
 }
