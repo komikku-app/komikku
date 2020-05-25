@@ -72,6 +72,7 @@ open class BrowseSourcePresenter(
      */
     var query = if (recommends) "" else searchQuery ?: ""
         private set
+
     /**
      * Modifiable list of filters.
      */
@@ -198,13 +199,6 @@ open class BrowseSourcePresenter(
     }
 
     /**
-     * Refeshes the display mode.
-     */
-    fun refreshDisplayMode() {
-        subscribeToMangaInitializer()
-    }
-
-    /**
      * Subscribes to the initializer of manga details and updates the view if needed.
      */
     private fun subscribeToMangaInitializer() {
@@ -283,6 +277,13 @@ open class BrowseSourcePresenter(
             manga.removeCovers(coverCache)
         }
         db.insertManga(manga).executeAsBlocking()
+    }
+
+    /**
+     * Refreshes the active display mode.
+     */
+    fun refreshDisplayMode() {
+        subscribeToMangaInitializer()
     }
 
     /**
