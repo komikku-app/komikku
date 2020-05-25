@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.migration.manga.process
+package eu.kanade.tachiyomi.ui.browse.migration.manga.process
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

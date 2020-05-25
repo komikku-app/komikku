@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.migration
+package eu.kanade.tachiyomi.ui.browse.migration
 
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
-import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import exh.util.RecyclerWindowInsetsListener
 import exh.util.applyWindowInsetsForController

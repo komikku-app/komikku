@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.migration.manga.process
+package eu.kanade.tachiyomi.ui.browse.migration.manga.process
 
 import android.view.View
 import android.widget.PopupMenu

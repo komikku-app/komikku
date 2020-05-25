@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.migration.manga.process
+package eu.kanade.tachiyomi.ui.browse.migration.manga.process
 
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -26,11 +26,11 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.browse.migration.MigrationMangaDialog
+import eu.kanade.tachiyomi.ui.browse.migration.SearchController
+import eu.kanade.tachiyomi.ui.browse.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.ui.migration.MigrationMangaDialog
-import eu.kanade.tachiyomi.ui.migration.SearchController
-import eu.kanade.tachiyomi.ui.migration.manga.design.PreMigrationController
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor

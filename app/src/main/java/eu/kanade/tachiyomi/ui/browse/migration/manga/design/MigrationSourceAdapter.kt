@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.migration.manga.design
+package eu.kanade.tachiyomi.ui.browse.migration.manga.design
 
 import android.os.Bundle
 import eu.davidea.flexibleadapter.FlexibleAdapter
