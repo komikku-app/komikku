@@ -4,24 +4,23 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.inflate
+import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import exh.EXHSavedSearch
 import kotlinx.android.synthetic.main.source_filter_sheet.view.filter_btn
 import kotlinx.android.synthetic.main.source_filter_sheet.view.reset_btn
 import kotlinx.android.synthetic.main.source_filter_sheet.view.save_search_btn
 import kotlinx.android.synthetic.main.source_filter_sheet.view.saved_searches
+import kotlinx.android.synthetic.main.source_filter_sheet.view.saved_searches_title
 
 class SourceFilterSheet(
     activity: Activity,
@@ -113,21 +112,22 @@ class SourceFilterSheet(
 
             save_search_btn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
 
+            if (searches.isEmpty()) {
+                saved_searches_title.gone()
+            } else {
+                saved_searches_title.visible()
+            }
+
             searches.withIndex().sortedBy { it.value.name }.forEach { (index, search) ->
-                val restoreBtn = TextView(context)
-                restoreBtn.text = search.name
-                val params = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-                params.gravity = Gravity.CENTER
-                restoreBtn.layoutParams = params
-                restoreBtn.gravity = Gravity.CENTER
-                restoreBtn.setBackgroundResource(outValue.resourceId)
-                restoreBtn.setPadding(8.dpToPx, 8.dpToPx, 8.dpToPx, 8.dpToPx)
-                restoreBtn.setOnClickListener { onSavedSearchClicked(index) }
-                restoreBtn.setOnLongClickListener { onSavedSearchDeleteClicked(index, search.name); true }
-                saved_searches.addView(restoreBtn)
+                val chip = Chip(context).apply {
+                    text = search.name
+                    setOnClickListener { onSavedSearchClicked(index) }
+                    setOnLongClickListener {
+                        onSavedSearchDeleteClicked(index, search.name); true
+                    }
+                }
+
+                saved_searches.addView(chip)
             }
         }
 
