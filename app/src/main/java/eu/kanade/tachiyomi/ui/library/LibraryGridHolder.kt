@@ -12,12 +12,12 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.view.visibleIf
-import kotlinx.android.synthetic.main.source_grid_item.card
-import kotlinx.android.synthetic.main.source_grid_item.download_text
-import kotlinx.android.synthetic.main.source_grid_item.local_text
-import kotlinx.android.synthetic.main.source_grid_item.thumbnail
-import kotlinx.android.synthetic.main.source_grid_item.title
-import kotlinx.android.synthetic.main.source_grid_item.unread_text
+import kotlinx.android.synthetic.main.source_compact_grid_item.card
+import kotlinx.android.synthetic.main.source_compact_grid_item.download_text
+import kotlinx.android.synthetic.main.source_compact_grid_item.local_text
+import kotlinx.android.synthetic.main.source_compact_grid_item.thumbnail
+import kotlinx.android.synthetic.main.source_compact_grid_item.title
+import kotlinx.android.synthetic.main.source_compact_grid_item.unread_text
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

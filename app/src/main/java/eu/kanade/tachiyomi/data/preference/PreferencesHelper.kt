@@ -11,7 +11,7 @@ import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
-import eu.kanade.tachiyomi.data.preference.PreferenceValues.DISPLAY_COMPACT_GRID
+import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import java.io.File
@@ -138,7 +138,7 @@ class PreferencesHelper(val context: Context) {
 
     fun lastVersionCode() = flowPrefs.getInt("last_version_code", 0)
 
-    fun catalogueDisplayMode() = flowPrefs.getInt(Keys.catalogueDisplayMode, DISPLAY_COMPACT_GRID)
+    fun catalogueDisplayMode() = flowPrefs.getInt(Keys.catalogueDisplayMode, DisplayMode.COMPACT_GRID.value)
 
     fun enabledLanguages() = flowPrefs.getStringSet(Keys.enabledLanguages, setOf("all", "en", Locale.getDefault().language))
 
@@ -186,7 +186,7 @@ class PreferencesHelper(val context: Context) {
 
     fun libraryUpdatePrioritization() = flowPrefs.getInt(Keys.libraryUpdatePrioritization, 0)
 
-    fun libraryDisplayMode() = flowPrefs.getInt(Keys.libraryDisplayMode, DISPLAY_COMPACT_GRID)
+    fun libraryDisplayMode() = flowPrefs.getInt(Keys.libraryDisplayMode, DisplayMode.COMPACT_GRID.value)
 
     fun downloadBadge() = flowPrefs.getBoolean(Keys.downloadBadge, false)
 

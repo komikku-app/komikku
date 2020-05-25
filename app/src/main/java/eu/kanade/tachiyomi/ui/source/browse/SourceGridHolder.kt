@@ -10,10 +10,10 @@ import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.widget.StateImageViewTarget
-import kotlinx.android.synthetic.main.source_grid_item.card
-import kotlinx.android.synthetic.main.source_grid_item.progress
-import kotlinx.android.synthetic.main.source_grid_item.thumbnail
-import kotlinx.android.synthetic.main.source_grid_item.title
+import kotlinx.android.synthetic.main.source_compact_grid_item.card
+import kotlinx.android.synthetic.main.source_compact_grid_item.progress
+import kotlinx.android.synthetic.main.source_compact_grid_item.thumbnail
+import kotlinx.android.synthetic.main.source_compact_grid_item.title
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

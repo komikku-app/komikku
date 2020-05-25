@@ -3,9 +3,7 @@ package eu.kanade.tachiyomi.ui.library
 import android.content.Context
 import android.util.AttributeSet
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferenceValues.DISPLAY_COMFORTABLE_GRID
-import eu.kanade.tachiyomi.data.preference.PreferenceValues.DISPLAY_COMPACT_GRID
-import eu.kanade.tachiyomi.data.preference.PreferenceValues.DISPLAY_LIST
+import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
@@ -242,13 +240,13 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
      */
     inner class DisplayGroup : Group {
 
-        private val grid = Item.Radio(R.string.action_display_grid, this)
+        private val compactGrid = Item.Radio(R.string.action_display_grid, this)
 
         private val comfortableGrid = Item.Radio(R.string.action_display_comfortable_grid, this)
 
         private val list = Item.Radio(R.string.action_display_list, this)
 
-        override val items = listOf(grid, comfortableGrid, list)
+        override val items = listOf(compactGrid, comfortableGrid, list)
 
         override val header = Item.Header(R.string.action_display)
 
@@ -256,9 +254,9 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         override fun initModels() {
             val mode = preferences.libraryDisplayMode().get()
-            grid.checked = mode == DISPLAY_COMPACT_GRID
-            list.checked = mode == DISPLAY_LIST
-            comfortableGrid.checked = mode == DISPLAY_COMFORTABLE_GRID
+            compactGrid.checked = mode == DisplayMode.COMPACT_GRID.value
+            comfortableGrid.checked = mode == DisplayMode.COMFORTABLE_GRID.value
+            list.checked = mode == DisplayMode.LIST.value
         }
 
         override fun onItemClicked(item: Item) {
