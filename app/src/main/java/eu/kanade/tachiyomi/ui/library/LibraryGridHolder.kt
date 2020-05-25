@@ -25,7 +25,7 @@ import kotlinx.android.synthetic.main.source_grid_item.unread_text
  * @param listener a listener to react to single tap and long tap events.
  * @constructor creates a new library holder.
  */
-class LibraryGridHolder(
+open class LibraryGridHolder(
     private val view: View,
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 ) : LibraryHolder(view, adapter) {
