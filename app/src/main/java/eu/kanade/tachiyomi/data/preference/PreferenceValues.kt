@@ -5,16 +5,25 @@ package eu.kanade.tachiyomi.data.preference
  */
 object PreferenceValues {
 
-    const val THEME_MODE_LIGHT = "light"
-    const val THEME_MODE_DARK = "dark"
-    const val THEME_MODE_SYSTEM = "system"
+    // Keys are lowercase to match legacy string values
+    enum class ThemeMode {
+        light,
+        dark,
+        system,
+    }
 
-    const val THEME_LIGHT_DEFAULT = "default"
-    const val THEME_LIGHT_BLUE = "blue"
+    // Keys are lowercase to match legacy string values
+    enum class LightThemeVariant {
+        default,
+        blue,
+    }
 
-    const val THEME_DARK_DEFAULT = "default"
-    const val THEME_DARK_BLUE = "blue"
-    const val THEME_DARK_AMOLED = "amoled"
+    // Keys are lowercase to match legacy string values
+    enum class DarkThemeVariant {
+        default,
+        blue,
+        amoled,
+    }
 
     enum class DisplayMode {
         COMPACT_GRID,
