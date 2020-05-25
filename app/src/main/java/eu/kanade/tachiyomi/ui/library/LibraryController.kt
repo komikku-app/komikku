@@ -10,7 +10,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -794,17 +793,5 @@ class LibraryController(
          * Key to change the cover of a manga in [onActivityResult].
          */
         const val REQUEST_IMAGE_OPEN = 101
-    }
-}
-
-object HeightTopWindowInsetsListener : View.OnApplyWindowInsetsListener {
-    override fun onApplyWindowInsets(v: View, insets: WindowInsets): WindowInsets {
-        val topInset = insets.systemWindowInsetTop
-        v.setPadding(0, topInset, 0, 0)
-        if (v.layoutParams.height != topInset) {
-            v.layoutParams.height = topInset
-            v.requestLayout()
-        }
-        return insets
     }
 }
