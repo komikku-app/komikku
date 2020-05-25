@@ -22,27 +22,15 @@ class SourceAdapter(val controller: MigrationController) :
     }
 
     /**
-     * Listener for browse item clicks.
-     */
-    val selectClickListener: OnSelectClickListener? = controller
-
-    /**
-     * Listener which should be called when user clicks select.
-     */
-    interface OnSelectClickListener {
-        fun onSelectClick(position: Int)
-    }
-
-    /**
      * Listener for auto item clicks.
      */
-    val autoClickListener: OnAutoClickListener? = controller
+    val allClickListener: OnAllClickListener? = controller
 
     /**
      * Listener which should be called when user clicks select.
      */
-    interface OnAutoClickListener {
-        fun onAutoClick(position: Int)
+    interface OnAllClickListener {
+        fun onAllClick(position: Int)
     }
 
     override fun updateDataSet(items: MutableList<IFlexible<*>>?) {
