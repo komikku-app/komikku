@@ -254,9 +254,9 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         override fun initModels() {
             val mode = preferences.libraryDisplayMode().get()
-            compactGrid.checked = mode == DisplayMode.COMPACT_GRID.value
-            comfortableGrid.checked = mode == DisplayMode.COMFORTABLE_GRID.value
-            list.checked = mode == DisplayMode.LIST.value
+            compactGrid.checked = mode == DisplayMode.COMPACT_GRID
+            comfortableGrid.checked = mode == DisplayMode.COMFORTABLE_GRID
+            list.checked = mode == DisplayMode.LIST
         }
 
         override fun onItemClicked(item: Item) {
@@ -268,9 +268,10 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
             preferences.libraryDisplayMode().set(
                 when (item) {
-                    grid -> DISPLAY_COMPACT_GRID
-                    list -> DISPLAY_LIST
-                    else -> DISPLAY_COMFORTABLE_GRID
+                    compactGrid -> DisplayMode.COMPACT_GRID
+                    comfortableGrid -> DisplayMode.COMFORTABLE_GRID
+                    list -> DisplayMode.LIST
+                    else -> throw NotImplementedError("Unknown display mode")
                 }
             )
 
