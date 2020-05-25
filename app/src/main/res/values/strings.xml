@@ -81,8 +81,9 @@
     <string name="action_migrate">Migrate</string>
     <string name="action_display_mode">Display mode</string>
     <string name="action_display">Display</string>
-    <string name="action_display_grid">Compact Grid</string>
+    <string name="action_display_grid">Compact grid</string>
     <string name="action_display_list">List</string>
+    <string name="action_display_comfortable_grid">Comfortable grid</string>
     <string name="action_display_download_badge">Download badges</string>
     <string name="action_display_unread_badge">Unread badges</string>
     <string name="action_hide">Hide</string>
@@ -566,7 +567,6 @@
     <string name="migration_info">Tap to select the source to migrate from</string>
     <string name="migration_dialog_what_to_include">Select data to include</string>
     <string name="migration_selection_prompt">Select a source to migrate from</string>
-    <string name="select">Select</string>
     <string name="migrate">Migrate</string>
     <string name="copy">Copy</string>
 
