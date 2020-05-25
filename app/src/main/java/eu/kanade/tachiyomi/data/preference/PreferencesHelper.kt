@@ -4,8 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import androidx.preference.PreferenceManager
-import com.f2prateek.rx.preferences.Preference as RxPreference
-import com.f2prateek.rx.preferences.RxSharedPreferences
 import com.tfcporciuncula.flow.FlowSharedPreferences
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
@@ -21,8 +19,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 
-fun <T> RxPreference<T>.getOrDefault(): T = get() ?: defaultValue()!!
-
 @OptIn(ExperimentalCoroutinesApi::class)
 fun <T> Preference<T>.asImmediateFlow(block: (value: T) -> Unit): Flow<T> {
     block(get())
@@ -34,7 +30,6 @@ fun <T> Preference<T>.asImmediateFlow(block: (value: T) -> Unit): Flow<T> {
 class PreferencesHelper(val context: Context) {
 
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-    private val rxPrefs = RxSharedPreferences.create(prefs)
     val flowPrefs = FlowSharedPreferences(prefs)
 
     private val defaultDownloadsDir = Uri.fromFile(
