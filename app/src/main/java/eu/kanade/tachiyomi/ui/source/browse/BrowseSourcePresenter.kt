@@ -99,12 +99,6 @@ open class BrowseSourcePresenter(
     private val mangaDetailSubject = PublishSubject.create<List<Manga>>()
 
     /**
-     * Whether the view is in list mode or not.
-     */
-    var mode: Int = 0
-        private set
-
-    /**
      * Subscription for the pager.
      */
     private var pagerSubscription: Subscription? = null
@@ -129,11 +123,6 @@ open class BrowseSourcePresenter(
         if (savedState != null) {
             query = savedState.getString(::query.name, "")
         }
-
-        add(
-            prefs.catalogueViewSetting().asObservable()
-                .subscribe { setDisplayMode(it) }
-        )
 
         restartPager()
     }
@@ -162,7 +151,7 @@ open class BrowseSourcePresenter(
 
         val sourceId = source.id
 
-        val catalogueViewSetting = prefs.catalogueViewSetting()
+        val catalogueDisplayMode = prefs.catalogueDisplayMode()
 
         // Prepare the pager.
         pagerSubscription?.let { remove(it) }
@@ -170,7 +159,7 @@ open class BrowseSourcePresenter(
             .observeOn(Schedulers.io())
             .map { pair -> pair.first to pair.second.map { networkToLocalManga(it, sourceId) } }
             .doOnNext { initializeMangas(it.second) }
-            .map { pair -> pair.first to pair.second.map { SourceItem(it, catalogueViewSetting) } }
+            .map { pair -> pair.first to pair.second.map { SourceItem(it, catalogueDisplayMode) } }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeReplay(
                 { view, (page, mangas) ->
@@ -209,12 +198,9 @@ open class BrowseSourcePresenter(
     }
 
     /**
-     * Sets the display mode.
-     *
-     * @param mode whether the current mode is in list or not.
+     * Refeshes the display mode.
      */
-    private fun setDisplayMode(mode: Int) {
-        this.mode = mode
+    fun refreshDisplayMode() {
         subscribeToMangaInitializer()
     }
 
@@ -297,19 +283,6 @@ open class BrowseSourcePresenter(
             manga.removeCovers(coverCache)
         }
         db.insertManga(manga).executeAsBlocking()
-    }
-
-    /**
-     * Changes the active display mode.
-     */
-    fun swapDisplayMode() {
-        prefs.catalogueViewSetting().set(
-            when (mode) {
-                0 -> 1
-                1 -> 2
-                else -> 0
-            }
-        )
     }
 
     /**

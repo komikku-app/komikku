@@ -3,6 +3,9 @@ package eu.kanade.tachiyomi.ui.library
 import android.content.Context
 import android.util.AttributeSet
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferenceValues.DISPLAY_COMFORTABLE_GRID
+import eu.kanade.tachiyomi.data.preference.PreferenceValues.DISPLAY_COMPACT_GRID
+import eu.kanade.tachiyomi.data.preference.PreferenceValues.DISPLAY_LIST
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
@@ -252,10 +255,10 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
         override val footer = null
 
         override fun initModels() {
-            val mode = preferences.libraryViewSetting().get()
-            grid.checked = mode == 0
-            list.checked = mode == 1
-            comfortableGrid.checked = mode == 2
+            val mode = preferences.libraryDisplayMode().get()
+            grid.checked = mode == DISPLAY_COMPACT_GRID
+            list.checked = mode == DISPLAY_LIST
+            comfortableGrid.checked = mode == DISPLAY_COMFORTABLE_GRID
         }
 
         override fun onItemClicked(item: Item) {
@@ -265,11 +268,11 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             item.group.items.forEach { (it as Item.Radio).checked = false }
             item.checked = true
 
-            preferences.libraryViewSetting().set(
+            preferences.libraryDisplayMode().set(
                 when (item) {
-                    grid -> 0
-                    list -> 1
-                    else -> 2
+                    grid -> DISPLAY_COMPACT_GRID
+                    list -> DISPLAY_LIST
+                    else -> DISPLAY_COMFORTABLE_GRID
                 }
             )
 

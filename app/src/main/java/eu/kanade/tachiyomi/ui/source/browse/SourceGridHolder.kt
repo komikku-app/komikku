@@ -25,7 +25,7 @@ import uy.kohesive.injekt.api.get
  * @param adapter the adapter handling this holder.
  * @constructor creates a new catalogue holder.
  */
-class SourceGridHolder(private val view: View, private val adapter: FlexibleAdapter<*>) :
+open class SourceGridHolder(private val view: View, private val adapter: FlexibleAdapter<*>) :
     SourceHolder(view, adapter) {
 
     private val preferences: PreferencesHelper = Injekt.get()

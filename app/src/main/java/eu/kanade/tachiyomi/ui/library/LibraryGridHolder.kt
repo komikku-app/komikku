@@ -30,7 +30,7 @@ import uy.kohesive.injekt.api.get
  * @param listener a listener to react to single tap and long tap events.
  * @constructor creates a new library holder.
  */
-class LibraryGridHolder(
+open class LibraryGridHolder(
     private val view: View,
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 
