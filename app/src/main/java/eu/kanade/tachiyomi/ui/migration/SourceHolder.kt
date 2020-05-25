@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.ui.migration
 
 import android.view.View
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.ui.base.holder.SlicedHolder
+import eu.kanade.tachiyomi.util.view.gone
 import io.github.mthli.slice.Slice
 import kotlinx.android.synthetic.main.source_main_controller_card_item.card
 import kotlinx.android.synthetic.main.source_main_controller_card_item.image
@@ -24,13 +24,10 @@ class SourceHolder(view: View, override val adapter: SourceAdapter) :
         get() = card
 
     init {
-        source_latest.text = "Auto"
-        source_browse.setText(R.string.select)
-        source_browse.setOnClickListener {
-            adapter.selectClickListener?.onSelectClick(bindingAdapterPosition)
-        }
+        source_browse.gone()
+        source_latest.text = "All"
         source_latest.setOnClickListener {
-            adapter.autoClickListener?.onAutoClick(bindingAdapterPosition)
+            adapter.allClickListener?.onAllClick(bindingAdapterPosition)
         }
     }
 
