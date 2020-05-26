@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.JsonArray
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.stream.JsonReader
@@ -21,6 +22,7 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.CHAPTERS
 import eu.kanade.tachiyomi.data.backup.models.Backup.HISTORY
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGA
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGAS
+import eu.kanade.tachiyomi.data.backup.models.Backup.SAVEDSEARCHES
 import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.models.Backup.VERSION
 import eu.kanade.tachiyomi.data.backup.models.DHistory
@@ -217,6 +219,8 @@ class BackupRestoreService : Service() {
         // Restore categories
         restoreCategories(json, backupManager)
 
+        json.get(SAVEDSEARCHES)?.let { restoreSavedSearches(it) }
+
         mangasJson.forEach {
             restoreManga(it.asJsonObject, backupManager)
         }
@@ -244,6 +248,13 @@ class BackupRestoreService : Service() {
         } else {
             restoreAmount -= 1
         }
+    }
+
+    private fun restoreSavedSearches(savedSearchesJson: JsonElement) {
+        backupManager.restoreSavedSearches(savedSearchesJson)
+
+        restoreProgress += 1
+        showProgressNotification(restoreProgress, restoreAmount, "Saved Searches added")
     }
 
     /**

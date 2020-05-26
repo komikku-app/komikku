@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.CHAPTERS
 import eu.kanade.tachiyomi.data.backup.models.Backup.CURRENT_VERSION
 import eu.kanade.tachiyomi.data.backup.models.Backup.HISTORY
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGA
+import eu.kanade.tachiyomi.data.backup.models.Backup.SAVEDSEARCHES
 import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.models.DHistory
 import eu.kanade.tachiyomi.data.backup.serializer.CategoryTypeAdapter
@@ -45,6 +46,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -55,6 +57,8 @@ import exh.eh.EHentaiThrottleManager
 import kotlin.math.max
 import rx.Observable
 import timber.log.Timber
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
@@ -147,6 +151,9 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             if ((flags and BACKUP_CATEGORY_MASK) == BACKUP_CATEGORY) {
                 backupCategories(categoryEntries)
             }
+
+            root[SAVEDSEARCHES] =
+                Injekt.get<PreferencesHelper>().eh_savedSearches().getOrDefault().joinToString(separator = "***")
         }
 
         try {
@@ -504,6 +511,16 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
         insertChapters(chapters)
         return true
+    }
+
+    internal fun restoreSavedSearches(jsonSavedSearches: JsonElement) {
+        val backupSavedSearches = jsonSavedSearches.asString.split("***").toSet()
+        backupSavedSearches.forEach {
+            val savedSearches = preferences.eh_savedSearches().getOrDefault()
+            if (it !in savedSearches) {
+                preferences.eh_savedSearches().set(savedSearches + it)
+            }
+        }
     }
 
     /**
