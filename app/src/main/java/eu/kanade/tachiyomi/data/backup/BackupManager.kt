@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.CURRENT_VERSION
 import eu.kanade.tachiyomi.data.backup.models.Backup.EXTENSIONS
 import eu.kanade.tachiyomi.data.backup.models.Backup.HISTORY
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGA
+import eu.kanade.tachiyomi.data.backup.models.Backup.SAVEDSEARCHES
 import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.models.DHistory
 import eu.kanade.tachiyomi.data.backup.serializer.CategoryTypeAdapter
@@ -55,6 +56,8 @@ import exh.eh.EHentaiThrottleManager
 import kotlin.math.max
 import rx.Observable
 import timber.log.Timber
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
@@ -148,6 +151,9 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
             // Backup extension ID/name mapping
             backupExtensionInfo(extensionEntries, extensions)
+
+            root[SAVEDSEARCHES] =
+                Injekt.get<PreferencesHelper>().eh_savedSearches().get().joinToString(separator = "***")
         }
 
         try {
@@ -490,6 +496,16 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
         insertChapters(chapters)
         return true
+    }
+
+    internal fun restoreSavedSearches(jsonSavedSearches: JsonElement) {
+        val backupSavedSearches = jsonSavedSearches.asString.split("***").toSet()
+        backupSavedSearches.forEach {
+            val savedSearches = preferences.eh_savedSearches().get()
+            if (it !in savedSearches) {
+                preferences.eh_savedSearches().set(savedSearches + it)
+            }
+        }
     }
 
     /**

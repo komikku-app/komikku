@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.CHAPTERS
 import eu.kanade.tachiyomi.data.backup.models.Backup.HISTORY
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGA
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGAS
+import eu.kanade.tachiyomi.data.backup.models.Backup.SAVEDSEARCHES
 import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.models.Backup.VERSION
 import eu.kanade.tachiyomi.data.backup.models.DHistory
@@ -240,6 +241,8 @@ class BackupRestoreService : Service() {
         // Restore categories
         json.get(CATEGORIES)?.let { restoreCategories(it) }
 
+        json.get(SAVEDSEARCHES)?.let { restoreSavedSearches(it) }
+
         // Store source mapping for error messages
         sourceMapping = BackupRestoreValidator.getSourceMapping(json)
 
@@ -268,6 +271,13 @@ class BackupRestoreService : Service() {
 
         restoreProgress += 1
         showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.categories))
+    }
+
+    private fun restoreSavedSearches(savedSearchesJson: JsonElement) {
+        backupManager.restoreSavedSearches(savedSearchesJson)
+
+        restoreProgress += 1
+        showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.eh_saved_searches))
     }
 
     private fun restoreManga(mangaJson: JsonObject) {
