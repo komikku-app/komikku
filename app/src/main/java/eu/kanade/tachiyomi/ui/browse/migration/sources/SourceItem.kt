@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration
+package eu.kanade.tachiyomi.ui.browse.migration.sources
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
@@ -14,7 +14,7 @@ import eu.kanade.tachiyomi.source.Source
  * @param source Instance of [Source] containing source information.
  * @param header The header for this item.
  */
-data class SourceItem(val source: Source, val header: SelectionHeader? = null) :
+data class SourceItem(val source: Source, val header: SelectionHeader) :
     AbstractSectionableItem<SourceHolder, SelectionHeader>(header) {
 
     /**
@@ -28,7 +28,10 @@ data class SourceItem(val source: Source, val header: SelectionHeader? = null) :
      * Creates a new view holder for this item.
      */
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): SourceHolder {
-        return SourceHolder(view, adapter as SourceAdapter)
+        return SourceHolder(
+            view,
+            adapter as SourceAdapter
+        )
     }
 
     /**

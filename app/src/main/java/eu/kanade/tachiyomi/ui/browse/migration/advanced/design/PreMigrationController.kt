@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.manga.design
+package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,8 +20,8 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.migration.manga.process.MigrationListController
-import eu.kanade.tachiyomi.ui.browse.migration.manga.process.MigrationProcedureConfig
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
 import exh.util.doOnApplyWindowInsets
 import exh.util.marginBottom
 import exh.util.updateLayoutParams

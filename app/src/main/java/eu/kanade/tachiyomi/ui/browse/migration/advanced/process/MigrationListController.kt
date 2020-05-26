@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.manga.process
+package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -27,8 +27,8 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationMangaDialog
-import eu.kanade.tachiyomi.ui.browse.migration.SearchController
-import eu.kanade.tachiyomi.ui.browse.migration.manga.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.search.SearchController
 import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
@@ -349,7 +349,11 @@ class MigrationListController(bundle: Bundle? = null) :
                     } else {
                         sources.filter { it.id != manga.source }
                     }
-                    val searchController = SearchController(manga, validSources)
+                    val searchController =
+                        SearchController(
+                            manga,
+                            validSources
+                        )
                     searchController.targetController = this@MigrationListController
                     router.pushController(searchController.withFadeTransaction())
                 }

@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration
+package eu.kanade.tachiyomi.ui.browse.migration.search
 
 import android.app.Dialog
 import android.os.Bundle
@@ -15,7 +15,9 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.migration.manga.process.MigrationListController
+import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
+import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationInterface
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
 import kotlinx.coroutines.flow.filter
@@ -50,7 +52,11 @@ class SearchController(
     }
 
     override fun createPresenter(): GlobalSearchPresenter {
-        return SearchPresenter(initialQuery, manga!!, sources = sources)
+        return SearchPresenter(
+            initialQuery,
+            manga!!,
+            sources = sources
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -85,7 +91,8 @@ class SearchController(
     }*/
 
     fun migrateManga() {
-        val target = targetController as? MigrationInterface ?: return
+        val target = targetController as? MigrationInterface
+            ?: return
         val manga = manga ?: return
         val newManga = newManga ?: return
 
@@ -94,7 +101,8 @@ class SearchController(
     }
 
     fun copyManga() {
-        val target = targetController as? MigrationInterface ?: return
+        val target = targetController as? MigrationInterface
+            ?: return
         val manga = manga ?: return
         val newManga = newManga ?: return
 
@@ -105,7 +113,10 @@ class SearchController(
     private fun replaceWithNewSearchController(manga: Manga?) {
         if (manga != null) {
             // router.popCurrentController()
-            val searchController = SearchController(manga)
+            val searchController =
+                SearchController(
+                    manga
+                )
             searchController.targetController = targetController
             searchController.progress = progress + 1
             searchController.totalProgress = totalProgress
@@ -123,7 +134,8 @@ class SearchController(
             return
         }
         newManga = manga
-        val dialog = MigrationDialog()
+        val dialog =
+            MigrationDialog()
         dialog.targetController = this
         dialog.showDialog(router)
     }
@@ -140,7 +152,10 @@ class SearchController(
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val prefValue = preferences.migrateFlags().get()
 
-            val preselected = MigrationFlags.getEnabledFlagsPositions(prefValue)
+            val preselected =
+                MigrationFlags.getEnabledFlagsPositions(
+                    prefValue
+                )
 
             return MaterialDialog(activity!!)
                 .message(R.string.data_to_include_in_migration)
@@ -149,7 +164,10 @@ class SearchController(
                     { resources?.getString(it) as CharSequence },
                     initialSelection = preselected.toIntArray()
                 ) { _, positions, _ ->
-                    val newValue = MigrationFlags.getFlagsFromPositions(positions.toTypedArray())
+                    val newValue =
+                        MigrationFlags.getFlagsFromPositions(
+                            positions.toTypedArray()
+                        )
                     preferences.migrateFlags().set(newValue)
                 }
                 .positiveButton(R.string.migrate) {

@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.manga.design
+package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.app.Activity
 import android.content.res.Configuration

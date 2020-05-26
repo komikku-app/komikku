@@ -34,8 +34,8 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.migration.MigrationController
-import eu.kanade.tachiyomi.ui.browse.migration.manga.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourcesController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
@@ -429,7 +429,10 @@ class LibraryController(
                 }
             }
             R.id.action_source_migration -> {
-                router.pushController(MigrationController().withFadeTransaction())
+                router.pushController(
+                    MigrationSourcesController()
+                        .withFadeTransaction()
+                )
             }
             // --> EXH
             R.id.action_sync_favorites -> {

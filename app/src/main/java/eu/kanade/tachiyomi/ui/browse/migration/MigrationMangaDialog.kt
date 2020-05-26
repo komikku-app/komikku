@@ -6,7 +6,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.Controller
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.ui.browse.migration.manga.process.MigrationListController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 
 class MigrationMangaDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
     where T : Controller {

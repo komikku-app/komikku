@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.migration.manga.process
+package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.view.MenuItem
 import eu.davidea.flexibleadapter.FlexibleAdapter
