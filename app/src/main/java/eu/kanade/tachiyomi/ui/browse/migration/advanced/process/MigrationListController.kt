@@ -349,11 +349,7 @@ class MigrationListController(bundle: Bundle? = null) :
                     } else {
                         sources.filter { it.id != manga.source }
                     }
-                    val searchController =
-                        SearchController(
-                            manga,
-                            validSources
-                        )
+                    val searchController = SearchController(manga, validSources)
                     searchController.targetController = this@MigrationListController
                     router.pushController(searchController.withFadeTransaction())
                 }

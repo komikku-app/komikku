@@ -429,10 +429,7 @@ class LibraryController(
                 }
             }
             R.id.action_source_migration -> {
-                router.pushController(
-                    MigrationSourcesController()
-                        .withFadeTransaction()
-                )
+                router.pushController(MigrationSourcesController().withFadeTransaction())
             }
             // --> EXH
             R.id.action_sync_favorites -> {

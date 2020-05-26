@@ -18,10 +18,7 @@ class MangaItem(val manga: Manga) : AbstractFlexibleItem<MangaHolder>(), Parcela
     }
 
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): MangaHolder {
-        return MangaHolder(
-            view,
-            adapter
-        )
+        return MangaHolder(view, adapter)
     }
 
     override fun bindViewHolder(

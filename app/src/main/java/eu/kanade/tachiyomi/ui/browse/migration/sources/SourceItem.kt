@@ -28,10 +28,7 @@ data class SourceItem(val source: Source, val header: SelectionHeader) :
      * Creates a new view holder for this item.
      */
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): SourceHolder {
-        return SourceHolder(
-            view,
-            adapter as SourceAdapter
-        )
+        return SourceHolder(view, adapter as SourceAdapter)
     }
 
     /**

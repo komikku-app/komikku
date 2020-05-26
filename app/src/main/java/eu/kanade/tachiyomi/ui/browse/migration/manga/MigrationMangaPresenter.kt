@@ -56,18 +56,9 @@ class MigrationMangaPresenter(
         replace: Boolean
     ) {
         val flags = Injekt.get<PreferencesHelper>().migrateFlags().get()
-        val migrateChapters =
-            MigrationFlags.hasChapters(
-                flags
-            )
-        val migrateCategories =
-            MigrationFlags.hasCategories(
-                flags
-            )
-        val migrateTracks =
-            MigrationFlags.hasTracks(
-                flags
-            )
+        val migrateChapters = MigrationFlags.hasChapters(flags)
+        val migrateCategories = MigrationFlags.hasCategories(flags)
+        val migrateTracks = MigrationFlags.hasTracks(flags)
 
         db.inTransaction {
             // Update chapters read
