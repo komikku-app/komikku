@@ -143,7 +143,7 @@ object Entry {
     }
 
     class TagFilteringThreshold(value: Int) : ConfigItem {
-        override val key = "tf"
+        override val key = "ft"
         override val value = "$value"
     }
 
