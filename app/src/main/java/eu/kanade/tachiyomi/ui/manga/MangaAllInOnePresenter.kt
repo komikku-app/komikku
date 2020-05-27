@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.ui.manga.chapter.MangaAllInOneChapterItem
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
+import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.MERGED_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
@@ -222,7 +223,11 @@ class MangaAllInOnePresenter(
             }
             try {
                 if (fetchChapters) {
-                    syncChaptersWithSource(db, chapters, manga, source)
+                    val chapterLists = syncChaptersWithSource(db, chapters, manga, source)
+
+                    if (manualFetch) {
+                        downloadNewChapters(chapterLists.first)
+                    }
 
                     updateChapters()
                     updateChapterInfo()
@@ -443,6 +448,10 @@ class MangaAllInOnePresenter(
                 true -> { c1, c2 -> c2.chapter_number.compareTo(c1.chapter_number) }
                 false -> { c1, c2 -> c1.chapter_number.compareTo(c2.chapter_number) }
             }
+            Manga.SORTING_UPLOAD_DATE -> when (sortDescending()) {
+                true -> { c1, c2 -> c2.date_upload.compareTo(c1.date_upload) }
+                false -> { c1, c2 -> c1.date_upload.compareTo(c2.date_upload) }
+            }
             else -> { c1, c2 -> c1.source_order.compareTo(c2.source_order) }
         }
         chapters = chapters.sortedWith(Comparator(sortFunction))
@@ -502,7 +511,7 @@ class MangaAllInOnePresenter(
      * Downloads the given list of chapters with the manager.
      * @param chapters the list of chapters to download.
      */
-    fun downloadChapters(chapters: List<MangaAllInOneChapterItem>) {
+    fun downloadChapters(chapters: List<Chapter>) {
         downloadManager.downloadChapters(manga, chapters)
     }
 
@@ -537,6 +546,12 @@ class MangaAllInOnePresenter(
                 },
                 MangaAllInOneController::onChaptersDeletedError
             )
+    }
+
+    private fun downloadNewChapters(chapters: List<Chapter>) {
+        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences)) return
+
+        downloadChapters(chapters)
     }
 
     /**

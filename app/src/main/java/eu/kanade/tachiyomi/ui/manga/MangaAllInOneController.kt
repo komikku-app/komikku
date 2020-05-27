@@ -330,7 +330,7 @@ class MangaAllInOneController :
         if (manga.initialized) {
             // Update view.
             setMangaInfo(manga, source, chapters, lastUpdateDate, chapterCount)
-            if (fromSource && !presenter.hasRequested && chapters.isNullOrEmpty()) {
+            if (!presenter.hasRequested && presenter.chapters.isEmpty()) {
                 fetchMangaFromSource(fetchManga = false)
             }
         } else {
@@ -651,11 +651,13 @@ class MangaAllInOneController :
         }
 
         // Sorting mode submenu
-        if (presenter.manga.sorting == Manga.SORTING_SOURCE) {
-            menu.findItem(R.id.sort_by_source).isChecked = true
-        } else {
-            menu.findItem(R.id.sort_by_number).isChecked = true
+        val sortingItem = when (presenter.manga.sorting) {
+            Manga.SORTING_SOURCE -> R.id.sort_by_source
+            Manga.SORTING_NUMBER -> R.id.sort_by_number
+            Manga.SORTING_UPLOAD_DATE -> R.id.sort_by_upload_date
+            else -> throw NotImplementedError("Unimplemented sorting method")
         }
+        menu.findItem(sortingItem).isChecked = true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -676,6 +678,10 @@ class MangaAllInOneController :
             R.id.sort_by_number -> {
                 item.isChecked = true
                 presenter.setSorting(Manga.SORTING_NUMBER)
+            }
+            R.id.sort_by_upload_date -> {
+                item.isChecked = true
+                presenter.setSorting(Manga.SORTING_UPLOAD_DATE)
             }
 
             R.id.download_next, R.id.download_next_5, R.id.download_next_10,
@@ -761,11 +767,11 @@ class MangaAllInOneController :
 
     private fun toggleSelection(position: Int) {
         val adapter = adapter ?: return
-        val item = adapter.getItem(position) ?: return
+        val item = adapter.getItem(position) as MangaAllInOneChapterItem? ?: return
         adapter.toggleSelection(position)
         adapter.notifyDataSetChanged()
         if (adapter.isSelected(position)) {
-            selectedItems.add(item as MangaAllInOneChapterItem)
+            selectedItems.add(item)
         } else {
             selectedItems.remove(item)
         }
@@ -896,10 +902,12 @@ class MangaAllInOneController :
         if (presenter.preferences.removeAfterMarkedAsRead()) {
             deleteChapters(chapters)
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun markAsUnread(chapters: List<MangaAllInOneChapterItem>) {
         presenter.markChaptersRead(chapters, false)
+        destroyActionModeIfNeeded()
     }
 
     private fun downloadChapters(chapters: List<MangaAllInOneChapterItem>) {
@@ -912,6 +920,7 @@ class MangaAllInOneController :
                 }
             }
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun showDeleteChaptersConfirmationDialog() {
@@ -929,16 +938,19 @@ class MangaAllInOneController :
         if (chapterPos != -1) {
             markAsRead(prevChapters.take(chapterPos))
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun bookmarkChapters(chapters: List<MangaAllInOneChapterItem>, bookmarked: Boolean) {
         presenter.bookmarkChapters(chapters, bookmarked)
+        destroyActionModeIfNeeded()
     }
 
     fun deleteChapters(chapters: List<MangaAllInOneChapterItem>) {
         if (chapters.isEmpty()) return
 
         presenter.deleteChapters(chapters)
+        destroyActionModeIfNeeded()
     }
 
     fun onChaptersDeleted(chapters: List<MangaAllInOneChapterItem>) {
@@ -981,6 +993,7 @@ class MangaAllInOneController :
         if (chaptersToDownload.isNotEmpty()) {
             downloadChapters(chaptersToDownload)
         }
+        destroyActionModeIfNeeded()
     }
 
     private fun showCustomDownloadDialog() {
