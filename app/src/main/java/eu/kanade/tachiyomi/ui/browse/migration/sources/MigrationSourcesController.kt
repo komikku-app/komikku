@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
 import eu.kanade.tachiyomi.ui.browse.source.SourceDividerItemDecoration
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import exh.util.await
 import kotlinx.coroutines.Dispatchers
@@ -41,8 +42,7 @@ class MigrationSourcesController :
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        adapter =
-            SourceAdapter(this)
+        adapter = SourceAdapter(this)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.adapter = adapter
         binding.recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
@@ -63,30 +63,31 @@ class MigrationSourcesController :
     }
 
     override fun onItemClick(view: View?, position: Int): Boolean {
-        val item = adapter?.getItem(position) as? SourceItem
-            ?: return false
-        val controller =
-            MigrationMangaController(
-                item.source
-            )
-        parentController!!.router.pushController(controller.withFadeTransaction())
+        val item = adapter?.getItem(position) as? SourceItem ?: return false
+        val controller = MigrationMangaController(item.source)
+        if (parentController is BrowseSourceController) {
+            parentController!!.router.pushController(controller.withFadeTransaction())
+        } else {
+            router.pushController(controller.withFadeTransaction())
+        }
+
         return false
     }
 
     override fun onAllClick(position: Int) {
-        val item = adapter?.getItem(position) as? SourceItem
-            ?: return
+        val item = adapter?.getItem(position) as? SourceItem ?: return
 
         launchUI {
-            val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().asRxSingle().await(
-                Schedulers.io()
-            )
-            val sourceMangas =
-                manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
+            val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().asRxSingle().await(Schedulers.io())
+            val sourceMangas = manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
             withContext(Dispatchers.Main) {
                 PreMigrationController.navigateToMigration(
                     Injekt.get<PreferencesHelper>().skipPreMigration().get(),
-                    parentController!!.router,
+                    if (parentController is BrowseSourceController) {
+                        parentController!!.router
+                    } else {
+                        router
+                    },
                     sourceMangas
                 )
             }
