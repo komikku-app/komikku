@@ -33,7 +33,7 @@
         style="@style/Theme.Widget.CardView.Item"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:minHeight="144dp"
+        android:minHeight="200dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constrainedHeight="true"
