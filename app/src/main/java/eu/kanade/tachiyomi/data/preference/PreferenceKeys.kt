@@ -242,4 +242,6 @@ object PreferenceKeys {
     const val eh_use_new_manga_interface = "eh_use_new_manga_interface"
 
     const val eh_use_auto_webtoon = "eh_use_auto_webtoon"
+
+    const val eh_watched_list_default_state = "eh_watched_list_default_state"
 }

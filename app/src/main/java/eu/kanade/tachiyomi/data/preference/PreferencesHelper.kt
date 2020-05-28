@@ -348,4 +348,6 @@ class PreferencesHelper(val context: Context) {
     fun eh_useNewMangaInterface() = flowPrefs.getBoolean(Keys.eh_use_new_manga_interface, true)
 
     fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
+
+    fun eh_watchedListDefaultState() = flowPrefs.getBoolean(Keys.eh_watched_list_default_state, false)
 }
