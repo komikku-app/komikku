@@ -58,8 +58,8 @@ android {
         }
     }
 
-    viewBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding = true
     }
 
     buildTypes {
@@ -111,6 +111,10 @@ android {
 
         // Compatibility for two RxJava versions (EXH)
         exclude 'META-INF/rxjava.properties'
+    }
+
+    dependenciesInfo {
+        includeInApk = false
     }
 
     lintOptions {
