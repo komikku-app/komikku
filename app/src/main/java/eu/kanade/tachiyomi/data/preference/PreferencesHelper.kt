@@ -358,4 +358,6 @@ class PreferencesHelper(val context: Context) {
     fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, 4)
 
     fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
+
+    fun eh_watchedListDefaultState() = flowPrefs.getBoolean(Keys.eh_watched_list_default_state, false)
 }

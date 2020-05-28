@@ -230,6 +230,13 @@ class SettingsEhController : SettingsController() {
         }.dependency = PreferenceKeys.eh_enableExHentai
 
         switchPreference {
+            defaultValue = false
+            key = PreferenceKeys.eh_watched_list_default_state
+            title = "Watched List Filter Default State"
+            summary = "When browsing ExHentai/E-Hentai should the watched list filter be enabled by default"
+        }
+
+        switchPreference {
             defaultValue = true
             key = "secure_exh"
             title = "Secure ExHentai/E-Hentai"

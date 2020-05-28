@@ -622,13 +622,17 @@ class EHentai(
 
     // Filters
     override fun getFilterList() = FilterList(
-        Watched(),
+        if (prefs.eh_watchedListDefaultState().get()) {
+            Watched(isEnabled = true)
+        } else {
+            Watched(isEnabled = false)
+        },
         GenreGroup(),
         AdvancedGroup(),
         ReverseFilter()
     )
 
-    class Watched : Filter.CheckBox("Watched List"), UriFilter {
+    class Watched(val isEnabled: Boolean) : Filter.CheckBox("Watched List", isEnabled), UriFilter {
         override fun addToUri(builder: Uri.Builder) {
             if (state) {
                 builder.appendPath("watched")
