@@ -438,7 +438,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                 it.controller() !is MangaAllInOneController &&
                                 it.controller() !is MigrationListController &&
                                 it.controller() !is PreMigrationController
-                        } + MangaController(manga).withFadeTransaction() // TODO MangaAllInOneController
+                        } + if (preferences.eh_useNewMangaInterface().get()) MangaAllInOneController(manga).withFadeTransaction() else MangaController(manga).withFadeTransaction()
                         router.setBackstack(newStack, FadeChangeHandler())
                         return@launchUI
                     }
