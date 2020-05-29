@@ -11,10 +11,10 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
 import eu.kanade.tachiyomi.ui.browse.source.SourceDividerItemDecoration
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import exh.util.await
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +65,7 @@ class MigrationSourcesController :
     override fun onItemClick(view: View?, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
         val controller = MigrationMangaController(item.source)
-        if (parentController is BrowseSourceController) {
+        if (parentController is BrowseController) {
             parentController!!.router.pushController(controller.withFadeTransaction())
         } else {
             router.pushController(controller.withFadeTransaction())
@@ -83,7 +83,7 @@ class MigrationSourcesController :
             withContext(Dispatchers.Main) {
                 PreMigrationController.navigateToMigration(
                     Injekt.get<PreferencesHelper>().skipPreMigration().get(),
-                    if (parentController is BrowseSourceController) {
+                    if (parentController is BrowseController) {
                         parentController!!.router
                     } else {
                         router
