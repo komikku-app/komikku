@@ -297,6 +297,10 @@ class ChaptersController :
             }
             actionMode?.invalidate()
         }
+
+        if (!chapters.any { it.read }) {
+            binding.fab.text = activity!!.getString(R.string.action_start)
+        }
     }
 
     private fun fetchChaptersFromSource(manualFetch: Boolean = false) {
