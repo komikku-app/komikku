@@ -22,10 +22,8 @@ import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
-import exh.util.doOnApplyWindowInsets
-import exh.util.marginBottom
-import exh.util.updateLayoutParams
-import exh.util.updatePaddingRelative
+import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
+import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import uy.kohesive.injekt.injectLazy
 
 class PreMigrationController(bundle: Bundle? = null) :
@@ -65,22 +63,8 @@ class PreMigrationController(bundle: Bundle? = null) :
         ourAdapter.itemTouchHelperCallback = null // Reset adapter touch adapter to fix drag after rotation
         ourAdapter.isHandleDragEnabled = true
         dialog = null
-        val fabBaseMarginBottom = binding.fab.marginBottom
-        binding.recycler.doOnApplyWindowInsets { v, insets, padding ->
 
-            binding.fab.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = fabBaseMarginBottom + insets.systemWindowInsetBottom
-            }
-            v.post {
-                // offset the recycler by the fab's inset + some inset on top
-                v.updatePaddingRelative(
-                    bottom = insets.systemWindowInsetBottom + (
-                        binding.fab.marginBottom
-                            ?: 0
-                        ) + (binding.fab.height ?: 0)
-                )
-            }
-        }
+        binding.fab.shrinkOnScroll(binding.recycler)
 
         binding.fab.setOnClickListener {
             if (dialog?.isShowing != true) {
@@ -96,6 +80,8 @@ class PreMigrationController(bundle: Bundle? = null) :
                 }
             }
         }
+        binding.fab.shrinkOnScroll(binding.recycler)
+        binding.fab.offsetAppbarHeight(activity!!)
     }
 
     override fun startMigration(extraParam: String?) {
