@@ -18,6 +18,7 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Locale
 
 class MigrationPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
@@ -69,7 +70,7 @@ class MigrationPresenter(
         val header = SelectionHeader()
         return library.map { it.source }.toSet()
             .mapNotNull { if (it != LocalSource.ID) sourceManager.getOrStub(it) else null }
-            .sortedBy { it.name }
+            .sortedBy { it.name.toLowerCase(Locale.ROOT) }
             .map { SourceItem(it, header) }
     }
 
