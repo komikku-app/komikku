@@ -171,7 +171,7 @@
 
         <activity
             android:name="exh.ui.intercept.InterceptActivity"
-            android:label="TachiyomiEH"
+            android:label="@string/app_name"
             android:theme="@style/Theme.EHActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
