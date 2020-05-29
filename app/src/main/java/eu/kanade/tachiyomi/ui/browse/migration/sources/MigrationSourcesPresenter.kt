@@ -12,6 +12,7 @@ import exh.MERGED_SOURCE_ID
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Locale
 
 class MigrationSourcesPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
@@ -34,7 +35,7 @@ class MigrationSourcesPresenter(
             SelectionHeader()
         return library.map { it.source }.toSet()
             .mapNotNull { if (it != LocalSource.ID && it != MERGED_SOURCE_ID) sourceManager.getOrStub(it) else null }
-            .sortedBy { it.name }
+            .sortedBy { it.name.toLowerCase(Locale.ROOT) }
             .map {
                 SourceItem(
                     it,
