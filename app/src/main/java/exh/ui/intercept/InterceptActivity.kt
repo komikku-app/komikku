@@ -8,17 +8,19 @@ import com.afollestad.materialdialogs.callbacks.onCancel
 import com.afollestad.materialdialogs.callbacks.onDismiss
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
-import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
+import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
-import nucleus.factory.RequiresPresenter
+import exh.GalleryAddEvent
+import exh.GalleryAdder
+import kotlin.concurrent.thread
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
+import rx.subjects.BehaviorSubject
 
-@RequiresPresenter(InterceptActivityPresenter::class)
-class InterceptActivity : BaseRxActivity<EhActivityInterceptBinding, InterceptActivityPresenter>() {
+class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
     private var statusSubscription: Subscription? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +40,7 @@ class InterceptActivity : BaseRxActivity<EhActivityInterceptBinding, InterceptAc
         if (Intent.ACTION_VIEW == intent.action) {
             binding.interceptProgress.visible()
             binding.interceptStatus.text = "Loading gallery..."
-            presenter.loadGallery(intent.dataString!!)
+            loadGallery(intent.dataString!!)
         }
     }
 
@@ -53,7 +55,7 @@ class InterceptActivity : BaseRxActivity<EhActivityInterceptBinding, InterceptAc
     override fun onStart() {
         super.onStart()
         statusSubscription?.unsubscribe()
-        statusSubscription = presenter.status
+        statusSubscription = status
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 when (it) {
@@ -89,4 +91,37 @@ class InterceptActivity : BaseRxActivity<EhActivityInterceptBinding, InterceptAc
         super.onStop()
         statusSubscription?.unsubscribe()
     }
+
+    private val galleryAdder = GalleryAdder()
+
+    val status = BehaviorSubject.create<InterceptResult>(InterceptResult.Idle())
+
+    @Synchronized
+    fun loadGallery(gallery: String) {
+        // Do not load gallery if already loading
+        if (status.value is InterceptResult.Idle) {
+            status.onNext(InterceptResult.Loading())
+
+            // Load gallery async
+            thread {
+                val result = galleryAdder.addGallery(gallery)
+
+                status.onNext(
+                    when (result) {
+                        is GalleryAddEvent.Success -> result.manga.id?.let {
+                            InterceptResult.Success(it)
+                        } ?: InterceptResult.Failure("Manga ID is null!")
+                        is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
+                    }
+                )
+            }
+        }
+    }
+}
+
+sealed class InterceptResult {
+    class Idle : InterceptResult()
+    class Loading : InterceptResult()
+    data class Success(val mangaId: Long) : InterceptResult()
+    data class Failure(val reason: String) : InterceptResult()
 }
