@@ -92,20 +92,12 @@ class MangaAllInOneHolder(
             .onEach { adapter.delegate.onFavoriteClick() }
             .launchIn(adapter.delegate.controllerScope)
 
-        if ((Injekt.get<TrackManager>().hasLoggedServices()) && presenter.manga.favorite) {
+        if ((Injekt.get<TrackManager>().hasLoggedServices())) {
             btn_tracking.visible()
         }
 
         adapter.delegate.controllerScope.launch(Dispatchers.IO) {
-            if (Injekt.get<DatabaseHelper>().getTracks(presenter.manga).executeAsBlocking().any {
-                val status = Injekt.get<TrackManager>().getService(it.sync_id)?.getStatus(it.status)
-                status != null
-            }
-            ) {
-                withContext(Dispatchers.Main) {
-                    btn_tracking.icon = itemView.context.getDrawable(R.drawable.ic_cloud_white_24dp)
-                }
-            }
+            setTrackingIcon()
         }
 
         btn_tracking.clicks()
@@ -268,7 +260,7 @@ class MangaAllInOneHolder(
 
         // EXH -->
         if (source?.id == MERGED_SOURCE_ID) {
-            manga_source_label.text = "Sources"
+            manga_source_label.setText(R.string.label_sources)
         } else {
             manga_source_label.setText(R.string.manga_info_source_label)
         }
@@ -407,7 +399,7 @@ class MangaAllInOneHolder(
         val presenter = adapter.delegate.mangaPresenter()
 
         val isNowFavorite = presenter.toggleFavorite()
-        if (itemView != null && !isNowFavorite && presenter.hasDownloads()) {
+        if (!isNowFavorite && presenter.hasDownloads()) {
             itemView.snack(itemView.context.getString(R.string.delete_downloads_for_manga)) {
                 setAction(R.string.action_delete) {
                     presenter.deleteDownloads()
@@ -446,5 +438,19 @@ class MangaAllInOneHolder(
 
     private fun performGlobalSearch(query: String) {
         adapter.delegate.performGlobalSearch(query)
+    }
+
+    private suspend fun setTrackingIcon() {
+        val presenter = adapter.delegate.mangaPresenter()
+
+        if (Injekt.get<DatabaseHelper>().getTracks(presenter.manga).executeAsBlocking().any {
+            val status = Injekt.get<TrackManager>().getService(it.sync_id)?.getStatus(it.status)
+            status != null
+        }
+        ) {
+            withContext(Dispatchers.Main) {
+                btn_tracking.setIconResource(R.drawable.ic_cloud_white_24dp)
+            }
+        }
     }
 }
