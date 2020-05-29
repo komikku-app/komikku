@@ -33,7 +33,7 @@
     <item
         android:id="@+id/action_migrate"
         android:icon="@drawable/baseline_swap_calls_24"
-        android:title="@string/label_migration"
+        android:title="@string/migrate"
         app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 

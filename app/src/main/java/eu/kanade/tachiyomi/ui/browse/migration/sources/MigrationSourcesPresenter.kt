@@ -3,21 +3,18 @@ package eu.kanade.tachiyomi.ui.browse.migration.sources
 import android.os.Bundle
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.ui.browse.migration.manga.MangaItem
 import exh.MERGED_SOURCE_ID
+import java.util.Locale
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.Locale
 
 class MigrationSourcesPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
-    private val db: DatabaseHelper = Injekt.get(),
-    private val preferences: PreferencesHelper = Injekt.get()
+    private val db: DatabaseHelper = Injekt.get()
 ) : BasePresenter<MigrationSourcesController>() {
 
     override fun onCreate(savedState: Bundle?) {
@@ -42,9 +39,5 @@ class MigrationSourcesPresenter(
                     header
                 )
             }
-    }
-
-    private fun libraryToMigrationItem(library: List<Manga>, sourceId: Long): List<MangaItem> {
-        return library.filter { it.source == sourceId }.map(::MangaItem)
     }
 }
