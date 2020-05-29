@@ -79,7 +79,7 @@ class MigrationListController(bundle: Bundle? = null) :
         private set
     private var migratingManga: MutableList<MigratingManga>? = null
     private var selectedPosition: Int? = null
-    private var manaulMigrations = 0
+    private var manualMigrations = 0
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = MigrationListControllerBinding.inflate(inflater)
@@ -325,7 +325,7 @@ class MigrationListController(bundle: Bundle? = null) :
             if (res != null) {
                 activity?.toast(
                     res.getQuantityString(
-                        R.plurals.manga_migrated, manaulMigrations, manaulMigrations
+                        R.plurals.manga_migrated, manualMigrations, manualMigrations
                     )
                 )
             }
@@ -356,11 +356,11 @@ class MigrationListController(bundle: Bundle? = null) :
             R.id.action_skip -> adapter?.removeManga(position)
             R.id.action_migrate_now -> {
                 adapter?.migrateManga(position, false)
-                manaulMigrations++
+                manualMigrations++
             }
             R.id.action_copy_now -> {
                 adapter?.migrateManga(position, true)
-                manaulMigrations++
+                manualMigrations++
             }
         }
     }
@@ -484,7 +484,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
         menuCopy.icon.mutate()
         menuMigrate.icon.mutate()
-        val tintColor = activity?.getResourceColor(R.attr.colorPrimary) ?: Color.WHITE
+        val tintColor = activity?.getResourceColor(R.attr.colorOnPrimary) ?: Color.WHITE
         val translucentWhite = ColorUtils.setAlphaComponent(tintColor, 127)
         menuCopy.icon?.setTint(if (allMangasDone) tintColor else translucentWhite)
         menuMigrate?.icon?.setTint(if (allMangasDone) tintColor else translucentWhite)
