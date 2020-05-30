@@ -39,7 +39,7 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
     private fun processLink() {
         if (Intent.ACTION_VIEW == intent.action) {
             binding.interceptProgress.visible()
-            binding.interceptStatus.text = "Loading gallery..."
+            binding.interceptStatus.setText(R.string.loading_gallery)
             loadGallery(intent.dataString!!)
         }
     }
