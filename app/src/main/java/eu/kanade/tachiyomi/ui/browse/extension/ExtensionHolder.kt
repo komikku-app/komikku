@@ -95,6 +95,10 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
                     setTextColor(context.getResourceColor(R.attr.colorError))
                     setText(R.string.ext_unofficial)
                 }
+                extension.isRedundant -> {
+                    setTextColor(context.getResourceColor(R.attr.colorError))
+                    setText(R.string.ext_redundant)
+                }
                 else -> {
                     setText(R.string.ext_details)
                 }

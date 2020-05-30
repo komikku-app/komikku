@@ -64,6 +64,11 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
             binding.extensionWarningBanner.setText(R.string.unofficial_extension_message)
         }
 
+        if (extension.isRedundant) {
+            binding.extensionWarningBanner.visible()
+            binding.extensionWarningBanner.setText(R.string.redundant_extension_message)
+        }
+
         if (presenter.extension?.sources?.find { it is ConfigurableSource } != null) {
             binding.extensionPrefs.visible()
             binding.extensionPrefs.clicks()
