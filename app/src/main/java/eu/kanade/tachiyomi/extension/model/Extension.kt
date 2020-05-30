@@ -19,7 +19,8 @@ sealed class Extension {
         override val lang: String,
         val hasUpdate: Boolean = false,
         val isObsolete: Boolean = false,
-        val isUnofficial: Boolean = false
+        val isUnofficial: Boolean = false,
+        val isRedundant: Boolean = false
     ) : Extension()
 
     data class Available(

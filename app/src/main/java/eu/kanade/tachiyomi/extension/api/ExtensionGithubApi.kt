@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
+import exh.source.BlacklistedSources
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -46,9 +47,12 @@ internal class ExtensionGithubApi {
 
         preferences.lastExtCheck().set(Date().time)
 
+        val blacklistEnabled = preferences.eh_enableSourceBlacklist().get()
+
         val installedExtensions = ExtensionLoader.loadExtensions(context)
             .filterIsInstance<LoadResult.Success>()
             .map { it.extension }
+            .filter { it.pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled }
 
         val extensionsWithUpdate = mutableListOf<Extension.Installed>()
         for (installedExt in installedExtensions) {

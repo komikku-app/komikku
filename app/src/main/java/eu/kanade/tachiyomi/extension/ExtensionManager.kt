@@ -108,6 +108,8 @@ class ExtensionManager(
             updatedInstalledExtensionsStatuses(value)
         }
 
+    var unalteredAvailableExtensions = emptyList<Extension.Available>()
+
     /**
      * Relay used to notify the untrusted extensions.
      */
@@ -145,7 +147,6 @@ class ExtensionManager(
         installedExtensions = extensions
             .filterIsInstance<LoadResult.Success>()
             .map { it.extension }
-            .filterNotBlacklisted()
         installedExtensions
             .flatMap { it.sources }
             // overwrite is needed until the bundled sources are removed
@@ -209,7 +210,8 @@ class ExtensionManager(
                 emptyList()
             }
 
-            availableExtensions = extensions
+            unalteredAvailableExtensions = extensions
+            availableExtensions = extensions.filterNotBlacklisted()
         }
     }
 
@@ -229,10 +231,13 @@ class ExtensionManager(
 
         for ((index, installedExt) in mutInstalledExtensions.withIndex()) {
             val pkgName = installedExt.pkgName
-            val availableExt = availableExtensions.find { it.pkgName == pkgName }
+            val availableExt = unalteredAvailableExtensions.find { it.pkgName == pkgName }
 
             if (availableExt == null && !installedExt.isObsolete) {
                 mutInstalledExtensions[index] = installedExt.copy(isObsolete = true)
+                changed = true
+            } else if (installedExt.isBlacklisted() && !installedExt.isRedundant) {
+                mutInstalledExtensions[index] = installedExt.copy(isRedundant = true)
                 changed = true
             } else if (availableExt != null) {
                 val hasUpdate = availableExt.versionCode > installedExt.versionCode
@@ -243,7 +248,7 @@ class ExtensionManager(
             }
         }
         if (changed) {
-            installedExtensions = mutInstalledExtensions.filterNotBlacklisted()
+            installedExtensions = mutInstalledExtensions
         }
         updatePendingUpdatesCount()
     }
