@@ -9,7 +9,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
+import eu.kanade.tachiyomi.databinding.MigrationMangaControllerBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
@@ -18,7 +18,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class MigrationMangaController :
-    NucleusController<MigrationControllerBinding, MigrationMangaPresenter>,
+    NucleusController<MigrationMangaControllerBinding, MigrationMangaPresenter>,
     FlexibleAdapter.OnItemClickListener,
     MigrationInterface {
 
@@ -40,13 +40,11 @@ class MigrationMangaController :
     }
 
     override fun createPresenter(): MigrationMangaPresenter {
-        return MigrationMangaPresenter(
-            source.id
-        )
+        return MigrationMangaPresenter(source.id)
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = MigrationControllerBinding.inflate(inflater)
+        binding = MigrationMangaControllerBinding.inflate(inflater)
         return binding.root
     }
 

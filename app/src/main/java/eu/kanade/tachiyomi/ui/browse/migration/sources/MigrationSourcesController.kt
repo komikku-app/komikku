@@ -8,7 +8,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.databinding.MigrationControllerBinding
+import eu.kanade.tachiyomi.databinding.MigrationSourcesControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
@@ -24,7 +24,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class MigrationSourcesController :
-    NucleusController<MigrationControllerBinding, MigrationSourcesPresenter>(),
+    NucleusController<MigrationSourcesControllerBinding, MigrationSourcesPresenter>(),
     FlexibleAdapter.OnItemClickListener,
     SourceAdapter.OnAllClickListener {
 
@@ -35,7 +35,7 @@ class MigrationSourcesController :
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = MigrationControllerBinding.inflate(inflater)
+        binding = MigrationSourcesControllerBinding.inflate(inflater)
         return binding.root
     }
 
