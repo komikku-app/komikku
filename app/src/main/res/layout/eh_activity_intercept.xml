@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Loading gallery..."
+                android:text="@string/loading_gallery"
                 android:textAppearance="@style/TextAppearance.Medium.Title" />
 
             <ProgressBar
