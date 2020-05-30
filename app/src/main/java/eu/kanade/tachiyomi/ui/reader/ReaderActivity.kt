@@ -185,6 +185,11 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         config = ReaderConfig()
         initializeMenu()
+
+        // Avoid status bar showing up on rotation
+        window.decorView.setOnSystemUiVisibilityChangeListener {
+            setMenuVisibility(menuVisible, animate = false)
+        }
     }
 
     // --> EH
