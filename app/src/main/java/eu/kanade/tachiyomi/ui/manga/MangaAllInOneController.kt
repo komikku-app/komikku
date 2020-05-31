@@ -740,6 +740,7 @@ class MangaAllInOneController :
 
     override fun onItemClick(view: View?, position: Int): Boolean {
         val adapter = adapter ?: return false
+        if (adapter.getItem(position) is MangaAllInOneHeaderItem) return false
         val item = adapter.getItem(position) as MangaAllInOneChapterItem? ?: return false
         return if (actionMode != null && adapter.mode == SelectableAdapter.Mode.MULTI) {
             lastClickPosition = position
@@ -752,6 +753,7 @@ class MangaAllInOneController :
     }
 
     override fun onItemLongClick(position: Int) {
+        if (adapter?.getItem(position) is MangaAllInOneHeaderItem) return
         createActionModeIfNeeded()
         when {
             lastClickPosition == -1 -> setSelection(position)
@@ -784,10 +786,10 @@ class MangaAllInOneController :
 
     private fun setSelection(position: Int) {
         val adapter = adapter ?: return
-        val item = adapter.getItem(position) ?: return
+        val item = adapter.getItem(position) as MangaAllInOneChapterItem? ?: return
         if (!adapter.isSelected(position)) {
             adapter.toggleSelection(position)
-            selectedItems.add(item as MangaAllInOneChapterItem)
+            selectedItems.add(item)
             actionMode?.invalidate()
         }
     }
