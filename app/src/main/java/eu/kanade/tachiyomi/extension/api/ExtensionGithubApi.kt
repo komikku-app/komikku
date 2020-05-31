@@ -52,7 +52,7 @@ internal class ExtensionGithubApi {
         val installedExtensions = ExtensionLoader.loadExtensions(context)
             .filterIsInstance<LoadResult.Success>()
             .map { it.extension }
-            .filter { it.pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled }
+            .filterNot { it.isBlacklisted(blacklistEnabled) }
 
         val extensionsWithUpdate = mutableListOf<Extension.Installed>()
         for (installedExt in installedExtensions) {
@@ -94,6 +94,13 @@ internal class ExtensionGithubApi {
 
     fun getApkUrl(extension: Extension.Available): String {
         return "$REPO_URL/apk/${extension.apkName}"
+    }
+
+    fun Extension.isBlacklisted(
+        blacklistEnabled: Boolean =
+            preferences.eh_enableSourceBlacklist().get()
+    ): Boolean {
+        return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
 
     companion object {
