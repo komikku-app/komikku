@@ -64,7 +64,7 @@ class MigrationSourcesController :
 
     override fun onItemClick(view: View?, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
-        val controller = MigrationMangaController(item.source)
+        val controller = MigrationMangaController(item.source.id, item.source.name)
         if (parentController is BrowseController) {
             parentController!!.router.pushController(controller.withFadeTransaction())
         } else {
