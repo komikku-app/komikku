@@ -414,11 +414,9 @@ class MangaAllInOnePresenter(
      * @param chapters the list of chapter from the database.
      */
     private fun setDownloadedChapters(chapters: List<MangaAllInOneChapterItem>) {
-        for (chapter in chapters) {
-            if (downloadManager.isChapterDownloaded(chapter, manga)) {
-                chapter.status = Download.DOWNLOADED
-            }
-        }
+        chapters
+            .filter { downloadManager.isChapterDownloaded(it, manga) }
+            .forEach { it.status = Download.DOWNLOADED }
     }
 
     /**
@@ -462,7 +460,7 @@ class MangaAllInOnePresenter(
      * Called when a download for the active manga changes status.
      * @param download the download whose status changed.
      */
-    fun onDownloadStatusChange(download: Download) {
+    private fun onDownloadStatusChange(download: Download) {
         // Assign the download to the model object.
         if (download.status == Download.QUEUE) {
             chapters.find { it.id == download.chapter.id }?.let {

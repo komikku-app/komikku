@@ -29,9 +29,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
-/**
- * Presenter of [ChaptersController].
- */
 class ChaptersPresenter(
     val manga: Manga,
     val source: Source,
@@ -52,8 +49,9 @@ class ChaptersPresenter(
     /**
      * Subject of list of chapters to allow updating the view without going to DB.
      */
-    val chaptersRelay: PublishRelay<List<ChapterItem>>
-    by lazy { PublishRelay.create<List<ChapterItem>>() }
+    private val chaptersRelay: PublishRelay<List<ChapterItem>> by lazy {
+        PublishRelay.create<List<ChapterItem>>()
+    }
 
     /**
      * Whether the chapter list has been requested to the source.
@@ -180,11 +178,9 @@ class ChaptersPresenter(
      * @param chapters the list of chapter from the database.
      */
     private fun setDownloadedChapters(chapters: List<ChapterItem>) {
-        for (chapter in chapters) {
-            if (downloadManager.isChapterDownloaded(chapter, manga)) {
-                chapter.status = Download.DOWNLOADED
-            }
-        }
+        chapters
+            .filter { downloadManager.isChapterDownloaded(it, manga) }
+            .forEach { it.status = Download.DOWNLOADED }
     }
 
     /**
@@ -258,7 +254,7 @@ class ChaptersPresenter(
      * Called when a download for the active manga changes status.
      * @param download the download whose status changed.
      */
-    fun onDownloadStatusChange(download: Download) {
+    private fun onDownloadStatusChange(download: Download) {
         // Assign the download to the model object.
         if (download.status == Download.QUEUE) {
             chapters.find { it.id == download.chapter.id }?.let {
