@@ -83,6 +83,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         when (preferences.startScreen()) {
             2 -> R.id.nav_drawer_history
             3 -> R.id.nav_drawer_updates
+            4 -> R.id.nav_drawer_sources
             else -> R.id.nav_drawer_library
         }
     }
