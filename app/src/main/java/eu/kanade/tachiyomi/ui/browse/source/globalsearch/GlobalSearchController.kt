@@ -36,7 +36,7 @@ open class GlobalSearchController(
     protected val extensionFilter: String? = null
 ) : NucleusController<GlobalSearchControllerBinding, GlobalSearchPresenter>(),
     GlobalSearchCardAdapter.OnMangaClickListener,
-    GlobalSearchAdapter.OnMoreClickListener {
+    GlobalSearchAdapter.OnTitleClickListener {
 
     /**
      * Application preferences.
@@ -205,7 +205,7 @@ open class GlobalSearchController(
         getHolder(source)?.setImage(manga)
     }
 
-    override fun onMoreClick(source: CatalogueSource) {
+    override fun onTitleClick(source: CatalogueSource) {
         openCatalogue(source, BrowseSourceController(source, presenter.query))
     }
 

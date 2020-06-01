@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
-import kotlinx.android.synthetic.main.global_search_controller_card.more
 import kotlinx.android.synthetic.main.global_search_controller_card.progress
 import kotlinx.android.synthetic.main.global_search_controller_card.recycler
 import kotlinx.android.synthetic.main.global_search_controller_card.source_card
@@ -32,10 +31,10 @@ class GlobalSearchHolder(view: View, val adapter: GlobalSearchAdapter) :
         // Set layout horizontal.
         recycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
         recycler.adapter = mangaAdapter
-        more.setOnClickListener {
+        title.setOnClickListener {
             val item = adapter.getItem(bindingAdapterPosition)
             if (item != null) {
-                adapter.moreClickListener.onMoreClick(item.source)
+                adapter.titleClickListener.onTitleClick(item.source)
             }
         }
     }
@@ -104,12 +103,10 @@ class GlobalSearchHolder(view: View, val adapter: GlobalSearchAdapter) :
     private fun showHolder() {
         title.visible()
         source_card.visible()
-        more.visible() // EXH
     }
 
     private fun hideHolder() {
         title.gone()
         source_card.gone()
-        more.gone() // EXH
     }
 }
