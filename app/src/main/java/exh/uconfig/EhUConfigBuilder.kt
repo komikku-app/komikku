@@ -63,6 +63,8 @@ class EhUConfigBuilder {
         configItems += Entry.TagFilteringThreshold(prefs.ehTagFilterValue().get())
         configItems += Entry.TagWatchingThreshold(prefs.ehTagWatchingValue().get())
 
+        configItems += Entry.LanguageSystem().getLanguages(prefs.eh_settingsLanguages().get().split("\n"))
+
         // Actually build form body
         val formBody = FormBody.Builder()
         configItems.forEach {
@@ -150,6 +152,396 @@ object Entry {
     class TagWatchingThreshold(value: Int) : ConfigItem {
         override val key = "wt"
         override val value = "$value"
+    }
+
+    class LanguageSystem {
+
+        fun getLanguages(values: List<String>): List<ConfigItem> {
+            return Japanese(values[0].split("*").map { it.toBoolean() }).configs +
+                English(values[1].split("*").map { it.toBoolean() }).configs +
+                Chinese(values[2].split("*").map { it.toBoolean() }).configs +
+                Dutch(values[3].split("*").map { it.toBoolean() }).configs +
+                French(values[4].split("*").map { it.toBoolean() }).configs +
+                German(values[5].split("*").map { it.toBoolean() }).configs +
+                Hungarian(values[6].split("*").map { it.toBoolean() }).configs +
+                Italian(values[7].split("*").map { it.toBoolean() }).configs +
+                Korean(values[8].split("*").map { it.toBoolean() }).configs +
+                Polish(values[9].split("*").map { it.toBoolean() }).configs +
+                Portuguese(values[10].split("*").map { it.toBoolean() }).configs +
+                Russian(values[11].split("*").map { it.toBoolean() }).configs +
+                Spanish(values[12].split("*").map { it.toBoolean() }).configs +
+                Thai(values[13].split("*").map { it.toBoolean() }).configs +
+                Vietnamese(values[14].split("*").map { it.toBoolean() }).configs +
+                NotAvailable(values[15].split("*").map { it.toBoolean() }).configs +
+                Other(values[16].split("*").map { it.toBoolean() }).configs
+        }
+
+        class Japanese(values: List<Boolean>) {
+
+            val configs = listOf(
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1024"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2048"
+                override val value = if (value) "checked" else ""
+            }
+        }
+        class English(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_1"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1025"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2049"
+                override val value = if (value) "checked" else ""
+            }
+        }
+        class Chinese(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_10"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1034"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2058"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Dutch(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_20"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1044"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2068"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class French(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_30"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1054"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2078"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class German(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_40"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1064"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2088"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Hungarian(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_50"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1074"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2098"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Italian(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_60"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1084"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2108"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Korean(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_70"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1094"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2118"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Polish(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_80"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1104"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2128"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Portuguese(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_90"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1114"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2138"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Russian(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_100"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1124"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2148"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Spanish(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_110"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1134"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2158"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Thai(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_120"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1144"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2168"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Vietnamese(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_130"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1154"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2178"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class NotAvailable(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_254"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1278"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2302"
+                override val value = if (value) "checked" else ""
+            }
+        }
+
+        class Other(values: List<Boolean>) {
+
+            val configs = listOf(
+                Original(values[0]),
+                Translated(values[1]),
+                Rewrite(values[2])
+            )
+
+            class Original(value: Boolean) : ConfigItem {
+                override val key = "xl_255"
+                override val value = if (value) "checked" else ""
+            }
+            class Translated(value: Boolean) : ConfigItem {
+                override val key = "xl_1279"
+                override val value = if (value) "checked" else ""
+            }
+            class Rewrite(value: Boolean) : ConfigItem {
+                override val key = "xl_2303"
+                override val value = if (value) "checked" else ""
+            }
+        }
     }
 }
 

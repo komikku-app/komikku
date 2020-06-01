@@ -360,4 +360,6 @@ class PreferencesHelper(val context: Context) {
     fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
 
     fun eh_watchedListDefaultState() = flowPrefs.getBoolean(Keys.eh_watched_list_default_state, false)
+
+    fun eh_settingsLanguages() = flowPrefs.getString(Keys.eh_settings_languages, "false,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false\nfalse,false,false")
 }
