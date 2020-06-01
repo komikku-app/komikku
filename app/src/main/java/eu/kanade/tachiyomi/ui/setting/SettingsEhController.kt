@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.setting
 
 import android.os.Handler
 import android.text.InputType
-import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
@@ -284,42 +283,138 @@ class SettingsEhController : SettingsController() {
 
         preference {
             title = "Language Filtering"
-            summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query."
+            summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\n Tdlr checkmarked = exclude"
 
             onClick {
                 MaterialDialog(activity!!)
                     .title(text = "Language Filtering")
+                    .message(text = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\n Tdlr checkmarked = exclude")
                     .customView(R.layout.eh_dialog_languages, scrollable = true)
                     .positiveButton(android.R.string.ok) {
                         val customView = it.view.contentLayout.customView!!
 
-                        val languages = listOfNotNull(
-                            "${customView.japanese_original.isChecked}*${customView.japanese_translated.isChecked}*${customView.japanese_rewrite.isChecked}",
-                            "${customView.english_original.isChecked}*${customView.english_translated.isChecked}*${customView.english_rewrite.isChecked}",
-                            "${customView.chinese_original.isChecked}*${customView.chinese_translated.isChecked}*${customView.chinese_rewrite.isChecked}",
-                            "${customView.dutch_original.isChecked}*${customView.dutch_translated.isChecked}*${customView.dutch_rewrite.isChecked}",
-                            "${customView.french_original.isChecked}*${customView.french_translated.isChecked}*${customView.french_rewrite.isChecked}",
-                            "${customView.german_original.isChecked}*${customView.german_translated.isChecked}*${customView.german_rewrite.isChecked}",
-                            "${customView.hungarian_original.isChecked}*${customView.hungarian_translated.isChecked}*${customView.hungarian_rewrite.isChecked}",
-                            "${customView.italian_original.isChecked}*${customView.italian_translated.isChecked}*${customView.italian_rewrite.isChecked}",
-                            "${customView.korean_original.isChecked}*${customView.korean_translated.isChecked}*${customView.korean_rewrite.isChecked}",
-                            "${customView.polish_original.isChecked}*${customView.polish_translated.isChecked}*${customView.polish_rewrite.isChecked}",
-                            "${customView.portuguese_original.isChecked}*${customView.portuguese_translated.isChecked}*${customView.portuguese_rewrite.isChecked}",
-                            "${customView.russian_original.isChecked}*${customView.russian_translated.isChecked}*${customView.russian_rewrite.isChecked}",
-                            "${customView.spanish_original.isChecked}*${customView.spanish_translated.isChecked}*${customView.spanish_rewrite.isChecked}",
-                            "${customView.thai_original.isChecked}*${customView.thai_translated.isChecked}*${customView.thai_rewrite.isChecked}",
-                            "${customView.vietnamese_original.isChecked}*${customView.vietnamese_translated.isChecked}*${customView.vietnamese_rewrite.isChecked}",
-                            "${customView.not_available_original.isChecked}*${customView.not_available_translated.isChecked}*${customView.not_available_rewrite.isChecked}",
-                            "${customView.other_original.isChecked}*${customView.other_translated.isChecked}*${customView.other_rewrite.isChecked}"
-                        ).joinToString("\n")
-
-                        Log.d("Test", languages)
+                        val languages = with(customView) {
+                            listOfNotNull(
+                                "${japanese_original.isChecked}*${japanese_translated.isChecked}*${japanese_rewrite.isChecked}",
+                                "${english_original.isChecked}*${english_translated.isChecked}*${english_rewrite.isChecked}",
+                                "${chinese_original.isChecked}*${chinese_translated.isChecked}*${chinese_rewrite.isChecked}",
+                                "${dutch_original.isChecked}*${dutch_translated.isChecked}*${dutch_rewrite.isChecked}",
+                                "${french_original.isChecked}*${french_translated.isChecked}*${french_rewrite.isChecked}",
+                                "${german_original.isChecked}*${german_translated.isChecked}*${german_rewrite.isChecked}",
+                                "${hungarian_original.isChecked}*${hungarian_translated.isChecked}*${hungarian_rewrite.isChecked}",
+                                "${italian_original.isChecked}*${italian_translated.isChecked}*${italian_rewrite.isChecked}",
+                                "${korean_original.isChecked}*${korean_translated.isChecked}*${korean_rewrite.isChecked}",
+                                "${polish_original.isChecked}*${polish_translated.isChecked}*${polish_rewrite.isChecked}",
+                                "${portuguese_original.isChecked}*${portuguese_translated.isChecked}*${portuguese_rewrite.isChecked}",
+                                "${russian_original.isChecked}*${russian_translated.isChecked}*${russian_rewrite.isChecked}",
+                                "${spanish_original.isChecked}*${spanish_translated.isChecked}*${spanish_rewrite.isChecked}",
+                                "${thai_original.isChecked}*${thai_translated.isChecked}*${thai_rewrite.isChecked}",
+                                "${vietnamese_original.isChecked}*${vietnamese_translated.isChecked}*${vietnamese_rewrite.isChecked}",
+                                "${not_available_original.isChecked}*${not_available_translated.isChecked}*${not_available_rewrite.isChecked}",
+                                "${other_original.isChecked}*${other_translated.isChecked}*${other_rewrite.isChecked}"
+                            ).joinToString("\n")
+                        }
 
                         preferences.eh_settingsLanguages().set(languages)
 
                         preferences.eh_settingsLanguages().reconfigure()
                     }
-                    .show()
+                    .show {
+                        val customView = this.view.contentLayout.customView!!
+                        val settingsLanguages = preferences.eh_settingsLanguages().get().split("\n")
+
+                        val japanese = settingsLanguages[0].split("*").map { it.toBoolean() }
+                        val english = settingsLanguages[1].split("*").map { it.toBoolean() }
+                        val chinese = settingsLanguages[2].split("*").map { it.toBoolean() }
+                        val dutch = settingsLanguages[3].split("*").map { it.toBoolean() }
+                        val french = settingsLanguages[4].split("*").map { it.toBoolean() }
+                        val german = settingsLanguages[5].split("*").map { it.toBoolean() }
+                        val hungarian = settingsLanguages[6].split("*").map { it.toBoolean() }
+                        val italian = settingsLanguages[7].split("*").map { it.toBoolean() }
+                        val korean = settingsLanguages[8].split("*").map { it.toBoolean() }
+                        val polish = settingsLanguages[9].split("*").map { it.toBoolean() }
+                        val portuguese = settingsLanguages[10].split("*").map { it.toBoolean() }
+                        val russian = settingsLanguages[11].split("*").map { it.toBoolean() }
+                        val spanish = settingsLanguages[12].split("*").map { it.toBoolean() }
+                        val thai = settingsLanguages[13].split("*").map { it.toBoolean() }
+                        val vietnamese = settingsLanguages[14].split("*").map { it.toBoolean() }
+                        val notAvailable = settingsLanguages[15].split("*").map { it.toBoolean() }
+                        val other = settingsLanguages[16].split("*").map { it.toBoolean() }
+
+                        with(customView) {
+                            japanese_original.isChecked = japanese[0]
+                            japanese_translated.isChecked = japanese[1]
+                            japanese_rewrite.isChecked = japanese[2]
+
+                            japanese_original.isChecked = japanese[0]
+                            japanese_translated.isChecked = japanese[1]
+                            japanese_rewrite.isChecked = japanese[2]
+
+                            english_original.isChecked = english[0]
+                            english_translated.isChecked = english[1]
+                            english_rewrite.isChecked = english[2]
+
+                            chinese_original.isChecked = chinese[0]
+                            chinese_translated.isChecked = chinese[1]
+                            chinese_rewrite.isChecked = chinese[2]
+
+                            dutch_original.isChecked = dutch[0]
+                            dutch_translated.isChecked = dutch[1]
+                            dutch_rewrite.isChecked = dutch[2]
+
+                            french_original.isChecked = french[0]
+                            french_translated.isChecked = french[1]
+                            french_rewrite.isChecked = french[2]
+
+                            german_original.isChecked = german[0]
+                            german_translated.isChecked = german[1]
+                            german_rewrite.isChecked = german[2]
+
+                            hungarian_original.isChecked = hungarian[0]
+                            hungarian_translated.isChecked = hungarian[1]
+                            hungarian_rewrite.isChecked = hungarian[2]
+
+                            italian_original.isChecked = italian[0]
+                            italian_translated.isChecked = italian[1]
+                            italian_rewrite.isChecked = italian[2]
+
+                            korean_original.isChecked = korean[0]
+                            korean_translated.isChecked = korean[1]
+                            korean_rewrite.isChecked = korean[2]
+
+                            polish_original.isChecked = polish[0]
+                            polish_translated.isChecked = polish[1]
+                            polish_rewrite.isChecked = polish[2]
+
+                            portuguese_original.isChecked = portuguese[0]
+                            portuguese_translated.isChecked = portuguese[1]
+                            portuguese_rewrite.isChecked = portuguese[2]
+
+                            russian_original.isChecked = russian[0]
+                            russian_translated.isChecked = russian[1]
+                            russian_rewrite.isChecked = russian[2]
+
+                            spanish_original.isChecked = spanish[0]
+                            spanish_translated.isChecked = spanish[1]
+                            spanish_rewrite.isChecked = spanish[2]
+
+                            thai_original.isChecked = thai[0]
+                            thai_translated.isChecked = thai[1]
+                            thai_rewrite.isChecked = thai[2]
+
+                            vietnamese_original.isChecked = vietnamese[0]
+                            vietnamese_translated.isChecked = vietnamese[1]
+                            vietnamese_rewrite.isChecked = vietnamese[2]
+
+                            not_available_original.isChecked = notAvailable[0]
+                            not_available_translated.isChecked = notAvailable[1]
+                            not_available_rewrite.isChecked = notAvailable[2]
+
+                            other_original.isChecked = other[0]
+                            other_translated.isChecked = other[1]
+                            other_rewrite.isChecked = other[2]
+                        }
+                    }
             }
         }.dependency = PreferenceKeys.eh_enableExHentai
 
