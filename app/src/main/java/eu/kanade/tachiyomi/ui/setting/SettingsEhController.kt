@@ -2,11 +2,13 @@ package eu.kanade.tachiyomi.ui.setting
 
 import android.os.Handler
 import android.text.InputType
+import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.WhichButton
 import com.afollestad.materialdialogs.actions.setActionButtonEnabled
+import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
 import com.bluelinelabs.conductor.RouterTransaction
@@ -49,6 +51,57 @@ import exh.util.await
 import exh.util.trans
 import humanize.Humanize
 import java.util.Date
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.chinese_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.chinese_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.chinese_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.dutch_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.dutch_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.dutch_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.english_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.english_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.english_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.french_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.french_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.french_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.german_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.german_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.german_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.hungarian_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.hungarian_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.hungarian_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.italian_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.italian_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.italian_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.japanese_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.japanese_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.japanese_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.korean_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.korean_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.korean_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.not_available_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.not_available_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.not_available_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.other_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.other_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.other_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.polish_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.polish_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.polish_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.portuguese_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.portuguese_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.portuguese_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.russian_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.russian_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.russian_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.spanish_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.spanish_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.spanish_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.thai_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.thai_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.thai_translated
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.vietnamese_original
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.vietnamese_rewrite
+import kotlinx.android.synthetic.main.eh_dialog_languages.view.vietnamese_translated
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.launchIn
@@ -224,6 +277,47 @@ class SettingsEhController : SettingsController() {
                         preferences.ehTagWatchingValue().set(value)
                         summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: $value"
                         preferences.ehTagWatchingValue().reconfigure()
+                    }
+                    .show()
+            }
+        }.dependency = PreferenceKeys.eh_enableExHentai
+
+        preference {
+            title = "Language Filtering"
+            summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query."
+
+            onClick {
+                MaterialDialog(activity!!)
+                    .title(text = "Language Filtering")
+                    .customView(R.layout.eh_dialog_languages, scrollable = true)
+                    .positiveButton(android.R.string.ok) {
+                        val customView = it.view.contentLayout.customView!!
+
+                        val languages = listOfNotNull(
+                            "${customView.japanese_original.isChecked}*${customView.japanese_translated.isChecked}*${customView.japanese_rewrite.isChecked}",
+                            "${customView.english_original.isChecked}*${customView.english_translated.isChecked}*${customView.english_rewrite.isChecked}",
+                            "${customView.chinese_original.isChecked}*${customView.chinese_translated.isChecked}*${customView.chinese_rewrite.isChecked}",
+                            "${customView.dutch_original.isChecked}*${customView.dutch_translated.isChecked}*${customView.dutch_rewrite.isChecked}",
+                            "${customView.french_original.isChecked}*${customView.french_translated.isChecked}*${customView.french_rewrite.isChecked}",
+                            "${customView.german_original.isChecked}*${customView.german_translated.isChecked}*${customView.german_rewrite.isChecked}",
+                            "${customView.hungarian_original.isChecked}*${customView.hungarian_translated.isChecked}*${customView.hungarian_rewrite.isChecked}",
+                            "${customView.italian_original.isChecked}*${customView.italian_translated.isChecked}*${customView.italian_rewrite.isChecked}",
+                            "${customView.korean_original.isChecked}*${customView.korean_translated.isChecked}*${customView.korean_rewrite.isChecked}",
+                            "${customView.polish_original.isChecked}*${customView.polish_translated.isChecked}*${customView.polish_rewrite.isChecked}",
+                            "${customView.portuguese_original.isChecked}*${customView.portuguese_translated.isChecked}*${customView.portuguese_rewrite.isChecked}",
+                            "${customView.russian_original.isChecked}*${customView.russian_translated.isChecked}*${customView.russian_rewrite.isChecked}",
+                            "${customView.spanish_original.isChecked}*${customView.spanish_translated.isChecked}*${customView.spanish_rewrite.isChecked}",
+                            "${customView.thai_original.isChecked}*${customView.thai_translated.isChecked}*${customView.thai_rewrite.isChecked}",
+                            "${customView.vietnamese_original.isChecked}*${customView.vietnamese_translated.isChecked}*${customView.vietnamese_rewrite.isChecked}",
+                            "${customView.not_available_original.isChecked}*${customView.not_available_translated.isChecked}*${customView.not_available_rewrite.isChecked}",
+                            "${customView.other_original.isChecked}*${customView.other_translated.isChecked}*${customView.other_rewrite.isChecked}"
+                        ).joinToString("\n")
+
+                        Log.d("Test", languages)
+
+                        preferences.eh_settingsLanguages().set(languages)
+
+                        preferences.eh_settingsLanguages().reconfigure()
                     }
                     .show()
             }
