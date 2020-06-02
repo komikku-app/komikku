@@ -279,12 +279,12 @@ class SettingsEhController : SettingsController() {
 
         preference {
             title = "Language Filtering"
-            summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\n Tdlr checkmarked = exclude"
+            summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude"
 
             onClick {
                 MaterialDialog(activity!!)
                     .title(text = "Language Filtering")
-                    .message(text = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\n Tdlr checkmarked = exclude")
+                    .message(text = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude")
                     .customView(R.layout.eh_dialog_languages, scrollable = true)
                     .positiveButton(android.R.string.ok) {
                         val customView = it.view.contentLayout.customView!!
