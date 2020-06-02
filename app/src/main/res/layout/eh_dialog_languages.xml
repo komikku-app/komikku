@@ -47,6 +47,7 @@
             android:id="@+id/japanese"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Japanese" />
 
@@ -78,6 +79,7 @@
             android:id="@+id/english"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="English" />
 
@@ -108,6 +110,7 @@
             android:id="@+id/chinese"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Chinese" />
 
@@ -138,6 +141,7 @@
             android:id="@+id/dutch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Dutch" />
 
@@ -168,6 +172,7 @@
             android:id="@+id/french"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="French" />
 
@@ -198,6 +203,7 @@
             android:id="@+id/german"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="German" />
 
@@ -228,6 +234,7 @@
             android:id="@+id/hungarian"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Hungarian" />
 
@@ -258,6 +265,7 @@
             android:id="@+id/italian"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Italian" />
 
@@ -288,6 +296,7 @@
             android:id="@+id/korean"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Korean" />
 
@@ -318,6 +327,7 @@
             android:id="@+id/polish"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Polish" />
 
@@ -348,6 +358,7 @@
             android:id="@+id/portuguese"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Portuguese" />
 
@@ -378,6 +389,7 @@
             android:id="@+id/russian"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Russian" />
 
@@ -408,6 +420,7 @@
             android:id="@+id/spanish"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Spanish" />
 
@@ -438,6 +451,7 @@
             android:id="@+id/thai"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Thai" />
 
@@ -468,6 +482,7 @@
             android:id="@+id/vietnamese"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Vietnamese" />
 
@@ -498,6 +513,7 @@
             android:id="@+id/not_available"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="N/A" />
 
@@ -528,6 +544,7 @@
             android:id="@+id/other"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:padding="4dp"
             android:text="Other" />
 
