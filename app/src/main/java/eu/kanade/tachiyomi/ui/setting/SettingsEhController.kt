@@ -211,9 +211,7 @@ class SettingsEhController : SettingsController() {
             key = PreferenceKeys.eh_tag_filtering_value
             defaultValue = 0
 
-            var value = preferences.ehTagFilterValue().get()
-
-            summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: $value"
+            summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: ${preferences.ehTagFilterValue().get()}"
 
             onClick {
                 MaterialDialog(activity!!)
@@ -224,17 +222,17 @@ class SettingsEhController : SettingsController() {
                         allowEmpty = false
                     ) { dialog, number ->
                         val inputField = dialog.getInputField()
-                        val tempValue = number.toString().toIntOrNull()
+                        val value = number.toString().toIntOrNull()
 
-                        if (tempValue != null && tempValue in -9999..0) {
+                        if (value != null && value in -9999..0) {
                             inputField.error = null
-                            value = tempValue
                         } else {
                             inputField.error = "Must be between -9999 and 0!"
                         }
-                        dialog.setActionButtonEnabled(WhichButton.POSITIVE, value in -9999..0)
+                        dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in -9999..0)
                     }
                     .positiveButton(android.R.string.ok) {
+                        val value = it.getInputField().text.toString().toInt()
                         preferences.ehTagFilterValue().set(value)
                         summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between 0 and -9999. Currently: $value"
                         preferences.ehTagFilterValue().reconfigure()
@@ -248,9 +246,7 @@ class SettingsEhController : SettingsController() {
             key = PreferenceKeys.eh_tag_watching_value
             defaultValue = 0
 
-            var value = preferences.ehTagWatchingValue().get()
-
-            summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: $value"
+            summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: ${preferences.ehTagWatchingValue().get()}"
 
             onClick {
                 MaterialDialog(activity!!)
@@ -262,17 +258,17 @@ class SettingsEhController : SettingsController() {
                         allowEmpty = false
                     ) { dialog, number ->
                         val inputField = dialog.getInputField()
-                        val tempValue = number.toString().toIntOrNull()
+                        val value = number.toString().toIntOrNull()
 
-                        if (tempValue != null && tempValue in 0..9999) {
+                        if (value != null && value in 0..9999) {
                             inputField.error = null
-                            value = tempValue
                         } else {
                             inputField.error = "Must be between 0 and 9999!"
                         }
-                        dialog.setActionButtonEnabled(WhichButton.POSITIVE, value in 0..9999)
+                        dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in 0..9999)
                     }
                     .positiveButton(android.R.string.ok) {
+                        val value = it.getInputField().text.toString().toInt()
                         preferences.ehTagWatchingValue().set(value)
                         summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: $value"
                         preferences.ehTagWatchingValue().reconfigure()
