@@ -65,6 +65,8 @@ class EhUConfigBuilder {
 
         configItems += Entry.LanguageSystem().getLanguages(prefs.eh_settingsLanguages().get().split("\n"))
 
+        configItems += Entry.Categories().categoryConfigs(prefs.eh_EnabledCategories().get().split(",").map { it.toBoolean() })
+
         // Actually build form body
         val formBody = FormBody.Builder()
         configItems.forEach {
@@ -152,6 +154,65 @@ object Entry {
     class TagWatchingThreshold(value: Int) : ConfigItem {
         override val key = "wt"
         override val value = "$value"
+    }
+
+    class Categories() {
+
+        fun categoryConfigs(list: List<Boolean>): List<ConfigItem> {
+            return listOf(
+                Doujinshi(list[0]),
+                Manga(list[1]),
+                ArtistCG(list[2]),
+                GameCG(list[3]),
+                Western(list[4]),
+                NonH(list[5]),
+                ImageSet(list[6]),
+                Cosplay(list[7]),
+                AsianPorn(list[8]),
+                Misc(list[9])
+            )
+        }
+
+        class Doujinshi(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_doujinshi"
+        }
+        class Manga(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_manga"
+        }
+        class ArtistCG(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_artistcg"
+        }
+        class GameCG(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_gamecg"
+        }
+        class Western(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_western"
+        }
+        class NonH(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_non-h"
+        }
+        class ImageSet(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_imageset"
+        }
+        class Cosplay(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_cosplay"
+        }
+        class AsianPorn(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_asianporn"
+        }
+        class Misc(exclude: Boolean) : ConfigItem {
+            override val value = if (exclude) "1" else "0"
+            override val key = "ct_misc_div"
+        }
     }
 
     class LanguageSystem {

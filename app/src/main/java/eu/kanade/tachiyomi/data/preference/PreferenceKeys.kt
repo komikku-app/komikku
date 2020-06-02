@@ -240,4 +240,6 @@ object PreferenceKeys {
     const val eh_watched_list_default_state = "eh_watched_list_default_state"
 
     const val eh_settings_languages = "eh_settings_languages"
+
+    const val eh_enabled_categories = "eh_enabled_categories"
 }
