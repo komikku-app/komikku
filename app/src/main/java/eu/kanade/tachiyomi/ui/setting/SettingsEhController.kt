@@ -50,6 +50,16 @@ import exh.util.await
 import exh.util.trans
 import humanize.Humanize
 import java.util.Date
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.artist_cg_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.asian_porn_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.cosplay_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.doujinshi_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.game_cg_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.image_set_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.manga_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.misc_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.non_h_checkbox
+import kotlinx.android.synthetic.main.eh_dialog_categories.view.western_checkbox
 import kotlinx.android.synthetic.main.eh_dialog_languages.view.chinese_original
 import kotlinx.android.synthetic.main.eh_dialog_languages.view.chinese_rewrite
 import kotlinx.android.synthetic.main.eh_dialog_languages.view.chinese_translated
@@ -409,6 +419,57 @@ class SettingsEhController : SettingsController() {
                             other_original.isChecked = other[0]
                             other_translated.isChecked = other[1]
                             other_rewrite.isChecked = other[2]
+                        }
+                    }
+            }
+        }.dependency = PreferenceKeys.eh_enableExHentai
+
+        preference {
+            title = "Front Page Categories"
+            summary = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters"
+
+            onClick {
+                MaterialDialog(activity!!)
+                    .title(text = "Front Page Categories")
+                    .message(text = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters")
+                    .customView(R.layout.eh_dialog_categories, scrollable = true)
+                    .positiveButton {
+                        val customView = it.view.contentLayout.customView!!
+
+                        with(customView) {
+                            preferences.eh_EnabledCategories().set(
+                                listOf(
+                                    (!doujinshi_checkbox.isChecked).toString(),
+                                    (!manga_checkbox.isChecked).toString(),
+                                    (!artist_cg_checkbox.isChecked).toString(),
+                                    (!game_cg_checkbox.isChecked).toString(),
+                                    (!western_checkbox.isChecked).toString(),
+                                    (!non_h_checkbox.isChecked).toString(),
+                                    (!image_set_checkbox.isChecked).toString(),
+                                    (!cosplay_checkbox.isChecked).toString(),
+                                    (!asian_porn_checkbox.isChecked).toString(),
+                                    (!misc_checkbox.isChecked).toString()
+                                ).joinToString(",")
+                            )
+                        }
+
+                        preferences.eh_EnabledCategories().reconfigure()
+                    }
+                    .show {
+                        val customView = this.view.contentLayout.customView!!
+
+                        with(customView) {
+                            val list = preferences.eh_EnabledCategories().get().split(",").map { !it.toBoolean() }
+                            doujinshi_checkbox.isChecked = list[0]
+                            manga_checkbox.isChecked = list[1]
+                            artist_cg_checkbox.isChecked = list[2]
+                            game_cg_checkbox.isChecked = list[3]
+                            western_checkbox.isChecked = list[4]
+                            non_h_checkbox.isChecked = list[5]
+                            image_set_checkbox.isChecked = list[6]
+                            cosplay_checkbox.isChecked = list[7]
+                            asian_porn_checkbox.isChecked = list[8]
+                            misc_checkbox.isChecked = list[9]
                         }
                     }
             }
