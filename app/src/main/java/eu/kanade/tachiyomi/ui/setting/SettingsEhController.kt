@@ -145,374 +145,379 @@ class SettingsEhController : SettingsController() {
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         title = "E-Hentai"
 
-        switchPreference {
-            title = "Enable ExHentai"
-            summaryOff = "Requires login"
-            key = PreferenceKeys.eh_enableExHentai
-            isPersistent = false
-            defaultValue = false
-            preferences.enableExhentai()
-                .asFlow()
-                .onEach {
-                    isChecked = it
+        preferenceCategory {
+            title = "E-Hentai Website Account Settings"
+
+            switchPreference {
+                title = "Enable ExHentai"
+                summaryOff = "Requires login"
+                key = PreferenceKeys.eh_enableExHentai
+                isPersistent = false
+                defaultValue = false
+                preferences.enableExhentai()
+                    .asFlow()
+                    .onEach {
+                        isChecked = it
+                    }
+                    .launchIn(scope)
+
+                onChange { newVal ->
+                    newVal as Boolean
+                    if (!newVal) {
+                        preferences.enableExhentai().set(false)
+                        true
+                    } else {
+                        router.pushController(
+                            RouterTransaction.with(LoginController())
+                                .pushChangeHandler(FadeChangeHandler())
+                                .popChangeHandler(FadeChangeHandler())
+                        )
+                        false
+                    }
                 }
-                .launchIn(scope)
+            }
 
-            onChange { newVal ->
-                newVal as Boolean
-                if (!newVal) {
-                    preferences.enableExhentai().set(false)
-                    true
-                } else {
-                    router.pushController(
-                        RouterTransaction.with(LoginController())
-                            .pushChangeHandler(FadeChangeHandler())
-                            .popChangeHandler(FadeChangeHandler())
-                    )
-                    false
+            switchPreference {
+                title = "Use Hentai@Home Network"
+                summary = "Do you wish to load images through the Hentai@Home Network? Disabling this option will reduce the amount of pages you are able to view"
+                key = "enable_hah"
+                defaultValue = true
+
+                onChange { preferences.useHentaiAtHome().reconfigure() }
+            }.dependency = PreferenceKeys.eh_enableExHentai
+
+            switchPreference {
+                title = "Show Japanese titles in search results"
+                summaryOn = "Currently showing Japanese titles in search results. Clear the chapter cache after changing this (in the Advanced section)"
+                summaryOff = "Currently showing English/Romanized titles in search results. Clear the chapter cache after changing this (in the Advanced section)"
+                key = "use_jp_title"
+                defaultValue = false
+
+                onChange { preferences.useJapaneseTitle().reconfigure() }
+            }.dependency = PreferenceKeys.eh_enableExHentai
+
+            switchPreference {
+                title = "Use original images"
+                summaryOn = "Currently using original images"
+                summaryOff = "Currently using resampled images"
+                key = PreferenceKeys.eh_useOrigImages
+                defaultValue = false
+
+                onChange { preferences.eh_useOriginalImages().reconfigure() }
+            }.dependency = PreferenceKeys.eh_enableExHentai
+
+            preference {
+                title = "Watched Tags"
+                summary = "Opens a webview to your E/ExHentai watched tags page"
+                onClick {
+                    val intent = if (preferences.enableExhentai().get()) {
+                        WebViewActivity.newIntent(activity!!, url = "https://exhentai.org/mytags", title = "ExHentai Watched Tags")
+                    } else {
+                        WebViewActivity.newIntent(activity!!, url = "https://e-hentai.org/mytags", title = "E-Hentai Watched Tags")
+                    }
+                    startActivity(intent)
                 }
-            }
-        }
+            }.dependency = PreferenceKeys.eh_enableExHentai
 
-        switchPreference {
-            title = "Use Hentai@Home Network"
-            summary = "Do you wish to load images through the Hentai@Home Network? Disabling this option will reduce the amount of pages you are able to view"
-            key = "enable_hah"
-            defaultValue = true
+            preference {
+                title = "Tag Filtering Threshold"
+                key = PreferenceKeys.eh_tag_filtering_value
+                defaultValue = 0
 
-            onChange { preferences.useHentaiAtHome().reconfigure() }
-        }.dependency = PreferenceKeys.eh_enableExHentai
+                summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: ${preferences.ehTagFilterValue().get()}"
 
-        switchPreference {
-            title = "Show Japanese titles in search results"
-            summaryOn = "Currently showing Japanese titles in search results. Clear the chapter cache after changing this (in the Advanced section)"
-            summaryOff = "Currently showing English/Romanized titles in search results. Clear the chapter cache after changing this (in the Advanced section)"
-            key = "use_jp_title"
-            defaultValue = false
+                onClick {
+                    MaterialDialog(activity!!)
+                        .title(text = "Tag Filtering Threshold")
+                        .input(
+                            inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
+                            waitForPositiveButton = false,
+                            allowEmpty = false
+                        ) { dialog, number ->
+                            val inputField = dialog.getInputField()
+                            val value = number.toString().toIntOrNull()
 
-            onChange { preferences.useJapaneseTitle().reconfigure() }
-        }.dependency = PreferenceKeys.eh_enableExHentai
-
-        switchPreference {
-            title = "Use original images"
-            summaryOn = "Currently using original images"
-            summaryOff = "Currently using resampled images"
-            key = PreferenceKeys.eh_useOrigImages
-            defaultValue = false
-
-            onChange { preferences.eh_useOriginalImages().reconfigure() }
-        }.dependency = PreferenceKeys.eh_enableExHentai
-
-        preference {
-            title = "Watched Tags"
-            summary = "Opens a webview to your E/ExHentai watched tags page"
-            onClick {
-                val intent = if (preferences.enableExhentai().get()) {
-                    WebViewActivity.newIntent(activity!!, url = "https://exhentai.org/mytags", title = "ExHentai Watched Tags")
-                } else {
-                    WebViewActivity.newIntent(activity!!, url = "https://e-hentai.org/mytags", title = "E-Hentai Watched Tags")
+                            if (value != null && value in -9999..0) {
+                                inputField.error = null
+                            } else {
+                                inputField.error = "Must be between -9999 and 0!"
+                            }
+                            dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in -9999..0)
+                        }
+                        .positiveButton(android.R.string.ok) {
+                            val value = it.getInputField().text.toString().toInt()
+                            preferences.ehTagFilterValue().set(value)
+                            summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between 0 and -9999. Currently: $value"
+                            preferences.ehTagFilterValue().reconfigure()
+                        }
+                        .show()
                 }
-                startActivity(intent)
+            }.dependency = PreferenceKeys.eh_enableExHentai
+
+            preference {
+                title = "Tag Watching Threshold"
+                key = PreferenceKeys.eh_tag_watching_value
+                defaultValue = 0
+
+                summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: ${preferences.ehTagWatchingValue().get()}"
+
+                onClick {
+                    MaterialDialog(activity!!)
+                        .title(text = "Tag Watching Threshold")
+                        .input(
+                            inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
+                            maxLength = 4,
+                            waitForPositiveButton = false,
+                            allowEmpty = false
+                        ) { dialog, number ->
+                            val inputField = dialog.getInputField()
+                            val value = number.toString().toIntOrNull()
+
+                            if (value != null && value in 0..9999) {
+                                inputField.error = null
+                            } else {
+                                inputField.error = "Must be between 0 and 9999!"
+                            }
+                            dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in 0..9999)
+                        }
+                        .positiveButton(android.R.string.ok) {
+                            val value = it.getInputField().text.toString().toInt()
+                            preferences.ehTagWatchingValue().set(value)
+                            summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: $value"
+                            preferences.ehTagWatchingValue().reconfigure()
+                        }
+                        .show()
+                }
+            }.dependency = PreferenceKeys.eh_enableExHentai
+
+            preference {
+                title = "Language Filtering"
+                summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude"
+
+                onClick {
+                    MaterialDialog(activity!!)
+                        .title(text = "Language Filtering")
+                        .message(text = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude")
+                        .customView(R.layout.eh_dialog_languages, scrollable = true)
+                        .positiveButton(android.R.string.ok) {
+                            val customView = it.view.contentLayout.customView!!
+
+                            val languages = with(customView) {
+                                listOfNotNull(
+                                    "${japanese_original.isChecked}*${japanese_translated.isChecked}*${japanese_rewrite.isChecked}",
+                                    "${english_original.isChecked}*${english_translated.isChecked}*${english_rewrite.isChecked}",
+                                    "${chinese_original.isChecked}*${chinese_translated.isChecked}*${chinese_rewrite.isChecked}",
+                                    "${dutch_original.isChecked}*${dutch_translated.isChecked}*${dutch_rewrite.isChecked}",
+                                    "${french_original.isChecked}*${french_translated.isChecked}*${french_rewrite.isChecked}",
+                                    "${german_original.isChecked}*${german_translated.isChecked}*${german_rewrite.isChecked}",
+                                    "${hungarian_original.isChecked}*${hungarian_translated.isChecked}*${hungarian_rewrite.isChecked}",
+                                    "${italian_original.isChecked}*${italian_translated.isChecked}*${italian_rewrite.isChecked}",
+                                    "${korean_original.isChecked}*${korean_translated.isChecked}*${korean_rewrite.isChecked}",
+                                    "${polish_original.isChecked}*${polish_translated.isChecked}*${polish_rewrite.isChecked}",
+                                    "${portuguese_original.isChecked}*${portuguese_translated.isChecked}*${portuguese_rewrite.isChecked}",
+                                    "${russian_original.isChecked}*${russian_translated.isChecked}*${russian_rewrite.isChecked}",
+                                    "${spanish_original.isChecked}*${spanish_translated.isChecked}*${spanish_rewrite.isChecked}",
+                                    "${thai_original.isChecked}*${thai_translated.isChecked}*${thai_rewrite.isChecked}",
+                                    "${vietnamese_original.isChecked}*${vietnamese_translated.isChecked}*${vietnamese_rewrite.isChecked}",
+                                    "${not_available_original.isChecked}*${not_available_translated.isChecked}*${not_available_rewrite.isChecked}",
+                                    "${other_original.isChecked}*${other_translated.isChecked}*${other_rewrite.isChecked}"
+                                ).joinToString("\n")
+                            }
+
+                            preferences.eh_settingsLanguages().set(languages)
+
+                            preferences.eh_settingsLanguages().reconfigure()
+                        }
+                        .show {
+                            val customView = this.view.contentLayout.customView!!
+                            val settingsLanguages = preferences.eh_settingsLanguages().get().split("\n")
+
+                            val japanese = settingsLanguages[0].split("*").map { it.toBoolean() }
+                            val english = settingsLanguages[1].split("*").map { it.toBoolean() }
+                            val chinese = settingsLanguages[2].split("*").map { it.toBoolean() }
+                            val dutch = settingsLanguages[3].split("*").map { it.toBoolean() }
+                            val french = settingsLanguages[4].split("*").map { it.toBoolean() }
+                            val german = settingsLanguages[5].split("*").map { it.toBoolean() }
+                            val hungarian = settingsLanguages[6].split("*").map { it.toBoolean() }
+                            val italian = settingsLanguages[7].split("*").map { it.toBoolean() }
+                            val korean = settingsLanguages[8].split("*").map { it.toBoolean() }
+                            val polish = settingsLanguages[9].split("*").map { it.toBoolean() }
+                            val portuguese = settingsLanguages[10].split("*").map { it.toBoolean() }
+                            val russian = settingsLanguages[11].split("*").map { it.toBoolean() }
+                            val spanish = settingsLanguages[12].split("*").map { it.toBoolean() }
+                            val thai = settingsLanguages[13].split("*").map { it.toBoolean() }
+                            val vietnamese = settingsLanguages[14].split("*").map { it.toBoolean() }
+                            val notAvailable =
+                                settingsLanguages[15].split("*").map { it.toBoolean() }
+                            val other = settingsLanguages[16].split("*").map { it.toBoolean() }
+
+                            with(customView) {
+                                japanese_original.isChecked = japanese[0]
+                                japanese_translated.isChecked = japanese[1]
+                                japanese_rewrite.isChecked = japanese[2]
+
+                                japanese_original.isChecked = japanese[0]
+                                japanese_translated.isChecked = japanese[1]
+                                japanese_rewrite.isChecked = japanese[2]
+
+                                english_original.isChecked = english[0]
+                                english_translated.isChecked = english[1]
+                                english_rewrite.isChecked = english[2]
+
+                                chinese_original.isChecked = chinese[0]
+                                chinese_translated.isChecked = chinese[1]
+                                chinese_rewrite.isChecked = chinese[2]
+
+                                dutch_original.isChecked = dutch[0]
+                                dutch_translated.isChecked = dutch[1]
+                                dutch_rewrite.isChecked = dutch[2]
+
+                                french_original.isChecked = french[0]
+                                french_translated.isChecked = french[1]
+                                french_rewrite.isChecked = french[2]
+
+                                german_original.isChecked = german[0]
+                                german_translated.isChecked = german[1]
+                                german_rewrite.isChecked = german[2]
+
+                                hungarian_original.isChecked = hungarian[0]
+                                hungarian_translated.isChecked = hungarian[1]
+                                hungarian_rewrite.isChecked = hungarian[2]
+
+                                italian_original.isChecked = italian[0]
+                                italian_translated.isChecked = italian[1]
+                                italian_rewrite.isChecked = italian[2]
+
+                                korean_original.isChecked = korean[0]
+                                korean_translated.isChecked = korean[1]
+                                korean_rewrite.isChecked = korean[2]
+
+                                polish_original.isChecked = polish[0]
+                                polish_translated.isChecked = polish[1]
+                                polish_rewrite.isChecked = polish[2]
+
+                                portuguese_original.isChecked = portuguese[0]
+                                portuguese_translated.isChecked = portuguese[1]
+                                portuguese_rewrite.isChecked = portuguese[2]
+
+                                russian_original.isChecked = russian[0]
+                                russian_translated.isChecked = russian[1]
+                                russian_rewrite.isChecked = russian[2]
+
+                                spanish_original.isChecked = spanish[0]
+                                spanish_translated.isChecked = spanish[1]
+                                spanish_rewrite.isChecked = spanish[2]
+
+                                thai_original.isChecked = thai[0]
+                                thai_translated.isChecked = thai[1]
+                                thai_rewrite.isChecked = thai[2]
+
+                                vietnamese_original.isChecked = vietnamese[0]
+                                vietnamese_translated.isChecked = vietnamese[1]
+                                vietnamese_rewrite.isChecked = vietnamese[2]
+
+                                not_available_original.isChecked = notAvailable[0]
+                                not_available_translated.isChecked = notAvailable[1]
+                                not_available_rewrite.isChecked = notAvailable[2]
+
+                                other_original.isChecked = other[0]
+                                other_translated.isChecked = other[1]
+                                other_rewrite.isChecked = other[2]
+                            }
+                        }
+                }
+            }.dependency = PreferenceKeys.eh_enableExHentai
+
+            preference {
+                title = "Front Page Categories"
+                summary = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters"
+
+                onClick {
+                    MaterialDialog(activity!!)
+                        .title(text = "Front Page Categories")
+                        .message(text = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters")
+                        .customView(R.layout.eh_dialog_categories, scrollable = true)
+                        .positiveButton {
+                            val customView = it.view.contentLayout.customView!!
+
+                            with(customView) {
+                                preferences.eh_EnabledCategories().set(
+                                    listOf(
+                                        (!doujinshi_checkbox.isChecked).toString(),
+                                        (!manga_checkbox.isChecked).toString(),
+                                        (!artist_cg_checkbox.isChecked).toString(),
+                                        (!game_cg_checkbox.isChecked).toString(),
+                                        (!western_checkbox.isChecked).toString(),
+                                        (!non_h_checkbox.isChecked).toString(),
+                                        (!image_set_checkbox.isChecked).toString(),
+                                        (!cosplay_checkbox.isChecked).toString(),
+                                        (!asian_porn_checkbox.isChecked).toString(),
+                                        (!misc_checkbox.isChecked).toString()
+                                    ).joinToString(",")
+                                )
+                            }
+
+                            preferences.eh_EnabledCategories().reconfigure()
+                        }
+                        .show {
+                            val customView = this.view.contentLayout.customView!!
+
+                            with(customView) {
+                                val list = preferences.eh_EnabledCategories().get().split(",").map { !it.toBoolean() }
+                                doujinshi_checkbox.isChecked = list[0]
+                                manga_checkbox.isChecked = list[1]
+                                artist_cg_checkbox.isChecked = list[2]
+                                game_cg_checkbox.isChecked = list[3]
+                                western_checkbox.isChecked = list[4]
+                                non_h_checkbox.isChecked = list[5]
+                                image_set_checkbox.isChecked = list[6]
+                                cosplay_checkbox.isChecked = list[7]
+                                asian_porn_checkbox.isChecked = list[8]
+                                misc_checkbox.isChecked = list[9]
+                            }
+                        }
+                }
+            }.dependency = PreferenceKeys.eh_enableExHentai
+
+            switchPreference {
+                defaultValue = false
+                key = PreferenceKeys.eh_watched_list_default_state
+                title = "Watched List Filter Default State"
+                summary = "When browsing ExHentai/E-Hentai should the watched list filter be enabled by default"
             }
-        }.dependency = PreferenceKeys.eh_enableExHentai
 
-        preference {
-            title = "Tag Filtering Threshold"
-            key = PreferenceKeys.eh_tag_filtering_value
-            defaultValue = 0
-
-            summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: ${preferences.ehTagFilterValue().get()}"
-
-            onClick {
-                MaterialDialog(activity!!)
-                    .title(text = "Tag Filtering Threshold")
-                    .input(
-                        inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
-                        waitForPositiveButton = false,
-                        allowEmpty = false
-                    ) { dialog, number ->
-                        val inputField = dialog.getInputField()
-                        val value = number.toString().toIntOrNull()
-
-                        if (value != null && value in -9999..0) {
-                            inputField.error = null
-                        } else {
-                            inputField.error = "Must be between -9999 and 0!"
-                        }
-                        dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in -9999..0)
-                    }
-                    .positiveButton(android.R.string.ok) {
-                        val value = it.getInputField().text.toString().toInt()
-                        preferences.ehTagFilterValue().set(value)
-                        summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between 0 and -9999. Currently: $value"
-                        preferences.ehTagFilterValue().reconfigure()
-                    }
-                    .show()
+            switchPreference {
+                defaultValue = true
+                key = PreferenceKeys.eh_secure_exh
+                title = "Secure ExHentai/E-Hentai"
+                summary = "Use the HTTPS version of ExHentai/E-Hentai."
             }
-        }.dependency = PreferenceKeys.eh_enableExHentai
 
-        preference {
-            title = "Tag Watching Threshold"
-            key = PreferenceKeys.eh_tag_watching_value
-            defaultValue = 0
+            listPreference {
+                defaultValue = "auto"
+                key = PreferenceKeys.eh_ehentai_quality
+                summary = "The quality of the downloaded images"
+                title = "Image quality"
+                entries = arrayOf(
+                    "Auto",
+                    "2400x",
+                    "1600x",
+                    "1280x",
+                    "980x",
+                    "780x"
+                )
+                entryValues = arrayOf(
+                    "auto",
+                    "ovrs_2400",
+                    "ovrs_1600",
+                    "high",
+                    "med",
+                    "low"
+                )
 
-            summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: ${preferences.ehTagWatchingValue().get()}"
-
-            onClick {
-                MaterialDialog(activity!!)
-                    .title(text = "Tag Watching Threshold")
-                    .input(
-                        inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
-                        maxLength = 4,
-                        waitForPositiveButton = false,
-                        allowEmpty = false
-                    ) { dialog, number ->
-                        val inputField = dialog.getInputField()
-                        val value = number.toString().toIntOrNull()
-
-                        if (value != null && value in 0..9999) {
-                            inputField.error = null
-                        } else {
-                            inputField.error = "Must be between 0 and 9999!"
-                        }
-                        dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in 0..9999)
-                    }
-                    .positiveButton(android.R.string.ok) {
-                        val value = it.getInputField().text.toString().toInt()
-                        preferences.ehTagWatchingValue().set(value)
-                        summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: $value"
-                        preferences.ehTagWatchingValue().reconfigure()
-                    }
-                    .show()
-            }
-        }.dependency = PreferenceKeys.eh_enableExHentai
-
-        preference {
-            title = "Language Filtering"
-            summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude"
-
-            onClick {
-                MaterialDialog(activity!!)
-                    .title(text = "Language Filtering")
-                    .message(text = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude")
-                    .customView(R.layout.eh_dialog_languages, scrollable = true)
-                    .positiveButton(android.R.string.ok) {
-                        val customView = it.view.contentLayout.customView!!
-
-                        val languages = with(customView) {
-                            listOfNotNull(
-                                "${japanese_original.isChecked}*${japanese_translated.isChecked}*${japanese_rewrite.isChecked}",
-                                "${english_original.isChecked}*${english_translated.isChecked}*${english_rewrite.isChecked}",
-                                "${chinese_original.isChecked}*${chinese_translated.isChecked}*${chinese_rewrite.isChecked}",
-                                "${dutch_original.isChecked}*${dutch_translated.isChecked}*${dutch_rewrite.isChecked}",
-                                "${french_original.isChecked}*${french_translated.isChecked}*${french_rewrite.isChecked}",
-                                "${german_original.isChecked}*${german_translated.isChecked}*${german_rewrite.isChecked}",
-                                "${hungarian_original.isChecked}*${hungarian_translated.isChecked}*${hungarian_rewrite.isChecked}",
-                                "${italian_original.isChecked}*${italian_translated.isChecked}*${italian_rewrite.isChecked}",
-                                "${korean_original.isChecked}*${korean_translated.isChecked}*${korean_rewrite.isChecked}",
-                                "${polish_original.isChecked}*${polish_translated.isChecked}*${polish_rewrite.isChecked}",
-                                "${portuguese_original.isChecked}*${portuguese_translated.isChecked}*${portuguese_rewrite.isChecked}",
-                                "${russian_original.isChecked}*${russian_translated.isChecked}*${russian_rewrite.isChecked}",
-                                "${spanish_original.isChecked}*${spanish_translated.isChecked}*${spanish_rewrite.isChecked}",
-                                "${thai_original.isChecked}*${thai_translated.isChecked}*${thai_rewrite.isChecked}",
-                                "${vietnamese_original.isChecked}*${vietnamese_translated.isChecked}*${vietnamese_rewrite.isChecked}",
-                                "${not_available_original.isChecked}*${not_available_translated.isChecked}*${not_available_rewrite.isChecked}",
-                                "${other_original.isChecked}*${other_translated.isChecked}*${other_rewrite.isChecked}"
-                            ).joinToString("\n")
-                        }
-
-                        preferences.eh_settingsLanguages().set(languages)
-
-                        preferences.eh_settingsLanguages().reconfigure()
-                    }
-                    .show {
-                        val customView = this.view.contentLayout.customView!!
-                        val settingsLanguages = preferences.eh_settingsLanguages().get().split("\n")
-
-                        val japanese = settingsLanguages[0].split("*").map { it.toBoolean() }
-                        val english = settingsLanguages[1].split("*").map { it.toBoolean() }
-                        val chinese = settingsLanguages[2].split("*").map { it.toBoolean() }
-                        val dutch = settingsLanguages[3].split("*").map { it.toBoolean() }
-                        val french = settingsLanguages[4].split("*").map { it.toBoolean() }
-                        val german = settingsLanguages[5].split("*").map { it.toBoolean() }
-                        val hungarian = settingsLanguages[6].split("*").map { it.toBoolean() }
-                        val italian = settingsLanguages[7].split("*").map { it.toBoolean() }
-                        val korean = settingsLanguages[8].split("*").map { it.toBoolean() }
-                        val polish = settingsLanguages[9].split("*").map { it.toBoolean() }
-                        val portuguese = settingsLanguages[10].split("*").map { it.toBoolean() }
-                        val russian = settingsLanguages[11].split("*").map { it.toBoolean() }
-                        val spanish = settingsLanguages[12].split("*").map { it.toBoolean() }
-                        val thai = settingsLanguages[13].split("*").map { it.toBoolean() }
-                        val vietnamese = settingsLanguages[14].split("*").map { it.toBoolean() }
-                        val notAvailable = settingsLanguages[15].split("*").map { it.toBoolean() }
-                        val other = settingsLanguages[16].split("*").map { it.toBoolean() }
-
-                        with(customView) {
-                            japanese_original.isChecked = japanese[0]
-                            japanese_translated.isChecked = japanese[1]
-                            japanese_rewrite.isChecked = japanese[2]
-
-                            japanese_original.isChecked = japanese[0]
-                            japanese_translated.isChecked = japanese[1]
-                            japanese_rewrite.isChecked = japanese[2]
-
-                            english_original.isChecked = english[0]
-                            english_translated.isChecked = english[1]
-                            english_rewrite.isChecked = english[2]
-
-                            chinese_original.isChecked = chinese[0]
-                            chinese_translated.isChecked = chinese[1]
-                            chinese_rewrite.isChecked = chinese[2]
-
-                            dutch_original.isChecked = dutch[0]
-                            dutch_translated.isChecked = dutch[1]
-                            dutch_rewrite.isChecked = dutch[2]
-
-                            french_original.isChecked = french[0]
-                            french_translated.isChecked = french[1]
-                            french_rewrite.isChecked = french[2]
-
-                            german_original.isChecked = german[0]
-                            german_translated.isChecked = german[1]
-                            german_rewrite.isChecked = german[2]
-
-                            hungarian_original.isChecked = hungarian[0]
-                            hungarian_translated.isChecked = hungarian[1]
-                            hungarian_rewrite.isChecked = hungarian[2]
-
-                            italian_original.isChecked = italian[0]
-                            italian_translated.isChecked = italian[1]
-                            italian_rewrite.isChecked = italian[2]
-
-                            korean_original.isChecked = korean[0]
-                            korean_translated.isChecked = korean[1]
-                            korean_rewrite.isChecked = korean[2]
-
-                            polish_original.isChecked = polish[0]
-                            polish_translated.isChecked = polish[1]
-                            polish_rewrite.isChecked = polish[2]
-
-                            portuguese_original.isChecked = portuguese[0]
-                            portuguese_translated.isChecked = portuguese[1]
-                            portuguese_rewrite.isChecked = portuguese[2]
-
-                            russian_original.isChecked = russian[0]
-                            russian_translated.isChecked = russian[1]
-                            russian_rewrite.isChecked = russian[2]
-
-                            spanish_original.isChecked = spanish[0]
-                            spanish_translated.isChecked = spanish[1]
-                            spanish_rewrite.isChecked = spanish[2]
-
-                            thai_original.isChecked = thai[0]
-                            thai_translated.isChecked = thai[1]
-                            thai_rewrite.isChecked = thai[2]
-
-                            vietnamese_original.isChecked = vietnamese[0]
-                            vietnamese_translated.isChecked = vietnamese[1]
-                            vietnamese_rewrite.isChecked = vietnamese[2]
-
-                            not_available_original.isChecked = notAvailable[0]
-                            not_available_translated.isChecked = notAvailable[1]
-                            not_available_rewrite.isChecked = notAvailable[2]
-
-                            other_original.isChecked = other[0]
-                            other_translated.isChecked = other[1]
-                            other_rewrite.isChecked = other[2]
-                        }
-                    }
-            }
-        }.dependency = PreferenceKeys.eh_enableExHentai
-
-        preference {
-            title = "Front Page Categories"
-            summary = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters"
-
-            onClick {
-                MaterialDialog(activity!!)
-                    .title(text = "Front Page Categories")
-                    .message(text = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters")
-                    .customView(R.layout.eh_dialog_categories, scrollable = true)
-                    .positiveButton {
-                        val customView = it.view.contentLayout.customView!!
-
-                        with(customView) {
-                            preferences.eh_EnabledCategories().set(
-                                listOf(
-                                    (!doujinshi_checkbox.isChecked).toString(),
-                                    (!manga_checkbox.isChecked).toString(),
-                                    (!artist_cg_checkbox.isChecked).toString(),
-                                    (!game_cg_checkbox.isChecked).toString(),
-                                    (!western_checkbox.isChecked).toString(),
-                                    (!non_h_checkbox.isChecked).toString(),
-                                    (!image_set_checkbox.isChecked).toString(),
-                                    (!cosplay_checkbox.isChecked).toString(),
-                                    (!asian_porn_checkbox.isChecked).toString(),
-                                    (!misc_checkbox.isChecked).toString()
-                                ).joinToString(",")
-                            )
-                        }
-
-                        preferences.eh_EnabledCategories().reconfigure()
-                    }
-                    .show {
-                        val customView = this.view.contentLayout.customView!!
-
-                        with(customView) {
-                            val list = preferences.eh_EnabledCategories().get().split(",").map { !it.toBoolean() }
-                            doujinshi_checkbox.isChecked = list[0]
-                            manga_checkbox.isChecked = list[1]
-                            artist_cg_checkbox.isChecked = list[2]
-                            game_cg_checkbox.isChecked = list[3]
-                            western_checkbox.isChecked = list[4]
-                            non_h_checkbox.isChecked = list[5]
-                            image_set_checkbox.isChecked = list[6]
-                            cosplay_checkbox.isChecked = list[7]
-                            asian_porn_checkbox.isChecked = list[8]
-                            misc_checkbox.isChecked = list[9]
-                        }
-                    }
-            }
-        }.dependency = PreferenceKeys.eh_enableExHentai
-
-        switchPreference {
-            defaultValue = false
-            key = PreferenceKeys.eh_watched_list_default_state
-            title = "Watched List Filter Default State"
-            summary = "When browsing ExHentai/E-Hentai should the watched list filter be enabled by default"
+                onChange { preferences.imageQuality().reconfigure() }
+            }.dependency = PreferenceKeys.eh_enableExHentai
         }
-
-        switchPreference {
-            defaultValue = true
-            key = "secure_exh"
-            title = "Secure ExHentai/E-Hentai"
-            summary = "Use the HTTPS version of ExHentai/E-Hentai."
-        }
-
-        listPreference {
-            defaultValue = "auto"
-            key = "ehentai_quality"
-            summary = "The quality of the downloaded images"
-            title = "Image quality"
-            entries = arrayOf(
-                "Auto",
-                "2400x",
-                "1600x",
-                "1280x",
-                "980x",
-                "780x"
-            )
-            entryValues = arrayOf(
-                "auto",
-                "ovrs_2400",
-                "ovrs_1600",
-                "high",
-                "med",
-                "low"
-            )
-
-            onChange { preferences.imageQuality().reconfigure() }
-        }.dependency = PreferenceKeys.eh_enableExHentai
 
         preferenceCategory {
             title = "Favorites sync"
