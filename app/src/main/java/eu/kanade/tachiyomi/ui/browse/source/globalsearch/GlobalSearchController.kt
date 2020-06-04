@@ -11,7 +11,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.GlobalSearchControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
-import uy.kohesive.injekt.injectLazy
 
 /**
  * This controller shows and manages the different search result in global search.
@@ -37,11 +35,6 @@ open class GlobalSearchController(
 ) : NucleusController<GlobalSearchControllerBinding, GlobalSearchPresenter>(),
     GlobalSearchCardAdapter.OnMangaClickListener,
     GlobalSearchAdapter.OnTitleClickListener {
-
-    /**
-     * Application preferences.
-     */
-    private val preferences: PreferencesHelper by injectLazy()
 
     /**
      * Adapter containing search results grouped by lang.
@@ -84,7 +77,7 @@ open class GlobalSearchController(
      */
     override fun onMangaClick(manga: Manga) {
         // Open MangaController.
-        if (preferences.eh_useNewMangaInterface().get()) {
+        if (presenter.preferences.eh_useNewMangaInterface().get()) {
             router.pushController(MangaAllInOneController(manga, true).withFadeTransaction())
         } else {
             router.pushController(MangaController(manga, true).withFadeTransaction())
@@ -205,15 +198,11 @@ open class GlobalSearchController(
         getHolder(source)?.setImage(manga)
     }
 
-    override fun onTitleClick(source: CatalogueSource) {
-        openCatalogue(source, BrowseSourceController(source, presenter.query))
-    }
-
     /**
-     * Opens a catalogue with the given controller.
+     * Opens a catalogue with the given search.
      */
-    private fun openCatalogue(source: CatalogueSource, controller: BrowseSourceController) {
-        preferences.lastUsedCatalogueSource().set(source.id)
-        router.pushController(controller.withFadeTransaction())
+    override fun onTitleClick(source: CatalogueSource) {
+        presenter.preferences.lastUsedCatalogueSource().set(source.id)
+        router.pushController(BrowseSourceController(source, presenter.query).withFadeTransaction())
     }
 }

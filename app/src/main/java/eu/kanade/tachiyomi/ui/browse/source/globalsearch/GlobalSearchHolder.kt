@@ -32,9 +32,8 @@ class GlobalSearchHolder(view: View, val adapter: GlobalSearchAdapter) :
         recycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
         recycler.adapter = mangaAdapter
         title.setOnClickListener {
-            val item = adapter.getItem(bindingAdapterPosition)
-            if (item != null) {
-                adapter.titleClickListener.onTitleClick(item.source)
+            adapter.getItem(bindingAdapterPosition)?.let {
+                adapter.titleClickListener.onTitleClick(it.source)
             }
         }
     }

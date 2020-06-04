@@ -15,9 +15,6 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 class GlobalSearchAdapter(val controller: GlobalSearchController) :
     FlexibleAdapter<GlobalSearchItem>(null, controller, true) {
 
-    /**
-     * Listen for more button clicks.
-     */
     val titleClickListener: OnTitleClickListener = controller
 
     /**
