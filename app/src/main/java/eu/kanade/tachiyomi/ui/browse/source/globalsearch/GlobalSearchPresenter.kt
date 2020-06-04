@@ -37,7 +37,7 @@ open class GlobalSearchPresenter(
     private val sourcesToUse: List<CatalogueSource>? = null,
     val sourceManager: SourceManager = Injekt.get(),
     val db: DatabaseHelper = Injekt.get(),
-    private val preferences: PreferencesHelper = Injekt.get()
+    val preferences: PreferencesHelper = Injekt.get()
 ) : BasePresenter<GlobalSearchController>() {
 
     /**
