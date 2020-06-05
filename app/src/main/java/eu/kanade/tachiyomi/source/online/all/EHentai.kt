@@ -573,17 +573,17 @@ class EHentai(
             cookies["sp"] = sp.toString()
 
             val sessionKey = prefs.eh_settingsKey().get()
-            if (sessionKey != null) {
+            if (sessionKey.isNotBlank()) {
                 cookies["sk"] = sessionKey
             }
 
             val sessionCookie = prefs.eh_sessionCookie().get()
-            if (sessionCookie != null) {
+            if (sessionCookie.isNotBlank()) {
                 cookies["s"] = sessionCookie
             }
 
             val hathPerksCookie = prefs.eh_hathPerksCookies().get()
-            if (hathPerksCookie != null) {
+            if (hathPerksCookie.isNotBlank()) {
                 cookies["hath_perks"] = hathPerksCookie
             }
         }
