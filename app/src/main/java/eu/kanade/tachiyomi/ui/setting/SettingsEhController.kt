@@ -177,11 +177,26 @@ class SettingsEhController : SettingsController() {
                 }
             }
 
-            switchPreference {
+            intListPreference {
                 title = "Use Hentai@Home Network"
-                summary = "Do you wish to load images through the Hentai@Home Network? Disabling this option will reduce the amount of pages you are able to view"
-                key = "enable_hah"
-                defaultValue = true
+
+                key = PreferenceKeys.eh_enable_hah
+                if (preferences.eh_hathPerksCookies().get().isBlank()) {
+                    summary = "Do you wish to load images through the Hentai@Home Network, if available? Disabling this option will reduce the amount of pages you are able to view\nOptions:\n - Any client (Recommended)\n - Default port clients only (Can be slower. Enable if behind firewall/proxy that blocks outgoing non-standard ports.)"
+                    entries = arrayOf(
+                        "Any client (Recommended)",
+                        "Default port clients only"
+                    )
+                    entryValues = arrayOf("0", "1")
+                } else {
+                    summary = "Do you wish to load images through the Hentai@Home Network, if available? Disabling this option will reduce the amount of pages you are able to view\nOptions:\n - Any client (Recommended)\n - Default port clients only (Can be slower. Enable if behind firewall/proxy that blocks outgoing non-standard ports.)\n - No (Donator only. You will not be able to browse as many pages, enable only if having severe problems.)"
+                    entries = arrayOf(
+                        "Any client (Recommended)",
+                        "Default port clients only",
+                        "No(will select Default port clients only if you are not a donator)"
+                    )
+                    entryValues = arrayOf("0", "1", "2")
+                }
 
                 onChange { preferences.useHentaiAtHome().reconfigure() }
             }.dependency = PreferenceKeys.eh_enableExHentai
