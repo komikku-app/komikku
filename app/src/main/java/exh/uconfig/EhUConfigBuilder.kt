@@ -24,10 +24,10 @@ class EhUConfigBuilder {
             else -> Entry.ImageSize.AUTO
         }
 
-        configItems += if (prefs.useHentaiAtHome().get()) {
-            Entry.UseHentaiAtHome.YES
-        } else {
-            Entry.UseHentaiAtHome.NO
+        configItems += when (prefs.useHentaiAtHome().get()) {
+            2 -> Entry.UseHentaiAtHome.NO
+            1 -> Entry.UseHentaiAtHome.DEFAULTONLY
+            else -> Entry.UseHentaiAtHome.ANY
         }
 
         configItems += if (prefs.useJapaneseTitle().get()) {
@@ -79,8 +79,9 @@ class EhUConfigBuilder {
 
 object Entry {
     enum class UseHentaiAtHome(override val value: String) : ConfigItem {
-        YES("0"),
-        NO("1");
+        ANY("0"),
+        DEFAULTONLY("1"),
+        NO("2");
 
         override val key = "uh"
     }

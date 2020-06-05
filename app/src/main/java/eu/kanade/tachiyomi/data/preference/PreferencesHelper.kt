@@ -269,7 +269,7 @@ class PreferencesHelper(val context: Context) {
 
     fun imageQuality() = flowPrefs.getString(Keys.eh_ehentai_quality, "auto")
 
-    fun useHentaiAtHome() = flowPrefs.getBoolean("enable_hah", true)
+    fun useHentaiAtHome() = flowPrefs.getInt(Keys.eh_enable_hah, 0)
 
     fun useJapaneseTitle() = flowPrefs.getBoolean("use_jp_title", false)
 
