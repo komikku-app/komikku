@@ -132,7 +132,8 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
             val trackService = trackManager.getService(it.sync_id)
             if (trackService != null) {
                 val status = trackService.getStatus(it.status)
-                return@any status.contains(constraint, true)
+                val name = trackService.name
+                return@any status.contains(constraint, true) || name.contains(constraint, true)
             }
             return@any false
         }
