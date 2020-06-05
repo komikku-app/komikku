@@ -173,43 +173,43 @@ object Entry {
             )
         }
 
-        class Doujinshi(exclude: Boolean) : ConfigItem {
+        private class Doujinshi(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_doujinshi"
         }
-        class Manga(exclude: Boolean) : ConfigItem {
+        private class Manga(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_manga"
         }
-        class ArtistCG(exclude: Boolean) : ConfigItem {
+        private class ArtistCG(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_artistcg"
         }
-        class GameCG(exclude: Boolean) : ConfigItem {
+        private class GameCG(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_gamecg"
         }
-        class Western(exclude: Boolean) : ConfigItem {
+        private class Western(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_western"
         }
-        class NonH(exclude: Boolean) : ConfigItem {
+        private class NonH(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_non-h"
         }
-        class ImageSet(exclude: Boolean) : ConfigItem {
+        private class ImageSet(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_imageset"
         }
-        class Cosplay(exclude: Boolean) : ConfigItem {
+        private class Cosplay(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_cosplay"
         }
-        class AsianPorn(exclude: Boolean) : ConfigItem {
+        private class AsianPorn(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_asianporn"
         }
-        class Misc(exclude: Boolean) : ConfigItem {
+        private class Misc(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
             override val key = "ct_misc_div"
         }
@@ -237,7 +237,7 @@ object Entry {
                 Other(values[16].split("*").map { it.toBoolean() }).configs
         }
 
-        class Japanese(values: List<Boolean>) {
+        private class Japanese(values: List<Boolean>) {
 
             val configs = listOf(
                 Translated(values[1]),
@@ -253,7 +253,7 @@ object Entry {
                 override val value = if (value) "checked" else ""
             }
         }
-        class English(values: List<Boolean>) {
+        private class English(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -274,7 +274,7 @@ object Entry {
                 override val value = if (value) "checked" else ""
             }
         }
-        class Chinese(values: List<Boolean>) {
+        private class Chinese(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -296,7 +296,7 @@ object Entry {
             }
         }
 
-        class Dutch(values: List<Boolean>) {
+        private class Dutch(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -318,7 +318,7 @@ object Entry {
             }
         }
 
-        class French(values: List<Boolean>) {
+        private class French(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -340,7 +340,7 @@ object Entry {
             }
         }
 
-        class German(values: List<Boolean>) {
+        private class German(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -362,7 +362,7 @@ object Entry {
             }
         }
 
-        class Hungarian(values: List<Boolean>) {
+        private class Hungarian(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -384,7 +384,7 @@ object Entry {
             }
         }
 
-        class Italian(values: List<Boolean>) {
+        private class Italian(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -406,7 +406,7 @@ object Entry {
             }
         }
 
-        class Korean(values: List<Boolean>) {
+        private class Korean(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -428,7 +428,7 @@ object Entry {
             }
         }
 
-        class Polish(values: List<Boolean>) {
+        private class Polish(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -450,7 +450,7 @@ object Entry {
             }
         }
 
-        class Portuguese(values: List<Boolean>) {
+        private class Portuguese(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -472,7 +472,7 @@ object Entry {
             }
         }
 
-        class Russian(values: List<Boolean>) {
+        private class Russian(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -494,7 +494,7 @@ object Entry {
             }
         }
 
-        class Spanish(values: List<Boolean>) {
+        private class Spanish(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -516,7 +516,7 @@ object Entry {
             }
         }
 
-        class Thai(values: List<Boolean>) {
+        private class Thai(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -538,7 +538,7 @@ object Entry {
             }
         }
 
-        class Vietnamese(values: List<Boolean>) {
+        private class Vietnamese(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -560,7 +560,7 @@ object Entry {
             }
         }
 
-        class NotAvailable(values: List<Boolean>) {
+        private class NotAvailable(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
@@ -582,7 +582,7 @@ object Entry {
             }
         }
 
-        class Other(values: List<Boolean>) {
+        private class Other(values: List<Boolean>) {
 
             val configs = listOf(
                 Original(values[0]),
