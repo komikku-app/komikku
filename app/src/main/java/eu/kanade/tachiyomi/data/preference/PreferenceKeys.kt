@@ -251,7 +251,5 @@ object PreferenceKeys {
 
     const val eh_enabled_categories = "eh_enabled_categories"
 
-    const val eh_secure_exh = "secure_exh"
-
     const val eh_ehentai_quality = "ehentai_quality"
 }

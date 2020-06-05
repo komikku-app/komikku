@@ -71,13 +71,6 @@ class EHentai(
 ) : HttpSource(), LewdSource<EHentaiSearchMetadata, Document>, UrlImportableSource {
     override val metaClass = EHentaiSearchMetadata::class
 
-    val schema: String
-        get() = if (prefs.secureEXH().get()) {
-            "https"
-        } else {
-            "http"
-        }
-
     val domain: String
         get() = if (exh) {
             "exhentai.org"
@@ -86,7 +79,7 @@ class EHentai(
         }
 
     override val baseUrl: String
-        get() = "$schema://$domain"
+        get() = "https://$domain"
 
     override val lang = "all"
     override val supportsLatest = true
@@ -567,23 +560,23 @@ class EHentai(
     fun rawCookies(sp: Int): Map<String, String> {
         val cookies: MutableMap<String, String> = mutableMapOf()
         if (prefs.enableExhentai().get()) {
-            cookies[LoginController.MEMBER_ID_COOKIE] = prefs.memberIdVal().get()!!
-            cookies[LoginController.PASS_HASH_COOKIE] = prefs.passHashVal().get()!!
-            cookies[LoginController.IGNEOUS_COOKIE] = prefs.igneousVal().get()!!
+            cookies[LoginController.MEMBER_ID_COOKIE] = prefs.memberIdVal().get()
+            cookies[LoginController.PASS_HASH_COOKIE] = prefs.passHashVal().get()
+            cookies[LoginController.IGNEOUS_COOKIE] = prefs.igneousVal().get()
             cookies["sp"] = sp.toString()
 
             val sessionKey = prefs.eh_settingsKey().get()
-            if (sessionKey != null) {
+            if (sessionKey != "") {
                 cookies["sk"] = sessionKey
             }
 
             val sessionCookie = prefs.eh_sessionCookie().get()
-            if (sessionCookie != null) {
+            if (sessionCookie != "") {
                 cookies["s"] = sessionCookie
             }
 
             val hathPerksCookie = prefs.eh_hathPerksCookies().get()
-            if (hathPerksCookie != null) {
+            if (hathPerksCookie != "") {
                 cookies["hath_perks"] = hathPerksCookie
             }
         }

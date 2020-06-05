@@ -268,8 +268,6 @@ class PreferencesHelper(val context: Context) {
 
     fun enableExhentai() = flowPrefs.getBoolean(Keys.eh_enableExHentai, false)
 
-    fun secureEXH() = flowPrefs.getBoolean(Keys.eh_secure_exh, true)
-
     fun imageQuality() = flowPrefs.getString(Keys.eh_ehentai_quality, "auto")
 
     fun useHentaiAtHome() = flowPrefs.getBoolean("enable_hah", true)

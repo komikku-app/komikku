@@ -486,13 +486,6 @@ class SettingsEhController : SettingsController() {
                 summary = "When browsing ExHentai/E-Hentai should the watched list filter be enabled by default"
             }
 
-            switchPreference {
-                defaultValue = true
-                key = PreferenceKeys.eh_secure_exh
-                title = "Secure ExHentai/E-Hentai"
-                summary = "Use the HTTPS version of ExHentai/E-Hentai."
-            }
-
             listPreference {
                 defaultValue = "auto"
                 key = PreferenceKeys.eh_ehentai_quality
