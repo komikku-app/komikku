@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.setting
+package eu.kanade.tachiyomi.ui.browse.source
 
 import android.graphics.drawable.Drawable
 import android.view.Menu
@@ -26,7 +26,7 @@ import reactivecircus.flowbinding.appcompat.queryTextChanges
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class SettingsSourcesController : SettingsController() {
+class SourceFilterController : SettingsController() {
 
     init {
         setHasOptionsMenu(true)
@@ -46,7 +46,7 @@ class SettingsSourcesController : SettingsController() {
     private var sorting = SourcesSort.Alpha
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
-        titleRes = R.string.action_filter
+        titleRes = R.string.label_sources
 
         sorting = SourcesSort.from(preferences.sourceSorting().get()) ?: SourcesSort.Alpha
         activity?.invalidateOptionsMenu()

@@ -30,7 +30,6 @@ import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
-import eu.kanade.tachiyomi.ui.setting.SettingsSourcesController
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.flow.filterIsInstance
@@ -268,7 +267,8 @@ class SourceController(bundle: Bundle? = null) :
             // Initialize option to open catalogue settings.
             R.id.action_settings -> {
                 parentController!!.router.pushController(
-                    SettingsSourcesController().withFadeTransaction()
+                    SourceFilterController()
+                        .withFadeTransaction()
                 )
             }
         }
