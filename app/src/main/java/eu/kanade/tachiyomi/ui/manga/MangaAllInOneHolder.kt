@@ -59,7 +59,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import uy.kohesive.injekt.Injekt
@@ -97,7 +96,12 @@ class MangaAllInOneHolder(
         }
 
         adapter.delegate.controllerScope.launch(Dispatchers.IO) {
-            setTrackingIcon()
+            setTrackingIcon(
+                Injekt.get<DatabaseHelper>().getTracks(presenter.manga).executeAsBlocking().any {
+                    val status = Injekt.get<TrackManager>().getService(it.sync_id)?.getStatus(it.status)
+                    status != null
+                }
+            )
         }
 
         btn_tracking.clicks()
@@ -440,17 +444,9 @@ class MangaAllInOneHolder(
         adapter.delegate.performGlobalSearch(query)
     }
 
-    private suspend fun setTrackingIcon() {
-        val presenter = adapter.delegate.mangaPresenter()
-
-        if (Injekt.get<DatabaseHelper>().getTracks(presenter.manga).executeAsBlocking().any {
-            val status = Injekt.get<TrackManager>().getService(it.sync_id)?.getStatus(it.status)
-            status != null
-        }
-        ) {
-            withContext(Dispatchers.Main) {
-                btn_tracking.setIconResource(R.drawable.ic_cloud_white_24dp)
-            }
+    fun setTrackingIcon(tracked: Boolean) {
+        if (tracked) {
+            btn_tracking.setIconResource(R.drawable.ic_cloud_white_24dp)
         }
     }
 }

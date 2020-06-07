@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.databinding.TrackControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toast
@@ -73,6 +74,8 @@ class TrackController(val fromAllInOne: Boolean = false, val manga: Manga? = nul
         binding.swipeRefresh.isEnabled = atLeastOneLink
         if (!fromAllInOne) {
             (parentController as? MangaController)?.setTrackingIcon(atLeastOneLink)
+        } else {
+            (parentController as? MangaAllInOneController)?.setTrackingIcon(atLeastOneLink)
         }
     }
 

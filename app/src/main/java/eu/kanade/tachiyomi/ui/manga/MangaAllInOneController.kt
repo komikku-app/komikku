@@ -533,6 +533,10 @@ class MangaAllInOneController :
         getHeader()?.setFavoriteButtonState(isFavorite)
     }
 
+    fun setTrackingIcon(tracked: Boolean) {
+        getHeader()?.setTrackingIcon(tracked)
+    }
+
     override fun isInitialLoadAndFromSource() = fromSource && initialLoad
 
     override fun removeInitialLoad() {
