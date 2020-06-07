@@ -13,7 +13,6 @@
 /build
 *.apk
 app/**/output.json
-open_source_licenses.html
 
 # Hebrew assets are copied on build
 app/src/main/res/values-iw/
