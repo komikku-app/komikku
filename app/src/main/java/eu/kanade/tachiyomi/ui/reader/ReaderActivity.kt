@@ -647,19 +647,24 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         viewer = newViewer
         binding.viewerContainer.addView(newViewer.getView())
 
+        val defaultReaderType = manga.defaultReaderType()
+        if (preferences.eh_useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == WEBTOON) {
+            binding.root.snack(resources.getString(R.string.eh_auto_webtoon_snack), Snackbar.LENGTH_LONG)
+        } else if (preferences.showReadingMode()) {
+            showReadingModeSnackbar(presenter.getMangaViewer())
+        }
+
         binding.toolbar.title = manga.title
 
         binding.pageSeekbar.isRTL = newViewer is R2LPagerViewer
 
         binding.pleaseWait.visible()
         binding.pleaseWait.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_long))
+    }
 
-        if (preferences.eh_useAutoWebtoon().get()) {
-            val defaultReaderType = manga.defaultReaderType()
-            if (manga.viewer == 0 && defaultReaderType != null && defaultReaderType == WEBTOON) {
-                binding.readerLayout.snack(resources.getString(R.string.eh_auto_webtoon_snack), Snackbar.LENGTH_LONG) {}
-            }
-        }
+    private fun showReadingModeSnackbar(mode: Int) {
+        val strings = resources.getStringArray(R.array.viewers_selector)
+        binding.root.snack(strings[mode], Snackbar.LENGTH_SHORT)
     }
 
     /**
