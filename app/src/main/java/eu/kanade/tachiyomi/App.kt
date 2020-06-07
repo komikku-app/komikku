@@ -42,10 +42,12 @@ import io.realm.Realm
 import io.realm.RealmConfiguration
 import java.io.File
 import java.security.NoSuchAlgorithmException
+import java.security.Security
 import javax.net.ssl.SSLContext
 import kotlin.concurrent.thread
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.conscrypt.Conscrypt
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.InjektScope
@@ -64,6 +66,11 @@ open class App : Application(), LifecycleObserver {
         if (!WebViewUtil.supportsWebView(this)) {
             toast(R.string.information_webview_required, Toast.LENGTH_LONG)
             ForceCloseActivity.closeApp(this)
+        }
+
+        // TLS 1.3 support for Android 10 and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            Security.insertProviderAt(Conscrypt.newProvider(), 1)
         }
 
         Injekt = InjektScope(DefaultRegistrar())
