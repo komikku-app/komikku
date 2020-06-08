@@ -224,6 +224,11 @@ class SourceController(bundle: Bundle? = null) :
         // Inflate menu
         inflater.inflate(R.menu.source_main, menu)
 
+        if (mode == Mode.SMART_SEARCH) {
+            menu.findItem(R.id.action_search).isVisible = false
+            menu.findItem(R.id.action_settings).isVisible = false
+        }
+
         // Initialize search option.
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
