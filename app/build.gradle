@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
 import java.text.SimpleDateFormat
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.android.gms.oss-licenses-plugin'
+apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
@@ -88,6 +88,9 @@ android {
     productFlavors {
         standard {
             buildConfigField "boolean", "INCLUDE_UPDATER", "true"
+            dimension "default"
+        }
+        fdroid {
             dimension "default"
         }
         dev {
@@ -273,6 +276,11 @@ dependencies {
     implementation "io.github.reactivecircus.flowbinding:flowbinding-recyclerview:$flowbinding_version"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-swiperefreshlayout:$flowbinding_version"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-viewpager:$flowbinding_version"
+
+    // Licenses
+    final aboutlibraries_version = '8.2.0'
+    implementation "com.mikepenz:aboutlibraries-core:$aboutlibraries_version"
+    implementation "com.mikepenz:aboutlibraries:$aboutlibraries_version"
 
     // Tests
     testImplementation 'junit:junit:4.13'

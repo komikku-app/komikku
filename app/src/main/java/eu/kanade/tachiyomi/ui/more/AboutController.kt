@@ -7,7 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.mikepenz.aboutlibraries.LibsBuilder
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.updater.UpdateChecker
@@ -125,7 +125,12 @@ class AboutController : SettingsController() {
                 titleRes = R.string.licenses
 
                 onClick {
-                    startActivity(Intent(activity, OssLicensesMenuActivity::class.java))
+                    LibsBuilder()
+                        .withActivityTitle(activity!!.getString(R.string.licenses))
+                        .withAboutIconShown(false)
+                        .withAboutVersionShown(false)
+                        .withLicenseShown(true)
+                        .start(activity!!)
                 }
             }
         }
@@ -210,7 +215,7 @@ class AboutController : SettingsController() {
         return try {
             val inputDf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.US)
             inputDf.timeZone = TimeZone.getTimeZone("UTC")
-            val buildTime = inputDf.parse(BuildConfig.BUILD_TIME)!!
+            val buildTime = inputDf.parse(BuildConfig.BUILD_TIME)
 
             val outputDf = DateFormat.getDateTimeInstance(
                 DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault()
