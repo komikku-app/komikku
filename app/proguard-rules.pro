@@ -30,6 +30,12 @@
     <init>();
 }
 
+# Madokami extension username and password crash fix
+-keepclassmembers class androidx.preference.EditTextPreference {
+      *** mOnBindEditTextListener;
+      *** mText;
+      public *;
+}
 
 # RxJava 1.1.0
 -dontwarn sun.misc.**
