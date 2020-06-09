@@ -176,7 +176,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
     }
 
     override fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
-        val json = GALLERY_JSON_REGEX.find(input.body!!.string())!!.groupValues[1].replace(UNICODE_ESCAPE_REGEX, { it.groupValues[1].toInt(radix = 16).toString() })
+        val json = GALLERY_JSON_REGEX.find(input.body!!.string())!!.groupValues[1].replace(UNICODE_ESCAPE_REGEX) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
         val obj = JsonParser.parseString(json).asJsonObject
 
         with(metadata) {
