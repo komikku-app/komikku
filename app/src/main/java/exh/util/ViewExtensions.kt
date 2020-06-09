@@ -123,12 +123,10 @@ fun ChipGroup.setChipsExtended(items: List<String>?, onClick: (item: String) -> 
             var search = item
             if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId == NHENTAI_SOURCE_ID || sourceId == HITOMI_SOURCE_ID) {
                 val parsed = parseTag(search)
-                if (sourceId == HITOMI_SOURCE_ID) {
-                    search = wrapTagHitomi(parsed.first, parsed.second.substringBefore('|').trim())
-                } else if (sourceId == NHENTAI_SOURCE_ID) {
-                    search = wrapTagNHentai(parsed.first, parsed.second.substringBefore('|').trim())
-                } else {
-                    search = wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
+                search = when (sourceId) {
+                    HITOMI_SOURCE_ID -> wrapTagHitomi(parsed.first, parsed.second.substringBefore('|').trim())
+                    NHENTAI_SOURCE_ID -> wrapTagNHentai(parsed.first, parsed.second.substringBefore('|').trim())
+                    else -> wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
                 }
             }
             setOnClickListener { onClick(search) }
