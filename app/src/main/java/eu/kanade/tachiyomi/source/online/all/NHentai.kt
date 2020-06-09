@@ -176,7 +176,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
     }
 
     override fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
-        val json = GALLERY_JSON_REGEX.find(input.body!!.string())!!.groupValues[1]
+        val json = GALLERY_JSON_REGEX.find(input.body!!.string())!!.groupValues[1].replace(UNICODE_ESCAPE_REGEX, { it.groupValues[1].toInt(radix = 16).toChar().toString() })
         val obj = JsonParser.parseString(json).asJsonObject
 
         with(metadata) {
@@ -316,7 +316,8 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
     }
 
     companion object {
-        private val GALLERY_JSON_REGEX = Regex("new N.gallery\\((.*)\\);")
+        private val GALLERY_JSON_REGEX = Regex(".parse\\(\"(.*)\"\\);")
+        private val UNICODE_ESCAPE_REGEX = Regex("\\\\u([0-9a-fA-F]{4})")
         private const val REVERSE_PARAM = "TEH_REVERSE"
 
         private fun defaultSortFilterSelection() = Filter.Sort.Selection(0, false)
