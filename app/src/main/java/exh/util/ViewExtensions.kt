@@ -125,6 +125,8 @@ fun ChipGroup.setChipsExtended(items: List<String>?, onClick: (item: String) -> 
                 val parsed = parseTag(search)
                 if (sourceId == HITOMI_SOURCE_ID) {
                     search = wrapTagHitomi(parsed.first, parsed.second.substringBefore('|').trim())
+                } else if (sourceId == NHENTAI_SOURCE_ID) {
+                    search = wrapTagNHentai(parsed.first, parsed.second.substringBefore('|').trim())
                 } else {
                     search = wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
                 }
@@ -150,6 +152,16 @@ private fun wrapTag(namespace: String, tag: String) = if (tag.contains(' ')) {
 
 private fun wrapTagHitomi(namespace: String, tag: String) = if (tag.contains(' ')) {
     "$namespace:$tag".replace("\\s".toRegex(), "_")
+} else {
+    "$namespace:$tag"
+}
+
+private fun wrapTagNHentai(namespace: String, tag: String) = if (tag.contains(' ')) {
+    if (namespace == "tag") {
+        "\"$tag\""
+    } else {
+        "$namespace:\"$tag\""
+    }
 } else {
     "$namespace:$tag"
 }
