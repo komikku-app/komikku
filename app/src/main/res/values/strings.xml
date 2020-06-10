@@ -651,6 +651,7 @@
     <string name="pre_migration_skip_toast">To show this screen again, go to Settings -> Library.</string>
 
     <!-- Migration -->
+    <string name="select_sources">Select sources</string>
     <string name="source_migration">Source migration</string>
     <string name="migration">Migration</string>
     <string name="skip_pre_migration">Skip pre-migration</string>

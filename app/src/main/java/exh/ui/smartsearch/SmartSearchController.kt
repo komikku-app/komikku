@@ -57,11 +57,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<SmartSea
         launch(Dispatchers.Default) {
             for (event in presenter.smartSearchChannel) {
                 if (event is SmartSearchPresenter.SearchResults.Found) {
-                    val transaction = if (Injekt.get<PreferencesHelper>().eh_useNewMangaInterface().get()) {
-                        MangaAllInOneController(event.manga, true, smartSearchConfig).withFadeTransaction()
-                    } else {
-                        MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
-                    }
+                    MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
                     withContext(Dispatchers.Main) {
                         router.replaceTopController(transaction)
                     }
