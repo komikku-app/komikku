@@ -300,7 +300,6 @@
     <string name="unknown">Nieznane</string>
     <string name="licensed">Licencjonowane</string>
     <string name="manga_info_chapters_label">Rozdziały</string>
-    <string name="manga_info_last_chapter_label">Ostatni rozdział</string>
     <string name="manga_info_status_label">Status</string>
     <string name="circular_icon">Okrągła ikonka</string>
     <string name="rounded_icon">Zaokrąglona ikonka</string>

@@ -391,7 +391,6 @@
     <string name="manga_info_full_title_label">Judul</string>
     <string name="manga_added_library">Ditambahkan ke perpustakaan</string>
     <string name="manga_removed_library">Dihapus dari perpustakaan</string>
-    <string name="manga_info_latest_data_label">Terbarui</string>
     <string name="copied_to_clipboard">%1$s tersalin ke clipboard</string>
     <string name="custom_download">Unduh sejumlah tertentu</string>
     <string name="custom_hint">jumlah</string>

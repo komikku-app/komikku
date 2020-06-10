@@ -399,7 +399,6 @@
     <string name="manga_added_library">Adicionado à biblioteca</string>
     <string name="manga_removed_library">Removido da biblioteca</string>
     <string name="manga_info_last_chapter_label">Capítulo mais recente</string>
-    <string name="manga_info_latest_data_label">Última atualização</string>
     <string name="circular_icon">Ícone circular</string>
     <string name="rounded_icon">Ícone redondo</string>
     <string name="square_icon">Ícone quadrado</string>

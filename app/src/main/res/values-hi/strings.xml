@@ -391,7 +391,6 @@
     <string name="manga_info_full_title_label">शीर्षक</string>
     <string name="manga_added_library">पुस्तकालय में जोड़ा गया</string>
     <string name="manga_removed_library">लाइब्रेरी से निकाला गया</string>
-    <string name="manga_info_latest_data_label">अपडेट किया गया</string>
     <string name="copied_to_clipboard">%1$s क्लिपबोर्ड पर नकल</string>
     <string name="custom_download">कस्टम राशि डाउनलोड करें</string>
     <string name="custom_hint">रकम</string>

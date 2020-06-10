@@ -286,7 +286,6 @@
     <string name="manga_info_artist_label">画师</string>
     <string name="manga_info_chapters_label">章节</string>
     <string name="manga_info_last_chapter_label">最新章节</string>
-    <string name="manga_info_latest_data_label">最后更新</string>
     <string name="manga_info_status_label">状态</string>
     <string name="manga_info_source_label">图源</string>
     <string name="manga_info_genres_label">类型</string>

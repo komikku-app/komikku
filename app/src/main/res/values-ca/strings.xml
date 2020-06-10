@@ -286,7 +286,6 @@
     <string name="manga_info_artist_label">Artista</string>
     <string name="manga_info_chapters_label">Capítols</string>
     <string name="manga_info_last_chapter_label">Darrer capítol</string>
-    <string name="manga_info_latest_data_label">Actuaitzat</string>
     <string name="manga_info_status_label">Estat</string>
     <string name="manga_info_source_label">Font</string>
     <string name="manga_info_genres_label">Gèneres</string>

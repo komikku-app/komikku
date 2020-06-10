@@ -400,7 +400,6 @@ Zorg ook dat je ingelogd bent voor bronnen die dit vereisen alvorens je het teru
     <string name="manga_info_full_title_label">Titel</string>
     <string name="manga_added_library">Toegevoegd aan bibliotheek</string>
     <string name="manga_removed_library">Verwijderd uit bibliotheek</string>
-    <string name="manga_info_latest_data_label">Bijgewerkt</string>
     <string name="copied_to_clipboard">%1$s gekopieerd naar het klembord</string>
     <string name="source_not_installed">Bron niet geïnstalleerd: %1$s</string>
     <string name="custom_download">Download aangepaste hoeveelheid</string>

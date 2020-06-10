@@ -391,7 +391,6 @@
     <string name="manga_info_full_title_label">Título</string>
     <string name="manga_added_library">Adicionado à biblioteca</string>
     <string name="manga_removed_library">Removido da biblioteca</string>
-    <string name="manga_info_latest_data_label">Última atualização</string>
     <string name="copied_to_clipboard">%1$s copiado para área de transferência</string>
     <string name="custom_download">Fazer download de uma quantidade personalizada</string>
     <string name="custom_hint">quantidade</string>

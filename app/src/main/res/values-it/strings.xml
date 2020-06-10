@@ -367,7 +367,6 @@
     <string name="no_more_results">Non ci sono altri risultati</string>
     <string name="local_source">Manga locale</string>
     <string name="added_to_library">Il manga è stato aggiunto alla tua libreria</string>
-    <string name="manga_info_last_chapter_label">Ultimo capitolo</string>
     <string name="delete_downloads_for_manga">Eliminare i capitoli scaricati?</string>
     <string name="chapter_paused">In pausa</string>
     <string name="manga_tracking_tab">Monitoraggio</string>

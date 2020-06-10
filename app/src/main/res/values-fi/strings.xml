@@ -404,7 +404,6 @@
     <string name="manga_info_artist_label">Artisti</string>
     <string name="manga_info_chapters_label">Luvut</string>
     <string name="manga_info_last_chapter_label">Viimeisin luku</string>
-    <string name="manga_info_latest_data_label">Päivitetty</string>
     <string name="manga_info_status_label">Tila</string>
     <string name="manga_info_source_label">Lähde</string>
     <string name="manga_info_genres_label">Lajityypit</string>

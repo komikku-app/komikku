@@ -348,7 +348,6 @@
     <string name="download_notifier_download_paused">Téléchargement en pause</string>
     <string name="local_source">Manga locaux</string>
     <string name="added_to_library">Ce manga a été ajouté à votre bibliothèque</string>
-    <string name="manga_info_last_chapter_label">Dernier chapitre</string>
     <string name="chapter_paused">En pause</string>
     <string name="action_open_log">Ouvre le fichier journal</string>
     <string name="action_restore">Restaurer</string>

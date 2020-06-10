@@ -286,7 +286,6 @@
     <string name="manga_info_artist_label">Artist</string>
     <string name="manga_info_chapters_label">Kapitel</string>
     <string name="manga_info_last_chapter_label">Sista kapitlet</string>
-    <string name="manga_info_latest_data_label">Uppdaterad</string>
     <string name="manga_info_status_label">Status</string>
     <string name="manga_info_source_label">Källa</string>
     <string name="manga_info_genres_label">Genrer</string>

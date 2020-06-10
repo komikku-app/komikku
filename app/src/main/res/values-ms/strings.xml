@@ -398,7 +398,6 @@
     <string name="manga_info_full_title_label">Tajuk</string>
     <string name="manga_added_library">Ditambah ke koleksi</string>
     <string name="manga_removed_library">Dibuang dari koleksi</string>
-    <string name="manga_info_latest_data_label">Dikemaskini</string>
     <string name="copied_to_clipboard">%1$s disalin ke papan keratan</string>
     <string name="source_not_installed">Sumber tidak dipasang: %1$s</string>
     <string name="custom_download">Muat turun jumlah tersuai</string>

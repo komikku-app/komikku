@@ -285,7 +285,6 @@
     <string name="manga_info_author_label">Yazar</string>
     <string name="manga_info_artist_label">Sanatçı</string>
     <string name="manga_info_chapters_label">Bölümler</string>
-    <string name="manga_info_last_chapter_label">Son bölüm</string>
     <string name="manga_info_latest_data_label">Güncellendi</string>
     <string name="manga_info_status_label">Durum</string>
     <string name="manga_info_source_label">Kaynak</string>

@@ -287,7 +287,6 @@
     <string name="manga_info_artist_label">Artist</string>
     <string name="manga_info_chapters_label">Capitole</string>
     <string name="manga_info_last_chapter_label">Ultimul capitol</string>
-    <string name="manga_info_latest_data_label">Actualizat</string>
     <string name="manga_info_status_label">Status</string>
     <string name="manga_info_source_label">Sursă</string>
     <string name="manga_info_genres_label">Genuri</string>

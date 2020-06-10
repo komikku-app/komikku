@@ -287,7 +287,6 @@
     <string name="manga_info_artist_label">Καλλιτέχνης</string>
     <string name="manga_info_chapters_label">Κεφάλαια</string>
     <string name="manga_info_last_chapter_label">Τελευταίο κεφάλαιο</string>
-    <string name="manga_info_latest_data_label">Ενημερωμένο</string>
     <string name="manga_info_status_label">Κατάσταση</string>
     <string name="manga_info_source_label">Πηγή</string>
     <string name="manga_info_genres_label">Είδη</string>
