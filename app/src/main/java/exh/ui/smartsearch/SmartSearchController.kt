@@ -57,7 +57,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<SmartSea
         launch(Dispatchers.Default) {
             for (event in presenter.smartSearchChannel) {
                 if (event is SmartSearchPresenter.SearchResults.Found) {
-                    MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
+                    val transaction = MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
                     withContext(Dispatchers.Main) {
                         router.replaceTopController(transaction)
                     }
