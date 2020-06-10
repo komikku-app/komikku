@@ -281,6 +281,18 @@ class PreferencesHelper(val context: Context) {
     fun eh_sessionCookie() = flowPrefs.getString(Keys.eh_sessionCookie, "")
     fun eh_hathPerksCookies() = flowPrefs.getString(Keys.eh_hathPerksCookie, "")
 
+    // Lock
+    fun eh_lockHash() = flowPrefs.getString(Keys.eh_lock_hash, "")
+
+    fun eh_lockSalt() = flowPrefs.getString(Keys.eh_lock_salt, "")
+
+    fun eh_lockLength() = flowPrefs.getInt(Keys.eh_lock_length, -1)
+
+    fun eh_lockUseFingerprint() = flowPrefs.getBoolean(Keys.eh_lock_finger, false)
+
+    fun eh_lockManually() = flowPrefs.getBoolean(Keys.eh_lock_manually, false)
+
+
     fun eh_nh_useHighQualityThumbs() = flowPrefs.getBoolean(Keys.eh_nh_useHighQualityThumbs, false)
 
     fun eh_showSyncIntro() = flowPrefs.getBoolean(Keys.eh_showSyncIntro, true)

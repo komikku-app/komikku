@@ -39,7 +39,7 @@ object LockActivityDelegate {
     }
 
     fun onResume(activity: FragmentActivity, router: Router) {
-        if (lockEnabled() && !isAppLocked(router) && willLock && !preferences.eh_lockManually().getOrDefault()) {
+        if (lockEnabled() && !isAppLocked(router) && willLock && !preferences.eh_lockManually().get()) {
             doLock(router)
             willLock = false
         }

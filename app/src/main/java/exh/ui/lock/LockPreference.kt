@@ -72,12 +72,12 @@ class LockPreference @JvmOverloads constructor(context: Context, attrs: Attribut
     }
 
     private fun savePassword(password: String) {
-        val salt: String?
-        val hash: String?
+        val salt: String
+        val hash: String
         val length: Int
         if (password.isEmpty()) {
-            salt = null
-            hash = null
+            salt = ""
+            hash = ""
             length = -1
         } else {
             salt = BigInteger(130, secureRandom).toString(32)

@@ -40,7 +40,7 @@ fun sha512(passwordToHash: String, salt: String): String {
 fun lockEnabled(prefs: PreferencesHelper = Injekt.get()) =
     prefs.eh_lockHash().get() != null &&
         prefs.eh_lockSalt().get() != null &&
-        prefs.eh_lockLength().getOrDefault() != -1
+        prefs.eh_lockLength().get() != -1
 
 /**
  * Check if the lock will function properly
@@ -52,7 +52,7 @@ fun notifyLockSecurity(
     prefs: PreferencesHelper = Injekt.get()
 ): Boolean {
     return false
-    if (!prefs.eh_lockManually().getOrDefault() &&
+    if (!prefs.eh_lockManually().get() &&
         !hasAccessToUsageStats(context)
     ) {
         MaterialDialog(context)

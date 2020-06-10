@@ -36,7 +36,7 @@ class FingerLockPreference @JvmOverloads constructor(context: Context, attrs: At
 
     val useFingerprint
         get() = fingerprintSupported &&
-            prefs.eh_lockUseFingerprint().getOrDefault()
+            prefs.eh_lockUseFingerprint().get()
 
     @SuppressLint("NewApi")
     override fun onAttached() {

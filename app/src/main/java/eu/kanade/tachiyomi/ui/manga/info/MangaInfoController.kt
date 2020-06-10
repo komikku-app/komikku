@@ -400,7 +400,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
         binding.mangaCoverCard.radius = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
-            preferences.eh_library_corner_radius().getOrDefault().toFloat(),
+            preferences.eh_library_corner_radius().get().toFloat(),
             view.context.resources.displayMetrics
         )
 

@@ -153,7 +153,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             }
 
             root[SAVEDSEARCHES] =
-                Injekt.get<PreferencesHelper>().eh_savedSearches().getOrDefault().joinToString(separator = "***")
+                Injekt.get<PreferencesHelper>().eh_savedSearches().get().joinToString(separator = "***")
         }
 
         try {
@@ -516,7 +516,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
     internal fun restoreSavedSearches(jsonSavedSearches: JsonElement) {
         val backupSavedSearches = jsonSavedSearches.asString.split("***").toSet()
         backupSavedSearches.forEach {
-            val savedSearches = preferences.eh_savedSearches().getOrDefault()
+            val savedSearches = preferences.eh_savedSearches().get()
             if (it !in savedSearches) {
                 preferences.eh_savedSearches().set(savedSearches + it)
             }

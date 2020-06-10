@@ -43,7 +43,7 @@ class LockController : NucleusController<ActivityLockBinding, LockPresenter>() {
             // Setup pin lock
             binding.pinLockView.attachIndicatorDots(binding.indicatorDots)
 
-            binding.pinLockView.pinLength = prefs.eh_lockLength().getOrDefault()
+            binding.pinLockView.pinLength = prefs.eh_lockLength().get()
             binding.pinLockView.setPinLockListener(object : PinLockListener {
                 override fun onEmpty() {}
 
