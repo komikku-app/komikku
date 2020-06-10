@@ -9,14 +9,11 @@
     <string name="label_settings">ตั้งค่า</string>
     <string name="label_download_queue">คิวดาวน์โหลด</string>
     <string name="label_library">ห้องสมุดของฉัน</string>
-    <string name="label_latest_updates">อัพเดทล่าสุด</string>
-    <string name="label_selected">เลือก: %1$d</string>
     <string name="label_backup">การสำรองข้อมูล</string>
     <string name="label_extensions">ส่วนขยาย</string>
     <string name="label_extension_info">ข้อมูลส่วนขยาย</string>
     <string name="action_settings">ตั้งค่า</string>
     <string name="action_filter">ตัวกรอง</string>
-    <string name="label_catalogues">แคตตาล็อก</string>
     <string name="label_recent_updates">อัพเดทห้องสมุด</string>
     <string name="label_categories">ประเภท</string>
     <string name="action_filter_downloaded">ดาวน์โหลดแล้ว</string>
@@ -26,7 +23,6 @@
     <string name="action_sort_alpha">ตามตัวอักษร</string>
     <string name="action_sort_total">จำนวนตอน</string>
     <string name="action_sort_last_read">อ่านล่าสุด</string>
-    <string name="action_sort_last_updated">อัพเดทล่าสุด</string>
     <string name="action_search">ค้นหา</string>
     <string name="action_select_all">เลือกทั้งหมด</string>
     <string name="action_mark_as_read">ตั้งเป็นอ่านแล้ว</string>
@@ -57,12 +53,10 @@
     <string name="action_create">สร้าง</string>
     <string name="action_open">เปิด</string>
     <string name="action_login">เข้าสู่ระบบ</string>
-    <string name="deleting">กำลังลบ…</string>
-    <string name="loading">กำลังโหลด…</string>
+    <string name="loading">กำลังดำเนินการ…</string>
     <string name="short_recent_updates">อัพเดท</string>
     <string name="pref_category_general">ทั่วไป</string>
     <string name="pref_category_reader">ตัวอ่าน</string>
-    <string name="pref_category_sources">แหล่งที่มา</string>
     <string name="pref_category_advanced">ขั้นสูง</string>
     <string name="pref_category_about">เกี่ยวกับ</string>
     <string name="default_columns">ค่าเริ่มต้น</string>
@@ -217,6 +211,8 @@
     <string name="source_not_found">ไม่พบแหล่งที่มา</string>
     <string name="backup_created">การสำรองข้อมูลที่สร้างขึ้น</string>
     <string name="restore_completed">การคืนค่าเสร็จสมบูรณ์</string>
+    <string name="restore_completed_content">การคืนค่าเอา %1$s
+\nพบข้อผิดพลาด %2$s</string>
     <string name="backup_choice">คุณต้องการสำรองข้อมูลอะไร\?</string>
     <string name="restoring_backup">กำลังคืนค่าการสำรองข้อมูล</string>
     <string name="creating_backup">กำลังสร้างการสำรองข้อมูล</string>
@@ -231,6 +227,8 @@
     <string name="pref_clear_database_summary">ลบมังงะและบทที่ไม่ได้อยู่ในห้องสมุดของคุณ</string>
     <string name="clear_database_confirmation">คุณแน่ใจไหม\? อ่านบทและความคืบหน้าของมังงะที่ไม่ใช่ห้องสมุดจะหายไป</string>
     <string name="clear_database_completed">รายการที่ลบแล้ว</string>
+    <string name="pref_refresh_library_metadata">รีเฟรชข้อมูลเมตาของไลบรารี</string>
+    <string name="pref_refresh_library_metadata_summary">การปรับปรุงครอบคลุมประเภทคำอธิบายและข้อมูลสถานะมังงะ</string>
     <string name="pref_refresh_library_tracking">รีเฟรชข้อมูลเมตาของการติดตาม</string>
     <string name="pref_refresh_library_tracking_summary">อัพเดตสถานะคะแนนและบทสุดท้ายที่อ่านจากบริการติดตาม</string>
     <string name="version">เวอร์ชัน</string>
