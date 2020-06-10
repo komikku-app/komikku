@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.extension
+package eu.kanade.tachiyomi.ui.extension
 
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
