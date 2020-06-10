@@ -372,13 +372,9 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
         // Update genres list
         if (!manga.genre.isNullOrBlank()) {
-            binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
-            binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
-        } else {
-            binding.mangaGenresTagsWrapper.gone()
+            binding.mangaGenresTags.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
         }
 
-        // Update description TextView.
         binding.mangaSummary.text = if (manga.description.isNullOrBlank()) {
             view.context.getString(R.string.unknown)
         } else {
