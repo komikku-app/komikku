@@ -53,6 +53,7 @@
     <string name="action_skip_manga">Don\'t migrate</string>
     <string name="action_global_search">Global search</string>
     <string name="action_select_all">Select all</string>
+    <string name="select_none">Select none</string>
     <string name="action_select_inverse">Select inverse</string>
     <string name="action_mark_as_read">Mark as read</string>
     <string name="action_mark_as_unread">Mark as unread</string>
