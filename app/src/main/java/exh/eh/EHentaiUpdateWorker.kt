@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.system.jobScheduler
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.debug.DebugToggles
