@@ -145,16 +145,17 @@ dependencies {
     implementation 'com.github.inorichi:subsampling-scale-image-view:ac0dae7'
     implementation 'com.github.inorichi:junrar-android:634c1f5'
 
-    // Android support library
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.preference:preference:1.1.1'
+    // AndroidX libraries
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'androidx.browser:browser:1.2.0'
-    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.appcompat:appcompat:1.3.0-alpha01'
     implementation 'androidx.biometric:biometric:1.0.1'
+    implementation 'androidx.browser:browser:1.2.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta6'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.1.0'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.recyclerview:recyclerview:1.2.0-alpha03'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0-rc01'
     implementation 'androidx.webkit:webkit:1.3.0-beta01'
 
@@ -162,6 +163,11 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+
+    // Job scheduling
+    final work_version = '2.4.0-beta01'
+    implementation "androidx.work:work-runtime:$work_version"
+    implementation "androidx.work:work-runtime-ktx:$work_version"
 
     // UI library
     implementation 'com.google.android.material:material:1.1.0'
@@ -194,7 +200,7 @@ dependencies {
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
     // JavaScript engine
-    implementation 'com.squareup.duktape:duktape-android:1.2.0' // Stuck on 1.2.0 to fix MangaPlus extension
+    implementation 'com.squareup.duktape:duktape-android:1.3.0'
 
     // Disk
     implementation 'com.jakewharton:disklrucache:2.0.2'
@@ -202,11 +208,6 @@ dependencies {
 
     // HTML parser
     implementation 'org.jsoup:jsoup:1.13.1'
-
-    // Job scheduling
-    final work_version = '2.3.4'
-    implementation "androidx.work:work-runtime:$work_version"
-    implementation "androidx.work:work-runtime-ktx:$work_version"
 
     // [EXH] Android 7 SSL Workaround
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
@@ -232,7 +233,7 @@ dependencies {
     implementation "com.github.inorichi.injekt:injekt-core:65b0440"
 
     // Image library
-    final glide_version = '4.10.0'
+    final glide_version = '4.11.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
