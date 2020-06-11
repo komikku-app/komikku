@@ -30,8 +30,6 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.SourceControllerBinding
-import eu.kanade.tachiyomi.extension.ExtensionManager
-import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.LocalSource
@@ -39,7 +37,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.extension.ExtensionPreferencesController
+import eu.kanade.tachiyomi.ui.browse.extension.SourcePreferencesController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet.FilterNavigationView.Companion.MAX_SAVED_SEARCHES
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
@@ -67,7 +65,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
@@ -452,17 +449,9 @@ open class BrowseSourceController(bundle: Bundle) :
     }
 
     private fun openSourceSettings() {
-        val extensions: List<Extension> = Injekt.get<ExtensionManager>().installedExtensions
-        extensions.forEach { extension ->
-            if (extension is Extension.Installed) {
-                if (extension.sources.contains(presenter.source)) {
-                    router.pushController(
-                        ExtensionPreferencesController(extension.pkgName).withFadeTransaction()
-                    )
-                    return
-                }
-            }
-        }
+        router.pushController(
+            SourcePreferencesController(presenter.source.id).withFadeTransaction()
+        )
     }
 
     /**
