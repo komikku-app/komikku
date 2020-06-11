@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.ui.base.holder.SlicedHolder
 import eu.kanade.tachiyomi.util.system.LocaleHelper
@@ -16,6 +17,7 @@ import kotlinx.android.synthetic.main.extension_card_item.ext_title
 import kotlinx.android.synthetic.main.extension_card_item.image
 import kotlinx.android.synthetic.main.extension_card_item.lang
 import kotlinx.android.synthetic.main.extension_card_item.version
+import uy.kohesive.injekt.api.get
 
 class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
     BaseFlexibleViewHolder(view, adapter),
@@ -100,7 +102,11 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
                     setText(R.string.ext_redundant)
                 }
                 else -> {
-                    setText(R.string.ext_details)
+                    if (extension.sources.any { it is ConfigurableSource }) {
+                        setText(R.string.action_settings)
+                    } else {
+                        setText(R.string.ext_details)
+                    }
                 }
             }
         } else if (extension is Extension.Untrusted) {
