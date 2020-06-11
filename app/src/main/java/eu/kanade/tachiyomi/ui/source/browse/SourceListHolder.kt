@@ -2,9 +2,6 @@ package eu.kanade.tachiyomi.ui.source.browse
 
 import android.view.View
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -44,14 +41,12 @@ class SourceListHolder(private val view: View, adapter: FlexibleAdapter<*>) :
         title.text = manga.title
 
         GlideApp.with(view.context).clear(thumbnail)
-
         if (!manga.thumbnail_url.isNullOrEmpty()) {
-            val radius = view.context.resources.getDimensionPixelSize(R.dimen.card_radius)
-            val requestOptions = RequestOptions().transform(CenterCrop(), RoundedCorners(radius))
             GlideApp.with(view.context)
                 .load(manga.toMangaThumbnail())
                 .diskCacheStrategy(DiskCacheStrategy.DATA)
-                .apply(requestOptions)
+                .centerCrop()
+                .circleCrop()
                 .dontAnimate()
                 .placeholder(android.R.color.transparent)
                 .into(thumbnail)
