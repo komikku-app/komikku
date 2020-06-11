@@ -16,4 +16,3 @@ val Context.clipboardManager: ClipboardManager
 
 val Context.jobScheduler: JobScheduler
     get() = applicationContext.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-

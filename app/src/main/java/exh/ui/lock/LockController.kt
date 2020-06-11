@@ -12,7 +12,6 @@ import com.github.ajalt.reprint.rxjava.RxReprint
 import com.mattprecious.swirl.SwirlView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.ActivityLockBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import exh.util.dpToPx

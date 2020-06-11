@@ -307,7 +307,6 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_lockManually() = flowPrefs.getBoolean(Keys.eh_lock_manually, false)
 
-
     fun eh_nh_useHighQualityThumbs() = flowPrefs.getBoolean(Keys.eh_nh_useHighQualityThumbs, false)
 
     fun eh_showSyncIntro() = flowPrefs.getBoolean(Keys.eh_showSyncIntro, true)

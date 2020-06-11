@@ -91,7 +91,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             } else {
                 listOf(downloaded, unread, completed, lewd)
             }
-        )
+            )
 
         override val header = Item.Header(R.string.action_filter)
 

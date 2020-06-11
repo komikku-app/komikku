@@ -10,7 +10,6 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import java.security.MessageDigest
 import kotlin.experimental.and
 import uy.kohesive.injekt.Injekt

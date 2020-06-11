@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.widget.StateImageViewTarget
 import kotlinx.android.synthetic.main.source_compact_grid_item.card
 import kotlinx.android.synthetic.main.source_compact_grid_item.progress
@@ -49,7 +48,6 @@ open class SourceGridHolder(private val view: View, private val adapter: Flexibl
     override fun setImage(manga: Manga) {
         // Setting this via XML doesn't work
         card.clipToOutline = true
-
         card.radius = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             preferences.eh_library_corner_radius().get().toFloat(),

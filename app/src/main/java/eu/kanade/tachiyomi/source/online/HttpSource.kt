@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.source.online
 
 import android.app.Application
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.network.AndroidCookieJar
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper

@@ -18,7 +18,6 @@ import com.github.ajalt.reprint.rxjava.RxReprint
 import com.mattprecious.swirl.SwirlView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.preference.onChange
 import exh.util.dpToPx
 import rx.android.schedulers.AndroidSchedulers

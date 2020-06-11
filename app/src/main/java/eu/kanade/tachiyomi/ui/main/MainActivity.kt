@@ -24,7 +24,6 @@ import com.bluelinelabs.conductor.RouterTransaction
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -48,9 +47,9 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.system.vibrate
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
-import exh.EXHMigrations
 import exh.EH_SOURCE_ID
 import exh.EIGHTMUSES_SOURCE_ID
+import exh.EXHMigrations
 import exh.EXH_SOURCE_ID
 import exh.HBROWSE_SOURCE_ID
 import exh.HITOMI_SOURCE_ID
@@ -142,7 +141,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         setSupportActionBar(binding.toolbar)
 
         drawerArrow = DrawerArrowDrawable(this)
-        drawerArrow?.color = if ((preferences.themeMode().get() == PreferenceValues.THEME_MODE_LIGHT || (preferences.themeMode().get() == PreferenceValues.THEME_MODE_SYSTEM && resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_YES)) && preferences.themeLight().get() == PreferenceValues.THEME_LIGHT_DEFAULT) Color.BLACK else Color.WHITE
+        drawerArrow?.color = if ((preferences.themeMode().get() == PreferenceValues.ThemeMode.light || (preferences.themeMode().get() == PreferenceValues.ThemeMode.system && resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_YES)) && preferences.themeLight().get() == PreferenceValues.LightThemeVariant.default) Color.BLACK else Color.WHITE
         binding.toolbar.navigationIcon = drawerArrow
 
         tabAnimator = TabsAnimator(binding.tabs)

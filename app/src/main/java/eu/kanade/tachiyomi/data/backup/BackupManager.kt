@@ -46,7 +46,6 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager

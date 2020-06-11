@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.visible
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach

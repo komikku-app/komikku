@@ -3,7 +3,6 @@ package exh.ui.lock
 import android.os.Build
 import com.github.ajalt.reprint.core.Reprint
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import uy.kohesive.injekt.injectLazy
 

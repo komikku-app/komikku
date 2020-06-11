@@ -11,11 +11,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <FrameLayout
+        <androidx.cardview.widget.CardView
             android:id="@+id/card"
             android:layout_width="match_parent"
             android:layout_height="220dp"
-            android:background="@drawable/rounded_rectangle"
+            app:cardCornerRadius="@dimen/card_radius"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -101,7 +101,7 @@
                 android:layout_gravity="center"
                 android:visibility="gone" />
 
-        </FrameLayout>
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/title"

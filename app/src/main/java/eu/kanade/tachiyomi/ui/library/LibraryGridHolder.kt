@@ -9,7 +9,6 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.view.visibleIf
 import kotlinx.android.synthetic.main.source_compact_grid_item.card

@@ -15,7 +15,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.elvishew.xlog.XLog
-import com.google.android.material.chip.Chip
 import com.google.gson.Gson
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -23,7 +22,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.databinding.MangaInfoControllerBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -45,14 +43,11 @@ import eu.kanade.tachiyomi.ui.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import exh.HITOMI_SOURCE_ID
 import exh.MERGED_SOURCE_ID
-import exh.NHENTAI_SOURCE_ID
 import exh.util.setChipsExtended
 import java.text.DateFormat
 import java.text.DecimalFormat
