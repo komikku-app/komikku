@@ -171,8 +171,7 @@ open class BrowseSourceController(bundle: Bundle) :
     }
 
     override fun onDestroyView(view: View) {
-        numColumnsSubscription?.unsubscribe()
-        numColumnsSubscription = null
+        numColumnsScope?.cancel()
         adapter = null
         snack = null
         recycler = null
