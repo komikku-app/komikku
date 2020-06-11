@@ -125,7 +125,6 @@
     <string name="action_search_manually">Search manually</string>
     <string name="action_migrate_now">Migrate now</string>
     <string name="action_copy_now">Copy now</string>
-    <string name="action_display_comfortable_grid">Comfortable grid</string>
 
     <!-- Operations -->
     <string name="loading">Loading…</string>
