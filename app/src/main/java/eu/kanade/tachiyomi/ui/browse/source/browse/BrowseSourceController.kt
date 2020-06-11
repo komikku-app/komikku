@@ -30,12 +30,16 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.SourceControllerBinding
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.browse.extension.ExtensionPreferencesController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet.FilterNavigationView.Companion.MAX_SAVED_SEARCHES
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
@@ -63,6 +67,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -416,6 +422,8 @@ open class BrowseSourceController(bundle: Bundle) :
 
         val isLocalSource = presenter.source is LocalSource
         menu.findItem(R.id.action_local_source_help).isVisible = isLocalSource && mode == Mode.CATALOGUE
+
+        menu.findItem(R.id.action_settings).isVisible = presenter.source is ConfigurableSource
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -425,6 +433,7 @@ open class BrowseSourceController(bundle: Bundle) :
             R.id.action_comfortable_grid -> setDisplayMode(DisplayMode.COMFORTABLE_GRID)
             R.id.action_list -> setDisplayMode(DisplayMode.LIST)
             R.id.action_open_in_web_view -> openInWebView()
+            R.id.action_settings -> openSourceSettings()
             R.id.action_local_source_help -> openLocalSourceHelpGuide()
         }
         return super.onOptionsItemSelected(item)
@@ -440,6 +449,20 @@ open class BrowseSourceController(bundle: Bundle) :
 
     private fun openLocalSourceHelpGuide() {
         activity?.openInBrowser(LocalSource.HELP_URL)
+    }
+
+    private fun openSourceSettings() {
+        val extensions: List<Extension> = Injekt.get<ExtensionManager>().installedExtensions
+        extensions.forEach { extension ->
+            if (extension is Extension.Installed) {
+                if (extension.sources.contains(presenter.source)) {
+                    router.pushController(
+                        ExtensionPreferencesController(extension.pkgName).withFadeTransaction()
+                    )
+                    return
+                }
+            }
+        }
     }
 
     /**
