@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.source.online
 
+import android.app.Application
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.network.AndroidCookieJar
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -11,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import exh.patch.injectPatches
 import exh.source.DelegatedHttpSource
 import java.net.URI
 import java.net.URISyntaxException
@@ -22,7 +25,6 @@ import okhttp3.Response
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 
 /**
  * A simple implementation for sources from a website.
@@ -32,7 +34,25 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Network service.
      */
-    protected val network: NetworkHelper by injectLazy()
+    protected val network: NetworkHelper by lazy {
+        val original = Injekt.get<NetworkHelper>()
+        object : NetworkHelper(Injekt.get<Application>()) {
+            override val client: OkHttpClient
+                get() = delegate?.networkHttpClient ?: original.client
+                    .newBuilder()
+                    .injectPatches { id }
+                    .build()
+
+            override val cloudflareClient: OkHttpClient
+                get() = delegate?.networkCloudflareClient ?: original.cloudflareClient
+                    .newBuilder()
+                    .injectPatches { id }
+                    .build()
+
+            override val cookieManager: AndroidCookieJar
+                get() = original.cookieManager
+        }
+    }
 
 //    /**
 //     * Preferences that a source may need.
