@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
+import eu.kanade.tachiyomi.util.system.toast
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.flow.filterIsInstance
@@ -167,6 +168,17 @@ class SourceController(bundle: Bundle? = null) :
             items.add(Pair(activity.getString(R.string.action_hide), { hideCatalogue(item.source) }))
         }
 
+        val isWatched = preferences.latestTabSources().get().contains(item.source.id.toString())
+
+        if (item.source.supportsLatest) {
+            items.add(
+                Pair(
+                    activity.getString(if (isWatched) R.string.unwatch else R.string.watch),
+                    { watchCatalogue(item.source, isWatched) }
+                )
+            )
+        }
+
         MaterialDialog(activity)
             .title(text = item.source.name)
             .listItems(
@@ -197,6 +209,19 @@ class SourceController(bundle: Bundle? = null) :
         presenter.updateSources()
     }
 
+    private fun watchCatalogue(source: Source, isWatched: Boolean) {
+        val current = preferences.latestTabSources().get()
+
+        if (isWatched) {
+            preferences.latestTabSources().set(current - source.id.toString())
+        } else {
+            if (current.size + 1 !in 0..5) {
+                applicationContext?.toast(R.string.too_many_watched)
+                return
+            }
+            preferences.latestTabSources().set(current + source.id.toString())
+        }
+    }
     /**
      * Called when browse is clicked in [SourceAdapter]
      */

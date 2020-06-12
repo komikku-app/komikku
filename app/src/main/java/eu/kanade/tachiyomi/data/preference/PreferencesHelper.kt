@@ -356,4 +356,8 @@ class PreferencesHelper(val context: Context) {
     fun eh_settingsLanguages() = flowPrefs.getString(Keys.eh_settings_languages, "false*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false")
 
     fun eh_EnabledCategories() = flowPrefs.getString(Keys.eh_enabled_categories, "false,false,false,false,false,false,false,false,false,false")
+
+    fun latestTabSources() = flowPrefs.getStringSet(Keys.latest_tab_sources, mutableSetOf())
+
+    fun latestTabInFront() = flowPrefs.getBoolean(Keys.latest_tab_position, false)
 }

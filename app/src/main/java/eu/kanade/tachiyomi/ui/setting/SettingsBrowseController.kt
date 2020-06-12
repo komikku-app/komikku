@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
+import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 
@@ -14,6 +15,17 @@ class SettingsBrowseController : SettingsController() {
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.browse
+
+        preferenceCategory {
+            titleRes = R.string.pref_category_general
+
+            switchPreference {
+                key = Keys.latest_tab_position
+                titleRes = R.string.pref_latest_position
+                summaryRes = R.string.pref_latest_position_summery
+                defaultValue = false
+            }
+        }
 
         preferenceCategory {
             titleRes = R.string.label_extensions

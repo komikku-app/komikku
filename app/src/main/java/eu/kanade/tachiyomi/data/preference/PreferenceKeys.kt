@@ -256,4 +256,8 @@ object PreferenceKeys {
     const val eh_ehentai_quality = "ehentai_quality"
 
     const val eh_enable_hah = "eh_enable_hah"
+
+    const val latest_tab_sources = "latest_tab_sources"
+
+    const val latest_tab_position = "latest_tab_position"
 }
