@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.view.visibleIf
+import kotlinx.android.synthetic.main.source_compact_grid_item.badges
 import kotlinx.android.synthetic.main.source_compact_grid_item.card
 import kotlinx.android.synthetic.main.source_compact_grid_item.download_text
 import kotlinx.android.synthetic.main.source_compact_grid_item.local_text
@@ -25,7 +26,7 @@ import kotlinx.android.synthetic.main.source_compact_grid_item.unread_text
  * @param listener a listener to react to single tap and long tap events.
  * @constructor creates a new library holder.
  */
-open class LibraryGridHolder(
+open class LibraryCompactGridHolder(
     private val view: View,
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 ) : LibraryHolder(view, adapter) {
@@ -40,6 +41,9 @@ open class LibraryGridHolder(
         // Update the title of the manga.
         title.text = item.manga.title
 
+        // For rounded corners
+        badges.clipToOutline = true
+
         // Update the unread count and its visibility.
         with(unread_text) {
             visibleIf { item.unreadCount > 0 }
@@ -53,7 +57,7 @@ open class LibraryGridHolder(
         // set local visibility if its local manga
         local_text.visibleIf { item.manga.isLocal() }
 
-        // Setting this via XML doesn't work
+        // For rounded corners
         card.clipToOutline = true
 
         // Update the cover.
