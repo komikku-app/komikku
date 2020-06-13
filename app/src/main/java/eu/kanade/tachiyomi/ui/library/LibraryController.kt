@@ -257,7 +257,7 @@ class LibraryController(
 
     override fun configureTabs(tabs: TabLayout) {
         with(tabs) {
-            tabGravity = TabLayout.GRAVITY_CENTER
+            tabGravity = TabLayout.GRAVITY_START
             tabMode = TabLayout.MODE_SCROLLABLE
         }
         tabsVisibilitySubscription?.unsubscribe()
