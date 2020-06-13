@@ -299,8 +299,9 @@ class ChaptersController :
             actionMode?.invalidate()
         }
 
-        if (!chapters.any { it.read }) {
-            binding.fab.text = activity!!.getString(R.string.action_start)
+        val context = view?.context
+        if (context != null && chapters.any { it.read }) {
+            binding.fab.text = context.getString(R.string.action_resume)
         }
     }
 

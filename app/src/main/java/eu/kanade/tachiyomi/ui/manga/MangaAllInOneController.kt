@@ -379,8 +379,8 @@ class MangaAllInOneController :
             actionMode?.invalidate()
         }
 
-        if (!chapters.any { it.read }) {
-            binding.fab.text = activity!!.getString(R.string.action_start)
+        if (view.context != null && chapters.any { it.read }) {
+            binding.fab.text = view.context.getString(R.string.action_resume)
         }
     }
 
