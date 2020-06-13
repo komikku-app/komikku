@@ -35,8 +35,6 @@ import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_share
 import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_smart_search
 import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_tracking
 import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_webview
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_artist
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_artist_label
 import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_author
 import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_author_label
 import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_chapters
@@ -154,22 +152,6 @@ class MangaAllInOneHolder(
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        manga_artist.longClicks()
-            .onEach {
-                adapter.delegate.copyToClipboard(manga_artist_label.text.toString(), manga_artist.text.toString())
-            }
-            .launchIn(adapter.delegate.controllerScope)
-
-        manga_artist.clicks()
-            .onEach {
-                var text = manga_artist.text.toString()
-                if (adapter.delegate.isEHentaiBasedSource()) {
-                    text = adapter.delegate.wrapTag("artist", text)
-                }
-                adapter.delegate.performGlobalSearch(text)
-            }
-            .launchIn(adapter.delegate.controllerScope)
-
         manga_author.longClicks()
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
@@ -228,18 +210,12 @@ class MangaAllInOneHolder(
             manga.title
         }
 
-        // Update artist TextView.
-        manga_artist.text = if (manga.artist.isNullOrBlank()) {
+        // Update author/artist TextView.
+        val authors = listOf(manga.author, manga.artist).filter { !it.isNullOrBlank() }.distinct()
+        manga_author.text = if (authors.isEmpty()) {
             itemView.context.getString(R.string.unknown)
         } else {
-            manga.artist
-        }
-
-        // Update author TextView.
-        manga_author.text = if (manga.author.isNullOrBlank()) {
-            itemView.context.getString(R.string.unknown)
-        } else {
-            manga.author
+            authors.joinToString(", ")
         }
 
         // If manga source is known update source TextView.

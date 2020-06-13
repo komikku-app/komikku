@@ -176,25 +176,6 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             }
             .launchIn(scope)
 
-        binding.mangaArtist.longClicks()
-            .onEach {
-                activity?.copyToClipboard(
-                    binding.mangaArtistLabel.text.toString(),
-                    binding.mangaArtist.text.toString()
-                )
-            }
-            .launchIn(scope)
-
-        binding.mangaArtist.clicks()
-            .onEach {
-                var text = binding.mangaArtist.text.toString()
-                if (isEHentaiBasedSource()) {
-                    text = wrapTag("artist", text)
-                }
-                performGlobalSearch(text)
-            }
-            .launchIn(scope)
-
         binding.mangaAuthor.longClicks()
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
@@ -337,18 +318,12 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             manga.title
         }
 
-        // Update artist TextView.
-        binding.mangaArtist.text = if (manga.artist.isNullOrBlank()) {
+        // Update author/artist TextView.
+        val authors = listOf(manga.author, manga.artist).filter { !it.isNullOrBlank() }.distinct()
+        binding.mangaAuthor.text = if (authors.isEmpty()) {
             view.context.getString(R.string.unknown)
         } else {
-            manga.artist
-        }
-
-        // Update author TextView.
-        binding.mangaAuthor.text = if (manga.author.isNullOrBlank()) {
-            view.context.getString(R.string.unknown)
-        } else {
-            manga.author
+            authors.joinToString(", ")
         }
 
         // If manga source is known update source TextView.
