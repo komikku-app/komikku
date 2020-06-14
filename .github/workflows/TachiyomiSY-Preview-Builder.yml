@@ -11,8 +11,11 @@ jobs:
       - uses: actions/checkout@master
         with:
           fetch-depth: '0'
-      - name: Set SHOULD_RUN flag
-        run: echo ::set-env name=CISKIP::"contains(github.event.action, 'skip-ci')" || "contains(github.event.action, 'skip ci')" || "contains(github.event.action, 'ci skip')" || "contains(github.event.action, 'ci-skip')"
+      - name: Set CISKIP flag to false
+        run: echo ::set-env name=CISKIP::'false'
+      - name: Set CISKIP flag if action has ci skip
+        if: contains(github.event.action, 'skip-ci') || contains(github.event.action, 'skip-ci') || contains(github.event.action, 'skip ci') || contains(github.event.action, 'ci skip') || contains(github.event.action, 'ci-skip')
+        run: echo ::set-env name=CISKIP::'true'
       - name: Exho
         run: echo env.CISKIP
       - name: TAG - Bump version and push tag
