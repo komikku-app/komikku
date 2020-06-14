@@ -12,7 +12,7 @@ jobs:
         with:
           fetch-depth: '0'
       - name: Set SHOULD_RUN flag
-        run: echo ::set-env name=SHOULD_RUN::!contains(toJSON(github.event.commits.*.message), 'skip-ci') && !contains(toJSON(github.event.commits.*.message), 'skip ci') && !contains(toJSON(github.event.commits.*.message), 'ci skip') && !contains(toJSON(github.event.commits.*.message), 'ci-skip')
+        run: echo ::set-env name=SHOULD_RUN::"!contains(toJSON(github.event.commits.*.message), 'skip-ci')" && "!contains(toJSON(github.event.commits.*.message), 'skip ci')" && "!contains(toJSON(github.event.commits.*.message), 'ci skip')" && "!contains(toJSON(github.event.commits.*.message), 'ci-skip')"
       - name: TAG - Bump version and push tag
         uses: anothrNick/github-tag-action@1.17.2
         if: github.event.action != 'pong' && env.SHOULD_RUN == 'true'
