@@ -122,6 +122,7 @@
     <string name="pref_latest_position_summery">Do you want the latest tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if your on data or a metered network</string>
     <string name="too_many_watched">Too many watched sources, cannot add more then 5</string>
     <string name="latest_tab_empty">You don\'t have any watched sources, go to the sources tab and long press a source to watch it</string>
+    <string name="pref_latest_tab_language_code">Display language code next to name</string>
 
     <!-- AZ -->
     <string name="az_recommends">See Recommendations</string>

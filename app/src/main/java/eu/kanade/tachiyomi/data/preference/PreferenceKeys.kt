@@ -260,4 +260,6 @@ object PreferenceKeys {
     const val latest_tab_sources = "latest_tab_sources"
 
     const val latest_tab_position = "latest_tab_position"
+
+    const val latest_tab_language_code = "latest_tab_language_code"
 }

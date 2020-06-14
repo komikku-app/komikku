@@ -17,12 +17,18 @@ class SettingsBrowseController : SettingsController() {
         titleRes = R.string.browse
 
         preferenceCategory {
-            titleRes = R.string.pref_category_general
+            titleRes = R.string.latest
 
             switchPreference {
                 key = Keys.latest_tab_position
                 titleRes = R.string.pref_latest_position
                 summaryRes = R.string.pref_latest_position_summery
+                defaultValue = false
+            }
+
+            switchPreference {
+                key = Keys.latest_tab_language_code
+                titleRes = R.string.pref_latest_tab_language_code
                 defaultValue = false
             }
         }

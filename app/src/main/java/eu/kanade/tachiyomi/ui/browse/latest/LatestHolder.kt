@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.latest
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestAdapter
 import eu.kanade.tachiyomi.util.view.gone
@@ -12,6 +13,8 @@ import kotlinx.android.synthetic.main.latest_controller_card.recycler
 import kotlinx.android.synthetic.main.latest_controller_card.source_card
 import kotlinx.android.synthetic.main.latest_controller_card.title
 import kotlinx.android.synthetic.main.latest_controller_card.title_wrapper
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 /**
  * Holder that binds the [LatestItem] containing catalogue cards.
@@ -51,7 +54,7 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
         val results = item.results
 
         val titlePrefix = if (item.highlighted) "▶ " else ""
-        val langSuffix = if (source.lang.isNotEmpty()) " (${source.lang})" else ""
+        val langSuffix = if (source.lang.isNotEmpty() && Injekt.get<PreferencesHelper>().latestTabDisplayLanguageCode().get()) " (${source.lang})" else ""
 
         // Set Title with country code if available.
         title.text = titlePrefix + source.name + langSuffix
