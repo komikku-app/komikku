@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.6.0-AZ" changeDate="">
+        <changelogtext>Manga recommendations</changelogtext>
+        <changelogtext>Fixed nhentai</changelogtext>
+        <changelogtext>added h-captcha to captcha detection</changelogtext>
+        <changelogtext>Comfortable grid viewing mode</changelogtext>
+        <changelogtext>Auto webtoon view switching</changelogtext>
+        <changelogtext>Concurrent downloading from different sources</changelogtext>
+        <changelogtext>Increased maximum saved searches (max 500)</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.5.0-AZ" changeDate="">
         <changelogtext>Added merged sources</changelogtext>
         <changelogtext>Splash screen</changelogtext>
