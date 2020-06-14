@@ -11,6 +11,11 @@ jobs:
       - uses: actions/checkout@master
         with:
           fetch-depth: '0'
+      - name: Check last commit message
+        id: skip
+        uses: atlwendy/retrieve-commit-messages-from-pr@v2
+      - name: Set SHOULD_RUN flag
+        run: echo ::set-env name=SHOULD_RUN::${{ steps.skip.outputs.shouldRun }}
       - name: TAG - Bump version and push tag
         uses: anothrNick/github-tag-action@1.17.2
         if: github.event.action != 'pong'
@@ -19,7 +24,7 @@ jobs:
           WITH_V: true
           RELEASE_BRANCHES: master
       - name: PING - Dispatch initiating repository event
-        if: github.event.action != 'pong'
+        if: github.event.action != 'pong' && env.SHOULD_RUN == 'true'
         run: |
           curl -X POST https://api.github.com/repos/jobobby04/TachiyomiSYPreview/dispatches \
           -H 'Accept: application/vnd.github.everest-preview+json' \
