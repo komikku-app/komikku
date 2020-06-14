@@ -4,7 +4,7 @@
 
 
 # ![app icon](./.github/readme-images/app-icon.png)TachiyomiSY
-TachiyomiSY is a free and open source manga reader for Android 5.0 and above. This version was based off TachiyomiAZ, while TachiyomiAZ has decided to keep the old UI of the app, this version is meant to push forward in the ways of UI and usability, including a lot of the up in coming features of the Tachiyomi Preview, as well as from other forks like J2K, it also contains quite a few custom features from myself and contributors.
+Tachiyomi is a free and open source manga reader for Android 5.0 and above. This version of Tachiyomu, TachiyomiSY was based off TachiyomiAZ. TachiyomiAZ has decided to keep the old UI of the app, this version is meant to push forward in the ways of UI and usability, doing that it takes the new Tachiyomi(original) UI. TachiyomiSY also includes a lot of the up in coming features of the Tachiyomi Preview, as well as features from other forks like J2K, it has quite a few custom features from myself and contributors as well.
 
 (image not updated, please standby for Ainz-sama to deliver a new version)
 ![screenshots of app](./.github/readme-images/screens.png)
@@ -25,7 +25,7 @@ Features of TachiyomiSY include:
 * Uses the new Tachiyomi Stable UI
 * Custom manga page, all your needs, such as info and chapters, in front of your face
 * Latest tab, store up to 5 sources where you can easily view the latest manga by viewing the tab
-* Hentai features enable/disable
+* Hentai features enable/disable, in advanced settings
 * Automatic webtoon detection, allowing the reader to switch to webtoon mode automatically when viewing one
 * Recommendations, from AZ but heavily modified by She11Shocked to use both MAL and Anilist interchangeably 
 * Lewd filter, hide the lewd manga in your library when you want to
@@ -33,7 +33,7 @@ Features of TachiyomiSY include:
 * Search tracking status in library, made by She11Shocked
 * Backup saved searches
 * New E-Hentai/ExHentai features, such as language settings and watched list settings
-* Comfortable grid
+* Comfortable grid view
 
 From originally from TachiyomiAZ or TachiyomiEH and are included in TachiyomiSY
 * Source migration, migrate all your manga from one source to another
