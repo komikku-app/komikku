@@ -171,7 +171,8 @@ class EightMuses :
         throw UnsupportedOperationException("Should not be called!")
     }
 
-    override fun fetchLatestUpdates(page: Int) = fetchListing(latestUpdatesRequest(page), false)
+//    override fun fetchLatestUpdates(page: Int) = fetchListing(latestUpdatesRequest(page), false)
+    override fun fetchLatestUpdates(page: Int) = fetchListing(popularMangaRequest(page), false)
 
     override fun fetchPopularManga(page: Int) = fetchListing(popularMangaRequest(page), false) // TODO Dig
 
