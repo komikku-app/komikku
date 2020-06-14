@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
-//noinspection GradleDependency
+
 import java.text.SimpleDateFormat
 
 apply plugin: 'com.android.application'
@@ -308,9 +308,6 @@ dependencies {
 
     // Text distance (EH)
     implementation 'info.debatty:java-string-similarity:1.2.1'
-
-    // Pin lock view (EH)
-    implementation 'com.github.jawnnypoo:pinlockview:2.2.0'
 
     // Reprint (EH)
     implementation 'com.github.ajalt.reprint:core:3.2.1@aar'

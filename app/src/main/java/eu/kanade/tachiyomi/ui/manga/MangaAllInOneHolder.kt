@@ -36,7 +36,6 @@ import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_smart_search
 import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_tracking
 import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_webview
 import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_author
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_author_label
 import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_chapters
 import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_cover
 import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_full_title
@@ -156,7 +155,7 @@ class MangaAllInOneHolder(
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
                 if (!adapter.delegate.isEHentaiBasedSource()) {
-                    adapter.delegate.copyToClipboard(manga_author_label.text.toString(), manga_author.text.toString())
+                    adapter.delegate.copyToClipboard("author", manga_author.text.toString())
                 }
             }
             .launchIn(adapter.delegate.controllerScope)

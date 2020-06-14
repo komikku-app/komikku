@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.extension
 
+import android.annotation.SuppressLint
 import android.view.View
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.glide.GlideApp
@@ -90,7 +91,12 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
                     setText(R.string.ext_update)
                 }
                 else -> {
-                    setText(R.string.action_settings)
+                    if (extension.sources.any { it is ConfigurableSource }) {
+                        @SuppressLint("SetTextI18n")
+                        text = context.getString(R.string.action_settings) + "+"
+                    } else {
+                        setText(R.string.action_settings)
+                    }
                 }
             }
         } else if (extension is Extension.Untrusted) {
