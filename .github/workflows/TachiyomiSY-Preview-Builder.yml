@@ -18,7 +18,7 @@ jobs:
         run: echo ::set-env name=SHOULD_RUN::${{ steps.skip.outputs.shouldRun }}
       - name: TAG - Bump version and push tag
         uses: anothrNick/github-tag-action@1.17.2
-        if: github.event.action != 'pong'
+        if: github.event.action != 'pong' && env.SHOULD_RUN == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
