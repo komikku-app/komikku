@@ -4,7 +4,7 @@
 
 
 # ![app icon](./.github/readme-images/app-icon.png)TachiyomiSY
-Tachiyomi is a free and open source manga reader for Android 5.0 and above. This version of Tachiyomu, TachiyomiSY was based off TachiyomiAZ. TachiyomiAZ has decided to keep the old UI of the app, this version is meant to push forward in the ways of UI and usability, doing that it takes the new Tachiyomi(original) UI. TachiyomiSY also includes a lot of the up in coming features of the Tachiyomi Preview, as well as features from other forks like J2K, it has quite a few custom features from myself and contributors as well.
+Tachiyomi is a free and open source manga reader for Android 5.0 and above. This version of Tachiyomi, TachiyomiSY was based off TachiyomiAZ. TachiyomiAZ has decided to keep the old UI of the app, this version is meant to push forward in the ways of UI and usability, doing that it takes the new Tachiyomi(original) UI. TachiyomiSY also includes a lot of the up in coming features of the Tachiyomi Preview, as well as features from other forks like J2K, it has quite a few custom features from myself and contributors as well.
 
 (image not updated, please standby for Ainz-sama to deliver a new version)
 ![screenshots of app](./.github/readme-images/screens.png)
