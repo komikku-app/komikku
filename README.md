@@ -35,7 +35,7 @@ Features of TachiyomiSY include:
 * New E-Hentai/ExHentai features, such as language settings and watched list settings
 * Comfortable grid view
 
-Inherited from TachiyomiAZ or TachiyomiEH and are included in and possibly modified in TachiyomiSY
+Inherited from TachiyomiAZ or TachiyomiEH and are included and possibly modified in TachiyomiSY
 * Source migration, migrate all your manga from one source to another
 * Custom hentai sources:
 * * E-Hentai/ExHentai
