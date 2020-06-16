@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.databinding.TrackControllerBinding
@@ -109,9 +108,7 @@ class TrackController(val fromAllInOne: Boolean = false, val manga: Manga? = nul
     override fun onLogoClick(position: Int) {
         val track = adapter?.getItem(position)?.track ?: return
 
-        if (track.tracking_url.isBlank()) {
-            activity?.toast(R.string.url_not_set)
-        } else {
+        if (track.tracking_url.isNotBlank()) {
             activity?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(track.tracking_url)))
         }
     }
