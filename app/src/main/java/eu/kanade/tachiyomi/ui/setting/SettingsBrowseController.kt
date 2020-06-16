@@ -4,8 +4,12 @@ import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
+import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.onChange
+import eu.kanade.tachiyomi.util.preference.onClick
+import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
@@ -15,6 +19,21 @@ class SettingsBrowseController : SettingsController() {
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.browse
+
+        preferenceCategory {
+            titleRes = R.string.label_sources
+
+            preference {
+                titleRes = R.string.action_edit_categories
+
+                val catCount = preferences.sourcesTabCategories().get().count()
+                summary = context.resources.getQuantityString(R.plurals.num_categories, catCount, catCount)
+
+                onClick {
+                    router.pushController(SourceCategoryController().withFadeTransaction())
+                }
+            }
+        }
 
         preferenceCategory {
             titleRes = R.string.latest

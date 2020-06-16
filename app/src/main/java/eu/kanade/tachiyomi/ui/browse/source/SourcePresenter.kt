@@ -60,6 +60,19 @@ class SourcePresenter(
 
         val pinnedSources = mutableListOf<SourceItem>()
         val pinnedCatalogues = preferences.pinnedCatalogues().get()
+        val categories = mutableListOf<SourceCategory>()
+
+        preferences.sourcesTabCategories().get().sortedByDescending { it.toLowerCase() }.forEach {
+            categories.add(SourceCategory(it))
+        }
+
+        val sourcesAndCategoriesCombined = preferences.sourcesTabSourcesInCategories().get()
+        val sourcesAndCategories = if (sourcesAndCategoriesCombined.isNotEmpty()) sourcesAndCategoriesCombined.map {
+            val temp = it.split("|")
+            Pair(temp[0], temp[1])
+        } else null
+
+        val sourcesInCategories = sourcesAndCategories?.map { it.first }
 
         val map = TreeMap<String, MutableList<CatalogueSource>> { d1, d2 ->
             // Catalogues without a lang defined will be placed at the end
@@ -77,8 +90,30 @@ class SourcePresenter(
                     pinnedSources.add(SourceItem(source, LangItem(PINNED_KEY), controllerMode == SourceController.Mode.CATALOGUE))
                 }
 
+                if (sourcesInCategories != null && source.id.toString() in sourcesInCategories) {
+                    sourcesAndCategories
+                        .filter { SourcesAndCategory -> SourcesAndCategory.first == source.id.toString() }
+                        .forEach { SourceAndCategory ->
+                            categories.forEach { dataClass ->
+                                if (dataClass.category.trim() == SourceAndCategory.second.trim()) {
+                                    dataClass.sources.add(
+                                        SourceItem(
+                                            source,
+                                            LangItem("custom|" + SourceAndCategory.second),
+                                            controllerMode == SourceController.Mode.CATALOGUE
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                }
+
                 SourceItem(source, langItem, controllerMode == SourceController.Mode.CATALOGUE)
             }
+        }
+
+        categories.forEach {
+            sourceItems = it.sources.sortedBy { sourceItem -> sourceItem.source.name.toLowerCase() } + sourceItems
         }
 
         if (pinnedSources.isNotEmpty()) {
@@ -134,3 +169,5 @@ class SourcePresenter(
         const val LAST_USED_KEY = "last_used"
     }
 }
+
+data class SourceCategory(val category: String, var sources: MutableList<SourceItem> = mutableListOf())

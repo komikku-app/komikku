@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
+import eu.kanade.tachiyomi.ui.category.sources.ChangeSourceCategoriesDialog
 import eu.kanade.tachiyomi.util.system.toast
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.android.parcel.Parcelize
@@ -52,7 +53,8 @@ class SourceController(bundle: Bundle? = null) :
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     SourceAdapter.OnBrowseClickListener,
-    SourceAdapter.OnLatestClickListener {
+    SourceAdapter.OnLatestClickListener,
+    ChangeSourceCategoriesDialog.Listener {
 
     private val preferences: PreferencesHelper = Injekt.get()
 
@@ -179,6 +181,13 @@ class SourceController(bundle: Bundle? = null) :
             )
         }
 
+        items.add(
+            Pair(
+                activity.getString(R.string.label_categories),
+                { addToCategories(item.source) }
+            )
+        )
+
         MaterialDialog(activity)
             .title(text = item.source.name)
             .listItems(
@@ -222,6 +231,54 @@ class SourceController(bundle: Bundle? = null) :
             preferences.latestTabSources().set(current + source.id.toString())
         }
     }
+
+    private fun addToCategories(source: Source) {
+        val categories = preferences.sourcesTabCategories().get().toList().sortedBy { it.toLowerCase() }
+
+        if (categories.isEmpty()) {
+            applicationContext?.toast(R.string.no_source_categories)
+            return
+        }
+
+        val preferenceSources = preferences.sourcesTabSourcesInCategories().get().toMutableList()
+        val sources = preferenceSources.map { it.split("|")[0] }
+
+        if (source.id.toString() in sources) {
+            val preferenceSources = preferenceSources.map { it.split("|") }.filter { it[0] == source.id.toString() }.map { Pair(it[0], it[1]) }.toMutableList()
+
+            val preselected = preferenceSources.map { category ->
+                categories.indexOf(category.second)
+            }.toTypedArray()
+
+            ChangeSourceCategoriesDialog(this, source, categories, preselected)
+                .showDialog(router)
+        } else {
+            ChangeSourceCategoriesDialog(this, source, categories, emptyArray())
+                .showDialog(router)
+        }
+    }
+
+    override fun updateCategoriesForSource(source: Source, categories: List<String>) {
+        var preferenceSources = preferences.sourcesTabSourcesInCategories().get().toMutableList()
+        val sources = preferenceSources.map { it.split("|")[0] }
+
+        if (source.id.toString() in sources) {
+            preferenceSources = preferenceSources
+                .map { it.split("|") }
+                .filter { it[0] != source.id.toString() }
+                .map { it[0] + "|" + it[1] }.toMutableList()
+        }
+
+        categories.forEach {
+            preferenceSources.add(source.id.toString() + "|" + it)
+        }
+
+        preferences.sourcesTabSourcesInCategories().set(
+            preferenceSources.sorted().toSet()
+        )
+        presenter.updateSources()
+    }
+
     /**
      * Called when browse is clicked in [SourceAdapter]
      */
