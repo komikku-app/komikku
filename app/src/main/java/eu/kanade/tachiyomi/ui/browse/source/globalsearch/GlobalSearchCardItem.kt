@@ -16,7 +16,7 @@ class GlobalSearchCardItem(val manga: Manga) : AbstractFlexibleItem<GlobalSearch
 
     override fun getLayoutRes(): Int {
         // SY -->
-        return when (Injekt.get<PreferencesHelper>().catalogueDisplayMode().get()) {
+        return when (Injekt.get<PreferencesHelper>().sourceDisplayMode().get()) {
             PreferenceValues.DisplayMode.COMPACT_GRID -> R.layout.global_search_controller_compact_card_item
             else -> R.layout.global_search_controller_comfortable_card_item
         }

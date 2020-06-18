@@ -15,7 +15,7 @@ import uy.kohesive.injekt.api.get
 class LatestCardItem(val manga: Manga) : AbstractFlexibleItem<LatestCardHolder>() {
 
     override fun getLayoutRes(): Int {
-        return when (Injekt.get<PreferencesHelper>().catalogueDisplayMode().get()) {
+        return when (Injekt.get<PreferencesHelper>().sourceDisplayMode().get()) {
             PreferenceValues.DisplayMode.COMPACT_GRID -> R.layout.global_search_controller_compact_card_item
             else -> R.layout.global_search_controller_comfortable_card_item
         }

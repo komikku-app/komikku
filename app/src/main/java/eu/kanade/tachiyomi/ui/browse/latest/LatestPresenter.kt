@@ -66,14 +66,14 @@ open class LatestPresenter(
     protected open fun getEnabledSources(): List<CatalogueSource> {
         val languages = preferences.enabledLanguages().get()
         val watchedSources = preferences.latestTabSources().get()
-        val pinnedCatalogues = preferences.pinnedCatalogues().get()
+        val pinnedSources = preferences.pinnedSources().get()
 
         val list = sourceManager.getVisibleCatalogueSources()
             .filter { it.lang in languages }
             .sortedBy { "(${it.lang}) ${it.name}" }
 
         return list.filter { it.id.toString() in watchedSources }
-            .sortedBy { it.id.toString() !in pinnedCatalogues }
+            .sortedBy { it.id.toString() !in pinnedSources }
     }
 
     private fun getSourcesToGetLatest(): List<CatalogueSource> {

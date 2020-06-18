@@ -106,24 +106,24 @@ class SourceFilterController : SettingsController() {
      * @param group the language category.
      */
     private fun addLanguageSources(group: PreferenceGroup, sources: List<HttpSource>) {
-        val hiddenCatalogues = preferences.hiddenCatalogues().get()
+        val disabledSourceIds = preferences.disabledSources().get()
 
         val selectAllPreference = CheckBoxPreference(group.context).apply {
             title = "\t\t${context.getString(R.string.pref_category_all_sources)}"
             key = "all_${sources.first().lang}"
             isPersistent = false
-            isChecked = sources.all { it.id.toString() !in hiddenCatalogues }
+            isChecked = sources.all { it.id.toString() !in disabledSourceIds }
             isVisible = query.isEmpty()
 
             onChange { newValue ->
                 val checked = newValue as Boolean
-                val current = preferences.hiddenCatalogues().get() as MutableSet? ?: mutableSetOf()
+                val current = preferences.disabledSources().get() as MutableSet? ?: mutableSetOf()
                 if (checked) {
                     current.removeAll(sources.map { it.id.toString() })
                 } else {
                     current.addAll(sources.map { it.id.toString() })
                 }
-                preferences.hiddenCatalogues().set(current)
+                preferences.disabledSources().set(current)
                 group.removeAll()
                 addLanguageSources(group, sortedSources(sources))
                 true
@@ -137,7 +137,7 @@ class SourceFilterController : SettingsController() {
                 title = source.name
                 key = getSourceKey(source.id)
                 isPersistent = false
-                isChecked = id !in hiddenCatalogues
+                isChecked = id !in disabledSourceIds
                 isVisible = query.isEmpty() || source.name.contains(query, ignoreCase = true)
 
                 val sourceIcon = source.icon()
@@ -147,9 +147,9 @@ class SourceFilterController : SettingsController() {
 
                 onChange { newValue ->
                     val checked = newValue as Boolean
-                    val current = preferences.hiddenCatalogues().get()
+                    val current = preferences.disabledSources().get()
 
-                    preferences.hiddenCatalogues().set(
+                    preferences.disabledSources().set(
                         if (checked) {
                             current - id
                         } else {
@@ -226,9 +226,9 @@ class SourceFilterController : SettingsController() {
     private fun sortedSources(sources: List<HttpSource>?): List<HttpSource> {
         val sourceAlpha = sources.orEmpty().sortedBy { it.name }
         return if (sorting == SourcesSort.Enabled) {
-            val hiddenCatalogues = preferences.hiddenCatalogues().get()
-            sourceAlpha.filter { it.id.toString() !in hiddenCatalogues } +
-                sourceAlpha.filterNot { it.id.toString() !in hiddenCatalogues }
+            val disabledSourceIds = preferences.disabledSources().get()
+            sourceAlpha.filter { it.id.toString() !in disabledSourceIds } +
+                sourceAlpha.filterNot { it.id.toString() !in disabledSourceIds }
         } else {
             sourceAlpha
         }

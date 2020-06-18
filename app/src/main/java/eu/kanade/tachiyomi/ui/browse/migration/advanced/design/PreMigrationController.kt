@@ -145,8 +145,8 @@ class PreMigrationController(bundle: Bundle? = null) :
 
     fun isEnabled(id: String): Boolean {
         val sourcesSaved = prefs.migrationSources().get()
-        val hiddenCatalogues = prefs.hiddenCatalogues().get()
-        return if (sourcesSaved.isEmpty()) id !in hiddenCatalogues
+        val disabledSourceIds = prefs.disabledSources().get()
+        return if (sourcesSaved.isEmpty()) id !in disabledSourceIds
         else sourcesSaved.split("/").contains(id)
     }
 
@@ -164,9 +164,9 @@ class PreMigrationController(bundle: Bundle? = null) :
             }
             R.id.action_match_enabled, R.id.action_match_pinned -> {
                 val enabledSources = if (item.itemId == R.id.action_match_enabled) {
-                    prefs.hiddenCatalogues().get().mapNotNull { it.toLongOrNull() }
+                    prefs.disabledSources().get().mapNotNull { it.toLongOrNull() }
                 } else {
-                    prefs.pinnedCatalogues().get().mapNotNull { it.toLongOrNull() }
+                    prefs.pinnedSources().get().mapNotNull { it.toLongOrNull() }
                 }
                 val items = adapter?.currentItems?.toList() ?: return true
                 items.forEach {

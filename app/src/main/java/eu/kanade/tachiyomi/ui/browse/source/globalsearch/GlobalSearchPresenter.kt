@@ -103,18 +103,18 @@ open class GlobalSearchPresenter(
      */
     protected open fun getEnabledSources(): List<CatalogueSource> {
         val languages = preferences.enabledLanguages().get()
-        val hiddenCatalogues = preferences.hiddenCatalogues().get()
-        val pinnedCatalogues = preferences.pinnedCatalogues().get()
+        val disabledSourceIds = preferences.disabledSources().get()
+        val pinnedSourceIds = preferences.pinnedSources().get()
 
         val list = sourceManager.getVisibleCatalogueSources()
             .filter { it.lang in languages }
-            .filterNot { it.id.toString() in hiddenCatalogues }
+            .filterNot { it.id.toString() in disabledSourceIds }
             .sortedBy { "(${it.lang}) ${it.name}" }
 
         return if (preferences.searchPinnedSourcesOnly()) {
-            list.filter { it.id.toString() in pinnedCatalogues }
+            list.filter { it.id.toString() in pinnedSourceIds }
         } else {
-            list.sortedBy { it.id.toString() !in pinnedCatalogues }
+            list.sortedBy { it.id.toString() !in pinnedSourceIds }
         }
     }
 
@@ -137,10 +137,10 @@ open class GlobalSearchPresenter(
         }
 
         val onlyPinnedSources = preferences.searchPinnedSourcesOnly()
-        val pinnedCatalogues = preferences.pinnedCatalogues().get()
+        val pinnedSourceIds = preferences.pinnedSources().get()
 
         return enabledSources
-            .filter { if (onlyPinnedSources) it.id.toString() in pinnedCatalogues else true }
+            .filter { if (onlyPinnedSources) it.id.toString() in pinnedSourceIds else true }
     }
 
     /**

@@ -149,7 +149,7 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
                                     }
 
                                     // React to enable/disable all changes
-                                    preferences.hiddenCatalogues().asFlow()
+                                    preferences.disabledSources().asFlow()
                                         .onEach {
                                             val enabled = source.isEnabled()
                                             isChecked = enabled
@@ -217,9 +217,9 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
     }
 
     private fun toggleSource(source: Source, enable: Boolean) {
-        val current = preferences.hiddenCatalogues().get()
+        val current = preferences.disabledSources().get()
 
-        preferences.hiddenCatalogues().set(
+        preferences.disabledSources().set(
             if (enable) {
                 current - source.id.toString()
             } else {
@@ -229,7 +229,7 @@ class ExtensionDetailsController(bundle: Bundle? = null) :
     }
 
     private fun Source.isEnabled(): Boolean {
-        return id.toString() !in preferences.hiddenCatalogues().get()
+        return id.toString() !in preferences.disabledSources().get()
     }
 
     private fun getPreferenceThemeContext(): Context {

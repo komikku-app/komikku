@@ -198,7 +198,7 @@ open class LatestController :
      * Opens a catalogue with the given search.
      */
     override fun onTitleClick(source: CatalogueSource) {
-        presenter.preferences.lastUsedCatalogueSource().set(source.id)
+        presenter.preferences.lastUsedSource().set(source.id)
         parentController?.router?.pushController(LatestUpdatesController(source).withFadeTransaction())
     }
 }
