@@ -35,7 +35,7 @@ class MangaAllInOneHeaderItem(val manga: Manga, val source: Source, var smartSea
         position: Int,
         payloads: MutableList<Any?>?
     ) {
-        holder.bind(this, manga, source)
+        holder.bind(manga, source)
     }
 
     override fun equals(other: Any?): Boolean {

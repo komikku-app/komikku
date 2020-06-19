@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.databinding.MangaAllInOneHeaderBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
@@ -27,31 +28,6 @@ import exh.util.setChipsExtended
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
-import kotlinx.android.synthetic.main.manga_all_in_one_header.backdrop
-import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_categories
-import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_favorite
-import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_migrate
-import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_share
-import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_smart_search
-import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_tracking
-import kotlinx.android.synthetic.main.manga_all_in_one_header.btn_webview
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_author
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_chapters
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_cover
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_full_title
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_genres_tags_compact
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_genres_tags_compact_chips
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_genres_tags_full_chips
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_genres_tags_wrapper
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_info_toggle
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_last_update
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_source
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_source_label
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_status
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_summary
-import kotlinx.android.synthetic.main.manga_all_in_one_header.manga_summary_label
-import kotlinx.android.synthetic.main.manga_all_in_one_header.merge_btn
-import kotlinx.android.synthetic.main.manga_all_in_one_header.recommend_btn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -78,18 +54,22 @@ class MangaAllInOneHolder(
 
     private val sourceManager: SourceManager by injectLazy()
 
+    var binding: MangaAllInOneHeaderBinding
+
     init {
         val presenter = adapter.delegate.mangaPresenter()
 
-        // Setting this via XML doesn't work
-        manga_cover.clipToOutline = true
+        binding = MangaAllInOneHeaderBinding.bind(itemView)
 
-        btn_favorite.clicks()
+        // Setting this via XML doesn't work
+        binding.mangaCover.clipToOutline = true
+
+        binding.btnFavorite.clicks()
             .onEach { adapter.delegate.onFavoriteClick() }
             .launchIn(adapter.delegate.controllerScope)
 
         if ((Injekt.get<TrackManager>().hasLoggedServices())) {
-            btn_tracking.visible()
+            binding.btnTracking.visible()
         }
 
         adapter.delegate.controllerScope.launch(Dispatchers.IO) {
@@ -101,81 +81,81 @@ class MangaAllInOneHolder(
             )
         }
 
-        btn_tracking.clicks()
+        binding.btnTracking.clicks()
             .onEach { adapter.delegate.openTracking() }
             .launchIn(adapter.delegate.controllerScope)
 
         if (presenter.manga.favorite && presenter.getCategories().isNotEmpty()) {
-            btn_categories.visible()
+            binding.btnCategories.visible()
         }
-        btn_categories.clicks()
+        binding.btnCategories.clicks()
             .onEach { adapter.delegate.onCategoriesClick() }
             .launchIn(adapter.delegate.controllerScope)
 
         if (presenter.source is HttpSource) {
-            btn_webview.visible()
-            btn_share.visible()
+            binding.btnWebview.visible()
+            binding.btnShare.visible()
 
-            btn_webview.clicks()
+            binding.btnWebview.clicks()
                 .onEach { adapter.delegate.openInWebView() }
                 .launchIn(adapter.delegate.controllerScope)
-            btn_share.clicks()
+            binding.btnShare.clicks()
                 .onEach { adapter.delegate.shareManga() }
                 .launchIn(adapter.delegate.controllerScope)
         }
 
         if (presenter.manga.favorite) {
-            btn_migrate.visible()
-            btn_smart_search.visible()
+            binding.btnMigrate.visible()
+            binding.btnSmartSearch.visible()
         }
 
-        btn_migrate.clicks()
+        binding.btnMigrate.clicks()
             .onEach {
                 adapter.delegate.migrateManga()
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        btn_smart_search.clicks()
+        binding.btnSmartSearch.clicks()
             .onEach { adapter.delegate.openSmartSearch() }
             .launchIn(adapter.delegate.controllerScope)
 
-        manga_full_title.longClicks()
+        binding.mangaFullTitle.longClicks()
             .onEach {
-                adapter.delegate.copyToClipboard(view.context.getString(R.string.title), manga_full_title.text.toString())
+                adapter.delegate.copyToClipboard(view.context.getString(R.string.title), binding.mangaFullTitle.text.toString())
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        manga_full_title.clicks()
+        binding.mangaFullTitle.clicks()
             .onEach {
-                adapter.delegate.performGlobalSearch(manga_full_title.text.toString())
+                adapter.delegate.performGlobalSearch(binding.mangaFullTitle.text.toString())
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        manga_author.longClicks()
+        binding.mangaAuthor.longClicks()
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
                 if (!adapter.delegate.isEHentaiBasedSource()) {
-                    adapter.delegate.copyToClipboard("author", manga_author.text.toString())
+                    adapter.delegate.copyToClipboard("author", binding.mangaAuthor.text.toString())
                 }
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        manga_author.clicks()
+        binding.mangaAuthor.clicks()
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
                 if (!adapter.delegate.isEHentaiBasedSource()) {
-                    adapter.delegate.performGlobalSearch(manga_author.text.toString())
+                    adapter.delegate.performGlobalSearch(binding.mangaAuthor.text.toString())
                 }
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        manga_summary.longClicks()
+        binding.mangaSummary.longClicks()
             .onEach {
-                adapter.delegate.copyToClipboard(view.context.getString(R.string.description), manga_summary.text.toString())
+                adapter.delegate.copyToClipboard(view.context.getString(R.string.description), binding.mangaSummary.text.toString())
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        manga_cover.longClicks()
+        binding.mangaCover.longClicks()
             .onEach {
                 adapter.delegate.copyToClipboard(view.context.getString(R.string.title), presenter.manga.title)
             }
@@ -183,14 +163,14 @@ class MangaAllInOneHolder(
 
         // EXH -->
         if (smartSearchConfig == null) {
-            recommend_btn.visible()
-            recommend_btn.clicks()
+            binding.recommendBtn.visible()
+            binding.recommendBtn.clicks()
                 .onEach { adapter.delegate.openRecommends() }
                 .launchIn(adapter.delegate.controllerScope)
         }
-        smartSearchConfig?.let { smartSearchConfig ->
-            if (smartSearchConfig.origMangaId != null) { merge_btn.visible() }
-            merge_btn.clicks()
+        smartSearchConfig?.let {
+            if (it.origMangaId != null) { binding.mergeBtn.visible() }
+            binding.mergeBtn.clicks()
                 .onEach {
                     adapter.delegate.mergeWithAnother()
                 }
@@ -200,10 +180,8 @@ class MangaAllInOneHolder(
         // EXH <--
     }
 
-    fun bind(item: MangaAllInOneHeaderItem, manga: Manga, source: Source?) {
-        val presenter = adapter.delegate.mangaPresenter()
-
-        manga_full_title.text = if (manga.title.isBlank()) {
+    fun bind(manga: Manga, source: Source?) {
+        binding.mangaFullTitle.text = if (manga.title.isBlank()) {
             itemView.context.getString(R.string.unknown)
         } else {
             manga.title
@@ -211,7 +189,7 @@ class MangaAllInOneHolder(
 
         // Update author/artist TextView.
         val authors = listOf(manga.author, manga.artist).filter { !it.isNullOrBlank() }.distinct()
-        manga_author.text = if (authors.isEmpty()) {
+        binding.mangaAuthor.text = if (authors.isEmpty()) {
             itemView.context.getString(R.string.unknown)
         } else {
             authors.joinToString(", ")
@@ -219,19 +197,23 @@ class MangaAllInOneHolder(
 
         // If manga source is known update source TextView.
         val mangaSource = source?.toString()
-        with(manga_source) {
+        with(binding.mangaSource) {
             // EXH -->
-            if (mangaSource == null) {
-                text = itemView.context.getString(R.string.unknown)
-            } else if (source.id == MERGED_SOURCE_ID) {
-                text = eu.kanade.tachiyomi.source.online.all.MergedSource.MangaConfig.readFromUrl(gson, manga.url).children.map {
-                    sourceManager.getOrStub(it.source).toString()
-                }.distinct().joinToString()
-            } else {
-                text = mangaSource
-                setOnClickListener {
-                    val sourceManager = Injekt.get<SourceManager>()
-                    adapter.delegate.performSearch(sourceManager.getOrStub(source.id).name)
+            when {
+                mangaSource == null -> {
+                    text = itemView.context.getString(R.string.unknown)
+                }
+                source.id == MERGED_SOURCE_ID -> {
+                    text = eu.kanade.tachiyomi.source.online.all.MergedSource.MangaConfig.readFromUrl(gson, manga.url).children.map {
+                        sourceManager.getOrStub(it.source).toString()
+                    }.distinct().joinToString()
+                }
+                else -> {
+                    text = mangaSource
+                    setOnClickListener {
+                        val sourceManager = Injekt.get<SourceManager>()
+                        adapter.delegate.performSearch(sourceManager.getOrStub(source.id).name)
+                    }
                 }
             }
             // EXH <--
@@ -239,14 +221,14 @@ class MangaAllInOneHolder(
 
         // EXH -->
         if (source?.id == MERGED_SOURCE_ID) {
-            manga_source_label.setText(R.string.label_sources)
+            binding.mangaSourceLabel.setText(R.string.label_sources)
         } else {
-            manga_source_label.setText(R.string.manga_info_source_label)
+            binding.mangaSourceLabel.setText(R.string.manga_info_source_label)
         }
         // EXH <--
 
         // Update status TextView.
-        manga_status.setText(
+        binding.mangaStatus.setText(
             when (manga.status) {
                 SManga.ONGOING -> R.string.ongoing
                 SManga.COMPLETED -> R.string.completed
@@ -268,22 +250,20 @@ class MangaAllInOneHolder(
             .load(mangaThumbnail)
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .centerCrop()
-            .into(manga_cover)
+            .into(binding.mangaCover)
 
-        backdrop?.let {
-            GlideApp.with(itemView.context)
-                .load(mangaThumbnail)
-                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                .centerCrop()
-                .into(it)
-        }
+        GlideApp.with(itemView.context)
+            .load(mangaThumbnail)
+            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+            .centerCrop()
+            .into(binding.backdrop)
 
         // Manga info section
         if (manga.description.isNullOrBlank() && manga.genre.isNullOrBlank()) {
             hideMangaInfo()
         } else {
             // Update description TextView.
-            manga_summary.text = if (manga.description.isNullOrBlank()) {
+            binding.mangaSummary.text = if (manga.description.isNullOrBlank()) {
                 itemView.context.getString(R.string.unknown)
             } else {
                 manga.description
@@ -291,17 +271,17 @@ class MangaAllInOneHolder(
 
             // Update genres list
             if (!manga.genre.isNullOrBlank()) {
-                manga_genres_tags_compact_chips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
-                manga_genres_tags_full_chips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
+                binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
+                binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), this::performSearch, this::performGlobalSearch, manga.source)
             } else {
-                manga_genres_tags_wrapper.gone()
+                binding.mangaGenresTagsWrapper.gone()
             }
 
             // Handle showing more or less info
-            manga_summary.clicks()
+            binding.mangaSummary.clicks()
                 .onEach { toggleMangaInfo(itemView.context) }
                 .launchIn(adapter.delegate.controllerScope)
-            manga_info_toggle.clicks()
+            binding.mangaInfoToggle.clicks()
                 .onEach { toggleMangaInfo(itemView.context) }
                 .launchIn(adapter.delegate.controllerScope)
 
@@ -314,23 +294,23 @@ class MangaAllInOneHolder(
     }
 
     private fun hideMangaInfo() {
-        manga_summary_label.gone()
-        manga_summary.gone()
-        manga_genres_tags_wrapper.gone()
-        manga_info_toggle.gone()
+        binding.mangaSummaryLabel.gone()
+        binding.mangaSummary.gone()
+        binding.mangaGenresTagsWrapper.gone()
+        binding.mangaInfoToggle.gone()
     }
 
-    fun toggleMangaInfo(context: Context) {
-        val isExpanded = manga_info_toggle.text == context.getString(R.string.manga_info_collapse)
+    private fun toggleMangaInfo(context: Context) {
+        val isExpanded = binding.mangaInfoToggle.text == context.getString(R.string.manga_info_collapse)
 
-        manga_info_toggle.text =
+        binding.mangaInfoToggle.text =
             if (isExpanded) {
                 context.getString(R.string.manga_info_expand)
             } else {
                 context.getString(R.string.manga_info_collapse)
             }
 
-        with(manga_summary) {
+        with(binding.mangaSummary) {
             maxLines =
                 if (isExpanded) {
                     3
@@ -346,8 +326,8 @@ class MangaAllInOneHolder(
                 }
         }
 
-        manga_genres_tags_compact.visibleIf { isExpanded }
-        manga_genres_tags_full_chips.visibleIf { !isExpanded }
+        binding.mangaGenresTagsCompact.visibleIf { isExpanded }
+        binding.mangaGenresTagsFullChips.visibleIf { !isExpanded }
     }
 
     /**
@@ -357,17 +337,17 @@ class MangaAllInOneHolder(
      */
     fun setChapterCount(count: Float) {
         if (count > 0f) {
-            manga_chapters.text = DecimalFormat("#.#").format(count)
+            binding.mangaChapters.text = DecimalFormat("#.#").format(count)
         } else {
-            manga_chapters.text = itemView.context.getString(R.string.unknown)
+            binding.mangaChapters.text = itemView.context.getString(R.string.unknown)
         }
     }
 
     fun setLastUpdateDate(date: Date) {
         if (date.time != 0L) {
-            manga_last_update.text = dateFormat.format(date)
+            binding.mangaLastUpdate.text = dateFormat.format(date)
         } else {
-            manga_last_update.text = itemView.context.getString(R.string.unknown)
+            binding.mangaLastUpdate.text = itemView.context.getString(R.string.unknown)
         }
     }
 
@@ -386,13 +366,13 @@ class MangaAllInOneHolder(
             }
         }
 
-        btn_categories.visibleIf { isNowFavorite && presenter.getCategories().isNotEmpty() }
+        binding.btnCategories.visibleIf { isNowFavorite && presenter.getCategories().isNotEmpty() }
         if (isNowFavorite) {
-            btn_smart_search.visible()
-            btn_migrate.visible()
+            binding.btnSmartSearch.visible()
+            binding.btnMigrate.visible()
         } else {
-            btn_smart_search.gone()
-            btn_migrate.gone()
+            binding.btnSmartSearch.gone()
+            binding.btnMigrate.gone()
         }
     }
 
@@ -404,7 +384,7 @@ class MangaAllInOneHolder(
     fun setFavoriteButtonState(isFavorite: Boolean) {
         // Set the Favorite drawable to the correct one.
         // Border drawable if false, filled drawable if true.
-        btn_favorite.apply {
+        binding.btnFavorite.apply {
             icon = ContextCompat.getDrawable(context, if (isFavorite) R.drawable.ic_favorite_24dp else R.drawable.ic_favorite_border_24dp)
             text = context.getString(if (isFavorite) R.string.in_library else R.string.add_to_library)
             isChecked = isFavorite
@@ -421,7 +401,7 @@ class MangaAllInOneHolder(
 
     fun setTrackingIcon(tracked: Boolean) {
         if (tracked) {
-            btn_tracking.setIconResource(R.drawable.ic_cloud_white_24dp)
+            binding.btnTracking.setIconResource(R.drawable.ic_cloud_white_24dp)
         }
     }
 }
