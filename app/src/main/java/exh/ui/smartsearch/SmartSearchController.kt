@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.databinding.SmartSearchBinding
+import eu.kanade.tachiyomi.databinding.EhSmartSearchBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -25,7 +25,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
-class SmartSearchController(bundle: Bundle? = null) : NucleusController<SmartSearchBinding, SmartSearchPresenter>(), CoroutineScope {
+class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartSearchBinding, SmartSearchPresenter>(), CoroutineScope {
     override val coroutineContext = Job() + Dispatchers.Main
 
     private val sourceManager: SourceManager by injectLazy()
@@ -36,7 +36,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<SmartSea
     )
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = SmartSearchBinding.inflate(inflater)
+        binding = EhSmartSearchBinding.inflate(inflater)
         return binding.root
     }
 
