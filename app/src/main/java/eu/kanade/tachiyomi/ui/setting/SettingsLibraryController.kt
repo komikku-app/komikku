@@ -209,6 +209,7 @@ class SettingsLibraryController : SettingsController() {
             }
         }
 
+        // SY -->
         if (preferences.skipPreMigration().get() || preferences.migrationSources().get()
             .isNotEmpty()
         ) {
@@ -223,6 +224,7 @@ class SettingsLibraryController : SettingsController() {
                 }
             }
         }
+        // SY <--
     }
 
     class LibraryColumnsDialog : DialogController() {

@@ -4,7 +4,7 @@ import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.updater.UpdateChecker
 import eu.kanade.tachiyomi.data.updater.UpdateResult
 import exh.syDebugVersion
-
+// SY -->
 class GithubUpdateChecker(val debug: Boolean = false) : UpdateChecker() {
 
     private val service: GithubService = GithubService.create()
@@ -25,3 +25,4 @@ class GithubUpdateChecker(val debug: Boolean = false) : UpdateChecker() {
         }
     }
 }
+// SY <--

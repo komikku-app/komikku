@@ -45,7 +45,7 @@ class HttpPageLoader(
      */
     private val subscriptions = CompositeSubscription()
 
-    private val preloadSize = prefs.eh_preload_size().get()
+    private val preloadSize = /* SY --> */ prefs.eh_preload_size().get() /* SY <-- */
 
     init {
         // EXH -->
@@ -102,6 +102,7 @@ class HttpPageLoader(
             .getPageListFromCache(chapter.chapter)
             .onErrorResumeNext { source.fetchPageList(chapter.chapter) }
             .map { pages ->
+                // SY -->
                 val rp = pages.mapIndexed { index, page ->
                     // Don't trust sources and use our own indexing
                     ReaderPage(index, page.url, page.imageUrl)
@@ -114,6 +115,7 @@ class HttpPageLoader(
                     }.forEach { queue.offer(it) }
                 }
                 rp
+                // SY <--
             }
     }
 

@@ -79,6 +79,7 @@ class WebViewActivity : BaseActivity<WebviewActivityBinding>() {
             }
 
             binding.webview.settings.javaScriptEnabled = true
+            binding.webview.settings.domStorageEnabled = true
 
             binding.webview.webChromeClient = object : WebChromeClient() {
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {

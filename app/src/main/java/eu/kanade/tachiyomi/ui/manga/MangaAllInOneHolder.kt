@@ -401,7 +401,7 @@ class MangaAllInOneHolder(
 
     fun setTrackingIcon(tracked: Boolean) {
         if (tracked) {
-            binding.btnTracking.setIconResource(R.drawable.ic_cloud_white_24dp)
+            binding.btnTracking.setIconResource(R.drawable.ic_cloud_24dp)
         }
     }
 }

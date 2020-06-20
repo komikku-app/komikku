@@ -48,7 +48,7 @@ class AboutController : SettingsController() {
 
         preference {
             titleRes = R.string.version
-            summary = if (syDebugVersion != "0") {
+            summary = if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY --> */) {
                 "Preview r$syDebugVersion (${BuildConfig.COMMIT_SHA})"
             } else {
                 "Stable ${BuildConfig.VERSION_NAME}"
@@ -71,7 +71,9 @@ class AboutController : SettingsController() {
             titleRes = R.string.changelog
 
             onClick {
+                // SY -->
                 ChangelogDialogController().showDialog(router)
+                // SY <--
             }
         }
 
@@ -96,13 +98,16 @@ class AboutController : SettingsController() {
             }
             preference {
                 title = "GitHub"
+                // SY -->
                 val url = "https://github.com/jobobby04/TachiyomiSY"
+                // SY <--
                 summary = url
                 onClick {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     startActivity(intent)
                 }
             }
+            // SY -->
             preference {
                 title = "Original Tachiyomi GitHub "
                 val url = "https://github.com/inorichi/tachiyomi"
@@ -112,6 +117,7 @@ class AboutController : SettingsController() {
                     startActivity(intent)
                 }
             }
+            // SY <--
             preference {
                 titleRes = R.string.label_extensions
                 val url = "https://github.com/inorichi/tachiyomi-extensions"

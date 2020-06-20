@@ -27,7 +27,7 @@
 
     <item
         android:id="@+id/action_sync_favorites"
-        android:icon="@drawable/ic_cloud_white_24dp"
+        android:icon="@drawable/ic_cloud_24dp"
         android:title="@string/eh_sync_favorites"
         app:showAsAction="never"/>
 

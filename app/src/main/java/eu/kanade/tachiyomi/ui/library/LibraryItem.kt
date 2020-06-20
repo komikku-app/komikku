@@ -28,8 +28,10 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
     AbstractFlexibleItem<LibraryHolder>(), IFilterable<String> {
 
     private val sourceManager: SourceManager = Injekt.get()
+    // SY -->
     private val trackManager: TrackManager = Injekt.get()
     private val db: DatabaseHelper = Injekt.get()
+    // SY <--
 
     var downloadCount = -1
     var unreadCount = -1
@@ -80,6 +82,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
         holder.onSetValues(this)
     }
 
+    // SY -->
     /**
      * Returns true if this item is draggable.
      */
@@ -138,6 +141,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
             return@any false
         }
     }
+    // SY <--
 
     private fun containsGenre(tag: String, genres: List<String>?): Boolean {
         return if (tag.startsWith("-")) {

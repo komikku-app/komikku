@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable as MangaCateg
 import eu.kanade.tachiyomi.data.database.tables.MangaTable as Manga
 import eu.kanade.tachiyomi.data.database.tables.MergedTable as Merged
 
+// SY -->
 /**
  * Query to get the manga merged into a merged manga
  */
@@ -32,6 +33,7 @@ fun getMergedChaptersQuery(id: Long) =
     JOIN ${Chapter.TABLE}
     ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = M.${Merged.COL_MANGA_ID}
 """
+// SY <--
 
 /**
  * Query to get the manga from the library, with their categories and unread count.
@@ -76,6 +78,7 @@ fun getRecentsQuery() =
  * and are read after the given time period
  * @return return limit is 25
  */
+// SY -->
 fun getRecentMangasQuery(offset: Int = 0, search: String = "") =
     """
     SELECT ${Manga.TABLE}.${Manga.COL_URL} as mangaUrl, ${Manga.TABLE}.*, ${Chapter.TABLE}.*, ${History.TABLE}.*
@@ -122,6 +125,7 @@ fun getRecentMangasLimitQuery(limit: Int = 25, search: String = "") =
     ORDER BY max_last_read.${History.COL_LAST_READ} DESC
     LIMIT $limit
 """
+// SY <--
 
 fun getHistoryByMangaId() =
     """

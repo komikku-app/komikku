@@ -151,9 +151,10 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
             // Backup extension ID/name mapping
             backupExtensionInfo(extensionEntries, extensions)
-
+            // SY -->
             root[SAVEDSEARCHES] =
                 Injekt.get<PreferencesHelper>().eh_savedSearches().get().joinToString(separator = "***")
+            // SY <--
         }
 
         try {
@@ -306,6 +307,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
      * @return [Observable] that contains manga
      */
     fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
+        // SY -->
         return (
             if (source is EHentai) {
                 source.fetchChapterList(manga, throttleManager::throttle)
@@ -322,6 +324,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
                 syncChaptersWithSource(databaseHelper, it, manga, source)
             }
         }
+            // SY <--
             .doOnNext { pair ->
                 if (pair.first.isNotEmpty()) {
                     chapters.forEach { it.manga_id = manga.id }
@@ -496,6 +499,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
         return true
     }
 
+    // SY -->
     internal fun restoreSavedSearches(jsonSavedSearches: JsonElement) {
         val backupSavedSearches = jsonSavedSearches.asString.split("***").toSet()
         backupSavedSearches.forEach {
@@ -505,6 +509,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             }
         }
     }
+    // SY <--
 
     /**
      * Returns manga

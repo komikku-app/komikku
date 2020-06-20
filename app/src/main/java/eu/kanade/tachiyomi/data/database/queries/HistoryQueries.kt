@@ -18,6 +18,7 @@ interface HistoryQueries : DbProvider {
      */
     fun insertHistory(history: History) = db.put().`object`(history).prepare()
 
+    // SY -->
     /**
      * Returns history of recent manga containing last read chapter
      * @param date recent date range
@@ -50,6 +51,7 @@ interface HistoryQueries : DbProvider {
         )
         .withGetResolver(MangaChapterHistoryGetResolver.INSTANCE)
         .prepare()
+    // SY <--
 
     fun getHistoryByMangaId(mangaId: Long) = db.get()
         .listOfObjects(History::class.java)

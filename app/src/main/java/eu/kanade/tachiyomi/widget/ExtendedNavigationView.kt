@@ -71,11 +71,13 @@ open class ExtendedNavigationView @JvmOverloads constructor(
              * @param context any context.
              * @param resId the vector resource to load and tint
              */
+            // SY -->
             fun tintVector(context: Context, resId: Int, colorId: Int = R.attr.colorAccent): Drawable {
                 return VectorDrawableCompat.create(context.resources, resId, context.theme)!!.apply {
                     setTint(context.getResourceColor(colorId))
                 }
             }
+            // SY <--
         }
 
         /**
@@ -106,6 +108,7 @@ open class ExtendedNavigationView @JvmOverloads constructor(
             }
         }
 
+        // SY -->
         class TriStateGroup(resId: Int, group: Group) : MultiStateGroup(resId, group) {
 
             companion object {
@@ -128,6 +131,7 @@ open class ExtendedNavigationView @JvmOverloads constructor(
                 }
             }
         }
+        // SY <--
     }
 
     /**

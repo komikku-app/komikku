@@ -37,6 +37,7 @@ class TrackController(val fromAllInOne: Boolean = false, val manga: Manga? = nul
     }
 
     override fun createPresenter(): TrackPresenter {
+        // SY -->
         return (
             if (fromAllInOne && manga != null) {
                 TrackPresenter(manga)
@@ -44,6 +45,7 @@ class TrackController(val fromAllInOne: Boolean = false, val manga: Manga? = nul
                 TrackPresenter((parentController as MangaController).manga!!)
             }
             )
+        // SY <--
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
@@ -72,11 +74,13 @@ class TrackController(val fromAllInOne: Boolean = false, val manga: Manga? = nul
         val atLeastOneLink = trackings.any { it.track != null }
         adapter?.items = trackings
         binding.swipeRefresh.isEnabled = atLeastOneLink
+        // SY -->
         if (!fromAllInOne) {
             (parentController as? MangaController)?.setTrackingIcon(atLeastOneLink)
         } else {
             (parentController as? MangaAllInOneController)?.setTrackingIcon(atLeastOneLink)
         }
+        // SY <--
     }
 
     fun onSearchResults(results: List<TrackSearch>) {

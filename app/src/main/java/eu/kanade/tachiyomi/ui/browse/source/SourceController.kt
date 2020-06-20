@@ -70,18 +70,22 @@ class SourceController(bundle: Bundle? = null) :
     // EXH <--
 
     init {
-        // Enable the option menu
+        // SY -->
         setHasOptionsMenu(mode == Mode.CATALOGUE)
+        // SY <--
     }
 
     override fun getTitle(): String? {
+        // SY -->
         return when (mode) {
             Mode.CATALOGUE -> applicationContext?.getString(R.string.label_sources)
             Mode.SMART_SEARCH -> "Find in another source"
         }
+        // SY <--
     }
+
     override fun createPresenter(): SourcePresenter {
-        return SourcePresenter(controllerMode = mode)
+        return SourcePresenter(/* SY --> */ controllerMode = mode /* SY <-- */)
     }
 
     /**
@@ -109,6 +113,7 @@ class SourceController(bundle: Bundle? = null) :
 
         requestPermissionsSafe(arrayOf(WRITE_EXTERNAL_STORAGE), 301)
 
+        // SY -->
         if (mode == Mode.CATALOGUE) {
             // Update list on extension changes (e.g. new installation)
             (parentController as BrowseController).extensionListUpdateRelay
@@ -116,6 +121,7 @@ class SourceController(bundle: Bundle? = null) :
                     presenter.updateSources()
                 }
         }
+        // SY <--
     }
 
     override fun onDestroyView(view: View) {
@@ -138,6 +144,7 @@ class SourceController(bundle: Bundle? = null) :
     private fun onItemClick(position: Int) {
         val item = adapter?.getItem(position) as? SourceItem ?: return
         val source = item.source
+        // SY -->
         when (mode) {
             Mode.CATALOGUE -> {
                 // Open the catalogue view.
@@ -152,6 +159,7 @@ class SourceController(bundle: Bundle? = null) :
                 ).withFadeTransaction()
             )
         }
+        // SY <--
     }
 
     override fun onItemLongClick(position: Int) {
@@ -170,6 +178,7 @@ class SourceController(bundle: Bundle? = null) :
             items.add(Pair(activity.getString(R.string.action_hide), { hideCatalogue(item.source) }))
         }
 
+        // SY -->
         val isWatched = preferences.latestTabSources().get().contains(item.source.id.toString())
 
         if (item.source.supportsLatest) {
@@ -187,6 +196,7 @@ class SourceController(bundle: Bundle? = null) :
                 { addToCategories(item.source) }
             )
         )
+        // SY <--
 
         MaterialDialog(activity)
             .title(text = item.source.name)
@@ -218,6 +228,7 @@ class SourceController(bundle: Bundle? = null) :
         presenter.updateSources()
     }
 
+    // SY -->
     private fun watchCatalogue(source: Source, isWatched: Boolean) {
         val current = preferences.latestTabSources().get()
 
@@ -278,6 +289,7 @@ class SourceController(bundle: Bundle? = null) :
         )
         presenter.updateSources()
     }
+    // SY <--
 
     /**
      * Called when browse is clicked in [SourceAdapter]
@@ -312,10 +324,12 @@ class SourceController(bundle: Bundle? = null) :
         // Inflate menu
         inflater.inflate(R.menu.source_main, menu)
 
+        // SY -->
         if (mode == Mode.SMART_SEARCH) {
             menu.findItem(R.id.action_search).isVisible = false
             menu.findItem(R.id.action_settings).isVisible = false
         }
+        // SY <--
 
         // Initialize search option.
         val searchItem = menu.findItem(R.id.action_search)
@@ -375,6 +389,7 @@ class SourceController(bundle: Bundle? = null) :
         }
     }
 
+    // SY -->
     @Parcelize
     data class SmartSearchConfig(val origTitle: String, val origMangaId: Long? = null) : Parcelable
 
@@ -386,4 +401,5 @@ class SourceController(bundle: Bundle? = null) :
     companion object {
         const val SMART_SEARCH_CONFIG = "SMART_SEARCH_CONFIG"
     }
+    // SY <--
 }

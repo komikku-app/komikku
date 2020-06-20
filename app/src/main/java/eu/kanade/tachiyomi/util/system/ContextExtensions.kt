@@ -40,9 +40,11 @@ import kotlinx.coroutines.launch
  * @param duration the duration of the toast. Defaults to short.
  */
 fun Context.toast(@StringRes resource: Int, duration: Int = Toast.LENGTH_SHORT) {
+    // SY -->
     GlobalScope.launch(Dispatchers.Main) {
         Toast.makeText(this@toast, resource, duration).show()
     }
+    // SY <--
 }
 
 /**
@@ -52,9 +54,11 @@ fun Context.toast(@StringRes resource: Int, duration: Int = Toast.LENGTH_SHORT) 
  * @param duration the duration of the toast. Defaults to short.
  */
 fun Context.toast(text: String?, duration: Int = Toast.LENGTH_SHORT) {
+    // SY -->
     GlobalScope.launch(Dispatchers.Main) {
         Toast.makeText(this@toast, text.orEmpty(), duration).show()
     }
+    // SY <--
 }
 
 /**

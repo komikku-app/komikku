@@ -32,7 +32,9 @@ import uy.kohesive.injekt.api.get
 class SourcePresenter(
     val sourceManager: SourceManager = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
+    // SY -->
     private val controllerMode: SourceController.Mode
+    // SY <--
 ) : BasePresenter<SourceController>() {
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
@@ -60,6 +62,8 @@ class SourcePresenter(
 
         val pinnedSources = mutableListOf<SourceItem>()
         val pinnedCatalogues = preferences.pinnedCatalogues().get()
+
+        // SY -->
         val categories = mutableListOf<SourceCategory>()
 
         preferences.sourcesTabCategories().get().sortedByDescending { it.toLowerCase() }.forEach {
@@ -73,6 +77,7 @@ class SourcePresenter(
         } else null
 
         val sourcesInCategories = sourcesAndCategories?.map { it.first }
+        // SY <--
 
         val map = TreeMap<String, MutableList<CatalogueSource>> { d1, d2 ->
             // Catalogues without a lang defined will be placed at the end
@@ -90,6 +95,7 @@ class SourcePresenter(
                     pinnedSources.add(SourceItem(source, LangItem(PINNED_KEY), controllerMode == SourceController.Mode.CATALOGUE))
                 }
 
+                // SY -->
                 if (sourcesInCategories != null && source.id.toString() in sourcesInCategories) {
                     sourcesAndCategories
                         .filter { SourcesAndCategory -> SourcesAndCategory.first == source.id.toString() }
@@ -107,14 +113,17 @@ class SourcePresenter(
                             }
                         }
                 }
+                // SY <--
 
                 SourceItem(source, langItem, controllerMode == SourceController.Mode.CATALOGUE)
             }
         }
 
+        // SY -->
         categories.forEach {
             sourceItems = it.sources.sortedBy { sourceItem -> sourceItem.source.name.toLowerCase() } + sourceItems
         }
+        // SY <--
 
         if (pinnedSources.isNotEmpty()) {
             sourceItems = pinnedSources + sourceItems
@@ -170,4 +179,6 @@ class SourcePresenter(
     }
 }
 
+// SY -->
 data class SourceCategory(val category: String, var sources: MutableList<SourceItem> = mutableListOf())
+// SY <--

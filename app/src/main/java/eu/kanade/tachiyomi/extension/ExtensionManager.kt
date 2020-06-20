@@ -79,6 +79,7 @@ class ExtensionManager(
             return iconMap[pkgName] ?: iconMap.getOrPut(pkgName) { context.packageManager.getApplicationIcon(pkgName) }
         }
 
+        // SY -->
         return when (source.id) {
             EH_SOURCE_ID -> context.getDrawable(R.mipmap.ic_ehentai_source)
             EXH_SOURCE_ID -> context.getDrawable(R.mipmap.ic_ehentai_source)
@@ -91,6 +92,7 @@ class ExtensionManager(
             MERGED_SOURCE_ID -> context.getDrawable(R.mipmap.ic_merged_source)
             else -> null
         }
+        // SY <--
     }
 
     /**
@@ -108,7 +110,9 @@ class ExtensionManager(
             updatedInstalledExtensionsStatuses(value)
         }
 
+    // SY -->
     var unalteredAvailableExtensions = emptyList<Extension.Available>()
+    // SY <--
 
     /**
      * Relay used to notify the untrusted extensions.
@@ -155,7 +159,9 @@ class ExtensionManager(
         untrustedExtensions = extensions
             .filterIsInstance<LoadResult.Untrusted>()
             .map { it.extension }
+            // SY -->
             .filterNotBlacklisted()
+        // SY <--
     }
 
     // EXH -->
@@ -210,8 +216,10 @@ class ExtensionManager(
                 emptyList()
             }
 
+            // SY -->
             unalteredAvailableExtensions = extensions
             availableExtensions = extensions.filterNotBlacklisted()
+            // SY <--
         }
     }
 
@@ -231,14 +239,18 @@ class ExtensionManager(
 
         for ((index, installedExt) in mutInstalledExtensions.withIndex()) {
             val pkgName = installedExt.pkgName
+            // SY -->
             val availableExt = unalteredAvailableExtensions.find { it.pkgName == pkgName }
+            // SY <--
 
             if (availableExt == null && !installedExt.isObsolete) {
                 mutInstalledExtensions[index] = installedExt.copy(isObsolete = true)
                 changed = true
+                // SY -->
             } else if (installedExt.isBlacklisted() && !installedExt.isRedundant) {
                 mutInstalledExtensions[index] = installedExt.copy(isRedundant = true)
                 changed = true
+                // SY <--
             } else if (availableExt != null) {
                 val hasUpdate = availableExt.versionCode > installedExt.versionCode
                 if (installedExt.hasUpdate != hasUpdate) {
@@ -334,10 +346,12 @@ class ExtensionManager(
      * @param extension The extension to be registered.
      */
     private fun registerNewExtension(extension: Extension.Installed) {
+        // SY -->
         if (extension.isBlacklisted()) {
             XLog.d("[EXH] Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }
+        // SY <--
 
         installedExtensions += extension
         extension.sources.forEach { sourceManager.registerSource(it) }
@@ -350,10 +364,12 @@ class ExtensionManager(
      * @param extension The extension to be registered.
      */
     private fun registerUpdatedExtension(extension: Extension.Installed) {
+        // SY -->
         if (extension.isBlacklisted()) {
             XLog.d("[EXH] Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }
+        // SY <--
 
         val mutInstalledExtensions = installedExtensions.toMutableList()
         val oldExtension = mutInstalledExtensions.find { it.pkgName == extension.pkgName }

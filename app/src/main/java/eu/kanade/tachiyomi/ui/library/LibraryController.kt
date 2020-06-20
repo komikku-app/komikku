@@ -125,10 +125,12 @@ class LibraryController(
      */
     val selectInverseRelay: PublishRelay<Int> = PublishRelay.create()
 
+    // SY -->
     /**
      * Relay to notify the library's viewpager to reotagnize all
      */
     val reorganizeRelay: PublishRelay<Pair<Int, Int>> = PublishRelay.create()
+    // SY <--
 
     /**
      * Number of manga per row in grid mode.
@@ -349,7 +351,9 @@ class LibraryController(
      * Called when the sorting mode is changed.
      */
     private fun onSortChanged() {
+        // SY -->
         activity?.invalidateOptionsMenu()
+        // SY <--
         presenter.requestSortUpdate()
     }
 
@@ -391,8 +395,10 @@ class LibraryController(
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.library, menu)
 
+        // SY -->
         val reorganizeItem = menu.findItem(R.id.action_reorganize)
         reorganizeItem.isVisible = preferences.librarySortingMode().get() == LibrarySort.DRAG_AND_DROP
+        // SY <--
 
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
@@ -421,7 +427,9 @@ class LibraryController(
         // Mutate the filter icon because it needs to be tinted and the resource is shared.
         menu.findItem(R.id.action_filter).icon.mutate()
 
+        // SY -->
         menu.findItem(R.id.action_sync_favorites).isVisible = preferences.eh_isHentaiEnabled().get()
+        // SY <--
     }
 
     fun search(query: String) {
@@ -451,10 +459,10 @@ class LibraryController(
                     }
                 }
             }
+            // SY -->
             R.id.action_source_migration -> {
                 router.pushController(MigrationSourcesController().withFadeTransaction())
             }
-            // --> EXH
             R.id.action_sync_favorites -> {
                 if (preferences.eh_showSyncIntro().get()) {
                     activity?.let { FavoritesIntroDialog().show(it) }
@@ -462,21 +470,23 @@ class LibraryController(
                     presenter.favoritesSync.runSync()
                 }
             }
-            // <-- EXH
             R.id.action_alpha_asc -> reOrder(1)
             R.id.action_alpha_dsc -> reOrder(2)
             R.id.action_update_asc -> reOrder(3)
             R.id.action_update_dsc -> reOrder(4)
+            // SY <--
         }
 
         return super.onOptionsItemSelected(item)
     }
 
+    // SY -->
     private fun reOrder(type: Int) {
         adapter?.categories?.getOrNull(binding.libraryPager.currentItem)?.id?.let {
             reorganizeRelay.call(it to type)
         }
     }
+    // SY <--
 
     /**
      * Invalidates the action mode, forcing it to refresh its content.
@@ -514,11 +524,13 @@ class LibraryController(
             R.id.action_delete -> showDeleteMangaDialog()
             R.id.action_select_all -> selectAllCategoryManga()
             R.id.action_select_inverse -> selectInverseCategoryManga()
+            // SY -->
             R.id.action_migrate -> {
                 val skipPre = preferences.skipPreMigration().get()
                 PreMigrationController.navigateToMigration(skipPre, router, selectedMangas.mapNotNull { it.id })
                 destroyActionModeIfNeeded()
             }
+            // SY <--
             else -> return false
         }
         return true
@@ -539,11 +551,13 @@ class LibraryController(
         // Notify the presenter a manga is being opened.
         presenter.onOpenManga()
 
+        // SY -->
         if (preferences.eh_useNewMangaInterface().get()) {
             router.pushController(MangaAllInOneController(manga).withFadeTransaction())
         } else {
             router.pushController(MangaController(manga).withFadeTransaction())
         }
+        // SY <--
     }
 
     /**
@@ -652,6 +666,7 @@ class LibraryController(
         destroyActionModeIfNeeded()
     }
 
+    // SY -->
     override fun onAttach(view: View) {
         super.onAttach(view)
 
@@ -673,6 +688,7 @@ class LibraryController(
         // EXH
         cleanupSyncState()
     }
+    // SY <--
 
     private fun selectAllCategoryManga() {
         adapter?.categories?.getOrNull(binding.libraryPager.currentItem)?.id?.let {

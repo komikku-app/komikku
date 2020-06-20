@@ -8,7 +8,9 @@ open class MangaImpl : Manga {
 
     override lateinit var url: String
 
+    // SY -->
     override var title: String = ""
+    // SY <--
 
     override var artist: String? = null
 

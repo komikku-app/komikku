@@ -89,7 +89,9 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         keepscreen.bindToPreference(preferences.keepScreenOn())
         long_tap.bindToPreference(preferences.readWithLongTap())
         always_show_chapter_transition.bindToPreference(preferences.alwaysShowChapterTransition())
+        // SY -->
         auto_webtoon_mode.bindToPreference(preferences.eh_useAutoWebtoon())
+        // SY <--
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             true_color.visible()

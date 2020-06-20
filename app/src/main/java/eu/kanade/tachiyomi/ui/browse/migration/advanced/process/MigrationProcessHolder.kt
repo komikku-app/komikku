@@ -122,7 +122,7 @@ class MigrationProcessHolder(
                 }
                 withContext(Dispatchers.Main) {
                     if (item.manga.mangaId != this@MigrationProcessHolder.item?.manga?.mangaId ||
-                        item.manga.migrationStatus == MigrationStatus.RUNNUNG
+                        item.manga.migrationStatus == MigrationStatus.RUNNING
                     ) {
                         return@withContext
                     }

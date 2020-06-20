@@ -14,7 +14,7 @@ import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import java.util.Date
 
 interface ChapterQueries : DbProvider {
-
+    // SY -->
     fun getChapters(manga: Manga) = getChaptersByMangaId(manga.id)
 
     fun getChaptersByMangaId(mangaId: Long?) = db.get()
@@ -36,6 +36,7 @@ interface ChapterQueries : DbProvider {
                 .build()
         )
         .prepare()
+    // SY <--
 
     fun getRecentChapters(date: Date) = db.get()
         .listOfObjects(MangaChapter::class.java)
@@ -82,6 +83,7 @@ interface ChapterQueries : DbProvider {
         )
         .prepare()
 
+    // SY -->
     fun getChapters(url: String) = db.get()
         .listOfObjects(Chapter::class.java)
         .withQuery(
@@ -92,6 +94,7 @@ interface ChapterQueries : DbProvider {
                 .build()
         )
         .prepare()
+    // SY <--
 
     fun insertChapter(chapter: Chapter) = db.put().`object`(chapter).prepare()
 

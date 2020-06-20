@@ -24,11 +24,13 @@ class SourceHolder(view: View, override val adapter: SourceAdapter) :
         get() = card
 
     init {
-        source_browse.gone()
-        source_latest.text = "All"
-        source_latest.setOnClickListener {
+        source_latest.gone()
+        // SY -->
+        source_browse.text = "All"
+        source_browse.setOnClickListener {
             adapter.allClickListener?.onAllClick(bindingAdapterPosition)
         }
+        // SY <--
     }
 
     fun bind(item: SourceItem) {

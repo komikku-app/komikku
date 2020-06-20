@@ -47,8 +47,10 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     FrameLayout(context, attrs),
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
+    // SY -->
     FlexibleAdapter.OnItemMoveListener,
     CategoryAdapter.OnItemReleaseListener {
+    // SY <--
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
@@ -142,8 +144,10 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         } else {
             SelectableAdapter.Mode.SINGLE
         }
+        // SY -->
         val sortingMode = preferences.librarySortingMode().get()
         adapter.isLongPressDragEnabled = sortingMode == LibrarySort.DRAG_AND_DROP
+        // SY <--
 
         // EXH -->
         scope2 = newScope()
@@ -206,6 +210,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 controller.invalidateActionMode()
             }
 
+        // SY -->
         subscriptions += controller.reorganizeRelay
             .subscribe {
                 if (it.first == category.id) {
@@ -230,10 +235,13 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 controller.invalidateActionMode()
             }
 //        }
+        // SY <--
     }
 
     fun onRecycle() {
+        // SY -->
         runBlocking { adapter.setItems(this, emptyList()) }
+        // SY <--
         adapter.clearSelection()
         unsubscribe()
     }
@@ -254,7 +262,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
      */
     suspend fun onNextLibraryManga(cScope: CoroutineScope, event: LibraryMangaEvent) {
         // Get the manga list for this category.
-
+        // SY -->
         val sortingMode = preferences.librarySortingMode().get()
         adapter.isLongPressDragEnabled = sortingMode == LibrarySort.DRAG_AND_DROP
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
@@ -270,6 +278,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 )
             }
         }
+        // SY <--
         // Update the category with its manga.
         // EXH -->
         adapter.setItems(cScope, mangaForCategory)
@@ -297,7 +306,9 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             is LibrarySelectionEvent.Selected -> {
                 if (adapter.mode != SelectableAdapter.Mode.MULTI) {
                     adapter.mode = SelectableAdapter.Mode.MULTI
+                    // SY -->
                     adapter.isLongPressDragEnabled = false
+                    // SY <--
                 }
                 findAndToggleSelection(event.manga)
             }
@@ -306,16 +317,20 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 if (adapter.indexOf(event.manga) != -1) lastClickPosition = -1
                 if (controller.selectedMangas.isEmpty()) {
                     adapter.mode = SelectableAdapter.Mode.SINGLE
+                    // SY -->
                     adapter.isLongPressDragEnabled = preferences.librarySortingMode()
                         .get() == LibrarySort.DRAG_AND_DROP
+                    // SY <--
                 }
             }
             is LibrarySelectionEvent.Cleared -> {
                 adapter.mode = SelectableAdapter.Mode.SINGLE
                 adapter.clearSelection()
                 lastClickPosition = -1
+                // SY -->
                 adapter.isLongPressDragEnabled = preferences.librarySortingMode()
                     .get() == LibrarySort.DRAG_AND_DROP
+                // SY <--
             }
         }
     }
@@ -359,7 +374,9 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
      */
     override fun onItemLongClick(position: Int) {
         controller.createActionModeIfNeeded()
+        // SY -->
         adapter.isLongPressDragEnabled = false
+        // SY <--
         when {
             lastClickPosition == -1 -> setSelection(position)
             lastClickPosition > position ->
@@ -372,7 +389,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         }
         lastClickPosition = position
     }
-
+    // SY -->
     override fun onItemMove(fromPosition: Int, toPosition: Int) {
     }
 
@@ -405,6 +422,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             onItemLongClick(position)
         }
     }
+    // SY <--
 
     /**
      * Opens a manga.

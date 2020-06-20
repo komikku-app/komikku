@@ -9,8 +9,9 @@ import kotlinx.coroutines.sync.withLock
  * @author nulldev
  */
 class DeferredField<T> {
+
     @Volatile
-    private var content: T? = null
+    var content: T? = null
 
     @Volatile
     var initialized = false
@@ -30,17 +31,25 @@ class DeferredField<T> {
         mutex.unlock()
     }
 
+    fun set(content: T) {
+        mutex.tryLock()
+        this.content = content
+        initialized = true
+        // Notify current listeners
+        mutex.unlock()
+    }
+
     /**
      * Will only suspend if !initialized.
      */
     suspend fun get(): T {
         // Check if field is initialized and return immediately if it is
-        if (initialized) return content!!
+        if (initialized) return content as T
 
         // Wait for field to initialize
         mutex.withLock {}
 
         // Field is initialized, return value
-        return content!!
+        return content as T
     }
 }

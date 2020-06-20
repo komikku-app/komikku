@@ -75,6 +75,7 @@ interface MangaQueries : DbProvider {
         )
         .prepare()
 
+    // SY -->
     fun getMergedMangas(id: Long) = db.get()
         .listOfObjects(Manga::class.java)
         .withQuery(
@@ -83,6 +84,7 @@ interface MangaQueries : DbProvider {
                 .build()
         )
         .prepare()
+    // SY <--
 
     fun insertManga(manga: Manga) = db.put().`object`(manga).prepare()
 
@@ -170,6 +172,7 @@ interface MangaQueries : DbProvider {
         )
         .prepare()
 
+    // SY -->
     fun getMangaWithMetadata() = db.get()
         .listOfObjects(Manga::class.java)
         .withQuery(
@@ -219,4 +222,5 @@ interface MangaQueries : DbProvider {
                 .build()
         )
         .prepare()
+    // SY <--
 }

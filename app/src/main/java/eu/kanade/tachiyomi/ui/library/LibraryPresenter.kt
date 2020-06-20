@@ -120,6 +120,7 @@ class LibraryPresenter(
         }
     }
 
+    // SY -->
     /**
      * Applies library filters to the given map of manga.
      *
@@ -171,6 +172,7 @@ class LibraryPresenter(
 
         return map.mapValues { entry -> entry.value.filter(filterFn) }
     }
+    // SY <--
 
     /**
      * Sets downloaded chapter count to each manga.
@@ -244,9 +246,11 @@ class LibraryPresenter(
                         ?: latestChapterManga.size
                     manga1latestChapter.compareTo(manga2latestChapter)
                 }
+                // SY -->
                 LibrarySort.DRAG_AND_DROP -> {
                     0
                 }
+                // SY <--
                 else -> throw Exception("Unknown sorting mode")
             }
         }
@@ -393,6 +397,7 @@ class LibraryPresenter(
         db.setMangaCategories(mc, mangas)
     }
 
+    // SY -->
     fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean) {
         val source = sourceManager.get(manga.source) ?: return
 
@@ -469,6 +474,7 @@ class LibraryPresenter(
             db.updateMangaTitle(manga).executeAsBlocking()
         }
     }
+    // SY <--
 
     /**
      * Update cover with local file.

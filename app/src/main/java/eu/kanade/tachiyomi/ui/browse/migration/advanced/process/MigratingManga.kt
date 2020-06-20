@@ -4,7 +4,7 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.util.DeferredField
+import exh.util.DeferredField
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,7 +23,7 @@ class MigratingManga(
 
     val migrationJob = parentContext + SupervisorJob() + Dispatchers.Default
 
-    var migrationStatus: Int = MigrationStatus.RUNNUNG
+    var migrationStatus: Int = MigrationStatus.RUNNING
 
     @Volatile
     private var manga: Manga? = null
@@ -44,8 +44,8 @@ class MigratingManga(
 
 class MigrationStatus {
     companion object {
-        val RUNNUNG = 0
-        val MANGA_FOUND = 1
-        val MANGA_NOT_FOUND = 2
+        const val RUNNING = 0
+        const val MANGA_FOUND = 1
+        const val MANGA_NOT_FOUND = 2
     }
 }

@@ -19,7 +19,9 @@ import uy.kohesive.injekt.api.get
 class MigrationMangaController :
     NucleusController<MigrationMangaControllerBinding, MigrationMangaPresenter>,
     FlexibleAdapter.OnItemClickListener,
+    // SY -->
     MigrationInterface {
+    // SY <--
 
     private var adapter: FlexibleAdapter<IFlexible<*>>? = null
 
@@ -72,20 +74,23 @@ class MigrationMangaController :
     }
 
     override fun onItemClick(view: View, position: Int): Boolean {
-        val item = adapter?.getItem(position) as? MangaItem
-            ?: return false
+        val item = adapter?.getItem(position) as? MangaItem ?: return false
+        // SY -->
         PreMigrationController.navigateToMigration(
             Injekt.get<PreferencesHelper>().skipPreMigration().get(),
             router,
             listOf(item.manga.id!!)
         )
+        // SY <--
         return false
     }
 
+    // SY -->
     override fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean): Manga? {
         presenter.migrateManga(prevManga, manga, replace)
         return null
     }
+    // SY <--
 
     companion object {
         const val SOURCE_ID_EXTRA = "source_id_extra"
@@ -93,6 +98,8 @@ class MigrationMangaController :
     }
 }
 
+// SY -->
 interface MigrationInterface {
     fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean): Manga?
 }
+// SY <--

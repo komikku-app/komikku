@@ -19,6 +19,7 @@ class SourceAdapter(val controller: MigrationSourcesController) :
         setDisplayHeadersAtStartUp(true)
     }
 
+    // SY -->
     /**
      * Listener for auto item clicks.
      */
@@ -30,4 +31,5 @@ class SourceAdapter(val controller: MigrationSourcesController) :
     interface OnAllClickListener {
         fun onAllClick(position: Int)
     }
+    // SY <--
 }

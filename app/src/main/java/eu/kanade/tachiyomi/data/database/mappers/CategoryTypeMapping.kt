@@ -41,8 +41,10 @@ class CategoryPutResolver : DefaultPutResolver<Category>() {
         put(COL_NAME, obj.name)
         put(COL_ORDER, obj.order)
         put(COL_FLAGS, obj.flags)
+        // SY -->
         val orderString = obj.mangaOrder.joinToString("/")
         put(COL_MANGA_ORDER, orderString)
+        // SY <--
     }
 }
 
@@ -54,8 +56,10 @@ class CategoryGetResolver : DefaultGetResolver<Category>() {
         order = cursor.getInt(cursor.getColumnIndex(COL_ORDER))
         flags = cursor.getInt(cursor.getColumnIndex(COL_FLAGS))
 
+        // SY -->
         val orderString = cursor.getString(cursor.getColumnIndex(COL_MANGA_ORDER))
         mangaOrder = orderString?.split("/")?.mapNotNull { it.toLongOrNull() } ?: emptyList()
+        // SY <--
     }
 }
 

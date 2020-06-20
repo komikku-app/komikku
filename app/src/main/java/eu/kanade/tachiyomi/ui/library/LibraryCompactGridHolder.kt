@@ -28,7 +28,9 @@ import kotlinx.android.synthetic.main.source_compact_grid_item.unread_text
  */
 open class LibraryCompactGridHolder(
     private val view: View,
+    // SY -->
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
+    // SY <--
 ) : LibraryHolder(view, adapter) {
 
     /**

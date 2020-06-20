@@ -45,7 +45,7 @@ class MigrationProcessAdapter(
     fun allMangasDone() = (
         items.all {
             it.manga.migrationStatus != MigrationStatus
-                .RUNNUNG
+                .RUNNING
         } && items.any { it.manga.migrationStatus == MigrationStatus.MANGA_FOUND }
         )
 

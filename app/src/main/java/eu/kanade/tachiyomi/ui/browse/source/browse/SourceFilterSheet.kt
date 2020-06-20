@@ -45,13 +45,9 @@ class SourceFilterSheet(
 
         // EXH -->
         filterNavView.onSaveClicked = onSaveClicked
-        // EXH <--
 
-        // EXH -->
         filterNavView.onSavedSearchClicked = onSavedSearchClicked
-        // EXH <--
 
-        // EXH -->
         filterNavView.onSavedSearchDeleteClicked = onSavedSearchDeleteClicked
         // EXH <--
 
@@ -62,6 +58,7 @@ class SourceFilterSheet(
         filterNavView.adapter.updateDataSet(items)
     }
 
+    // SY -->
     fun setSavedSearches(searches: List<EXHSavedSearch>) {
         filterNavView.setSavedSearches(searches)
     }
@@ -69,19 +66,16 @@ class SourceFilterSheet(
     fun hideFilterButton() {
         filterNavView.hideFilterButton()
     }
+    // SY <--
 
     class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
         SimpleNavigationView(context, attrs) {
 
         // EXH -->
         var onSaveClicked = {}
-        // EXH <--
 
-        // EXH -->
         var onSavedSearchClicked: (Int) -> Unit = {}
-        // EXH <--
 
-        // EXH -->
         var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
         // EXH <--
 
@@ -96,9 +90,13 @@ class SourceFilterSheet(
             recycler.adapter = adapter
             recycler.setHasFixedSize(true)
             val view = inflate(R.layout.source_filter_sheet)
+            // SY -->
             ((view as ViewGroup).findViewById(R.id.source_filter_content) as ViewGroup).addView(recycler)
+            // SY <--
             addView(view)
+            // SY -->
             save_search_btn.setOnClickListener { onSaveClicked() }
+            // SY <--
             filter_btn.setOnClickListener { onFilterClicked() }
             reset_btn.setOnClickListener { onResetClicked() }
         }

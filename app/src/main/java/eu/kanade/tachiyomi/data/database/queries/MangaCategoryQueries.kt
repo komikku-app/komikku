@@ -26,12 +26,14 @@ interface MangaCategoryQueries : DbProvider {
 
     fun setMangaCategories(mangasCategories: List<MangaCategory>, mangas: List<Manga>) {
         db.inTransaction {
+            // SY -->
             mangas.chunked(100) { chunk ->
                 deleteOldMangasCategories(chunk).executeAsBlocking()
             }
             mangasCategories.chunked(100) { chunk ->
                 insertMangasCategories(chunk).executeAsBlocking()
             }
+            // SY <--
         }
     }
 }

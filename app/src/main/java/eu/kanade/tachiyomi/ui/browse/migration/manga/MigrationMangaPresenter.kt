@@ -38,6 +38,7 @@ class MigrationMangaPresenter(
             .map { MangaItem(it) }
     }
 
+    // SY -->
     fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean) {
         val source = sourceManager.get(manga.source) ?: return
 
@@ -109,4 +110,5 @@ class MigrationMangaPresenter(
             db.updateMangaTitle(manga).executeAsBlocking()
         }
     }
+    // SY <--
 }

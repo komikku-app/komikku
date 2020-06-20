@@ -15,7 +15,9 @@ import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 
 abstract class LibraryHolder(
     view: View,
+    // SY -->
     val adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
+    // SY <--
 ) : BaseFlexibleViewHolder(view, adapter) {
 
     /**
@@ -26,6 +28,7 @@ abstract class LibraryHolder(
      */
     abstract fun onSetValues(item: LibraryItem)
 
+    // SY -->
     /**
      * Called when an item is released.
      *
@@ -35,4 +38,5 @@ abstract class LibraryHolder(
         super.onItemReleased(position)
         (adapter as? LibraryCategoryAdapter)?.onItemReleaseListener?.onItemReleased(position)
     }
+    // SY <--
 }

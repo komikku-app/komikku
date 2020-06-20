@@ -103,7 +103,9 @@ class BackupRestoreService : Service() {
 
     private var job: Job? = null
 
+    // SY -->
     private val throttleManager = EHentaiThrottleManager()
+    // SY <--
 
     /**
      * The progress of a backup restore
@@ -115,9 +117,11 @@ class BackupRestoreService : Service() {
      */
     private var restoreAmount = 0
 
+    // SY -->
     private var skippedAmount = 0
 
     private var totalAmount = 0
+    // SY <--
 
     /**
      * Mapping of source ID to source name from backup data
@@ -178,7 +182,9 @@ class BackupRestoreService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val uri = intent?.getParcelableExtra<Uri>(BackupConst.EXTRA_URI) ?: return START_NOT_STICKY
 
+        // SY -->
         throttleManager.resetThrottle()
+        // SY <--
 
         // Cancel any previous job if needed.
         job?.cancel()
@@ -221,6 +227,7 @@ class BackupRestoreService : Service() {
 
         val mangasJson = json.get(MANGAS).asJsonArray
 
+        // SY -->
         val validManga = mangasJson.filter {
             var manga = backupManager.parser.fromJson<MangaImpl>(it.asJsonObject.get(MANGA))
             // EXH -->
@@ -235,13 +242,16 @@ class BackupRestoreService : Service() {
         totalAmount = mangasJson.size()
         restoreAmount = validManga.count() + 1 // +1 for categories
         skippedAmount = mangasJson.size() - validManga.count()
+        // SY <--
         restoreProgress = 0
         errors.clear()
 
         // Restore categories
         json.get(CATEGORIES)?.let { restoreCategories(it) }
 
+        // SY -->
         json.get(SAVEDSEARCHES)?.let { restoreSavedSearches(it) }
+        // SY <--
 
         // Store source mapping for error messages
         sourceMapping = BackupRestoreValidator.getSourceMapping(json)
@@ -273,15 +283,19 @@ class BackupRestoreService : Service() {
         showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.categories))
     }
 
+    // SY -->
     private fun restoreSavedSearches(savedSearchesJson: JsonElement) {
         backupManager.restoreSavedSearches(savedSearchesJson)
 
         restoreProgress += 1
         showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.eh_saved_searches))
     }
+    // SY <--
 
     private fun restoreManga(mangaJson: JsonObject) {
+        // SY -->
         var manga = backupManager.parser.fromJson<MangaImpl>(mangaJson.get(MANGA))
+        // SY <--
         val chapters = backupManager.parser.fromJson<List<ChapterImpl>>(
             mangaJson.get(CHAPTERS)
                 ?: JsonArray()
@@ -437,7 +451,9 @@ class BackupRestoreService : Service() {
      * @return [Observable] that contains manga
      */
     private fun chapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>): Observable<Pair<List<Chapter>, List<Chapter>>> {
+        // SY -->
         return backupManager.restoreChapterFetchObservable(source, manga, chapters, throttleManager)
+            // SY <--
             // If there's any error, return empty update and continue.
             .onErrorReturn {
                 errors.add(Date() to "${manga.title} - ${it.message}")

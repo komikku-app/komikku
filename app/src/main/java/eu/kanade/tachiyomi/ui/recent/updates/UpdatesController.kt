@@ -287,11 +287,13 @@ class UpdatesController :
     }
 
     private fun openManga(chapter: UpdatesItem) {
+        // SY -->
         if (Injekt.get<PreferencesHelper>().eh_useNewMangaInterface().get()) {
             router.pushController(MangaAllInOneController(chapter.manga).withFadeTransaction())
         } else {
             router.pushController(MangaController(chapter.manga).withFadeTransaction())
         }
+        // SY <--
     }
 
     /**

@@ -20,6 +20,7 @@ class SettingsBrowseController : SettingsController() {
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.browse
 
+        // SY -->
         preferenceCategory {
             titleRes = R.string.label_sources
 
@@ -51,6 +52,7 @@ class SettingsBrowseController : SettingsController() {
                 defaultValue = false
             }
         }
+        // SY <--
 
         preferenceCategory {
             titleRes = R.string.label_extensions

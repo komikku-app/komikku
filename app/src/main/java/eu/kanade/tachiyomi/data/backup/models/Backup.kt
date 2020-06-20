@@ -17,7 +17,9 @@ object Backup {
     const val EXTENSIONS = "extensions"
     const val HISTORY = "history"
     const val VERSION = "version"
+    // SY -->
     const val SAVEDSEARCHES = "savedsearches"
+    // SY <--
 
     fun getDefaultFilename(): String {
         val date = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())

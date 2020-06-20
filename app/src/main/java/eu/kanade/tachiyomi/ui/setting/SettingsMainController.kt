@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.setting
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.more.AboutController
 import eu.kanade.tachiyomi.util.preference.iconRes
 import eu.kanade.tachiyomi.util.preference.iconTint
 import eu.kanade.tachiyomi.util.preference.onClick
@@ -66,6 +65,7 @@ class SettingsMainController : SettingsController() {
             titleRes = R.string.pref_category_security
             onClick { navigateTo(SettingsSecurityController()) }
         }
+        // SY -->
         if (preferences.eh_isHentaiEnabled().get()) {
             preference {
                 iconRes = R.drawable.eh_ic_ehlogo_red_24dp
@@ -86,17 +86,12 @@ class SettingsMainController : SettingsController() {
                 onClick { navigateTo(SettingsHlController()) }
             }
         }
+        // SY <--
         preference {
             iconRes = R.drawable.ic_code_24dp
             iconTint = tintColor
             titleRes = R.string.pref_category_advanced
             onClick { navigateTo(SettingsAdvancedController()) }
-        }
-        preference {
-            iconRes = R.drawable.ic_info_24dp
-            iconTint = tintColor
-            titleRes = R.string.pref_category_about
-            onClick { navigateTo(AboutController()) }
         }
     }
 

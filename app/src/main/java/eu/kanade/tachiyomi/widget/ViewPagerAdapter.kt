@@ -4,7 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 
-abstract class ViewPagerAdapter : androidx.viewpager.widget.PagerAdapter() {
+abstract class ViewPagerAdapter : PagerAdapter() {
 
     protected abstract fun createView(container: ViewGroup, position: Int): View
 

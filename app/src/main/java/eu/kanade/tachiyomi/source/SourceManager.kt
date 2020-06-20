@@ -37,23 +37,27 @@ import uy.kohesive.injekt.injectLazy
 
 open class SourceManager(private val context: Context) {
 
-    private val prefs: PreferencesHelper by injectLazy()
-
     private val sourcesMap = mutableMapOf<Long, Source>()
 
     private val stubSourcesMap = mutableMapOf<Long, StubSource>()
 
+    // SY -->
+    private val prefs: PreferencesHelper by injectLazy()
+
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
+    // SY <--
 
     init {
         createInternalSources().forEach { registerSource(it) }
 
+        // SY -->
         // Recreate sources when they change
         prefs.enableExhentai().asFlow().onEach {
             createEHSources().forEach { registerSource(it) }
         }.launchIn(scope)
 
         registerSource(MergedSource())
+        // SY <--
     }
 
     open fun get(sourceKey: Long): Source? {
@@ -70,9 +74,11 @@ open class SourceManager(private val context: Context) {
 
     fun getCatalogueSources() = sourcesMap.values.filterIsInstance<CatalogueSource>()
 
+    // SY -->
     fun getVisibleCatalogueSources() = sourcesMap.values.filterIsInstance<CatalogueSource>().filter {
         it.id !in BlacklistedSources.HIDDEN_SOURCES
     }
+    // SY <--
 
     internal fun registerSource(source: Source, overwrite: Boolean = false) {
         // EXH -->
@@ -105,6 +111,7 @@ open class SourceManager(private val context: Context) {
         LocalSource(context)
     )
 
+    // SY -->
     private fun createEHSources(): List<Source> {
         val exSrcs = mutableListOf<HttpSource>(
             EHentai(EH_SOURCE_ID, false, context)
@@ -120,6 +127,7 @@ open class SourceManager(private val context: Context) {
         exSrcs += HBrowse()
         return exSrcs
     }
+    // SY <--
 
     private inner class StubSource(override val id: Long) : Source {
 
@@ -147,6 +155,7 @@ open class SourceManager(private val context: Context) {
         }
     }
 
+    // SY -->
     companion object {
         val DELEGATED_SOURCES = listOf(
             DelegatedSource(
@@ -176,6 +185,7 @@ open class SourceManager(private val context: Context) {
             val newSourceClass: KClass<out DelegatedHttpSource>
         )
     }
+    // SY <--
 }
 
 class SourceNotFoundException(message: String, val id: Long) : Exception(message)

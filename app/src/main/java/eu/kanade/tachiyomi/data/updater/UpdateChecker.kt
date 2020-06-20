@@ -6,7 +6,9 @@ abstract class UpdateChecker {
 
     companion object {
         fun getUpdateChecker(): UpdateChecker {
+            // SY -->
             return GithubUpdateChecker()
+            // SY <--
         }
     }
 

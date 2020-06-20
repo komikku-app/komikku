@@ -101,7 +101,9 @@ class BrowseController :
         activity?.tabs?.apply {
             val updates = preferences.extensionUpdatesCount().get()
             if (updates > 0) {
+                // SY -->
                 val badge: BadgeDrawable? = getTabAt(EXTENSIONS_CONTROLLER)?.orCreateBadge
+                // SY <--
                 badge?.isVisible = true
             } else {
                 getTabAt(EXTENSIONS_CONTROLLER)?.removeBadge()
@@ -111,6 +113,7 @@ class BrowseController :
 
     private inner class BrowseAdapter : RouterPagerAdapter(this@BrowseController) {
 
+        // SY -->
         private val tabTitles = (
             if (preferences.latestTabInFront().get()) {
                 listOf(
@@ -129,6 +132,7 @@ class BrowseController :
                 )
             }
             )
+            // SY <--
             .map { resources!!.getString(it) }
 
         override fun getCount(): Int {
@@ -138,8 +142,10 @@ class BrowseController :
         override fun configureRouter(router: Router, position: Int) {
             if (!router.hasRootController()) {
                 val controller: Controller = when (position) {
+                    // SY -->
                     SOURCES_CONTROLLER -> if (preferences.latestTabInFront().get()) LatestController() else SourceController()
                     LATEST_CONTROLLER -> if (!preferences.latestTabInFront().get()) LatestController() else SourceController()
+                    // SY <--
                     EXTENSIONS_CONTROLLER -> ExtensionController()
                     MIGRATION_CONTROLLER -> MigrationSourcesController()
                     else -> error("Wrong position $position")
@@ -157,8 +163,10 @@ class BrowseController :
         const val TO_EXTENSIONS_EXTRA = "to_extensions"
 
         const val SOURCES_CONTROLLER = 0
+        // SY -->
         const val LATEST_CONTROLLER = 1
         const val EXTENSIONS_CONTROLLER = 2
         const val MIGRATION_CONTROLLER = 3
+        // SY <--
     }
 }

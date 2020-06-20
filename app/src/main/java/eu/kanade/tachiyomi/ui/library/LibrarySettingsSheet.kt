@@ -65,18 +65,23 @@ class LibrarySettingsSheet(
          * Returns true if there's at least one filter from [FilterGroup] active.
          */
         fun hasActiveFilters(): Boolean {
+            // SY -->
             return filterGroup.items.any { it.state != STATE_IGNORE }
+            // SY <--
         }
 
         inner class FilterGroup : Group {
 
+            // SY -->
             private val downloaded = Item.TriStateGroup(R.string.action_filter_downloaded, this)
             private val unread = Item.TriStateGroup(R.string.action_filter_unread, this)
             private val completed = Item.TriStateGroup(R.string.completed, this)
             private val tracked = Item.TriStateGroup(R.string.tracked, this)
             private val lewd = Item.TriStateGroup(R.string.lewd, this)
+            // SY <--
 
             override val header = null
+            // SY -->
             override val items = (
                 if (Injekt.get<TrackManager>().hasLoggedServices()) {
                     listOf(downloaded, unread, completed, tracked, lewd)
@@ -84,8 +89,10 @@ class LibrarySettingsSheet(
                     listOf(downloaded, unread, completed, lewd)
                 }
                 )
+            // SY <--
             override val footer = null
 
+            // SY -->
             override fun initModels() { // j2k changes
                 try {
                     downloaded.state = preferences.filterDownloaded().get()
@@ -120,6 +127,7 @@ class LibrarySettingsSheet(
 
                 adapter.notifyItemChanged(item)
             }
+            // SY <--
         }
     }
 
@@ -141,11 +149,13 @@ class LibrarySettingsSheet(
             private val lastChecked = Item.MultiSort(R.string.action_sort_last_checked, this)
             private val unread = Item.MultiSort(R.string.action_filter_unread, this)
             private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
+            // SY -->
             private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
+            // SY <--
 
             override val header = null
             override val items =
-                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, dragAndDrop)
+                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter /* SY --> */, dragAndDrop /* SY <-- */)
             override val footer = null
 
             override fun initModels() {
@@ -167,7 +177,9 @@ class LibrarySettingsSheet(
                 total.state = if (sorting == LibrarySort.TOTAL) order else Item.MultiSort.SORT_NONE
                 latestChapter.state =
                     if (sorting == LibrarySort.LATEST_CHAPTER) order else Item.MultiSort.SORT_NONE
+                // SY -->
                 dragAndDrop.state = if (sorting == LibrarySort.DRAG_AND_DROP) order else Item.MultiSort.SORT_NONE
+                // SY <--
             }
 
             override fun onItemClicked(item: Item) {
@@ -178,6 +190,7 @@ class LibrarySettingsSheet(
                     (it as Item.MultiStateGroup).state =
                         Item.MultiSort.SORT_NONE
                 }
+                // SY -->
                 if (item == dragAndDrop) {
                     item.state = Item.MultiSort.SORT_ASC
                 } else {
@@ -188,6 +201,7 @@ class LibrarySettingsSheet(
                         else -> throw Exception("Unknown state")
                     }
                 }
+                // SY <--
 
                 preferences.librarySortingMode().set(
                     when (item) {
@@ -197,7 +211,9 @@ class LibrarySettingsSheet(
                         unread -> LibrarySort.UNREAD
                         total -> LibrarySort.TOTAL
                         latestChapter -> LibrarySort.LATEST_CHAPTER
+                        // SY -->
                         dragAndDrop -> LibrarySort.DRAG_AND_DROP
+                        // SY <--
                         else -> throw Exception("Unknown sorting")
                     }
                 )

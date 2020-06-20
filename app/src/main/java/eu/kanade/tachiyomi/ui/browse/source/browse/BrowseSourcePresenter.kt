@@ -59,7 +59,9 @@ open class BrowseSourcePresenter(
     private val db: DatabaseHelper = Injekt.get(),
     private val prefs: PreferencesHelper = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
+    // SY -->
     private val recommends: Boolean = false
+    // SY <--
 ) : BasePresenter<BrowseSourceController>() {
 
     /**
@@ -70,7 +72,7 @@ open class BrowseSourcePresenter(
     /**
      * Query from the view.
      */
-    var query = if (recommends) "" else searchQuery ?: ""
+    var query = /* SY --> */ if (recommends) "" else /* SY <-- */ searchQuery ?: ""
         private set
 
     /**
@@ -146,9 +148,11 @@ open class BrowseSourcePresenter(
         subscribeToMangaInitializer()
 
         // Create a new pager.
+        // SY -->
         pager = if (recommends && searchManga != null) RecommendsPager(
             searchManga
         ) else createPager(query, filters)
+        // SY <--
 
         val sourceId = source.id
 

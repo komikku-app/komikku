@@ -38,7 +38,6 @@ import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
 import exh.EIGHTMUSES_SOURCE_ID
 import exh.EXHMigrations
@@ -78,6 +77,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
     private var isConfirmingExit: Boolean = false
     private var isHandlingShortcut: Boolean = false
 
+    // SY -->
     // Idle-until-urgent
     private var firstPaint = false
     private val iuuQueue = LinkedList<() -> Unit>()
@@ -94,6 +94,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             iuuQueue += task
         }
     }
+    // SY <--
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -186,7 +187,9 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             if (EXHMigrations.upgrade(preferences)) {
                 ChangelogDialogController().showDialog(router)
             }
+            // EXH <--
 
+            // SY -->
             initWhenIdle {
                 // Upload settings
                 if (preferences.enableExhentai().get() &&
@@ -198,7 +201,9 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
                 EHentaiUpdateWorker.scheduleBackground(this)
             }
+            // SY <--
         }
+        // SY -->
         if (!preferences.eh_isHentaiEnabled().get()) {
             if (EH_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
                 BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
@@ -225,7 +230,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
                 BlacklistedSources.HIDDEN_SOURCES += HBROWSE_SOURCE_ID
             }
         }
-        // EXH <--
+        // SY -->
 
         setExtensionsBadge()
         preferences.extensionUpdatesCount().asFlow()
@@ -295,11 +300,13 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
                     router.popToRoot()
                 }
                 setSelectedNavItem(R.id.nav_library)
+                // SY -->
                 if (preferences.eh_useNewMangaInterface().get()) {
                     router.pushController(RouterTransaction.with(MangaAllInOneController(extras)))
                 } else {
                     router.pushController(RouterTransaction.with(MangaController(extras)))
                 }
+                // SY <--
             }
             SHORTCUT_DOWNLOADS -> {
                 if (router.backstackSize > 1) {

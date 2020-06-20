@@ -26,7 +26,9 @@ import uy.kohesive.injekt.api.get
 class MigrationSourcesController :
     NucleusController<MigrationSourcesControllerBinding, MigrationSourcesPresenter>(),
     FlexibleAdapter.OnItemClickListener,
+    // SY -->
     SourceAdapter.OnAllClickListener {
+    // SY <--
 
     private var adapter: SourceAdapter? = null
 
@@ -58,6 +60,7 @@ class MigrationSourcesController :
         adapter?.updateDataSet(sourcesWithManga)
     }
 
+    // SY -->
     override fun getTitle(): String? {
         return resources?.getString(R.string.source_migration)
     }
@@ -93,4 +96,5 @@ class MigrationSourcesController :
             }
         }
     }
+    // SY <--
 }

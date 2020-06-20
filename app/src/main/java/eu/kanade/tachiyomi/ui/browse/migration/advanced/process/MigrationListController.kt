@@ -89,7 +89,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     override fun getTitle(): String? {
         return resources?.getString(R.string.migration) + " (${adapter?.items?.count {
-            it.manga.migrationStatus != MigrationStatus.RUNNUNG
+            it.manga.migrationStatus != MigrationStatus.RUNNING
         }}/${adapter?.itemCount ?: 0})"
     }
 
@@ -369,7 +369,7 @@ class MigrationListController(bundle: Bundle? = null) :
     fun useMangaForMigration(manga: Manga, source: Source) {
         val firstIndex = selectedPosition ?: return
         val migratingManga = adapter?.getItem(firstIndex) ?: return
-        migratingManga.manga.migrationStatus = MigrationStatus.RUNNUNG
+        migratingManga.manga.migrationStatus = MigrationStatus.RUNNING
         adapter?.notifyItemChanged(firstIndex)
         launchUI {
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {

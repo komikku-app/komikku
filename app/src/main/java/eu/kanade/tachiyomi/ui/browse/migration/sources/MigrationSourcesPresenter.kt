@@ -28,16 +28,12 @@ class MigrationSourcesPresenter(
     }
 
     private fun findSourcesWithManga(library: List<Manga>): List<SourceItem> {
-        val header =
-            SelectionHeader()
+        val header = SelectionHeader()
         return library.map { it.source }.toSet()
+            // SY -->
             .mapNotNull { if (it != LocalSource.ID && it != MERGED_SOURCE_ID) sourceManager.getOrStub(it) else null }
             .sortedBy { it.name.toLowerCase(Locale.ROOT) }
-            .map {
-                SourceItem(
-                    it,
-                    header
-                )
-            }
+            // SY <--
+            .map { SourceItem(it, header) }
     }
 }

@@ -49,7 +49,9 @@ class LibraryCategoryAdapter(view: LibraryCategoryView) :
      */
     private var mangas: List<LibraryItem> = emptyList()
 
+    // SY -->
     val onItemReleaseListener: CategoryAdapter.OnItemReleaseListener = view
+    // SY <--
 
     /**
      * Sets a list of manga in the adapter.

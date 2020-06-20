@@ -77,11 +77,13 @@ open class GlobalSearchController(
      */
     override fun onMangaClick(manga: Manga) {
         // Open MangaController.
+        // SY -->
         if (presenter.preferences.eh_useNewMangaInterface().get()) {
             router.pushController(MangaAllInOneController(manga, true).withFadeTransaction())
         } else {
             router.pushController(MangaController(manga, true).withFadeTransaction())
         }
+        // SY <--
     }
 
     /**

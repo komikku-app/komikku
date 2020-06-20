@@ -46,9 +46,11 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory { Gson() }
 
+        // SY -->
         addSingletonFactory { EHentaiUpdateHelper(app) }
 
         addSingletonFactory { Markwon.create(app) }
+        // SY <--
 
         // Asynchronously init expensive components for a faster cold start
 

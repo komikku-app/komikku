@@ -14,7 +14,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
  * @param source Instance of [CatalogueSource] containing source information.
  * @param header The header for this item.
  */
-data class SourceItem(val source: CatalogueSource, val header: LangItem? = null, val showButtons: Boolean) :
+data class SourceItem(val source: CatalogueSource, val header: LangItem? = null /* SY --> */, val showButtons: Boolean /* SY <-- */) :
     AbstractSectionableItem<SourceHolder, LangItem>(header) {
 
     /**
@@ -28,7 +28,7 @@ data class SourceItem(val source: CatalogueSource, val header: LangItem? = null,
      * Creates a new view holder for this item.
      */
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): SourceHolder {
-        return SourceHolder(view, adapter as SourceAdapter, showButtons)
+        return SourceHolder(view, adapter as SourceAdapter /* SY --> */, showButtons /* SY <-- */)
     }
 
     /**

@@ -100,17 +100,13 @@ fun ExtendedFloatingActionButton.shrinkOnScroll(recycler: RecyclerView) {
  * @param items List of strings that are shown as individual chips.
  * @param onClick Optional on click listener for each chip.
  */
-fun ChipGroup.setChips(items: List<String>?, onClick: (item: String) -> Unit = {}, onLongClick: (item: String) -> Unit = {}) {
+fun ChipGroup.setChips(items: List<String>?, onClick: (item: String) -> Unit = {}) {
     removeAllViews()
 
     items?.forEach { item ->
         val chip = Chip(context).apply {
             text = item
             setOnClickListener { onClick(item) }
-            setOnLongClickListener {
-                onLongClick(item)
-                false
-            }
         }
 
         addView(chip)

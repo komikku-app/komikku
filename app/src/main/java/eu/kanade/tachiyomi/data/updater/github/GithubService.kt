@@ -24,9 +24,11 @@ interface GithubService {
         }
     }
 
+    // SY -->
     @GET("/repos/jobobby04/tachiyomiSY/releases/latest")
     suspend fun getLatestVersion(): GithubRelease
 
     @GET("/repos/jobobby04/TachiyomiSYPreview/releases/latest")
     suspend fun getLatestDebugVersion(): GithubRelease
+    // SY <--
 }

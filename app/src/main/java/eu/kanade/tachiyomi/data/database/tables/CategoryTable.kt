@@ -12,7 +12,9 @@ object CategoryTable {
 
     const val COL_FLAGS = "flags"
 
+    // SY -->
     const val COL_MANGA_ORDER = "manga_order"
+    // SY <--
 
     val createTableQuery: String
         get() =
@@ -21,9 +23,12 @@ object CategoryTable {
             $COL_NAME TEXT NOT NULL,
             $COL_ORDER INTEGER NOT NULL,
             $COL_FLAGS INTEGER NOT NULL,
+            // SY -->
             $COL_MANGA_ORDER TEXT NOT NULL
+            // SY <--
             )"""
-
+    // SY -->
     val addMangaOrder: String
         get() = "ALTER TABLE $TABLE ADD COLUMN $COL_MANGA_ORDER TEXT"
+    // SY <--
 }

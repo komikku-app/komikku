@@ -67,6 +67,7 @@ class MoreController :
                     router.pushController(DownloadController().withFadeTransaction())
                 }
             }
+            // SY -->
             if (preferences.eh_isHentaiEnabled().get()) {
                 preference {
                     titleRes = R.string.eh_batch_add
@@ -77,6 +78,7 @@ class MoreController :
                     }
                 }
             }
+            // SY <--
         }
 
         preferenceCategory {

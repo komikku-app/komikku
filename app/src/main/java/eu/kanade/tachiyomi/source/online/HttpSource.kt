@@ -34,6 +34,7 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Network service.
      */
+    // SY -->
     protected val network: NetworkHelper by lazy {
         val original = Injekt.get<NetworkHelper>()
         object : NetworkHelper(Injekt.get<Application>()) {
@@ -53,12 +54,13 @@ abstract class HttpSource : CatalogueSource {
                 get() = original.cookieManager
         }
     }
+    // SY <--
 
 //    /**
 //     * Preferences that a source may need.
 //     */
 //    val preferences: SharedPreferences by lazy {
-//        Injekt.get<Application>().getSharedPreferences("source_$id", Context.MODE_PRIVATE)
+//        Injekt.get<Application>().getSharedPreferences(source.getPreferenceKey(), Context.MODE_PRIVATE)
 //    }
 
     /**
@@ -92,7 +94,9 @@ abstract class HttpSource : CatalogueSource {
      * Default network client for doing requests.
      */
     open val client: OkHttpClient
+        // SY -->
         get() = delegate?.baseHttpClient ?: network.client
+    // SY <--
 
     /**
      * Headers builder for requests. Implementations can override this method for custom headers.
@@ -323,7 +327,7 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page whose source image has to be downloaded.
      */
-    open fun fetchImage(page: Page): Observable<Response> {
+    /* SY --> */ open /* SY <-- */ fun fetchImage(page: Page): Observable<Response> {
         return client.newCallWithProgress(imageRequest(page), page)
             .asObservableSuccess()
     }

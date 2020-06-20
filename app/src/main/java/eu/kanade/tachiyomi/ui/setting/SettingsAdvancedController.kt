@@ -133,7 +133,7 @@ class SettingsAdvancedController : SettingsController() {
             }
         }
 
-        // <-- EXH
+        // --> EXH
         preferenceCategory {
             title = "Developer tools"
             isPersistent = false

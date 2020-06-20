@@ -647,10 +647,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         viewer = newViewer
         binding.viewerContainer.addView(newViewer.getView())
 
+        // SY -->
         val defaultReaderType = manga.defaultReaderType()
         if (preferences.eh_useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == WEBTOON) {
             binding.root.snack(resources.getString(R.string.eh_auto_webtoon_snack), Snackbar.LENGTH_LONG)
         } else if (preferences.showReadingMode()) {
+            // SY <--
             showReadingModeSnackbar(presenter.getMangaViewer())
         }
 

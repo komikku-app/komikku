@@ -47,12 +47,16 @@ internal class ExtensionGithubApi {
 
         preferences.lastExtCheck().set(Date().time)
 
+        // SY -->
         val blacklistEnabled = preferences.eh_enableSourceBlacklist().get()
+        // SY <--
 
         val installedExtensions = ExtensionLoader.loadExtensions(context)
             .filterIsInstance<LoadResult.Success>()
             .map { it.extension }
+            // SY -->
             .filterNot { it.isBlacklisted(blacklistEnabled) }
+        // SY <--
 
         val extensionsWithUpdate = mutableListOf<Extension.Installed>()
         for (installedExt in installedExtensions) {
@@ -96,12 +100,14 @@ internal class ExtensionGithubApi {
         return "$REPO_URL/apk/${extension.apkName}"
     }
 
+    // SY -->
     fun Extension.isBlacklisted(
         blacklistEnabled: Boolean =
             preferences.eh_enableSourceBlacklist().get()
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
+    // SY <--
 
     companion object {
         private const val REPO_URL = "https://raw.githubusercontent.com/inorichi/tachiyomi-extensions/repo"

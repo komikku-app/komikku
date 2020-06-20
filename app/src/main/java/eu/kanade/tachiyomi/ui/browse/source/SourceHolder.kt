@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.source_main_controller_card_item.source_br
 import kotlinx.android.synthetic.main.source_main_controller_card_item.source_latest
 import kotlinx.android.synthetic.main.source_main_controller_card_item.title
 
-class SourceHolder(view: View, override val adapter: SourceAdapter, val showButtons: Boolean) :
+class SourceHolder(view: View, override val adapter: SourceAdapter /* SY --> */, val showButtons: Boolean /* SY <-- */) :
     BaseFlexibleViewHolder(view, adapter),
     SlicedHolder {
 
@@ -35,10 +35,12 @@ class SourceHolder(view: View, override val adapter: SourceAdapter, val showButt
             adapter.latestClickListener.onLatestClick(bindingAdapterPosition)
         }
 
+        // SY -->
         if (!showButtons) {
             source_browse.gone()
             source_latest.gone()
         }
+        // SY <--
     }
 
     fun bind(item: SourceItem) {
@@ -58,7 +60,7 @@ class SourceHolder(view: View, override val adapter: SourceAdapter, val showButt
         }
 
         source_browse.setText(R.string.browse)
-        if (source.supportsLatest && showButtons) {
+        if (source.supportsLatest /* SY --> */ && showButtons /* SY <-- */) {
             source_latest.visible()
         } else {
             source_latest.gone()

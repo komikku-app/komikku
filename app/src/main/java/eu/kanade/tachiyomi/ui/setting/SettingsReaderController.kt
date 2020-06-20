@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
+import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 
 class SettingsReaderController : SettingsController() {
 
@@ -29,7 +30,7 @@ class SettingsReaderController : SettingsController() {
                     R.string.vertical_viewer, R.string.webtoon_viewer, R.string.vertical_plus_viewer
                 )
                 entryValues = arrayOf("1", "2", "3", "4", "5")
-                defaultValue = "1"
+                defaultValue = "2"
                 summary = "%s"
             }
             intListPreference {
@@ -64,6 +65,15 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_fullscreen
                 defaultValue = true
             }
+
+            if (activity?.hasDisplayCutout() == true) {
+                switchPreference {
+                    key = Keys.cutoutShort
+                    titleRes = R.string.pref_cutout_short
+                    defaultValue = true
+                }
+            }
+
             switchPreference {
                 key = Keys.keepScreenOn
                 titleRes = R.string.pref_keep_screen_on
@@ -223,6 +233,7 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = true
             }
         }
+        // EXH <--
 
         preferenceCategory {
             titleRes = R.string.pager_viewer

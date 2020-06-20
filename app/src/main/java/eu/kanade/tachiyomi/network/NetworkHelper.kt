@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 
+// SY -->
 open class NetworkHelper(context: Context) {
 
     private val cacheDir = File(context.cacheDir, "network_cache")
@@ -26,3 +27,4 @@ open class NetworkHelper(context: Context) {
         .addInterceptor(CloudflareInterceptor(context))
         .build()
 }
+// SY <--

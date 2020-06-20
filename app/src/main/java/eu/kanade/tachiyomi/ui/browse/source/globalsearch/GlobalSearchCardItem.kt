@@ -15,10 +15,12 @@ import uy.kohesive.injekt.api.get
 class GlobalSearchCardItem(val manga: Manga) : AbstractFlexibleItem<GlobalSearchCardHolder>() {
 
     override fun getLayoutRes(): Int {
+        // SY -->
         return when (Injekt.get<PreferencesHelper>().catalogueDisplayMode().get()) {
             PreferenceValues.DisplayMode.COMPACT_GRID -> R.layout.global_search_controller_compact_card_item
             else -> R.layout.global_search_controller_comfortable_card_item
         }
+        // SY <--
     }
 
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): GlobalSearchCardHolder {

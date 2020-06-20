@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -81,7 +80,9 @@ open class BrowseSourceController(bundle: Bundle) :
     constructor(
         source: CatalogueSource,
         searchQuery: String? = null,
+        // SY -->
         smartSearchConfig: SourceController.SmartSearchConfig? = null
+        // SY <--
     ) : this(
         Bundle().apply {
             putLong(SOURCE_ID_KEY, source.id)
@@ -90,15 +91,19 @@ open class BrowseSourceController(bundle: Bundle) :
                 putString(SEARCH_QUERY_KEY, searchQuery)
             }
 
+            // SY -->
             if (smartSearchConfig != null) {
                 putParcelable(SMART_SEARCH_CONFIG_KEY, smartSearchConfig)
             }
+            // SY <--
         }
     )
 
     private val preferences: PreferencesHelper by injectLazy()
 
+    // SY -->
     private val recommendsConfig: RecommendsConfig? = args.getParcelable(RECOMMENDS_CONFIG)
+    // SY <--
 
     // AZ -->
     private val mode = if (recommendsConfig == null) Mode.CATALOGUE else Mode.RECOMMENDS
@@ -138,19 +143,23 @@ open class BrowseSourceController(bundle: Bundle) :
     }
 
     override fun getTitle(): String? {
+        // SY -->
         return when (mode) {
             Mode.CATALOGUE -> presenter.source.name
             Mode.RECOMMENDS -> recommendsConfig!!.manga.title
         }
+        // SY <--
     }
 
     override fun createPresenter(): BrowseSourcePresenter {
+        // SY -->
         return BrowseSourcePresenter(
             args.getLong(SOURCE_ID_KEY),
             args.getString(SEARCH_QUERY_KEY),
             searchManga = if (mode == Mode.RECOMMENDS) recommendsConfig?.manga else null,
             recommends = (mode == Mode.RECOMMENDS)
         )
+        // SY <--
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
@@ -172,12 +181,16 @@ open class BrowseSourceController(bundle: Bundle) :
     }
 
     open fun initFilterSheet() {
+        // SY -->
         if (mode == Mode.RECOMMENDS) {
             return
         }
+        // SY <--
 
         if (presenter.sourceFilters.isEmpty()) {
+            // SY -->
             binding.fabFilter.text = activity!!.getString(R.string.eh_saved_searches)
+            // SY <--
         }
 
         filterSheet = SourceFilterSheet(
@@ -373,9 +386,11 @@ open class BrowseSourceController(bundle: Bundle) :
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.source_browse, menu)
 
+        // SY -->
         if (mode == Mode.RECOMMENDS) {
             menu.findItem(R.id.action_search).isVisible = false
         }
+        // SY <--
 
         // Initialize search menu
         val searchItem = menu.findItem(R.id.action_search)
@@ -418,9 +433,11 @@ open class BrowseSourceController(bundle: Bundle) :
         menu.findItem(R.id.action_open_in_web_view).isVisible = isHttpSource
 
         val isLocalSource = presenter.source is LocalSource
+        // SY -->
         menu.findItem(R.id.action_local_source_help).isVisible = isLocalSource && mode == Mode.CATALOGUE
 
         menu.findItem(R.id.action_settings).isVisible = presenter.source is ConfigurableSource
+        // SY <--
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -430,7 +447,9 @@ open class BrowseSourceController(bundle: Bundle) :
             R.id.action_comfortable_grid -> setDisplayMode(DisplayMode.COMFORTABLE_GRID)
             R.id.action_list -> setDisplayMode(DisplayMode.LIST)
             R.id.action_open_in_web_view -> openInWebView()
+            // SY -->
             R.id.action_settings -> openSourceSettings()
+            // SY <--
             R.id.action_local_source_help -> openLocalSourceHelpGuide()
         }
         return super.onOptionsItemSelected(item)
@@ -448,11 +467,13 @@ open class BrowseSourceController(bundle: Bundle) :
         activity?.openInBrowser(LocalSource.HELP_URL)
     }
 
+    // SY -->
     private fun openSourceSettings() {
         router.pushController(
             SourcePreferencesController(presenter.source.id).withFadeTransaction()
         )
     }
+    // SY <--
 
     /**
      * Restarts the request with a new query.
@@ -493,6 +514,7 @@ open class BrowseSourceController(bundle: Bundle) :
      * @param error the error received.
      */
     fun onAddPageError(error: Throwable) {
+        // SY -->
         XLog.w("> Failed to load next catalogue page!", error)
 
         if (mode == Mode.CATALOGUE) {
@@ -504,6 +526,7 @@ open class BrowseSourceController(bundle: Bundle) :
         } else {
             XLog.w("> Recommendations")
         }
+        // SY <--
 
         val adapter = adapter ?: return
         adapter.onLoadMoreComplete(null)
@@ -523,10 +546,9 @@ open class BrowseSourceController(bundle: Bundle) :
         }
 
         if (adapter.isEmpty) {
-            Log.d("Adapter", "empty")
             val actions = emptyList<EmptyView.Action>().toMutableList()
 
-            if (presenter.source is LocalSource && mode == Mode.CATALOGUE) {
+            if (presenter.source is LocalSource /* SY --> */ && mode == Mode.CATALOGUE /* SY <-- */) {
                 actions += EmptyView.Action(R.string.local_source_help_guide, View.OnClickListener { openLocalSourceHelpGuide() })
             } else {
                 actions += EmptyView.Action(R.string.action_retry, retryAction)
@@ -669,7 +691,7 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     override fun onItemClick(view: View, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
-
+        // SY -->
         when (mode) {
             Mode.CATALOGUE -> {
                 if (preferences.eh_useNewMangaInterface().get()) {
@@ -692,6 +714,7 @@ open class BrowseSourceController(bundle: Bundle) :
             }
             Mode.RECOMMENDS -> openSmartSearch(item.manga.title)
         }
+        // SY <--
         return false
     }
 
@@ -718,7 +741,9 @@ open class BrowseSourceController(bundle: Bundle) :
      * @param position the position of the element clicked.
      */
     override fun onItemLongClick(position: Int) {
-        if (mode == Mode.RECOMMENDS) { return }
+        // SY -->
+        if (mode == Mode.RECOMMENDS) return
+        // SY <--
         val activity = activity ?: return
         val manga = (adapter?.getItem(position) as? SourceItem?)?.manga ?: return
 
@@ -794,6 +819,7 @@ open class BrowseSourceController(bundle: Bundle) :
         activity?.toast(activity?.getString(R.string.manga_added_library))
     }
 
+    // SY -->
     @Parcelize
     data class RecommendsConfig(val manga: Manga) : Parcelable
 
@@ -801,13 +827,15 @@ open class BrowseSourceController(bundle: Bundle) :
         CATALOGUE,
         RECOMMENDS
     }
+    // SY <--
 
     companion object {
         const val SOURCE_ID_KEY = "sourceId"
-
         const val SEARCH_QUERY_KEY = "searchQuery"
-        const val SMART_SEARCH_CONFIG_KEY = "smartSearchConfig"
 
+        // SY -->
+        const val SMART_SEARCH_CONFIG_KEY = "smartSearchConfig"
         const val RECOMMENDS_CONFIG = "RECOMMENDS_CONFIG"
+        // SY <--
     }
 }
