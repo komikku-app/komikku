@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.MergeAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -13,14 +13,11 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.inflate
-import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import exh.EXHSavedSearch
 import kotlinx.android.synthetic.main.source_filter_sheet.view.filter_btn
 import kotlinx.android.synthetic.main.source_filter_sheet.view.reset_btn
 import kotlinx.android.synthetic.main.source_filter_sheet.view.save_search_btn
-import kotlinx.android.synthetic.main.source_filter_sheet.view.saved_searches
-import kotlinx.android.synthetic.main.source_filter_sheet.view.saved_searches_title
 
 class SourceFilterSheet(
     activity: Activity,
@@ -71,28 +68,31 @@ class SourceFilterSheet(
     class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
         SimpleNavigationView(context, attrs) {
 
-        // EXH -->
+        var onFilterClicked = {}
+        var onResetClicked = {}
+
+        // SY -->
         var onSaveClicked = {}
 
         var onSavedSearchClicked: (Int) -> Unit = {}
 
         var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
-        // EXH <--
 
-        var onFilterClicked = {}
-        var onResetClicked = {}
+        var savedSearchesItem = SavedSearchesItem()
+        var savedSearchesAdapter: FlexibleAdapter<SavedSearchesItem> = FlexibleAdapter<SavedSearchesItem>(listOf(savedSearchesItem))
+        // SY <--
 
         val adapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter<IFlexible<*>>(null)
             .setDisplayHeadersAtStartUp(true)
             .setStickyHeaders(true)
 
         init {
-            recycler.adapter = adapter
+            // SY -->
+            recycler.adapter = MergeAdapter(savedSearchesAdapter, adapter)
+            // SY <--
             recycler.setHasFixedSize(true)
             val view = inflate(R.layout.source_filter_sheet)
-            // SY -->
-            ((view as ViewGroup).findViewById(R.id.source_filter_content) as ViewGroup).addView(recycler)
-            // SY <--
+            ((view as ViewGroup).getChildAt(1) as ViewGroup).addView(recycler)
             addView(view)
             // SY -->
             save_search_btn.setOnClickListener { onSaveClicked() }
@@ -103,20 +103,10 @@ class SourceFilterSheet(
 
         // EXH -->
         fun setSavedSearches(searches: List<EXHSavedSearch>) {
-            saved_searches.removeAllViews()
-
-            val outValue = TypedValue()
-            context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-
             save_search_btn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
+            val chips: MutableList<Chip> = mutableListOf()
 
-            if (searches.isEmpty()) {
-                saved_searches_title.gone()
-            } else {
-                saved_searches_title.visible()
-            }
-
-            searches.withIndex().sortedBy { it.value.name }.forEach { (index, search) ->
+            searches.withIndex().sortedBy { it.value.name.toLowerCase() }.forEach { (index, search) ->
                 val chip = Chip(context).apply {
                     text = search.name
                     setOnClickListener { onSavedSearchClicked(index) }
@@ -125,7 +115,11 @@ class SourceFilterSheet(
                     }
                 }
 
-                saved_searches.addView(chip)
+                chips += chip
+            }
+            savedSearchesAdapter.recyclerView.post {
+                (recycler.findViewHolderForAdapterPosition(0) as? SavedSearchesHolder)?.setChips(chips)
+                savedSearchesAdapter.expand(0)
             }
         }
 

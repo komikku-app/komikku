@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -65,46 +64,11 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-    <androidx.core.widget.NestedScrollView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/saved_searches_title"
-                style="@style/Theme.Widget.Chip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-
-                android:text="@string/eh_saved_searches" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/saved_searches"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                app:chipSpacingHorizontal="4dp" />
-
-            <FrameLayout
-                android:id="@+id/source_filter_content"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:paddingBottom="8dp" />
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
+        android:layout_height="0dp"
+        android:layout_gravity="top"
+        android:layout_weight="1"
+        android:paddingBottom="8dp" />
 
 </LinearLayout>
