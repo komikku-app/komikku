@@ -40,23 +40,30 @@
             android:layout_height="56dp"
             android:layout_gravity="center" />
 
-        <TextView
-            android:id="@+id/manga_chapters"
-            style="@style/TextAppearance.Regular.Caption"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/md_teal_500"
-            android:paddingBottom="1dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="1dp"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:text="101"
             android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/rounded_rectangle"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="4dp"/>
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/manga_chapters"
+                style="@style/TextAppearance.Regular.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/pale_green"
+                android:paddingStart="3dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="3dp"
+                android:paddingBottom="1dp"
+                android:text="101"
+                android:textColor="@color/md_black_1000"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </LinearLayout>
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/title"
