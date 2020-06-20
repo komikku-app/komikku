@@ -6,25 +6,23 @@ import java.util.concurrent.TimeUnit
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 
-// SY -->
-open class NetworkHelper(context: Context) {
+/* SY --> */ open /* SY <-- */ class NetworkHelper(context: Context) {
 
     private val cacheDir = File(context.cacheDir, "network_cache")
 
     private val cacheSize = 5L * 1024 * 1024 // 5 MiB
 
-    open val cookieManager = AndroidCookieJar()
+    /* SY --> */ open /* SY <-- */ val cookieManager = AndroidCookieJar()
 
-    open val client = OkHttpClient.Builder()
+    /* SY --> */ open /* SY <-- */ val client = OkHttpClient.Builder()
         .cookieJar(cookieManager)
         .cache(Cache(cacheDir, cacheSize))
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    open val cloudflareClient = client.newBuilder()
+    /* SY --> */ open /* SY <-- */ val cloudflareClient = client.newBuilder()
         .addInterceptor(UserAgentInterceptor())
         .addInterceptor(CloudflareInterceptor(context))
         .build()
 }
-// SY <--

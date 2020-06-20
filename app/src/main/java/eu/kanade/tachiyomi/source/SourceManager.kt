@@ -187,5 +187,3 @@ open class SourceManager(private val context: Context) {
     }
     // SY <--
 }
-
-class SourceNotFoundException(message: String, val id: Long) : Exception(message)

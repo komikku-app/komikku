@@ -293,9 +293,7 @@ class BackupRestoreService : Service() {
     // SY <--
 
     private fun restoreManga(mangaJson: JsonObject) {
-        // SY -->
-        var manga = backupManager.parser.fromJson<MangaImpl>(mangaJson.get(MANGA))
-        // SY <--
+        /* SY --> */ var /* SY <-- */ manga = backupManager.parser.fromJson<MangaImpl>(mangaJson.get(MANGA))
         val chapters = backupManager.parser.fromJson<List<ChapterImpl>>(
             mangaJson.get(CHAPTERS)
                 ?: JsonArray()
@@ -451,9 +449,7 @@ class BackupRestoreService : Service() {
      * @return [Observable] that contains manga
      */
     private fun chapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        // SY -->
-        return backupManager.restoreChapterFetchObservable(source, manga, chapters, throttleManager)
-            // SY <--
+        return backupManager.restoreChapterFetchObservable(source, manga, chapters /* SY --> */, throttleManager /* SY <-- */)
             // If there's any error, return empty update and continue.
             .onErrorReturn {
                 errors.add(Date() to "${manga.title} - ${it.message}")

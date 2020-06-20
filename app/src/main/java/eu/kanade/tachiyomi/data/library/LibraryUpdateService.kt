@@ -266,10 +266,12 @@ class LibraryUpdateService(
             .doOnNext { notifier.showProgressNotification(it, count.andIncrement, mangaToUpdate.size) }
             // Update the chapters of the manga
             .concatMap { manga ->
+                // SY -->
                 if (manga.source in LIBRARY_UPDATE_EXCLUDED_SOURCES) {
                     // Ignore EXH manga, updating chapters for every manga will get you banned
                     Observable.empty()
                 } else {
+                    // SY <--
                     updateManga(manga)
                         // If there's any error, return empty update and continue.
                         .onErrorReturn {

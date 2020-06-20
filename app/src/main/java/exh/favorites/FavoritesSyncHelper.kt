@@ -138,7 +138,7 @@ class FavoritesSyncHelper(val context: Context) {
 
                         // Apply remote categories
                         status.onNext(FavoritesSyncStatus.Processing("Updating category names"))
-                        applyRemoteCategories(errorList, favorites.second)
+                        applyRemoteCategories(favorites.second)
 
                         // Apply change sets
                         applyChangeSetToLocal(errorList, remoteChanges)
@@ -186,7 +186,7 @@ class FavoritesSyncHelper(val context: Context) {
         }
     }
 
-    private fun applyRemoteCategories(errorList: MutableList<String>, categories: List<String>) {
+    private fun applyRemoteCategories(categories: List<String>) {
         val localCategories = db.getCategories().executeAsBlocking()
 
         val newLocalCategories = localCategories.toMutableList()

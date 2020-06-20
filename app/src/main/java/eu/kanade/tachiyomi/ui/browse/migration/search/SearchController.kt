@@ -52,7 +52,11 @@ class SearchController(
     }
 
     override fun createPresenter(): GlobalSearchPresenter {
-        return SearchPresenter(initialQuery, manga!!, sources = sources)
+        return SearchPresenter(
+            initialQuery,
+            manga!!,
+            sources
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -66,25 +70,6 @@ class SearchController(
         manga = savedInstanceState.getSerializable(::manga.name) as? Manga
         newManga = savedInstanceState.getSerializable(::newManga.name) as? Manga
     }
-
-    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (totalProgress > 1) {
-            val menuItem = menu.add(Menu.NONE, 1, Menu.NONE, R.string.action_skip_manga)
-            menuItem.icon = VectorDrawableCompat.create(resources!!, R.drawable
-                .baseline_skip_next_white_24, null)
-            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            1 -> {
-                newManga = manga
-                migrateManga()
-            }
-        }
-        return true
-    }*/
 
     fun migrateManga() {
         val target = targetController as? MigrationInterface ?: return
@@ -125,7 +110,8 @@ class SearchController(
             return
         }
         newManga = manga
-        val dialog = MigrationDialog()
+        val dialog =
+            MigrationDialog()
         dialog.targetController = this
         dialog.showDialog(router)
     }
@@ -142,16 +128,22 @@ class SearchController(
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val prefValue = preferences.migrateFlags().get()
 
-            val preselected = MigrationFlags.getEnabledFlagsPositions(prefValue)
+            val preselected =
+                MigrationFlags.getEnabledFlagsPositions(
+                    prefValue
+                )
 
             return MaterialDialog(activity!!)
-                .message(R.string.data_to_include_in_migration)
+                .message(R.string.migration_dialog_what_to_include)
                 .listItemsMultiChoice(
-                    items = MigrationFlags.titles.map
-                    { resources?.getString(it) as CharSequence },
+                    items = MigrationFlags.titles.map { resources?.getString(it) as CharSequence },
                     initialSelection = preselected.toIntArray()
                 ) { _, positions, _ ->
-                    val newValue = MigrationFlags.getFlagsFromPositions(positions.toTypedArray())
+                    // Save current settings for the next time
+                    val newValue =
+                        MigrationFlags.getFlagsFromPositions(
+                            positions.toTypedArray()
+                        )
                     preferences.migrateFlags().set(newValue)
                 }
                 .positiveButton(R.string.migrate) {
@@ -160,6 +152,7 @@ class SearchController(
                 .negativeButton(R.string.copy) {
                     (targetController as? SearchController)?.copyManga()
                 }
+                .neutralButton(android.R.string.cancel)
         }
     }
 

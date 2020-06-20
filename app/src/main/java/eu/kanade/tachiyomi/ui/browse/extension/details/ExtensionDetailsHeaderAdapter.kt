@@ -58,10 +58,12 @@ class ExtensionDetailsHeaderAdapter(private val presenter: ExtensionDetailsPrese
                 binding.extensionWarningBanner.setText(R.string.unofficial_extension_message)
             }
 
+            // SY -->
             if (extension.isRedundant) {
                 binding.extensionWarningBanner.visible()
                 binding.extensionWarningBanner.setText(R.string.redundant_extension_message)
             }
+            // SY <--
         }
     }
 }
