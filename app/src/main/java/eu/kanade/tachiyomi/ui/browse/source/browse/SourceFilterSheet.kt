@@ -21,6 +21,9 @@ import kotlinx.android.synthetic.main.source_filter_sheet.view.save_search_btn
 
 class SourceFilterSheet(
     activity: Activity,
+    // SY -->
+    searches: List<EXHSavedSearch> = emptyList(),
+    // SY <--
     onFilterClicked: () -> Unit,
     onResetClicked: () -> Unit,
     // EXH -->
@@ -33,7 +36,7 @@ class SourceFilterSheet(
     private var filterNavView: FilterNavigationView
 
     init {
-        filterNavView = FilterNavigationView(activity)
+        filterNavView = FilterNavigationView(activity /* SY --> */, searches = searches/* SY <-- */)
         filterNavView.onFilterClicked = {
             onFilterClicked()
             this.dismiss()
@@ -65,7 +68,7 @@ class SourceFilterSheet(
     }
     // SY <--
 
-    class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+    class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null /* SY --> */, searches: List<EXHSavedSearch> = emptyList()/* SY <-- */) :
         SimpleNavigationView(context, attrs) {
 
         var onFilterClicked = {}
@@ -78,8 +81,7 @@ class SourceFilterSheet(
 
         var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
 
-        var savedSearchesItem = SavedSearchesItem()
-        var savedSearchesAdapter: FlexibleAdapter<SavedSearchesItem> = FlexibleAdapter<SavedSearchesItem>(listOf(savedSearchesItem))
+        var savedSearchesAdapter: FlexibleAdapter<SavedSearchesItem> = FlexibleAdapter<SavedSearchesItem>(listOf(SavedSearchesItem(getChips(searches))))
         // SY <--
 
         val adapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter<IFlexible<*>>(null)
@@ -103,6 +105,13 @@ class SourceFilterSheet(
 
         // EXH -->
         fun setSavedSearches(searches: List<EXHSavedSearch>) {
+            recycler.post {
+                (recycler.findViewHolderForAdapterPosition(0) as? SavedSearchesHolder)?.setChips(getChips(searches))
+                savedSearchesAdapter.expand(0)
+            }
+        }
+
+        private fun getChips(searches: List<EXHSavedSearch>): List<Chip> {
             save_search_btn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
             val chips: MutableList<Chip> = mutableListOf()
 
@@ -117,10 +126,7 @@ class SourceFilterSheet(
 
                 chips += chip
             }
-            savedSearchesAdapter.recyclerView.post {
-                (recycler.findViewHolderForAdapterPosition(0) as? SavedSearchesHolder)?.setChips(chips)
-                savedSearchesAdapter.expand(0)
-            }
+            return chips
         }
 
         fun hideFilterButton() {

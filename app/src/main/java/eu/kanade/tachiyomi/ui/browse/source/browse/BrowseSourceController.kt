@@ -195,6 +195,9 @@ open class BrowseSourceController(bundle: Bundle) :
 
         filterSheet = SourceFilterSheet(
             activity!!,
+            // SY -->
+            presenter.loadSearches(),
+            // SY <--
             onFilterClicked = {
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
                 showProgressBar()
@@ -296,9 +299,6 @@ open class BrowseSourceController(bundle: Bundle) :
             }
             // EXH <--
         )
-        // EXH -->
-        filterSheet?.setSavedSearches(presenter.loadSearches())
-        // EXH <--
 
         filterSheet?.setFilters(presenter.filterItems)
 

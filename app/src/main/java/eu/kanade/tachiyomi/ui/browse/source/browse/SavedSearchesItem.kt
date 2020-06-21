@@ -2,12 +2,13 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 
-class SavedSearchesItem :
+class SavedSearchesItem(val chips: List<Chip>) :
     AbstractFlexibleItem<SavedSearchesHolder>() {
 
     override fun getLayoutRes(): Int {
@@ -31,7 +32,9 @@ class SavedSearchesItem :
         holder: SavedSearchesHolder,
         position: Int,
         payloads: MutableList<Any?>?
-    ) {}
+    ) {
+        holder.setChips(chips)
+    }
 
     override fun equals(other: Any?): Boolean {
         return (this === other)
