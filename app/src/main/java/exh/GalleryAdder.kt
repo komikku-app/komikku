@@ -45,6 +45,15 @@ class GalleryAdder {
                             XLog.e("Source URI match check error!", e)
                             false
                         }
+                    } ?: sourceManager.getDelegatedCatalogueSources()
+                    .filterIsInstance<UrlImportableSource>()
+                    .find {
+                        try {
+                            it.matchesUri(uri)
+                        } catch (e: Exception) {
+                            XLog.e("Source URI match check error!", e)
+                            false
+                        }
                     } ?: return GalleryAddEvent.Fail.UnknownType(url)
             }
 

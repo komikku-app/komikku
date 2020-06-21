@@ -78,6 +78,10 @@ open class SourceManager(private val context: Context) {
     fun getVisibleCatalogueSources() = sourcesMap.values.filterIsInstance<CatalogueSource>().filter {
         it.id !in BlacklistedSources.HIDDEN_SOURCES
     }
+
+    fun getDelegatedCatalogueSources() = sourcesMap.values.filterIsInstance<EnhancedHttpSource>().mapNotNull { enhancedHttpSource ->
+        enhancedHttpSource.enchancedSource as? DelegatedHttpSource
+    }
     // SY <--
 
     internal fun registerSource(source: Source, overwrite: Boolean = false) {
