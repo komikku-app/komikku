@@ -142,19 +142,22 @@ class MangaAllInOnePresenter(
         }
         // EXH <--
 
-        this.chapters = applyChapterFilters(chapters)
+        this.chapters = chapters
     }
+
+    private suspend fun getUpdatedChapters(): List<MangaAllInOneChapterItem> = applyChapterFilters(chapters)
 
     private fun updateChaptersView(updateInfo: Boolean = false) {
         scope.launch(Dispatchers.IO) {
             updateChapters()
+            val chapterList = getUpdatedChapters()
             if (updateInfo) {
                 updateChapterInfo()
             }
             withContext(Dispatchers.Main) {
                 Observable.just(manga)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeLatestCache({ view, manga -> view.onNextManga(manga, source, chapters, lastUpdateDate, chapterCount) })
+                    .subscribeLatestCache({ view, manga -> view.onNextManga(manga, source, chapterList, lastUpdateDate, chapterCount) })
             }
         }
     }
@@ -172,10 +175,12 @@ class MangaAllInOnePresenter(
     private fun updateManga(updateInfo: Boolean = true) {
         scope.launch(Dispatchers.IO) {
             var manga2: Manga? = null
+            var chapterList = getUpdatedChapters()
             if (updateInfo) {
                 manga2 = db.getManga(manga.url, manga.source).await()
                 updateChapters()
                 updateChapterInfo()
+                chapterList = getUpdatedChapters()
             }
 
             withContext(Dispatchers.Main) {
@@ -184,7 +189,7 @@ class MangaAllInOnePresenter(
                 } else {
                     Observable.just(manga)
                 }.observeOn(AndroidSchedulers.mainThread())
-                    .subscribeLatestCache({ view, manga -> view.onNextManga(manga, source, chapters, lastUpdateDate, chapterCount) })
+                    .subscribeLatestCache({ view, manga -> view.onNextManga(manga, source, chapterList, lastUpdateDate, chapterCount) })
             }
         }
     }
