@@ -1,6 +1,5 @@
 package exh.ui.batchadd
 
-import android.util.Log
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.ReplayRelay
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -35,7 +34,6 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
                 } else {
                     "https://e-hentai.org/g/"
                 }}${LinkParts[0]}/${LinkParts[1].replace(":", "")}"
-                Log.d("Batch Add", Link)
                 Link
             }.joinToString(separator = "\n")
         } else {
