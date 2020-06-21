@@ -112,7 +112,9 @@ class SourceFilterSheet(
         }
 
         private fun getChips(searches: List<EXHSavedSearch>): List<Chip> {
-            save_search_btn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
+            recycler.post {
+                save_search_btn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
+            }
             val chips: MutableList<Chip> = mutableListOf()
 
             searches.withIndex().sortedBy { it.value.name.toLowerCase() }.forEach { (index, search) ->
