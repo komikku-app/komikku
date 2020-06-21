@@ -15,7 +15,7 @@
             android:animateLayoutChanges="true"
             android:padding="16dp">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/input_title_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -26,13 +26,14 @@
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/galleries_box"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
+                android:gravity="top"
                 android:hint="@string/eh_batch_add_description"
-                android:inputType="textMultiLine"
+                android:inputType="textUri|textMultiLine|textNoSuggestions"
                 android:visibility="visible"
                 app:layout_constraintBottom_toTopOf="@+id/btn_add_galleries"
                 app:layout_constraintLeft_toLeftOf="@+id/input_title_view"
@@ -49,7 +50,7 @@
                 app:layout_constraintLeft_toLeftOf="@+id/galleries_box"
                 app:layout_constraintRight_toRightOf="@+id/galleries_box" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/progress_title_view"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -78,7 +79,7 @@
                 app:layout_constraintLeft_toLeftOf="@+id/progress_log_wrapper"
                 app:layout_constraintRight_toLeftOf="@+id/progress_text" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/progress_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -107,7 +108,7 @@
             <ScrollView
                 android:id="@+id/progress_log_wrapper"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:visibility="gone"
@@ -118,7 +119,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/progress_title_view"
                 app:layout_constraintVertical_bias="0.0">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/progress_log"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
