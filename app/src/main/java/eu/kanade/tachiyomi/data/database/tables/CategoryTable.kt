@@ -23,9 +23,7 @@ object CategoryTable {
             $COL_NAME TEXT NOT NULL,
             $COL_ORDER INTEGER NOT NULL,
             $COL_FLAGS INTEGER NOT NULL,
-            // SY -->
             $COL_MANGA_ORDER TEXT NOT NULL
-            // SY <--
             )"""
     // SY -->
     val addMangaOrder: String
