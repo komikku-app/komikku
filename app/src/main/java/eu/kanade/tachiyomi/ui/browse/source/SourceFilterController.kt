@@ -117,7 +117,7 @@ class SourceFilterController : SettingsController() {
 
             onChange { newValue ->
                 val checked = newValue as Boolean
-                val current = preferences.disabledSources().get() as MutableSet? ?: mutableSetOf()
+                val current = preferences.disabledSources().get().toMutableSet()
                 if (checked) {
                     current.removeAll(sources.map { it.id.toString() })
                 } else {

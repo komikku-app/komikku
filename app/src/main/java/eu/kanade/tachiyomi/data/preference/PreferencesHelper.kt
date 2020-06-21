@@ -145,8 +145,6 @@ class PreferencesHelper(val context: Context) {
 
     fun enabledLanguages() = flowPrefs.getStringSet(Keys.enabledLanguages, setOf("all", "en", Locale.getDefault().language))
 
-    fun sourceSorting() = flowPrefs.getInt(Keys.sourcesSort, 0)
-
     fun trackUsername(sync: TrackService) = prefs.getString(Keys.trackUsername(sync.id), "")
 
     fun trackPassword(sync: TrackService) = prefs.getString(Keys.trackPassword(sync.id), "")
@@ -366,4 +364,6 @@ class PreferencesHelper(val context: Context) {
     fun sourcesTabCategories() = flowPrefs.getStringSet(Keys.sources_tab_categories, mutableSetOf())
 
     fun sourcesTabSourcesInCategories() = flowPrefs.getStringSet(Keys.sources_tab_source_categories, mutableSetOf())
+
+    fun sourceSorting() = flowPrefs.getInt(Keys.sourcesSort, 0)
 }
