@@ -145,7 +145,7 @@ class MangaAllInOnePresenter(
         this.chapters = chapters
     }
 
-    private suspend fun getUpdatedChapters(): List<MangaAllInOneChapterItem> = applyChapterFilters(chapters)
+    private fun getUpdatedChapters(): List<MangaAllInOneChapterItem> = applyChapterFilters(chapters)
 
     private fun updateChaptersView(updateInfo: Boolean = false) {
         scope.launch(Dispatchers.IO) {
