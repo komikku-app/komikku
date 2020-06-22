@@ -117,7 +117,7 @@ class SourceFilterSheet(
             }
             val chips: MutableList<Chip> = mutableListOf()
 
-            searches.withIndex().sortedBy { it.value.name.toLowerCase() }.forEach { (index, search) ->
+            searches.withIndex().sortedBy { it.value.name }.forEach { (index, search) ->
                 val chip = Chip(context).apply {
                     text = search.name
                     setOnClickListener { onSavedSearchClicked(index) }
