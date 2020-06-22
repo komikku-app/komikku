@@ -128,7 +128,7 @@ class SourceFilterSheet(
 
                 chips += chip
             }
-            return chips
+            return chips.sortedBy { it.text.toString().toLowerCase() }
         }
 
         fun hideFilterButton() {
