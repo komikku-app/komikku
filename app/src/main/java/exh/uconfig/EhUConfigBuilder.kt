@@ -212,7 +212,7 @@ object Entry {
         }
         private class Misc(exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
-            override val key = "ct_misc_div"
+            override val key = "ct_misc"
         }
     }
 
