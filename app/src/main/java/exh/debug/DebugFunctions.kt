@@ -1,13 +1,20 @@
 package exh.debug
 
 import android.app.Application
+import com.github.salomonbrys.kotson.array
+import com.github.salomonbrys.kotson.jsonObject
+import com.github.salomonbrys.kotson.obj
+import com.github.salomonbrys.kotson.string
+import com.google.gson.JsonParser
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.EH_SOURCE_ID
 import exh.EXHMigrations
+import exh.EXHSavedSearch
 import exh.EXH_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
@@ -17,11 +24,14 @@ import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.await
 import exh.util.cancellable
 import exh.util.jobScheduler
+import java.lang.RuntimeException
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
+import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
 object DebugFunctions {
     val app: Application by injectLazy()
@@ -208,5 +218,125 @@ object DebugFunctions {
                 .affectsTables(MangaTable.TABLE)
                 .build()
         )
+    }
+
+    fun copyEHentaiSavedSearchesToExhentai() {
+        runBlocking {
+            val filterSerializer = FilterSerializer()
+            val source = sourceManager.getOrStub(EH_SOURCE_ID) as CatalogueSource
+            val newSource = sourceManager.getOrStub(EXH_SOURCE_ID) as CatalogueSource
+            val savedSearches = prefs.eh_savedSearches().get().map {
+                try {
+                    val id = it.substringBefore(':').toLong()
+                    if (id != source.id) return@map null
+                    val content = JsonParser.parseString(it.substringAfter(':')).obj
+
+                    val originalFilters = source.getFilterList()
+                    filterSerializer.deserialize(originalFilters, content["filters"].array)
+                    EXHSavedSearch(
+                        content["name"].string,
+                        content["query"].string,
+                        originalFilters
+                    )
+                } catch (t: RuntimeException) {
+                    // Load failed
+                    Timber.e(t, "Failed to load saved search!")
+                    t.printStackTrace()
+                    null
+                }
+            }.filterNotNull().toMutableList()
+            savedSearches += prefs.eh_savedSearches().get().map {
+                try {
+                    val id = it.substringBefore(':').toLong()
+                    if (id != newSource.id) return@map null
+                    val content = JsonParser.parseString(it.substringAfter(':')).obj
+
+                    val originalFilters = source.getFilterList()
+                    filterSerializer.deserialize(originalFilters, content["filters"].array)
+                    EXHSavedSearch(
+                        content["name"].string,
+                        content["query"].string,
+                        originalFilters
+                    )
+                } catch (t: RuntimeException) {
+                    // Load failed
+                    Timber.e(t, "Failed to load saved search!")
+                    t.printStackTrace()
+                    null
+                }
+            }.filterNotNull().filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
+
+            val otherSerialized = prefs.eh_savedSearches().get().filter {
+                !it.startsWith("${newSource.id}:")
+            }
+            val newSerialized = savedSearches.map {
+                "${newSource.id}:" + jsonObject(
+                    "name" to it.name,
+                    "query" to it.query,
+                    "filters" to filterSerializer.serialize(it.filterList)
+                ).toString()
+            }
+            prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
+        }
+    }
+
+    fun copyExhentaiSavedSearchesToEHentai() {
+        runBlocking {
+            val filterSerializer = FilterSerializer()
+            val source = sourceManager.getOrStub(EXH_SOURCE_ID) as CatalogueSource
+            val newSource = sourceManager.getOrStub(EH_SOURCE_ID) as CatalogueSource
+            val savedSearches = prefs.eh_savedSearches().get().map {
+                try {
+                    val id = it.substringBefore(':').toLong()
+                    if (id != source.id) return@map null
+                    val content = JsonParser.parseString(it.substringAfter(':')).obj
+
+                    val originalFilters = source.getFilterList()
+                    filterSerializer.deserialize(originalFilters, content["filters"].array)
+                    EXHSavedSearch(
+                        content["name"].string,
+                        content["query"].string,
+                        originalFilters
+                    )
+                } catch (t: RuntimeException) {
+                    // Load failed
+                    Timber.e(t, "Failed to load saved search!")
+                    t.printStackTrace()
+                    null
+                }
+            }.filterNotNull().toMutableList()
+            savedSearches += prefs.eh_savedSearches().get().map {
+                try {
+                    val id = it.substringBefore(':').toLong()
+                    if (id != newSource.id) return@map null
+                    val content = JsonParser.parseString(it.substringAfter(':')).obj
+
+                    val originalFilters = source.getFilterList()
+                    filterSerializer.deserialize(originalFilters, content["filters"].array)
+                    EXHSavedSearch(
+                        content["name"].string,
+                        content["query"].string,
+                        originalFilters
+                    )
+                } catch (t: RuntimeException) {
+                    // Load failed
+                    Timber.e(t, "Failed to load saved search!")
+                    t.printStackTrace()
+                    null
+                }
+            }.filterNotNull().filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
+
+            val otherSerialized = prefs.eh_savedSearches().get().filter {
+                !it.startsWith("${newSource.id}:")
+            }
+            val newSerialized = savedSearches.map {
+                "${newSource.id}:" + jsonObject(
+                    "name" to it.name,
+                    "query" to it.query,
+                    "filters" to filterSerializer.serialize(it.filterList)
+                ).toString()
+            }
+            prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
+        }
     }
 }
