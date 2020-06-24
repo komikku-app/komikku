@@ -18,7 +18,7 @@ import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys
+import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
@@ -78,6 +78,12 @@ class SettingsAdvancedController : SettingsController() {
                 activity?.toast(R.string.cookies_cleared)
             }
         }
+        switchPreference {
+            key = Keys.enableDoh
+            titleRes = R.string.pref_dns_over_https
+            summaryRes = R.string.pref_dns_over_https_summary
+            defaultValue = false
+        }
         preference {
             titleRes = R.string.pref_clear_database
             summaryRes = R.string.pref_clear_database_summary
@@ -135,7 +141,7 @@ class SettingsAdvancedController : SettingsController() {
             switchPreference {
                 title = "Enable integrated hentai features"
                 summary = "This is a experimental feature that will disable all hentai features if toggled off"
-                key = PreferenceKeys.eh_is_hentai_enabled
+                key = Keys.eh_is_hentai_enabled
                 defaultValue = true
 
                 onChange {
@@ -196,13 +202,13 @@ class SettingsAdvancedController : SettingsController() {
 
             switchPreference {
                 title = "Enable delegated sources"
-                key = PreferenceKeys.eh_delegateSources
+                key = Keys.eh_delegateSources
                 defaultValue = true
                 summary = "Apply ${context.getString(R.string.app_name)} enhancements to the following sources if they are installed: ${DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString()}"
             }
 
             intListPreference {
-                key = PreferenceKeys.eh_logLevel
+                key = Keys.eh_logLevel
                 title = "Log level"
 
                 entries = EHLogLevel.values().map {
@@ -216,7 +222,7 @@ class SettingsAdvancedController : SettingsController() {
 
             switchPreference {
                 title = "Enable source blacklist"
-                key = PreferenceKeys.eh_enableSourceBlacklist
+                key = Keys.eh_enableSourceBlacklist
                 defaultValue = true
                 summary = "Hide extensions/sources that are incompatible with ${context.getString(R.string.app_name)}. Force-restart app after changing."
             }

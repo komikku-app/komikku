@@ -237,6 +237,8 @@ class PreferencesHelper(val context: Context) {
 
     fun trustedSignatures() = flowPrefs.getStringSet("trusted_signatures", emptySet())
 
+    fun enableDoh() = prefs.getBoolean(Keys.enableDoh, false)
+
     // --> AZ J2K CHERRYPICKING
 
     fun defaultMangaOrder() = flowPrefs.getString("default_manga_order", "")
