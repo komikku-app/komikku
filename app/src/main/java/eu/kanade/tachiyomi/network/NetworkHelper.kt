@@ -61,8 +61,10 @@ import uy.kohesive.injekt.injectLazy
         builder.build()
     }
 
-    /* SY --> */ open /* SY <-- */ val cloudflareClient = client.newBuilder()
-        .addInterceptor(UserAgentInterceptor())
-        .addInterceptor(CloudflareInterceptor(context))
-        .build()
+    /* SY --> */ open /* SY <-- */val cloudflareClient by lazy {
+        client.newBuilder()
+            .addInterceptor(UserAgentInterceptor())
+            .addInterceptor(CloudflareInterceptor(context))
+            .build()
+    }
 }
