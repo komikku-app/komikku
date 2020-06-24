@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.network
 
 import android.content.Context
+import eu.kanade.tachiyomi.BuildConfig
 import java.io.File
 import java.util.concurrent.TimeUnit
 import okhttp3.Cache
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 
 /* SY --> */ open /* SY <-- */ class NetworkHelper(context: Context) {
 
@@ -14,12 +16,22 @@ import okhttp3.OkHttpClient
 
     /* SY --> */ open /* SY <-- */ val cookieManager = AndroidCookieJar()
 
-    /* SY --> */ open /* SY <-- */ val client = OkHttpClient.Builder()
-        .cookieJar(cookieManager)
-        .cache(Cache(cacheDir, cacheSize))
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
+    /* SY --> */ open /* SY <-- */ val client by lazy {
+        val builder = OkHttpClient.Builder()
+            .cookieJar(cookieManager)
+            .cache(Cache(cacheDir, cacheSize))
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+
+        if (BuildConfig.DEBUG) {
+            val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.HEADERS
+            }
+            builder.addInterceptor(httpLoggingInterceptor)
+        }
+
+        builder.build()
+    }
 
     /* SY --> */ open /* SY <-- */ val cloudflareClient = client.newBuilder()
         .addInterceptor(UserAgentInterceptor())
