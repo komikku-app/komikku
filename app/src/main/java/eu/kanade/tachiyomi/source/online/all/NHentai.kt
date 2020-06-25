@@ -70,11 +70,6 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
         val advQuery = combineQuery(filters)
         val favoriteFilter = filters.findInstance<FavoriteFilter>()
         val uploadedFilter = filters.findInstance<UploadedFilter>()
-        val langFilter = filters.filterIsInstance<FilterLang>().firstOrNull()
-        var langFilterString = ""
-        if (langFilter != null) {
-            langFilterString = SOURCE_LANG_LIST.first { it.first == langFilter.values[langFilter.state] }.second
-        }
 
         val url: HttpUrl.Builder
 
@@ -84,7 +79,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
                 .addQueryParameter("page", page.toString())
         } else {
             url = "$baseUrl/search".toHttpUrlOrNull()!!.newBuilder()
-                .addQueryParameter("q", "$query +$langFilterString $advQuery")
+                .addQueryParameter("q", "$query $advQuery")
                 .addQueryParameter("page", page.toString())
 
             if (uploadedFilter!!.state.isBlank()) {
@@ -135,7 +130,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
 
     override fun mangaDetailsRequest(manga: SManga) = nhGet(baseUrl + manga.url)
 
-    fun parseResultPage(response: Response): MangasPage {
+    private fun parseResultPage(response: Response): MangasPage {
         val doc = response.asJsoup()
 
         // TODO Parse lang + tags
@@ -181,14 +176,14 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
                 englishTitle = title["english"].nullString
             }
 
-            obj["images"].nullObj?.let {
-                coverImageType = it["cover"]?.get("t").nullString
-                it["pages"].nullArray?.mapNotNull {
+            obj["images"].nullObj?.let { images ->
+                coverImageType = images["cover"]?.get("t").nullString
+                images["pages"].nullArray?.mapNotNull {
                     it?.asJsonObject?.get("t").nullString
                 }?.let {
                     pageImageTypes = it
                 }
-                thumbnailImageType = it["thumbnail"]?.get("t").nullString
+                thumbnailImageType = images["thumbnail"]?.get("t").nullString
             }
 
             scanlator = obj["scanlator"].nullString
@@ -206,13 +201,13 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
         }
     }
 
-    fun getOrLoadMetadata(mangaId: Long?, nhId: Long) = getOrLoadMetadata(mangaId) {
+    private fun getOrLoadMetadata(mangaId: Long?, nhId: Long) = getOrLoadMetadata(mangaId) {
         client.newCall(nhGet(baseUrl + NHentaiSearchMetadata.nhIdToPath(nhId)))
             .asObservableSuccess()
             .toSingle()
     }
 
-    override fun fetchChapterList(manga: SManga) = Observable.just(
+    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = Observable.just(
         listOf(
             SChapter.create().apply {
                 url = manga.url
@@ -222,7 +217,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
         )
     )
 
-    override fun fetchPageList(chapter: SChapter) = getOrLoadMetadata(chapter.mangaId, NHentaiSearchMetadata.nhUrlToId(chapter.url)).map { metadata ->
+    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> = getOrLoadMetadata(chapter.mangaId, NHentaiSearchMetadata.nhUrlToId(chapter.url)).map { metadata ->
         if (metadata.mediaId == null) {
             emptyList()
         } else {
@@ -235,7 +230,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
 
     override fun fetchImageUrl(page: Page) = Observable.just(page.imageUrl!!)!!
 
-    fun imageUrlFromType(mediaId: String, page: Int, t: String) = NHentaiSearchMetadata.typeToExtension(t)?.let {
+    private fun imageUrlFromType(mediaId: String, page: Int, t: String) = NHentaiSearchMetadata.typeToExtension(t)?.let {
         "https://i.nhentai.net/galleries/$mediaId/$page.$it"
     }
 
@@ -265,6 +260,14 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
             stringBuilder.append("${entry.name}:")
             stringBuilder.append(entry.text)
             stringBuilder.append(" ")
+        }
+
+        val langFilter = filters.filterIsInstance<FilterLang>().firstOrNull()
+        if (langFilter != null) {
+            val language = SOURCE_LANG_LIST.first { it.first == langFilter.values[langFilter.state] }.second
+            if (!language.isBlank()) {
+                stringBuilder.append("language:$language")
+            }
         }
 
         return stringBuilder.toString()
@@ -323,11 +326,11 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
 
     private inline fun <reified T> Iterable<*>.findInstance() = find { it is T } as? T
 
-    val appName by lazy {
+    private val appName by lazy {
         context.getString(R.string.app_name)
     }
 
-    fun nhGet(url: String, tag: Any? = null) = GET(url)
+    private fun nhGet(url: String, tag: Any? = null) = GET(url)
         .newBuilder()
         .header(
             "User-Agent",
@@ -368,13 +371,11 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
         private val UNICODE_ESCAPE_REGEX = Regex("\\\\u([0-9a-fA-F]{4})")
         private const val REVERSE_PARAM = "TEH_REVERSE"
 
-        private fun defaultSortFilterSelection() = Filter.Sort.Selection(0, false)
-
         private val SOURCE_LANG_LIST = listOf(
             Pair("All", ""),
-            Pair("English", " english"),
-            Pair("Japanese", " japanese"),
-            Pair("Chinese", " chinese")
+            Pair("English", "english"),
+            Pair("Japanese", "japanese"),
+            Pair("Chinese", "chinese")
         )
     }
 }
