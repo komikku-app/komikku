@@ -97,7 +97,6 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
         return client.newCall(nhGet(url.toString()))
             .asObservableSuccess()
             .map { nhGet(url.toString(), page) }
-        // return Observable.just(nhGet(uri.toString(), page))
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
