@@ -81,12 +81,10 @@ class SourceFilterSheet(
 
         var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
 
-        var savedSearchesAdapter: FlexibleAdapter<SavedSearchesItem> = FlexibleAdapter<SavedSearchesItem>(listOf(SavedSearchesItem(getChips(searches))))
+        private val savedSearchesAdapter = SavedSearchesAdapter(getSavedSearchesChips(searches))
         // SY <--
 
         val adapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter<IFlexible<*>>(null)
-            .setDisplayHeadersAtStartUp(true)
-            .setStickyHeaders(true)
 
         init {
             // SY -->
@@ -105,13 +103,14 @@ class SourceFilterSheet(
 
         // EXH -->
         fun setSavedSearches(searches: List<EXHSavedSearch>) {
+            val savedSearchesChips = getSavedSearchesChips(searches)
+            savedSearchesAdapter.chips = savedSearchesChips
             recycler.post {
-                (recycler.findViewHolderForAdapterPosition(0) as? SavedSearchesHolder)?.setChips(getChips(searches))
-                savedSearchesAdapter.expand(0)
+                (recycler.findViewHolderForAdapterPosition(0) as? SavedSearchesAdapter.SavedSearchesViewHolder)?.bind(savedSearchesChips)
             }
         }
 
-        private fun getChips(searches: List<EXHSavedSearch>): List<Chip> {
+        private fun getSavedSearchesChips(searches: List<EXHSavedSearch>): List<Chip> {
             recycler.post {
                 save_search_btn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
             }
