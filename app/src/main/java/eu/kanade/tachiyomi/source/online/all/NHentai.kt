@@ -27,6 +27,8 @@ import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.NHentaiSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedTag
 import exh.util.urlImportFetchSearchManga
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
@@ -65,51 +67,37 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
     }
 
     private fun searchMangaRequestObservable(page: Int, query: String, filters: FilterList): Observable<Request> {
-        val langFilter = filters.filterIsInstance<filterLang>().firstOrNull()
+        val advQuery = combineQuery(filters)
+        val favoriteFilter = filters.findInstance<FavoriteFilter>()
+        val uploadedFilter = filters.findInstance<UploadedFilter>()
+        val langFilter = filters.filterIsInstance<FilterLang>().firstOrNull()
         var langFilterString = ""
         if (langFilter != null) {
             langFilterString = SOURCE_LANG_LIST.first { it.first == langFilter.values[langFilter.state] }.second
         }
 
-        val uri = if (query.isNotBlank()) {
-            Uri.parse("$baseUrl/search/").buildUpon().apply {
-                appendQueryParameter("q", query + langFilterString)
-            }
+        val url: HttpUrl.Builder
+
+        if (favoriteFilter != null && favoriteFilter.state) {
+            url = "$baseUrl/favorites".toHttpUrlOrNull()!!.newBuilder()
+                .addQueryParameter("q", "$query $advQuery")
+                .addQueryParameter("page", page.toString())
         } else {
-            Uri.parse(baseUrl).buildUpon()
-        }
+            url = "$baseUrl/search".toHttpUrlOrNull()!!.newBuilder()
+                .addQueryParameter("q", "$query +$langFilterString $advQuery")
+                .addQueryParameter("page", page.toString())
 
-        val sortFilter = filters.filterIsInstance<SortFilter>().firstOrNull()?.state
-            ?: defaultSortFilterSelection()
-
-        if (sortFilter.index == 1) {
-            if (query.isBlank()) error("You must specify a search query if you wish to sort by popularity!")
-            uri.appendQueryParameter("sort", "popular")
-        }
-
-        if (sortFilter.ascending) {
-            return client.newCall(nhGet(uri.toString()))
-                .asObservableSuccess()
-                .map {
-                    val doc = it.asJsoup()
-
-                    val lastPage = doc.selectFirst(".last")
-                        ?.attr("href")
-                        ?.substringAfterLast('=')
-                        ?.toIntOrNull() ?: 1
-
-                    val thisPage = lastPage - (page - 1)
-
-                    uri.appendQueryParameter(REVERSE_PARAM, (thisPage > 1).toString())
-                    uri.appendQueryParameter("page", thisPage.toString())
-
-                    nhGet(uri.toString(), page)
+            if (uploadedFilter!!.state.isBlank()) {
+                filters.findInstance<SortFilter>()?.let { f ->
+                    url.addQueryParameter("sort", f.toUriPart())
                 }
+            }
         }
 
-        uri.appendQueryParameter("page", page.toString())
-
-        return Observable.just(nhGet(uri.toString(), page))
+        return client.newCall(nhGet(url.toString()))
+            .asObservableSuccess()
+            .map { nhGet(url.toString(), page) }
+        // return Observable.just(nhGet(uri.toString(), page))
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
@@ -264,16 +252,77 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
         throw NotImplementedError("Unused method called!")
     }
 
-    override fun getFilterList() = FilterList(SortFilter(), filterLang())
+    private fun combineQuery(filters: FilterList): String {
+        val stringBuilder = StringBuilder()
+        val advSearch = filters.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
+            val splitState = filter.state.split(",").map(String::trim).filterNot(String::isBlank)
+            splitState.map {
+                AdvSearchEntry(filter.name, it.removePrefix("-"), it.startsWith("-"))
+            }
+        }
+
+        advSearch.forEach { entry ->
+            if (entry.exclude) stringBuilder.append("-")
+            stringBuilder.append("${entry.name}:")
+            stringBuilder.append(entry.text)
+            stringBuilder.append(" ")
+        }
+
+        return stringBuilder.toString()
+    }
+
+    data class AdvSearchEntry(val name: String, val text: String, val exclude: Boolean)
+
+    override fun getFilterList(): FilterList = FilterList(
+        Filter.Header("Separate tags with commas (,)"),
+        Filter.Header("Prepend with dash (-) to exclude"),
+        TagFilter(),
+        CategoryFilter(),
+        GroupFilter(),
+        ArtistFilter(),
+        ParodyFilter(),
+        CharactersFilter(),
+        Filter.Header("Uploaded valid units are h, d, w, m, y."),
+        Filter.Header("example: (>20d)"),
+        UploadedFilter(),
+
+        Filter.Separator(),
+        SortFilter(),
+        Filter.Header("Sort is ignored if favorites only"),
+        FavoriteFilter(),
+        FilterLang()
+    )
+
+    class TagFilter : AdvSearchEntryFilter("Tags")
+    class CategoryFilter : AdvSearchEntryFilter("Categories")
+    class GroupFilter : AdvSearchEntryFilter("Groups")
+    class ArtistFilter : AdvSearchEntryFilter("Artists")
+    class ParodyFilter : AdvSearchEntryFilter("Parodies")
+    class CharactersFilter : AdvSearchEntryFilter("Characters")
+    class UploadedFilter : AdvSearchEntryFilter("Uploaded")
+    open class AdvSearchEntryFilter(name: String) : Filter.Text(name)
+
+    private class FavoriteFilter : Filter.CheckBox("Show favorites only", false)
 
     // language filtering
-    private class filterLang : Filter.Select<String>("Language", SOURCE_LANG_LIST.map { it.first }.toTypedArray())
+    private class FilterLang : Filter.Select<String>("Language", SOURCE_LANG_LIST.map { it.first }.toTypedArray())
 
-    class SortFilter : Filter.Sort(
-        "Sort",
-        arrayOf("Date", "Popular"),
-        defaultSortFilterSelection()
+    private class SortFilter : UriPartFilter(
+        "Sort By",
+        arrayOf(
+            Pair("Popular: All Time", "popular"),
+            Pair("Popular: Week", "popular-week"),
+            Pair("Popular: Today", "popular-today"),
+            Pair("Recent", "date")
+        )
     )
+
+    private open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String>>) :
+        Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
+        fun toUriPart() = vals[state].second
+    }
+
+    private inline fun <reified T> Iterable<*>.findInstance() = find { it is T } as? T
 
     val appName by lazy {
         context.getString(R.string.app_name)
