@@ -41,15 +41,15 @@ val LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
     PURURIN_SOURCE_ID
 )
 
-private inline fun <reified T> delegatedSourceId(): Long {
+private inline fun <reified T> delegatedSourceId(): Long? {
     return SourceManager.DELEGATED_SOURCES.entries.find {
         it.value.newSourceClass == T::class
-    }!!.value.sourceId
+    }?.value?.sourceId
 }
 
 // Used to speed up isLewdSource
-val lewdDelegatedSourceIds = SourceManager.DELEGATED_SOURCES.filter {
-    it.value.newSourceClass in DELEGATED_LEWD_SOURCES
+val lewdDelegatedSourceIds = SourceManager.currentDelegatedSources.filter {
+    !it.value.factory && it.value.newSourceClass in DELEGATED_LEWD_SOURCES
 }.map { it.value.sourceId }.sorted()
 
 // This method MUST be fast!

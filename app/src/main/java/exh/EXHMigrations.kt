@@ -62,12 +62,12 @@ object EXHMigrations {
     fun migrateBackupEntry(manga: MangaImpl): MangaImpl {
         // Migrate HentaiCafe source IDs
         if (manga.source == 6908L) {
-            manga.source = HENTAI_CAFE_SOURCE_ID
+            manga.source = HENTAI_CAFE_SOURCE_ID!!
         }
 
         // Migrate Tsumino source IDs
         if (manga.source == 6909L) {
-            manga.source = TSUMINO_SOURCE_ID
+            manga.source = TSUMINO_SOURCE_ID!!
         }
 
         // Migrate nhentai URLs

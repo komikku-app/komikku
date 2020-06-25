@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.Hitomi
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.all.PervEden
@@ -87,13 +88,22 @@ open class SourceManager(private val context: Context) {
     internal fun registerSource(source: Source, overwrite: Boolean = false) {
         // EXH -->
         val sourceQName = source::class.qualifiedName
-        val delegate = DELEGATED_SOURCES[sourceQName]
+        val factories = DELEGATED_SOURCES.entries.filter { it.value.factory }.map { it.value.originalSourceQualifiedClassName }
+        val delegate = if (sourceQName != null) {
+            val matched = factories.find { sourceQName.startsWith(it) }
+            if (matched != null) {
+                DELEGATED_SOURCES[matched]
+            } else DELEGATED_SOURCES[sourceQName]
+        } else null
         val newSource = if (source is HttpSource && delegate != null) {
             XLog.d("[EXH] Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
-            EnhancedHttpSource(
+            val enhancedSource = EnhancedHttpSource(
                 source,
                 delegate.newSourceClass.constructors.find { it.parameters.size == 1 }!!.call(source)
             )
+            val map = listOf(DelegatedSource(enhancedSource.originalSource.name, enhancedSource.originalSource.id, enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName, (enhancedSource.enchancedSource as DelegatedHttpSource)::class, delegate.factory)).associateBy { it.originalSourceQualifiedClassName }
+            currentDelegatedSources.plusAssign(map)
+            enhancedSource
         } else source
 
         if (source.id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
@@ -161,6 +171,7 @@ open class SourceManager(private val context: Context) {
 
     // SY -->
     companion object {
+        private const val fillInSourceId = 9999L
         val DELEGATED_SOURCES = listOf(
             DelegatedSource(
                 "Hentai Cafe",
@@ -179,14 +190,24 @@ open class SourceManager(private val context: Context) {
                 6707338697138388238,
                 "eu.kanade.tachiyomi.extension.en.tsumino.Tsumino",
                 Tsumino::class
+            ),
+            DelegatedSource(
+                "MangaDex",
+                fillInSourceId,
+                "eu.kanade.tachiyomi.extension.all.mangadex",
+                MangaDex::class,
+                true
             )
         ).associateBy { it.originalSourceQualifiedClassName }
+
+        var currentDelegatedSources = mutableMapOf<String, DelegatedSource>()
 
         data class DelegatedSource(
             val sourceName: String,
             val sourceId: Long,
             val originalSourceQualifiedClassName: String,
-            val newSourceClass: KClass<out DelegatedHttpSource>
+            val newSourceClass: KClass<out DelegatedHttpSource>,
+            val factory: Boolean = false
         )
     }
     // SY <--
