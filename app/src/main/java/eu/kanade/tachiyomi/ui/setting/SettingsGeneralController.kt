@@ -250,7 +250,7 @@ class SettingsGeneralController : SettingsController() {
                 summary = "%s"
             }
         }
-    // --> EXH
+        // --> EXH
         preferenceCategory {
             titleRes = R.string.eh_settings_category
 
