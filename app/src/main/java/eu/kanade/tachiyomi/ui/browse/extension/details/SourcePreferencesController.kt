@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.getPreferenceKey
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import exh.source.EnhancedHttpSource
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
@@ -77,7 +78,13 @@ class SourcePreferencesController(bundle: Bundle? = null) :
         preferenceScreen = screen
 
         try {
-            addPreferencesForSource(screen, source)
+            // SY -->
+            if (source is EnhancedHttpSource) {
+                addPreferencesForSource(screen, source.enchancedSource)
+            } else {
+                addPreferencesForSource(screen, source)
+            }
+            // SY <--
         } catch (e: AbstractMethodError) {
             Timber.e("Source did not implement [addPreferencesForSource]: ${source.name}")
         }
