@@ -1,12 +1,15 @@
 package eu.kanade.tachiyomi.source.online.all
 
 import android.net.Uri
+import androidx.preference.PreferenceScreen
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import exh.source.DelegatedHttpSource
 
 class MangaDex(delegate: HttpSource) :
     DelegatedHttpSource(delegate),
+    ConfigurableSource,
     UrlImportableSource {
 
     override val matchingHosts: List<String> = listOf("mangadex.org")
@@ -22,4 +25,6 @@ class MangaDex(delegate: HttpSource) :
     }
 
     override val lang: String = delegate.lang
+
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = (delegate as ConfigurableSource).setupPreferenceScreen(screen)
 }
