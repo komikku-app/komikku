@@ -80,7 +80,12 @@ class SourcePreferencesController(bundle: Bundle? = null) :
         try {
             // SY -->
             if (source is EnhancedHttpSource) {
-                addPreferencesForSource(screen, source.enchancedSource)
+                if (source.enchancedSource is ConfigurableSource) {
+                    addPreferencesForSource(screen, source.source())
+                } else {
+                    addPreferencesForSource(screen, source.originalSource)
+                }
+
             } else {
                 addPreferencesForSource(screen, source)
             }
