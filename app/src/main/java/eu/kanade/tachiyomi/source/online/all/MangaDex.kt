@@ -24,7 +24,7 @@ class MangaDex(delegate: HttpSource) :
         }
     }
 
-    override val lang: String = delegate.lang
+    override val lang: String get() = delegate.lang
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = (delegate as ConfigurableSource).setupPreferenceScreen(screen)
 }
