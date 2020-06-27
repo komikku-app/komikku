@@ -228,6 +228,7 @@ class AboutController : SettingsController() {
             )
             outputDf.timeZone = TimeZone.getDefault()
 
+            @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
             buildTime.toDateTimestampString(dateFormat)
         } catch (e: ParseException) {
             BuildConfig.BUILD_TIME
