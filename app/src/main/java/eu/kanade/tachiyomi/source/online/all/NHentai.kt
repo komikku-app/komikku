@@ -82,7 +82,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
                 .addQueryParameter("q", "$query $advQuery")
                 .addQueryParameter("page", page.toString())
 
-            if (uploadedFilter!!.state.isBlank()) {
+            if (uploadedFilter?.state?.isBlank() == true) {
                 filters.findInstance<SortFilter>()?.let { f ->
                     url.addQueryParameter("sort", f.toUriPart())
                 }
