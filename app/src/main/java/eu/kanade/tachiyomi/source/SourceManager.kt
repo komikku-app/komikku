@@ -81,7 +81,7 @@ open class SourceManager(private val context: Context) {
     }
 
     fun getDelegatedCatalogueSources() = sourcesMap.values.filterIsInstance<EnhancedHttpSource>().mapNotNull { enhancedHttpSource ->
-        enhancedHttpSource.enchancedSource as? DelegatedHttpSource
+        enhancedHttpSource.enhancedSource as? DelegatedHttpSource
     }
     // SY <--
 
@@ -101,7 +101,7 @@ open class SourceManager(private val context: Context) {
                 source,
                 delegate.newSourceClass.constructors.find { it.parameters.size == 1 }!!.call(source)
             )
-            val map = listOf(DelegatedSource(enhancedSource.originalSource.name, enhancedSource.originalSource.id, enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName, (enhancedSource.enchancedSource as DelegatedHttpSource)::class, delegate.factory)).associateBy { it.originalSourceQualifiedClassName }
+            val map = listOf(DelegatedSource(enhancedSource.originalSource.name, enhancedSource.originalSource.id, enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName, (enhancedSource.enhancedSource as DelegatedHttpSource)::class, delegate.factory)).associateBy { it.originalSourceQualifiedClassName }
             currentDelegatedSources.plusAssign(map)
             enhancedSource
         } else source

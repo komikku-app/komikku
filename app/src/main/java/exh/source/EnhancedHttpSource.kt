@@ -12,7 +12,7 @@ import uy.kohesive.injekt.injectLazy
 
 class EnhancedHttpSource(
     val originalSource: HttpSource,
-    val enchancedSource: HttpSource
+    val enhancedSource: HttpSource
 ) : HttpSource() {
     private val prefs: PreferencesHelper by injectLazy()
 
@@ -215,9 +215,9 @@ class EnhancedHttpSource(
      */
     override fun getFilterList() = source().getFilterList()
 
-    private fun source(): HttpSource {
+    fun source(): HttpSource {
         return if (prefs.eh_delegateSources().get()) {
-            enchancedSource
+            enhancedSource
         } else {
             originalSource
         }
