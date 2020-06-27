@@ -85,7 +85,6 @@ class SourcePreferencesController(bundle: Bundle? = null) :
                 } else {
                     addPreferencesForSource(screen, source.originalSource)
                 }
-
             } else {
                 addPreferencesForSource(screen, source)
             }
