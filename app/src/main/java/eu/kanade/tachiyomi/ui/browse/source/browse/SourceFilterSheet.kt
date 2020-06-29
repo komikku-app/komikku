@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.MergeAdapter
+import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -88,7 +88,7 @@ class SourceFilterSheet(
 
         init {
             // SY -->
-            recycler.adapter = MergeAdapter(savedSearchesAdapter, adapter)
+            recycler.adapter = ConcatAdapter(savedSearchesAdapter, adapter)
             // SY <--
             recycler.setHasFixedSize(true)
             val view = inflate(R.layout.source_filter_sheet)
