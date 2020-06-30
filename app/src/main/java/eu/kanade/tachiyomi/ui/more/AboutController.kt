@@ -205,7 +205,8 @@ class AboutController : SettingsController() {
         val deviceInfo =
             """
             App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})
-            Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})
+            Preview build: $syDebugVersion
+            Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) 
             Android build ID: ${Build.DISPLAY}
             Device brand: ${Build.BRAND}
             Device manufacturer: ${Build.MANUFACTURER}
