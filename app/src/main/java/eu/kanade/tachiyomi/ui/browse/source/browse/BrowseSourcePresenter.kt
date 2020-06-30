@@ -20,6 +20,8 @@ import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.ui.browse.source.filter.AutoComplete
+import eu.kanade.tachiyomi.ui.browse.source.filter.AutoCompleteSectionItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.CheckboxItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.CheckboxSectionItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.GroupItem
@@ -309,6 +311,7 @@ open class BrowseSourcePresenter(
                 is Filter.Header -> HeaderItem(filter)
                 // --> EXH
                 is Filter.HelpDialog -> HelpDialogItem(filter)
+                is Filter.AutoComplete -> AutoComplete(filter)
                 // <-- EXH
                 is Filter.Separator -> SeparatorItem(filter)
                 is Filter.CheckBox -> CheckboxItem(filter)
@@ -323,6 +326,9 @@ open class BrowseSourcePresenter(
                             is Filter.TriState -> TriStateSectionItem(it)
                             is Filter.Text -> TextSectionItem(it)
                             is Filter.Select<*> -> SelectSectionItem(it)
+                            // SY -->
+                            is Filter.AutoComplete -> AutoCompleteSectionItem(it)
+                            // SY <--
                             else -> null
                         } as? ISectionable<*, *>
                     }

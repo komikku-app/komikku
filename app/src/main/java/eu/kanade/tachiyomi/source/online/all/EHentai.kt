@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.debug.DebugToggles
+import exh.eh.EHTags
 import exh.eh.EHentaiUpdateHelper
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.GalleryEntry
@@ -280,7 +281,8 @@ class EHentai(
 
     private fun searchMangaRequestObservable(page: Int, query: String, filters: FilterList): Observable<Request> {
         val uri = Uri.parse("$baseUrl$QUERY_PREFIX").buildUpon()
-        uri.appendQueryParameter("f_search", query)
+
+        uri.appendQueryParameter("f_search", (query + " " + combineQuery(filters)).trim())
         filters.forEach {
             if (it is UriFilter) it.addToUri(uri)
         }
@@ -614,16 +616,24 @@ class EHentai(
         }.build()
 
     // Filters
-    override fun getFilterList() = FilterList(
-        if (prefs.eh_watchedListDefaultState().get()) {
-            Watched(isEnabled = true)
-        } else {
-            Watched(isEnabled = false)
-        },
-        GenreGroup(),
-        AdvancedGroup(),
-        ReverseFilter()
-    )
+    override fun getFilterList(): FilterList {
+        val excludePrefix = "-"
+
+        return FilterList(
+            AutoCompleteTags(
+                EHTags.getNameSpaces().map { "$it:" } + EHTags.getAllTags(),
+                EHTags.getNameSpaces().map { "$it:" }, excludePrefix
+            ),
+            if (prefs.eh_watchedListDefaultState().get()) {
+                Watched(isEnabled = true)
+            } else {
+                Watched(isEnabled = false)
+            },
+            GenreGroup(),
+            AdvancedGroup(),
+            ReverseFilter()
+        )
+    }
 
     class Watched(val isEnabled: Boolean) : Filter.CheckBox("Watched List", isEnabled), UriFilter {
         override fun addToUri(builder: Uri.Builder) {
@@ -678,6 +688,41 @@ class EHentai(
             }
         }
     }
+
+    private fun combineQuery(filters: FilterList): String {
+        val stringBuilder = StringBuilder()
+        val advSearch = filters.filterIsInstance<Filter.AutoComplete>().flatMap { filter ->
+            val splitState = filter.state.map(String::trim).filterNot(String::isBlank)
+            splitState.mapNotNull { tag ->
+                val split = tag.split(":").filterNot { it.isBlank() }.toMutableList()
+                if (split.size > 1) {
+                    val namespace = split[0].removePrefix("-")
+                    val exclude = split[0].startsWith("-")
+                    split -= namespace
+                    AdvSearchEntry(Pair(namespace, split.joinToString(":")), exclude)
+                } else {
+                    null
+                }
+            }
+        }
+
+        advSearch.forEach { entry ->
+            if (entry.exclude) stringBuilder.append("-")
+            if (entry.search.second.contains(" ")) {
+                stringBuilder.append(("${entry.search.first}:\"${entry.search.second}$\""))
+            } else {
+                stringBuilder.append("${entry.search.first}:${entry.search.second}$")
+            }
+            stringBuilder.append(" ")
+        }
+
+        XLog.d(stringBuilder.toString())
+        return stringBuilder.toString().trim()
+    }
+
+    data class AdvSearchEntry(val search: Pair<String, String>, val exclude: Boolean)
+
+    class AutoCompleteTags(tags: List<String>, skipAutoFillTags: List<String>, excludePrefix: String) : Filter.AutoComplete(name = "Tags", hint = "Search tags here (limit of 8)", values = tags, skipAutoFillTags = skipAutoFillTags, excludePrefix = excludePrefix, state = emptyList())
 
     class MinPagesOption : PageOption("Minimum Pages", "f_spf")
     class MaxPagesOption : PageOption("Maximum Pages", "f_spt")

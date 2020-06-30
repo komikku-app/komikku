@@ -23,6 +23,7 @@ class FilterSerializer {
     val serializers = listOf<Serializer<*>>(
         // EXH -->
         HelpDialogSerializer(this),
+        AutoCompleteSerializer(this),
         // EXH <--
         HeaderSerializer(this),
         SeparatorSerializer(this),

@@ -1,9 +1,12 @@
 package xyz.nulldev.ts.api.http.serializer
 
 import com.github.salomonbrys.kotson.bool
+import com.github.salomonbrys.kotson.forEach
 import com.github.salomonbrys.kotson.int
+import com.github.salomonbrys.kotson.nullArray
 import com.github.salomonbrys.kotson.nullObj
 import com.github.salomonbrys.kotson.set
+import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonArray
 import com.google.gson.JsonNull
 import com.google.gson.JsonObject
@@ -216,5 +219,35 @@ class SortSerializer(override val serializer: FilterSerializer) : Serializer<Fil
 
         const val STATE_INDEX = "index"
         const val STATE_ASCENDING = "ascending"
+    }
+}
+
+class AutoCompleteSerializer(override val serializer: FilterSerializer) : Serializer<Filter.AutoComplete> {
+    override val type = "AUTOCOMPLETE"
+    override val clazz = Filter.AutoComplete::class
+
+    override fun serialize(json: JsonObject, filter: Filter.AutoComplete) {
+        // Serialize values to JSON
+        json[STATE] = JsonArray().apply {
+            filter.state.forEach { add(it) }
+        }
+    }
+
+    override fun deserialize(json: JsonObject, filter: Filter.AutoComplete) {
+        // Deserialize state
+        json[STATE].nullArray?.let { array ->
+            filter.state = array.map {
+                it.string
+            }
+        }
+    }
+
+    override fun mappings() = listOf(
+        Pair(NAME, Filter.AutoComplete::name)
+    )
+
+    companion object {
+        const val NAME = "name"
+        const val STATE = "state"
     }
 }
