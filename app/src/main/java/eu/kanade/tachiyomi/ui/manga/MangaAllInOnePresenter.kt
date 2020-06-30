@@ -24,6 +24,8 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import exh.EH_SOURCE_ID
+import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
@@ -552,7 +554,7 @@ class MangaAllInOnePresenter(
     }
 
     private fun downloadNewChapters(chapters: List<Chapter>) {
-        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences)) return
+        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences) /* SY --> */ || manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID/* SY <-- */) return
 
         downloadChapters(chapters)
     }
