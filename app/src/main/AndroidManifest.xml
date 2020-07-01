@@ -287,7 +287,7 @@
                     android:scheme="https" />
 
                 <!-- MangaDex -->
-                <data
+<!--                <data
                     android:host="mangadex.org"
                     android:pathPattern="\/(title|manga)\/"
                     android:scheme="http" />
@@ -302,7 +302,7 @@
                 <data
                     android:host="www.mangadex.org"
                     android:pathPattern="\/(title|manga)\/"
-                    android:scheme="https" />
+                    android:scheme="https" />-->
             </intent-filter>
         </activity>
         <activity

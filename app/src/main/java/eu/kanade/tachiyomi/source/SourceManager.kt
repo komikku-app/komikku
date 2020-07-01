@@ -10,7 +10,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.Hitomi
-import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.all.PervEden
@@ -190,14 +189,14 @@ open class SourceManager(private val context: Context) {
                 6707338697138388238,
                 "eu.kanade.tachiyomi.extension.en.tsumino.Tsumino",
                 Tsumino::class
-            ),
+            )/*,
             DelegatedSource(
                 "MangaDex",
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.mangadex",
                 MangaDex::class,
                 true
-            )
+            )*/
         ).associateBy { it.originalSourceQualifiedClassName }
 
         var currentDelegatedSources = mutableMapOf<String, DelegatedSource>()
