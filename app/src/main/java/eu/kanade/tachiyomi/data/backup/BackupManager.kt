@@ -3,15 +3,20 @@ package eu.kanade.tachiyomi.data.backup
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import com.github.salomonbrys.kotson.array
 import com.github.salomonbrys.kotson.fromJson
+import com.github.salomonbrys.kotson.jsonObject
+import com.github.salomonbrys.kotson.obj
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.github.salomonbrys.kotson.registerTypeHierarchyAdapter
 import com.github.salomonbrys.kotson.set
+import com.github.salomonbrys.kotson.string
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY_MASK
@@ -47,18 +52,23 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.system.sendLocalBroadcast
+import exh.EXHSavedSearch
 import exh.eh.EHentaiThrottleManager
+import java.lang.RuntimeException
 import kotlin.math.max
 import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
 class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
@@ -514,12 +524,78 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
     internal fun restoreSavedSearches(jsonSavedSearches: JsonElement) {
         val backupSavedSearches = jsonSavedSearches.asString.split("***").toSet()
-        backupSavedSearches.forEach {
-            val savedSearches = preferences.eh_savedSearches().get()
-            if (it !in savedSearches) {
-                preferences.eh_savedSearches().set(savedSearches + it)
+        val filterSerializer = FilterSerializer()
+
+        val newSavedSearches = backupSavedSearches.mapNotNull {
+            try {
+                val id = it.substringBefore(':').toLong()
+                val content = JsonParser.parseString(it.substringAfter(':')).obj
+                val source = sourceManager.getOrStub(id)
+                if (source !is CatalogueSource) return@mapNotNull null
+
+                val originalFilters = source.getFilterList()
+                filterSerializer.deserialize(originalFilters, content["filters"].array)
+                Pair(
+                    id,
+                    EXHSavedSearch(
+                        content["name"].string,
+                        content["query"].string,
+                        originalFilters
+                    )
+                )
+            } catch (t: RuntimeException) {
+                // Load failed
+                Timber.e(t, "Failed to load saved search!")
+                t.printStackTrace()
+                null
             }
+        }.toMutableList()
+
+        val currentSources = newSavedSearches.map { it.first }.toSet()
+
+        newSavedSearches += preferences.eh_savedSearches().get().mapNotNull {
+            try {
+                val id = it.substringBefore(':').toLong()
+                val content = JsonParser.parseString(it.substringAfter(':')).obj
+                if (id !in currentSources) return@mapNotNull null
+                val source = sourceManager.getOrStub(id)
+                if (source !is CatalogueSource) return@mapNotNull null
+
+                val originalFilters = source.getFilterList()
+                filterSerializer.deserialize(originalFilters, content["filters"].array)
+                Pair(
+                    id,
+                    EXHSavedSearch(
+                        content["name"].string,
+                        content["query"].string,
+                        originalFilters
+                    )
+                )
+            } catch (t: RuntimeException) {
+                // Load failed
+                Timber.e(t, "Failed to load saved search!")
+                t.printStackTrace()
+                null
+            }
+        }.toMutableList()
+
+        val otherSerialized = preferences.eh_savedSearches().get().mapNotNull {
+            val sourceId = it.split(":")[0].toLongOrNull() ?: return@mapNotNull null
+            if (sourceId in currentSources) return@mapNotNull null
+            it
         }
+
+        /*.filter {
+            !it.startsWith("${newSource.id}:")
+        }*/
+        val newSerialized = newSavedSearches.map {
+            "${it.first}:" + jsonObject(
+                "name" to it.second.name,
+                "query" to it.second.query,
+                "filters" to filterSerializer.serialize(it.second.filterList)
+            ).toString()
+        }
+        preferences.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
     }
 
     /**
