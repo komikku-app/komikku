@@ -2,7 +2,7 @@ package exh.eh
 
 class EHTags {
     companion object {
-        fun getAllTags() = getFemaleTags() + getMaleTags() + getLanguageTags() + getReclassTags() + getMiscTags() + getParodyTags() + getCharacterTags() + getGroupTags() + getArtistTags() + getArtistTags2()
+        fun getAllTags() = getFemaleTags() + getMaleTags() + getLanguageTags() + getReclassTags() + getMiscTags() + getParodyTags() + getCharacterTags() + getGroupTags() + getArtistTags() + getArtist2Tags()
 
         fun getNameSpaces() = listOf(
             "female",
@@ -10,6 +10,8 @@ class EHTags {
             "language",
             "reclass",
             "misc",
+            "parody",
+            "character",
             "group",
             "artist"
         )
@@ -2595,6 +2597,7 @@ class EHTags {
             "parody:sengoku otome",
             "parody:senjou no enbukyoku",
             "parody:senki zesshou symphogear",
+            "parody:senko no ronde",
             "parody:senkou no double x",
             "parody:senpai ga uzai kouhai no hanashi",
             "parody:senran kagura",
@@ -17493,7 +17496,10 @@ class EHTags {
             "artist:maple",
             "artist:maple-go",
             "artist:mara iafew",
-            "artist:marble soda",
+            "artist:marble soda"
+        )
+
+        fun getArtist2Tags() = listOf(
             "artist:marc brunet",
             "artist:marcel gotlib",
             "artist:marcelo mueller",
@@ -18254,10 +18260,7 @@ class EHTags {
             "artist:myrho",
             "artist:myuk",
             "artist:myuratch",
-            "artist:mz09"
-        )
-
-        fun getArtistTags2() = listOf(
+            "artist:mz09",
             "artist:n. dofline",
             "artist:n.o. chachamaru",
             "artist:n.w.f.",
