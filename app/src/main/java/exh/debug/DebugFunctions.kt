@@ -228,10 +228,10 @@ object DebugFunctions {
             val filterSerializer = FilterSerializer()
             val source = sourceManager.getOrStub(EH_SOURCE_ID) as CatalogueSource
             val newSource = sourceManager.getOrStub(EXH_SOURCE_ID) as CatalogueSource
-            val savedSearches = prefs.eh_savedSearches().get().map {
+            val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
-                    if (id != source.id) return@map null
+                    if (id != source.id) return@mapNotNull null
                     val content = JsonParser.parseString(it.substringAfter(':')).obj
 
                     val originalFilters = source.getFilterList()
@@ -247,11 +247,11 @@ object DebugFunctions {
                     t.printStackTrace()
                     null
                 }
-            }.filterNotNull().toMutableList()
-            savedSearches += prefs.eh_savedSearches().get().map {
+            }.toMutableList()
+            savedSearches += prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
-                    if (id != newSource.id) return@map null
+                    if (id != newSource.id) return@mapNotNull null
                     val content = JsonParser.parseString(it.substringAfter(':')).obj
 
                     val originalFilters = source.getFilterList()
@@ -267,7 +267,7 @@ object DebugFunctions {
                     t.printStackTrace()
                     null
                 }
-            }.filterNotNull().filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
+            }.filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
 
             val otherSerialized = prefs.eh_savedSearches().get().filter {
                 !it.startsWith("${newSource.id}:")
@@ -288,10 +288,10 @@ object DebugFunctions {
             val filterSerializer = FilterSerializer()
             val source = sourceManager.getOrStub(EXH_SOURCE_ID) as CatalogueSource
             val newSource = sourceManager.getOrStub(EH_SOURCE_ID) as CatalogueSource
-            val savedSearches = prefs.eh_savedSearches().get().map {
+            val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
-                    if (id != source.id) return@map null
+                    if (id != source.id) return@mapNotNull null
                     val content = JsonParser.parseString(it.substringAfter(':')).obj
 
                     val originalFilters = source.getFilterList()
@@ -307,11 +307,11 @@ object DebugFunctions {
                     t.printStackTrace()
                     null
                 }
-            }.filterNotNull().toMutableList()
-            savedSearches += prefs.eh_savedSearches().get().map {
+            }.toMutableList()
+            savedSearches += prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
-                    if (id != newSource.id) return@map null
+                    if (id != newSource.id) return@mapNotNull null
                     val content = JsonParser.parseString(it.substringAfter(':')).obj
 
                     val originalFilters = source.getFilterList()
@@ -327,7 +327,7 @@ object DebugFunctions {
                     t.printStackTrace()
                     null
                 }
-            }.filterNotNull().filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
+            }.filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
 
             val otherSerialized = prefs.eh_savedSearches().get().filter {
                 !it.startsWith("${newSource.id}:")
