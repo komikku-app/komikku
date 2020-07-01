@@ -34,14 +34,14 @@ ext {
 }
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion '29.0.3'
+    compileSdkVersion AndroidConfig.compileSdk
+    buildToolsVersion AndroidConfig.buildTools
     publishNonDefault true
 
     defaultConfig {
         applicationId "eu.kanade.tachiyomi.sy"
-        minSdkVersion 21
-        targetSdkVersion 29
+        minSdkVersion AndroidConfig.minSdk
+        targetSdkVersion AndroidConfig.targetSdk
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         versionCode 1
         versionName "0.9.2.7"
@@ -99,11 +99,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
-    }
-
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'LICENSE.txt'
@@ -129,8 +124,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
