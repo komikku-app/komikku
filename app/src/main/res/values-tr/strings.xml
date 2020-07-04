@@ -263,10 +263,6 @@
     <string name="manga_info_full_title_label">Başlık</string>
     <string name="manga_added_library">Kitaplığa eklendi</string>
     <string name="manga_removed_library">Kitaplıktan kaldırıldı</string>
-    <string name="manga_info_chapters_label">Bölümler</string>
-    <string name="manga_info_status_label">Durum</string>
-    <string name="manga_info_source_label">Kaynak</string>
-    <string name="manga_info_genres_label">Türler</string>
     <string name="delete_downloads_for_manga">İndirilen bölümler silinsin mi?</string>
     <string name="copied_to_clipboard">Panoya kopyalandı:
 \n%1$s</string>
@@ -309,7 +305,6 @@
     <string name="track_start_date">Başlama</string>
     <string name="track_type">Tür</string>
     <string name="track_author">Yazar</string>
-    <string name="url_not_set">Manga URL\'si ayarlı değil, lütfen başlığa dokunun ve mangayı yeniden seçin</string>
     <string name="error_category_exists">Bu adla bir kategori zaten var!</string>
     <string name="snack_categories_deleted">Kategoriler silindi</string>
     <string name="dialog_with_checkbox_remove_description">Bu, bu bölümün okunma tarihini kaldıracak. Emin misiniz?</string>
@@ -355,13 +350,12 @@
     <string name="update_check_notification_download_complete">İndirme tamamlandı</string>
     <string name="update_check_notification_download_error">İndirme hatası</string>
     <string name="update_check_notification_update_available">Yeni sürüm var!</string>
-    <string name="description_backdrop">Manganın art alan görseli</string>
     <string name="description_cover">Manganın kapağı</string>
     <string name="information_no_downloads">İndirme yok</string>
     <string name="information_no_recent">Yeni güncelleme yok</string>
     <string name="information_no_recent_manga">Yakında okunan yok</string>
-    <string name="information_empty_library">Kitaplığınız boş, serileri Göz At\'dan kitaplığınıza ekleyin.</string>
-    <string name="information_empty_category">Kategoriniz yok. Kitaplığınızı düzenlemek için bir tane oluşturmak için artı düğmesine basın.</string>
+    <string name="information_empty_library">Kitaplığınız boş. Serileri Göz At\'dan kitaplığınıza ekleyin.</string>
+    <string name="information_empty_category">Kategoriniz yok. Kitaplığınızı düzenlemek için bir tane oluşturmak için artı düğmesine dokunun.</string>
     <string name="download_notifier_downloader_title">İndirici</string>
     <string name="download_notifier_title_error">Hata</string>
     <string name="download_notifier_unknown_error">Bölüm, beklenmeyen hata sonucu indirilemedi</string>
@@ -412,7 +406,7 @@
     <string name="currently_reading">Şu anda okunan</string>
     <string name="paused">Duraklatıldı</string>
     <string name="want_to_read">Okunmak istenen</string>
-    <string name="label_more">Daha</string>
+    <string name="label_more">Daha fazla</string>
     <string name="action_sort_latest_chapter">Son bölüm</string>
     <string name="action_view_chapters">Bölümleri görüntüle</string>
     <string name="action_cancel_all">Hepsini iptal et</string>
@@ -454,7 +448,6 @@
         <item quantity="one">Bölüm %1$s ve 1 daha</item>
         <item quantity="other">Bölüm %1$s ve %2$d daha</item>
     </plurals>
-    <string name="action_hide">Gizle</string>
     <string name="hide_notification_content">Bildirim içeriğini gizle</string>
     <string name="notification_check_updates">Yeni bölümler aranıyor</string>
     <string name="pref_disable_battery_optimization">Pil iyileştirmeyi devre dışı bırak</string>
@@ -503,8 +496,8 @@
     <string name="add_tracking">İzleme ekle</string>
     <string name="in_library">Kitaplıkta</string>
     <string name="add_to_library">Kitaplığa ekle</string>
-    <string name="manga_info_collapse">Daha az bilgi göster</string>
-    <string name="manga_info_expand">Daha çok bilgi göster</string>
+    <string name="manga_info_collapse">Daha az</string>
+    <string name="manga_info_expand">Daha fazla</string>
     <string name="manga_info_about_label">Hakkında</string>
     <string name="website">Web sitesi</string>
     <string name="information_webview_required">WebView, Tachiyomi için gereklidir</string>
@@ -526,9 +519,7 @@
     <string name="last_used_source">Son kullanılan</string>
     <string name="local_source_help_guide">Yerel kaynak kılavuzu</string>
     <string name="restore_duration">%02d dk, %02d sn</string>
-    <string name="manga_info_last_chapter_label">Son bölüm</string>
     <string name="downloaded_only_summary">Kitaplığınızdaki tüm mangaları filtreler</string>
-    <string name="manga_info_latest_data_label">Güncellendi</string>
     <plurals name="download_queue_summary">
         <item quantity="one">1 kaldı</item>
         <item quantity="other">%1$s kaldı</item>
@@ -577,8 +568,27 @@
     <string name="page_list_empty_error">Sayfa bulunamadı</string>
     <string name="action_disable_all">Tümünü devre dışı bırak</string>
     <string name="action_enable_all">Tümünü etkinleştir</string>
-    <string name="enabled">Etkin</string>
     <string name="pref_show_reading_mode_summary">Okuyucu açılınca, kısaca o anki kipi göster</string>
     <string name="pref_show_reading_mode">Okuma kipini göster</string>
     <string name="action_start">Başlat</string>
+    <string name="loader_not_implemented_error">Kaynak bulunamadı</string>
+    <string name="action_disable">Devre dışı bırak</string>
+    <string name="action_sort_descending">Azalan</string>
+    <plurals name="manga_num_chapters">
+        <item quantity="one">1 bölüm</item>
+        <item quantity="other">%1$s bölüm</item>
+    </plurals>
+    <string name="action_open_in_settings">Ayarlarda aç</string>
+    <string name="pref_dns_over_https_summary">Etkili olması için uygulama yeniden başlatılmalıdır</string>
+    <string name="pref_dns_over_https" translatable="false">HTTPS ile DNS (Cloudflare)</string>
+    <string name="label_network">Ağ</string>
+    <string name="pref_jump_to_chapters">Açınca bölümlere git</string>
+    <string name="tapping_inverted_none">Yok</string>
+    <string name="pref_read_with_tapping_inverted">Dokunmayı ters çevir</string>
+    <string name="tapping_inverted_both">Her ikisi de</string>
+    <string name="tapping_inverted_vertical">Dikey</string>
+    <string name="tapping_inverted_horizontal">Yatay</string>
+    <string name="unknown_status">Bilinmeyen durum</string>
+    <string name="unknown_author">Bilinmeyen yazar</string>
+    <string name="action_download_unread">Okunmamış bölümleri indir</string>
 </resources>

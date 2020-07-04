@@ -224,10 +224,6 @@
     <string name="unknown">Tidak diketahui</string>
     <string name="licensed">Berlisensi</string>
     <string name="remove_from_library">Hapus dari perpustakaan</string>
-    <string name="manga_info_chapters_label">Bab</string>
-    <string name="manga_info_status_label">Status</string>
-    <string name="manga_info_source_label">Sumber</string>
-    <string name="manga_info_genres_label">Genre</string>
     <string name="delete_downloads_for_manga">Hapus bab terunduh?</string>
     <string name="manga_chapters_tab">Bab</string>
     <string name="manga_chapter_no_title">Tanpa judul</string>
@@ -301,7 +297,6 @@
     <string name="update_check_notification_download_complete">Mengunduh selesai</string>
     <string name="update_check_notification_download_error">Terjadi kesalahan saat mengunduh</string>
     <string name="update_check_notification_update_available">Versi baru tersedia!</string>
-    <string name="description_backdrop">Gambar latar belakang manga</string>
     <string name="description_cover">Sampul manga</string>
     <string name="information_no_downloads">Tidak ada unduhan</string>
     <string name="information_no_recent">Tidak ada pembaruan</string>
@@ -372,7 +367,6 @@
     <string name="track_start_date">Dimulai</string>
     <string name="track_type">Tipe</string>
     <string name="track_author">Penulis</string>
-    <string name="url_not_set">Tautan manga belum disetel, silahkan klik judul dan pilih manga lagi</string>
     <string name="transition_finished">Selesai:</string>
     <string name="transition_current">Saat ini:</string>
     <string name="transition_next">Selanjutnya:</string>
@@ -416,7 +410,6 @@
     <string name="pref_manage_notifications">Kelola notifikasi</string>
     <string name="pref_category_security">Keamanan</string>
     <string name="unlock_app">Buka Tachiyomi</string>
-    <string name="action_hide">Sembunyikan</string>
     <string name="theme_light_blue">Biru terang</string>
     <string name="action_menu">Menu</string>
     <string name="action_reorganize_by">Susun ulang</string>
@@ -486,8 +479,8 @@
     <string name="recent_manga_time">Bab. %1$s - %2$s</string>
     <string name="updating_library">Memperbaharui koleksi perpustakaan</string>
     <string name="add_tracking">Tambahkan pelacak</string>
-    <string name="manga_info_collapse">Tampilkan sedikit informasi</string>
-    <string name="manga_info_expand">Liat informasi lebih lanjut</string>
+    <string name="manga_info_collapse">Lebih sedikit</string>
+    <string name="manga_info_expand">Selengkapnya</string>
     <string name="manga_info_about_label">Tentang</string>
     <string name="in_library">Dalam koleksi</string>
     <string name="add_to_library">Tambahkan ke koleksi</string>
@@ -514,8 +507,6 @@
     <string name="error_invalid_date_supplied">Tanggal yang salah telah dimasukkan</string>
     <string name="track_finished_reading_date">Tanggal selesai dibaca</string>
     <string name="track_started_reading_date">Tanggal mulai dibaca</string>
-    <string name="manga_info_latest_data_label">Telah diperbarui</string>
-    <string name="manga_info_last_chapter_label">Bab terakhir</string>
     <string name="local_source_help_guide">Petunjuk sumber lokal</string>
     <string name="last_used_source">Terakhir digunakan</string>
     <plurals name="download_queue_summary">
@@ -570,5 +561,16 @@
     <string name="action_enable_all">Izinkan semua</string>
     <string name="pref_show_reading_mode_summary">Perlihatkan mode saat ini secara singkat ketika pembaca dibuka</string>
     <string name="pref_show_reading_mode">Tampilkan mode membaca</string>
-    <string name="enabled">Diaktifkan</string>
+    <string name="action_start">Mulai</string>
+    <string name="loader_not_implemented_error">Sumber tidak ditemukan</string>
+    <plurals name="manga_num_chapters">
+        <item quantity="other">%1$s bab</item>
+    </plurals>
+    <string name="pref_dns_over_https_summary">Mulai ulang aplikasi untuk menerapkan pengaturan</string>
+    <string name="pref_dns_over_https" translatable="false">DNS melalui HTTPS (Cloudflare)</string>
+    <string name="label_network">Jaringan</string>
+    <string name="pref_jump_to_chapters">Lompat ke bab saat dibuka</string>
+    <string name="action_sort_descending">Menurun</string>
+    <string name="action_disable">Matikan</string>
+    <string name="action_open_in_settings">Buka di pengaturan</string>
 </resources>
