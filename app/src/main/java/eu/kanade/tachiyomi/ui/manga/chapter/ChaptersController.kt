@@ -503,9 +503,6 @@ class ChaptersController :
 
     private fun markAsRead(chapters: List<ChapterItem>) {
         presenter.markChaptersRead(chapters, true)
-        if (presenter.preferences.removeAfterMarkedAsRead()) {
-            deleteChapters(chapters)
-        }
         destroyActionModeIfNeeded()
     }
 
