@@ -909,9 +909,6 @@ class MangaAllInOneController :
 
     private fun markAsRead(chapters: List<MangaAllInOneChapterItem>) {
         presenter.markChaptersRead(chapters, true)
-        if (presenter.preferences.removeAfterMarkedAsRead()) {
-            deleteChapters(chapters)
-        }
         destroyActionModeIfNeeded()
     }
 
