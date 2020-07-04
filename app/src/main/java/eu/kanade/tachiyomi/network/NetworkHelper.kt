@@ -29,6 +29,7 @@ import uy.kohesive.injekt.injectLazy
             .cache(Cache(cacheDir, cacheSize))
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(UserAgentInterceptor())
 
         if (BuildConfig.DEBUG) {
             val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
@@ -63,7 +64,6 @@ import uy.kohesive.injekt.injectLazy
 
     /* SY --> */ open /* SY <-- */val cloudflareClient by lazy {
         client.newBuilder()
-            .addInterceptor(UserAgentInterceptor())
             .addInterceptor(CloudflareInterceptor(context))
             .build()
     }
