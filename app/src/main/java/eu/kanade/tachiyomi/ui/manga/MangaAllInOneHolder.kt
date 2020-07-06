@@ -131,27 +131,11 @@ class MangaAllInOneHolder(
             }
             .launchIn(adapter.delegate.controllerScope)
 
-        binding.mangaArtist.longClicks()
-            .onEach {
-                adapter.delegate.copyToClipboard(binding.mangaArtistLabel.text.toString(), binding.mangaArtist.text.toString())
-            }
-            .launchIn(adapter.delegate.controllerScope)
-
-        binding.mangaArtist.clicks()
-            .onEach {
-                var text = binding.mangaArtist.text.toString()
-                if (adapter.delegate.isEHentaiBasedSource()) {
-                    text = adapter.delegate.wrapTag("artist", text)
-                }
-                adapter.delegate.performGlobalSearch(text)
-            }
-            .launchIn(adapter.delegate.controllerScope)
-
         binding.mangaAuthor.longClicks()
             .onEach {
                 // EXH Special case E-Hentai/ExHentai to ignore author field (unused)
                 if (!adapter.delegate.isEHentaiBasedSource()) {
-                    adapter.delegate.copyToClipboard(binding.mangaAuthorLabel.text.toString(), binding.mangaAuthor.text.toString())
+                    adapter.delegate.copyToClipboard("author", binding.mangaAuthor.text.toString())
                 }
             }
             .launchIn(adapter.delegate.controllerScope)
@@ -203,18 +187,12 @@ class MangaAllInOneHolder(
             manga.title
         }
 
-        // Update artist TextView.
-        binding.mangaArtist.text = if (manga.artist.isNullOrBlank()) {
+        // Update author/artist TextView.
+        val authors = listOf(manga.author, manga.artist).filter { !it.isNullOrBlank() }.distinct()
+        binding.mangaAuthor.text = if (authors.isEmpty()) {
             itemView.context.getString(R.string.unknown)
         } else {
-            manga.artist
-        }
-
-        // Update author TextView.
-        binding.mangaAuthor.text = if (manga.author.isNullOrBlank()) {
-            itemView.context.getString(R.string.unknown)
-        } else {
-            manga.author
+            authors.joinToString(", ")
         }
 
         // If manga source is known update source TextView.
