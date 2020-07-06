@@ -188,7 +188,17 @@ class MangaAllInOneHolder(
         }
 
         // Update author/artist TextView.
-        val authors = listOf(manga.author, manga.artist).filter { !it.isNullOrBlank() }.distinct()
+
+        val authors: MutableSet<String> = mutableSetOf()
+        val author = manga.author
+        val artist = manga.artist
+        val splitRegex = "([,\\-])".toRegex()
+        if (author != null) {
+            authors += author.split(splitRegex).map { it.trim() }.filter { !it.isBlank() }.toMutableSet()
+        }
+        if (artist != null) {
+            authors += artist.split(splitRegex).map { it.trim() }.filter { !it.isBlank() }.toMutableSet()
+        }
         binding.mangaAuthor.text = if (authors.isEmpty()) {
             itemView.context.getString(R.string.unknown)
         } else {
