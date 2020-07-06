@@ -26,7 +26,7 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
     override fun copyTo(manga: SManga) {
         prId?.let { prId ->
             prShortLink?.let { prShortLink ->
-                manga.url = "$BASE_URL/gallery/$prId/$prShortLink"
+                manga.url = "/gallery/$prId/$prShortLink"
             }
         }
 
