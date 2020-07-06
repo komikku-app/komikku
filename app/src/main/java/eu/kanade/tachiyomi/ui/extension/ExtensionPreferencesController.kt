@@ -30,7 +30,6 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
-import exh.source.EnhancedHttpSource
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
@@ -77,7 +76,6 @@ class ExtensionPreferencesController(bundle: Bundle? = null) :
         val screen = manager.createPreferenceScreen(themedContext)
         preferenceScreen = screen
 
-<<<<<<< HEAD:app/src/main/java/eu/kanade/tachiyomi/ui/extension/ExtensionPreferencesController.kt
         val multiSource = extension.sources.size > 1
 
         for (source in extension.sources) {
@@ -88,18 +86,6 @@ class ExtensionPreferencesController(bundle: Bundle? = null) :
                     Timber.e("Source did not implement [addPreferencesForSource]: ${source.name}")
                 }
             }
-=======
-        try {
-            // SY -->
-            if (source is EnhancedHttpSource) {
-                addPreferencesForSource(screen, source.enchancedSource)
-            } else {
-                addPreferencesForSource(screen, source)
-            }
-            // SY <--
-        } catch (e: AbstractMethodError) {
-            Timber.e("Source did not implement [addPreferencesForSource]: ${source.name}")
->>>>>>> 988356e... Add delegation support for configurable sources:app/src/main/java/eu/kanade/tachiyomi/ui/browse/extension/details/SourcePreferencesController.kt
         }
 
         manager.setPreferences(screen)
