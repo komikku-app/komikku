@@ -62,7 +62,7 @@ class Pururin(delegate: HttpSource) :
 
             val contentWrapper = input.selectFirst(".content-wrapper")
             title = contentWrapper.selectFirst(".title h1").text()
-            altTitle = contentWrapper.selectFirst(".alt-title").text()
+            altTitle = contentWrapper.selectFirst(".alt-title")?.text()
 
             thumbnailUrl = "https:" + input.selectFirst(".cover-wrapper v-lazy-image").attr("src")
 
