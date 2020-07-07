@@ -1,12 +1,10 @@
 package exh.util
 
-import android.util.Log
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
-import exh.lewdDelegatedSourceIds
 import java.util.Locale
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -15,16 +13,13 @@ fun Manga.isLewd(): Boolean {
     val sourceName = Injekt.get<SourceManager>().getOrStub(source).name
     val currentTags =
         genre?.split(",")?.map { it.trim().toLowerCase(Locale.US) } ?: emptyList()
-    val meta =
-
-        Log.d("Lewd", currentTags.joinToString(separator = "\n"))
 
     if (source == EH_SOURCE_ID || source == EXH_SOURCE_ID || source == NHENTAI_SOURCE_ID) {
         return !currentTags.any { tag -> isNonHentaiTag(tag) }
     }
 
     return source in 6905L..6913L ||
-        source in lewdDelegatedSourceIds ||
+        // source in lewdDelegatedSourceIds ||
         isHentaiSource(sourceName) ||
         currentTags.any { tag -> isHentaiTag(tag) }
 }
@@ -39,8 +34,18 @@ private fun isHentaiTag(tag: String): Boolean {
 }
 
 private fun isHentaiSource(source: String): Boolean {
-    return source.contains("hentai cafe", true) ||
-        source.contains("allporncomic", true) ||
+    return source.contains("allporncomic", true) ||
+        source.contains("hentai cafe", true) ||
         source.contains("hentai2read", true) ||
-        source.contains("hentainexus", true)
+        source.contains("hentaifox", true) ||
+        source.contains("hentainexus", true) ||
+        source.contains("manhwahentai.me", true) ||
+        source.contains("milftoon", true) ||
+        source.contains("myhentaicomics", true) ||
+        source.contains("myhentaigallery", true) ||
+        source.contains("ninehentai", true) ||
+        source.contains("pururin", true) ||
+        source.contains("simply hentai", true) ||
+        source.contains("tsumino", true) ||
+        source.contains("hentai", true)
 }
