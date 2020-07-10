@@ -8,6 +8,7 @@ import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.EHentaiSearchMetadata
 import io.realm.Realm
 import io.realm.RealmConfiguration
+import java.util.Date
 import uy.kohesive.injekt.injectLazy
 
 class LocalFavoritesStorage {
@@ -41,6 +42,7 @@ class LocalFavoritesStorage {
                         it.fav,
                         it.manga.apply {
                             favorite = true
+                            date_added = Date().time
                         }
                     )
                 }

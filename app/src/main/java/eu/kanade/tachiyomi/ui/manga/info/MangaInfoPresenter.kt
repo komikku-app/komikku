@@ -109,6 +109,10 @@ class MangaInfoPresenter(
      */
     fun toggleFavorite(): Boolean {
         manga.favorite = !manga.favorite
+        manga.date_added = when (manga.favorite) {
+            true -> Date().time
+            false -> 0
+        }
         if (!manga.favorite) {
             manga.removeCovers(coverCache)
         }

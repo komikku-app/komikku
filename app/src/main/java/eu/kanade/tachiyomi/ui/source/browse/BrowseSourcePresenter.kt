@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.ui.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.EXHSavedSearch
 import java.lang.RuntimeException
+import java.util.Date
 import kotlinx.coroutines.flow.subscribe
 import rx.Observable
 import rx.Subscription
@@ -273,9 +274,15 @@ open class BrowseSourcePresenter(
      */
     fun changeMangaFavorite(manga: Manga) {
         manga.favorite = !manga.favorite
+        manga.date_added = when (manga.favorite) {
+            true -> Date().time
+            false -> 0
+        }
+
         if (!manga.favorite) {
             manga.removeCovers(coverCache)
         }
+
         db.insertManga(manga).executeAsBlocking()
     }
 

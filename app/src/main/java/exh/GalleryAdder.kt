@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import java.util.Date
 import uy.kohesive.injekt.injectLazy
 
 class GalleryAdder {
@@ -93,7 +94,10 @@ class GalleryAdder {
             manga.copyFrom(newManga)
             manga.initialized = true
 
-            if (fav) manga.favorite = true
+            if (fav) {
+                manga.favorite = true
+                manga.date_added = Date().time
+            }
 
             db.insertManga(manga).executeAsBlocking()
 

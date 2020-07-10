@@ -62,6 +62,15 @@ open class App : Application(), LifecycleObserver {
 
         workaroundAndroid7BrokenSSL()
 
+        // Debug tool; see https://fbflipper.com/
+        // SoLoader.init(this, false)
+        // if (BuildConfig.DEBUG && FlipperUtils.shouldEnableFlipper(this)) {
+        //     val client = AndroidFlipperClient.getInstance(this)
+        //     client.addPlugin(InspectorFlipperPlugin(this, DescriptorMapping.withDefaults()))
+        //     client.addPlugin(DatabasesFlipperPlugin(this))
+        //     client.start()
+        // }
+
         // Enforce WebView availability
         if (!WebViewUtil.supportsWebView(this)) {
             toast(R.string.information_webview_required, Toast.LENGTH_LONG)

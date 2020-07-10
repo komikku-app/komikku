@@ -154,7 +154,9 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
 
         private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
 
-        override val items = listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, source, dragAndDrop)
+        private val dateAdded = Item.MultiSort(R.string.action_sort_date_added, this)
+
+        override val items = listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, dateAdded, source, dragAndDrop)
 
         override val header = Item.Header(R.string.action_sort)
 
@@ -174,6 +176,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             unread.state = if (sorting == LibrarySort.UNREAD) order else SORT_NONE
             total.state = if (sorting == LibrarySort.TOTAL) order else SORT_NONE
             latestChapter.state = if (sorting == LibrarySort.LATEST_CHAPTER) order else SORT_NONE
+            dateAdded.state = if (sorting == LibrarySort.DATE_ADDED) order else Item.MultiSort.SORT_NONE
             source.state = if (sorting == LibrarySort.SOURCE) order else SORT_NONE
             dragAndDrop.state = if (sorting == LibrarySort.DRAG_AND_DROP) order else SORT_NONE
         }
@@ -202,6 +205,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
                     unread -> LibrarySort.UNREAD
                     total -> LibrarySort.TOTAL
                     latestChapter -> LibrarySort.LATEST_CHAPTER
+                    dateAdded -> LibrarySort.DATE_ADDED
                     source -> LibrarySort.SOURCE
                     dragAndDrop -> LibrarySort.DRAG_AND_DROP
                     else -> throw Exception("Unknown sorting")
