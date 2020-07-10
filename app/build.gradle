@@ -303,6 +303,13 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactive:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$coroutines_version"
 
+    // For detecting memory leaks; see https://square.github.io/leakcanary/
+//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.2'
+
+    // Debug tool; see https://fbflipper.com/
+//    debugImplementation 'com.facebook.flipper:flipper:0.49.0'
+//    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
+    
     // Text distance (EH)
     implementation 'info.debatty:java-string-similarity:1.2.1'
 

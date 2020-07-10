@@ -33,6 +33,7 @@ import exh.favorites.FavoritesSyncHelper
 import exh.util.isLewd
 import java.util.Collections
 import java.util.Comparator
+import java.util.Date
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -246,6 +247,7 @@ class LibraryPresenter(
                         ?: latestChapterManga.size
                     manga1latestChapter.compareTo(manga2latestChapter)
                 }
+                LibrarySort.DATE_ADDED -> i2.manga.date_added.compareTo(i1.manga.date_added)
                 // SY -->
                 LibrarySort.DRAG_AND_DROP -> {
                     0
@@ -481,7 +483,11 @@ class LibraryPresenter(
             // Update favorite status
             if (replace) {
                 prevManga.favorite = false
+                manga.date_added = prevManga.date_added
+                prevManga.date_added = 0
                 db.updateMangaFavorite(prevManga).executeAsBlocking()
+            } else {
+                manga.date_added = Date().time
             }
             manga.favorite = true
             db.updateMangaFavorite(manga).executeAsBlocking()

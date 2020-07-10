@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.debug.DebugFunctions.sourceManager
+import java.util.Date
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
@@ -101,7 +102,11 @@ class MigrationMangaPresenter(
             // Update favorite status
             if (replace) {
                 prevManga.favorite = false
+                manga.date_added = prevManga.date_added
+                prevManga.date_added = 0
                 db.updateMangaFavorite(prevManga).executeAsBlocking()
+            } else {
+                manga.date_added = Date().time
             }
             manga.favorite = true
             db.updateMangaFavorite(manga).executeAsBlocking()

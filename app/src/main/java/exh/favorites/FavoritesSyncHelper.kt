@@ -339,6 +339,7 @@ class FavoritesSyncHelper(val context: Context) {
 
                 if (manga?.favorite == true) {
                     manga.favorite = false
+                    manga.date_added = 0
                     db.updateMangaFavorite(manga).executeAsBlocking()
                     removedManga += manga
                 }

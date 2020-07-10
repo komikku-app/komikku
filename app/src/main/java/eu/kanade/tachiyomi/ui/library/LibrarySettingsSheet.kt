@@ -149,6 +149,7 @@ class LibrarySettingsSheet(
             private val lastChecked = Item.MultiSort(R.string.action_sort_last_checked, this)
             private val unread = Item.MultiSort(R.string.action_filter_unread, this)
             private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
+            private val dateAdded = Item.MultiSort(R.string.action_sort_date_added, this)
             // SY -->
             private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
             // SY <--
@@ -174,9 +175,12 @@ class LibrarySettingsSheet(
                     if (sorting == LibrarySort.LAST_CHECKED) order else Item.MultiSort.SORT_NONE
                 unread.state =
                     if (sorting == LibrarySort.UNREAD) order else Item.MultiSort.SORT_NONE
-                total.state = if (sorting == LibrarySort.TOTAL) order else Item.MultiSort.SORT_NONE
+                total.state =
+                    if (sorting == LibrarySort.TOTAL) order else Item.MultiSort.SORT_NONE
                 latestChapter.state =
                     if (sorting == LibrarySort.LATEST_CHAPTER) order else Item.MultiSort.SORT_NONE
+                dateAdded.state =
+                    if (sorting == LibrarySort.DATE_ADDED) order else Item.MultiSort.SORT_NONE
                 // SY -->
                 dragAndDrop.state = if (sorting == LibrarySort.DRAG_AND_DROP) order else Item.MultiSort.SORT_NONE
                 // SY <--
@@ -211,6 +215,7 @@ class LibrarySettingsSheet(
                         unread -> LibrarySort.UNREAD
                         total -> LibrarySort.TOTAL
                         latestChapter -> LibrarySort.LATEST_CHAPTER
+                        dateAdded -> LibrarySort.DATE_ADDED
                         // SY -->
                         dragAndDrop -> LibrarySort.DRAG_AND_DROP
                         // SY <--

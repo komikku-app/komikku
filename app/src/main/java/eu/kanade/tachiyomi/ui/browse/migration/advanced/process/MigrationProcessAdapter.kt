@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.lang.launchUI
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
@@ -135,7 +136,10 @@ class MigrationProcessAdapter(
         // Update favorite status
         if (replace) {
             prevManga.favorite = false
+            manga.date_added = prevManga.date_added
             db.updateMangaFavorite(prevManga).executeAsBlocking()
+        } else {
+            manga.date_added = Date().time
         }
         manga.favorite = true
 

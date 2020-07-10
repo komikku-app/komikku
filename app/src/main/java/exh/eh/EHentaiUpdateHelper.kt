@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import java.io.File
+import java.util.Date
 import rx.Observable
 import rx.Single
 import uy.kohesive.injekt.injectLazy
@@ -129,8 +130,12 @@ class EHentaiUpdateHelper(context: Context) {
                         }
                     }
 
-                toDiscard.forEach { it.manga.favorite = false }
+                toDiscard.forEach {
+                    it.manga.favorite = false
+                    it.manga.date_added = 0
+                }
                 accepted.manga.favorite = true
+                accepted.manga.date_added = Date().time
 
                 val newAccepted = ChapterChain(accepted.manga, newChapters)
                 val rootsToMutate = toDiscard + newAccepted
