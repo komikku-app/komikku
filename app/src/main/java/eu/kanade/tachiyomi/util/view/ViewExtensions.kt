@@ -82,8 +82,8 @@ inline fun View.toggle() {
  *
  * @param recycler [RecyclerView] that the FAB should shrink/extend in response to.
  */
-fun ExtendedFloatingActionButton.shrinkOnScroll(recycler: RecyclerView) {
-    recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+fun ExtendedFloatingActionButton.shrinkOnScroll(recycler: RecyclerView): RecyclerView.OnScrollListener {
+    val listener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             if (dy <= 0) {
                 extend()
@@ -91,7 +91,9 @@ fun ExtendedFloatingActionButton.shrinkOnScroll(recycler: RecyclerView) {
                 shrink()
             }
         }
-    })
+    }
+    recycler.addOnScrollListener(listener)
+    return listener
 }
 
 /**

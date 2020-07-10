@@ -9,15 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
 import eu.davidea.flexibleadapter.helpers.UndoHelper
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.CategoriesControllerBinding
+import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
-import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -28,6 +30,7 @@ import reactivecircus.flowbinding.android.view.clicks
 class SourceCategoryController :
     NucleusController<CategoriesControllerBinding, SourceCategoryPresenter>(),
     ActionMode.Callback,
+    FabController,
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     SourceCategoryCreateDialog.Listener,
@@ -43,6 +46,9 @@ class SourceCategoryController :
      * Adapter containing category items.
      */
     private var adapter: SourceCategoryAdapter? = null
+
+    private var actionFab: ExtendedFloatingActionButton? = null
+    private var actionFabScrollListener: RecyclerView.OnScrollListener? = null
 
     /**
      * Undo helper used for restoring a deleted category.
@@ -86,13 +92,23 @@ class SourceCategoryController :
         binding.recycler.adapter = adapter
         adapter?.isPermanentDelete = false
 
-        binding.fab.clicks()
+        actionFabScrollListener = actionFab?.shrinkOnScroll(binding.recycler)
+    }
+
+    override fun configureFab(fab: ExtendedFloatingActionButton) {
+        actionFab = fab
+        fab.setText(R.string.action_add)
+        fab.setIconResource(R.drawable.ic_add_24dp)
+        fab.clicks()
             .onEach {
                 SourceCategoryCreateDialog(this@SourceCategoryController).showDialog(router, null)
             }
             .launchIn(scope)
+    }
 
-        binding.fab.offsetAppbarHeight(activity!!)
+    override fun cleanupFab(fab: ExtendedFloatingActionButton) {
+        actionFabScrollListener?.let { binding.recycler.removeOnScrollListener(it) }
+        actionFab = null
     }
 
     /**
@@ -178,7 +194,7 @@ class SourceCategoryController :
             R.id.action_delete -> {
                 undoHelper = UndoHelper(adapter, this)
                 undoHelper?.start(
-                    adapter.selectedPositions, view!!,
+                    adapter.selectedPositions, activity!!.findViewById(R.id.root_coordinator),
                     R.string.snack_categories_deleted, R.string.action_undo, 3000
                 )
 

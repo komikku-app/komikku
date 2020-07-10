@@ -3,8 +3,10 @@ package eu.kanade.tachiyomi.ui.main
 import android.app.Activity
 import android.app.SearchManager
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -16,13 +18,16 @@ import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
+import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
@@ -38,6 +43,10 @@ import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.gone
+import eu.kanade.tachiyomi.util.view.snack
+import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
 import exh.EIGHTMUSES_SOURCE_ID
 import exh.EXHMigrations
@@ -176,10 +185,10 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         syncActivityViewWithController(router.backstack.lastOrNull()?.controller())
 
         if (savedInstanceState == null) {
-            // Show changelog if needed
+            // Show changelog prompt on update
             // TODO
-//            if (Migrations.upgrade(preferences)) {
-//                ChangelogDialogController().showDialog(router)
+//            if (Migrations.upgrade(preferences) && !BuildConfig.DEBUG) {
+//                showUpdateInfoSnackbar()
 //            }
 
             // EXH -->
@@ -427,6 +436,15 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             binding.tabs.setupWithViewPager(null)
         }
 
+        if (from is FabController) {
+            binding.rootFab.gone()
+            from.cleanupFab(binding.rootFab)
+        }
+        if (to is FabController) {
+            binding.rootFab.visible()
+            to.configureFab(binding.rootFab)
+        }
+
         if (to is NoToolbarElevationController) {
             binding.appbar.disableElevation()
         } else {
@@ -449,6 +467,32 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             }
 
             bottomViewNavigationBehavior.slideDown(binding.bottomNav)
+        }
+    }
+
+    private fun showUpdateInfoSnackbar() {
+        val snack = binding.rootCoordinator.snack(
+            getString(R.string.updated_version, BuildConfig.VERSION_NAME),
+            Snackbar.LENGTH_INDEFINITE
+        ) {
+            setAction(R.string.whats_new) {
+                val url = "https://github.com/inorichi/tachiyomi/releases/tag/v${BuildConfig.VERSION_NAME}"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            }
+
+            // Ensure the snackbar sits above the bottom nav
+            val layoutParams = view.layoutParams as CoordinatorLayout.LayoutParams
+            layoutParams.anchorId = binding.bottomNav.id
+            layoutParams.anchorGravity = Gravity.TOP
+            layoutParams.gravity = Gravity.TOP
+            view.layoutParams = layoutParams
+        }
+
+        // Manually handle dismiss delay since Snackbar.LENGTH_LONG is a too short
+        launchIO {
+            delay(5000)
+            snack.dismiss()
         }
     }
 
