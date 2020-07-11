@@ -125,6 +125,7 @@
     <string name="pref_latest_tab_language_code">Display language code next to name</string>
     <string name="no_source_categories">No source categories available</string>
     <string name="invalid_category_name">Invalid category name</string>
+    <string name="add_tag">Add Tag</string>
 
     <!-- AZ -->
     <string name="az_recommends">See Recommendations</string>
@@ -135,5 +136,6 @@
     <string name="manhua">Manhua</string>
     <string name="comic">Comic</string>
     <string name="webtoon">Webtoon</string>
+    <string name="reset_tags">Reset Tags</string>
 
 </resources>

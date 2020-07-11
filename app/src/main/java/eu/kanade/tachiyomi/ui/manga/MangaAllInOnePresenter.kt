@@ -204,31 +204,31 @@ class MangaAllInOnePresenter(
         title: String?,
         author: String?,
         artist: String?,
-        description: String?
-        // tags: Array<String>?
+        description: String?,
+        tags: List<String>?
     ) {
         if (manga.source == LocalSource.ID) {
             manga.title = if (title.isNullOrBlank()) manga.url else title.trim()
             manga.author = author?.trimOrNull()
             manga.artist = artist?.trimOrNull()
             manga.description = description?.trimOrNull()
-            /*val tagsString = tags?.joinToString(", ") { it.capitalize() }*/
-            /*manga.genre = if (tags.isNullOrEmpty()) null else tagsString?.trim()*/
+            val tagsString = tags?.joinToString(", ")
+            manga.genre = if (tags.isNullOrEmpty()) null else tagsString?.trim()
             LocalSource(downloadManager.context).updateMangaInfo(manga)
             db.updateMangaInfo(manga).executeAsBlocking()
         } else {
-                /*val genre = if (!tags.isNullOrEmpty() && tags.joinToString(", ") != manga.genre) {
-                    tags.map { it.capitalize() }.toTypedArray()
-                } else {
-                    null
-                }*/
+            val genre = if (!tags.isNullOrEmpty() && tags.joinToString(", ") != manga.genre) {
+                tags.toTypedArray()
+            } else {
+                null
+            }
             val manga = CustomMangaManager.MangaJson(
                 manga.id!!,
                 title?.trimOrNull(),
                 author?.trimOrNull(),
                 artist?.trimOrNull(),
-                description?.trimOrNull()
-                // genre
+                description?.trimOrNull(),
+                genre
             )
             customMangaManager.saveMangaInfo(manga)
         }
