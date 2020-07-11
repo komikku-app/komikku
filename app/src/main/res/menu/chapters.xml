@@ -95,4 +95,11 @@
                 android:title="@string/download_all" />
         </menu>
     </item>
+
+    <item
+        android:id="@+id/action_edit"
+        android:icon="@drawable/ic_edit_24dp"
+        android:title="@string/action_edit"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

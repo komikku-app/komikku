@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/cover_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:foreground="?attr/selectableItemBackground"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:id="@+id/manga_cover"
+            android:layout_width="wrap_content"
+            android:adjustViewBounds="true"
+            android:minWidth="75dp"
+            android:layout_height="150dp"
+            android:contentDescription="@string/description_cover"
+            android:background="@drawable/rounded_rectangle"
+            android:src="@mipmap/ic_launcher"/>
+    </FrameLayout>
+
+    <!--<Button
+        android:id="@+id/reset_cover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Theme.Widget"
+        android:textAllCaps="false"
+        android:layout_gravity="center"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:text="@string/reset_cover" />-->
+
+    <EditText
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/title"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:inputType="text"
+        android:maxLines="1"/>
+    <EditText
+        android:id="@+id/manga_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Artist"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:inputType="text"
+        android:maxLines="1"/>
+
+    <EditText
+        android:id="@+id/manga_artist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Author"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:inputType="text"
+        android:maxLines="1"/>
+
+    <EditText
+        android:id="@+id/manga_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:hint="@string/description"
+        android:inputType="text|textMultiLine"
+        android:scrollHorizontally="false" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/manga_genres_tags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/reset_tags"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:textAllCaps="false"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:text="Clear Tags" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/divider"/>
+
+</LinearLayout>

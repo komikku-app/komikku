@@ -161,6 +161,8 @@ class MangaAllInOneController :
     val smartSearchConfig: SourceController.SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG_EXTRA)
 
     override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+
+    private var editMangaDialog: EditMangaDialog? = null
     // EXH <--
 
     val fromSource = args.getBoolean(FROM_SOURCE_EXTRA, false)
@@ -666,6 +668,8 @@ class MangaAllInOneController :
             else -> throw NotImplementedError("Unimplemented sorting method")
         }
         menu.findItem(sortingItem).isChecked = true
+
+        if (presenter.manga.favorite) menu.findItem(R.id.action_edit).isVisible = true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -719,6 +723,12 @@ class MangaAllInOneController :
             R.id.action_filter_empty -> {
                 presenter.removeFilters()
                 activity?.invalidateOptionsMenu()
+            }
+            R.id.action_edit -> {
+                editMangaDialog = EditMangaDialog(
+                    this, presenter.manga
+                )
+                editMangaDialog?.showDialog(router)
             }
             R.id.action_sort -> presenter.revertSortOrder()
         }

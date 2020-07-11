@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
@@ -31,6 +32,7 @@ import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.isEhBasedSource
 import exh.util.await
+import exh.util.trimOrNull
 import java.util.Date
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,6 +77,8 @@ class MangaAllInOnePresenter(
     private var chapterCount: Float = 0F
 
     private val scope = CoroutineScope(Job() + Dispatchers.Default)
+
+    private val customMangaManager: CustomMangaManager by injectLazy()
 
     /**
      * Whether the chapter list has been requested to the source.
@@ -194,6 +198,47 @@ class MangaAllInOnePresenter(
                     .subscribeLatestCache({ view, manga -> view.onNextManga(manga, source, chapterList, lastUpdateDate, chapterCount) })
             }
         }
+    }
+
+    fun updateMangaInfo(
+        title: String?,
+        author: String?,
+        artist: String?,
+        description: String?
+        // tags: Array<String>?
+    ) {
+        if (manga.source == LocalSource.ID) {
+            manga.title = if (title.isNullOrBlank()) manga.url else title.trim()
+            manga.author = author?.trimOrNull()
+            manga.artist = artist?.trimOrNull()
+            manga.description = description?.trimOrNull()
+            /*val tagsString = tags?.joinToString(", ") { it.capitalize() }*/
+            /*manga.genre = if (tags.isNullOrEmpty()) null else tagsString?.trim()*/
+            LocalSource(downloadManager.context).updateMangaInfo(manga)
+            db.updateMangaInfo(manga).executeAsBlocking()
+        } else {
+                /*val genre = if (!tags.isNullOrEmpty() && tags.joinToString(", ") != manga.genre) {
+                    tags.map { it.capitalize() }.toTypedArray()
+                } else {
+                    null
+                }*/
+            val manga = CustomMangaManager.MangaJson(
+                manga.id!!,
+                title?.trimOrNull(),
+                author?.trimOrNull(),
+                artist?.trimOrNull(),
+                description?.trimOrNull()
+                // genre
+            )
+            customMangaManager.saveMangaInfo(manga)
+        }
+            /*if (uri != null) {
+                editCoverWithStream(uri)
+            } else if (resetCover) {
+                coverCache.deleteCustomCover(manga)
+                controller.setPaletteColor()
+            }*/
+        // controller.updateHeader()
     }
 
     /**

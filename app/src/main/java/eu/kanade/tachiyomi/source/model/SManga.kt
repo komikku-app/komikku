@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.model
 
+import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import java.io.Serializable
 
 interface SManga : Serializable {
@@ -22,27 +23,38 @@ interface SManga : Serializable {
 
     var initialized: Boolean
 
+    val originalTitle: String
+        get() = (this as? MangaImpl)?.ogTitle ?: title
+    val originalAuthor: String?
+        get() = (this as? MangaImpl)?.ogAuthor ?: author
+    val originalArtist: String?
+        get() = (this as? MangaImpl)?.ogArtist ?: artist
+    val originalDescription: String?
+        get() = (this as? MangaImpl)?.ogDesc ?: description
+    val originalGenre: String?
+        get() = (this as? MangaImpl)?.ogGenre ?: genre
+
     fun copyFrom(other: SManga) {
         // EXH -->
         if (other.title.isNotBlank()) {
-            title = other.title
+            title = other.originalTitle
         }
         // EXH <--
 
         if (other.author != null) {
-            author = other.author
+            author = other.originalAuthor
         }
 
         if (other.artist != null) {
-            artist = other.artist
+            artist = other.originalArtist
         }
 
         if (other.description != null) {
-            description = other.description
+            description = other.originalDescription
         }
 
         if (other.genre != null) {
-            genre = other.genre
+            genre = other.originalGenre
         }
 
         if (other.thumbnail_url != null) {
@@ -61,9 +73,6 @@ interface SManga : Serializable {
         const val ONGOING = 1
         const val COMPLETED = 2
         const val LICENSED = 3
-        // SY -->
-        const val RECOMMENDS = 69 // nice
-        // SY <--
 
         fun create(): SManga {
             return SMangaImpl()
