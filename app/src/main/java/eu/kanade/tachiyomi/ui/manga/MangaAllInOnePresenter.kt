@@ -238,7 +238,7 @@ class MangaAllInOnePresenter(
                 coverCache.deleteCustomCover(manga)
                 controller.setPaletteColor()
             }*/
-        // controller.updateHeader()
+        updateManga(updateInfo = false)
     }
 
     /**
