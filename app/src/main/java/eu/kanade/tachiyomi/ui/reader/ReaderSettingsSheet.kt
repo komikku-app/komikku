@@ -19,7 +19,6 @@ import kotlinx.android.synthetic.main.reader_settings_sheet.always_show_chapter_
 import kotlinx.android.synthetic.main.reader_settings_sheet.auto_webtoon_mode
 import kotlinx.android.synthetic.main.reader_settings_sheet.background_color
 import kotlinx.android.synthetic.main.reader_settings_sheet.crop_borders
-import kotlinx.android.synthetic.main.reader_settings_sheet.crop_borders_webtoon
 import kotlinx.android.synthetic.main.reader_settings_sheet.cutout_short
 import kotlinx.android.synthetic.main.reader_settings_sheet.fullscreen
 import kotlinx.android.synthetic.main.reader_settings_sheet.keepscreen
@@ -89,6 +88,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         keepscreen.bindToPreference(preferences.keepScreenOn())
         long_tap.bindToPreference(preferences.readWithLongTap())
         always_show_chapter_transition.bindToPreference(preferences.alwaysShowChapterTransition())
+        crop_borders.bindToPreference(preferences.cropBorders())
         // SY -->
         auto_webtoon_mode.bindToPreference(preferences.eh_useAutoWebtoon())
         // SY <--
@@ -108,7 +108,6 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
 
         scale_type.bindToPreference(preferences.imageScaleType(), 1)
         zoom_start.bindToPreference(preferences.zoomStart(), 1)
-        crop_borders.bindToPreference(preferences.cropBorders())
         page_transitions.bindToPreference(preferences.pageTransitions())
     }
 
@@ -119,7 +118,6 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         pager_prefs_group.invisible()
         webtoon_prefs_group.visible()
 
-        crop_borders_webtoon.bindToPreference(preferences.cropBordersWebtoon())
         webtoon_side_padding.bindToIntPreference(preferences.webtoonSidePadding(), R.array.webtoon_side_padding_values)
     }
 

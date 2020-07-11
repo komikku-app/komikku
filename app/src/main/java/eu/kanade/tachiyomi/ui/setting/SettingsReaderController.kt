@@ -100,6 +100,11 @@ class SettingsReaderController : SettingsController() {
                     defaultValue = false
                 }
             }
+            switchPreference {
+                key = Keys.cropBorders
+                titleRes = R.string.pref_crop_borders
+                defaultValue = false
+            }
         }
 
         preferenceCategory {
@@ -268,21 +273,10 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_page_transitions
                 defaultValue = true
             }
-            switchPreference {
-                key = Keys.cropBorders
-                titleRes = R.string.pref_crop_borders
-                defaultValue = false
-            }
         }
 
         preferenceCategory {
             titleRes = R.string.webtoon_viewer
-
-            switchPreference {
-                key = Keys.cropBordersWebtoon
-                titleRes = R.string.pref_crop_borders
-                defaultValue = false
-            }
 
             intListPreference {
                 key = Keys.webtoonSidePadding
