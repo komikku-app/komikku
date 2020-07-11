@@ -93,13 +93,16 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             }
         })
         recycler.tapListener = { event ->
-            val positionX = event.rawX
             val positionY = event.rawY
+            val invertMode = config.tappingInverted
+            val topSideTap = positionY < recycler.height * 0.33f && config.tappingEnabled
+            val bottomSideTap = positionY > recycler.height * 0.66f && config.tappingEnabled
+
+            val tappingInverted = invertMode == TappingInvertMode.VERTICAL || invertMode == TappingInvertMode.BOTH
+
             when {
-                positionY < recycler.height * 0.25 && config.tappingEnabled -> scrollUp()
-                positionY > recycler.height * 0.75 && config.tappingEnabled -> scrollDown()
-                positionX < recycler.width * 0.33 && config.tappingEnabled -> scrollUp()
-                positionX > recycler.width * 0.66 && config.tappingEnabled -> scrollDown()
+                topSideTap && !tappingInverted || bottomSideTap && tappingInverted -> scrollUp()
+                bottomSideTap && !tappingInverted || topSideTap && tappingInverted -> scrollDown()
                 else -> activity.toggleMenu()
             }
         }
@@ -232,14 +235,22 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
      * Scrolls up by [scrollDistance].
      */
     private fun scrollUp() {
-        recycler.smoothScrollBy(0, -scrollDistance)
+        if (config.usePageTransitions) {
+            recycler.smoothScrollBy(0, -scrollDistance)
+        } else {
+            recycler.scrollBy(0, -scrollDistance)
+        }
     }
 
     /**
      * Scrolls down by [scrollDistance].
      */
     /* [EXH] private */ fun scrollDown() {
-        recycler.smoothScrollBy(0, scrollDistance)
+        if (config.usePageTransitions) {
+            recycler.smoothScrollBy(0, scrollDistance)
+        } else {
+            recycler.scrollBy(0, scrollDistance)
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
+import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.invisible
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.IgnoreFirstSpinnerListener
@@ -23,11 +24,13 @@ import kotlinx.android.synthetic.main.reader_settings_sheet.cutout_short
 import kotlinx.android.synthetic.main.reader_settings_sheet.fullscreen
 import kotlinx.android.synthetic.main.reader_settings_sheet.keepscreen
 import kotlinx.android.synthetic.main.reader_settings_sheet.long_tap
+import kotlinx.android.synthetic.main.reader_settings_sheet.navigation_prefs_group
 import kotlinx.android.synthetic.main.reader_settings_sheet.page_transitions
 import kotlinx.android.synthetic.main.reader_settings_sheet.pager_prefs_group
 import kotlinx.android.synthetic.main.reader_settings_sheet.rotation_mode
 import kotlinx.android.synthetic.main.reader_settings_sheet.scale_type
 import kotlinx.android.synthetic.main.reader_settings_sheet.show_page_number
+import kotlinx.android.synthetic.main.reader_settings_sheet.tapping_inverted
 import kotlinx.android.synthetic.main.reader_settings_sheet.true_color
 import kotlinx.android.synthetic.main.reader_settings_sheet.viewer
 import kotlinx.android.synthetic.main.reader_settings_sheet.webtoon_prefs_group
@@ -57,6 +60,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         super.onCreate(savedInstanceState)
 
         initGeneralPreferences()
+        initNavigationPreferences()
 
         when (activity.viewer) {
             is PagerViewer -> initPagerPreferences()
@@ -89,6 +93,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         long_tap.bindToPreference(preferences.readWithLongTap())
         always_show_chapter_transition.bindToPreference(preferences.alwaysShowChapterTransition())
         crop_borders.bindToPreference(preferences.cropBorders())
+        page_transitions.bindToPreference(preferences.pageTransitions())
         // SY -->
         auto_webtoon_mode.bindToPreference(preferences.eh_useAutoWebtoon())
         // SY <--
@@ -108,7 +113,6 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
 
         scale_type.bindToPreference(preferences.imageScaleType(), 1)
         zoom_start.bindToPreference(preferences.zoomStart(), 1)
-        page_transitions.bindToPreference(preferences.pageTransitions())
     }
 
     /**
@@ -119,6 +123,17 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         webtoon_prefs_group.visible()
 
         webtoon_side_padding.bindToIntPreference(preferences.webtoonSidePadding(), R.array.webtoon_side_padding_values)
+    }
+
+    /**
+     * Init the preferences for navigation.
+     */
+    private fun initNavigationPreferences() {
+        if (!preferences.readWithTapping().get()) {
+            navigation_prefs_group.gone()
+        }
+
+        tapping_inverted.bindToPreference(preferences.readWithTappingInverted())
     }
 
     /**
@@ -137,6 +152,19 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
             pref.set(position + offset)
         }
         setSelection(pref.get() - offset, false)
+    }
+
+    /**
+     * Binds a spinner to an enum preference.
+     */
+    private inline fun <reified T : Enum<T>> Spinner.bindToPreference(pref: Preference<T>) {
+        val enumConstants = T::class.java.enumConstants
+
+        onItemSelectedListener = IgnoreFirstSpinnerListener { position ->
+            enumConstants?.get(position)?.let { pref.set(it) }
+        }
+
+        enumConstants?.indexOf(pref.get())?.let { setSelection(it, false) }
     }
 
     /**
