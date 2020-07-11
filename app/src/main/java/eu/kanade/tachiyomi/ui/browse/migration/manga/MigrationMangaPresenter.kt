@@ -34,7 +34,7 @@ class MigrationMangaPresenter(
 
     private fun libraryToMigrationItem(library: List<Manga>): List<MangaItem> {
         return library.filter { it.source == sourceId }
-            .sortedBy { it.title }
+            .sortedBy { it.originalTitle }
             .map { MangaItem(it) }
     }
 

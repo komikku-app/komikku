@@ -171,7 +171,7 @@ class MigrationProcessHolder(
         title.text = if (manga.title.isBlank()) {
             view.context.getString(R.string.unknown)
         } else {
-            manga.title
+            manga.originalTitle
         }
 
         gradient.visible()

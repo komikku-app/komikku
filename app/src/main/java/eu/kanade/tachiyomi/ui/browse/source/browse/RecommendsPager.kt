@@ -282,7 +282,7 @@ open class RecommendsPager(
 
     private fun getRecs(api: API) {
         Timber.tag("RECOMMENDATIONS").d("USING > %s", api.toString())
-        apiList[api]?.getRecsBySearch(manga.title) { recs, error ->
+        apiList[api]?.getRecsBySearch(manga.originalTitle) { recs, error ->
             if (error != null) {
                 handleError(error)
             }

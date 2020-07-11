@@ -211,7 +211,7 @@ class MangaInfoPresenter(
                     )
                 )
             )
-            Manga.create(newMangaConfig.writeAsUrl(gson), originalManga.title, MERGED_SOURCE_ID).apply {
+            Manga.create(newMangaConfig.writeAsUrl(gson), originalManga.originalTitle, MERGED_SOURCE_ID).apply {
                 copyFrom(originalManga)
                 favorite = true
                 last_update = originalManga.last_update

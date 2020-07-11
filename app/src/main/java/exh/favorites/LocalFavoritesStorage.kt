@@ -120,7 +120,7 @@ class LocalFavoritesStorage {
             validateDbManga(it.second)
         }.mapNotNull {
             FavoriteEntry().apply {
-                title = it.second.title
+                title = it.second.originalTitle
                 gid = EHentaiSearchMetadata.galleryId(it.second.url)
                 token = EHentaiSearchMetadata.galleryToken(it.second.url)
                 category = it.first

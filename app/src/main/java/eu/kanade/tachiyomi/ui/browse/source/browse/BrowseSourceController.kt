@@ -146,7 +146,7 @@ open class BrowseSourceController(bundle: Bundle) :
         // SY -->
         return when (mode) {
             Mode.CATALOGUE -> presenter.source.name
-            Mode.RECOMMENDS -> recommendsConfig!!.manga.title
+            Mode.RECOMMENDS -> recommendsConfig!!.manga.originalTitle
         }
         // SY <--
     }
@@ -712,7 +712,7 @@ open class BrowseSourceController(bundle: Bundle) :
                     )
                 }
             }
-            Mode.RECOMMENDS -> openSmartSearch(item.manga.title)
+            Mode.RECOMMENDS -> openSmartSearch(item.manga.originalTitle)
         }
         // SY <--
         return false

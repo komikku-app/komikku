@@ -167,12 +167,12 @@ class MigrationListController(bundle: Bundle? = null) :
                                             val searchResult = if (useSmartSearch) {
                                                 smartSearchEngine.smartSearch(
                                                     source,
-                                                    mangaObj.title
+                                                    mangaObj.originalTitle
                                                 )
                                             } else {
                                                 smartSearchEngine.normalSearch(
                                                     source,
-                                                    mangaObj.title
+                                                    mangaObj.originalTitle
                                                 )
                                             }
 
@@ -222,12 +222,12 @@ class MigrationListController(bundle: Bundle? = null) :
                                     val searchResult = if (useSmartSearch) {
                                         smartSearchEngine.smartSearch(
                                             source,
-                                            mangaObj.title
+                                            mangaObj.originalTitle
                                         )
                                     } else {
                                         smartSearchEngine.normalSearch(
                                             source,
-                                            mangaObj.title
+                                            mangaObj.originalTitle
                                         )
                                     }
 

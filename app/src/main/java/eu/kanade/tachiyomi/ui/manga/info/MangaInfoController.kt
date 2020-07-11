@@ -258,7 +258,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
     // EXH -->
     private fun openSmartSearch() {
-        val smartSearchConfig = SourceController.SmartSearchConfig(presenter.manga.title, presenter.manga.id!!)
+        val smartSearchConfig = SourceController.SmartSearchConfig(presenter.manga.originalTitle, presenter.manga.id!!)
 
         parentController?.router?.pushController(
             SourceController(

@@ -42,7 +42,7 @@ class SmartSearchEngine(
                         .toSingle().await(Schedulers.io())
 
                     searchResults.mangas.map {
-                        val cleanedMangaTitle = cleanSmartSearchTitle(it.title)
+                        val cleanedMangaTitle = cleanSmartSearchTitle(it.originalTitle)
                         val normalizedDistance = normalizedLevenshtein.similarity(cleanedTitle, cleanedMangaTitle)
                         SearchEntry(it, normalizedDistance)
                     }.filter { (_, normalizedDistance) ->
@@ -67,7 +67,7 @@ class SmartSearchEngine(
             }
 
             searchResults.mangas.map {
-                val normalizedDistance = normalizedLevenshtein.similarity(title, it.title)
+                val normalizedDistance = normalizedLevenshtein.similarity(title, it.originalTitle)
                 SearchEntry(it, normalizedDistance)
             }.filter { (_, normalizedDistance) ->
                 normalizedDistance >= MIN_NORMAL_ELIGIBLE_THRESHOLD
