@@ -1,25 +1,43 @@
-package eu.kanade.tachiyomi.ui.manga.chapter
+package eu.kanade.tachiyomi.ui.manga
 
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
+import com.google.gson.Gson
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
+import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.prepUpdateCover
+import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
+import eu.kanade.tachiyomi.util.updateCoverLastModified
+import exh.MERGED_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
+import exh.isEhBasedSource
+import exh.util.await
+import exh.util.trimOrNull
 import java.util.Date
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -29,16 +47,22 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
-class ChaptersPresenter(
+class MangaPresenter(
     val manga: Manga,
     val source: Source,
-    private val chapterCountRelay: BehaviorRelay<Float>,
-    private val lastUpdateRelay: BehaviorRelay<Date>,
-    private val mangaFavoriteRelay: PublishRelay<Boolean>,
     val preferences: PreferencesHelper = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get(),
-    private val downloadManager: DownloadManager = Injekt.get()
-) : BasePresenter<ChaptersController>() {
+    private val downloadManager: DownloadManager = Injekt.get(),
+    private val coverCache: CoverCache = Injekt.get(),
+    // SY -->
+    private val gson: Gson = Injekt.get()
+    // SY <--
+) : BasePresenter<MangaController>() {
+
+    /**
+     * Subscription to update the manga from the source.
+     */
+    private var fetchMangaSubscription: Subscription? = null
 
     /**
      * List of chapters of the manga. It's always unfiltered and unsorted.
@@ -70,9 +94,11 @@ class ChaptersPresenter(
     private var observeDownloadsSubscription: Subscription? = null
 
     // EXH -->
+    private val customMangaManager: CustomMangaManager by injectLazy()
+
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
-    val redirectUserRelay = BehaviorRelay.create<EXHRedirect>()
+    private val redirectUserRelay = BehaviorRelay.create<EXHRedirect>()
 
     data class EXHRedirect(val manga: Manga, val update: Boolean)
     // EXH <--
@@ -80,10 +106,19 @@ class ChaptersPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
+        // Manga info - start
+
+        getMangaObservable()
+            .subscribeLatestCache({ view, manga -> view.onNextMangaInfo(manga, source) })
+
         // Prepare the relay.
         chaptersRelay.flatMap { applyChapterFilters(it) }
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeLatestCache(ChaptersController::onNextChapters) { _, error -> Timber.e(error) }
+            .subscribeLatestCache(MangaController::onNextChapters) { _, error -> Timber.e(error) }
+
+        // Manga info - end
+
+        // Chapters list - start
 
         // Add the subscription that retrieves the chapters from the database, keeps subscribed to
         // changes, and sends the list of chapters to the relay.
@@ -103,24 +138,8 @@ class ChaptersPresenter(
                     // Listen for download status changes
                     observeDownloads()
 
-                    // Emit the number of chapters to the info tab.
-                    chapterCountRelay.call(
-                        chapters.maxBy { it.chapter_number }?.chapter_number
-                            ?: 0f
-                    )
-
-                    // Emit the upload date of the most recent chapter
-                    lastUpdateRelay.call(
-                        Date(
-                            chapters.maxBy { it.date_upload }?.date_upload
-                                ?: 0
-                        )
-                    )
-                    // EXH -->
-                    if (chapters.isNotEmpty() &&
-                        (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) &&
-                        DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled
-                    ) {
+                    // SY -->
+                    if (chapters.isNotEmpty() && (source.isEhBasedSource()) && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
                         // Check for gallery in library and accept manga with lowest id
                         // Find chapters sharing same root
                         add(
@@ -133,16 +152,315 @@ class ChaptersPresenter(
                                         val ourChapterUrls = chapters.map { it.url }.toSet()
                                         val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
                                         val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
-                                        redirectUserRelay.call(EXHRedirect(acceptedChain.manga, update))
+                                        redirectUserRelay.call(
+                                            EXHRedirect(
+                                                acceptedChain.manga,
+                                                update
+                                            )
+                                        )
                                     }
                                 }
                         )
                     }
-                    // EXH <--
+                    // SY <--
                 }
                 .subscribe { chaptersRelay.call(it) }
         )
+
+        // Chapters list - end
     }
+
+    // Manga info - start
+
+    private fun getMangaObservable(): Observable<Manga> {
+        return db.getManga(manga.url, manga.source).asRxObservable()
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    /**
+     * Fetch manga information from source.
+     */
+    fun fetchMangaFromSource(manualFetch: Boolean = false) {
+        if (!fetchMangaSubscription.isNullOrUnsubscribed()) return
+        fetchMangaSubscription = Observable.defer { source.fetchMangaDetails(manga) }
+            .map { networkManga ->
+                manga.prepUpdateCover(coverCache, networkManga, manualFetch)
+                manga.copyFrom(networkManga)
+                manga.initialized = true
+                db.insertManga(manga).executeAsBlocking()
+                manga
+            }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeFirst(
+                { view, _ ->
+                    view.onFetchMangaInfoDone()
+                },
+                MangaController::onFetchMangaInfoError
+            )
+    }
+
+    // SY -->
+    fun updateMangaInfo(
+        title: String?,
+        author: String?,
+        artist: String?,
+        description: String?,
+        tags: List<String>?,
+        uri: Uri?,
+        resetCover: Boolean = false
+    ) {
+        if (manga.source == LocalSource.ID) {
+            manga.title = if (title.isNullOrBlank()) manga.url else title.trim()
+            manga.author = author?.trimOrNull()
+            manga.artist = artist?.trimOrNull()
+            manga.description = description?.trimOrNull()
+            val tagsString = tags?.joinToString(", ")
+            manga.genre = if (tags.isNullOrEmpty()) null else tagsString?.trim()
+            LocalSource(downloadManager.context).updateMangaInfo(manga)
+            db.updateMangaInfo(manga).executeAsBlocking()
+        } else {
+            val genre = if (!tags.isNullOrEmpty() && tags.joinToString(", ") != manga.genre) {
+                tags.toTypedArray()
+            } else {
+                null
+            }
+            val manga = CustomMangaManager.MangaJson(
+                manga.id!!,
+                title?.trimOrNull(),
+                author?.trimOrNull(),
+                artist?.trimOrNull(),
+                description?.trimOrNull(),
+                genre
+            )
+            customMangaManager.saveMangaInfo(manga)
+        }
+
+        if (uri != null) {
+            editCoverWithStream(uri)
+        } else if (resetCover) {
+            coverCache.deleteCustomCover(manga)
+        }
+
+        if (uri == null && resetCover) {
+            Observable.just(manga)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeLatestCache(
+                    { view, _ ->
+                        view.setRefreshing()
+                    }
+                )
+            fetchMangaFromSource(manualFetch = true)
+        } else {
+            Observable.just(manga)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeLatestCache(
+                    { view, _ ->
+                        view.onNextMangaInfo(manga, source)
+                    }
+                )
+        }
+    }
+
+    fun editCoverWithStream(uri: Uri): Boolean {
+        val inputStream =
+            downloadManager.context.contentResolver.openInputStream(uri) ?: return false
+        if (manga.source == LocalSource.ID) {
+            LocalSource.updateCover(downloadManager.context, manga, inputStream)
+            manga.updateCoverLastModified(db)
+            return true
+        }
+
+        if (manga.favorite) {
+            coverCache.setCustomCoverToCache(manga, inputStream)
+            manga.updateCoverLastModified(db)
+            return true
+        }
+        return false
+    }
+
+    suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
+        val originalManga = db.getManga(originalMangaId).await()
+            ?: throw IllegalArgumentException("Unknown manga ID: $originalMangaId")
+        val toInsert = if (originalManga.source == MERGED_SOURCE_ID) {
+            originalManga.apply {
+                val originalChildren = MergedSource.MangaConfig.readFromUrl(gson, url).children
+                if (originalChildren.any { it.source == manga.source && it.url == manga.url }) {
+                    throw IllegalArgumentException("This manga is already merged with the current manga!")
+                }
+
+                url = MergedSource.MangaConfig(
+                    originalChildren + MergedSource.MangaSource(
+                        manga.source,
+                        manga.url
+                    )
+                ).writeAsUrl(gson)
+            }
+        } else {
+            val newMangaConfig = MergedSource.MangaConfig(
+                listOf(
+                    MergedSource.MangaSource(
+                        originalManga.source,
+                        originalManga.url
+                    ),
+                    MergedSource.MangaSource(
+                        manga.source,
+                        manga.url
+                    )
+                )
+            )
+            Manga.create(newMangaConfig.writeAsUrl(gson), originalManga.title, MERGED_SOURCE_ID).apply {
+                copyFrom(originalManga)
+                favorite = true
+                last_update = originalManga.last_update
+                viewer = originalManga.viewer
+                chapter_flags = originalManga.chapter_flags
+                sorting = Manga.SORTING_NUMBER
+            }
+        }
+
+        // Note that if the manga are merged in a different order, this won't trigger, but I don't care lol
+        val existingManga = db.getManga(toInsert.url, toInsert.source).await()
+        if (existingManga != null) {
+            withContext(NonCancellable) {
+                if (toInsert.id != null) {
+                    db.deleteManga(toInsert).await()
+                }
+            }
+
+            return existingManga
+        }
+
+        // Reload chapters immediately
+        toInsert.initialized = false
+
+        val newId = db.insertManga(toInsert).await().insertedId()
+        if (newId != null) toInsert.id = newId
+
+        return toInsert
+    }
+    // SY <--
+
+    /**
+     * Update favorite status of manga, (removes / adds) manga (to / from) library.
+     *
+     * @return the new status of the manga.
+     */
+    fun toggleFavorite(): Boolean {
+        manga.favorite = !manga.favorite
+        manga.date_added = when (manga.favorite) {
+            true -> Date().time
+            false -> 0
+        }
+        if (!manga.favorite) {
+            manga.removeCovers(coverCache)
+        }
+        db.insertManga(manga).executeAsBlocking()
+        return manga.favorite
+    }
+
+    /**
+     * Returns true if the manga has any downloads.
+     */
+    fun hasDownloads(): Boolean {
+        return downloadManager.getDownloadCount(manga) > 0
+    }
+
+    /**
+     * Deletes all the downloads for the manga.
+     */
+    fun deleteDownloads() {
+        downloadManager.deleteManga(manga, source)
+    }
+
+    /**
+     * Get user categories.
+     *
+     * @return List of categories, not including the default category
+     */
+    fun getCategories(): List<Category> {
+        return db.getCategories().executeAsBlocking()
+    }
+
+    /**
+     * Gets the category id's the manga is in, if the manga is not in a category, returns the default id.
+     *
+     * @param manga the manga to get categories from.
+     * @return Array of category ids the manga is in, if none returns default id
+     */
+    fun getMangaCategoryIds(manga: Manga): Array<Int> {
+        val categories = db.getCategoriesForManga(manga).executeAsBlocking()
+        return categories.mapNotNull { it.id }.toTypedArray()
+    }
+
+    /**
+     * Move the given manga to categories.
+     *
+     * @param manga the manga to move.
+     * @param categories the selected categories.
+     */
+    fun moveMangaToCategories(manga: Manga, categories: List<Category>) {
+        val mc = categories.filter { it.id != 0 }.map { MangaCategory.create(manga, it) }
+        db.setMangaCategories(mc, listOf(manga))
+    }
+
+    /**
+     * Move the given manga to the category.
+     *
+     * @param manga the manga to move.
+     * @param category the selected category, or null for default category.
+     */
+    fun moveMangaToCategory(manga: Manga, category: Category?) {
+        moveMangaToCategories(manga, listOfNotNull(category))
+    }
+
+    /**
+     * Update cover with local file.
+     *
+     * @param manga the manga edited.
+     * @param context Context.
+     * @param data uri of the cover resource.
+     */
+    fun editCover(manga: Manga, context: Context, data: Uri) {
+        Observable
+            .fromCallable {
+                context.contentResolver.openInputStream(data)?.use {
+                    if (manga.isLocal()) {
+                        LocalSource.updateCover(context, manga, it)
+                        manga.updateCoverLastModified(db)
+                    } else if (manga.favorite) {
+                        coverCache.setCustomCoverToCache(manga, it)
+                        manga.updateCoverLastModified(db)
+                    }
+                }
+            }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeFirst(
+                { view, _ -> view.onSetCoverSuccess() },
+                { view, e -> view.onSetCoverError(e) }
+            )
+    }
+
+    fun deleteCustomCover(manga: Manga) {
+        Observable
+            .fromCallable {
+                coverCache.deleteCustomCover(manga)
+                manga.updateCoverLastModified(db)
+            }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeFirst(
+                { view, _ -> view.onSetCoverSuccess() },
+                { view, e -> view.onSetCoverError(e) }
+            )
+    }
+
+    // Manga info - end
+
+    // Chapters list - start
 
     private fun observeDownloads() {
         observeDownloadsSubscription?.let { remove(it) }
@@ -150,7 +468,7 @@ class ChaptersPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             .filter { download -> download.manga.id == manga.id }
             .doOnNext { onDownloadStatusChange(it) }
-            .subscribeLatestCache(ChaptersController::onChapterStatusChange) { _, error ->
+            .subscribeLatestCache(MangaController::onChapterStatusChange) { _, error ->
                 Timber.e(error)
             }
     }
@@ -203,7 +521,7 @@ class ChaptersPresenter(
                 { view, _ ->
                     view.onFetchChaptersDone()
                 },
-                ChaptersController::onFetchChaptersError
+                MangaController::onFetchChaptersError
             )
     }
 
@@ -283,20 +601,21 @@ class ChaptersPresenter(
      * @param read whether to mark chapters as read or unread.
      */
     fun markChaptersRead(selectedChapters: List<ChapterItem>, read: Boolean) {
-        Observable.from(selectedChapters)
-            .doOnNext { chapter ->
-                chapter.read = read
-                if (!read /* --> EH */ && !preferences
-                    .eh_preserveReadingPosition()
-                    .get() /* <-- EH */
-                ) {
-                    chapter.last_page_read = 0
-                }
+        val chapters = selectedChapters.map { chapter ->
+            chapter.read = read
+            if (!read) {
+                chapter.last_page_read = 0
             }
-            .toList()
-            .flatMap { db.updateChaptersProgress(it).asRxObservable() }
-            .subscribeOn(Schedulers.io())
-            .subscribe()
+            chapter
+        }
+
+        launchIO {
+            db.updateChaptersProgress(chapters).executeAsBlocking()
+
+            if (preferences.removeAfterMarkedAsRead()) {
+                deleteChapters(chapters)
+            }
+        }
     }
 
     /**
@@ -336,12 +655,12 @@ class ChaptersPresenter(
                 { view, _ ->
                     view.onChaptersDeleted(chapters)
                 },
-                ChaptersController::onChaptersDeletedError
+                MangaController::onChaptersDeletedError
             )
     }
 
     private fun downloadNewChapters(chapters: List<Chapter>) {
-        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences) /* SY --> */ || manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID/* SY <-- */) return
+        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences)) return
 
         downloadChapters(chapters)
     }
@@ -361,7 +680,7 @@ class ChaptersPresenter(
     /**
      * Reverses the sorting and requests an UI update.
      */
-    fun revertSortOrder() {
+    fun reverseSortOrder() {
         manga.setChapterOrder(if (sortDescending()) Manga.SORT_ASC else Manga.SORT_DESC)
         db.updateFlags(manga).executeAsBlocking()
         refreshChapters()
@@ -416,13 +735,6 @@ class ChaptersPresenter(
         manga.bookmarkedFilter = Manga.SHOW_ALL
         db.updateFlags(manga).executeAsBlocking()
         refreshChapters()
-    }
-
-    /**
-     * Adds manga to library
-     */
-    fun addToLibrary() {
-        mangaFavoriteRelay.call(true)
     }
 
     /**
@@ -485,4 +797,6 @@ class ChaptersPresenter(
     fun sortDescending(): Boolean {
         return manga.sortDescending()
     }
+
+    // Chapters list - end
 }

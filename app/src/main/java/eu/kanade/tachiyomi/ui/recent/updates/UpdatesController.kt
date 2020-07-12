@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.UpdatesControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -25,7 +24,6 @@ import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
-import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.notificationManager
@@ -35,8 +33,6 @@ import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.recyclerview.scrollStateChanges
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import timber.log.Timber
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 /**
  * Fragment that shows recent chapters.
@@ -287,13 +283,7 @@ class UpdatesController :
     }
 
     private fun openManga(chapter: UpdatesItem) {
-        // SY -->
-        if (Injekt.get<PreferencesHelper>().eh_useNewMangaInterface().get()) {
-            router.pushController(MangaAllInOneController(chapter.manga).withFadeTransaction())
-        } else {
-            router.pushController(MangaController(chapter.manga).withFadeTransaction())
-        }
-        // SY <--
+        router.pushController(MangaController(chapter.manga).withFadeTransaction())
     }
 
     /**

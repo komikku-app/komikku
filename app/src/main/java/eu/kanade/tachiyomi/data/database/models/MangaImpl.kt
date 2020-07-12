@@ -11,6 +11,7 @@ open class MangaImpl : Manga {
 
     override lateinit var url: String
 
+    // SY -->
     private val customMangaManager: CustomMangaManager by injectLazy()
 
     override var title: String
@@ -39,6 +40,7 @@ open class MangaImpl : Manga {
     override var genre: String?
         get() = if (favorite) customMangaManager.getManga(this)?.genre ?: ogGenre else ogGenre
         set(value) { ogGenre = value }
+    // SY <--
 
     override var status: Int = 0
 
@@ -58,6 +60,7 @@ open class MangaImpl : Manga {
 
     override var cover_last_modified: Long = 0
 
+    // SY -->
     lateinit var ogTitle: String
         private set
     var ogAuthor: String? = null
@@ -68,6 +71,7 @@ open class MangaImpl : Manga {
         private set
     var ogGenre: String? = null
         private set
+    // SY <--
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

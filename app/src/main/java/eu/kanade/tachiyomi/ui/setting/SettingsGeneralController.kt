@@ -267,13 +267,6 @@ class SettingsGeneralController : SettingsController() {
                     "Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device."
                 defaultValue = false
             }
-
-            switchPreference {
-                key = Keys.eh_use_new_manga_interface
-                title = "Use New Manga Interface"
-                summary = "Use new all in one manga interface"
-                defaultValue = true
-            }
         }
         // <-- EXH
     }

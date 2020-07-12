@@ -136,6 +136,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
         return Observable.just(MangasPage(mangas, false))
     }
 
+    // SY -->
     fun updateMangaInfo(manga: SManga) {
         val directory = getBaseDirectories(context).mapNotNull { File(it, manga.url) }.find {
             it.exists()
@@ -173,6 +174,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
             return title.hashCode()
         }
     }
+    // SY <--
 
     override fun fetchLatestUpdates(page: Int) = fetchSearchManga(page, "", LATEST_FILTERS)
 

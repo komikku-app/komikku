@@ -54,7 +54,7 @@ class SourceController(bundle: Bundle? = null) :
     FlexibleAdapter.OnItemLongClickListener,
     SourceAdapter.OnBrowseClickListener,
     SourceAdapter.OnLatestClickListener,
-    ChangeSourceCategoriesDialog.Listener {
+    /*SY -->*/ ChangeSourceCategoriesDialog.Listener /*SY <--*/ {
 
     private val preferences: PreferencesHelper = Injekt.get()
 

@@ -67,6 +67,8 @@ class AppModule(val app: Application) : InjektModule {
 
         GlobalScope.launch { get<DownloadManager>() }
 
+        // SY -->
         GlobalScope.launch { get<CustomMangaManager>() }
+        // SY <--
     }
 }

@@ -16,7 +16,6 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
-import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
@@ -76,14 +75,7 @@ open class GlobalSearchController(
      * @param manga clicked item containing manga information.
      */
     override fun onMangaClick(manga: Manga) {
-        // Open MangaController.
-        // SY -->
-        if (presenter.preferences.eh_useNewMangaInterface().get()) {
-            router.pushController(MangaAllInOneController(manga, true).withFadeTransaction())
-        } else {
-            router.pushController(MangaController(manga, true).withFadeTransaction())
-        }
-        // SY <--
+        router.pushController(MangaController(manga, true).withFadeTransaction())
     }
 
     /**

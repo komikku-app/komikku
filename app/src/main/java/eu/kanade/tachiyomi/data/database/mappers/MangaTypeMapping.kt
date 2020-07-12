@@ -52,11 +52,13 @@ class MangaPutResolver : DefaultPutResolver<Manga>() {
         put(COL_ID, obj.id)
         put(COL_SOURCE, obj.source)
         put(COL_URL, obj.url)
+        // SY -->
         put(COL_ARTIST, obj.originalArtist)
         put(COL_AUTHOR, obj.originalAuthor)
         put(COL_DESCRIPTION, obj.originalDescription)
         put(COL_GENRE, obj.originalGenre)
         put(COL_TITLE, obj.originalTitle)
+        // SY <--
         put(COL_STATUS, obj.status)
         put(COL_THUMBNAIL_URL, obj.thumbnail_url)
         put(COL_FAVORITE, obj.favorite)

@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestAdapter
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestPresenter
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
-import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import kotlinx.coroutines.flow.launchIn
 
@@ -72,11 +71,7 @@ open class LatestController :
      */
     override fun onMangaClick(manga: Manga) {
         // Open MangaController.
-        if (presenter.preferences.eh_useNewMangaInterface().get()) {
-            parentController?.router?.pushController(MangaAllInOneController(manga, true).withFadeTransaction())
-        } else {
-            parentController?.router?.pushController(MangaController(manga, true).withFadeTransaction())
-        }
+        parentController?.router?.pushController(MangaController(manga, true).withFadeTransaction())
     }
 
     /**

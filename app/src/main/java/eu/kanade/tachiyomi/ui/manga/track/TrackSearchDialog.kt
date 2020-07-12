@@ -84,7 +84,7 @@ class TrackSearchDialog : DialogController {
 
         // Do an initial search based on the manga's title
         if (savedState == null) {
-            val title = trackController.presenter.manga.originalTitle
+            val title = trackController.presenter.manga.title
             view.track_search.append(title)
             search(title)
         }

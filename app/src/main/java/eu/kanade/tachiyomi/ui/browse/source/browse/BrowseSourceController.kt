@@ -42,7 +42,6 @@ import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesControll
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet.FilterNavigationView.Companion.MAX_SAVED_SEARCHES
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
-import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.connectivityManager
@@ -304,7 +303,6 @@ open class BrowseSourceController(bundle: Bundle) :
             }
             // EXH <--
         )
-
         filterSheet?.setFilters(presenter.filterItems)
 
         // TODO: [ExtendedFloatingActionButton] hide/show methods don't work properly
@@ -713,23 +711,13 @@ open class BrowseSourceController(bundle: Bundle) :
         // SY -->
         when (mode) {
             Mode.CATALOGUE -> {
-                if (preferences.eh_useNewMangaInterface().get()) {
-                    router.pushController(
-                        MangaAllInOneController(
-                            item.manga,
-                            true,
-                            args.getParcelable(SMART_SEARCH_CONFIG_KEY)
-                        ).withFadeTransaction()
-                    )
-                } else {
-                    router.pushController(
-                        MangaController(
-                            item.manga,
-                            true,
-                            args.getParcelable(SMART_SEARCH_CONFIG_KEY)
-                        ).withFadeTransaction()
-                    )
-                }
+                router.pushController(
+                    MangaController(
+                        item.manga,
+                        true,
+                        args.getParcelable(MangaController.SMART_SEARCH_CONFIG_EXTRA)
+                    ).withFadeTransaction()
+                )
             }
             Mode.RECOMMENDS -> openSmartSearch(item.manga.originalTitle)
         }

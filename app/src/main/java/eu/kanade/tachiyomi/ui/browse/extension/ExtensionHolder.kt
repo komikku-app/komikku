@@ -48,7 +48,9 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
             extension is Extension.Untrusted -> itemView.context.getString(R.string.ext_untrusted).toUpperCase()
             extension is Extension.Installed && extension.isObsolete -> itemView.context.getString(R.string.ext_obsolete).toUpperCase()
             extension is Extension.Installed && extension.isUnofficial -> itemView.context.getString(R.string.ext_unofficial).toUpperCase()
+            // SY -->
             extension is Extension.Installed && extension.isRedundant -> itemView.context.getString(R.string.ext_redundant).toUpperCase()
+            // SY <--
             else -> null
         }
 
@@ -91,12 +93,14 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
                     setText(R.string.ext_update)
                 }
                 else -> {
+                    // SY -->
                     if (extension.sources.any { it is ConfigurableSource }) {
                         @SuppressLint("SetTextI18n")
                         text = context.getString(R.string.action_settings) + "+"
                     } else {
                         setText(R.string.action_settings)
                     }
+                    // SY <--
                 }
             }
         } else if (extension is Extension.Untrusted) {

@@ -67,6 +67,8 @@ object PreferenceKeys {
 
     const val landscapeColumns = "pref_library_columns_landscape_key"
 
+    const val jumpToChapters = "jump_to_chapters"
+
     const val updateOnlyNonCompleted = "pref_update_only_non_completed_key"
 
     const val autoUpdateTrack = "pref_auto_update_manga_sync_key"
@@ -242,8 +244,6 @@ object PreferenceKeys {
     const val eh_tag_watching_value = "eh_tag_watching_value"
 
     const val eh_is_hentai_enabled = "eh_is_hentai_enabled"
-
-    const val eh_use_new_manga_interface = "eh_use_new_manga_interface"
 
     const val eh_use_auto_webtoon = "eh_use_auto_webtoon"
 

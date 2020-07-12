@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhSmartSearchBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
@@ -12,7 +11,6 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
-import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +19,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
@@ -61,11 +58,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
         launch(Dispatchers.Default) {
             for (event in presenter.smartSearchChannel) {
                 if (event is SmartSearchPresenter.SearchResults.Found) {
-                    val transaction = if (Injekt.get<PreferencesHelper>().eh_useNewMangaInterface().get()) {
-                        MangaAllInOneController(event.manga, true, smartSearchConfig).withFadeTransaction()
-                    } else {
-                        MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
-                    }
+                    val transaction = MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
                     withContext(Dispatchers.Main) {
                         router.replaceTopController(transaction)
                     }

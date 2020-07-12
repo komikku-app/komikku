@@ -131,6 +131,8 @@ class PreferencesHelper(val context: Context) {
 
     fun landscapeColumns() = flowPrefs.getInt(Keys.landscapeColumns, 0)
 
+    fun jumpToChapters() = prefs.getBoolean(Keys.jumpToChapters, false)
+
     fun updateOnlyNonCompleted() = prefs.getBoolean(Keys.updateOnlyNonCompleted, false)
 
     fun autoUpdateTrack() = prefs.getBoolean(Keys.autoUpdateTrack, true)
@@ -346,8 +348,6 @@ class PreferencesHelper(val context: Context) {
     fun eh_hl_useHighQualityThumbs() = flowPrefs.getBoolean(Keys.eh_hl_useHighQualityThumbs, false)
 
     fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, 4)
-
-    fun eh_useNewMangaInterface() = flowPrefs.getBoolean(Keys.eh_use_new_manga_interface, true)
 
     fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
 

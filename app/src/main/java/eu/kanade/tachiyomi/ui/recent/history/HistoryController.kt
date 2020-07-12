@@ -13,14 +13,12 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.HistoryControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.ProgressItem
-import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.toast
@@ -28,7 +26,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextChanges
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
@@ -163,11 +160,7 @@ class HistoryController :
 
     override fun onItemClick(position: Int) {
         val manga = (adapter?.getItem(position) as? HistoryItem)?.mch?.manga ?: return
-        if (Injekt.get<PreferencesHelper>().eh_useNewMangaInterface().get()) {
-            router.pushController(MangaAllInOneController(manga).withFadeTransaction())
-        } else {
-            router.pushController(MangaController(manga).withFadeTransaction())
-        }
+        router.pushController(MangaController(manga).withFadeTransaction())
     }
 
     override fun removeHistory(manga: Manga, history: History, all: Boolean) {

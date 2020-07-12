@@ -110,7 +110,7 @@ class SettingsAdvancedController : SettingsController() {
         }
 
         preferenceCategory {
-            titleRes = R.string.label_data
+            titleRes = R.string.label_network
 
             preference {
                 titleRes = R.string.pref_clear_cookies

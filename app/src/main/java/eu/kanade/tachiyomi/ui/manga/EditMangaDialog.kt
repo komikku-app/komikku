@@ -48,9 +48,9 @@ class EditMangaDialog : DialogController {
     private var willResetCover = false
 
     private val infoController
-        get() = targetController as MangaAllInOneController
+        get() = targetController as MangaController
 
-    constructor(target: MangaAllInOneController, manga: Manga) : super(
+    constructor(target: MangaController, manga: Manga) : super(
         Bundle()
             .apply {
                 putLong(KEY_MANGA, manga.id!!)

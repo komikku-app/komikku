@@ -35,14 +35,16 @@ class SourceListHolder(private val view: View, adapter: FlexibleAdapter<*>) :
      * @param manga the manga to bind.
      */
     override fun onSetValues(manga: Manga) {
+        title.text = manga.title
         title.setTextColor(if (manga.favorite) favoriteColor else unfavoriteColor)
+
+        // Set alpha of thumbnail.
+        thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
 
         setImage(manga)
     }
 
     override fun setImage(manga: Manga) {
-        title.text = manga.title
-
         GlideApp.with(view.context).clear(thumbnail)
 
         if (!manga.thumbnail_url.isNullOrEmpty()) {

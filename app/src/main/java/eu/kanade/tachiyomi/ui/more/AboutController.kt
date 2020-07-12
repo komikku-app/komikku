@@ -68,7 +68,7 @@ class AboutController : SettingsController() {
             }
         }
         preference {
-            titleRes = R.string.changelog
+            titleRes = R.string.whats_new
 
             onClick {
                 // SY -->

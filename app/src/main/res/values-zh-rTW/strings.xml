@@ -278,10 +278,6 @@
     <string name="licensed">已授權</string>
     <string name="remove_from_library">移出書櫃</string>
     <string name="manga_info_full_title_label">標題</string>
-    <string name="manga_info_chapters_label">章節</string>
-    <string name="manga_info_status_label">狀態</string>
-    <string name="manga_info_source_label">來源</string>
-    <string name="manga_info_genres_label">類型</string>
     <string name="delete_downloads_for_manga">刪除下載的章節？</string>
     <string name="manga_chapters_tab">章節</string>
     <string name="manga_chapter_no_title">無標題</string>

@@ -20,7 +20,7 @@
     <string name="label_sources">Sources</string>
     <string name="label_categories">Categories</string>
     <string name="label_backup">Backup</string>
-    <string name="label_migration">Migration</string>
+    <string name="label_migration">Migrate</string>
     <string name="label_extensions">Extensions</string>
     <string name="label_extension_info">Extension info</string>
     <string name="label_help">Help</string>
@@ -83,6 +83,7 @@
     <string name="action_move">Move</string>
     <string name="action_open_in_browser">Open in browser</string>
     <string name="action_open_in_web_view">Open in WebView</string>
+    <string name="action_open_in_settings">Open in Settings</string>
     <string name="action_migrate">Migrate</string>
     <string name="action_display_mode">Display mode</string>
     <string name="action_display">Display</string>
@@ -98,6 +99,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_cancel_all">Cancel all</string>
     <string name="action_sort">Sort</string>
+    <string name="action_sort_descending">Descending</string>
     <string name="action_reorganize_by">Reorder</string>
     <string name="action_newest">Newest</string>
     <string name="action_oldest">Oldest</string>
@@ -174,6 +176,7 @@
     <string name="portrait">Portrait</string>
     <string name="landscape">Landscape</string>
     <string name="default_columns">Default</string>
+    <string name="pref_jump_to_chapters">Jump to chapters on open</string>
 
     <string name="pref_category_library_update">Updates</string>
     <string name="pref_library_update_interval">Library update frequency</string>
@@ -391,7 +394,6 @@
     <string name="website">Website</string>
     <string name="version">Version</string>
     <string name="build_time">Build time</string>
-    <string name="changelog">Changelog</string>
     <string name="whats_new">What\'s new</string>
     <string name="notices">Preview build notices</string>
     <string name="licenses">Open source licenses</string>
@@ -462,6 +464,8 @@
     <string name="description">Description</string>
     <string name="ongoing">Ongoing</string>
     <string name="unknown">Unknown</string>
+    <string name="unknown_author">Unknown author</string>
+    <string name="unknown_status">Unknown status</string>
     <string name="licensed">Licensed</string>
     <string name="add_to_library">Add to library</string>
     <string name="in_library">In library</string>
@@ -469,15 +473,13 @@
     <string name="manga_info_full_title_label">Title</string>
     <string name="manga_added_library">Added to library</string>
     <string name="manga_removed_library">Removed from library</string>
-    <string name="manga_info_chapters_label">Chapters</string>
-    <string name="manga_info_last_chapter_label">Last chapter</string>
-    <string name="manga_info_latest_data_label">Updated</string>
-    <string name="manga_info_status_label">Status</string>
-    <string name="manga_info_source_label">Source</string>
-    <string name="manga_info_genres_label">Genres</string>
     <string name="manga_info_about_label">About</string>
-    <string name="manga_info_expand">Show more info</string>
-    <string name="manga_info_collapse">Show less info</string>
+    <string name="manga_info_expand">More</string>
+    <string name="manga_info_collapse">Less</string>
+    <plurals name="manga_num_chapters">
+        <item quantity="one">1 chapter</item>
+        <item quantity="other">%1$s chapters</item>
+    </plurals>
     <string name="delete_downloads_for_manga">Delete downloaded chapters?</string>
     <string name="copied_to_clipboard">Copied to clipboard:\n%1$s</string>
     <string name="source_not_installed">Source not installed: %1$s</string>

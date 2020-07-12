@@ -105,6 +105,10 @@ class BackupRestoreService : Service() {
 
     // SY -->
     private val throttleManager = EHentaiThrottleManager()
+
+    private var skippedAmount = 0
+
+    private var totalAmount = 0
     // SY <--
 
     /**
@@ -116,12 +120,6 @@ class BackupRestoreService : Service() {
      * Amount of manga in Json file (needed for restore)
      */
     private var restoreAmount = 0
-
-    // SY -->
-    private var skippedAmount = 0
-
-    private var totalAmount = 0
-    // SY <--
 
     /**
      * Mapping of source ID to source name from backup data

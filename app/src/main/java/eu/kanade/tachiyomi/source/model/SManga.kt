@@ -23,6 +23,7 @@ interface SManga : Serializable {
 
     var initialized: Boolean
 
+    // SY -->
     val originalTitle: String
         get() = (this as? MangaImpl)?.ogTitle ?: title
     val originalAuthor: String?
@@ -33,6 +34,7 @@ interface SManga : Serializable {
         get() = (this as? MangaImpl)?.ogDesc ?: description
     val originalGenre: String?
         get() = (this as? MangaImpl)?.ogGenre ?: genre
+    // SY <--
 
     fun copyFrom(other: SManga) {
         // EXH -->
@@ -42,19 +44,19 @@ interface SManga : Serializable {
         // EXH <--
 
         if (other.author != null) {
-            author = other.originalAuthor
+            author = /* SY --> */ other.originalAuthor /* SY <-- */
         }
 
         if (other.artist != null) {
-            artist = other.originalArtist
+            artist = /* SY --> */ other.originalArtist /* SY <-- */
         }
 
         if (other.description != null) {
-            description = other.originalDescription
+            description = /* SY --> */ other.originalDescription /* SY <-- */
         }
 
         if (other.genre != null) {
-            genre = other.originalGenre
+            genre = /* SY --> */ other.originalGenre /* SY <-- */
         }
 
         if (other.thumbnail_url != null) {

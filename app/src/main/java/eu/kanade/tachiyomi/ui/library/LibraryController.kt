@@ -38,7 +38,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourcesControlle
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
-import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
@@ -572,13 +571,7 @@ class LibraryController(
         // Notify the presenter a manga is being opened.
         presenter.onOpenManga()
 
-        // SY -->
-        if (preferences.eh_useNewMangaInterface().get()) {
-            router.pushController(MangaAllInOneController(manga).withFadeTransaction())
-        } else {
-            router.pushController(MangaController(manga).withFadeTransaction())
-        }
-        // SY <--
+        router.pushController(MangaController(manga).withFadeTransaction())
     }
 
     /**

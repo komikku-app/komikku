@@ -77,7 +77,7 @@ object ChapterRecognition {
         }
 
         // Remove manga title from chapter title.
-        val nameWithoutManga = name.replace(manga.originalTitle.toLowerCase(), "").trim()
+        val nameWithoutManga = name.replace(/* SY --> */ manga.originalTitle.toLowerCase()/* SY <-- */, "").trim()
 
         // Check if first value is number after title remove.
         if (updateChapter(withoutManga.find(nameWithoutManga), chapter)) {
