@@ -1,7 +1,5 @@
 package eu.kanade.tachiyomi.ui.library
 
-import android.app.Activity
-import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -42,7 +40,6 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaAllInOneController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.hasCustomCover
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.gone
@@ -62,7 +59,6 @@ import reactivecircus.flowbinding.appcompat.queryTextChanges
 import reactivecircus.flowbinding.viewpager.pageSelections
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -74,7 +70,6 @@ class LibraryController(
     RootController,
     TabbedController,
     ActionMode.Callback,
-    ChangeMangaCoverDialog.Listener,
     ChangeMangaCategoriesDialog.Listener,
     DeleteLibraryMangasDialog.Listener {
 
@@ -97,8 +92,6 @@ class LibraryController(
      * Currently selected mangas.
      */
     val selectedMangas = mutableSetOf<Manga>()
-
-    private var selectedCoverManga: Manga? = null
 
     /**
      * Relay to notify the UI of selection updates.
@@ -536,7 +529,6 @@ class LibraryController(
         } else {
             mode.title = count.toString()
 
-            binding.actionToolbar.findItem(R.id.action_edit_cover)?.isVisible = count == 1
             binding.actionToolbar.findItem(R.id.action_download_unread)?.isVisible = selectedMangas.any { it.source != LocalSource.ID }
         }
         return false
@@ -548,7 +540,6 @@ class LibraryController(
 
     private fun onActionItemClicked(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_edit_cover -> handleChangeCover()
             R.id.action_move_to_category -> showChangeMangaCategoriesDialog()
             R.id.action_download_unread -> downloadUnreadChapters()
             R.id.action_delete -> showDeleteMangaDialog()
@@ -621,23 +612,6 @@ class LibraryController(
         }
     }
 
-    private fun handleChangeCover() {
-        val manga = selectedMangas.firstOrNull() ?: return
-
-        if (manga.hasCustomCover(coverCache)) {
-            showEditCoverDialog(manga)
-        } else {
-            openMangaCoverPicker(manga)
-        }
-    }
-
-    /**
-     * Edit custom cover for selected manga.
-     */
-    private fun showEditCoverDialog(manga: Manga) {
-        ChangeMangaCoverDialog(this, manga).showDialog(router)
-    }
-
     /**
      * Move the selected manga to a list of categories.
      */
@@ -665,31 +639,6 @@ class LibraryController(
 
     private fun showDeleteMangaDialog() {
         DeleteLibraryMangasDialog(this, selectedMangas.toList()).showDialog(router)
-    }
-
-    override fun openMangaCoverPicker(manga: Manga) {
-        selectedCoverManga = manga
-
-        if (manga.favorite) {
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.type = "image/*"
-            startActivityForResult(
-                Intent.createChooser(
-                    intent,
-                    resources?.getString(R.string.file_select_cover)
-                ),
-                REQUEST_IMAGE_OPEN
-            )
-        } else {
-            activity?.toast(R.string.notification_first_add_to_library)
-        }
-
-        destroyActionModeIfNeeded()
-    }
-
-    override fun deleteMangaCover(manga: Manga) {
-        presenter.deleteCustomCover(manga)
-        destroyActionModeIfNeeded()
     }
 
     override fun updateCategoriesForMangas(mangas: List<Manga>, categories: List<Category>) {
@@ -841,32 +790,4 @@ class LibraryController(
         oldSyncStatus = status
     }
     // <-- EXH
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_IMAGE_OPEN) {
-            val dataUri = data?.data
-            if (dataUri == null || resultCode != Activity.RESULT_OK) return
-            val activity = activity ?: return
-            val manga = selectedCoverManga ?: return
-
-            selectedCoverManga = null
-            presenter.editCover(manga, activity, dataUri)
-        }
-    }
-
-    fun onSetCoverSuccess() {
-        activity?.toast(R.string.cover_updated)
-    }
-
-    fun onSetCoverError(error: Throwable) {
-        activity?.toast(R.string.notification_cover_update_failed)
-        Timber.e(error)
-    }
-
-    private companion object {
-        /**
-         * Key to change the cover of a manga in [onActivityResult].
-         */
-        const val REQUEST_IMAGE_OPEN = 101
-    }
 }
