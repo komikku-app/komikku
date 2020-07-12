@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.manga
 
 import android.app.Dialog
+import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -21,12 +22,16 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.visibleIf
 import exh.util.trimOrNull
+import kotlinx.android.synthetic.main.edit_manga_dialog.view.cover_layout
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_artist
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_author
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_cover
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_description
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_genres_tags
+import kotlinx.android.synthetic.main.edit_manga_dialog.view.reset_cover
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.reset_tags
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.title
 import uy.kohesive.injekt.Injekt
@@ -38,9 +43,9 @@ class EditMangaDialog : DialogController {
 
     private val manga: Manga
 
-    // private var customCoverUri: Uri? = null
+    private var customCoverUri: Uri? = null
 
-    // private var willResetCover = false
+    private var willResetCover = false
 
     private val infoController
         get() = targetController as MangaAllInOneController
@@ -126,17 +131,16 @@ class EditMangaDialog : DialogController {
             }
         }
         view.manga_genres_tags.clearFocus()
-        /*view.cover_layout.setOnClickListener {
+        view.cover_layout.setOnClickListener {
             infoController.changeCover()
-        }*/
+        }
         view.reset_tags.setOnClickListener { resetTags() }
-        /*view.reset_cover.visibleIf(!isLocal)
+        view.reset_cover.visibleIf { !isLocal }
         view.reset_cover.setOnClickListener {
-            view.manga_cover.loadAny(manga, builder = {
-                parameters(Parameters.Builder().set(MangaFetcher.realCover, true).build())
-            })
+            view.context.toast(R.string.cover_reset_toast)
+            customCoverUri = null
             willResetCover = true
-        }*/
+        }
     }
 
     private fun resetTags() {
@@ -146,11 +150,15 @@ class EditMangaDialog : DialogController {
         else dialogView?.manga_genres_tags?.setChips(manga.originalGenre?.split(", "))
     }
 
-    /*fun updateCover(uri: Uri) {
+    fun updateCover(uri: Uri) {
         willResetCover = false
-        dialogView!!.manga_cover.loadAny(uri)
+        GlideApp.with(dialogView!!.context)
+            .load(uri)
+            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+            .centerCrop()
+            .into(dialogView!!.manga_cover)
         customCoverUri = uri
-    }*/
+    }
 
     override fun onDestroyView(view: View) {
         super.onDestroyView(view)
@@ -161,7 +169,8 @@ class EditMangaDialog : DialogController {
         infoController.presenter.updateMangaInfo(
             dialogView?.title?.text.toString(),
             dialogView?.manga_author?.text.toString(), dialogView?.manga_artist?.text.toString(),
-            dialogView?.manga_description?.text.toString(), dialogView?.manga_genres_tags?.getTextStrings()
+            dialogView?.manga_description?.text.toString(), dialogView?.manga_genres_tags?.getTextStrings(),
+            customCoverUri, willResetCover
         )
     }
 

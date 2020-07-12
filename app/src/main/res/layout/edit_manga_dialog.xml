@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -15,25 +14,24 @@
 
         <ImageView
             android:id="@+id/manga_cover"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:adjustViewBounds="true"
-            android:minWidth="75dp"
             android:layout_height="150dp"
             android:contentDescription="@string/description_cover"
             android:background="@drawable/rounded_rectangle"
             android:src="@mipmap/ic_launcher"/>
     </FrameLayout>
 
-    <!--<Button
+    <Button
         android:id="@+id/reset_cover"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/Theme.Widget"
+        style="@style/Theme.Widget.Button.FilledAccent"
         android:textAllCaps="false"
         android:layout_gravity="center"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:text="@string/reset_cover" />-->
+        android:text="@string/reset_cover" />
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Theme.Widget.TextInputLayout.OutlinedBox.Dense"

@@ -126,6 +126,10 @@
     <string name="no_source_categories">No source categories available</string>
     <string name="invalid_category_name">Invalid category name</string>
     <string name="add_tag">Add Tag</string>
+    <string name="cover_reset_toast">The cover will be updated when you exit manga info edit</string>
+    <string name="select_cover_image">Select cover image</string>
+    <string name="cover_must_be_in_library">Must be in library to edit cover images</string>
+    <string name="failed_to_update_cover">Failed to update cover</string>
 
     <!-- AZ -->
     <string name="az_recommends">See Recommendations</string>
@@ -136,6 +140,9 @@
     <string name="manhua">Manhua</string>
     <string name="comic">Comic</string>
     <string name="webtoon">Webtoon</string>
+
+    <!-- SY -->
     <string name="reset_tags">Reset Tags</string>
+    <string name="reset_cover">Reset Cover</string>
 
 </resources>

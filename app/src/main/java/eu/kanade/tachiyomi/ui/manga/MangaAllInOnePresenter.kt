@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga
 
+import android.net.Uri
 import android.os.Bundle
 import com.google.gson.Gson
 import com.jakewharton.rxrelay.BehaviorRelay
@@ -25,6 +26,7 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
@@ -205,7 +207,9 @@ class MangaAllInOnePresenter(
         author: String?,
         artist: String?,
         description: String?,
-        tags: List<String>?
+        tags: List<String>?,
+        uri: Uri?,
+        resetCover: Boolean = false
     ) {
         if (manga.source == LocalSource.ID) {
             manga.title = if (title.isNullOrBlank()) manga.url else title.trim()
@@ -232,13 +236,36 @@ class MangaAllInOnePresenter(
             )
             customMangaManager.saveMangaInfo(manga)
         }
-            /*if (uri != null) {
-                editCoverWithStream(uri)
-            } else if (resetCover) {
-                coverCache.deleteCustomCover(manga)
-                controller.setPaletteColor()
-            }*/
-        updateManga(updateInfo = false)
+
+        if (uri != null) {
+            editCoverWithStream(uri)
+        } else if (resetCover) {
+            controller.setRefreshing(true)
+            coverCache.deleteCustomCover(manga)
+        }
+
+        if (uri == null && resetCover) {
+            fetchMangaFromSource(manualFetch = true, fetchChapters = false)
+        } else {
+            updateManga(updateInfo = false)
+        }
+    }
+
+    fun editCoverWithStream(uri: Uri): Boolean {
+        val inputStream =
+            downloadManager.context.contentResolver.openInputStream(uri) ?: return false
+        if (manga.source == LocalSource.ID) {
+            LocalSource.updateCover(downloadManager.context, manga, inputStream)
+            manga.updateCoverLastModified(db)
+            return true
+        }
+
+        if (manga.favorite) {
+            coverCache.setCustomCoverToCache(manga, inputStream)
+            manga.updateCoverLastModified(db)
+            return true
+        }
+        return false
     }
 
     /**

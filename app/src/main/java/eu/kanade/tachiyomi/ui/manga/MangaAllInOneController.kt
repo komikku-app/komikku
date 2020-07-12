@@ -60,6 +60,7 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
+import java.io.IOException
 import java.util.Date
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
@@ -1021,6 +1022,39 @@ class MangaAllInOneController :
         val chaptersToDownload = getUnreadChaptersSorted().take(amount)
         if (chaptersToDownload.isNotEmpty()) {
             downloadChapters(chaptersToDownload)
+        }
+    }
+
+    fun changeCover() {
+        if (manga?.favorite == true) {
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "image/*"
+            startActivityForResult(
+                Intent.createChooser(
+                    intent,
+                    resources?.getString(R.string.select_cover_image)
+                ),
+                101
+            )
+        } else {
+            activity?.toast(R.string.cover_must_be_in_library)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 101) {
+            if (data == null || resultCode != Activity.RESULT_OK) return
+            val activity = activity ?: return
+            try {
+                val uri = data.data ?: return
+                if (editMangaDialog != null) editMangaDialog?.updateCover(uri)
+                else {
+                    presenter.editCoverWithStream(uri)
+                }
+            } catch (error: IOException) {
+                activity.toast(R.string.failed_to_update_cover)
+                Timber.e(error)
+            }
         }
     }
 
