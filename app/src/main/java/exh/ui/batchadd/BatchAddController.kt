@@ -49,12 +49,14 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
             val progressSubscriptions = CompositeSubscription()
 
             presenter.currentlyAddingRelay
+                .onBackpressureBuffer()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeUntilDestroy {
                     progressSubscriptions.clear()
                     if (it == BatchAddPresenter.STATE_INPUT_TO_PROGRESS) {
                         showProgress(this)
                         progressSubscriptions += presenter.progressRelay
+                            .onBackpressureBuffer()
                             .observeOn(AndroidSchedulers.mainThread())
                             .combineLatest(presenter.progressTotalRelay) { progress, total ->
                                 // Show hide dismiss button
@@ -71,18 +73,21 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
                             }
 
                         progressSubscriptions += presenter.progressTotalRelay
+                            .onBackpressureBuffer()
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeUntilDestroy {
                                 binding.progressBar.max = it
                             }
 
                         progressSubscriptions += presenter.progressRelay
+                            .onBackpressureBuffer()
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeUntilDestroy {
                                 binding.progressBar.progress = it
                             }
 
                         presenter.eventRelay
+                            ?.onBackpressureBuffer()
                             ?.observeOn(AndroidSchedulers.mainThread())
                             ?.subscribeUntilDestroy {
                                 binding.progressLog.append("$it\n")
