@@ -28,10 +28,8 @@ import exh.util.setChipsExtended
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import uy.kohesive.injekt.Injekt
@@ -72,14 +70,12 @@ class MangaAllInOneHolder(
             binding.btnTracking.visible()
         }
 
-        adapter.delegate.controllerScope.launch(Dispatchers.IO) {
-            setTrackingIcon(
-                Injekt.get<DatabaseHelper>().getTracks(presenter.manga).executeAsBlocking().any {
-                    val status = Injekt.get<TrackManager>().getService(it.sync_id)?.getStatus(it.status)
-                    status != null
-                }
-            )
-        }
+        setTrackingIcon(
+            Injekt.get<DatabaseHelper>().getTracks(presenter.manga).executeAsBlocking().any {
+                val status = Injekt.get<TrackManager>().getService(it.sync_id)?.getStatus(it.status)
+                status != null
+            }
+        )
 
         binding.btnTracking.clicks()
             .onEach { adapter.delegate.openTracking() }
