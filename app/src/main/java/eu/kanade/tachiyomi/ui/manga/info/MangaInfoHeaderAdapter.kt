@@ -28,6 +28,7 @@ import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.util.view.visibleIf
 import exh.MERGED_SOURCE_ID
+import exh.util.SourceTagsUtil
 import exh.util.setChipsExtended
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -153,31 +154,43 @@ class MangaInfoHeaderAdapter(
 
             binding.mangaAuthor.longClicks()
                 .onEach {
+                    // SY -->
+                    val author = binding.mangaAuthor.text.toString()
                     controller.activity?.copyToClipboard(
-                        binding.mangaAuthor.text.toString(),
-                        binding.mangaAuthor.text.toString()
+                        author,
+                        SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = author) ?: author
                     )
+                    // SY <--
                 }
                 .launchIn(scope)
 
             binding.mangaAuthor.clicks()
                 .onEach {
-                    controller.performGlobalSearch(binding.mangaAuthor.text.toString())
+                    // SY -->
+                    val author = binding.mangaAuthor.text.toString()
+                    controller.performGlobalSearch(SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = author) ?: author)
+                    // SY <--
                 }
                 .launchIn(scope)
 
             binding.mangaArtist.longClicks()
                 .onEach {
+                    // SY -->
+                    val artist = binding.mangaArtist.text.toString()
                     controller.activity?.copyToClipboard(
-                        binding.mangaArtist.text.toString(),
-                        binding.mangaArtist.text.toString()
+                        artist,
+                        SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist
                     )
+                    // SY <--
                 }
                 .launchIn(scope)
 
             binding.mangaArtist.clicks()
                 .onEach {
-                    controller.performGlobalSearch(binding.mangaArtist.text.toString())
+                    // SY -->
+                    val artist = binding.mangaArtist.text.toString()
+                    controller.performGlobalSearch(SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist)
+                    // SY <--
                 }
                 .launchIn(scope)
 
