@@ -240,6 +240,7 @@ class MangaPresenter(
             editCoverWithStream(uri)
         } else if (resetCover) {
             coverCache.deleteCustomCover(manga)
+            manga.updateCoverLastModified(db)
         }
 
         if (uri == null && resetCover) {

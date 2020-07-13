@@ -334,8 +334,8 @@ class MangaController :
         menu.findItem(R.id.download_group).isVisible = !isLocalSource
 
         // Hide edit cover and migrate options for non-library manga
-        menu.findItem(R.id.action_edit_cover).isVisible = presenter.manga.favorite
-        /* SY -->  menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite SY <-- */
+        /* SY --> menu.findItem(R.id.action_edit_cover).isVisible = presenter.manga.favorite SY <-- */
+        /* SY --> menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite SY <-- */
 
         // SY -->
         if (presenter.manga.favorite) menu.findItem(R.id.action_edit).isVisible = true
@@ -407,7 +407,7 @@ class MangaController :
             }
             // SY <--
 
-            R.id.action_edit_cover -> handleChangeCover()
+            // SY --> R.id.action_edit_cover -> handleChangeCover() // SY <--
             // SY --> R.id.action_migrate -> migrateManga() // SY <--
         }
         return super.onOptionsItemSelected(item)
@@ -553,7 +553,7 @@ class MangaController :
                 REQUEST_EDIT_MANGA_COVER
             )
         } else {
-            activity?.toast(R.string.cover_must_be_in_library)
+            activity?.toast(R.string.notification_first_add_to_library)
         }
     }
 

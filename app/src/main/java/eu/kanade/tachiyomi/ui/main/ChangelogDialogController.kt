@@ -18,7 +18,7 @@ class ChangelogDialogController : DialogController() {
         val activity = activity!!
         val view = WhatsNewRecyclerView(activity)
         return MaterialDialog(activity)
-            .title(res = if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY <-- */) R.string.notices else R.string.changelog)
+            .title(res = if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY <-- */) R.string.notices else R.string.whats_new)
             .customView(view = view)
             .positiveButton(R.string.action_close)
     }
