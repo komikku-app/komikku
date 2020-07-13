@@ -24,11 +24,11 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.setChips
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.util.view.visibleIf
 import exh.MERGED_SOURCE_ID
+import exh.util.setChipsExtended
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -306,8 +306,10 @@ class MangaInfoHeaderAdapter(
 
                 // Update genres list
                 if (!manga.genre.isNullOrBlank()) {
-                    binding.mangaGenresTagsCompactChips.setChips(manga.getGenres(), controller::performSearch)
-                    binding.mangaGenresTagsFullChips.setChips(manga.getGenres(), controller::performSearch)
+                    // SY -->
+                    binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
+                    binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
+                    // SY <--
                 } else {
                     binding.mangaGenresTagsWrapper.gone()
                 }
