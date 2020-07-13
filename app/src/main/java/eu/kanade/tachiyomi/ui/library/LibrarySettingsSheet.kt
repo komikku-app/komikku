@@ -156,7 +156,7 @@ class LibrarySettingsSheet(
 
             override val header = null
             override val items =
-                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter /* SY --> */, dragAndDrop /* SY <-- */)
+                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, dateAdded /* SY --> */, dragAndDrop /* SY <-- */)
             override val footer = null
 
             override fun initModels() {
