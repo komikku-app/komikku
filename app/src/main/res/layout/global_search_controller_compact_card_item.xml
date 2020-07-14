@@ -28,16 +28,11 @@
     <FrameLayout
         android:layout_width="112dp"
         android:layout_height="168dp"
+        android:background="@drawable/rounded_rectangle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <View
-            android:id="@+id/gradient"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="bottom"
-            android:background="@drawable/gradient_shape" />
 
         <ImageView
             android:id="@+id/itemImage"
@@ -45,8 +40,16 @@
             android:layout_height="match_parent"
             android:gravity="bottom"
             android:scaleType="fitCenter"
+            android:background="@drawable/rounded_rectangle"
             tools:ignore="ContentDescription"
             tools:src="@mipmap/ic_launcher" />
+
+        <View
+            android:id="@+id/gradient"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:background="@drawable/gradient_shape" />
 
         <TextView
             android:id="@+id/tvTitle"
@@ -56,7 +59,7 @@
             android:layout_gravity="bottom"
             android:layout_marginTop="0dp"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:maxLines="2"
             android:padding="8dp"
             android:shadowColor="@color/textColorPrimaryLight"
             android:shadowDx="0"
