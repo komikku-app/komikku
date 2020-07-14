@@ -240,8 +240,8 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
     // Crash reports
-    final acra_version = '5.5.0'
-    implementation "ch.acra:acra-http:$acra_version"
+    //final acra_version = '5.5.0'
+    //implementation "ch.acra:acra-http:$acra_version"
 
     // Sort
     implementation 'com.github.gpanther:java-nat-sort:natural-comparator-1.1'
