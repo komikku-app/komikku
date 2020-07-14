@@ -1,7 +1,7 @@
 package exh.log
 
 import android.content.Context
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 
 enum class EHLogLevel(val description: String) {
