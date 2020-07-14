@@ -16,9 +16,6 @@ interface Category : Serializable {
     var mangaOrder: List<Long>
     // SY <--
 
-    val nameLower: String
-        get() = name.toLowerCase()
-
     companion object {
 
         fun create(name: String): Category = CategoryImpl().apply {
