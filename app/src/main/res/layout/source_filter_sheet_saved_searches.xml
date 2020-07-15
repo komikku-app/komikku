@@ -14,7 +14,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:visibility="visible"
-        android:text="@string/eh_saved_searches" />
+        android:text="@string/saved_searches" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/saved_searches"

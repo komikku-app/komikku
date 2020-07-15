@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import android.content.Context
 import android.net.Uri
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -11,7 +12,7 @@ import exh.source.DelegatedHttpSource
 import exh.util.urlImportFetchSearchManga
 import rx.Observable
 
-class MangaDex(delegate: HttpSource) :
+class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     ConfigurableSource,
     UrlImportableSource {
@@ -19,7 +20,7 @@ class MangaDex(delegate: HttpSource) :
     override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
 
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        urlImportFetchSearchManga(query) {
+        urlImportFetchSearchManga(context, query) {
             super.fetchSearchManga(page, query, filters)
         }
 

@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
+import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
@@ -252,19 +253,18 @@ class SettingsGeneralController : SettingsController() {
         }
         // --> EXH
         preferenceCategory {
-            titleRes = R.string.eh_settings_category
+            titleRes = R.string.pref_category_fork
 
             switchPreference {
                 key = Keys.eh_expandFilters
-                title = "Expand all search filters by default"
+                titleRes = R.string.toggle_expand_search_filters
                 defaultValue = false
             }
 
             switchPreference {
                 key = Keys.eh_autoSolveCaptchas
-                title = "Automatically solve captcha"
-                summary =
-                    "Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device."
+                titleRes = R.string.auto_solve_captchas
+                summaryRes = R.string.auto_solve_captchas_summary
                 defaultValue = false
             }
         }

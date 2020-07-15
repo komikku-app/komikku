@@ -1,7 +1,9 @@
 package exh
 
+import android.content.Context
 import android.net.Uri
 import com.elvishew.xlog.XLog
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
@@ -18,12 +20,13 @@ class GalleryAdder {
     private val sourceManager: SourceManager by injectLazy()
 
     fun addGallery(
+        context: Context,
         url: String,
         fav: Boolean = false,
         forceSource: UrlImportableSource? = null,
         throttleFunc: () -> Unit = {}
     ): GalleryAddEvent {
-        XLog.d("Importing gallery (url: %s, fav: %s, forceSource: %s)...", url, fav, forceSource)
+        XLog.d(context.getString(R.string.gallery_adder_importing_gallery, url, fav.toString(), forceSource))
         try {
             val uri = Uri.parse(url)
 
@@ -31,10 +34,10 @@ class GalleryAdder {
             val source = if (forceSource != null) {
                 try {
                     if (forceSource.matchesUri(uri)) forceSource
-                    else return GalleryAddEvent.Fail.UnknownType(url)
+                    else return GalleryAddEvent.Fail.UnknownType(url, context)
                 } catch (e: Exception) {
-                    XLog.e("Source URI match check error!", e)
-                    return GalleryAddEvent.Fail.UnknownType(url)
+                    XLog.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
+                    return GalleryAddEvent.Fail.UnknownType(url, context)
                 }
             } else {
                 sourceManager.getVisibleCatalogueSources()
@@ -43,7 +46,7 @@ class GalleryAdder {
                         try {
                             it.matchesUri(uri)
                         } catch (e: Exception) {
-                            XLog.e("Source URI match check error!", e)
+                            XLog.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
                             false
                         }
                     } ?: sourceManager.getDelegatedCatalogueSources()
@@ -52,27 +55,27 @@ class GalleryAdder {
                         try {
                             it.matchesUri(uri)
                         } catch (e: Exception) {
-                            XLog.e("Source URI match check error!", e)
+                            XLog.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
                             false
                         }
-                    } ?: return GalleryAddEvent.Fail.UnknownType(url)
+                    } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
             }
 
             // Map URL to manga URL
             val realUrl = try {
                 source.mapUrlToMangaUrl(uri)
             } catch (e: Exception) {
-                XLog.e("Source URI map-to-manga error!", e)
+                XLog.e(context.getString(R.string.gallery_adder_uri_map_to_manga_error), e)
                 null
-            } ?: return GalleryAddEvent.Fail.UnknownType(url)
+            } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Clean URL
             val cleanedUrl = try {
                 source.cleanMangaUrl(realUrl)
             } catch (e: Exception) {
-                XLog.e("Source URI clean error!", e)
+                XLog.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
                 null
-            } ?: return GalleryAddEvent.Fail.UnknownType(url)
+            } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
             val manga = db.getManga(cleanedUrl, source.id).executeAsBlocking()
@@ -112,16 +115,16 @@ class GalleryAdder {
                     syncChaptersWithSource(db, it, manga, source)
                 }.toBlocking().first()
             } catch (e: Exception) {
-                XLog.w("Failed to update chapters for gallery: ${manga.title}!", e)
-                return GalleryAddEvent.Fail.Error(url, "Failed to update chapters for gallery: $url")
+                XLog.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
+                return GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_chapter_fetch_error, url))
             }
 
-            return GalleryAddEvent.Success(url, manga)
+            return GalleryAddEvent.Success(url, manga, context)
         } catch (e: Exception) {
-            XLog.w("Could not add gallery (url: $url)!", e)
+            XLog.w(context.getString(R.string.gallery_adder_could_not_add_gallery, url), e)
 
             if (e is EHentai.GalleryNotFoundException) {
-                return GalleryAddEvent.Fail.NotFound(url)
+                return GalleryAddEvent.Fail.NotFound(url, context)
             }
 
             return GalleryAddEvent.Fail.Error(
@@ -139,15 +142,16 @@ sealed class GalleryAddEvent {
 
     class Success(
         override val galleryUrl: String,
-        val manga: Manga
+        val manga: Manga,
+        val context: Context
     ) : GalleryAddEvent() {
         override val galleryTitle = manga.title
-        override val logMessage = "Added gallery: $galleryTitle"
+        override val logMessage = context.getString(R.string.batch_add_success_log_message, galleryTitle)
     }
 
     sealed class Fail : GalleryAddEvent() {
-        class UnknownType(override val galleryUrl: String) : Fail() {
-            override val logMessage = "Unknown gallery type for gallery: $galleryUrl"
+        class UnknownType(override val galleryUrl: String, val context: Context) : Fail() {
+            override val logMessage = context.getString(R.string.batch_add_unknown_type_log_message, galleryUrl)
         }
 
         open class Error(
@@ -155,7 +159,7 @@ sealed class GalleryAddEvent {
             override val logMessage: String
         ) : Fail()
 
-        class NotFound(galleryUrl: String) :
-            Error(galleryUrl, "Gallery does not exist: $galleryUrl")
+        class NotFound(galleryUrl: String, context: Context) :
+            Error(galleryUrl, context.getString(R.string.batch_add_not_exist_log_message, galleryUrl))
     }
 }

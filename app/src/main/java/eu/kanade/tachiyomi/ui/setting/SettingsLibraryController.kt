@@ -219,11 +219,11 @@ class SettingsLibraryController : SettingsController() {
             .isNotEmpty()
         ) {
             preferenceCategory {
-                title = "Migration"
+                titleRes = R.string.migration
 
                 switchPreference {
                     key = Keys.skipPreMigration
-                    titleRes = R.string.pref_skip_pre_migration
+                    titleRes = R.string.skip_pre_migration
                     summaryRes = R.string.pref_skip_pre_migration_summary
                     defaultValue = false
                 }

@@ -1,5 +1,7 @@
 package exh.uconfig
 
+import android.content.Context
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -13,7 +15,7 @@ import okhttp3.Request
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 
-class EHConfigurator {
+class EHConfigurator(val context: Context) {
     private val prefs: PreferencesHelper by injectLazy()
     private val sources: SourceManager by injectLazy()
 
@@ -104,7 +106,7 @@ class EHConfigurator {
 
         // No profile slots left :(
         if (availableProfiles.isEmpty()) {
-            throw IllegalStateException("You are out of profile slots on ${source.name}, please delete a profile!")
+            throw IllegalStateException(context.getString(R.string.eh_settings_out_of_slots_error, source.name))
         }
         // Create profile in available slot
 

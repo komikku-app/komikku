@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.english
 
+import android.content.Context
 import android.net.Uri
 import com.github.salomonbrys.kotson.array
 import com.github.salomonbrys.kotson.string
@@ -43,7 +44,7 @@ import org.jsoup.nodes.Element
 import rx.Observable
 import rx.schedulers.Schedulers
 
-class HBrowse : HttpSource(), LewdSource<HBrowseSearchMetadata, Document>, UrlImportableSource {
+class HBrowse(val context: Context) : HttpSource(), LewdSource<HBrowseSearchMetadata, Document>, UrlImportableSource {
     /**
      * An ISO 639-1 compliant language code (two letters in lower case).
      */
@@ -110,7 +111,7 @@ class HBrowse : HttpSource(), LewdSource<HBrowseSearchMetadata, Document>, UrlIm
      * @param filters the list of filters to apply.
      */
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return urlImportFetchSearchManga(query) {
+        return urlImportFetchSearchManga(context, query) {
             fetchSearchMangaInternal(page, query, filters)
         }
     }

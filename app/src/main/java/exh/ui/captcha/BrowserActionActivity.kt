@@ -15,6 +15,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.github.salomonbrys.kotson.get
 import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonParser
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -180,8 +181,8 @@ class BrowserActionActivity : AppCompatActivity() {
         runOnUiThread {
             webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             MaterialDialog(this)
-                .title(text = "Captcha solve failure")
-                .message(text = "Failed to auto-solve the captcha!")
+                .title(R.string.captcha_solve_failure)
+                .message(R.string.captcha_solve_failure_message)
                 .cancelable(true)
                 .cancelOnTouchOutside(true)
                 .positiveButton(android.R.string.ok)

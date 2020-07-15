@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.english
 
+import android.content.Context
 import android.net.Uri
 import com.kizitonwose.time.hours
 import eu.kanade.tachiyomi.network.GET
@@ -41,7 +42,7 @@ import rx.schedulers.Schedulers
 
 typealias SiteMap = NakedTrie<Unit>
 
-class EightMuses :
+class EightMuses(val context: Context) :
     HttpSource(),
     LewdSource<EightMusesSearchMetadata, Document>,
     UrlImportableSource {
@@ -177,7 +178,7 @@ class EightMuses :
     override fun fetchPopularManga(page: Int) = fetchListing(popularMangaRequest(page), false) // TODO Dig
 
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return urlImportFetchSearchManga(query) {
+        return urlImportFetchSearchManga(context, query) {
             fetchListing(searchMangaRequest(page, query, filters), false)
         }
     }

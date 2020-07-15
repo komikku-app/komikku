@@ -192,7 +192,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:contentDescription="@string/eh_merge_with_another_source"
+                    android:contentDescription="@string/merge_with_another_source"
                     android:visibility="gone"
                     app:icon="@drawable/eh_ic_find_replace_white_24dp"
                     tools:visibility="visible" />
@@ -289,7 +289,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="4dp"
-        android:text="@string/eh_merge_with_another_source"
+        android:text="@string/merge_with_another_source"
         android:visibility="gone"
         tools:visibility="visible" />
 

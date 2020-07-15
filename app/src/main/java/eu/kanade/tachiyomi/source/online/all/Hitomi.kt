@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import com.github.salomonbrys.kotson.array
@@ -41,7 +42,7 @@ import uy.kohesive.injekt.injectLazy
 /**
  * Man, I hate this source :(
  */
-class Hitomi : HttpSource(), LewdSource<HitomiSearchMetadata, Document>, UrlImportableSource {
+class Hitomi(val context: Context) : HttpSource(), LewdSource<HitomiSearchMetadata, Document>, UrlImportableSource {
     private val prefs: PreferencesHelper by injectLazy()
 
     override val id = HITOMI_SOURCE_ID
@@ -185,7 +186,7 @@ class Hitomi : HttpSource(), LewdSource<HitomiSearchMetadata, Document>, UrlImpo
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
 
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return urlImportFetchSearchManga(query) {
+        return urlImportFetchSearchManga(context, query) {
             val splitQuery = query.split(" ")
 
             val positive = splitQuery.filter { !it.startsWith('-') }.toMutableList()

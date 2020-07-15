@@ -61,7 +61,7 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
                 when (it) {
                     is InterceptResult.Success -> {
                         binding.interceptProgress.gone()
-                        binding.interceptStatus.text = "Launching app..."
+                        binding.interceptStatus.setText(R.string.launching_app)
                         onBackPressed()
                         startActivity(
                             Intent(this, MainActivity::class.java)
@@ -72,10 +72,10 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
                     }
                     is InterceptResult.Failure -> {
                         binding.interceptProgress.gone()
-                        binding.interceptStatus.text = "Error: ${it.reason}"
+                        binding.interceptStatus.text = this.getString(R.string.error_with_reason, it.reason)
                         MaterialDialog(this)
-                            .title(text = "Error")
-                            .message(text = "Could not open this gallery:\n\n${it.reason}")
+                            .title(R.string.chapter_error)
+                            .message(text = this.getString(R.string.could_not_open_gallery, it.reason))
                             .cancelable(true)
                             .cancelOnTouchOutside(true)
                             .positiveButton(android.R.string.ok)
@@ -104,13 +104,13 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
 
             // Load gallery async
             thread {
-                val result = galleryAdder.addGallery(gallery)
+                val result = galleryAdder.addGallery(this, gallery)
 
                 status.onNext(
                     when (result) {
                         is GalleryAddEvent.Success -> result.manga.id?.let {
                             InterceptResult.Success(it)
-                        } ?: InterceptResult.Failure("Manga ID is null!")
+                        } ?: InterceptResult.Failure(this.getString(R.string.manga_id_is_null))
                         is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
                     }
                 )

@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.afollestad.materialdialogs.MaterialDialog
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhFragmentBatchAddBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.lang.combineLatest
@@ -26,7 +27,7 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
         return binding.root
     }
 
-    override fun getTitle() = "Batch add"
+    override fun getTitle() = activity!!.getString(R.string.batch_add)
 
     override fun createPresenter() = BatchAddPresenter()
 
@@ -145,14 +146,14 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
             return
         }
 
-        presenter.addGalleries(galleries)
+        presenter.addGalleries(activity!!, galleries)
     }
 
     private fun noGalleriesSpecified() {
         activity?.let {
             MaterialDialog(it)
-                .title(text = "No galleries to add!")
-                .message(text = "You must specify at least one gallery to add!")
+                .title(R.string.batch_add_no_valid_galleries)
+                .message(R.string.batch_add_no_valid_galleries_message)
                 .positiveButton(android.R.string.ok) { materialDialog -> materialDialog.dismiss() }
                 .cancelable(true)
                 .cancelOnTouchOutside(true)

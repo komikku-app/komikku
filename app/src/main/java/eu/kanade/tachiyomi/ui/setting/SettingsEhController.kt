@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
+import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
@@ -143,14 +144,14 @@ class SettingsEhController : SettingsController() {
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
-        title = "E-Hentai"
+        titleRes = R.string.pref_category_eh
 
         preferenceCategory {
-            title = "E-Hentai Website Account Settings"
+            titleRes = R.string.ehentai_prefs_account_settings
 
             switchPreference {
-                title = "Enable ExHentai"
-                summaryOff = "Requires login"
+                titleRes = R.string.enable_exhentai
+                summaryOff = context.getString(R.string.requires_login)
                 key = PreferenceKeys.eh_enableExHentai
                 isPersistent = false
                 defaultValue = false
@@ -178,33 +179,23 @@ class SettingsEhController : SettingsController() {
             }
 
             intListPreference {
-                title = "Use Hentai@Home Network"
+                titleRes = R.string.use_hentai_at_home
 
                 key = PreferenceKeys.eh_enable_hah
-                if (preferences.eh_hathPerksCookies().get().isBlank()) {
-                    summary = "Do you wish to load images through the Hentai@Home Network, if available? Disabling this option will reduce the amount of pages you are able to view\nOptions:\n - Any client (Recommended)\n - Default port clients only (Can be slower. Enable if behind firewall/proxy that blocks outgoing non-standard ports.)"
-                    entries = arrayOf(
-                        "Any client (Recommended)",
-                        "Default port clients only"
-                    )
-                    entryValues = arrayOf("0", "1")
-                } else {
-                    summary = "Do you wish to load images through the Hentai@Home Network, if available? Disabling this option will reduce the amount of pages you are able to view\nOptions:\n - Any client (Recommended)\n - Default port clients only (Can be slower. Enable if behind firewall/proxy that blocks outgoing non-standard ports.)\n - No (Donator only. You will not be able to browse as many pages, enable only if having severe problems.)"
-                    entries = arrayOf(
-                        "Any client (Recommended)",
-                        "Default port clients only",
-                        "No(will select Default port clients only if you are not a donator)"
-                    )
-                    entryValues = arrayOf("0", "1", "2")
-                }
+                summaryRes = R.string.use_hentai_at_home_summary
+                entriesRes = arrayOf(
+                    R.string.use_hentai_at_home_option_1,
+                    R.string.use_hentai_at_home_option_2
+                )
+                entryValues = arrayOf("0", "1")
 
                 onChange { preferences.useHentaiAtHome().reconfigure() }
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             switchPreference {
-                title = "Show Japanese titles in search results"
-                summaryOn = "Currently showing Japanese titles in search results. Clear the chapter cache after changing this (in the Advanced section)"
-                summaryOff = "Currently showing English/Romanized titles in search results. Clear the chapter cache after changing this (in the Advanced section)"
+                titleRes = R.string.show_japanese_titles
+                summaryOn = context.getString(R.string.show_japanese_titles_option_1)
+                summaryOff = context.getString(R.string.show_japanese_titles_option_2)
                 key = "use_jp_title"
                 defaultValue = false
 
@@ -212,9 +203,9 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             switchPreference {
-                title = "Use original images"
-                summaryOn = "Currently using original images"
-                summaryOff = "Currently using resampled images"
+                titleRes = R.string.use_original_images
+                summaryOn = context.getString(R.string.use_original_images_on)
+                summaryOff = context.getString(R.string.use_original_images_off)
                 key = PreferenceKeys.eh_useOrigImages
                 defaultValue = false
 
@@ -222,28 +213,28 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
-                title = "Watched Tags"
-                summary = "Opens a webview to your E/ExHentai watched tags page"
+                titleRes = R.string.watched_tags
+                summaryRes = R.string.watched_tags_summary
                 onClick {
                     val intent = if (preferences.enableExhentai().get()) {
-                        WebViewActivity.newIntent(activity!!, url = "https://exhentai.org/mytags", title = "ExHentai Watched Tags")
+                        WebViewActivity.newIntent(activity!!, url = "https://exhentai.org/mytags", title = context.getString(R.string.watched_tags_exh))
                     } else {
-                        WebViewActivity.newIntent(activity!!, url = "https://e-hentai.org/mytags", title = "E-Hentai Watched Tags")
+                        WebViewActivity.newIntent(activity!!, url = "https://e-hentai.org/mytags", title = context.getString(R.string.watched_tags_eh))
                     }
                     startActivity(intent)
                 }
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
-                title = "Tag Filtering Threshold"
+                titleRes = R.string.tag_filtering_threshold
                 key = PreferenceKeys.eh_tag_filtering_value
                 defaultValue = 0
 
-                summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: ${preferences.ehTagFilterValue().get()}"
+                summaryRes = R.string.tag_filtering_threshhold_summary
 
                 onClick {
                     MaterialDialog(activity!!)
-                        .title(text = "Tag Filtering Threshold")
+                        .title(R.string.tag_filtering_threshold)
                         .input(
                             inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
                             waitForPositiveButton = false,
@@ -255,14 +246,13 @@ class SettingsEhController : SettingsController() {
                             if (value != null && value in -9999..0) {
                                 inputField.error = null
                             } else {
-                                inputField.error = "Must be between -9999 and 0!"
+                                inputField.error = context.getString(R.string.tag_filtering_threshhold_error)
                             }
                             dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in -9999..0)
                         }
                         .positiveButton(android.R.string.ok) {
                             val value = it.getInputField().text.toString().toInt()
                             preferences.ehTagFilterValue().set(value)
-                            summary = "You can soft filter tags by adding them to the \"My Tags\" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between 0 and -9999. Currently: $value"
                             preferences.ehTagFilterValue().reconfigure()
                         }
                         .show()
@@ -270,15 +260,15 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
-                title = "Tag Watching Threshold"
+                titleRes = R.string.tag_watching_threshhold
                 key = PreferenceKeys.eh_tag_watching_value
                 defaultValue = 0
 
-                summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: ${preferences.ehTagWatchingValue().get()}"
+                summaryRes = R.string.tag_watching_threshhold_summary
 
                 onClick {
                     MaterialDialog(activity!!)
-                        .title(text = "Tag Watching Threshold")
+                        .title(R.string.tag_watching_threshhold)
                         .input(
                             inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
                             maxLength = 4,
@@ -291,14 +281,13 @@ class SettingsEhController : SettingsController() {
                             if (value != null && value in 0..9999) {
                                 inputField.error = null
                             } else {
-                                inputField.error = "Must be between 0 and 9999!"
+                                inputField.error = context.getString(R.string.tag_watching_threshhold_error)
                             }
                             dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in 0..9999)
                         }
                         .positiveButton(android.R.string.ok) {
                             val value = it.getInputField().text.toString().toInt()
                             preferences.ehTagWatchingValue().set(value)
-                            summary = "Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: $value"
                             preferences.ehTagWatchingValue().reconfigure()
                         }
                         .show()
@@ -306,13 +295,13 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
-                title = "Language Filtering"
-                summary = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude"
+                titleRes = R.string.language_filtering
+                summaryRes = R.string.language_filtering_summary
 
                 onClick {
                     MaterialDialog(activity!!)
-                        .title(text = "Language Filtering")
-                        .message(text = "If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude")
+                        .title(R.string.language_filtering)
+                        .message(R.string.language_filtering_summary)
                         .customView(R.layout.eh_dialog_languages, scrollable = true)
                         .positiveButton(android.R.string.ok) {
                             val customView = it.view.contentLayout.customView!!
@@ -444,13 +433,13 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
-                title = "Front Page Categories"
-                summary = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters"
+                titleRes = R.string.frong_page_categories
+                summaryRes = R.string.fromt_page_categories_summary
 
                 onClick {
                     MaterialDialog(activity!!)
-                        .title(text = "Front Page Categories")
-                        .message(text = "What categories would you like to show by default on the front page and in searches? They can still be enabled by enabling their filters")
+                        .title(R.string.frong_page_categories)
+                        .message(R.string.fromt_page_categories_summary)
                         .customView(R.layout.eh_dialog_categories, scrollable = true)
                         .positiveButton {
                             val customView = it.view.contentLayout.customView!!
@@ -497,22 +486,22 @@ class SettingsEhController : SettingsController() {
             switchPreference {
                 defaultValue = false
                 key = PreferenceKeys.eh_watched_list_default_state
-                title = "Watched List Filter Default State"
-                summary = "When browsing ExHentai/E-Hentai should the watched list filter be enabled by default"
-            }
+                titleRes = R.string.watched_list_default
+                summaryRes = R.string.watched_list_state_summary
+            }.dependency = PreferenceKeys.eh_enableExHentai
 
             listPreference {
                 defaultValue = "auto"
                 key = PreferenceKeys.eh_ehentai_quality
-                summary = "The quality of the downloaded images"
-                title = "Image quality"
-                entries = arrayOf(
-                    "Auto",
-                    "2400x",
-                    "1600x",
-                    "1280x",
-                    "980x",
-                    "780x"
+                summaryRes = R.string.eh_image_quality_summary
+                titleRes = R.string.eh_image_quality
+                entriesRes = arrayOf(
+                    R.string.eh_image_quality_auto,
+                    R.string.eh_image_quality_2400,
+                    R.string.eh_image_quality_1600,
+                    R.string.eh_image_quality_1280,
+                    R.string.eh_image_quality_980,
+                    R.string.eh_image_quality_780
                 )
                 entryValues = arrayOf(
                     "auto",
@@ -528,18 +517,18 @@ class SettingsEhController : SettingsController() {
         }
 
         preferenceCategory {
-            title = "Favorites sync"
+            titleRes = R.string.favorites_sync
 
             switchPreference {
-                title = "Disable favorites uploading"
-                summary = "Favorites are only downloaded from ExHentai. Any changes to favorites in the app will not be uploaded. Prevents accidental loss of favorites on ExHentai. Note that removals will still be downloaded (if you remove a favorites on ExHentai, it will be removed in the app as well)."
+                titleRes = R.string.disable_favorites_uploading
+                summaryRes = R.string.disable_favorites_uploading_summary
                 key = PreferenceKeys.eh_readOnlySync
                 defaultValue = false
             }
 
             preference {
-                title = "Show favorites sync notes"
-                summary = "Show some information regarding the favorites sync feature"
+                titleRes = R.string.show_favorite_sync_notes
+                summaryRes = R.string.show_favorite_sync_notes_summary
 
                 onClick {
                     activity?.let {
@@ -549,21 +538,21 @@ class SettingsEhController : SettingsController() {
             }
 
             switchPreference {
-                title = "Ignore sync errors when possible"
-                summary = "Do not abort immediately when encountering errors during the sync process. Errors will still be displayed when the sync is complete. Can cause loss of favorites in some cases. Useful when syncing large libraries."
+                titleRes = R.string.ignore_sync_errors
+                summaryRes = R.string.ignore_sync_errors_summary
                 key = PreferenceKeys.eh_lenientSync
                 defaultValue = false
             }
 
             preference {
-                title = "Force sync state reset"
-                summary = "Performs a full resynchronization on the next sync. Removals will not be synced. All favorites in the app will be re-uploaded to ExHentai and all favorites on ExHentai will be re-downloaded into the app. Useful for repairing sync after sync has been interrupted."
+                titleRes = R.string.force_sync_state_reset
+                summaryRes = R.string.force_sync_state_reset_summary
 
                 onClick {
                     activity?.let { activity ->
                         MaterialDialog(activity)
-                            .title(R.string.eh_force_sync_reset_title)
-                            .message(R.string.eh_force_sync_reset_message)
+                            .title(R.string.favorites_sync_reset)
+                            .message(R.string.favorites_sync_reset_message)
                             .positiveButton(android.R.string.yes) {
                                 LocalFavoritesStorage().apply {
                                     getRealm().use {
@@ -572,7 +561,7 @@ class SettingsEhController : SettingsController() {
                                         }
                                     }
                                 }
-                                activity.toast("Sync state reset", Toast.LENGTH_LONG)
+                                activity.toast(context.getString(R.string.sync_state_reset), Toast.LENGTH_LONG)
                             }
                             .negativeButton(android.R.string.no)
                             .cancelable(false)
@@ -583,20 +572,20 @@ class SettingsEhController : SettingsController() {
         }
 
         preferenceCategory {
-            title = "Gallery update checker"
+            titleRes = R.string.gallery_update_checker
 
             intListPreference {
                 key = PreferenceKeys.eh_autoUpdateFrequency
-                title = "Time between update batches"
-                entries = arrayOf(
-                    "Never update galleries",
-                    "1 hour",
-                    "2 hours",
-                    "3 hours",
-                    "6 hours",
-                    "12 hours",
-                    "24 hours",
-                    "48 hours"
+                titleRes = R.string.time_between_batches
+                entriesRes = arrayOf(
+                    R.string.time_between_batches_never,
+                    R.string.time_between_batches_1_hour,
+                    R.string.time_between_batches_2_hours,
+                    R.string.time_between_batches_3_hours,
+                    R.string.time_between_batches_6_hours,
+                    R.string.time_between_batches_12_hours,
+                    R.string.time_between_batches_24_hours,
+                    R.string.time_between_batches_48_hours
                 )
                 entryValues = arrayOf("0", "1", "2", "3", "6", "12", "24", "48")
                 defaultValue = "0"
@@ -604,11 +593,9 @@ class SettingsEhController : SettingsController() {
                 preferences.eh_autoUpdateFrequency().asFlow()
                     .onEach { newVal ->
                         summary = if (newVal == 0) {
-                            "${context.getString(R.string.app_name)} will currently never check galleries in your library for updates."
+                            context.getString(R.string.time_between_batches_summary_1, context.getString(R.string.app_name))
                         } else {
-                            "${context.getString(R.string.app_name)} checks/updates galleries in batches. " +
-                                "This means it will wait $newVal hour(s), check ${EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION} galleries," +
-                                " wait $newVal hour(s), check ${EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION} and so on..."
+                            context.getString(R.string.time_between_batches_summary_2, context.getString(R.string.app_name), newVal, EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION)
                         }
                     }
                     .launchIn(scope)
@@ -622,7 +609,7 @@ class SettingsEhController : SettingsController() {
 
             multiSelectListPreference {
                 key = PreferenceKeys.eh_autoUpdateRestrictions
-                title = "Auto update restrictions"
+                titleRes = R.string.auto_update_restrictions
                 entriesRes = arrayOf(R.string.wifi, R.string.charging)
                 entryValues = arrayOf("wifi", "ac")
                 summaryRes = R.string.pref_library_update_restriction_summary
@@ -639,11 +626,11 @@ class SettingsEhController : SettingsController() {
             }
 
             preference {
-                title = "Show updater statistics"
+                titleRes = R.string.show_updater_statistics
 
                 onClick {
                     val progress = MaterialDialog(context)
-                        .message(R.string.eh_show_update_statistics_dialog)
+                        .message(R.string.gallery_updater_statistics_collection)
                         .cancelable(false)
                     progress.show()
 
@@ -655,8 +642,8 @@ class SettingsEhController : SettingsController() {
                                 }
 
                             val statsText = if (stats != null) {
-                                "The updater last ran ${Humanize.naturalTime(Date(stats.startTime))}, and checked ${stats.updateCount} out of the ${stats.possibleUpdates} galleries that were ready for checking."
-                            } else "The updater has not ran yet."
+                                context.getString(R.string.gallery_updater_stats_text, Humanize.naturalTime(Date(stats.startTime)), stats.updateCount, stats.possibleUpdates)
+                            } else context.getString(R.string.gallery_updater_not_ran_yet)
 
                             val allMeta = db.getFavoriteMangaWithMetadata().await().filter {
                                 it.source == EH_SOURCE_ID || it.source == EXH_SOURCE_ID
@@ -672,26 +659,24 @@ class SettingsEhController : SettingsController() {
                                 }.count()
                             }
 
-                            """
-                            $statsText
-
-                            Galleries that were checked in the last:
-                            - hour: ${metaInRelativeDuration(1.hours)}
-                            - 6 hours: ${metaInRelativeDuration(6.hours)}
-                            - 12 hours: ${metaInRelativeDuration(12.hours)}
-                            - day: ${metaInRelativeDuration(1.days)}
-                            - 2 days: ${metaInRelativeDuration(2.days)}
-                            - week: ${metaInRelativeDuration(7.days)}
-                            - month: ${metaInRelativeDuration(30.days)}
-                            - year: ${metaInRelativeDuration(365.days)}
-                            """.trimIndent()
+                            statsText + "\n\n" + context.getString(
+                                R.string.gallery_updater_stats_time,
+                                metaInRelativeDuration(1.hours),
+                                metaInRelativeDuration(6.hours),
+                                metaInRelativeDuration(12.hours),
+                                metaInRelativeDuration(1.days),
+                                metaInRelativeDuration(2.days),
+                                metaInRelativeDuration(7.days),
+                                metaInRelativeDuration(30.days),
+                                metaInRelativeDuration(365.days)
+                            )
                         } finally {
                             progress.dismiss()
                         }
 
                         withContext(Dispatchers.Main) {
                             MaterialDialog(context)
-                                .title(text = "Gallery updater statistics")
+                                .title(R.string.gallery_updater_statistics)
                                 .message(text = updateInfo)
                                 .positiveButton(android.R.string.ok)
                                 .show()

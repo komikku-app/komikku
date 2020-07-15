@@ -4,7 +4,6 @@ import android.content.Context
 import android.widget.ArrayAdapter
 import android.widget.Filter
 import android.widget.Filterable
-import timber.log.Timber
 
 class AutoCompleteAdapter(context: Context, resource: Int, var objects: List<String>, val excludePrefix: String?) :
     ArrayAdapter<String>(context, resource, objects),
@@ -35,8 +34,6 @@ class AutoCompleteAdapter(context: Context, resource: Int, var objects: List<Str
                 mOriginalValues = objects
             }
 
-            Timber.d("$prefix ")
-
             if (prefix == null || prefix.isEmpty()) {
                 val list = mOriginalValues!!
                 results.values = list
@@ -44,7 +41,6 @@ class AutoCompleteAdapter(context: Context, resource: Int, var objects: List<Str
             } else {
                 val prefixString = prefix.toString()
                 val containsPrefix: Boolean = excludePrefix?.let { prefixString.startsWith(it) } ?: false
-                Timber.d(prefixString)
                 val filterResults = mOriginalValues!!.filter { it.contains(if (excludePrefix != null) prefixString.removePrefix(excludePrefix) else prefixString, true) }
                 results.values = if (containsPrefix) filterResults.map { excludePrefix + it } else filterResults
                 results.count = filterResults.size

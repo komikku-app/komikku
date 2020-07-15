@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.PowerManager
 import com.elvishew.xlog.XLog
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -52,7 +53,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private val logger = XLog.tag("EHFavSync").build()
 
-    val status = BehaviorSubject.create<FavoritesSyncStatus>(FavoritesSyncStatus.Idle())
+    val status = BehaviorSubject.create<FavoritesSyncStatus>(FavoritesSyncStatus.Idle(context))
 
     @Synchronized
     fun runSync() {
@@ -60,7 +61,7 @@ class FavoritesSyncHelper(val context: Context) {
             return
         }
 
-        status.onNext(FavoritesSyncStatus.Initializing())
+        status.onNext(FavoritesSyncStatus.Initializing(context))
 
         thread { beginSync() }
     }
@@ -68,12 +69,12 @@ class FavoritesSyncHelper(val context: Context) {
     private fun beginSync() {
         // Check if logged in
         if (!prefs.enableExhentai().get()) {
-            status.onNext(FavoritesSyncStatus.Error("Please log in!"))
+            status.onNext(FavoritesSyncStatus.Error(context.getString(R.string.please_login)))
             return
         }
 
         // Validate library state
-        status.onNext(FavoritesSyncStatus.Processing("Verifying local library"))
+        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context))
         val libraryManga = db.getLibraryMangas().executeAsBlocking()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
@@ -83,9 +84,9 @@ class FavoritesSyncHelper(val context: Context) {
                 val inCategories = db.getCategoriesForManga(it).executeAsBlocking()
                 status.onNext(
                     FavoritesSyncStatus.BadLibraryState
-                        .MangaInMultipleCategories(it, inCategories)
+                        .MangaInMultipleCategories(it, inCategories, context)
                 )
-                logger.w("Manga %s is in multiple categories!", it.id)
+                logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, it.id))
                 return
             } else {
                 seenManga += it.id!!
@@ -94,11 +95,11 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Download remote favorites
         val favorites = try {
-            status.onNext(FavoritesSyncStatus.Processing("Downloading favorites from remote server"))
+            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_downloading), context = context))
             exh.fetchFavorites()
         } catch (e: Exception) {
-            status.onNext(FavoritesSyncStatus.Error("Failed to fetch favorites from remote server!"))
-            logger.e("Could not fetch favorites!", e)
+            status.onNext(FavoritesSyncStatus.Error(context.getString(R.string.favorites_sync_failed_to_featch)))
+            logger.e(context.getString(R.string.favorites_sync_could_not_fetch), e)
             return
         }
 
@@ -127,17 +128,17 @@ class FavoritesSyncHelper(val context: Context) {
             storage.getRealm().use { realm ->
                 realm.trans {
                     db.inTransaction {
-                        status.onNext(FavoritesSyncStatus.Processing("Calculating remote changes"))
+                        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context))
                         val remoteChanges = storage.getChangedRemoteEntries(realm, favorites.first)
                         val localChanges = if (prefs.eh_readOnlySync().get()) {
                             null // Do not build local changes if they are not going to be applied
                         } else {
-                            status.onNext(FavoritesSyncStatus.Processing("Calculating local changes"))
+                            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context))
                             storage.getChangedDbEntries(realm)
                         }
 
                         // Apply remote categories
-                        status.onNext(FavoritesSyncStatus.Processing("Updating category names"))
+                        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names), context = context))
                         applyRemoteCategories(favorites.second)
 
                         // Apply change sets
@@ -146,7 +147,7 @@ class FavoritesSyncHelper(val context: Context) {
                             applyChangeSetToRemote(errorList, localChanges)
                         }
 
-                        status.onNext(FavoritesSyncStatus.Processing("Cleaning up"))
+                        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_cleaning_up), context = context))
                         storage.snapshotEntries(realm)
                     }
                 }
@@ -154,15 +155,15 @@ class FavoritesSyncHelper(val context: Context) {
 
             val theContext = context
             launchUI {
-                theContext.toast("Sync complete!")
+                theContext.toast(context.getString(R.string.favorites_sync_complete))
             }
         } catch (e: IgnoredException) {
             // Do not display error as this error has already been reported
-            logger.w("Ignoring exception!", e)
+            logger.w(context.getString(R.string.favorites_sync_ignoring_exception), e)
             return
         } catch (e: Exception) {
-            status.onNext(FavoritesSyncStatus.Error("Unknown error: ${e.message}"))
-            logger.e("Sync error!", e)
+            status.onNext(FavoritesSyncStatus.Error(context.getString(R.string.favorites_sync_unknown_error, e.message)))
+            logger.e(context.getString(R.string.favorites_sync_sync_error), e)
             return
         } finally {
             // Release wake + wifi locks
@@ -180,7 +181,7 @@ class FavoritesSyncHelper(val context: Context) {
         }
 
         if (errorList.isEmpty()) {
-            status.onNext(FavoritesSyncStatus.Idle())
+            status.onNext(FavoritesSyncStatus.Idle(context))
         } else {
             status.onNext(FavoritesSyncStatus.CompleteWithErrors(errorList))
         }
@@ -268,7 +269,7 @@ class FavoritesSyncHelper(val context: Context) {
                     break
                 }
             } catch (e: Exception) {
-                logger.w("Sync network error!", e)
+                logger.w(context.getString(R.string.favorites_sync_network_error), e)
             }
         }
 
@@ -278,7 +279,7 @@ class FavoritesSyncHelper(val context: Context) {
     private fun applyChangeSetToRemote(errorList: MutableList<String>, changeSet: ChangeSet) {
         // Apply removals
         if (changeSet.removed.isNotEmpty()) {
-            status.onNext(FavoritesSyncStatus.Processing("Removing ${changeSet.removed.size} galleries from remote server"))
+            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_removing_galleries, changeSet.removed.size), context = context))
 
             val formBody = FormBody.Builder()
                 .add("ddact", "delete")
@@ -295,7 +296,7 @@ class FavoritesSyncHelper(val context: Context) {
                 .build()
 
             if (!explicitlyRetryExhRequest(10, request)) {
-                val errorString = "Unable to delete galleries from the remote servers!"
+                val errorString = context.getString(R.string.favorites_sync_unable_to_delete)
 
                 if (prefs.eh_lenientSync().get()) {
                     errorList += errorString
@@ -311,8 +312,9 @@ class FavoritesSyncHelper(val context: Context) {
         changeSet.added.forEachIndexed { index, it ->
             status.onNext(
                 FavoritesSyncStatus.Processing(
-                    "Adding gallery ${index + 1} of ${changeSet.added.size} to remote server",
-                    needWarnThrottle()
+                    context.getString(R.string.favorites_sync_adding_to_remote, index + 1, changeSet.added.size),
+                    needWarnThrottle(),
+                    context
                 )
             )
 
@@ -327,7 +329,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Apply removals
         changeSet.removed.forEachIndexed { index, it ->
-            status.onNext(FavoritesSyncStatus.Processing("Removing gallery ${index + 1} of ${changeSet.removed.size} from local library"))
+            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_remove_from_local, index + 1, changeSet.removed.size), context = context))
             val url = it.getUrl()
 
             // Consider both EX and EH sources
@@ -359,8 +361,9 @@ class FavoritesSyncHelper(val context: Context) {
         changeSet.added.forEachIndexed { index, it ->
             status.onNext(
                 FavoritesSyncStatus.Processing(
-                    "Adding gallery ${index + 1} of ${changeSet.added.size} to local library",
-                    needWarnThrottle()
+                    context.getString(R.string.favorites_sync_add_to_local, index + 1, changeSet.added.size),
+                    needWarnThrottle(),
+                    context
                 )
             )
 
@@ -368,6 +371,7 @@ class FavoritesSyncHelper(val context: Context) {
 
             // Import using gallery adder
             val result = galleryAdder.addGallery(
+                context,
                 "${exh.baseUrl}${it.getUrl()}",
                 true,
                 exh,
@@ -376,14 +380,14 @@ class FavoritesSyncHelper(val context: Context) {
 
             if (result is GalleryAddEvent.Fail) {
                 if (result is GalleryAddEvent.Fail.NotFound) {
-                    XLog.e("Remote gallery does not exist, skipping: %s!", it.getUrl())
+                    XLog.e(context.getString(R.string.favorites_sync_remote_not_exist, it.getUrl()))
                     // Skip this gallery, it no longer exists
                     return@forEachIndexed
                 }
 
-                val errorString = "Failed to add gallery to local database: " + when (result) {
-                    is GalleryAddEvent.Fail.Error -> "'${it.title}' ${result.logMessage}"
-                    is GalleryAddEvent.Fail.UnknownType -> "'${it.title}' (${result.galleryUrl}) is not a valid gallery!"
+                val errorString = context.getString(R.string.favorites_sync_failed_to_add_to_local) + when (result) {
+                    is GalleryAddEvent.Fail.Error -> context.getString(R.string.favorites_sync_failed_to_add_to_local_error, it.title, result.logMessage)
+                    is GalleryAddEvent.Fail.UnknownType -> context.getString(R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl)
                 }
 
                 if (prefs.eh_lenientSync().get()) {
@@ -418,20 +422,22 @@ class FavoritesSyncHelper(val context: Context) {
     }
 }
 
+// TODO String resources
 sealed class FavoritesSyncStatus(val message: String) {
     class Error(message: String) : FavoritesSyncStatus(message)
-    class Idle : FavoritesSyncStatus("Waiting for sync to start")
+    class Idle(context: Context) : FavoritesSyncStatus(context.getString(R.string.favorites_sync_waiting_for_start))
     sealed class BadLibraryState(message: String) : FavoritesSyncStatus(message) {
         class MangaInMultipleCategories(
             val manga: Manga,
-            val categories: List<Category>
+            val categories: List<Category>,
+            context: Context
         ) :
-            BadLibraryState("The gallery: ${manga.title} is in more than one category (${categories.joinToString { it.name }})!")
+            BadLibraryState(context.getString(R.string.favorites_sync_manga_in_multiple_categories, manga.title, categories.joinToString { it.name }))
     }
-    class Initializing : FavoritesSyncStatus("Initializing sync")
-    class Processing(message: String, isThrottle: Boolean = false) : FavoritesSyncStatus(
+    class Initializing(context: Context) : FavoritesSyncStatus(context.getString(R.string.favorites_sync_initializing))
+    class Processing(message: String, isThrottle: Boolean = false, context: Context) : FavoritesSyncStatus(
         if (isThrottle) {
-            "$message\n\nSync is currently throttling (to avoid being banned from ExHentai) and may take a long time to complete."
+            context.getString(R.string.favorites_sync_processing_throttle, message)
         } else {
             message
         }

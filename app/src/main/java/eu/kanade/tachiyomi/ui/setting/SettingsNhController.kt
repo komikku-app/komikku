@@ -1,9 +1,12 @@
 package eu.kanade.tachiyomi.ui.setting
 
 import androidx.preference.PreferenceScreen
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.util.preference.defaultValue
+import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
+import eu.kanade.tachiyomi.util.preference.titleRes
 
 /**
  * nhentai Settings fragment
@@ -11,11 +14,11 @@ import eu.kanade.tachiyomi.util.preference.switchPreference
 
 class SettingsNhController : SettingsController() {
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
-        title = "nhentai"
+        titleRes = R.string.pref_category_nh
 
         switchPreference {
-            title = "Use high-quality thumbnails"
-            summary = "May slow down search results"
+            titleRes = R.string.high_quality_thumbnails
+            summaryRes = R.string.high_quality_thumbnails_summary
             key = PreferenceKeys.eh_nh_useHighQualityThumbs
             defaultValue = false
         }

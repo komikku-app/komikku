@@ -548,7 +548,7 @@ class MangaController :
             startActivityForResult(
                 Intent.createChooser(
                     intent,
-                    resources?.getString(R.string.select_cover_image)
+                    resources?.getString(R.string.action_edit_cover)
                 ),
                 REQUEST_EDIT_MANGA_COVER
             )
@@ -750,7 +750,7 @@ class MangaController :
                     presenter.editCoverWithStream(uri)
                 }
             } catch (error: IOException) {
-                activity.toast(R.string.failed_to_update_cover)
+                activity.toast(R.string.notification_cover_update_failed)
                 Timber.e(error)
             }
         }

@@ -1,5 +1,6 @@
 package exh.util
 
+import android.content.Context
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import exh.GalleryAddEvent
@@ -13,11 +14,11 @@ private val galleryAdder by lazy {
 /**
  * A version of fetchSearchManga that supports URL importing
  */
-fun UrlImportableSource.urlImportFetchSearchManga(query: String, fail: () -> Observable<MangasPage>) =
+fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: String, fail: () -> Observable<MangasPage>) =
     when {
         query.startsWith("http://") || query.startsWith("https://") -> {
             Observable.fromCallable {
-                val res = galleryAdder.addGallery(query, false, this)
+                val res = galleryAdder.addGallery(context, query, false, this)
                 MangasPage(
                     (
                         if (res is GalleryAddEvent.Success) {

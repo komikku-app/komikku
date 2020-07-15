@@ -271,7 +271,7 @@ class EHentai(
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        urlImportFetchSearchManga(query) {
+        urlImportFetchSearchManga(context, query) {
             searchMangaRequestObservable(page, query, filters).flatMap {
                 client.newCall(it).asObservableSuccess()
             }.map { response ->

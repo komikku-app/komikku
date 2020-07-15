@@ -286,7 +286,7 @@ class BackupRestoreService : Service() {
         backupManager.restoreSavedSearches(savedSearchesJson)
 
         restoreProgress += 1
-        showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.eh_saved_searches))
+        showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.saved_searches))
     }
     // SY <--
 

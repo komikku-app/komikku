@@ -133,7 +133,7 @@ class MangaInfoHeaderAdapter(
                 binding.btnSmartSearch.clicks()
                     .onEach { controller.openSmartSearch() }
                     .launchIn(scope)
-                binding.btnSmartSearch.setTooltip(R.string.eh_merge_with_another_source)
+                binding.btnSmartSearch.setTooltip(R.string.merge_with_another_source)
             }
             // SY <--
 

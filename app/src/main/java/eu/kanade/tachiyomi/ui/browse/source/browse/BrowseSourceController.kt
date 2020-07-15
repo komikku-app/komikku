@@ -64,7 +64,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -193,7 +192,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
         if (presenter.sourceFilters.isEmpty()) {
             // SY -->
-            actionFab?.text = activity!!.getString(R.string.eh_saved_searches)
+            actionFab?.text = activity!!.getString(R.string.saved_searches)
             // SY <--
         }
 
@@ -218,8 +217,8 @@ open class BrowseSourceController(bundle: Bundle) :
             onSaveClicked = {
                 filterSheet?.context?.let {
                     MaterialDialog(it)
-                        .title(text = "Save current search query?")
-                        .input("My search name", hintRes = null) { _, searchName ->
+                        .title(R.string.save_search)
+                        .input(hintRes = R.string.save_search_hint) { _, searchName ->
                             val oldSavedSearches = presenter.loadSearches()
                             if (searchName.isNotBlank() &&
                                 oldSavedSearches.size < MAX_SAVED_SEARCHES
@@ -248,8 +247,8 @@ open class BrowseSourceController(bundle: Bundle) :
                 if (search == null) {
                     filterSheet?.context?.let {
                         MaterialDialog(it)
-                            .title(text = "Failed to load saved searches!")
-                            .message(text = "An error occurred while loading your saved searches.")
+                            .title(R.string.save_search_failed_to_load)
+                            .message(R.string.save_search_failed_to_load_message)
                             .cancelable(true)
                             .cancelOnTouchOutside(true)
                             .show()
@@ -275,8 +274,8 @@ open class BrowseSourceController(bundle: Bundle) :
                 if (search == null || search.name != name) {
                     filterSheet?.context?.let {
                         MaterialDialog(it)
-                            .title(text = "Failed to delete saved search!")
-                            .message(text = "An error occurred while deleting the search.")
+                            .title(R.string.save_search_failed_to_delete)
+                            .message(R.string.save_search_failed_to_delete_message)
                             .cancelable(true)
                             .cancelOnTouchOutside(true)
                             .show()
@@ -286,10 +285,10 @@ open class BrowseSourceController(bundle: Bundle) :
 
                 filterSheet?.context?.let {
                     MaterialDialog(it)
-                        .title(text = "Delete saved search query?")
-                        .message(text = "Are you sure you wish to delete your saved search query: '${search.name}'?")
+                        .title(R.string.save_search_delete)
+                        .message(text = it.getString(R.string.save_search_delete_message, search.name))
                         .positiveButton(R.string.action_cancel)
-                        .negativeButton(text = "Confirm") {
+                        .negativeButton(android.R.string.yes) {
                             val newSearches = savedSearches.filterIndexed { index, _ ->
                                 index != indexToDelete
                             }

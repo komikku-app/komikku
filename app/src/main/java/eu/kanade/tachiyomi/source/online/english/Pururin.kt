@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.english
 
+import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -18,7 +19,7 @@ import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import rx.Observable
 
-class Pururin(delegate: HttpSource) :
+class Pururin(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     LewdSource<PururinSearchMetadata, Document>,
     UrlImportableSource {
@@ -38,7 +39,7 @@ class Pururin(delegate: HttpSource) :
             "$baseUrl/gallery/$trimmedIdQuery/-"
         } else query
 
-        return urlImportFetchSearchManga(newQuery) {
+        return urlImportFetchSearchManga(context, newQuery) {
             super.fetchSearchManga(page, query, filters)
         }
     }

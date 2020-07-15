@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import com.afollestad.materialdialogs.MaterialDialog
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
@@ -17,16 +18,16 @@ class ConfiguringDialogController : DialogController() {
         if (savedViewState == null) {
             thread {
                 try {
-                    EHConfigurator().configureAll()
+                    EHConfigurator(activity!!).configureAll()
                     launchUI {
-                        activity?.toast("Settings successfully uploaded!")
+                        activity?.toast(activity?.getString(R.string.eh_settings_successfully_uploaded))
                     }
                 } catch (e: Exception) {
                     activity?.let {
                         it.runOnUiThread {
                             MaterialDialog(it)
-                                .title(text = "Configuration failed!")
-                                .message(text = "An error occurred during the configuration process: " + e.message)
+                                .title(R.string.eh_settings_configuration_failed)
+                                .message(text = it.getString(R.string.eh_settings_configuration_failed_message, e.message))
                                 .positiveButton(android.R.string.ok)
                                 .show()
                         }
@@ -40,8 +41,8 @@ class ConfiguringDialogController : DialogController() {
         }
 
         return MaterialDialog(activity!!)
-            .title(text = "Uploading settings to server")
-            .message(text = "Please wait, this may take some time...")
+            .title(R.string.eh_settings_uploading_to_server)
+            .message(R.string.eh_settings_uploading_to_server_message)
             .cancelable(false)
             .also {
                 materialDialog = it

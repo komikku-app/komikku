@@ -140,34 +140,31 @@ class SettingsReaderController : SettingsController() {
 
         // EXH -->
         preferenceCategory {
-            titleRes = R.string.eh_settings_category
+            titleRes = R.string.pref_category_fork
 
             intListPreference {
                 key = Keys.eh_readerThreads
-                title = "Download threads"
+                titleRes = R.string.download_threads
                 entries = arrayOf("1", "2", "3", "4", "5")
                 entryValues = entries
                 defaultValue = "2"
-                summary =
-                    "Higher values can speed up image downloading significantly, but can also trigger bans. Recommended value is 2 or 3. Current value is: %s"
+                summaryRes = R.string.download_threads_summary
             }
             switchPreference {
                 key = Keys.eh_aggressivePageLoading
-                title = "Aggressively load pages"
-                summary =
-                    "Slowly download the entire gallery while reading instead of just loading the pages you are viewing."
+                titleRes = R.string.aggressively_load_pages
+                summaryRes = R.string.aggressively_load_pages_summary
                 defaultValue = false
             }
             switchPreference {
                 key = Keys.eh_readerInstantRetry
-                title = "Skip queue on retry"
-                summary =
-                    "Normally, pressing the retry button on a failed download will wait until the downloader has finished downloading the last page before beginning to re-download the failed page. Enabling this will force the downloader to begin re-downloading the failed page as soon as you press the retry button."
+                titleRes = R.string.skip_queue_on_retry
+                summaryRes = R.string.skip_queue_on_retry_summary
                 defaultValue = true
             }
             intListPreference {
                 key = Keys.eh_preload_size
-                title = "Reader Preload amount"
+                titleRes = R.string.reader_preload_amount
                 entryValues = arrayOf(
                     "1",
                     "2",
@@ -180,25 +177,24 @@ class SettingsReaderController : SettingsController() {
                     "14",
                     "16"
                 )
-                entries = arrayOf(
-                    "1 Page",
-                    "2 Pages",
-                    "3 Pages",
-                    "4 Pages",
-                    "6 Pages",
-                    "8 Pages",
-                    "10 Pages",
-                    "12 Pages",
-                    "14 Pages",
-                    "16 Pages"
+                entriesRes = arrayOf(
+                    R.string.reader_preload_amount_1_page,
+                    R.string.reader_preload_amount_2_pages,
+                    R.string.reader_preload_amount_3_pages,
+                    R.string.reader_preload_amount_4_pages,
+                    R.string.reader_preload_amount_6_pages,
+                    R.string.reader_preload_amount_8_pages,
+                    R.string.reader_preload_amount_10_pages,
+                    R.string.reader_preload_amount_12_pages,
+                    R.string.reader_preload_amount_14_pages,
+                    R.string.reader_preload_amount_16_pages
                 )
                 defaultValue = "4"
-                summary =
-                    "The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to increase the amount of cache you allocate when using larger values"
+                summaryRes = R.string.reader_preload_amount_summary
             }
             listPreference {
                 key = Keys.eh_cacheSize
-                title = "Reader cache size"
+                titleRes = R.string.reader_cache_size
                 entryValues = arrayOf(
                     "50",
                     "75",
@@ -236,18 +232,17 @@ class SettingsReaderController : SettingsController() {
                     "5 GB"
                 )
                 defaultValue = "75"
-                summary =
-                    "The amount of images to save on device while reading. Higher values will result in a smoother reading experience, at the cost of higher disk space usage"
+                summaryRes = R.string.reader_cache_size_summary
             }
             switchPreference {
                 key = Keys.eh_preserveReadingPosition
-                title = "Preserve reading position on read manga"
+                titleRes = R.string.preserve_reading_position
                 defaultValue = false
             }
             switchPreference {
                 key = Keys.eh_use_auto_webtoon
-                title = "Auto Webtoon Mode"
-                summary = "Use auto webtoon mode for manga that are detected to likely use the long strip format"
+                titleRes = R.string.auto_webtoon_mode
+                summaryRes = R.string.auto_webtoon_mode_summary
                 defaultValue = true
             }
         }

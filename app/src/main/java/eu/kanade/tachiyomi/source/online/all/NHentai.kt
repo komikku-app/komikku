@@ -37,7 +37,7 @@ import rx.Observable
  * NHentai source
  */
 
-class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata, Response>, UrlImportableSource {
+class NHentai(val context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata, Response>, UrlImportableSource {
     override val metaClass = NHentaiSearchMetadata::class
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
@@ -57,7 +57,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
             "$baseUrl/g/$trimmedIdQuery/"
         } else query
 
-        return urlImportFetchSearchManga(newQuery) {
+        return urlImportFetchSearchManga(context, newQuery) {
             searchMangaRequestObservable(page, query, filters).flatMap {
                 client.newCall(it).asObservableSuccess()
             }.map { response ->

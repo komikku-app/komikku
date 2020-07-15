@@ -98,7 +98,7 @@ open class SourceManager(private val context: Context) {
             XLog.d("[EXH] Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
             val enhancedSource = EnhancedHttpSource(
                 source,
-                delegate.newSourceClass.constructors.find { it.parameters.size == 1 }!!.call(source)
+                delegate.newSourceClass.constructors.find { it.parameters.size == 2 }!!.call(source, context)
             )
             val map = listOf(DelegatedSource(enhancedSource.originalSource.name, enhancedSource.originalSource.id, enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName, (enhancedSource.enhancedSource as DelegatedHttpSource)::class, delegate.factory)).associateBy { it.originalSourceQualifiedClassName }
             currentDelegatedSources.plusAssign(map)
@@ -132,12 +132,12 @@ open class SourceManager(private val context: Context) {
         if (prefs.enableExhentai().get()) {
             exSrcs += EHentai(EXH_SOURCE_ID, true, context)
         }
-        exSrcs += PervEden(PERV_EDEN_EN_SOURCE_ID, PervEdenLang.en)
-        exSrcs += PervEden(PERV_EDEN_IT_SOURCE_ID, PervEdenLang.it)
+        exSrcs += PervEden(PERV_EDEN_EN_SOURCE_ID, PervEdenLang.en, context)
+        exSrcs += PervEden(PERV_EDEN_IT_SOURCE_ID, PervEdenLang.it, context)
         exSrcs += NHentai(context)
-        exSrcs += Hitomi()
-        exSrcs += EightMuses()
-        exSrcs += HBrowse()
+        exSrcs += Hitomi(context)
+        exSrcs += EightMuses(context)
+        exSrcs += HBrowse(context)
         return exSrcs
     }
     // SY <--

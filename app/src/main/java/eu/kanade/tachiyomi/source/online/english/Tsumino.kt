@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.english
 
+import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -19,7 +20,7 @@ import java.util.Locale
 import org.jsoup.nodes.Document
 import rx.Observable
 
-class Tsumino(delegate: HttpSource) :
+class Tsumino(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     LewdSource<TsuminoSearchMetadata, Document>,
     UrlImportableSource {
@@ -28,7 +29,7 @@ class Tsumino(delegate: HttpSource) :
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        urlImportFetchSearchManga(query) {
+        urlImportFetchSearchManga(context, query) {
             super.fetchSearchManga(page, query, filters)
         }
 

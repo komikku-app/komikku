@@ -1,7 +1,9 @@
 package exh.ui.batchadd
 
+import android.content.Context
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.ReplayRelay
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import exh.GalleryAddEvent
@@ -20,7 +22,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
     var eventRelay: ReplayRelay<String>? = null
     val currentlyAddingRelay = BehaviorRelay.create(STATE_IDLE)!!
 
-    fun addGalleries(galleries: String) {
+    fun addGalleries(context: Context, galleries: String) {
         eventRelay = ReplayRelay.create()
         val regex =
             """[0-9]*?\.[a-z0-9]*?:""".toRegex()
@@ -53,7 +55,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
             val failed = mutableListOf<String>()
 
             splitGalleries.forEachIndexed { i, s ->
-                val result = galleryAdder.addGallery(s, true)
+                val result = galleryAdder.addGallery(context, s, true)
                 if (result is GalleryAddEvent.Success) {
                     succeeded.add(s)
                 } else {
@@ -63,15 +65,15 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
                 eventRelay?.call(
                     (
                         when (result) {
-                            is GalleryAddEvent.Success -> "[OK]"
-                            is GalleryAddEvent.Fail -> "[ERROR]"
+                            is GalleryAddEvent.Success -> context.getString(R.string.batch_add_ok)
+                            is GalleryAddEvent.Fail -> context.getString(R.string.batch_add_error)
                         }
                         ) + " " + result.logMessage
                 )
             }
 
             // Show report
-            val summary = "\nSummary:\nAdded: ${succeeded.size} gallerie(s)\nFailed: ${failed.size} gallerie(s)"
+            val summary = context.getString(R.string.batch_add_summary, succeeded.size, failed.size)
             eventRelay?.call(summary)
         }
     }

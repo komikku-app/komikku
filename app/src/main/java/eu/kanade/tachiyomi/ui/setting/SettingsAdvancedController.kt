@@ -146,12 +146,12 @@ class SettingsAdvancedController : SettingsController() {
 
         // --> EXH
         preferenceCategory {
-            title = "Developer tools"
+            titleRes = R.string.developer_tools
             isPersistent = false
 
             switchPreference {
-                title = "Enable integrated hentai features"
-                summary = "This is a experimental feature that will disable all hentai features if toggled off"
+                titleRes = R.string.toggle_hentai_features
+                summaryRes = R.string.toggle_hentai_features_summary
                 key = Keys.eh_is_hentai_enabled
                 defaultValue = true
 
@@ -212,35 +212,35 @@ class SettingsAdvancedController : SettingsController() {
             }
 
             switchPreference {
-                title = "Enable delegated sources"
+                titleRes = R.string.toggle_delegated_sources
                 key = Keys.eh_delegateSources
                 defaultValue = true
-                summary = "Apply ${context.getString(R.string.app_name)} enhancements to the following sources if they are installed: ${DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString()}"
+                summary = context.getString(R.string.toggle_delegated_sources_summary, context.getString(R.string.app_name), DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString())
             }
 
             intListPreference {
                 key = Keys.eh_logLevel
-                title = "Log level"
+                titleRes = R.string.log_level
 
                 entries = EHLogLevel.values().map {
-                    "${it.name.toLowerCase().capitalize()} (${it.description})"
+                    "${context.getString(it.nameRes)} (${context.getString(it.description)})"
                 }.toTypedArray()
                 entryValues = EHLogLevel.values().mapIndexed { index, _ -> "$index" }.toTypedArray()
                 defaultValue = "0"
 
-                summary = "Changing this can impact app performance. Force-restart app after changing. Current value: %s"
+                summaryRes = R.string.log_level_summary
             }
 
             switchPreference {
-                title = "Enable source blacklist"
+                titleRes = R.string.enable_source_blacklist
                 key = Keys.eh_enableSourceBlacklist
                 defaultValue = true
-                summary = "Hide extensions/sources that are incompatible with ${context.getString(R.string.app_name)}. Force-restart app after changing."
+                summary = context.getString(R.string.enable_source_blacklist_summary, context.getString(R.string.app_name))
             }
 
             preference {
-                title = "Open debug menu"
-                summary = HtmlCompat.fromHtml("DO NOT TOUCH THIS MENU UNLESS YOU KNOW WHAT YOU ARE DOING! <font color='red'>IT CAN CORRUPT YOUR LIBRARY!</font>", HtmlCompat.FROM_HTML_MODE_LEGACY)
+                titleRes = R.string.open_debug_menu
+                summary = HtmlCompat.fromHtml(context.getString(R.string.open_debug_menu_summary), HtmlCompat.FROM_HTML_MODE_LEGACY)
                 onClick { router.pushController(SettingsDebugController().withFadeTransaction()) }
             }
         }

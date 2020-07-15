@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -33,7 +34,7 @@ import org.jsoup.nodes.TextNode
 import rx.Observable
 
 // TODO Transform into delegated source
-class PervEden(override val id: Long, val pvLang: PervEdenLang) :
+class PervEden(override val id: Long, val pvLang: PervEdenLang, val context: Context) :
     ParsedHttpSource(),
     LewdSource<PervEdenSearchMetadata, Document>,
     UrlImportableSource {
@@ -64,7 +65,7 @@ class PervEden(override val id: Long, val pvLang: PervEdenLang) :
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        urlImportFetchSearchManga(query) {
+        urlImportFetchSearchManga(context, query) {
             super.fetchSearchManga(page, query, filters)
         }
 
