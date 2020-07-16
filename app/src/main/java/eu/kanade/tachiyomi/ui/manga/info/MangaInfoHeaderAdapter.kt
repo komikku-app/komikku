@@ -7,8 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
@@ -27,8 +30,14 @@ import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.util.view.visibleIf
+import exh.EH_SOURCE_ID
+import exh.EXH_SOURCE_ID
+import exh.HITOMI_SOURCE_ID
 import exh.MERGED_SOURCE_ID
+import exh.NHENTAI_SOURCE_ID
+import exh.PURURIN_SOURCE_ID
 import exh.util.SourceTagsUtil
+import exh.util.makeSearchChip
 import exh.util.setChipsExtended
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,6 +74,8 @@ class MangaInfoHeaderAdapter(
     override fun onBindViewHolder(holder: HeaderViewHolder, position: Int) {
         holder.bind()
     }
+
+    val tagsAdapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter(null)
 
     /**
      * Update the view with manga information.
@@ -229,6 +240,11 @@ class MangaInfoHeaderAdapter(
             }
             // EXH <--
 
+            // SY -->
+            binding.mangaNamespaceTagsRecycler.layoutManager = LinearLayoutManager(itemView.context)
+            binding.mangaNamespaceTagsRecycler.adapter = tagsAdapter
+            // SY <--
+
             setMangaInfo(manga, source)
         }
 
@@ -320,8 +336,18 @@ class MangaInfoHeaderAdapter(
                 // Update genres list
                 if (!manga.genre.isNullOrBlank()) {
                     // SY -->
-                    binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
+                    if (source != null && (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID || source.id == NHENTAI_SOURCE_ID || source.id == HITOMI_SOURCE_ID || source.id == PURURIN_SOURCE_ID)) {
+                        val genre = manga.getGenres()
+                        if (!genre.isNullOrEmpty()) {
+                            val namespaceTags = genre.map { SourceTagsUtil().parseTag(it) }
+                                .groupBy { it.first }
+                                .mapValues { values -> values.value.map { makeSearchChip(it.second, controller::performSearch, controller::performGlobalSearch, source.id, itemView.context, it.first) } }
+                                .map { NamespaceTagsItem(it.key, it.value) }
+                            tagsAdapter.updateDataSet(namespaceTags)
+                        }
+                    }
                     binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
+                    binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
                     // SY <--
                 } else {
                     binding.mangaGenresTagsWrapper.gone()
@@ -387,7 +413,13 @@ class MangaInfoHeaderAdapter(
             }
 
             binding.mangaGenresTagsCompact.visibleIf { isExpanded }
-            binding.mangaGenresTagsFullChips.visibleIf { !isExpanded }
+            // SY -->
+            if (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID || source.id == NHENTAI_SOURCE_ID || source.id == HITOMI_SOURCE_ID || source.id == PURURIN_SOURCE_ID) {
+                binding.mangaNamespaceTagsRecycler.visibleIf { !isExpanded }
+            } else {
+                binding.mangaGenresTagsFullChips.visibleIf { !isExpanded }
+            }
+            // SY <--
         }
 
         /**

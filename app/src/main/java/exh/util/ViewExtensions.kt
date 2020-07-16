@@ -1,5 +1,6 @@
 package exh.util
 
+import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
@@ -114,16 +115,19 @@ fun ChipGroup.setChipsExtended(items: List<String>?, onClick: (item: String) -> 
     removeAllViews()
 
     items?.forEach { item ->
-        val chip = Chip(context).apply {
-            text = item
-            val search = SourceTagsUtil().getWrappedTag(sourceId, fullTag = item) ?: item
-            setOnClickListener { onClick(search) }
-            setOnLongClickListener {
-                onLongClick(search)
-                false
-            }
-        }
-
+        val chip = makeSearchChip(item, onClick, onLongClick, sourceId, context)
         addView(chip)
+    }
+}
+
+fun makeSearchChip(item: String, onClick: (item: String) -> Unit = {}, onLongClick: (item: String) -> Unit = {}, sourceId: Long, context: Context, namespace: String? = null): Chip {
+    return Chip(context).apply {
+        text = item
+        val search = (if (namespace != null) SourceTagsUtil().getWrappedTag(sourceId, namespace = namespace, tag = item) else SourceTagsUtil().getWrappedTag(sourceId, fullTag = item)) ?: item
+        setOnClickListener { onClick(search) }
+        setOnLongClickListener {
+            onLongClick(search)
+            false
+        }
     }
 }

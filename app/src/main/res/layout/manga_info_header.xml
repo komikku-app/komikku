@@ -244,6 +244,15 @@
         android:textIsSelectable="false"
         tools:text="Summary" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/manga_namespace_tags_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        tools:listitem="@layout/manga_info_genre_grouping"/>
+
     <FrameLayout
         android:id="@+id/manga_genres_tags_wrapper"
         android:layout_width="match_parent"
