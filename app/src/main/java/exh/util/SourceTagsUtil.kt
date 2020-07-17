@@ -5,6 +5,7 @@ import exh.EXH_SOURCE_ID
 import exh.HITOMI_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
 import exh.PURURIN_SOURCE_ID
+import exh.TSUMINO_SOURCE_ID
 
 class SourceTagsUtil {
     fun getWrappedTag(sourceId: Long, namespace: String? = null, tag: String? = null, fullTag: String? = null): String? {
@@ -15,6 +16,7 @@ class SourceTagsUtil {
                     HITOMI_SOURCE_ID -> wrapTagHitomi(parsed.first, parsed.second.substringBefore('|').trim())
                     NHENTAI_SOURCE_ID -> wrapTagNHentai(parsed.first, parsed.second.substringBefore('|').trim())
                     PURURIN_SOURCE_ID -> parsed.second.substringBefore('|').trim()
+                    TSUMINO_SOURCE_ID -> parsed.second.substringBefore('|').trim()
                     else -> wrapTag(parsed.first, parsed.second.substringBefore('|').trim())
                 }
             } else null

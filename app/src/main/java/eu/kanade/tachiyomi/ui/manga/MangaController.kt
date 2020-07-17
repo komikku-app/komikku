@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -69,6 +70,9 @@ import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
+import exh.metadata.metadata.base.FlatMetadata
+import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.source.EnhancedHttpSource
 import java.io.IOException
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.coroutines.CancellationException
@@ -419,6 +423,16 @@ class MangaController :
 
     // Manga info - start
 
+    // SY -->
+    fun onNextMetaInfo(flatMetadata: FlatMetadata) {
+        presenter.meta = if (presenter.source is LewdSource<*, *>) {
+            flatMetadata.raise((presenter.source as LewdSource<*, *>).metaClass)
+        } else if (presenter.source is EnhancedHttpSource && (presenter.source as EnhancedHttpSource).enhancedSource is LewdSource<*, *>) {
+            flatMetadata.raise(((presenter.source as EnhancedHttpSource).enhancedSource as LewdSource<*, *>).metaClass)
+        } else null
+    }
+    // SY <--
+
     /**
      * Check if manga is initialized.
      * If true update header with manga information,
@@ -427,10 +441,10 @@ class MangaController :
      * @param manga manga object containing information about manga.
      * @param source the source of the manga.
      */
-    fun onNextMangaInfo(manga: Manga, source: Source) {
+    fun onNextMangaInfo(manga: Manga, source: Source /* SY --> */, meta: RaisedSearchMetadata? /* SY <-- */) {
         if (manga.initialized) {
             // Update view.
-            mangaInfoAdapter?.update(manga, source)
+            mangaInfoAdapter?.update(manga, source /* SY --> */, meta /* SY <-- */)
         } else {
             // Initialize manga.
             fetchMangaInfoFromSource()

@@ -30,12 +30,9 @@ import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.util.view.visibleIf
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
-import exh.HITOMI_SOURCE_ID
 import exh.MERGED_SOURCE_ID
-import exh.NHENTAI_SOURCE_ID
-import exh.PURURIN_SOURCE_ID
+import exh.isNamespaceSource
+import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
 import exh.util.makeSearchChip
 import exh.util.setChipsExtended
@@ -57,6 +54,7 @@ class MangaInfoHeaderAdapter(
 
     private var manga: Manga = controller.presenter.manga
     private var source: Source = controller.presenter.source
+    private var meta: RaisedSearchMetadata? = controller.presenter.meta
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private lateinit var binding: MangaInfoHeaderBinding
@@ -83,9 +81,10 @@ class MangaInfoHeaderAdapter(
      * @param manga manga object containing information about manga.
      * @param source the source of the manga.
      */
-    fun update(manga: Manga, source: Source) {
+    fun update(manga: Manga, source: Source, meta: RaisedSearchMetadata?) {
         this.manga = manga
         this.source = source
+        this.meta = meta
 
         notifyDataSetChanged()
     }
@@ -336,7 +335,7 @@ class MangaInfoHeaderAdapter(
                 // Update genres list
                 if (!manga.genre.isNullOrBlank()) {
                     // SY -->
-                    if (source != null && (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID || source.id == NHENTAI_SOURCE_ID || source.id == HITOMI_SOURCE_ID || source.id == PURURIN_SOURCE_ID)) {
+                    if (source != null && source.isNamespaceSource()) {
                         val genre = manga.getGenres()
                         if (!genre.isNullOrEmpty()) {
                             val namespaceTags = genre.map { SourceTagsUtil().parseTag(it) }
@@ -414,7 +413,7 @@ class MangaInfoHeaderAdapter(
 
             binding.mangaGenresTagsCompact.visibleIf { isExpanded }
             // SY -->
-            if (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID || source.id == NHENTAI_SOURCE_ID || source.id == HITOMI_SOURCE_ID || source.id == PURURIN_SOURCE_ID) {
+            if (source.isNamespaceSource()) {
                 binding.mangaNamespaceTagsRecycler.visibleIf { !isExpanded }
             } else {
                 binding.mangaGenresTagsFullChips.visibleIf { !isExpanded }

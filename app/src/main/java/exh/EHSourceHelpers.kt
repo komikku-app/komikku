@@ -57,3 +57,5 @@ fun isLewdSource(source: Long) = source in 6900..6999 ||
     lewdDelegatedSourceIds.binarySearch(source) >= 0
 
 fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
+
+fun Source.isNamespaceSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID || id == NHENTAI_SOURCE_ID || id == HITOMI_SOURCE_ID || id == PURURIN_SOURCE_ID || id == TSUMINO_SOURCE_ID

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
@@ -14,6 +15,8 @@ import exh.metadata.metadata.TsuminoSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.util.dropBlank
+import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -28,13 +31,13 @@ class Tsumino(delegate: HttpSource, val context: Context) :
     override val lang = "en"
 
     // Support direct URL importing
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
             super.fetchSearchManga(page, query, filters)
         }
 
     override fun mapUrlToMangaUrl(uri: Uri): String? {
-        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
+        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase(Locale.ROOT) ?: return null
         if (lcFirstPathSegment != "read" && lcFirstPathSegment != "book" && lcFirstPathSegment != "entry") {
             return null
         }
@@ -58,9 +61,12 @@ class Tsumino(delegate: HttpSource, val context: Context) :
                 title = it.trim()
             }
 
-            input.getElementById("Artist")?.children()?.first()?.text()?.trim()?.let {
-                tags.add(RaisedTag("artist", it, TAG_TYPE_VIRTUAL))
-                artist = it
+            input.getElementById("Artist")?.children()?.first()?.text()?.trim()?.let { artistString ->
+                artistString.split("|").trimAll().dropBlank().forEach {
+                    tags.add(RaisedTag("artist", it, TAG_TYPE_DEFAULT))
+                }
+                tags.add(RaisedTag("artist", artistString, TAG_TYPE_VIRTUAL))
+                artist = artistString
             }
 
             input.getElementById("Uploader")?.children()?.first()?.text()?.trim()?.let {
@@ -86,18 +92,19 @@ class Tsumino(delegate: HttpSource, val context: Context) :
 
             input.getElementById("Collection")?.children()?.first()?.text()?.let {
                 collection = it.trim()
+                tags.add(RaisedTag("collection", it, TAG_TYPE_DEFAULT))
             }
 
             input.getElementById("Group")?.children()?.first()?.text()?.let {
                 group = it.trim()
-                tags.add(RaisedTag("group", it, TAG_TYPE_VIRTUAL))
+                tags.add(RaisedTag("group", it, TAG_TYPE_DEFAULT))
             }
 
             val newParody = mutableListOf<String>()
             input.getElementById("Parody")?.children()?.forEach {
                 val entry = it.text().trim()
                 newParody.add(entry)
-                tags.add(RaisedTag("parody", entry, TAG_TYPE_VIRTUAL))
+                tags.add(RaisedTag("parody", entry, TAG_TYPE_DEFAULT))
             }
             parody = newParody
 
@@ -105,14 +112,14 @@ class Tsumino(delegate: HttpSource, val context: Context) :
             input.getElementById("Character")?.children()?.forEach {
                 val entry = it.text().trim()
                 newCharacter.add(entry)
-                tags.add(RaisedTag("character", entry, TAG_TYPE_VIRTUAL))
+                tags.add(RaisedTag("character", entry, TAG_TYPE_DEFAULT))
             }
             character = newCharacter
 
-            input.getElementById("Tag")?.children()?.let {
+            input.getElementById("Tag")?.children()?.let { tagElements ->
                 tags.addAll(
-                    it.map {
-                        RaisedTag(null, it.text().trim(), TAG_TYPE_DEFAULT)
+                    tagElements.map {
+                        RaisedTag("tags", it.text().trim(), TAG_TYPE_DEFAULT)
                     }
                 )
             }
@@ -126,6 +133,5 @@ class Tsumino(delegate: HttpSource, val context: Context) :
 
     companion object {
         val TM_DATE_FORMAT = SimpleDateFormat("yyyy MMM dd", Locale.US)
-        private val ASP_NET_COOKIE_NAME = "ASP.NET_SessionId"
     }
 }

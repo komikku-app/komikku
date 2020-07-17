@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
@@ -33,6 +34,10 @@ import exh.MERGED_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.isEhBasedSource
+import exh.metadata.metadata.base.FlatMetadata
+import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.base.getFlatMetadataForManga
+import exh.source.EnhancedHttpSource
 import exh.util.await
 import exh.util.trimOrNull
 import java.util.Date
@@ -101,15 +106,23 @@ class MangaPresenter(
     private val redirectUserRelay = BehaviorRelay.create<EXHRedirect>()
 
     data class EXHRedirect(val manga: Manga, val update: Boolean)
+
+    var meta: RaisedSearchMetadata? = null
     // EXH <--
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
+        // SY -->
+        if (manga.initialized && (source is LewdSource<*, *> || (source is EnhancedHttpSource && source.enhancedSource is LewdSource<*, *>))) {
+            getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else Timber.d("Invalid metadata") })
+        }
+        // SY <--
+
         // Manga info - start
 
         getMangaObservable()
-            .subscribeLatestCache({ view, manga -> view.onNextMangaInfo(manga, source) })
+            .subscribeLatestCache({ view, manga -> view.onNextMangaInfo(manga, source /* SY --> */, meta/* SY <-- */) })
 
         // Prepare the relay.
         chaptersRelay.flatMap { applyChapterFilters(it) }
@@ -177,6 +190,16 @@ class MangaPresenter(
             .observeOn(AndroidSchedulers.mainThread())
     }
 
+    // SY -->
+    private fun getMangaMetaObservable(): Observable<FlatMetadata?> {
+        val mangaId = manga.id
+        return if (mangaId != null) {
+            db.getFlatMetadataForManga(mangaId).asRxObservable()
+                .observeOn(AndroidSchedulers.mainThread())
+        } else Observable.just(null)
+    }
+    // SY <--
+
     /**
      * Fetch manga information from source.
      */
@@ -190,6 +213,13 @@ class MangaPresenter(
                 db.insertManga(manga).executeAsBlocking()
                 manga
             }
+            // SY -->
+            .doOnNext {
+                if (source is LewdSource<*, *> || (source is EnhancedHttpSource && source.enhancedSource is LewdSource<*, *>)) {
+                    getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else Timber.d("Invalid metadata") })
+                }
+            }
+            // SY <--
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
@@ -259,7 +289,7 @@ class MangaPresenter(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(
                     { view, _ ->
-                        view.onNextMangaInfo(manga, source)
+                        view.onNextMangaInfo(manga, source /* SY --> */, meta/* SY <-- */)
                     }
                 )
         }
