@@ -337,7 +337,8 @@ class MangaController :
         // Hide download options for local manga
         menu.findItem(R.id.download_group).isVisible = !isLocalSource
 
-        // Hide edit cover and migrate options for non-library manga
+        // Hide options for non-library manga
+        menu.findItem(R.id.action_edit_categories).isVisible = presenter.manga.favorite && presenter.getCategories().isNotEmpty()
         /* SY --> menu.findItem(R.id.action_edit_cover).isVisible = presenter.manga.favorite SY <-- */
         /* SY --> menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite SY <-- */
 
@@ -411,6 +412,7 @@ class MangaController :
             }
             // SY <--
 
+            R.id.action_edit_categories -> onCategoriesClick()
             // SY --> R.id.action_edit_cover -> handleChangeCover() // SY <--
             // SY --> R.id.action_migrate -> migrateManga() // SY <--
         }
@@ -643,7 +645,7 @@ class MangaController :
         mangaInfoAdapter?.notifyDataSetChanged()
     }
 
-    fun onCategoriesClick() {
+    private fun onCategoriesClick() {
         val manga = presenter.manga
         val categories = presenter.getCategories()
 
