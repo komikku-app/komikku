@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.LewdSource
@@ -57,6 +58,7 @@ class MangaPresenter(
     val source: Source,
     val preferences: PreferencesHelper = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get(),
+    private val trackManager: TrackManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     // SY -->
@@ -122,7 +124,12 @@ class MangaPresenter(
         // Manga info - start
 
         getMangaObservable()
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribeLatestCache({ view, manga -> view.onNextMangaInfo(manga, source /* SY --> */, meta/* SY <-- */) })
+
+        getTrackingObservable()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeLatestCache(MangaController::onTrackingCount) { _, error -> Timber.e(error) }
 
         // Prepare the relay.
         chaptersRelay.flatMap { applyChapterFilters(it) }
@@ -187,7 +194,19 @@ class MangaPresenter(
 
     private fun getMangaObservable(): Observable<Manga> {
         return db.getManga(manga.url, manga.source).asRxObservable()
-            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    private fun getTrackingObservable(): Observable<Int> {
+        if (!trackManager.hasLoggedServices()) {
+            return Observable.just(0)
+        }
+
+        return db.getTracks(manga).asRxObservable()
+            .map { tracks ->
+                val loggedServices = trackManager.services.filter { it.isLogged }.map { it.id }
+                tracks.filter { it.sync_id in loggedServices }
+            }
+            .map { it.size }
     }
 
     // SY -->
