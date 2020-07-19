@@ -38,9 +38,9 @@
     <string name="enable_exhentai">Ativar ExHentai</string>
     <string name="requires_login">Requer login</string>
     <string name="use_hentai_at_home">Usar Hentai@Home Network</string>
-    <string name="use_hentai_at_home_summary">Deseja carregar imagens através da Hentai@Home Network, se disponível? Desativar isso reduzirá a quantidade de páginas que você pode ver\nOptions:\n- Qualquer cliente (recomendado)\n- Somente clientes de porta padrão (pode ser mais lento. Ative se estiver por trás de um firewall/proxy que bloqueie portas não-padrão de saída.)</string>
+    <string name="use_hentai_at_home_summary">Deseja carregar imagens através do Hentai@Home Network, se disponível? Desativar isso reduzirá a quantidade de páginas que você pode ver\nOptions:\n- Qualquer cliente (recomendado)\n- Apenas clientes de porta padrão (pode ser mais lento. Ative se estiver por trás de um firewall/proxy que bloqueie portas não-padrão de saída.)</string>
     <string name="use_hentai_at_home_option_1">Qualquer cliente (Recomendado)</string>
-    <string name="use_hentai_at_home_option_2">Somente clientes de porta padrão</string>
+    <string name="use_hentai_at_home_option_2">Apenas clientes de porta padrão</string>
     <string name="show_japanese_titles">Exibir títulos japoneses na pesquisa</string>
     <string name="show_japanese_titles_option_1">Atualmente exibindo títulos japoneses nos resultados da pesquisa. Limpe o cache de capítulos ao alterar isso (na seção Avançado)</string>
     <string name="show_japanese_titles_option_2">Atualmente exibindo títulos ingleses/romanizados nos resultados da pesquisa. Limpe o cache de capítulo ao alterar isso (na seção Avançado)</string>
@@ -48,7 +48,7 @@
     <string name="use_original_images_on">Atualmente usando imagens originais</string>
     <string name="use_original_images_off">Atualmente usando imagens redimensionadas</string>
     <string name="watched_tags">Tags assitidas</string>
-    <string name="watched_tags_summary">Abre a sua página de tags observadas do E/ExHentai na webview</string>
+    <string name="watched_tags_summary">Abre a sua página "Watched tags" do E/ExHentai na webview</string>
     <string name="watched_tags_exh">Tags assistidas do ExHentai</string>
     <string name="watched_tags_eh">Tags assistidas do E-Hentai</string>
     <string name="tag_filtering_threshold">Limite de filtragem de tags</string>
@@ -58,7 +58,7 @@
     <string name="tag_watching_threshhold_error">Deve estar entre 0 e 9999</string>
     <string name="tag_watching_threshhold_summary">Galerias enviadas recentemente serão incluídas na tela de tags assistidas se houver ao menos uma das tags com valor positivo, e se a soma dos valores nas tags assistidas chegarem a esse número ou um maior. Esse limite pode ser entre 0 e 9999. Atualmente: %s</string>
     <string name="language_filtering">Filtro de idioma</string>
-    <string name="language_filtering_summary">Se você quer ocultar galerias em certos idiomas da lista da galeria e pesquisas, selecione-as na caixa que exibirá.\nNote que essas galerias nunca aparecerão, independentemente da sua pesquisa.\nEm resumo: marcado = excluído</string>
+    <string name="language_filtering_summary">Se quer ocultar galerias em certos idiomas da lista da galeria e das pesquisas, selecione-as na caixa que exibirá.\nNote que essas galerias nunca aparecerão, independentemente da sua pesquisa.\nEm suma: marcado = excluído</string>
     <string name="frong_page_categories">Categorias na página inicial</string>
     <string name="fromt_page_categories_summary">Quais categorias você gostaria de exibir por padrão na página inicial e nas pesquisas? Elas ainda podem ser habilitadas ativando seus filtros</string>
     <string name="watched_list_default">Estado padrão do filtro de lista de tags assistidas</string>
@@ -73,7 +73,7 @@
     <string name="eh_image_quality_780">780x</string>
     <string name="favorites_sync">Sincronização de favoritos</string>
     <string name="disable_favorites_uploading">Desativar upload de favoritos</string>
-    <string name="disable_favorites_uploading_summary">Favoritos são baixados apenas do ExHentai. Quaisquer alterações nos favoritos no aplicativo não serão enviadas. Evita a perda acidental de favoritos no ExHentai. Note que as remoções ainda serão baixadas (se você remover um favorito no ExHentai, também será removido no aplicativo).</string>
+    <string name="disable_favorites_uploading_summary">Favoritos são baixados apenas do ExHentai. Quaisquer alterações dos favoritos no aplicativo não serão enviadas. Isso evita a perda acidental de favoritos no ExHentai. Note que as remoções ainda serão baixadas (se você remover um favorito no ExHentai, também será removido no aplicativo).</string>
     <string name="show_favorite_sync_notes">Mostrar notas de sincronização de favoritos</string>
     <string name="show_favorite_sync_notes_summary">Mostrar algumas informações sobre o recurso de sincronização de favoritos</string>
     <string name="ignore_sync_errors">Ignorar erros de sincronização quando possível</string>
@@ -138,7 +138,7 @@
     <string name="auto_solve_captchas_summary">Use o solucionador de ReCAPTCHA automático ALTAMENTE EXPERIMENTAL. Será acinzentado se não suportado pelo seu dispositivo.</string>
 
     <!-- Library settings -->
-    <string name="pref_skip_pre_migration_summary">Use as últimas fontes e preferências de pré-migração salvas para migrar em massa</string>
+    <string name="pref_skip_pre_migration_summary">Use as últimas fontes e preferências da pré-migração salvas para migrar em massa</string>
 
     <!-- Other Settings -->
     <string name="high_quality_thumbnails">Usar miniaturas de alta qualidade</string>
@@ -213,7 +213,7 @@
 
     <!-- Latest Tab -->
     <string name="watch">Observar</string>
-    <string name="unwatch">remover dos observados</string>
+    <string name="unwatch">Remover dos observados</string>
     <string name="too_many_watched">Muitas fontes oservadas, não é possível adicionar mais de 5</string>
     <string name="latest_tab_empty">Você não tem fontes observadas, vá para a aba "Fontes" e mantenha pressionado em uma fonte para oservá-la</string>
     <string name="pref_latest_tab_language_code">Exibir código do idioma ao lado do nome</string>
@@ -243,8 +243,7 @@
     <string name="migrating_to">migrando para</string>
     <string name="match_pinned_sources">Combinar com fontes fixadas</string>
     <string name="match_enabled_sources">Combinar com fontes ativadas</string>
-    <string name="no_chapters_found_for_migration">Nenhum capítulo encontrado, este mangá não pode ser usado para
-        migração</string>
+    <string name="no_chapters_found_for_migration">Sem capítulos encontrados, este mangá não pode ser usado para migração</string>
     <string name="no_alternatives_found">Sem alternativas encontradas</string>
     <string name="stop_migrating">Parar migração?</string>
     <plurals name="migrate_manga">
@@ -257,7 +256,7 @@
     </plurals>
     <string name="skipping_">(pulando %1$d)</string>
     <plurals name="manga_migrated">
-        <item quantity="one">%d mangá migradp</item>
+        <item quantity="one">%d mangá migrado</item>
         <item quantity="other">%d mangás migrados</item>
     </plurals>
 
