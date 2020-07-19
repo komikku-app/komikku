@@ -17,6 +17,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
 import com.tfcporciuncula.flow.Preference
@@ -53,7 +54,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.appcompat.queryTextChanges
-import reactivecircus.flowbinding.viewpager.pageSelections
+import reactivecircus.flowbinding.viewpager2.pageSelections
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
@@ -190,7 +191,8 @@ class LibraryController(
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        adapter = LibraryAdapter(this)
+        adapter = LibraryAdapter(activity!!, this)
+        binding.libraryPager.offscreenPageLimit = 5
         binding.libraryPager.adapter = adapter
         binding.libraryPager.pageSelections()
             .onEach {
@@ -238,7 +240,11 @@ class LibraryController(
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
         super.onChangeStarted(handler, type)
         if (type.isEnter) {
-            activity?.tabs?.setupWithViewPager(binding.libraryPager)
+            activity?.tabs?.let { tabLayout ->
+                TabLayoutMediator(tabLayout, binding.libraryPager) { tab, position ->
+                    tab.text = adapter?.getPageTitle(position)
+                }.attach()
+            }
             presenter.subscribeLibrary()
         }
     }
@@ -362,10 +368,8 @@ class LibraryController(
 
         val position = binding.libraryPager.currentItem
 
-        adapter.recycle = false
         binding.libraryPager.adapter = adapter
         binding.libraryPager.currentItem = position
-        adapter.recycle = true
     }
 
     /**
