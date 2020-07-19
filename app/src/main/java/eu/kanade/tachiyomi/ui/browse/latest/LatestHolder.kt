@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestAdapter
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
+import kotlinx.android.synthetic.main.latest_controller_card.no_results_found
 import kotlinx.android.synthetic.main.latest_controller_card.progress
 import kotlinx.android.synthetic.main.latest_controller_card.recycler
 import kotlinx.android.synthetic.main.latest_controller_card.source_card
@@ -62,15 +63,15 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
         when {
             results == null -> {
                 progress.visible()
-                showHolder()
+                showResultsHolder()
             }
             results.isEmpty() -> {
                 progress.gone()
-                hideHolder()
+                showNoResults()
             }
             else -> {
                 progress.gone()
-                showHolder()
+                showResultsHolder()
             }
         }
         if (results !== lastBoundResults) {
@@ -105,13 +106,13 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
         return null
     }
 
-    private fun showHolder() {
-        title_wrapper.visible()
+    private fun showResultsHolder() {
+        no_results_found.gone()
         source_card.visible()
     }
 
-    private fun hideHolder() {
-        title_wrapper.gone()
+    private fun showNoResults() {
+        no_results_found.visible()
         source_card.gone()
     }
 }
