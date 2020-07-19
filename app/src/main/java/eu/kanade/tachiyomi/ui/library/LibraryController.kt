@@ -95,11 +95,6 @@ class LibraryController(
     val selectionRelay: PublishRelay<LibrarySelectionEvent> = PublishRelay.create()
 
     /**
-     * Current mangas to move.
-     */
-    private var migratingMangas = mutableSetOf<Manga>()
-
-    /**
      * Relay to notify search query changes.
      */
     val searchRelay: BehaviorRelay<String> = BehaviorRelay.create()
