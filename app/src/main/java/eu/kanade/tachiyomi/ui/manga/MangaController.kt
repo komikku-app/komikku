@@ -322,6 +322,7 @@ class MangaController :
 
         // SY -->
         if (presenter.manga.favorite) menu.findItem(R.id.action_edit).isVisible = true
+        if (preferences.recommendsInOverflow().get()) menu.findItem(R.id.action_recommend).isVisible = true
         // SY <--
     }
 
@@ -337,6 +338,10 @@ class MangaController :
                     this, presenter.manga
                 )
                 editMangaDialog?.showDialog(router)
+            }
+
+            R.id.action_recommend -> {
+                openRecommends()
             }
             // SY <--
 

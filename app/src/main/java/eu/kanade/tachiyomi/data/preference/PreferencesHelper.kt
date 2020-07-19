@@ -368,4 +368,6 @@ class PreferencesHelper(val context: Context) {
     fun sourcesTabSourcesInCategories() = flowPrefs.getStringSet(Keys.sources_tab_source_categories, mutableSetOf())
 
     fun sourceSorting() = flowPrefs.getInt(Keys.sourcesSort, 0)
+
+    fun recommendsInOverflow() = flowPrefs.getBoolean(Keys.recommendsInOverflow, false)
 }

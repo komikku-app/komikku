@@ -267,6 +267,13 @@ class SettingsGeneralController : SettingsController() {
                 summaryRes = R.string.auto_solve_captchas_summary
                 defaultValue = false
             }
+
+            switchPreference {
+                key = Keys.recommendsInOverflow
+                titleRes = R.string.put_recommends_in_overflow
+                summaryRes = R.string.put_recommends_in_overflow_summary
+                defaultValue = false
+            }
         }
         // <-- EXH
     }

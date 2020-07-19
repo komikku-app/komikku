@@ -268,4 +268,6 @@ object PreferenceKeys {
     const val sources_tab_source_categories = "sources_tab_source_categories"
 
     const val sourcesSort = "sources_sort"
+
+    const val recommendsInOverflow = "recommends_in_overflow"
 }

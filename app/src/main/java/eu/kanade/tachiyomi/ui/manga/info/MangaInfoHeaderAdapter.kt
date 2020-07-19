@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.MangaThumbnail
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MangaInfoHeaderBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -46,6 +47,7 @@ import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
 class MangaInfoHeaderAdapter(
     private val controller: MangaController,
@@ -57,6 +59,7 @@ class MangaInfoHeaderAdapter(
     private var source: Source = controller.presenter.source
     private var trackCount: Int = 0
     // SY -->
+    private val preferences: PreferencesHelper by injectLazy()
     private var meta: RaisedSearchMetadata? = controller.presenter.meta
     // SY <--
 
@@ -243,7 +246,7 @@ class MangaInfoHeaderAdapter(
 
             // EXH -->
             if (controller.smartSearchConfig == null) {
-                binding.recommendBtn.visible()
+                binding.recommendBtn.visibleIf { !preferences.recommendsInOverflow().get() }
                 binding.recommendBtn.clicks()
                     .onEach { controller.openRecommends() }
                     .launchIn(scope)
