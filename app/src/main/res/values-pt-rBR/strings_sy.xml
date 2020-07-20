@@ -53,10 +53,10 @@
     <string name="watched_tags_eh">Tags assistidas do E-Hentai</string>
     <string name="tag_filtering_threshold">Limite de filtragem de tags</string>
     <string name="tag_filtering_threshhold_error">Deve estar entre -9999 e 0.</string>
-    <string name="tag_filtering_threshhold_summary">Você pode filtrar as tags adicionando-as à página "My tags" do E/ExHentai com um valor negativo. Se uma galeria tiver tags com valor abaixo desse número, ela será filtrada da exibição. Esse limite pode ser entre -9999 e 0. Atualmente: %1$s</string>
+    <string name="tag_filtering_threshhold_summary">Você pode filtrar as tags adicionando-as à página "My tags" do E/ExHentai com um valor negativo. Se uma galeria tiver tags com valor abaixo desse número, ela será filtrada da exibição. Esse limite pode ser entre -9999 e 0. Atualmente: %1$d</string>
     <string name="tag_watching_threshhold">Limite de exibição de tags</string>
     <string name="tag_watching_threshhold_error">Deve estar entre 0 e 9999</string>
-    <string name="tag_watching_threshhold_summary">Galerias enviadas recentemente serão incluídas na tela de tags assistidas se houver ao menos uma das tags com valor positivo, e se a soma dos valores nas tags assistidas chegarem a esse número ou a um maior. Esse limite pode ser entre 0 e 9999. Atualmente: %1$s</string>
+    <string name="tag_watching_threshhold_summary">Galerias enviadas recentemente serão incluídas na tela de tags assistidas se houver ao menos uma das tags com valor positivo, e se a soma dos valores nas tags assistidas chegarem a esse número ou a um maior. Esse limite pode ser entre 0 e 9999. Atualmente: %1$d</string>
     <string name="language_filtering">Filtro de idioma</string>
     <string name="language_filtering_summary">Se quer ocultar galerias em certos idiomas da lista da galeria e das pesquisas, selecione-as na caixa que exibirá.\nNote que essas galerias nunca aparecerão, independentemente da sua pesquisa.\nEm suma: marcado = excluído</string>
     <string name="frong_page_categories">Categorias na página inicial</string>

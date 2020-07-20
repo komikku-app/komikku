@@ -53,10 +53,10 @@
     <string name="watched_tags_eh">E-Hentai Watched Tags</string>
     <string name="tag_filtering_threshold">Tag Filtering Threshold</string>
     <string name="tag_filtering_threshhold_error">Must be between -9999 and 0!</string>
-    <string name="tag_filtering_threshhold_summary">You can soft filter tags by adding them to the "My Tags" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: %s</string>
+    <string name="tag_filtering_threshhold_summary">You can soft filter tags by adding them to the "My Tags" E/ExHentai page with a negative weight. If a gallery has tags that add up to weight below this value, it is filtered from view. This threshold can be set between -9999 and 0. Currently: %1$d</string>
     <string name="tag_watching_threshhold">Tag Watching Threshold</string>
     <string name="tag_watching_threshhold_error">Must be between 0 and 9999!</string>
-    <string name="tag_watching_threshhold_summary">Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: %s</string>
+    <string name="tag_watching_threshhold_summary">Recently uploaded galleries will be included on the watched screen if it has at least one watched tag with positive weight, and the sum of weights on its watched tags add up to this value or higher. This threshold can be set between 0 and 9999. Currently: %1$d</string>
     <string name="language_filtering">Language Filtering</string>
     <string name="language_filtering_summary">If you wish to hide galleries in certain languages from the gallery list and searches, select them in the dialog that will popup.\nNote that matching galleries will never appear regardless of your search query.\nTldr checkmarked = exclude</string>
     <string name="frong_page_categories">Front Page Categories</string>

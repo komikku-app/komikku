@@ -230,7 +230,7 @@ class SettingsEhController : SettingsController() {
                 key = PreferenceKeys.eh_tag_filtering_value
                 defaultValue = 0
 
-                summaryRes = R.string.tag_filtering_threshhold_summary
+                summary = context.getString(R.string.tag_filtering_threshhold_summary, preferences.ehTagFilterValue().get())
 
                 onClick {
                     MaterialDialog(activity!!)
@@ -253,6 +253,7 @@ class SettingsEhController : SettingsController() {
                         .positiveButton(android.R.string.ok) {
                             val value = it.getInputField().text.toString().toInt()
                             preferences.ehTagFilterValue().set(value)
+                            summary = context.getString(R.string.tag_filtering_threshhold_summary, preferences.ehTagFilterValue().get())
                             preferences.ehTagFilterValue().reconfigure()
                         }
                         .show()
@@ -264,7 +265,7 @@ class SettingsEhController : SettingsController() {
                 key = PreferenceKeys.eh_tag_watching_value
                 defaultValue = 0
 
-                summaryRes = R.string.tag_watching_threshhold_summary
+                summary = context.getString(R.string.tag_watching_threshhold_summary, preferences.ehTagWatchingValue().get())
 
                 onClick {
                     MaterialDialog(activity!!)
@@ -288,6 +289,7 @@ class SettingsEhController : SettingsController() {
                         .positiveButton(android.R.string.ok) {
                             val value = it.getInputField().text.toString().toInt()
                             preferences.ehTagWatchingValue().set(value)
+                            summary = context.getString(R.string.tag_watching_threshhold_summary, preferences.ehTagWatchingValue().get())
                             preferences.ehTagWatchingValue().reconfigure()
                         }
                         .show()
