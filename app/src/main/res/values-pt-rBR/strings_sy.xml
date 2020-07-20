@@ -38,7 +38,7 @@
     <string name="enable_exhentai">Ativar ExHentai</string>
     <string name="requires_login">Requer login</string>
     <string name="use_hentai_at_home">Usar Hentai@Home Network</string>
-    <string name="use_hentai_at_home_summary">Deseja carregar imagens através do Hentai@Home Network, se disponível? Desativar isso reduzirá a quantidade de páginas que você pode ver\nOptions:\n- Qualquer cliente (recomendado)\n- Apenas clientes de porta padrão (pode ser mais lento. Ative se estiver por trás de um firewall/proxy que bloqueie portas não-padrão de saída.)</string>
+    <string name="use_hentai_at_home_summary">Deseja carregar imagens através do Hentai@Home Network, se disponível? Desativar isso reduzirá a quantidade de páginas que você pode ver\nOpções:\n- Qualquer cliente (recomendado)\n- Apenas clientes de porta padrão (pode ser mais lento. Ative se estiver por trás de um firewall/proxy que bloqueie portas não-padrão de saída.)</string>
     <string name="use_hentai_at_home_option_1">Qualquer cliente (Recomendado)</string>
     <string name="use_hentai_at_home_option_2">Apenas clientes de porta padrão</string>
     <string name="show_japanese_titles">Exibir títulos japoneses na pesquisa</string>
@@ -48,15 +48,15 @@
     <string name="use_original_images_on">Atualmente usando imagens originais</string>
     <string name="use_original_images_off">Atualmente usando imagens redimensionadas</string>
     <string name="watched_tags">Tags assitidas</string>
-    <string name="watched_tags_summary">Abre a sua página "Watched tags" do E/ExHentai na webview</string>
+    <string name="watched_tags_summary">Abre a página "Watched tags" do E/ExHentai na webview</string>
     <string name="watched_tags_exh">Tags assistidas do ExHentai</string>
     <string name="watched_tags_eh">Tags assistidas do E-Hentai</string>
     <string name="tag_filtering_threshold">Limite de filtragem de tags</string>
     <string name="tag_filtering_threshhold_error">Deve estar entre -9999 e 0.</string>
-    <string name="tag_filtering_threshhold_summary">Você pode filtrar as tags adicionando-as à página "My tags" do E/ExHentai com um valor negativo. Se uma galeria tiver tags com valor abaixo desse número, ela será filtrada da exibição. Esse limite pode ser entre -9999 e 0. Atualmente: %s</string>
+    <string name="tag_filtering_threshhold_summary">Você pode filtrar as tags adicionando-as à página "My tags" do E/ExHentai com um valor negativo. Se uma galeria tiver tags com valor abaixo desse número, ela será filtrada da exibição. Esse limite pode ser entre -9999 e 0. Atualmente: %1$s</string>
     <string name="tag_watching_threshhold">Limite de exibição de tags</string>
     <string name="tag_watching_threshhold_error">Deve estar entre 0 e 9999</string>
-    <string name="tag_watching_threshhold_summary">Galerias enviadas recentemente serão incluídas na tela de tags assistidas se houver ao menos uma das tags com valor positivo, e se a soma dos valores nas tags assistidas chegarem a esse número ou um maior. Esse limite pode ser entre 0 e 9999. Atualmente: %s</string>
+    <string name="tag_watching_threshhold_summary">Galerias enviadas recentemente serão incluídas na tela de tags assistidas se houver ao menos uma das tags com valor positivo, e se a soma dos valores nas tags assistidas chegarem a esse número ou a um maior. Esse limite pode ser entre 0 e 9999. Atualmente: %1$s</string>
     <string name="language_filtering">Filtro de idioma</string>
     <string name="language_filtering_summary">Se quer ocultar galerias em certos idiomas da lista da galeria e das pesquisas, selecione-as na caixa que exibirá.\nNote que essas galerias nunca aparecerão, independentemente da sua pesquisa.\nEm suma: marcado = excluído</string>
     <string name="frong_page_categories">Categorias na página inicial</string>
@@ -93,7 +93,7 @@
     <string name="time_between_batches_24_hours">24 horas</string>
     <string name="time_between_batches_48_hours">48 horas</string>
     <string name="time_between_batches_summary_1">%1$s atualmente nunca verificará galerias em sua biblioteca para atualizações.</string>
-    <string name="time_between_batches_summary_2">%1$s%1$s verifica/atualiza galerias em batches. Isso significa que ele irá esperar %2$d hora(s), verificar %3$d galerias, esperar %2$d hora(s), verificar %3$d e assim por diante…</string>
+    <string name="time_between_batches_summary_2">%1$s verifica/atualiza galerias em batches. Isso significa que ele irá esperar %2$d hora(s), verificar %3$d galerias, esperar %2$d hora(s), verificar %3$d e assim por diante…</string>
     <string name="show_updater_statistics">Mostrar estatísticas do atualizador</string>
     <string name="gallery_updater_statistics_collection">Coletando estatísticas…</string>
     <string name="gallery_updater_statistics">Estatísticas do atualizador da galeria</string>
@@ -136,9 +136,17 @@
     <string name="toggle_expand_search_filters">Expandir todos os filtros de pesquisa por padrão</string>
     <string name="auto_solve_captchas">Resolver captcha automaticamente</string>
     <string name="auto_solve_captchas_summary">Use o solucionador de ReCAPTCHA automático ALTAMENTE EXPERIMENTAL. Será acinzentado se não suportado pelo seu dispositivo.</string>
+    <string name="put_recommends_in_overflow">Recomendações no menu de opções</string>
+    <string name="put_recommends_in_overflow_summary">Coloca o botão de recomendações no botão de mais opções em vez de na página do mangá</string>
 
     <!-- Library settings -->
     <string name="pref_skip_pre_migration_summary">Use as últimas fontes e preferências da pré-migração salvas para migrar em massa</string>
+
+
+    <!-- Hitomi.la settings -->
+    <string name="always_download_webp">Sempre baixar em webp</string>
+    <string name="always_download_webp_summary_on">Sempre tentará baixar imagens como webp quando possível</string>
+    <string name="always_download_webp_summary_off">Apenas baixará imagens webp se for a única opção, a maioria das imagens será jpg</string>
 
     <!-- Other Settings -->
     <string name="high_quality_thumbnails">Usar miniaturas de alta qualidade</string>
