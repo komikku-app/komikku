@@ -375,8 +375,8 @@ class Hitomi(val context: Context) : HttpSource(), LewdSource<HitomiSearchMetada
         val json = JsonParser.parseString(str.removePrefix("var galleryinfo = "))
         return json["files"].array.mapIndexed { index, jsonElement ->
             val hash = jsonElement["hash"].string
-            val ext = if (jsonElement["haswebp"].string == "0") jsonElement["name"].string.split('.').last() else "webp"
-            val path = if (jsonElement["haswebp"].string == "0") "images" else "webp"
+            val ext = if (jsonElement["haswebp"].string == "0" || !prefs.hitomiAlwaysWebp().get()) jsonElement["name"].string.split('.').last() else "webp"
+            val path = if (jsonElement["haswebp"].string == "0" || !prefs.hitomiAlwaysWebp().get()) "images" else "webp"
             val hashPath1 = hash.takeLast(1)
             val hashPath2 = hash.takeLast(3).take(2)
             Page(

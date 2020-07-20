@@ -370,4 +370,6 @@ class PreferencesHelper(val context: Context) {
     fun sourceSorting() = flowPrefs.getInt(Keys.sourcesSort, 0)
 
     fun recommendsInOverflow() = flowPrefs.getBoolean(Keys.recommendsInOverflow, false)
+
+    fun hitomiAlwaysWebp() = flowPrefs.getBoolean(Keys.hitomiAlwaysWebp, true)
 }

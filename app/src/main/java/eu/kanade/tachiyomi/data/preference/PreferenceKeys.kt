@@ -270,4 +270,6 @@ object PreferenceKeys {
     const val sourcesSort = "sources_sort"
 
     const val recommendsInOverflow = "recommends_in_overflow"
+
+    const val hitomiAlwaysWebp = "hitomi_always_webp"
 }

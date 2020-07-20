@@ -22,5 +22,13 @@ class SettingsHlController : SettingsController() {
             key = PreferenceKeys.eh_hl_useHighQualityThumbs
             defaultValue = false
         }
+
+        switchPreference {
+            titleRes = R.string.always_download_webp
+            summaryOn = context.getString(R.string.always_download_webp_summary_on)
+            summaryOff = context.getString(R.string.always_download_webp_summary_off)
+            key = PreferenceKeys.hitomiAlwaysWebp
+            defaultValue = true
+        }
     }
 }
