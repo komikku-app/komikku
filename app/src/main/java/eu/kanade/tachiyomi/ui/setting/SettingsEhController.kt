@@ -243,7 +243,7 @@ class SettingsEhController : SettingsController() {
                             val inputField = dialog.getInputField()
                             val value = number.toString().toIntOrNull()
 
-                            if (value != null && value in -9999..0) {
+                            if ((value != null && value in -9999..0) || number.toString() == "-") {
                                 inputField.error = null
                             } else {
                                 inputField.error = context.getString(R.string.tag_filtering_threshhold_error)
@@ -256,6 +256,7 @@ class SettingsEhController : SettingsController() {
                             summary = context.getString(R.string.tag_filtering_threshhold_summary, preferences.ehTagFilterValue().get())
                             preferences.ehTagFilterValue().reconfigure()
                         }
+                        .negativeButton(android.R.string.cancel)
                         .show()
                 }
             }.dependency = PreferenceKeys.eh_enableExHentai
@@ -292,6 +293,7 @@ class SettingsEhController : SettingsController() {
                             summary = context.getString(R.string.tag_watching_threshhold_summary, preferences.ehTagWatchingValue().get())
                             preferences.ehTagWatchingValue().reconfigure()
                         }
+                        .negativeButton(android.R.string.cancel)
                         .show()
                 }
             }.dependency = PreferenceKeys.eh_enableExHentai
