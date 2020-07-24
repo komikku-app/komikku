@@ -51,12 +51,12 @@ class BrowserActionActivity : AppCompatActivity() {
     private var validateCurrentLoopId: String? = null
     private var strictValidationStartTime: Long? = null
 
-    lateinit var credentialsObservable: Observable<String>
+    private lateinit var credentialsObservable: Observable<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(eu.kanade.tachiyomi.R.layout.eh_activity_captcha)
+        setContentView(R.layout.eh_activity_captcha)
 
         val sourceId = intent.getLongExtra(SOURCE_ID_EXTRA, -1)
         val originalSource = if (sourceId != -1L) sourceManager.get(sourceId) else null

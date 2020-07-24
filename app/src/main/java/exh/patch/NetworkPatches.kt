@@ -1,8 +1,11 @@
 package exh.patch
 
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 typealias EHInterceptor = (request: Request, response: Response, sourceId: Long) -> Response
 
@@ -16,10 +19,9 @@ fun OkHttpClient.Builder.injectPatches(sourceIdProducer: () -> Long): OkHttpClie
 }
 
 fun findAndApplyPatches(sourceId: Long): EHInterceptor {
-    return (
-        (EH_INTERCEPTORS[sourceId] ?: emptyList()) +
-            (EH_INTERCEPTORS[EH_UNIVERSAL_INTERCEPTOR] ?: emptyList())
-        ).merge()
+    // TODO make it so captcha doesnt auto open in manga eden while applying universal interceptors
+    return if (Injekt.get<PreferencesHelper>().eh_autoSolveCaptchas().get()) ((EH_INTERCEPTORS[sourceId] ?: emptyList()) + (EH_INTERCEPTORS[EH_UNIVERSAL_INTERCEPTOR] ?: emptyList())).merge()
+    else (EH_INTERCEPTORS[sourceId] ?: emptyList()).merge()
 }
 
 fun List<EHInterceptor>.merge(): EHInterceptor {
