@@ -11,8 +11,6 @@ import android.provider.Settings
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
-import com.bluelinelabs.conductor.RouterTransaction
-import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -284,12 +282,6 @@ class SettingsAdvancedController : SettingsController() {
     }
 
     private fun clearDatabase() {
-        // Avoid weird behavior by going back to the library.
-        val newBackstack = listOf(RouterTransaction.with(LibraryController())) +
-            router.backstack.drop(1)
-
-        router.setBackstack(newBackstack, FadeChangeHandler())
-
         db.deleteMangasNotInLibrary().executeAsBlocking()
         db.deleteHistoryNoLastRead().executeAsBlocking()
         activity?.toast(R.string.clear_database_completed)
