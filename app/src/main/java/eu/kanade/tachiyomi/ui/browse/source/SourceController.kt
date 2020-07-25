@@ -19,6 +19,8 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.minusAssign
+import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.databinding.SourceMainControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
@@ -211,8 +213,7 @@ class SourceController(bundle: Bundle? = null) :
     }
 
     private fun disableSource(source: Source) {
-        val current = preferences.disabledSources().get()
-        preferences.disabledSources().set(current + source.id.toString())
+        preferences.disabledSources() += source.id.toString()
 
         presenter.updateSources()
     }
@@ -230,16 +231,14 @@ class SourceController(bundle: Bundle? = null) :
 
     // SY -->
     private fun watchCatalogue(source: Source, isWatched: Boolean) {
-        val current = preferences.latestTabSources().get()
-
         if (isWatched) {
-            preferences.latestTabSources().set(current - source.id.toString())
+            preferences.latestTabSources() -= source.id.toString()
         } else {
-            if (current.size + 1 !in 0..5) {
+            if (preferences.latestTabSources().get().size + 1 !in 0..5) {
                 applicationContext?.toast(R.string.too_many_watched)
                 return
             }
-            preferences.latestTabSources().set(current + source.id.toString())
+            preferences.latestTabSources() += source.id.toString()
         }
     }
 
