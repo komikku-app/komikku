@@ -91,8 +91,9 @@ class SourcePresenter(
         var sourceItems = byLang.flatMap {
             val langItem = LangItem(it.key)
             it.value.map { source ->
-                if (source.id.toString() in pinnedSourceIds) {
-                    pinnedSources.add(SourceItem(source, LangItem(PINNED_KEY), controllerMode == SourceController.Mode.CATALOGUE))
+                val isPinned = source.id.toString() in pinnedSourceIds
+                if (isPinned) {
+                    pinnedSources.add(SourceItem(source, LangItem(PINNED_KEY), isPinned, controllerMode == SourceController.Mode.CATALOGUE))
                 }
 
                 // SY -->
@@ -106,6 +107,7 @@ class SourcePresenter(
                                         SourceItem(
                                             source,
                                             LangItem("custom|" + SourceAndCategory.second),
+                                            isPinned,
                                             controllerMode == SourceController.Mode.CATALOGUE
                                         )
                                     )
@@ -115,7 +117,7 @@ class SourcePresenter(
                 }
                 // SY <--
 
-                SourceItem(source, langItem, controllerMode == SourceController.Mode.CATALOGUE)
+                SourceItem(source, langItem, isPinned, controllerMode == SourceController.Mode.CATALOGUE)
             }
         }
 
