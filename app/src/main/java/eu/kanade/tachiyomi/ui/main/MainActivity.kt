@@ -485,7 +485,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
         // Manually handle dismiss delay since Snackbar.LENGTH_LONG is a too short
         launchIO {
-            delay(5000)
+            delay(10000)
             snack.dismiss()
         }
     }
