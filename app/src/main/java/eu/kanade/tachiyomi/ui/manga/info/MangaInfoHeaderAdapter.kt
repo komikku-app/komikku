@@ -21,9 +21,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.setTooltip
-import eu.kanade.tachiyomi.util.view.visible
 import exh.MERGED_SOURCE_ID
 import exh.util.SourceTagsUtil
 import kotlinx.coroutines.CoroutineScope
@@ -100,7 +98,7 @@ class MangaInfoHeaderAdapter(
 
             with(binding.btnTracking) {
                 if (trackManager.hasLoggedServices()) {
-                    visible()
+                    isVisible = true
 
                     if (trackCount > 0) {
                         setIconResource(R.drawable.ic_done_24dp)
@@ -116,18 +114,18 @@ class MangaInfoHeaderAdapter(
                         .onEach { controller.onTrackingClick() }
                         .launchIn(scope)
                 } else {
-                    gone()
+                    isVisible = false
                 }
             }
 
             if (controller.presenter.source is HttpSource) {
-                binding.btnWebview.visible()
+                binding.btnWebview.isVisible = true
                 binding.btnWebview.clicks()
                     .onEach { controller.openMangaInWebView() }
                     .launchIn(scope)
                 binding.btnWebview.setTooltip(R.string.action_open_in_web_view)
 
-                binding.btnShare.visible()
+                binding.btnShare.isVisible = true
                 binding.btnShare.clicks()
                     .onEach { controller.shareManga() }
                     .launchIn(scope)
@@ -136,13 +134,13 @@ class MangaInfoHeaderAdapter(
 
             // SY -->
             if (controller.presenter.manga.favorite) {
-                binding.btnMigrate.visible()
+                binding.btnMigrate.isVisible = true
                 binding.btnMigrate.clicks()
                     .onEach { controller.migrateManga() }
                     .launchIn(scope)
                 binding.btnMigrate.setTooltip(R.string.migrate)
 
-                binding.btnSmartSearch.visible()
+                binding.btnSmartSearch.isVisible = true
                 binding.btnSmartSearch.clicks()
                     .onEach { controller.openSmartSearch() }
                     .launchIn(scope)

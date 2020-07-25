@@ -7,13 +7,12 @@ import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.visible
 import exh.uconfig.WarnConfigureDialogController
 import java.net.HttpCookie
 import timber.log.Timber
@@ -44,8 +43,8 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
             binding.btnCancel.setOnClickListener { router.popCurrentController() }
 
             binding.btnAdvanced.setOnClickListener {
-                binding.advancedOptions.visible()
-                binding.webview.gone()
+                binding.advancedOptions.isVisible = true
+                binding.webview.isVisible = false
                 binding.btnAdvanced.isEnabled = false
                 binding.btnCancel.isEnabled = false
             }
@@ -78,8 +77,8 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
     }
 
     private fun hideAdvancedOptions(view: View) {
-        binding.advancedOptions.gone()
-        binding.webview.visible()
+        binding.advancedOptions.isVisible = false
+        binding.webview.isVisible = true
         binding.btnAdvanced.isEnabled = true
         binding.btnCancel.isEnabled = true
     }

@@ -3,11 +3,10 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import eu.kanade.tachiyomi.databinding.SourceFilterSheetSavedSearchesBinding
-import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.visible
 
 class SavedSearchesAdapter(var chips: List<Chip> = emptyList()) :
     RecyclerView.Adapter<SavedSearchesAdapter.SavedSearchesViewHolder>() {
@@ -29,9 +28,9 @@ class SavedSearchesAdapter(var chips: List<Chip> = emptyList()) :
         fun bind(chips: List<Chip> = emptyList()) {
             binding.savedSearches.removeAllViews()
             if (chips.isEmpty()) {
-                binding.savedSearchesTitle.gone()
+                binding.savedSearchesTitle.isVisible = false
             } else {
-                binding.savedSearchesTitle.visible()
+                binding.savedSearchesTitle.isVisible = true
                 chips.forEach {
                     binding.savedSearches.addView(it)
                 }

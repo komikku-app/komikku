@@ -3,12 +3,11 @@ package eu.kanade.tachiyomi.ui.manga.info
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MangaInfoButtonsBinding
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.view.visible
-import eu.kanade.tachiyomi.util.view.visibleIf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,13 +42,13 @@ class MangaInfoButtonsAdapter(
         fun bind() {
             // EXH -->
             if (controller.smartSearchConfig == null) {
-                binding.recommendBtn.visibleIf { !preferences.recommendsInOverflow().get() }
+                binding.recommendBtn.isVisible = !preferences.recommendsInOverflow().get()
                 binding.recommendBtn.clicks()
                     .onEach { controller.openRecommends() }
                     .launchIn(scope)
             } else {
                 if (controller.smartSearchConfig.origMangaId != null) {
-                    binding.mergeBtn.visible()
+                    binding.mergeBtn.isVisible = true
                 }
                 binding.mergeBtn.clicks()
                     .onEach {

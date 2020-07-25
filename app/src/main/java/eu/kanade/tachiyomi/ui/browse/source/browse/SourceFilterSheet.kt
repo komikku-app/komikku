@@ -6,13 +6,13 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.databinding.SourceFilterSheetBinding
-import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import exh.EXHSavedSearch
@@ -130,7 +130,7 @@ class SourceFilterSheet(
         }
 
         fun hideFilterButton() {
-            binding.filterBtn.gone()
+            binding.filterBtn.isVisible = false
         }
 
         companion object {

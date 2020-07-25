@@ -2,6 +2,8 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.view.View
 import android.widget.PopupMenu
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.gson.Gson
 import eu.kanade.tachiyomi.R
@@ -17,10 +19,7 @@ import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.invisible
 import eu.kanade.tachiyomi.util.view.setVectorCompat
-import eu.kanade.tachiyomi.util.view.visible
 import exh.MERGED_SOURCE_ID
 import java.text.DecimalFormat
 import kotlinx.android.synthetic.main.migration_manga_card.view.gradient
@@ -75,8 +74,8 @@ class MigrationProcessHolder(
                         .attr.colorOnPrimary
                 )
             )
-            migration_menu.invisible()
-            skip_manga.visible()
+            migration_menu.isInvisible = true
+            skip_manga.isVisible = true
             migration_manga_card_to.resetManga()
             if (manga != null) {
                 withContext(Dispatchers.Main) {
@@ -124,12 +123,12 @@ class MigrationProcessHolder(
                             )
                         }
                     } else {
-                        migration_manga_card_to.loading_group.gone()
+                        migration_manga_card_to.loading_group.isVisible = false
                         migration_manga_card_to.title.text = view.context.applicationContext
                             .getString(R.string.no_alternatives_found)
                     }
-                    migration_menu.visible()
-                    skip_manga.gone()
+                    migration_menu.isVisible = true
+                    skip_manga.isVisible = false
                     adapter.sourceFinished()
                 }
             }
@@ -137,18 +136,18 @@ class MigrationProcessHolder(
     }
 
     private fun View.resetManga() {
-        loading_group.visible()
+        loading_group.isVisible = true
         thumbnail.setImageDrawable(null)
         title.text = ""
         manga_source_label.text = ""
         manga_chapters.text = ""
-        manga_chapters.gone()
+        manga_chapters.isVisible = false
         manga_last_chapter_label.text = ""
         migration_manga_card_to.setOnClickListener(null)
     }
 
     private fun View.attachManga(manga: Manga, source: Source) {
-        loading_group.gone()
+        loading_group.isVisible = false
         GlideApp.with(view.context.applicationContext)
             .load(manga.toMangaThumbnail())
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
@@ -162,7 +161,7 @@ class MigrationProcessHolder(
             manga.originalTitle
         }
 
-        gradient.visible()
+        gradient.isVisible = true
         manga_source_label.text = if (source.id == MERGED_SOURCE_ID) {
             MergedSource.MangaConfig.readFromUrl(gson, manga.url).children.map {
                 sourceManager.getOrStub(it.source).toString()
@@ -172,7 +171,7 @@ class MigrationProcessHolder(
         }
 
         val mangaChapters = db.getChapters(manga).executeAsBlocking()
-        manga_chapters.visible()
+        manga_chapters.isVisible = true
         manga_chapters.text = mangaChapters.size.toString()
         val latestChapter = mangaChapters.maxBy { it.chapter_number }?.chapter_number ?: -1f
 

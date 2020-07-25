@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -40,8 +41,6 @@ import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.visible
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.ui.LoaderManager
@@ -221,7 +220,7 @@ class LibraryController(
         }
 
         if (preferences.downloadedOnly().get()) {
-            binding.downloadedOnly.visible()
+            binding.downloadedOnly.isVisible = true
         }
 
         binding.btnGlobalSearch.clicks()
@@ -440,11 +439,11 @@ class LibraryController(
     private fun performSearch() {
         searchRelay.call(query)
         if (!query.isNullOrEmpty()) {
-            binding.btnGlobalSearch.visible()
+            binding.btnGlobalSearch.isVisible = true
             binding.btnGlobalSearch.text =
                 resources?.getString(R.string.action_global_search_query, query)
         } else {
-            binding.btnGlobalSearch.gone()
+            binding.btnGlobalSearch.isVisible = false
         }
     }
 

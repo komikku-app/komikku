@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.View
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.input.getInputField
@@ -23,7 +24,6 @@ import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.view.visibleIf
 import exh.util.trimOrNull
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.cover_layout
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_artist
@@ -135,7 +135,7 @@ class EditMangaDialog : DialogController {
             infoController.changeCover()
         }
         view.reset_tags.setOnClickListener { resetTags() }
-        view.reset_cover.visibleIf { !isLocal }
+        view.reset_cover.isVisible = !isLocal
         view.reset_cover.setOnClickListener {
             view.context.toast(R.string.cover_reset_toast)
             customCoverUri = null

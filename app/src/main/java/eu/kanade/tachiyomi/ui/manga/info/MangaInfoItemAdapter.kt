@@ -5,6 +5,7 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -15,9 +16,6 @@ import eu.kanade.tachiyomi.databinding.MangaInfoItemBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.visible
-import eu.kanade.tachiyomi.util.view.visibleIf
 import exh.isEhBasedSource
 import exh.isNamespaceSource
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -115,7 +113,7 @@ class MangaInfoItemAdapter(
                 }
 
                 if (binding.mangaSummary.text == "meta") {
-                    binding.mangaSummary.gone()
+                    binding.mangaSummary.isVisible = false
                     binding.mangaSummaryLabel.setText(R.string.tags)
                 }
 
@@ -144,7 +142,7 @@ class MangaInfoItemAdapter(
                     binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
                     // SY <--
                 } else {
-                    binding.mangaGenresTagsWrapper.gone()
+                    binding.mangaGenresTagsWrapper.isVisible = false
                 }
 
                 // Handle showing more or less info
@@ -161,10 +159,10 @@ class MangaInfoItemAdapter(
         }
 
         private fun showMangaInfo(visible: Boolean) {
-            binding.mangaSummaryLabel.visibleIf { visible }
-            binding.mangaSummary.visibleIf { visible }
-            binding.mangaGenresTagsWrapper.visibleIf { visible }
-            binding.mangaInfoToggle.visibleIf { visible }
+            binding.mangaSummaryLabel.isVisible = visible
+            binding.mangaSummary.isVisible = visible
+            binding.mangaGenresTagsWrapper.isVisible = visible
+            binding.mangaInfoToggle.isVisible = visible
         }
 
         private fun toggleMangaInfo(context: Context) {
@@ -201,12 +199,12 @@ class MangaInfoItemAdapter(
                     }
             }
 
-            binding.mangaGenresTagsCompact.visibleIf { isExpanded }
+            binding.mangaGenresTagsCompact.isVisible = isExpanded
             // SY -->
             if (!source.isNamespaceSource()) {
-                binding.mangaGenresTagsFullChips.visibleIf { !isExpanded }
+                binding.mangaGenresTagsFullChips.isVisible = !isExpanded
             } else {
-                binding.genreGroups.visibleIf { !isExpanded }
+                binding.genreGroups.isVisible = !isExpanded
             }
             // SY <--
         }

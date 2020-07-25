@@ -3,6 +3,7 @@ package exh.ui.intercept
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onCancel
 import com.afollestad.materialdialogs.callbacks.onDismiss
@@ -11,8 +12,6 @@ import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.visible
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import kotlin.concurrent.thread
@@ -38,7 +37,7 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
 
     private fun processLink() {
         if (Intent.ACTION_VIEW == intent.action) {
-            binding.interceptProgress.visible()
+            binding.interceptProgress.isVisible = true
             binding.interceptStatus.setText(R.string.loading_gallery)
             loadGallery(intent.dataString!!)
         }
@@ -60,7 +59,7 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
             .subscribe {
                 when (it) {
                     is InterceptResult.Success -> {
-                        binding.interceptProgress.gone()
+                        binding.interceptProgress.isVisible = false
                         binding.interceptStatus.setText(R.string.launching_app)
                         onBackPressed()
                         startActivity(
@@ -71,7 +70,7 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
                         )
                     }
                     is InterceptResult.Failure -> {
-                        binding.interceptProgress.gone()
+                        binding.interceptProgress.isVisible = false
                         binding.interceptStatus.text = this.getString(R.string.error_with_reason, it.reason)
                         MaterialDialog(this)
                             .title(R.string.chapter_error)

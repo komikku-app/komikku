@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.Controller
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.tfcporciuncula.flow.Preference
@@ -15,8 +16,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.view.gone
-import eu.kanade.tachiyomi.util.view.visible
 import kotlinx.android.synthetic.main.migration_bottom_sheet.*
 import kotlinx.android.synthetic.main.migration_bottom_sheet.extra_search_param
 import kotlinx.android.synthetic.main.migration_bottom_sheet.extra_search_param_text
@@ -88,13 +87,9 @@ class MigrationBottomSheetDialog(
         mig_tracking.setOnCheckedChangeListener { _, _ -> setFlags() }
 
         use_smart_search.bindToPreference(preferences.smartMigration())
-        extra_search_param_text.gone()
+        extra_search_param_text.isVisible = false
         extra_search_param.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                extra_search_param_text.visible()
-            } else {
-                extra_search_param_text.gone()
-            }
+            extra_search_param_text.isVisible = isChecked
         }
         sourceGroup.bindToPreference(preferences.useSourceWithMost())
 

@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.ui.category.sources
 
 import android.view.View
+import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import eu.kanade.tachiyomi.util.view.gone
 import kotlinx.android.synthetic.main.categories_item.reorder
 import kotlinx.android.synthetic.main.categories_item.title
 
@@ -21,6 +21,6 @@ class SourceCategoryHolder(view: View, val adapter: SourceCategoryAdapter) : Bas
     fun bind(category: String) {
         // Set capitalized title.
         title.text = category
-        reorder.gone()
+        reorder.isVisible = false
     }
 }
