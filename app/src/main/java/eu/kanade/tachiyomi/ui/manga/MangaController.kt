@@ -238,7 +238,7 @@ class MangaController :
 
         binding.recycler.adapter = ConcatAdapter(adapters)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.addItemDecoration(ChapterDividerItemDecoration(view.context, if (preferences.recommendsInOverflow().get()) 3 else 4))
+        binding.recycler.addItemDecoration(ChapterDividerItemDecoration(view.context, if ((!preferences.recommendsInOverflow().get() || smartSearchConfig != null) && thisSourceAsLewdSource != null) 4 else if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null || thisSourceAsLewdSource != null) 3 else 2))
         binding.recycler.setHasFixedSize(true)
         chaptersAdapter?.fastScroller = binding.fastScroller
 
