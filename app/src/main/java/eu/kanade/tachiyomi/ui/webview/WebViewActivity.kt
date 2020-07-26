@@ -72,6 +72,11 @@ class WebViewActivity : BaseWebViewActivity() {
         }
     }
 
+    override fun onDestroy() {
+        binding.webview?.destroy()
+        super.onDestroy()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.webview, menu)
         return true
