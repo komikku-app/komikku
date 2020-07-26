@@ -1,23 +1,17 @@
 package eu.kanade.tachiyomi.ui.manga.info
 
-import android.content.Context
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.MangaThumbnail
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MangaInfoHeaderBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -29,44 +23,30 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.visible
-import eu.kanade.tachiyomi.util.view.visibleIf
 import exh.MERGED_SOURCE_ID
-import exh.isNamespaceSource
-import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
-import exh.util.makeSearchChip
-import exh.util.setChipsExtended
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 
 class MangaInfoHeaderAdapter(
-    private val controller: MangaController,
-    private val fromSource: Boolean
+    private val controller: MangaController
 ) :
     RecyclerView.Adapter<MangaInfoHeaderAdapter.HeaderViewHolder>() {
 
     private var manga: Manga = controller.presenter.manga
     private var source: Source = controller.presenter.source
     private var trackCount: Int = 0
-    // SY -->
-    private val preferences: PreferencesHelper by injectLazy()
-    private var meta: RaisedSearchMetadata? = controller.presenter.meta
-    // SY <--
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private lateinit var binding: MangaInfoHeaderBinding
 
-    private var initialLoad: Boolean = true
     private var currentMangaThumbnail: MangaThumbnail? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder {
@@ -80,18 +60,15 @@ class MangaInfoHeaderAdapter(
         holder.bind()
     }
 
-    val tagsAdapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter(null)
-
     /**
      * Update the view with manga information.
      *
      * @param manga manga object containing information about manga.
      * @param source the source of the manga.
      */
-    fun update(manga: Manga, source: Source, meta: RaisedSearchMetadata?) {
+    fun update(manga: Manga, source: Source) {
         this.manga = manga
         this.source = source
-        this.meta = meta
 
         notifyDataSetChanged()
     }
@@ -226,15 +203,6 @@ class MangaInfoHeaderAdapter(
                 }
                 .launchIn(scope)
 
-            binding.mangaSummary.longClicks()
-                .onEach {
-                    controller.activity?.copyToClipboard(
-                        view.context.getString(R.string.description),
-                        binding.mangaSummary.text.toString()
-                    )
-                }
-                .launchIn(scope)
-
             binding.mangaCover.longClicks()
                 .onEach {
                     controller.activity?.copyToClipboard(
@@ -243,28 +211,6 @@ class MangaInfoHeaderAdapter(
                     )
                 }
                 .launchIn(scope)
-
-            // EXH -->
-            if (controller.smartSearchConfig == null) {
-                binding.recommendBtn.visibleIf { !preferences.recommendsInOverflow().get() }
-                binding.recommendBtn.clicks()
-                    .onEach { controller.openRecommends() }
-                    .launchIn(scope)
-            } else {
-                if (controller.smartSearchConfig.origMangaId != null) { binding.mergeBtn.visible() }
-                binding.mergeBtn.clicks()
-                    .onEach {
-                        controller.mergeWithAnother()
-                    }
-
-                    .launchIn(scope)
-            }
-            // EXH <--
-
-            // SY -->
-            binding.mangaNamespaceTagsRecycler.layoutManager = LinearLayoutManager(itemView.context)
-            binding.mangaNamespaceTagsRecycler.adapter = tagsAdapter
-            // SY <--
 
             setMangaInfo(manga, source)
         }
@@ -275,7 +221,6 @@ class MangaInfoHeaderAdapter(
          * @param manga manga object containing information about manga.
          * @param source the source of the manga.
          */
-        @ExperimentalCoroutinesApi
         private fun setMangaInfo(manga: Manga, source: Source?) {
             // Update full title TextView.
             binding.mangaFullTitle.text = if (manga.title.isBlank()) {
@@ -343,100 +288,6 @@ class MangaInfoHeaderAdapter(
                             .into(it)
                     }
             }
-
-            // Manga info section
-            val hasInfoContent = !manga.description.isNullOrBlank() || !manga.genre.isNullOrBlank()
-            showMangaInfo(hasInfoContent)
-            if (hasInfoContent) {
-                // Update description TextView.
-                binding.mangaSummary.text = if (manga.description.isNullOrBlank()) {
-                    view.context.getString(R.string.unknown)
-                } else {
-                    manga.description
-                }
-
-                // Update genres list
-                if (!manga.genre.isNullOrBlank()) {
-                    // SY -->
-                    if (source != null && source.isNamespaceSource()) {
-                        val genre = manga.getGenres()
-                        if (!genre.isNullOrEmpty()) {
-                            val namespaceTags = genre.map { SourceTagsUtil().parseTag(it) }
-                                .groupBy { it.first }
-                                .mapValues { values -> values.value.map { makeSearchChip(it.second, controller::performSearch, controller::performGlobalSearch, source.id, itemView.context, it.first) } }
-                                .map { NamespaceTagsItem(it.key, it.value) }
-                            tagsAdapter.updateDataSet(namespaceTags)
-                        }
-                    }
-                    binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
-                    binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
-                    // SY <--
-                } else {
-                    binding.mangaGenresTagsWrapper.gone()
-                }
-
-                // Handle showing more or less info
-                merge(view.clicks(), binding.mangaSummary.clicks(), binding.mangaInfoToggle.clicks())
-                    .onEach { toggleMangaInfo(view.context) }
-                    .launchIn(scope)
-
-                // Expand manga info if navigated from source listing
-                if (initialLoad && fromSource) {
-                    toggleMangaInfo(view.context)
-                    initialLoad = false
-                }
-            }
-        }
-
-        private fun showMangaInfo(visible: Boolean) {
-            binding.mangaSummaryLabel.visibleIf { visible }
-            binding.mangaSummary.visibleIf { visible }
-            binding.mangaGenresTagsWrapper.visibleIf { visible }
-            binding.mangaInfoToggle.visibleIf { visible }
-        }
-
-        private fun toggleMangaInfo(context: Context) {
-            val isExpanded =
-                binding.mangaInfoToggle.text == context.getString(R.string.manga_info_collapse)
-
-            with(binding.mangaInfoToggle) {
-                text = if (isExpanded) {
-                    context.getString(R.string.manga_info_expand)
-                } else {
-                    context.getString(R.string.manga_info_collapse)
-                }
-
-                icon = if (isExpanded) {
-                    context.getDrawable(R.drawable.ic_baseline_expand_more_24dp)
-                } else {
-                    context.getDrawable(R.drawable.ic_baseline_expand_less_24dp)
-                }
-            }
-
-            with(binding.mangaSummary) {
-                maxLines =
-                    if (isExpanded) {
-                        2
-                    } else {
-                        Int.MAX_VALUE
-                    }
-
-                ellipsize =
-                    if (isExpanded) {
-                        TextUtils.TruncateAt.END
-                    } else {
-                        null
-                    }
-            }
-
-            binding.mangaGenresTagsCompact.visibleIf { isExpanded }
-            // SY -->
-            if (source.isNamespaceSource()) {
-                binding.mangaNamespaceTagsRecycler.visibleIf { !isExpanded }
-            } else {
-                binding.mangaGenresTagsFullChips.visibleIf { !isExpanded }
-            }
-            // SY <--
         }
 
         /**

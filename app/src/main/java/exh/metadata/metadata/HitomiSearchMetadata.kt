@@ -1,5 +1,7 @@
 package exh.metadata.metadata
 
+import android.content.Context
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -37,16 +39,24 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
     override fun copyTo(manga: SManga) {
         thumbnailUrl?.let { manga.thumbnail_url = it }
 
-        val titleDesc = StringBuilder()
-
         title?.let {
             manga.title = it
+        }
+
+        // Copy tags -> genres
+        manga.genre = tagsToGenreString()
+
+        manga.artist = artists.joinToString()
+
+        manga.status = SManga.UNKNOWN
+
+        /*val titleDesc = StringBuilder()
+
+        title?.let {
             titleDesc += "Title: $it\n"
         }
 
         val detailsDesc = StringBuilder()
-
-        manga.artist = artists.joinToString()
 
         detailsDesc += "Artist(s): ${manga.artist}\n"
 
@@ -74,16 +84,35 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
             detailsDesc += "Upload date: ${EX_DATE_FORMAT.format(Date(it))}\n"
         }
 
-        manga.status = SManga.UNKNOWN
+        val tagsDesc = tagsToDescription()*/
 
-        // Copy tags -> genres
-        manga.genre = tagsToGenreString()
-
-        val tagsDesc = tagsToDescription()
-
-        manga.description = listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
+        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
             .filter(String::isNotBlank)
-            .joinToString(separator = "\n")
+            .joinToString(separator = "\n")*/
+    }
+
+    override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
+        val pairs = mutableListOf<Pair<String, String>>()
+        hlId?.let { pairs += Pair(context.getString(R.string.id), it) }
+        title?.let { pairs += Pair(context.getString(R.string.title), it) }
+        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
+        val artists = artists.joinToString()
+        if (artists.isNotBlank()) {
+            pairs += Pair(context.getString(R.string.artist), artists)
+        }
+        group?.let { pairs += Pair(context.getString(R.string.group), it) }
+        type?.let { pairs += Pair(context.getString(R.string.genre), it) }
+        language?.let { pairs += Pair(context.getString(R.string.language), it) }
+        val series = series.joinToString()
+        if (series.isNotBlank()) {
+            pairs += Pair(context.getString(R.string.series), series)
+        }
+        val characters = characters.joinToString()
+        if (characters.isNotBlank()) {
+            pairs += Pair(context.getString(R.string.characters), characters)
+        }
+        uploadDate?.let { pairs += Pair(context.getString(R.string.date_posted), EX_DATE_FORMAT.format(Date(it))) }
+        return pairs
     }
 
     companion object {

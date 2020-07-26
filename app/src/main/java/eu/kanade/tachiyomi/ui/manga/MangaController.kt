@@ -36,7 +36,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.LewdSource
+import eu.kanade.tachiyomi.source.online.LewdSource.Companion.getLewdSource
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -56,7 +56,9 @@ import eu.kanade.tachiyomi.ui.manga.chapter.ChaptersSettingsSheet
 import eu.kanade.tachiyomi.ui.manga.chapter.DeleteChaptersDialog
 import eu.kanade.tachiyomi.ui.manga.chapter.DownloadCustomChaptersDialog
 import eu.kanade.tachiyomi.ui.manga.chapter.MangaChaptersHeaderAdapter
+import eu.kanade.tachiyomi.ui.manga.info.MangaInfoButtonsAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoHeaderAdapter
+import eu.kanade.tachiyomi.ui.manga.info.MangaInfoItemAdapter
 import eu.kanade.tachiyomi.ui.manga.track.TrackController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
@@ -71,7 +73,6 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.source.EnhancedHttpSource
 import java.io.IOException
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.coroutines.CancellationException
@@ -133,6 +134,9 @@ class MangaController :
     private val coverCache: CoverCache by injectLazy()
 
     private var mangaInfoAdapter: MangaInfoHeaderAdapter? = null
+    private var mangaInfoItemAdapter: MangaInfoItemAdapter? = null
+    private var mangaInfoButtonsAdapter: MangaInfoButtonsAdapter? = null
+    private var mangaMetaInfoAdapter: RecyclerView.Adapter<*>? = null
     private var chaptersHeaderAdapter: MangaChaptersHeaderAdapter? = null
     private var chaptersAdapter: ChaptersAdapter? = null
 
@@ -201,13 +205,35 @@ class MangaController :
         super.onViewCreated(view)
 
         if (manga == null || source == null) return
+        val adapters: MutableList<RecyclerView.Adapter<out RecyclerView.ViewHolder>?> = mutableListOf()
 
         // Init RecyclerView and adapter
-        mangaInfoAdapter = MangaInfoHeaderAdapter(this, fromSource)
+        mangaInfoAdapter = MangaInfoHeaderAdapter(this)
+
+        adapters += mangaInfoAdapter
+
+        val thisSourceAsLewdSource = presenter.source.getLewdSource()
+        if (thisSourceAsLewdSource != null) {
+            mangaMetaInfoAdapter = thisSourceAsLewdSource.getDescriptionAdapter(this)
+            mangaMetaInfoAdapter?.let { adapters += it }
+        }
+        mangaInfoItemAdapter = MangaInfoItemAdapter(this, fromSource)
+        adapters += mangaInfoItemAdapter
+
+        if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null) {
+            mangaInfoButtonsAdapter = MangaInfoButtonsAdapter(this)
+            adapters += mangaInfoButtonsAdapter
+        }
+
         chaptersHeaderAdapter = MangaChaptersHeaderAdapter(this)
+
+        adapters += chaptersHeaderAdapter
+
         chaptersAdapter = ChaptersAdapter(this, view.context)
 
-        binding.recycler.adapter = ConcatAdapter(mangaInfoAdapter, chaptersHeaderAdapter, chaptersAdapter)
+        adapters += chaptersAdapter
+
+        binding.recycler.adapter = ConcatAdapter(adapters)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.addItemDecoration(DividerItemDecoration(view.context, DividerItemDecoration.VERTICAL))
         binding.recycler.setHasFixedSize(true)
@@ -360,11 +386,11 @@ class MangaController :
 
     // SY -->
     fun onNextMetaInfo(flatMetadata: FlatMetadata) {
-        presenter.meta = if (presenter.source is LewdSource<*, *>) {
-            flatMetadata.raise((presenter.source as LewdSource<*, *>).metaClass)
-        } else if (presenter.source is EnhancedHttpSource && (presenter.source as EnhancedHttpSource).enhancedSource is LewdSource<*, *>) {
-            flatMetadata.raise(((presenter.source as EnhancedHttpSource).enhancedSource as LewdSource<*, *>).metaClass)
-        } else null
+        val thisSourceAsLewdSource = presenter.source.getLewdSource()
+        if (thisSourceAsLewdSource != null) {
+            presenter.meta = flatMetadata.raise(thisSourceAsLewdSource.metaClass)
+            mangaMetaInfoAdapter?.notifyDataSetChanged()
+        }
     }
     // SY <--
 
@@ -379,7 +405,8 @@ class MangaController :
     fun onNextMangaInfo(manga: Manga, source: Source /* SY --> */, meta: RaisedSearchMetadata? /* SY <-- */) {
         if (manga.initialized) {
             // Update view.
-            mangaInfoAdapter?.update(manga, source /* SY --> */, meta /* SY <-- */)
+            mangaInfoAdapter?.update(manga, source)
+            mangaInfoItemAdapter?.update(manga, source, presenter.meta)
         } else {
             // Initialize manga.
             fetchMangaInfoFromSource()

@@ -1,14 +1,18 @@
 package eu.kanade.tachiyomi.source.online
 
+import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.source.EnhancedHttpSource
 import kotlin.reflect.KClass
 import rx.Completable
 import rx.Single
@@ -102,6 +106,24 @@ interface LewdSource<M : RaisedSearchMetadata, I> : CatalogueSource {
         }
     }
 
+    fun getDescriptionAdapter(controller: MangaController): RecyclerView.Adapter<*>?
+
     val SManga.id get() = (this as? Manga)?.id
     val SChapter.mangaId get() = (this as? Chapter)?.manga_id
+
+    companion object {
+        fun Source.isLewdSource() = (this is LewdSource<*, *> || (this is EnhancedHttpSource && this.enhancedSource is LewdSource<*, *>))
+
+        fun Source.getLewdSource(): LewdSource<*, *>? {
+            return if (!this.isLewdSource()) {
+                null
+            } else if (this is LewdSource<*, *>) {
+                this
+            } else if (this is EnhancedHttpSource && this.enhancedSource is LewdSource<*, *>) {
+                this.enhancedSource
+            } else {
+                null
+            }
+        }
+    }
 }

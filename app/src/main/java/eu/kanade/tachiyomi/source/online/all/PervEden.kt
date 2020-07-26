@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import eu.kanade.tachiyomi.util.chapter.ChapterRecognition
 import exh.metadata.metadata.PervEdenLang
@@ -20,6 +21,7 @@ import exh.metadata.metadata.PervEdenSearchMetadata
 import exh.metadata.metadata.PervEdenSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
+import exh.ui.metadata.adapters.PervEdenDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.urlImportFetchSearchManga
@@ -356,6 +358,10 @@ class PervEden(override val id: Long, val pvLang: PervEdenLang, val context: Con
             newUri.appendPath(it)
         }
         return newUri.toString()
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): PervEdenDescriptionAdapter {
+        return PervEdenDescriptionAdapter(controller)
     }
 
     companion object {

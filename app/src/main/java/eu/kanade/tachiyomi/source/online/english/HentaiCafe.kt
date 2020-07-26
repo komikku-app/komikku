@@ -9,12 +9,14 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.HentaiCafeSearchMetadata
 import exh.metadata.metadata.HentaiCafeSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.HentaiCafeDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.jsoup.nodes.Document
@@ -110,5 +112,9 @@ class HentaiCafe(delegate: HttpSource, val context: Context) :
         } else {
             "https://hentai.cafe/$lcFirstPathSegment"
         }
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): HentaiCafeDescriptionAdapter {
+        return HentaiCafeDescriptionAdapter(controller)
     }
 }

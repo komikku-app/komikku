@@ -1,8 +1,9 @@
 package exh.metadata.metadata
 
+import android.content.Context
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.plusAssign
 
 class PururinSearchMetadata : RaisedSearchMetadata() {
     var prId: Int? = null
@@ -42,7 +43,7 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
 
         manga.genre = tagsToGenreString()
 
-        val titleDesc = StringBuilder()
+        /*val titleDesc = StringBuilder()
         title?.let { titleDesc += "English Title: $it\n" }
         altTitle?.let { titleDesc += "Japanese Title: $it\n" }
 
@@ -52,11 +53,26 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
         fileSize?.let { detailsDesc += "Size: $it\n" }
         ratingCount?.let { detailsDesc += "Rating: $averageRating ($ratingCount)\n" }
 
-        val tagsDesc = tagsToDescription()
+        val tagsDesc = tagsToDescription()*/
 
-        manga.description = listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
+        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
             .filter(String::isNotBlank)
-            .joinToString(separator = "\n")
+            .joinToString(separator = "\n")*/
+    }
+
+    override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
+        val pairs = mutableListOf<Pair<String, String>>()
+        prId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
+        title?.let { pairs += Pair(context.getString(R.string.title), it) }
+        altTitle?.let { pairs += Pair(context.getString(R.string.alt_title), it) }
+        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
+        uploaderDisp?.let { pairs += Pair(context.getString(R.string.uploader_capital), it) }
+        uploader?.let { pairs += Pair(context.getString(R.string.uploader), it) }
+        pages?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
+        fileSize?.let { pairs += Pair(context.getString(R.string.gallery_size), it) }
+        ratingCount?.let { pairs += Pair(context.getString(R.string.total_ratings), it.toString()) }
+        averageRating?.let { pairs += Pair(context.getString(R.string.average_rating), it.toString()) }
+        return pairs
     }
 
     companion object {
@@ -66,6 +82,7 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
         const val TAG_TYPE_DEFAULT = 0
 
         private const val TAG_NAMESPACE_ARTIST = "artist"
+        const val TAG_NAMESPACE_CATEGORY = "category"
 
         val BASE_URL = "https://pururin.io"
     }

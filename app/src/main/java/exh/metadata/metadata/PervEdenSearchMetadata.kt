@@ -1,12 +1,13 @@
 package exh.metadata.metadata
 
+import android.content.Context
 import android.net.Uri
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.PERV_EDEN_EN_SOURCE_ID
 import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTitle
-import exh.plusAssign
 
 class PervEdenSearchMetadata : RaisedSearchMetadata() {
     var pvId: String? = null
@@ -36,9 +37,28 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
         url?.let { manga.url = it }
         thumbnailUrl?.let { manga.thumbnail_url = it }
 
-        val titleDesc = StringBuilder()
         title?.let {
             manga.title = it
+        }
+
+        artist?.let {
+            manga.artist = it
+        }
+
+        status?.let {
+            manga.status = when (it) {
+                "Ongoing" -> SManga.ONGOING
+                "Completed", "Suspended" -> SManga.COMPLETED
+                else -> SManga.UNKNOWN
+            }
+        }
+
+        // Copy tags -> genres
+        manga.genre = tagsToGenreString()
+
+        /*val titleDesc = StringBuilder()
+
+        title?.let {
             titleDesc += "Title: $it\n"
         }
         if (altTitles.isNotEmpty()) {
@@ -50,7 +70,6 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
 
         val detailsDesc = StringBuilder()
         artist?.let {
-            manga.artist = it
             detailsDesc += "Artist: $it\n"
         }
 
@@ -59,11 +78,6 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
         }
 
         status?.let {
-            manga.status = when (it) {
-                "Ongoing" -> SManga.ONGOING
-                "Completed", "Suspended" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
             detailsDesc += "Status: $it\n"
         }
 
@@ -71,14 +85,30 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
             detailsDesc += "Rating: %.2\n".format(it)
         }
 
-        // Copy tags -> genres
-        manga.genre = tagsToGenreString()
 
-        val tagsDesc = tagsToDescription()
+        val tagsDesc = tagsToDescription()*/
 
-        manga.description = listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
+        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
             .filter(String::isNotBlank)
-            .joinToString(separator = "\n")
+            .joinToString(separator = "\n")*/
+    }
+
+    override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
+        val pairs = mutableListOf<Pair<String, String>>()
+        pvId?.let { pairs += Pair(context.getString(R.string.id), it) }
+        url?.let { pairs += Pair(context.getString(R.string.url), it) }
+        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
+        title?.let { pairs += Pair(context.getString(R.string.title), it) }
+        val altTitles = altTitles.joinToString()
+        if (altTitles.isNotBlank()) {
+            pairs += Pair(context.getString(R.string.alt_titles), altTitles)
+        }
+        artist?.let { pairs += Pair(context.getString(R.string.artist), it) }
+        type?.let { pairs += Pair(context.getString(R.string.genre), it) }
+        rating?.let { pairs += Pair(context.getString(R.string.average_rating), it.toString()) }
+        status?.let { pairs += Pair(context.getString(R.string.status), it) }
+        lang?.let { pairs += Pair(context.getString(R.string.language), it) }
+        return pairs
     }
 
     companion object {

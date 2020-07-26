@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.debug.DebugToggles
 import exh.eh.EHTags
@@ -36,11 +37,13 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_NORMAL
+import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.nullIfBlank
 import exh.metadata.parseHumanReadableByteCount
 import exh.ui.login.LoginController
+import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
@@ -477,6 +480,8 @@ class EHentai(
                                 element.text().trim(),
                                 if (element.hasClass("gtl")) {
                                     TAG_TYPE_LIGHT
+                                } else if (element.hasClass("gtw")) {
+                                    TAG_TYPE_WEAK
                                 } else {
                                     TAG_TYPE_NORMAL
                                 }
@@ -830,6 +835,10 @@ class EHentai(
 
         val obj = outJson["tokenlist"].array.first()
         return "${uri.scheme}://${uri.host}/g/${obj["gid"].int}/${obj["token"].string}/"
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): EHentaiDescriptionAdapter {
+        return EHentaiDescriptionAdapter(controller)
     }
 
     companion object {

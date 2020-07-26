@@ -14,10 +14,12 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.EIGHTMUSES_SOURCE_ID
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
+import exh.ui.metadata.adapters.EightMusesDescriptionAdapter
 import exh.util.CachedField
 import exh.util.NakedTrie
 import exh.util.await
@@ -396,5 +398,9 @@ class EightMuses(val context: Context) :
             path = path.dropLast(1)
         }
         return "/comics/album/${path.joinToString("/")}"
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): EightMusesDescriptionAdapter {
+        return EightMusesDescriptionAdapter(controller)
     }
 }

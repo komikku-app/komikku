@@ -345,4 +345,80 @@
     <string name="manga_id_is_null">Manga ID is null!</string>
     <string name="loading_gallery">Loading gallery…</string>
 
+    <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
+    <string name="rating10">Masterpiece</string>
+    <string name="rating9">Amazing</string>
+    <string name="rating8">Great</string>
+    <string name="rating7">Good</string>
+    <string name="rating6">Okay</string>
+    <string name="rating5">Mediocre</string>
+    <string name="rating4">Bad</string>
+    <string name="rating3">Awful</string>
+    <string name="rating2">Painful</string>
+    <string name="rating1">Unbearable</string>
+    <string name="rating0">Disaster</string>
+    <string name="no_rating">No rating</string>
+
+
+    <!-- Gallery types -->
+    <string name="doujinshi">Doujinshi</string>
+    <string name="artist_cg">Artist CG</string>
+    <string name="game_cg">Game CG</string>
+    <string name="western">Western</string>
+    <string name="non_h">Non-H</string>
+    <string name="image_set">Image Set</string>
+    <string name="cosplay">Cosplay</string>
+    <string name="asian_porn">Asian Porn</string>
+    <string name="misc">Misc</string>
+    <string name="artbook">Artbook</string>
+    <string name="video">Video</string>
+
+    <!-- More Info Menu -->
+    <string name="more_info">More Info</string>
+    <string name="alt_title">Alt Title</string>
+    <string name="id">Id</string>
+    <string name="token">Token</string>
+    <string name="is_exhentai_gallery">is Exhentai gallery</string>
+    <string name="thumbnail_url">Thumbnail url</string>
+    <string name="genre">Genre</string>
+    <string name="date_posted">Date posted</string>
+    <string name="page_count">Page count</string>
+    <string name="parent">Parent</string>
+    <string name="visible">Visible</string>
+    <string name="language">Language</string>
+    <string name="gallery_size">Gallery size</string>
+    <string name="total_favorites">Total favorites</string>
+    <string name="total_ratings">Total ratings</string>
+    <string name="average_rating">Average rating</string>
+    <string name="aged">Aged</string>
+    <string name="last_update_check">Last update check</string>
+    <string name="path">Path</string>
+    <string name="artist">Artist</string>
+    <string name="reader_id">Reader id</string>
+    <string name="series">Series</string>
+    <string name="characters">Characters</string>
+    <string name="group">Group</string>
+    <string name="media_id">Media id</string>
+    <string name="japanese_title">Japanese Title</string>
+    <string name="english_title">English Title</string>
+    <string name="short_title">Short Title</string>
+    <string name="cover_image_file_type">Cover image file type</string>
+    <string name="thumbnail_image_file_type">Thumbnail image file type</string>
+    <string name="scanlator">Scanlator</string>
+    <string name="url">Url</string>
+    <string name="alt_titles">Alt titles</string>
+    <string name="uploader_capital">Uploader Capitalized</string>
+    <string name="uploader">Uploader</string>
+    <string name="rating_string">Rating string</string>
+    <string name="collection">Collection</string>
+    <string name="parodies">Parodies</string>
+
+    <!-- Extra gallery info -->
+    <string name="num_pages">%1$d pages</string>
+    <string name="tags">Tags</string>
+    <string name="is_visible">Visible: %1$s</string>
+    <string name="rating_view">%1$s (%2$s, %3$d)</string>
+    <string name="rating_view_no_count">%1$s (%2$s)</string>
+    <string name="language_translated">%1$s TR</string>
+
 </resources>

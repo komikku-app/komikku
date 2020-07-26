@@ -1,9 +1,10 @@
 package exh.metadata.metadata
 
+import android.content.Context
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.EightMusesSearchMetadata.Companion.ARTIST_NAMESPACE
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.plusAssign
 
 class HBrowseSearchMetadata : RaisedSearchMetadata() {
     var hbId: Long? = null
@@ -27,15 +28,25 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
 
         manga.artist = tags.ofNamespace(ARTIST_NAMESPACE).joinToString { it.name }
 
-        val titleDesc = StringBuilder()
+        manga.genre = tagsToGenreString()
+
+        /*val titleDesc = StringBuilder()
         title?.let { titleDesc += "Title: $it\n" }
         length?.let { titleDesc += "Length: $it page(s)\n" }
 
-        val tagsDesc = tagsToDescription()
+        val tagsDesc = tagsToDescription()*/
 
-        manga.description = listOf(titleDesc.toString(), tagsDesc.toString())
+        manga.description = "meta" /*listOf(titleDesc.toString(), tagsDesc.toString())
             .filter(String::isNotBlank)
-            .joinToString(separator = "\n")
+            .joinToString(separator = "\n")*/
+    }
+
+    override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
+        val pairs = mutableListOf<Pair<String, String>>()
+        hbId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
+        title?.let { pairs += Pair(context.getString(R.string.title), it) }
+        length?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
+        return pairs
     }
 
     companion object {

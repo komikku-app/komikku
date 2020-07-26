@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.HITOMI_SOURCE_ID
 import exh.hitomi.HitomiNozomi
@@ -27,6 +28,7 @@ import exh.metadata.metadata.HitomiSearchMetadata.Companion.LTN_BASE_URL
 import exh.metadata.metadata.HitomiSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
+import exh.ui.metadata.adapters.HitomiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -420,6 +422,10 @@ class Hitomi(val context: Context) : HttpSource(), LewdSource<HitomiSearchMetada
         }
 
         return "https://hitomi.la/manga/${uri.pathSegments[1].substringBefore('.')}.html"
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): HitomiDescriptionAdapter {
+        return HitomiDescriptionAdapter(controller)
     }
 
     companion object {

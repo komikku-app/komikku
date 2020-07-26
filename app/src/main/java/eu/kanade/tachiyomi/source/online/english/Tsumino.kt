@@ -9,12 +9,14 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.metadata.metadata.TsuminoSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.TsuminoDescriptionAdapter
 import exh.util.dropBlank
 import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
@@ -83,6 +85,12 @@ class Tsumino(delegate: HttpSource, val context: Context) :
 
             input.getElementById("Rating")?.text()?.let {
                 ratingString = it.trim()
+                val ratingString = ratingString
+                if (!ratingString.isNullOrBlank()) {
+                    averageRating = RATING_FLOAT_REGEX.find(ratingString)?.groups?.get(1)?.value?.toFloatOrNull()
+                    userRatings = RATING_USERS_REGEX.find(ratingString)?.groups?.get(1)?.value?.toLongOrNull()
+                    favorites = RATING_FAVORITES_REGEX.find(ratingString)?.groups?.get(1)?.value?.toLongOrNull()
+                }
             }
 
             input.getElementById("Category")?.children()?.first()?.text()?.let {
@@ -133,5 +141,12 @@ class Tsumino(delegate: HttpSource, val context: Context) :
 
     companion object {
         val TM_DATE_FORMAT = SimpleDateFormat("yyyy MMM dd", Locale.US)
+        val RATING_FLOAT_REGEX = "([0-9].*) \\(".toRegex()
+        val RATING_USERS_REGEX = "\\(([0-9].*) users".toRegex()
+        val RATING_FAVORITES_REGEX = "/ ([0-9].*) favs".toRegex()
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): TsuminoDescriptionAdapter {
+        return TsuminoDescriptionAdapter(controller)
     }
 }

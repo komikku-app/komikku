@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.HBROWSE_SOURCE_ID
 import exh.metadata.metadata.HBrowseSearchMetadata
@@ -25,6 +26,7 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.search.Namespace
 import exh.search.SearchEngine
 import exh.search.Text
+import exh.ui.metadata.adapters.HBrowseDescriptionAdapter
 import exh.util.await
 import exh.util.dropBlank
 import exh.util.urlImportFetchSearchManga
@@ -473,6 +475,10 @@ class HBrowse(val context: Context) : HttpSource(), LewdSource<HBrowseSearchMeta
 
     override fun mapUrlToMangaUrl(uri: Uri): String? {
         return "$baseUrl/${uri.pathSegments.first()}"
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): HBrowseDescriptionAdapter {
+        return HBrowseDescriptionAdapter(controller)
     }
 
     companion object {

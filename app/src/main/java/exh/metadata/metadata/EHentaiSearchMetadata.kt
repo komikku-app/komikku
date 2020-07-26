@@ -1,13 +1,14 @@
 package exh.metadata.metadata
 
+import android.content.Context
 import android.net.Uri
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.ONGOING_SUFFIX
 import exh.metadata.humanReadableByteCount
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.plusAssign
 import java.util.Date
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -76,7 +77,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
         }
 
         // Build a nice looking description out of what we know
-        val titleDesc = StringBuilder()
+        /* val titleDesc = StringBuilder()
         title?.let { titleDesc += "Title: $it\n" }
         altTitle?.let { titleDesc += "Alternate Title: $it\n" }
 
@@ -99,11 +100,36 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
             detailsDesc += "\n"
         }
 
-        val tagsDesc = tagsToDescription()
+        val tagsDesc = tagsToDescription()*/
 
-        manga.description = listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
+        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
             .filter(String::isNotBlank)
-            .joinToString(separator = "\n")
+            .joinToString(separator = "\n")*/
+    }
+
+    override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
+        val pairs = mutableListOf<Pair<String, String>>()
+        gId?.let { pairs += Pair(context.getString(R.string.id), it) }
+        gToken?.let { pairs += Pair(context.getString(R.string.token), it) }
+        exh?.let { pairs += Pair(context.getString(R.string.is_exhentai_gallery), context.getString(if (it) android.R.string.yes else android.R.string.no)) }
+        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
+        title?.let { pairs += Pair(context.getString(R.string.title), it) }
+        altTitle?.let { pairs += Pair(context.getString(R.string.alt_title), it) }
+        genre?.let { pairs += Pair(context.getString(R.string.genre), it) }
+        datePosted?.let { pairs += Pair(context.getString(R.string.date_posted), EX_DATE_FORMAT.format(Date(it))) }
+        parent?.let { pairs += Pair(context.getString(R.string.parent), it) }
+        visible?.let { pairs += Pair(context.getString(R.string.visible), it) }
+        language?.let { pairs += Pair(context.getString(R.string.language), it) }
+        translated?.let { pairs += Pair("Translated", context.getString(if (it) android.R.string.yes else android.R.string.no)) }
+        size?.let { pairs += Pair(context.getString(R.string.gallery_size), humanReadableByteCount(it, true)) }
+        length?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
+        favorites?.let { pairs += Pair(context.getString(R.string.total_favorites), it.toString()) }
+        ratingCount?.let { pairs += Pair(context.getString(R.string.total_ratings), it.toString()) }
+        averageRating?.let { pairs += Pair(context.getString(R.string.average_rating), it.toString()) }
+        aged.let { pairs += Pair(context.getString(R.string.aged), context.getString(if (it) android.R.string.yes else android.R.string.no)) }
+        lastUpdateCheck.let { pairs += Pair(context.getString(R.string.last_update_check), EX_DATE_FORMAT.format(Date(it))) }
+
+        return pairs
     }
 
     companion object {
@@ -112,6 +138,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
 
         const val TAG_TYPE_NORMAL = 0
         const val TAG_TYPE_LIGHT = 1
+        const val TAG_TYPE_WEAK = 2
 
         const val EH_GENRE_NAMESPACE = "genre"
         private const val EH_ARTIST_NAMESPACE = "artist"

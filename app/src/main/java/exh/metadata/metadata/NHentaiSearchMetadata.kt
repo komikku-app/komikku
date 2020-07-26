@@ -1,12 +1,12 @@
 package exh.metadata.metadata
 
+import android.content.Context
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.ONGOING_SUFFIX
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.metadata.nullIfBlank
-import exh.plusAssign
 import java.util.Date
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -77,7 +77,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             }
         }
 
-        val titleDesc = StringBuilder()
+        /*val titleDesc = StringBuilder()
         englishTitle?.let { titleDesc += "English Title: $it\n" }
         japaneseTitle?.let { titleDesc += "Japanese Title: $it\n" }
         shortTitle?.let { titleDesc += "Short Title: $it\n" }
@@ -89,11 +89,27 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         favoritesCount?.let { detailsDesc += "Favorited: $it times\n" }
         scanlator?.nullIfBlank()?.let { detailsDesc += "Scanlator: $it\n" }
 
-        val tagsDesc = tagsToDescription()
+        val tagsDesc = tagsToDescription()*/
 
-        manga.description = listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
+        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
             .filter(String::isNotBlank)
-            .joinToString(separator = "\n")
+            .joinToString(separator = "\n")*/
+    }
+
+    override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
+        val pairs = mutableListOf<Pair<String, String>>()
+        nhId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
+        uploadDate?.let { pairs += Pair(context.getString(R.string.date_posted), EX_DATE_FORMAT.format(Date(it * 1000))) }
+        favoritesCount?.let { pairs += Pair(context.getString(R.string.total_favorites), it.toString()) }
+        mediaId?.let { pairs += Pair(context.getString(R.string.media_id), it) }
+        japaneseTitle?.let { pairs += Pair(context.getString(R.string.japanese_title), it) }
+        englishTitle?.let { pairs += Pair(context.getString(R.string.english_title), it) }
+        shortTitle?.let { pairs += Pair(context.getString(R.string.short_title), it) }
+        coverImageType?.let { pairs += Pair(context.getString(R.string.cover_image_file_type), it) }
+        pageImageTypes.size.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
+        thumbnailImageType?.let { pairs += Pair(context.getString(R.string.thumbnail_image_file_type), it) }
+        scanlator?.let { pairs += Pair(context.getString(R.string.scanlator), it) }
+        return pairs
     }
 
     companion object {
@@ -106,7 +122,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         const val BASE_URL = "https://nhentai.net"
 
         private const val NHENTAI_ARTIST_NAMESPACE = "artist"
-        private const val NHENTAI_CATEGORIES_NAMESPACE = "category"
+        const val NHENTAI_CATEGORIES_NAMESPACE = "category"
 
         fun typeToExtension(t: String?) =
             when (t) {

@@ -20,6 +20,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.LewdSource
+import eu.kanade.tachiyomi.source.online.LewdSource.Companion.isLewdSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
@@ -116,7 +117,7 @@ class MangaPresenter(
         super.onCreate(savedState)
 
         // SY -->
-        if (manga.initialized && (source is LewdSource<*, *> || (source is EnhancedHttpSource && source.enhancedSource is LewdSource<*, *>))) {
+        if (manga.initialized && source.isLewdSource()) {
             getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else Timber.d("Invalid metadata") })
         }
         // SY <--

@@ -1,5 +1,7 @@
 package exh.metadata.metadata
 
+import android.content.Context
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 
@@ -30,16 +32,26 @@ class HentaiCafeSearchMetadata : RaisedSearchMetadata() {
         // Not available
         manga.status = SManga.UNKNOWN
 
-        val detailsDesc = "Title: $title\n" +
-            "Artist: $artist\n"
-
-        val tagsDesc = tagsToDescription()
-
         manga.genre = tagsToGenreString()
 
-        manga.description = listOf(detailsDesc, tagsDesc.toString())
+        /* val detailsDesc = "Title: $title\n" +
+            "Artist: $artist\n"
+
+        val tagsDesc = tagsToDescription()*/
+
+        manga.description = "meta" /*listOf(detailsDesc, tagsDesc.toString())
             .filter(String::isNotBlank)
-            .joinToString(separator = "\n")
+            .joinToString(separator = "\n")*/
+    }
+
+    override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
+        val pairs = mutableListOf<Pair<String, String>>()
+        hcId?.let { pairs += Pair(context.getString(R.string.id), it) }
+        readerId?.let { pairs += Pair(context.getString(R.string.reader_id), it) }
+        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
+        title?.let { pairs += Pair(context.getString(R.string.title), it) }
+        artist?.let { pairs += Pair(context.getString(R.string.artist), it) }
+        return pairs
     }
 
     companion object {

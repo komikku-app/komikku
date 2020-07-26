@@ -58,4 +58,4 @@ fun isLewdSource(source: Long) = source in 6900..6999 ||
 
 fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
 
-fun Source.isNamespaceSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID || id == NHENTAI_SOURCE_ID || id == HITOMI_SOURCE_ID || id == PURURIN_SOURCE_ID || id == TSUMINO_SOURCE_ID
+fun Source.isNamespaceSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID || id == NHENTAI_SOURCE_ID || id == HITOMI_SOURCE_ID || id == PURURIN_SOURCE_ID || id == TSUMINO_SOURCE_ID || id == EIGHTMUSES_SOURCE_ID || id == HBROWSE_SOURCE_ID

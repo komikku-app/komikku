@@ -1,5 +1,6 @@
 package exh.metadata.metadata.base
 
+import android.content.Context
 import com.google.gson.GsonBuilder
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.forEach
@@ -111,6 +112,8 @@ abstract class RaisedSearchMetadata {
             RaisedTitle(it.title, it.type)
         }
     }
+
+    abstract fun getExtraInfoPairs(context: Context): List<Pair<String, String>>
 
     companion object {
         // Virtual tags allow searching of otherwise unindexed fields

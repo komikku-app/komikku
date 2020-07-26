@@ -21,11 +21,14 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.NHENTAI_SOURCE_ID
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.NHentaiSearchMetadata.Companion.TAG_TYPE_DEFAULT
+import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
+import exh.ui.metadata.adapters.NHentaiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -195,7 +198,7 @@ class NHentai(val context: Context) : HttpSource(), LewdSource<NHentaiSearchMeta
                 tags.clear()
             }?.forEach {
                 if (it.first != null && it.second != null) {
-                    tags.add(RaisedTag(it.first!!, it.second!!, TAG_TYPE_DEFAULT))
+                    tags.add(RaisedTag(it.first!!, it.second!!, if (it.first == "category") TAG_TYPE_VIRTUAL else TAG_TYPE_DEFAULT))
                 }
             }
         }
@@ -364,6 +367,10 @@ class NHentai(val context: Context) : HttpSource(), LewdSource<NHentaiSearchMeta
         }
 
         return "$baseUrl/g/${uri.pathSegments[1]}/"
+    }
+
+    override fun getDescriptionAdapter(controller: MangaController): NHentaiDescriptionAdapter {
+        return NHentaiDescriptionAdapter(controller)
     }
 
     companion object {
