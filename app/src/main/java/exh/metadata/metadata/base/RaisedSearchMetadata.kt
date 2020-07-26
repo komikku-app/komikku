@@ -36,9 +36,7 @@ abstract class RaisedSearchMetadata {
 
     abstract fun copyTo(manga: SManga)
 
-    fun tagsToGenreString() =
-        tags.filter { it.type != TAG_TYPE_VIRTUAL }
-            .joinToString { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
+    fun tagsToGenreString() = tags.toGenreString()
 
     fun tagsToDescription() =
         StringBuilder("Tags:\n").apply {
@@ -118,6 +116,10 @@ abstract class RaisedSearchMetadata {
     companion object {
         // Virtual tags allow searching of otherwise unindexed fields
         const val TAG_TYPE_VIRTUAL = -2
+
+        fun MutableList<RaisedTag>.toGenreString() =
+            (this).filter { it.type != TAG_TYPE_VIRTUAL }
+                .joinToString { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
 
         val raiseFlattenGson = GsonBuilder().create()
 

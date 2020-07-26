@@ -39,6 +39,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_NORMAL
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
+import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.nullIfBlank
 import exh.metadata.parseHumanReadableByteCount
@@ -105,6 +106,7 @@ class EHentai(
             val thumbnailElement = it.selectFirst(".gl1e img, .gl2c .glthumb img")
             val column2 = it.selectFirst(".gl3e, .gl2c")
             val linkElement = it.selectFirst(".gl3c > a, .gl2e > div > a")
+            val infoElement = it.selectFirst(".gl3e")
 
             val favElement = column2.children().find { it.attr("style").startsWith("border-color") }
 
@@ -119,7 +121,67 @@ class EHentai(
                     // Get image
                     thumbnail_url = thumbnailElement.attr("src")
 
-                    // TODO Parse genre + uploader + tags
+                    val tags = mutableListOf<RaisedTag>()
+                    linkElement.select("div div").getOrNull(1)?.select("tr")?.forEach { row ->
+                        val namespace = row.select(".tc").text().removeSuffix(":")
+                        tags.addAll(
+                            row.select("div").map { element ->
+                                RaisedTag(
+                                    namespace,
+                                    element.text().trim(),
+                                    when {
+                                        element.hasClass("gtl") -> TAG_TYPE_LIGHT
+                                        element.hasClass("gtw") -> TAG_TYPE_WEAK
+                                        else -> TAG_TYPE_NORMAL
+                                    }
+                                )
+                            }
+                        )
+                    }
+
+                    val infoElements = infoElement.select("div")
+
+                    infoElements[1]?.attr("onclick").nullIfBlank()?.let { genre ->
+                        tags += RaisedTag(
+                            EH_GENRE_NAMESPACE,
+                            genre.trim()
+                                .substringAfterLast('/')
+                                .removeSuffix("'"),
+                            TAG_TYPE_NORMAL
+                        )
+                    }
+
+                    infoElements[2]?.text()?.nullIfBlank()?.let { dateString ->
+                        EX_DATE_FORMAT.parse(dateString)?.let { date ->
+                            tags += RaisedTag(
+                                EH_DATE_POSTED_NAMESPACE,
+                                date.time.toString(),
+                                TAG_TYPE_NORMAL
+                            )
+                        }
+                    }
+
+                    infoElements[3]?.attr("style")?.nullIfBlank()?.let { ratingStyle ->
+                        val matches = "([0-9]*)px".toRegex().findAll(ratingStyle).mapNotNull { it.groupValues.getOrNull(1)?.toIntOrNull() }.toList()
+                        if (matches.size != 2) return@let
+                        var rate = 5 - matches[0] / 16
+                        tags += RaisedTag(
+                            EH_RATING_NAMESPACE,
+                            if (matches[1] == 21) {
+                                rate--
+                                "$rate.5"
+                            } else rate.toString(),
+                            TAG_TYPE_NORMAL
+                        )
+                    }
+                    genre = tags.toGenreString()
+
+                    author = infoElements[4]
+                        ?.select("a")
+                        ?.attr("href")
+                        ?.nullIfBlank()
+                        ?.trim()
+                        ?.substringAfterLast('/')
                 }
             )
         }
@@ -845,6 +907,8 @@ class EHentai(
         private const val QUERY_PREFIX = "?f_apply=Apply+Filter"
         private const val TR_SUFFIX = "TR"
         private const val REVERSE_PARAM = "TEH_REVERSE"
+        private const val EH_DATE_POSTED_NAMESPACE = "date_posted"
+        private const val EH_RATING_NAMESPACE = "rating"
 
         private const val EH_API_BASE = "https://api.e-hentai.org/api.php"
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()!!
