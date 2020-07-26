@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
  * Used in MangaController since the manga info header and chapters header are the first two
  * items in the list using a ConcatAdapter.
  */
-class ChapterDividerItemDecoration(context: Context) : RecyclerView.ItemDecoration() {
+class ChapterDividerItemDecoration(context: Context, val skipAdapers: Int) : RecyclerView.ItemDecoration() {
 
     private val divider: Drawable
 
@@ -30,7 +30,7 @@ class ChapterDividerItemDecoration(context: Context) : RecyclerView.ItemDecorati
 
         canvas.save()
         val childCount = parent.childCount
-        for (i in 1 until childCount) {
+        for (i in skipAdapers until childCount) {
             val child = parent.getChildAt(i)
             val params = child.layoutParams as RecyclerView.LayoutParams
             val top = child.bottom + params.bottomMargin
