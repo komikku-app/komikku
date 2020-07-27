@@ -49,6 +49,7 @@ import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
 import exh.util.ignore
+import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
 import java.net.URLEncoder
 import java.util.ArrayList
@@ -122,66 +123,66 @@ class EHentai(
                     thumbnail_url = thumbnailElement.attr("src")
 
                     val tags = mutableListOf<RaisedTag>()
-                    linkElement.select("div div").getOrNull(1)?.select("tr")?.forEach { row ->
-                        val namespace = row.select(".tc").text().removeSuffix(":")
-                        tags.addAll(
-                            row.select("div").map { element ->
-                                RaisedTag(
-                                    namespace,
-                                    element.text().trim(),
-                                    when {
-                                        element.hasClass("gtl") -> TAG_TYPE_LIGHT
-                                        element.hasClass("gtw") -> TAG_TYPE_WEAK
-                                        else -> TAG_TYPE_NORMAL
-                                    }
-                                )
-                            }
-                        )
-                    }
 
-                    val infoElements = infoElement.select("div")
+                    val infoElements = infoElement?.select("div")
 
-                    infoElements[1]?.attr("onclick").nullIfBlank()?.let { genre ->
-                        tags += RaisedTag(
-                            EH_GENRE_NAMESPACE,
-                            genre.trim()
-                                .substringAfterLast('/')
-                                .removeSuffix("'"),
-                            TAG_TYPE_NORMAL
-                        )
-                    }
-
-                    infoElements[2]?.text()?.nullIfBlank()?.let { dateString ->
-                        EX_DATE_FORMAT.parse(dateString)?.let { date ->
-                            tags += RaisedTag(
-                                EH_DATE_POSTED_NAMESPACE,
-                                date.time.toString(),
-                                TAG_TYPE_NORMAL
+                    if (infoElements != null) {
+                        linkElement.select("div div")?.getOrNull(1)?.select("tr")?.forEach { row ->
+                            val namespace = row.select(".tc").text().removeSuffix(":")
+                            tags.addAll(
+                                row.select("div").map { element ->
+                                    RaisedTag(
+                                        namespace,
+                                        element.text().trim(),
+                                        when {
+                                            element.hasClass("gtl") -> TAG_TYPE_LIGHT
+                                            element.hasClass("gtw") -> TAG_TYPE_WEAK
+                                            else -> TAG_TYPE_NORMAL
+                                        }
+                                    )
+                                }
                             )
                         }
+
+                        getGenre(infoElements[1])?.let { tags += it }
+
+                        getDateTag(infoElements[2])?.let { tags += it }
+
+                        getRating(infoElements[3])?.let { tags += it }
+
+                        getAuthor(infoElements[4])?.let { author = it }
+                    } else {
+                        val tagElement = it.selectFirst(".gl3c > a")
+                        val tagElements = tagElement.select("div")
+                        tagElements.forEach { element ->
+                            if (element.className() == "gt") {
+                                val namespace = element.attr("title").substringBefore(":").trimOrNull() ?: "misc"
+                                tags += RaisedTag(
+                                    namespace,
+                                    element.attr("title").substringAfter(":").trim(),
+                                    TAG_TYPE_NORMAL
+                                )
+                            }
+                        }
+
+                        val genre = it.selectFirst(".gl1c div")
+                        getGenre(genreString = genre?.text()?.nullIfBlank()?.toLowerCase()?.replace(" ", ""))?.let { tags += it }
+
+                        val info = it.selectFirst(".gl2c")
+                        val extraInfo = it.selectFirst(".gl4c")
+
+                        val infoList = info.select("div div")
+
+                        getDateTag(infoList[8])?.let { tags += it }
+
+                        getRating(infoList[9])?.let { tags += it }
+
+                        val extraInfoList = extraInfo.select("div")
+
+                        getAuthor(extraInfoList[1])?.let { author = it }
                     }
 
-                    infoElements[3]?.attr("style")?.nullIfBlank()?.let { ratingStyle ->
-                        val matches = "([0-9]*)px".toRegex().findAll(ratingStyle).mapNotNull { it.groupValues.getOrNull(1)?.toIntOrNull() }.toList()
-                        if (matches.size != 2) return@let
-                        var rate = 5 - matches[0] / 16
-                        tags += RaisedTag(
-                            EH_RATING_NAMESPACE,
-                            if (matches[1] == 21) {
-                                rate--
-                                "$rate.5"
-                            } else rate.toString(),
-                            TAG_TYPE_NORMAL
-                        )
-                    }
                     genre = tags.toGenreString()
-
-                    author = infoElements[4]
-                        ?.select("a")
-                        ?.attr("href")
-                        ?.nullIfBlank()
-                        ?.trim()
-                        ?.substringAfterLast('/')
                 }
             )
         }
@@ -199,6 +200,63 @@ class EHentai(
             parsedLocation.queryParameter(REVERSE_PARAM)!!.toBoolean()
         }
         Pair(parsedMangas, hasNextPage)
+    }
+
+    private fun getGenre(element: Element? = null, genreString: String? = null): RaisedTag? {
+        val attr = element?.attr("onclick")
+            ?.nullIfBlank()
+            ?.substringAfterLast('/')
+            ?.removeSuffix("'")
+            ?.trim()
+            ?.substringAfterLast('/')
+            ?.removeSuffix("'") ?: genreString
+        return if (attr != null) {
+            RaisedTag(
+                EH_GENRE_NAMESPACE,
+                attr,
+                TAG_TYPE_NORMAL
+            )
+        } else null
+    }
+
+    private fun getDateTag(element: Element?): RaisedTag? {
+        val text = element?.text()?.nullIfBlank()
+        return if (text != null) {
+            val date = EX_DATE_FORMAT.parse(text)
+            if (date != null) {
+                RaisedTag(
+                    EH_DATE_POSTED_NAMESPACE,
+                    date.time.toString(),
+                    TAG_TYPE_NORMAL
+                )
+            } else null
+        } else null
+    }
+
+    private fun getRating(element: Element?): RaisedTag? {
+        val ratingStyle = element?.attr("style")?.nullIfBlank()
+        return if (ratingStyle != null) {
+            val matches = "([0-9]*)px".toRegex().findAll(ratingStyle).mapNotNull { it.groupValues.getOrNull(1)?.toIntOrNull() }.toList()
+            if (matches.size == 2) {
+                var rate = 5 - matches[0] / 16
+                RaisedTag(
+                    EH_RATING_NAMESPACE,
+                    if (matches[1] == 21) {
+                        rate--
+                        "$rate.5"
+                    } else rate.toString(),
+                    TAG_TYPE_NORMAL
+                )
+            } else null
+        } else null
+    }
+
+    private fun getAuthor(element: Element?): String? {
+        return element?.select("a")
+            ?.attr("href")
+            ?.nullIfBlank()
+            ?.trim()
+            ?.substringAfterLast('/')
     }
 
     /**
