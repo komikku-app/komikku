@@ -19,7 +19,6 @@ class CategoryImpl : Category {
         if (other == null || javaClass != other.javaClass) return false
 
         val category = other as Category
-
         return name == category.name
     }
 
