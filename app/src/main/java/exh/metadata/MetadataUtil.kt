@@ -2,6 +2,8 @@ package exh.metadata
 
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.ln
+import kotlin.math.pow
 
 /**
  * Metadata utils
@@ -9,9 +11,9 @@ import java.util.Locale
 fun humanReadableByteCount(bytes: Long, si: Boolean): String {
     val unit = if (si) 1000 else 1024
     if (bytes < unit) return "$bytes B"
-    val exp = (Math.log(bytes.toDouble()) / Math.log(unit.toDouble())).toInt()
+    val exp = (ln(bytes.toDouble()) / ln(unit.toDouble())).toInt()
     val pre = (if (si) "kMGTPE" else "KMGTPE")[exp - 1] + if (si) "" else "i"
-    return String.format("%.1f %sB", bytes / Math.pow(unit.toDouble(), exp.toDouble()), pre)
+    return String.format("%.1f %sB", bytes / unit.toDouble().pow(exp.toDouble()), pre)
 }
 
 private const val KB_FACTOR: Long = 1000
@@ -33,12 +35,6 @@ fun parseHumanReadableByteCount(arg0: String): Double? {
         "KiB" -> return ret * KIB_FACTOR
     }
     return null
-}
-
-fun String?.nullIfBlank(): String? = if (isNullOrBlank()) {
-    null
-} else {
-    this
 }
 
 fun <K, V> Set<Map.Entry<K, V>>.forEach(action: (K, V) -> Unit) {

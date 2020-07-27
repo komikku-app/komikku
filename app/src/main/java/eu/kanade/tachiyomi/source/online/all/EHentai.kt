@@ -41,7 +41,6 @@ import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
-import exh.metadata.nullIfBlank
 import exh.metadata.parseHumanReadableByteCount
 import exh.ui.login.LoginController
 import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
@@ -49,6 +48,7 @@ import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
 import exh.util.ignore
+import exh.util.nullIfBlank
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
 import java.net.URLEncoder

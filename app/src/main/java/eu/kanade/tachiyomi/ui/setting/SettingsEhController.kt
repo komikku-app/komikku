@@ -44,10 +44,10 @@ import exh.favorites.FavoritesIntroDialog
 import exh.favorites.LocalFavoritesStorage
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.metadata.nullIfBlank
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.LoginController
 import exh.util.await
+import exh.util.nullIfBlank
 import exh.util.trans
 import humanize.Humanize
 import java.util.Date

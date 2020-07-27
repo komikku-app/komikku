@@ -12,3 +12,9 @@ fun String.trimOrNull(): String? {
     val trimmed = trim()
     return if (trimmed.isBlank()) null else trimmed
 }
+
+fun String?.nullIfBlank(): String? = if (isNullOrBlank()) {
+    null
+} else {
+    this
+}

@@ -8,7 +8,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import exh.GalleryAddEvent
 import exh.GalleryAdder
-import exh.metadata.nullIfBlank
+import exh.util.trimOrNull
 import kotlin.concurrent.thread
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -42,7 +42,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
             galleries
         }
         val splitGalleries = testedGalleries.split("\n").mapNotNull {
-            it.trim().nullIfBlank()
+            it.trimOrNull()
         }
 
         progressRelay.call(0)
