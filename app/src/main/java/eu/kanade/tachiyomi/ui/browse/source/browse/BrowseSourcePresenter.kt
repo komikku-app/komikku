@@ -38,9 +38,9 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.EXHSavedSearch
+import exh.isEhBasedSource
 import java.lang.RuntimeException
 import java.util.Date
-import kotlinx.coroutines.flow.subscribe
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -165,9 +165,13 @@ open class BrowseSourcePresenter(
         pagerSubscription?.let { remove(it) }
         pagerSubscription = pager.results()
             .observeOn(Schedulers.io())
-            .map { pair -> pair.first to pair.second.map { networkToLocalManga(it, sourceId) } }
+            // SY -->
+            .map { triple -> Triple(triple.first, triple.second.map { networkToLocalManga(it, sourceId) }, triple.third) }
+            // SY <--
             .doOnNext { initializeMangas(it.second) }
-            .map { pair -> pair.first to pair.second.map { SourceItem(it, sourceDisplayMode) } }
+            // SY -->
+            .map { triple -> triple.first to triple.second.mapIndexed { index, manga -> SourceItem(manga, sourceDisplayMode, if (prefs.enhancedEHentaiView().get() && source.isEhBasedSource()) triple.third?.getOrNull(index) else null) } }
+            // SY <--
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeReplay(
                 { view, (page, mangas) ->

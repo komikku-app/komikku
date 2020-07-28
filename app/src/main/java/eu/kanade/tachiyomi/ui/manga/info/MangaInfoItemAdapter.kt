@@ -20,7 +20,7 @@ import exh.isEhBasedSource
 import exh.isNamespaceSource
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
-import exh.util.SourceTagsUtil
+import exh.util.SourceTagsUtil.Companion.getRaisedTags
 import exh.util.makeSearchChip
 import exh.util.setChipsExtended
 import kotlinx.coroutines.CoroutineScope
@@ -128,11 +128,11 @@ class MangaInfoItemAdapter(
                                 .mapValues { values -> values.value.map { makeSearchChip(it.name, controller::performSearch, controller::performGlobalSearch, source.id, itemView.context, it.namespace, it.type) } }
                                 .map { NamespaceTagsItem(it.key!!, it.value) }
                         } else {
-                            val genre = manga.getGenres()
+                            val genre = manga.getRaisedTags()
                             if (!genre.isNullOrEmpty()) {
-                                namespaceTags = genre.map { SourceTagsUtil().parseTag(it) }
-                                    .groupBy { it.first }
-                                    .mapValues { values -> values.value.map { makeSearchChip(it.second, controller::performSearch, controller::performGlobalSearch, source.id, itemView.context, it.first) } }
+                                namespaceTags = genre
+                                    .groupBy { it.namespace }
+                                    .mapValues { values -> values.value.map { makeSearchChip(it.name, controller::performSearch, controller::performGlobalSearch, source.id, itemView.context, it.namespace) } }
                                     .map { NamespaceTagsItem(it.key, it.value) }
                             }
                         }

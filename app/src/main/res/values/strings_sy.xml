@@ -71,6 +71,8 @@
     <string name="eh_image_quality_1280">1280x</string>
     <string name="eh_image_quality_980">980x</string>
     <string name="eh_image_quality_780">780x</string>
+    <string name="pref_enhanced_e_hentai_view">Enhanced E/ExHentai browse</string>
+    <string name="pref_enhanced_e_hentai_view_summary">Enable/Disable the enhanced browse menu made for E/ExHentai</string>
     <string name="favorites_sync">Favorites sync</string>
     <string name="disable_favorites_uploading">Disable favorites uploading</string>
     <string name="disable_favorites_uploading_summary">Favorites are only downloaded from ExHentai. Any changes to favorites in the app will not be uploaded. Prevents accidental loss of favorites on ExHentai. Note that removals will still be downloaded (if you remove a favorites on ExHentai, it will be removed in the app as well).</string>
@@ -414,11 +416,21 @@
     <string name="parodies">Parodies</string>
 
     <!-- Extra gallery info -->
-    <string name="num_pages">%1$d pages</string>
+    <plurals name="num_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
     <string name="tags">Tags</string>
     <string name="is_visible">Visible: %1$s</string>
     <string name="rating_view">%1$s (%2$s, %3$d)</string>
     <string name="rating_view_no_count">%1$s (%2$s)</string>
     <string name="language_translated">%1$s TR</string>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d page</item>
+        <item quantity="other">%2$s, %1$d pages</item>
+    </plurals>
+
 
 </resources>

@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.ui.metadata.MetadataViewController
+import exh.util.SourceTagsUtil
 import java.util.Date
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,16 +48,16 @@ class HitomiDescriptionAdapter(
             val genre = meta.type
             if (genre != null) {
                 val pair = when (genre) {
-                    "doujinshi" -> Pair("#fc4e4e", R.string.doujinshi)
-                    "manga" -> Pair("#e78c1a", R.string.manga)
-                    "artist CG" -> Pair("#dde500", R.string.artist_cg)
-                    "game CG" -> Pair("#05bf0b", R.string.game_cg)
-                    "western" -> Pair("#14e723", R.string.western)
-                    "non-H" -> Pair("#08d7e2", R.string.non_h)
-                    "image Set" -> Pair("#5f5fff", R.string.image_set)
-                    "cosplay" -> Pair("#9755f5", R.string.cosplay)
-                    "asian Porn" -> Pair("#fe93ff", R.string.asian_porn)
-                    "misc" -> Pair("#9e9e9e", R.string.misc)
+                    "doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
+                    "manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
+                    "artist CG" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.artist_cg)
+                    "game CG" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.game_cg)
+                    "western" -> Pair(SourceTagsUtil.WESTERN_COLOR, R.string.western)
+                    "non-H" -> Pair(SourceTagsUtil.NON_H_COLOR, R.string.non_h)
+                    "image Set" -> Pair(SourceTagsUtil.IMAGE_SET_COLOR, R.string.image_set)
+                    "cosplay" -> Pair(SourceTagsUtil.COSPLAY_COLOR, R.string.cosplay)
+                    "asian Porn" -> Pair(SourceTagsUtil.ASIAN_PORN_COLOR, R.string.asian_porn)
+                    "misc" -> Pair(SourceTagsUtil.MISC_COLOR, R.string.misc)
                     else -> Pair("", 0)
                 }
 

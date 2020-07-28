@@ -10,7 +10,7 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 
-open class NamespaceTagsItem(val namespace: String, val tags: List<Chip>) : AbstractFlexibleItem<NamespaceTagsItem.Holder>() {
+open class NamespaceTagsItem(val namespace: String?, val tags: List<Chip>) : AbstractFlexibleItem<NamespaceTagsItem.Holder>() {
 
     override fun getLayoutRes(): Int {
         return R.layout.manga_info_genre_grouping
@@ -22,7 +22,7 @@ open class NamespaceTagsItem(val namespace: String, val tags: List<Chip>) : Abst
 
     override fun bindViewHolder(adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>, holder: Holder, position: Int, payloads: List<Any?>?) {
         val namespaceChip = Chip(holder.itemView.context)
-        namespaceChip.text = namespace
+        namespaceChip.text = namespace ?: holder.itemView.context.getString(R.string.unknown)
         holder.namespaceChipGroup.addView(namespaceChip)
 
         tags.forEach {

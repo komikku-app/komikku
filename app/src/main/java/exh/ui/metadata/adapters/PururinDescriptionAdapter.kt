@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.PururinSearchMetadata
 import exh.metadata.metadata.PururinSearchMetadata.Companion.TAG_NAMESPACE_CATEGORY
 import exh.ui.metadata.MetadataViewController
+import exh.util.SourceTagsUtil
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,12 +48,12 @@ class PururinDescriptionAdapter(
             val genre = meta.tags.find { it.namespace == TAG_NAMESPACE_CATEGORY }
             if (genre != null) {
                 val pair = when (genre.name) {
-                    "doujinshi" -> Pair("#fc4e4e", R.string.doujinshi)
-                    "manga" -> Pair("#e78c1a", R.string.manga)
-                    "artist-cg" -> Pair("#dde500", R.string.artist_cg)
-                    "game-cg" -> Pair("#05bf0b", R.string.game_cg)
-                    "artbook" -> Pair("#5f5fff", R.string.artbook)
-                    "webtoon" -> Pair("#5f5fff", R.string.webtoon)
+                    "doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
+                    "manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
+                    "artist-cg" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.artist_cg)
+                    "game-cg" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.game_cg)
+                    "artbook" -> Pair(SourceTagsUtil.IMAGE_SET_COLOR, R.string.artbook)
+                    "webtoon" -> Pair(SourceTagsUtil.NON_H_COLOR, R.string.webtoon)
                     else -> Pair("", 0)
                 }
 
@@ -64,7 +65,7 @@ class PururinDescriptionAdapter(
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader ?: ""
             binding.size.text = meta.fileSize ?: itemView.context.getString(R.string.unknown)
-            binding.pages.text = itemView.context.getString(R.string.num_pages, meta.pages ?: 0)
+            binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pages ?: 0, meta.pages ?: 0)
 
             val ratingFloat = meta.averageRating?.toFloat()
             val name = when (((ratingFloat ?: 100F) * 2).roundToInt()) {

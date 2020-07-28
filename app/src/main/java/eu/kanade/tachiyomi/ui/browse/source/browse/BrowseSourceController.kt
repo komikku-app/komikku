@@ -54,6 +54,7 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
 import exh.EXHSavedSearch
+import exh.isEhBasedSource
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop
@@ -348,7 +349,7 @@ open class BrowseSourceController(bundle: Bundle) :
             binding.catalogueView.removeView(oldRecycler)
         }
 
-        val recycler = if (preferences.sourceDisplayMode().get() == DisplayMode.LIST) {
+        val recycler = if (preferences.sourceDisplayMode().get() == DisplayMode.LIST /* SY --> */ || (preferences.enhancedEHentaiView().get() && presenter.source.isEhBasedSource()) /* SY <-- */) {
             RecyclerView(view.context).apply {
                 id = R.id.recycler
                 layoutManager = LinearLayoutManager(context)
@@ -439,6 +440,11 @@ open class BrowseSourceController(bundle: Bundle) :
             DisplayMode.LIST -> R.id.action_list
         }
         menu.findItem(displayItem).isChecked = true
+        // SY -->
+        if (preferences.enhancedEHentaiView().get() && presenter.source.isEhBasedSource()) {
+            menu.findItem(R.id.action_display_mode).isVisible = false
+        }
+        // SY <--
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

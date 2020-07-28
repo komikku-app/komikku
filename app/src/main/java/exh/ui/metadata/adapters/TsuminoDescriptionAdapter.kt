@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.ui.metadata.MetadataViewController
+import exh.util.SourceTagsUtil
 import java.util.Date
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -48,11 +49,11 @@ class TsuminoDescriptionAdapter(
             val genre = meta.category
             if (genre != null) {
                 val pair = when (genre) {
-                    "Doujinshi" -> Pair("#fc4e4e", R.string.doujinshi)
-                    "Manga" -> Pair("#e78c1a", R.string.manga)
-                    "Artist CG" -> Pair("#dde500", R.string.artist_cg)
-                    "Game CG" -> Pair("#05bf0b", R.string.game_cg)
-                    "Video" -> Pair("#14e723", R.string.video)
+                    "Doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
+                    "Manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
+                    "Artist CG" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.artist_cg)
+                    "Game CG" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.game_cg)
+                    "Video" -> Pair(SourceTagsUtil.WESTERN_COLOR, R.string.video)
                     else -> Pair("", 0)
                 }
 
@@ -70,7 +71,7 @@ class TsuminoDescriptionAdapter(
             binding.whenPosted.text = TsuminoSearchMetadata.TSUMINO_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
 
             binding.uploader.text = meta.uploader ?: itemView.context.getString(R.string.unknown)
-            binding.pages.text = itemView.context.getString(R.string.num_pages, meta.length ?: 0)
+            binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
 
             val name = when (((meta.averageRating ?: 100F) * 2).roundToInt()) {
                 0 -> R.string.rating0

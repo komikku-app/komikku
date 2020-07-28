@@ -18,7 +18,7 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
@@ -96,9 +96,9 @@ class EHentai(
     /**
      * Gallery list entry
      */
-    data class ParsedManga(val fav: Int, val manga: Manga)
+    data class ParsedManga(val fav: Int, val manga: Manga, val metadata: EHentaiSearchMetadata)
 
-    fun extendedGenericMangaParse(doc: Document) = with(doc) {
+    private fun extendedGenericMangaParse(doc: Document) = with(doc) {
         // Parse mangas (supports compact + extended layout)
         val parsedMangas = select(".itg > tbody > tr").filter {
             // Do not parse header and ads
@@ -110,6 +110,8 @@ class EHentai(
             val infoElement = it.selectFirst(".gl3e")
 
             val favElement = column2.children().find { it.attr("style").startsWith("border-color") }
+            val infoElements = infoElement?.select("div")
+            val parsedTags = mutableListOf<RaisedTag>()
 
             ParsedManga(
                 fav = FAVORITES_BORDER_HEX_COLORS.indexOf(
@@ -122,14 +124,10 @@ class EHentai(
                     // Get image
                     thumbnail_url = thumbnailElement.attr("src")
 
-                    val tags = mutableListOf<RaisedTag>()
-
-                    val infoElements = infoElement?.select("div")
-
                     if (infoElements != null) {
                         linkElement.select("div div")?.getOrNull(1)?.select("tr")?.forEach { row ->
                             val namespace = row.select(".tc").text().removeSuffix(":")
-                            tags.addAll(
+                            parsedTags.addAll(
                                 row.select("div").map { element ->
                                     RaisedTag(
                                         namespace,
@@ -143,46 +141,61 @@ class EHentai(
                                 }
                             )
                         }
-
-                        getGenre(infoElements[1])?.let { tags += it }
-
-                        getDateTag(infoElements[2])?.let { tags += it }
-
-                        getRating(infoElements[3])?.let { tags += it }
-
-                        getAuthor(infoElements[4])?.let { author = it }
                     } else {
                         val tagElement = it.selectFirst(".gl3c > a")
                         val tagElements = tagElement.select("div")
                         tagElements.forEach { element ->
                             if (element.className() == "gt") {
                                 val namespace = element.attr("title").substringBefore(":").trimOrNull() ?: "misc"
-                                tags += RaisedTag(
+                                parsedTags += RaisedTag(
                                     namespace,
                                     element.attr("title").substringAfter(":").trim(),
                                     TAG_TYPE_NORMAL
                                 )
                             }
                         }
+                    }
 
-                        val genre = it.selectFirst(".gl1c div")
-                        getGenre(genreString = genre?.text()?.nullIfBlank()?.toLowerCase()?.replace(" ", ""))?.let { tags += it }
+                    genre = parsedTags.toGenreString()
+                },
+                metadata = EHentaiSearchMetadata().apply {
+                    tags += parsedTags
+
+                    if (infoElements != null) {
+                        getGenre(infoElements.getOrNull(1))?.let { genre = it }
+
+                        getDateTag(infoElements.getOrNull(2))?.let { datePosted = it }
+
+                        getRating(infoElements.getOrNull(3))?.let { averageRating = it }
+
+                        getUploader(infoElements.getOrNull(4))?.let { uploader = it }
+
+                        getPageCount(infoElements.getOrNull(5))?.let { length = it }
+                    } else {
+                        val parsedGenre = it.selectFirst(".gl1c div")
+                        getGenre(genreString = parsedGenre?.text()?.nullIfBlank()?.toLowerCase()?.replace(" ", ""))?.let { genre = it }
 
                         val info = it.selectFirst(".gl2c")
                         val extraInfo = it.selectFirst(".gl4c")
 
                         val infoList = info.select("div div")
 
-                        getDateTag(infoList[8])?.let { tags += it }
+                        getDateTag(infoList.getOrNull(8))?.let { datePosted = it }
 
-                        getRating(infoList[9])?.let { tags += it }
+                        getRating(infoList.getOrNull(9))?.let { averageRating = it }
 
                         val extraInfoList = extraInfo.select("div")
 
-                        getAuthor(extraInfoList[1])?.let { author = it }
-                    }
+                        if (extraInfoList.getOrNull(2) == null) {
+                            getUploader(extraInfoList.getOrNull(0))?.let { uploader = it }
 
-                    genre = tags.toGenreString()
+                            getPageCount(extraInfoList.getOrNull(1))?.let { length = it }
+                        } else {
+                            getUploader(extraInfoList.getOrNull(1))?.let { uploader = it }
+
+                            getPageCount(extraInfoList.getOrNull(2))?.let { length = it }
+                        }
+                    }
                 }
             )
         }
@@ -202,68 +215,54 @@ class EHentai(
         Pair(parsedMangas, hasNextPage)
     }
 
-    private fun getGenre(element: Element? = null, genreString: String? = null): RaisedTag? {
-        val attr = element?.attr("onclick")
+    private fun getGenre(element: Element? = null, genreString: String? = null): String? {
+        return element?.attr("onclick")
             ?.nullIfBlank()
             ?.substringAfterLast('/')
             ?.removeSuffix("'")
             ?.trim()
             ?.substringAfterLast('/')
             ?.removeSuffix("'") ?: genreString
-        return if (attr != null) {
-            RaisedTag(
-                EH_GENRE_NAMESPACE,
-                attr,
-                TAG_TYPE_NORMAL
-            )
-        } else null
     }
 
-    private fun getDateTag(element: Element?): RaisedTag? {
+    private fun getDateTag(element: Element?): Long? {
         val text = element?.text()?.nullIfBlank()
         return if (text != null) {
             val date = EX_DATE_FORMAT.parse(text)
-            if (date != null) {
-                RaisedTag(
-                    EH_DATE_POSTED_NAMESPACE,
-                    date.time.toString(),
-                    TAG_TYPE_NORMAL
-                )
-            } else null
+            date?.time
         } else null
     }
 
-    private fun getRating(element: Element?): RaisedTag? {
+    private fun getRating(element: Element?): Double? {
         val ratingStyle = element?.attr("style")?.nullIfBlank()
         return if (ratingStyle != null) {
-            val matches = "([0-9]*)px".toRegex().findAll(ratingStyle).mapNotNull { it.groupValues.getOrNull(1)?.toIntOrNull() }.toList()
+            val matches = RATING_REGEX.findAll(ratingStyle).mapNotNull { it.groupValues.getOrNull(1)?.toIntOrNull() }.toList()
             if (matches.size == 2) {
                 var rate = 5 - matches[0] / 16
-                RaisedTag(
-                    EH_RATING_NAMESPACE,
-                    if (matches[1] == 21) {
-                        rate--
-                        "$rate.5"
-                    } else rate.toString(),
-                    TAG_TYPE_NORMAL
-                )
+                if (matches[1] == 21) {
+                    rate--
+                    rate + 0.5
+                } else rate.toDouble()
             } else null
         } else null
     }
 
-    private fun getAuthor(element: Element?): String? {
-        return element?.select("a")
-            ?.attr("href")
-            ?.nullIfBlank()
-            ?.trim()
-            ?.substringAfterLast('/')
+    private fun getUploader(element: Element?): String? {
+        return element?.select("a")?.text()?.trimOrNull()
+    }
+
+    private fun getPageCount(element: Element?): Int? {
+        val pageCount = element?.text()?.trimOrNull()
+        return if (pageCount != null) {
+            PAGE_COUNT_REGEX.find(pageCount)?.value?.toIntOrNull()
+        } else null
     }
 
     /**
      * Parse a list of galleries
      */
     fun genericMangaParse(response: Response) = extendedGenericMangaParse(response.asJsoup()).let {
-        MangasPage(it.first.map { it.manga }, it.second)
+        MetadataMangasPage(it.first.map { it.manga }, it.second, it.first.map { it.metadata })
     }
 
     override fun fetchChapterList(manga: SManga) = fetchChapterList(manga) {}
@@ -675,7 +674,7 @@ class EHentai(
             page++
         } while (parsed.second)
 
-        return Pair(result as List<ParsedManga>, favNames!!)
+        return Pair(result.toList(), favNames!!)
     }
 
     fun spPref() = if (exh) {
@@ -965,8 +964,8 @@ class EHentai(
         private const val QUERY_PREFIX = "?f_apply=Apply+Filter"
         private const val TR_SUFFIX = "TR"
         private const val REVERSE_PARAM = "TEH_REVERSE"
-        private const val EH_DATE_POSTED_NAMESPACE = "date_posted"
-        private const val EH_RATING_NAMESPACE = "rating"
+        private val PAGE_COUNT_REGEX = "[0-9]*".toRegex()
+        private val RATING_REGEX = "([0-9]*)px".toRegex()
 
         private const val EH_API_BASE = "https://api.e-hentai.org/api.php"
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()!!

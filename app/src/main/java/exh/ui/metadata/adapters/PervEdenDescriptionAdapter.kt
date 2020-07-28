@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.PervEdenSearchMetadata
 import exh.ui.metadata.MetadataViewController
+import exh.util.SourceTagsUtil
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -47,11 +48,11 @@ class PervEdenDescriptionAdapter(
             val genre = meta.type
             if (genre != null) {
                 val pair = when (genre) {
-                    "Doujinshi" -> Pair("#fc4e4e", R.string.doujinshi)
-                    "Japanese Manga" -> Pair("#e78c1a", R.string.manga)
-                    "Korean Manhwa" -> Pair("#dde500", R.string.manhwa)
-                    "Chinese Manhua" -> Pair("#05bf0b", R.string.manhua)
-                    "Comic" -> Pair("#14e723", R.string.comic)
+                    "Doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
+                    "Japanese Manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
+                    "Korean Manhwa" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.manhwa)
+                    "Chinese Manhua" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.manhua)
+                    "Comic" -> Pair(SourceTagsUtil.WESTERN_COLOR, R.string.comic)
                     else -> Pair("", 0)
                 }
 

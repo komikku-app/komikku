@@ -272,4 +272,6 @@ object PreferenceKeys {
     const val recommendsInOverflow = "recommends_in_overflow"
 
     const val hitomiAlwaysWebp = "hitomi_always_webp"
+
+    const val enhancedEHentaiView = "enhanced_e_hentai_view"
 }

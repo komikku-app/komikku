@@ -14,25 +14,26 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
+import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.card
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.gradient
 
-class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMode>) :
+class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMode> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
     AbstractFlexibleItem<SourceHolder>() {
 
     override fun getLayoutRes(): Int {
-        return when (displayMode.get()) {
+        return /* SY --> */ if (metadata == null) /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item
             DisplayMode.COMFORTABLE_GRID -> R.layout.source_comfortable_grid_item
             DisplayMode.LIST -> R.layout.source_list_item
-        }
+        } /* SY --> */ else R.layout.source_enhanced_ehentai_list_item /* SY <-- */
     }
 
     override fun createViewHolder(
         view: View,
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
     ): SourceHolder {
-        return when (displayMode.get()) {
+        return /* SY --> */ if (metadata == null) /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> {
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
@@ -59,7 +60,11 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
             DisplayMode.LIST -> {
                 SourceListHolder(view, adapter)
             }
+            // SY -->
+        } else {
+            SourceEnhancedEHentaiListHolder(view, adapter)
         }
+        // SY <--
     }
 
     override fun bindViewHolder(
@@ -69,6 +74,11 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         payloads: List<Any?>?
     ) {
         holder.onSetValues(manga)
+        // SY -->
+        if (metadata != null) {
+            (holder as? SourceEnhancedEHentaiListHolder)?.onSetMetadataValues(manga, metadata)
+        }
+        // SY <--
     }
 
     override fun equals(other: Any?): Boolean {

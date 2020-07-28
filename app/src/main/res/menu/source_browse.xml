@@ -10,6 +10,7 @@
         app:showAsAction="collapseActionView|ifRoom" />
 
     <item
+        android:id="@+id/action_display_mode"
         android:icon="@drawable/ic_view_module_24dp"
         android:title="@string/action_display_mode"
         app:iconTint="?attr/colorOnPrimary"

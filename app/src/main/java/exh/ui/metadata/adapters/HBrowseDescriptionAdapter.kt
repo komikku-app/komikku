@@ -41,7 +41,7 @@ class HBrowseDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is HBrowseSearchMetadata) return
 
-            binding.pages.text = itemView.context.getString(R.string.num_pages, meta.length ?: 0)
+            binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
 
             binding.moreInfo.clicks()
                 .onEach {

@@ -518,6 +518,13 @@ class SettingsEhController : SettingsController() {
 
                 onChange { preferences.imageQuality().reconfigure() }
             }.dependency = PreferenceKeys.eh_enableExHentai
+
+            switchPreference {
+                titleRes = R.string.pref_enhanced_e_hentai_view
+                summaryRes = R.string.pref_enhanced_e_hentai_view_summary
+                key = PreferenceKeys.enhancedEHentaiView
+                defaultValue = true
+            }
         }
 
         preferenceCategory {

@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.ui.metadata.MetadataViewController
+import exh.util.SourceTagsUtil
 import java.util.Date
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,16 +55,16 @@ class NHentaiDescriptionAdapter(
 
             if (category != null) {
                 val pair = when (category) {
-                    "doujinshi" -> Pair("#fc4e4e", R.string.doujinshi)
-                    "manga" -> Pair("#e78c1a", R.string.manga)
-                    "artistcg" -> Pair("#dde500", R.string.artist_cg)
-                    "gamecg" -> Pair("#05bf0b", R.string.game_cg)
-                    "western" -> Pair("#14e723", R.string.western)
-                    "non-h" -> Pair("#08d7e2", R.string.non_h)
-                    "imageset" -> Pair("#5f5fff", R.string.image_set)
-                    "cosplay" -> Pair("#9755f5", R.string.cosplay)
-                    "asianporn" -> Pair("#fe93ff", R.string.asian_porn)
-                    "misc" -> Pair("#9e9e9e", R.string.misc)
+                    "doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
+                    "manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
+                    "artistcg" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.artist_cg)
+                    "gamecg" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.game_cg)
+                    "western" -> Pair(SourceTagsUtil.WESTERN_COLOR, R.string.western)
+                    "non-h" -> Pair(SourceTagsUtil.NON_H_COLOR, R.string.non_h)
+                    "imageset" -> Pair(SourceTagsUtil.IMAGE_SET_COLOR, R.string.image_set)
+                    "cosplay" -> Pair(SourceTagsUtil.COSPLAY_COLOR, R.string.cosplay)
+                    "asianporn" -> Pair(SourceTagsUtil.ASIAN_PORN_COLOR, R.string.asian_porn)
+                    "misc" -> Pair(SourceTagsUtil.MISC_COLOR, R.string.misc)
                     else -> Pair("", 0)
                 }
 
@@ -85,7 +86,7 @@ class NHentaiDescriptionAdapter(
 
             binding.whenPosted.text = EX_DATE_FORMAT.format(Date((meta.uploadDate ?: 0) * 1000))
 
-            binding.pages.text = itemView.context.getString(R.string.num_pages, meta.pageImageTypes.size)
+            binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pageImageTypes.size, meta.pageImageTypes.size)
             @SuppressLint("SetTextI18n")
             binding.id.text = "#" + (meta.nhId ?: 0)
 
