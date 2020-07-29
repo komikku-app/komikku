@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.source_main_controller_card_item.pin
 import kotlinx.android.synthetic.main.source_main_controller_card_item.source_latest
 import kotlinx.android.synthetic.main.source_main_controller_card_item.title
 
-class SourceHolder(private val view: View, override val adapter: SourceAdapter /* SY --> */, val showButtons: Boolean /* SY <-- */) :
+class SourceHolder(private val view: View, override val adapter: SourceAdapter /* SY --> */, private val showButtons: Boolean /* SY <-- */) :
     BaseFlexibleViewHolder(view, adapter),
     SlicedHolder {
 
@@ -61,7 +61,7 @@ class SourceHolder(private val view: View, override val adapter: SourceAdapter /
 
         source_latest.isVisible = source.supportsLatest/* SY --> */ && showButtons /* SY <-- */
 
-        pin.isVisible = true
+        pin.isVisible = showButtons
         if (item.isPinned) {
             pin.setVectorCompat(R.drawable.ic_push_pin_filled_24dp, view.context.getResourceColor(R.attr.colorAccent))
         } else {
