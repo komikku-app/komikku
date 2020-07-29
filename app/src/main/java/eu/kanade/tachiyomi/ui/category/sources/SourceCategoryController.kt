@@ -30,8 +30,8 @@ import reactivecircus.flowbinding.android.view.clicks
  */
 class SourceCategoryController :
     NucleusController<CategoriesControllerBinding, SourceCategoryPresenter>(),
-    ActionMode.Callback,
     FabController,
+    ActionMode.Callback,
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     SourceCategoryCreateDialog.Listener,
@@ -195,7 +195,7 @@ class SourceCategoryController :
             R.id.action_delete -> {
                 undoHelper = UndoHelper(adapter, this)
                 undoHelper?.start(
-                    adapter.selectedPositions, root_coordinator,
+                    adapter.selectedPositions, activity!!.root_coordinator,
                     R.string.snack_categories_deleted, R.string.action_undo, 3000
                 )
 
