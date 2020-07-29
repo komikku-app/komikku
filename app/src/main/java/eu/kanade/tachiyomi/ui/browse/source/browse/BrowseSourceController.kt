@@ -149,7 +149,7 @@ open class BrowseSourceController(bundle: Bundle) :
         // SY -->
         return when (mode) {
             Mode.CATALOGUE -> presenter.source.name
-            Mode.RECOMMENDS -> recommendsConfig!!.manga.originalTitle
+            Mode.RECOMMENDS -> recommendsConfig!!.title
         }
         // SY <--
     }
@@ -159,8 +159,7 @@ open class BrowseSourceController(bundle: Bundle) :
         return BrowseSourcePresenter(
             args.getLong(SOURCE_ID_KEY),
             args.getString(SEARCH_QUERY_KEY),
-            searchManga = if (mode == Mode.RECOMMENDS) recommendsConfig?.manga else null,
-            recommends = (mode == Mode.RECOMMENDS)
+            recommendsMangaId = if (mode == Mode.RECOMMENDS) recommendsConfig?.mangaId else null
         )
         // SY <--
     }
@@ -402,12 +401,6 @@ open class BrowseSourceController(bundle: Bundle) :
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.source_browse, menu)
 
-        // SY -->
-        if (mode == Mode.RECOMMENDS) {
-            menu.findItem(R.id.action_search).isVisible = false
-        }
-        // SY <--
-
         // Initialize search menu
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
@@ -441,6 +434,10 @@ open class BrowseSourceController(bundle: Bundle) :
         }
         menu.findItem(displayItem).isChecked = true
         // SY -->
+        if (mode == Mode.RECOMMENDS) {
+            menu.findItem(R.id.action_search).isVisible = false
+        }
+
         if (preferences.enhancedEHentaiView().get() && presenter.source.isEhBasedSource()) {
             menu.findItem(R.id.action_display_mode).isVisible = false
         }
@@ -833,7 +830,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
     // SY -->
     @Parcelize
-    data class RecommendsConfig(val manga: Manga) : Parcelable
+    data class RecommendsConfig(val title: String, val mangaId: Long?) : Parcelable
 
     enum class Mode {
         CATALOGUE,

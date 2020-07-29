@@ -57,14 +57,13 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 open class BrowseSourcePresenter(
     private val sourceId: Long,
     private val searchQuery: String? = null,
-    private val searchManga: Manga? = null,
+    // SY -->
+    private val recommendsMangaId: Long? = null,
+    // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get(),
     private val prefs: PreferencesHelper = Injekt.get(),
-    private val coverCache: CoverCache = Injekt.get(),
-    // SY -->
-    private val recommends: Boolean = false
-    // SY <--
+    private val coverCache: CoverCache = Injekt.get()
 ) : BasePresenter<BrowseSourceController>() {
 
     /**
@@ -75,7 +74,7 @@ open class BrowseSourcePresenter(
     /**
      * Query from the view.
      */
-    var query = /* SY --> */ if (recommends) "" else /* SY <-- */ searchQuery ?: ""
+    var query = searchQuery ?: ""
         private set
 
     /**
@@ -114,6 +113,10 @@ open class BrowseSourcePresenter(
      */
     private var pageSubscription: Subscription? = null
 
+    // SY -->
+    private var manga: Manga? = null
+    // SY <--
+
     /**
      * Subscription to initialize manga details.
      */
@@ -128,6 +131,10 @@ open class BrowseSourcePresenter(
 
         if (savedState != null) {
             query = savedState.getString(::query.name, "")
+        }
+
+        if (recommendsMangaId != null) {
+            manga = db.getManga(recommendsMangaId).executeAsBlocking()
         }
 
         restartPager()
@@ -152,8 +159,8 @@ open class BrowseSourcePresenter(
 
         // Create a new pager.
         // SY -->
-        pager = if (recommends && searchManga != null) RecommendsPager(
-            searchManga
+        pager = if (recommendsMangaId != null && manga != null) RecommendsPager(
+            manga ?: throw Exception("Could not get Manga")
         ) else createPager(query, filters)
         // SY <--
 
