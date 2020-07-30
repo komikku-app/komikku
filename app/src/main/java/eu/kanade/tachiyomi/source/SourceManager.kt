@@ -4,6 +4,7 @@ import android.content.Context
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
@@ -31,7 +32,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
@@ -52,7 +52,7 @@ open class SourceManager(private val context: Context) {
 
         // SY -->
         // Recreate sources when they change
-        prefs.enableExhentai().asFlow().onEach {
+        prefs.enableExhentai().asImmediateFlow {
             createEHSources().forEach { registerSource(it) }
         }.launchIn(scope)
 
@@ -71,6 +71,10 @@ open class SourceManager(private val context: Context) {
     }
 
     fun getOnlineSources() = sourcesMap.values.filterIsInstance<HttpSource>()
+
+    fun getVisibleOnlineSources() = sourcesMap.values.filterIsInstance<HttpSource>().filter {
+        it.id !in BlacklistedSources.HIDDEN_SOURCES
+    }
 
     fun getCatalogueSources() = sourcesMap.values.filterIsInstance<CatalogueSource>()
 

@@ -179,9 +179,20 @@ object DebugFunctions {
 
     fun clearSavedSearches() = prefs.eh_savedSearches().set(emptySet())
 
-    fun listAllSources() = sourceManager.getCatalogueSources().map {
+    fun listAllSources() = sourceManager.getCatalogueSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
-    }.joinToString("\n")
+    }
+
+    fun listFilteredSources() = sourceManager.getVisibleCatalogueSources().joinToString("\n") {
+        "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
+    }
+
+    fun listAllHttpSources() = sourceManager.getOnlineSources().joinToString("\n") {
+        "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
+    }
+    fun listFilteredHttpSources() = sourceManager.getVisibleOnlineSources().joinToString("\n") {
+        "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
+    }
 
     fun convertAllEhentaiGalleriesToExhentai() = convertSources(EH_SOURCE_ID, EXH_SOURCE_ID)
 

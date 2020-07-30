@@ -20,7 +20,6 @@ import eu.kanade.tachiyomi.util.preference.switchPreferenceCategory
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
-import exh.source.BlacklistedSources
 import java.util.TreeMap
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
@@ -36,9 +35,7 @@ class SourceFilterController : SettingsController() {
     }
 
     private val onlineSources by lazy {
-        Injekt.get<SourceManager>().getOnlineSources().filter {
-            it.id !in BlacklistedSources.HIDDEN_SOURCES
-        }
+        Injekt.get<SourceManager>().getVisibleOnlineSources()
     }
 
     private var query = ""
