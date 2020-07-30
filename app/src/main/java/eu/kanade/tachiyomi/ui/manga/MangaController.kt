@@ -72,6 +72,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
+import exh.isEhBasedSource
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import java.io.IOException
@@ -1105,7 +1106,11 @@ class MangaController :
 
     // OVERFLOW MENU DIALOGS
 
-    private fun getUnreadChaptersSorted() = presenter.chapters
+    private fun getUnreadChaptersSorted() = /* SY --> */ if (presenter.source.isEhBasedSource()) presenter.chapters
+        .filter { !it.read && it.status == Download.NOT_DOWNLOADED }
+        .distinctBy { it.name }
+        .sortedBy { it.source_order }
+    else /* SY <-- */ presenter.chapters
         .filter { !it.read && it.status == Download.NOT_DOWNLOADED }
         .distinctBy { it.name }
         .sortedByDescending { it.source_order }
