@@ -70,7 +70,7 @@ object DebugFunctions {
 
     fun getDelegatedSourceList(): String = currentDelegatedSources.map { it.value.sourceName }.joinToString(separator = "\n")
 
-    fun ResetEHGalleriesForUpdater() {
+    fun resetEHGalleriesForUpdater() {
         throttleManager.resetThrottle()
         runBlocking {
             val metadataManga = db.getFavoriteMangaWithMetadata().await()
@@ -183,14 +183,14 @@ object DebugFunctions {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
     }
 
-    fun listFilteredSources() = sourceManager.getVisibleCatalogueSources().joinToString("\n") {
+    fun listVisibleSources() = sourceManager.getVisibleCatalogueSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
     }
 
     fun listAllHttpSources() = sourceManager.getOnlineSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
     }
-    fun listFilteredHttpSources() = sourceManager.getVisibleOnlineSources().joinToString("\n") {
+    fun listVisibleHttpSources() = sourceManager.getVisibleOnlineSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
     }
 
