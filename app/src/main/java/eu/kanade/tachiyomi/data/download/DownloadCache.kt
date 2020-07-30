@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
+import exh.source.BlacklistedSources
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.Injekt
@@ -122,7 +123,11 @@ class DownloadCache(
      * Renews the downloads cache.
      */
     private fun renew() {
-        val onlineSources = sourceManager.getOnlineSources()
+        // SY -->
+        val onlineSources = sourceManager.getOnlineSources().filter {
+            it.id !in BlacklistedSources.HIDDEN_SOURCES
+        }
+        // SY <--
 
         val sourceDirs = rootDir.dir.listFiles()
             .orEmpty()
