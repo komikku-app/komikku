@@ -644,7 +644,8 @@ class MangaPresenter(
      */
     fun getNextUnreadChapter(): ChapterItem? {
         return if (source.isEhBasedSource()) {
-            chapters.sortedBy { it.source_order }.getOrNull(0)
+            val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
+            if (chapter?.read == false) chapter else null
         } else {
             chapters.sortedByDescending { it.source_order }.find { !it.read }
         }
