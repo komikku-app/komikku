@@ -74,7 +74,6 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import exh.isEhBasedSource
 import exh.metadata.metadata.base.FlatMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata
 import java.io.IOException
 import kotlin.math.min
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
@@ -443,7 +442,7 @@ class MangaController :
      * @param manga manga object containing information about manga.
      * @param source the source of the manga.
      */
-    fun onNextMangaInfo(manga: Manga, source: Source /* SY --> */, meta: RaisedSearchMetadata? /* SY <-- */) {
+    fun onNextMangaInfo(manga: Manga, source: Source) {
         if (manga.initialized) {
             // Update view.
             mangaInfoAdapter?.update(manga, source)

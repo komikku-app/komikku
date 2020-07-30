@@ -126,7 +126,7 @@ class MangaPresenter(
 
         getMangaObservable()
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeLatestCache({ view, manga -> view.onNextMangaInfo(manga, source /* SY --> */, meta/* SY <-- */) })
+            .subscribeLatestCache({ view, manga -> view.onNextMangaInfo(manga, source) })
 
         getTrackingObservable()
             .observeOn(AndroidSchedulers.mainThread())
@@ -309,7 +309,7 @@ class MangaPresenter(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(
                     { view, _ ->
-                        view.onNextMangaInfo(manga, source /* SY --> */, meta/* SY <-- */)
+                        view.onNextMangaInfo(manga, source)
                     }
                 )
         }
