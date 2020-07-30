@@ -21,6 +21,8 @@ import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.removeCovers
+import exh.EH_SOURCE_ID
+import exh.EXH_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
 import exh.util.isLewd
 import java.util.Collections
@@ -353,7 +355,10 @@ class LibraryPresenter(
     fun downloadUnreadChapters(mangas: List<Manga>) {
         mangas.forEach { manga ->
             launchIO {
-                val chapters = db.getChapters(manga).executeAsBlocking()
+                /* SY --> */ val chapters = if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
+                    val chapter = db.getChapters(manga).executeAsBlocking().minBy { it.source_order }
+                    if (chapter != null) listOf(chapter) else emptyList()
+                } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
                     .filter { !it.read }
 
                 downloadManager.downloadChapters(manga, chapters)
