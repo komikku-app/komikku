@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.source
 
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.app.Dialog
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -25,6 +26,7 @@ import eu.kanade.tachiyomi.databinding.SourceMainControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -176,7 +178,12 @@ class SourceController(bundle: Bundle? = null) :
             )
         )
         if (item.source !is LocalSource) {
-            items.add(Pair(activity.getString(R.string.action_disable), { disableSource(item.source) }))
+            items.add(
+                Pair(
+                    activity.getString(R.string.action_disable),
+                    { disableSource(item.source) }
+                )
+            )
         }
 
         // SY -->
@@ -199,16 +206,7 @@ class SourceController(bundle: Bundle? = null) :
         )
         // SY <--
 
-        MaterialDialog(activity)
-            .title(text = item.source.toString())
-            .listItems(
-                items = items.map { it.first },
-                waitForPositiveButton = false
-            ) { dialog, which, _ ->
-                items[which].second()
-                dialog.dismiss()
-            }
-            .show()
+        SourceOptionsDialog(item, items).showDialog(router)
     }
 
     private fun disableSource(source: Source) {
@@ -392,6 +390,29 @@ class SourceController(bundle: Bundle? = null) :
         if (item != null) {
             adapter?.addScrollableHeader(item)
             adapter?.addScrollableHeader(LangItem(SourcePresenter.LAST_USED_KEY))
+        }
+    }
+
+    class SourceOptionsDialog(bundle: Bundle? = null) : DialogController(bundle) {
+
+        private lateinit var item: SourceItem
+        private lateinit var items: List<Pair<String, () -> Unit>>
+
+        constructor(item: SourceItem, items: List<Pair<String, () -> Unit>>) : this() {
+            this.item = item
+            this.items = items
+        }
+
+        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+            return MaterialDialog(activity!!)
+                .title(text = item.source.toString())
+                .listItems(
+                    items = items.map { it.first },
+                    waitForPositiveButton = false
+                ) { dialog, which, _ ->
+                    items[which].second()
+                    dialog.dismiss()
+                }
         }
     }
 
