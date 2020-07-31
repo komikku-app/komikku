@@ -260,7 +260,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
      *
      * @param event the event received.
      */
-    suspend fun onNextLibraryManga(cScope: CoroutineScope, event: LibraryMangaEvent) {
+    private suspend fun onNextLibraryManga(cScope: CoroutineScope, event: LibraryMangaEvent) {
         // Get the manga list for this category.
         // SY -->
         val sortingMode = preferences.librarySortingMode().get()

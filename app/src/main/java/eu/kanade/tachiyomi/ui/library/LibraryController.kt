@@ -46,8 +46,9 @@ import exh.favorites.FavoritesSyncStatus
 import exh.ui.LoaderManager
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.tabs
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -81,7 +82,7 @@ class LibraryController(
     /**
      * Library search query.
      */
-    private var query: String? = ""
+    private var query: String = ""
 
     /**
      * Currently selected mangas.
@@ -401,19 +402,20 @@ class LibraryController(
         searchView.maxWidth = Int.MAX_VALUE
         searchItem.fixExpand(onExpand = { invalidateMenuOnExpand() })
 
-        if (!query.isNullOrEmpty()) {
+        if (query.isNotEmpty()) {
             searchItem.expandActionView()
             searchView.setQuery(query, true)
             searchView.clearFocus()
 
-            // If we re-enter the controller with a prior search still active
-            view?.post {
-                performSearch()
-            }
+            performSearch()
         }
 
         searchView.queryTextChanges()
-            .distinctUntilChanged()
+            // Ignore events if this controller isn't at the top to avoid query being reset
+            .filter { router.backstack.lastOrNull()?.controller() == this }
+            // If we re-enter the controller with a prior search still active, but searchview
+            // content sometimes appears empty.
+            .dropWhile { query.isNotEmpty() && query != it.toString() }
             .onEach {
                 query = it.toString()
                 performSearch()
@@ -428,17 +430,14 @@ class LibraryController(
         // SY <--
     }
 
-    fun search(query: String?) {
-        // Delay to let contents load first for searches from manga info
-        view?.post {
-            this.query = query
-            performSearch()
-        }
+    fun search(query: String) {
+        this.query = query
+        performSearch()
     }
 
     private fun performSearch() {
         searchRelay.call(query)
-        if (!query.isNullOrEmpty()) {
+        if (query.isNotEmpty()) {
             binding.btnGlobalSearch.isVisible = true
             binding.btnGlobalSearch.text =
                 resources?.getString(R.string.action_global_search_query, query)
