@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    android:id="@+id/manga_summary_section"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
@@ -42,7 +44,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
-        android:id="@+id/manga_summary"
+        android:id="@+id/manga_summary_text"
         style="@style/TextAppearance.Regular.Body1.Secondary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -53,14 +55,12 @@
         android:focusable="true"
         android:maxLines="2"
         android:textIsSelectable="false"
-        android:visibility="gone"
-        tools:text="Summary"
-        tools:visibility="visible" />
+        tools:text="Summary" />
 
     <FrameLayout
         android:id="@+id/manga_genres_tags_wrapper"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/manga_genres_tags_full_chips"
