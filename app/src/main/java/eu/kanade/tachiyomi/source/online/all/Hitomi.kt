@@ -306,9 +306,9 @@ class Hitomi(val context: Context) : HttpSource(), LewdSource<HitomiSearchMetada
             val titleElement = doc.selectFirst("h1")
             title = titleElement.text()
             thumbnail_url = "https:" + if (prefs.eh_hl_useHighQualityThumbs().get()) {
-                doc.selectFirst("img").attr("data-srcset").substringBefore(' ')
+                doc.selectFirst("img").attr("srcset").substringBefore(' ')
             } else {
-                doc.selectFirst("img").attr("data-src")
+                doc.selectFirst("img").attr("src")
             }
             url = titleElement.child(0).attr("href")
 
