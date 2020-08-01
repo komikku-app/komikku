@@ -11,8 +11,8 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationMangaControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.browse.SourceDividerItemDecoration
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
-import eu.kanade.tachiyomi.ui.browse.source.SourceDividerItemDecoration
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
