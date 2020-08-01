@@ -149,7 +149,10 @@ class SourcePresenter(
     }
 
     private fun updateLastUsedSource(sourceId: Long) {
-        val source = (sourceManager.get(sourceId) as? CatalogueSource)?.let { SourceItem(it, showButtons = controllerMode == SourceController.Mode.CATALOGUE) }
+        val source = (sourceManager.get(sourceId) as? CatalogueSource)?.let {
+            val isPinned = it.id.toString() in preferences.pinnedSources().get()
+            SourceItem(it, null, isPinned, controllerMode == SourceController.Mode.CATALOGUE)
+        }
         source?.let { view?.setLastUsedSource(it) }
     }
 
