@@ -274,7 +274,7 @@ class EightMuses :
         // Request
         val req = eightMusesGet(baseUrl + url)
 
-        return client.newCall(req).asObservableSuccess().toSingle().await(Schedulers.io()).use { response ->
+        return client.newCall(req).asObservableSuccess().toSingle().toBlocking().value().use { response ->
             val contents = parseSelf(response.asJsoup())
 
             val out = mutableListOf<SChapter>()
