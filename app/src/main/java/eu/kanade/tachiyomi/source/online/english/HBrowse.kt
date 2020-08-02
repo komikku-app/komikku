@@ -82,7 +82,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
     )
 
     override fun mapUrlToMangaUrl(uri: Uri): String? {
-        return "$baseUrl/${uri.pathSegments.first()}"
+        return "/${uri.pathSegments.first()}/c00001/"
     }
 
     override fun getDescriptionAdapter(controller: MangaController): HBrowseDescriptionAdapter {
