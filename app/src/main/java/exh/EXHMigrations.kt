@@ -74,7 +74,7 @@ object EXHMigrations {
                             .prepare()
                             .executeAsBlocking()
                         hBrowseManga.forEach {
-                            it.url = it.url + "/c00001"
+                            it.url = it.url + "/c00001/"
                         }
 
                         db.db.put()
