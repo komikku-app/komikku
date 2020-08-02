@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
 import exh.EIGHTMUSES_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import exh.HBROWSE_SOURCE_ID
 import exh.HITOMI_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
@@ -89,7 +88,6 @@ class ExtensionManager(
             NHENTAI_SOURCE_ID -> context.getDrawable(R.mipmap.ic_nhentai_source)
             HITOMI_SOURCE_ID -> context.getDrawable(R.mipmap.ic_hitomi_source)
             EIGHTMUSES_SOURCE_ID -> context.getDrawable(R.mipmap.ic_8muses_source)
-            HBROWSE_SOURCE_ID -> context.getDrawable(R.mipmap.ic_hbrowse_source)
             MERGED_SOURCE_ID -> context.getDrawable(R.mipmap.ic_merged_source)
             else -> null
         }

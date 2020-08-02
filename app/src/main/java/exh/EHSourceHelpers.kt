@@ -2,6 +2,7 @@ package exh
 
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.HentaiCafe
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
@@ -22,13 +23,14 @@ val PURURIN_SOURCE_ID = delegatedSourceId<Pururin>()
 val TSUMINO_SOURCE_ID = delegatedSourceId<Tsumino>()
 const val HITOMI_SOURCE_ID = LEWD_SOURCE_SERIES + 10
 const val EIGHTMUSES_SOURCE_ID = LEWD_SOURCE_SERIES + 11
-const val HBROWSE_SOURCE_ID = LEWD_SOURCE_SERIES + 12
+val HBROWSE_SOURCE_ID = delegatedSourceId<HBrowse>()
 const val MERGED_SOURCE_ID = LEWD_SOURCE_SERIES + 69
 
 private val DELEGATED_LEWD_SOURCES = listOf(
     HentaiCafe::class,
     Pururin::class,
-    Tsumino::class
+    Tsumino::class,
+    HBrowse::class
 )
 
 val LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(

@@ -141,7 +141,6 @@ open class SourceManager(private val context: Context) {
         exSrcs += NHentai(context)
         exSrcs += Hitomi(context)
         exSrcs += EightMuses(context)
-        exSrcs += HBrowse(context)
         return exSrcs
     }
     // SY <--
@@ -200,7 +199,13 @@ open class SourceManager(private val context: Context) {
                 "eu.kanade.tachiyomi.extension.all.mangadex",
                 MangaDex::class,
                 true
-            )*/
+            )*/,
+            DelegatedSource(
+                "HBrowse",
+                1401584337232758222,
+                "eu.kanade.tachiyomi.extension.en.hbrowse.HBrowse",
+                HBrowse::class
+            )
         ).associateBy { it.originalSourceQualifiedClassName }
 
         var currentDelegatedSources = mutableMapOf<String, DelegatedSource>()

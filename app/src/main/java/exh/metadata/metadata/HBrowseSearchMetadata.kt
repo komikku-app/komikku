@@ -9,13 +9,17 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 class HBrowseSearchMetadata : RaisedSearchMetadata() {
     var hbId: Long? = null
 
+    var hbUrlExtra: String? = null
+
+    var thumbnail: String? = null
+
     var title: String? by titleDelegate(TITLE_TYPE_MAIN)
 
     // Length in pages
     var length: Int? = null
 
     override fun copyTo(manga: SManga) {
-        manga.url = "/$hbId"
+        manga.url = "/$hbId/$hbUrlExtra"
 
         title?.let {
             manga.title = it
@@ -44,6 +48,8 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         hbId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
+        hbUrlExtra?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
+        thumbnail?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it.toString()) }
         title?.let { pairs += Pair(context.getString(R.string.title), it) }
         length?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
         return pairs

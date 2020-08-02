@@ -2,6 +2,8 @@ package exh
 
 import android.content.Context
 import com.elvishew.xlog.XLog
+import com.pushtorefresh.storio.sqlite.queries.Query
+import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.models.DHistory
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -9,6 +11,8 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
+import eu.kanade.tachiyomi.data.database.resolvers.MangaUrlPutResolver
+import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
@@ -43,6 +47,44 @@ object EXHMigrations {
                     LibraryUpdateJob.setupTask(context)
                     return false
                 }
+                if (oldVersion < 4) {
+                    db.inTransaction {
+                        // Migrate Tsumino source IDs
+                        db.lowLevel().executeSQL(
+                            RawQuery.builder()
+                                .query(
+                                    """
+                                    UPDATE ${MangaTable.TABLE}
+                                        SET ${MangaTable.COL_SOURCE} = $HBROWSE_SOURCE_ID
+                                        WHERE ${MangaTable.COL_SOURCE} = 6912
+                                    """.trimIndent()
+                                )
+                                .affectsTables(MangaTable.TABLE)
+                                .build()
+                        )
+                        // Migrate BHrowse URLs
+                        val hBrowseManga = db.db.get()
+                            .listOfObjects(Manga::class.java)
+                            .withQuery(
+                                Query.builder()
+                                    .table(MangaTable.TABLE)
+                                    .where("${MangaTable.COL_SOURCE} = $HBROWSE_SOURCE_ID")
+                                    .build()
+                            )
+                            .prepare()
+                            .executeAsBlocking()
+                        hBrowseManga.forEach {
+                            it.url = it.url + "/c00001"
+                        }
+
+                        db.db.put()
+                            .objects(hBrowseManga)
+                            // Extremely slow without the resolver :/
+                            .withPutResolver(MangaUrlPutResolver())
+                            .prepare()
+                            .executeAsBlocking()
+                    }
+                }
 
                 // if (oldVersion < 1) { }
                 // do stuff here when releasing changed crap
@@ -68,6 +110,10 @@ object EXHMigrations {
         // Migrate Tsumino source IDs
         if (manga.source == 6909L) {
             manga.source = TSUMINO_SOURCE_ID!!
+        }
+
+        if (manga.source == 6912L) {
+            manga.source = HBROWSE_SOURCE_ID!!
         }
 
         // Migrate nhentai URLs
