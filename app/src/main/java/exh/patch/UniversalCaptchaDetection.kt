@@ -10,7 +10,7 @@ val CAPTCHA_DETECTION_PATCH: EHInterceptor = { request, response, sourceId ->
     if (!response.isSuccessful) {
         response.interceptAsHtml { doc ->
             // Find captcha
-            if (doc.getElementsByClass("g-recaptcha").isNotEmpty() || doc.getElementsByClass("h-captcha").isNotEmpty()) {
+            if ((doc.getElementsByClass("g-recaptcha").isNotEmpty() && !("mangaeden" in request.URL.host)) || doc.getElementsByClass("h-captcha").isNotEmpty()) {
                 // Found it, allow the user to solve this thing
                 BrowserActionActivity.launchUniversal(
                     Injekt.get<Application>(),
