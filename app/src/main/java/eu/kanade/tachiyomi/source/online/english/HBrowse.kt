@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -45,10 +44,9 @@ class HBrowse(delegate: HttpSource, val context: Context) :
     override fun parseIntoMetadata(metadata: HBrowseSearchMetadata, input: Document) {
         val tables = parseIntoTables(input)
         with(metadata) {
-            val uri = input.location().toUri()
-            hbId = uri.pathSegments[1].toLong()
+            hbUrl = input.location().removePrefix("$baseUrl/thumbnails")
 
-            hbUrlExtra = uri.pathSegments[2]
+            hbId = hbUrl!!.removePrefix("/").substringBefore("/").toLong()
 
             tags.clear()
             ((tables[""] ?: error("")) + (tables["categories"] ?: error(""))).forEach { (k, v) ->
