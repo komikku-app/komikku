@@ -45,12 +45,12 @@ Inherited from TachiyomiAZ or TachiyomiEH and are included and possibly modified
 * * nHentai
 * * Hitomi.la
 * * 8Muses
-* * HBrowse
 * * Perv Eden
 * Additional features for some extensions, features include custom description, opening in app, batch add to library:
 * * Puruin
 * * Tsumino
 * * HentaiCafe (Foolside)
+* * HBrowse
 * Saving searches
 * Autoscroll
 * Page preload customization
