@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import exh.syDebugVersion
 import it.gmariotti.changelibs.library.view.ChangeLogRecyclerView
 
-class ChangelogDialogController : DialogController() {
+class WhatsNewDialogController : DialogController() {
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         val activity = activity!!

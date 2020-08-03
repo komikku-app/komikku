@@ -14,7 +14,7 @@ import eu.kanade.tachiyomi.data.updater.UpdateChecker
 import eu.kanade.tachiyomi.data.updater.UpdateResult
 import eu.kanade.tachiyomi.data.updater.UpdaterService
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.ui.main.ChangelogDialogController
+import eu.kanade.tachiyomi.ui.main.WhatsNewDialogController
 import eu.kanade.tachiyomi.ui.setting.SettingsController
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
@@ -72,7 +72,7 @@ class AboutController : SettingsController() {
 
             onClick {
                 // SY -->
-                ChangelogDialogController().showDialog(router)
+                WhatsNewDialogController().showDialog(router)
                 // SY <--
             }
         }
