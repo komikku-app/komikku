@@ -373,10 +373,10 @@ class MigrationListController(bundle: Bundle? = null) :
         launchUI {
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
                 val localManga = smartSearchEngine.networkToLocalManga(manga, source.id)
-                val chapters = source.fetchChapterList(localManga).toSingle().await(
-                    Schedulers.io()
-                )
                 try {
+                    val chapters = source.fetchChapterList(localManga).toSingle().await(
+                        Schedulers.io()
+                    )
                     syncChaptersWithSource(db, chapters, localManga, source)
                 } catch (e: Exception) {
                     return@async null
