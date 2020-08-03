@@ -70,13 +70,14 @@ class NHentai(val context: Context) : HttpSource(), LewdSource<NHentaiSearchMeta
     }
 
     private fun searchMangaRequestObservable(page: Int, query: String, filters: FilterList): Observable<Request> {
-        val advQuery = combineQuery(filters)
-        val favoriteFilter = filters.findInstance<FavoriteFilter>()
-        val uploadedFilter = filters.findInstance<UploadedFilter>()
+        val filterList = if (filters.isEmpty()) getFilterList() else filters
+        val advQuery = combineQuery(filterList)
+        val favoriteFilter = filterList.findInstance<FavoriteFilter>()
+        val isOkayToSort = filterList.findInstance<UploadedFilter>()?.state?.isBlank() ?: true
 
         val url: HttpUrl.Builder
 
-        if (favoriteFilter != null && favoriteFilter.state) {
+        if (favoriteFilter?.state == true) {
             url = "$baseUrl/favorites".toHttpUrlOrNull()!!.newBuilder()
                 .addQueryParameter("q", "$query $advQuery")
                 .addQueryParameter("page", page.toString())
@@ -85,8 +86,8 @@ class NHentai(val context: Context) : HttpSource(), LewdSource<NHentaiSearchMeta
                 .addQueryParameter("q", "$query $advQuery")
                 .addQueryParameter("page", page.toString())
 
-            if (uploadedFilter?.state?.isBlank() == true) {
-                filters.findInstance<SortFilter>()?.let { f ->
+            if (isOkayToSort) {
+                filterList.findInstance<SortFilter>()?.let { f ->
                     url.addQueryParameter("sort", f.toUriPart())
                 }
             }
