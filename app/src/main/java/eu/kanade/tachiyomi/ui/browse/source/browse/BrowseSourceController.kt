@@ -56,6 +56,7 @@ import eu.kanade.tachiyomi.widget.EmptyView
 import exh.EXHSavedSearch
 import exh.isEhBasedSource
 import kotlinx.android.parcel.Parcelize
+import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
@@ -578,7 +579,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
             binding.emptyView.show(message, actions)
         } else {
-            snack = binding.catalogueView.snack(message, Snackbar.LENGTH_INDEFINITE) {
+            snack = activity!!.root_coordinator?.snack(message, Snackbar.LENGTH_INDEFINITE) {
                 setAction(R.string.action_retry, retryAction)
             }
         }

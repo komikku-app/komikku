@@ -183,8 +183,6 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 //                WhatsNewDialogController().showDialog(router)
 //            }
 
-//            WhatsNewDialogController().showDialog(router)
-
             // EXH -->
             // Perform EXH specific migrations
             if (EXHMigrations.upgrade(preferences)) {
