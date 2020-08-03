@@ -48,9 +48,21 @@ class SourceTagsUtil {
         "$namespace:$tag"
     }
     companion object {
-        fun Manga.getRaisedTags(): List<RaisedTag>? = this.getGenres()?.map { parseTag(it) }
+        fun Manga.getRaisedTags(genres: List<String>? = null): List<RaisedTag>? = (genres ?: this.getGenres())?.map { parseTag(it) }
 
-        fun parseTag(tag: String) = RaisedTag(tag.substringBefore(':').trimOrNull(), (tag.substringAfter(':').trimOrNull() ?: tag), TAG_TYPE_DEFAULT)
+        fun parseTag(tag: String) = RaisedTag(
+            (
+                if (tag.startsWith("-")) {
+                    tag.substringAfter("-")
+                } else {
+                    tag
+                }
+                ).substringBefore(':', missingDelimiterValue = "").trimOrNull(),
+            tag.substringAfter(':', missingDelimiterValue = tag).trim(),
+            if (tag.startsWith("-")) TAG_TYPE_EXCLUDE else TAG_TYPE_DEFAULT
+        )
+
+        const val TAG_TYPE_EXCLUDE = 69 // why not
 
         const val DOUJINSHI_COLOR = "#f44336"
         const val MANGA_COLOR = "#ff9800"

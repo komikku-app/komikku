@@ -7,7 +7,7 @@ import exh.metadata.sql.tables.SearchTitleTable
 class SearchEngine {
     private val queryCache = mutableMapOf<String, List<QueryComponent>>()
 
-    fun textToSubQueries(
+    private fun textToSubQueries(
         namespace: String?,
         component: Text?
     ): Pair<String, List<String>>? {
@@ -20,42 +20,46 @@ class SearchEngine {
         }
         val componentTagQuery = maybeLenientComponent?.let {
             val params = mutableListOf<String>()
-            it.map { q ->
+            it.joinToString(separator = " OR ", prefix = "(", postfix = ")") { q ->
                 params += q
                 "${SearchTagTable.TABLE}.${SearchTagTable.COL_NAME} LIKE ?"
-            }.joinToString(separator = " OR ", prefix = "(", postfix = ")") to params
+            } to params
         }
-        return if (namespace != null) {
-            var query =
-                """
-                (SELECT ${SearchTagTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTagTable.TABLE}
-                    WHERE ${SearchTagTable.COL_NAMESPACE} IS NOT NULL
-                    AND ${SearchTagTable.COL_NAMESPACE} LIKE ?
-                """.trimIndent()
-            val params = mutableListOf(escapeLike(namespace))
-            if (componentTagQuery != null) {
-                query += "\n    AND ${componentTagQuery.first}"
-                params += componentTagQuery.second
+        return when {
+            namespace != null -> {
+                var query =
+                    """
+                    (SELECT ${SearchTagTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTagTable.TABLE}
+                        WHERE ${SearchTagTable.COL_NAMESPACE} IS NOT NULL
+                        AND ${SearchTagTable.COL_NAMESPACE} LIKE ?
+                    """.trimIndent()
+                val params = mutableListOf(escapeLike(namespace))
+                if (componentTagQuery != null) {
+                    query += "\n    AND ${componentTagQuery.first}"
+                    params += componentTagQuery.second
+                }
+
+                "$query)" to params
             }
+            component != null -> {
+                // Match title + tags
+                val tagQuery =
+                    """
+                    SELECT ${SearchTagTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTagTable.TABLE}
+                        WHERE ${componentTagQuery!!.first}
+                    """.trimIndent() to componentTagQuery.second
 
-            "$query)" to params
-        } else if (component != null) {
-            // Match title + tags
-            val tagQuery =
-                """
-                SELECT ${SearchTagTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTagTable.TABLE}
-                    WHERE ${componentTagQuery!!.first}
-                """.trimIndent() to componentTagQuery.second
+                val titleQuery =
+                    """
+                    SELECT ${SearchTitleTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTitleTable.TABLE}
+                        WHERE ${SearchTitleTable.COL_TITLE} LIKE ?
+                    """.trimIndent() to listOf(component.asLenientTitleQuery())
 
-            val titleQuery =
-                """
-                SELECT ${SearchTitleTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTitleTable.TABLE}
-                    WHERE ${SearchTitleTable.COL_TITLE} LIKE ?
-                """.trimIndent() to listOf(component.asLenientTitleQuery())
-
-            "(${tagQuery.first} UNION ${titleQuery.first})".trimIndent() to
-                (tagQuery.second + titleQuery.second)
-        } else null
+                "(${tagQuery.first} UNION ${titleQuery.first})".trimIndent() to
+                    (tagQuery.second + titleQuery.second)
+            }
+            else -> null
+        }
     }
 
     fun queryToSql(q: List<QueryComponent>): Pair<String, List<String>> {
@@ -158,7 +162,7 @@ class SearchEngine {
             }
         }
 
-        for (char in query.toLowerCase()) {
+        query.toLowerCase().forEach { char ->
             if (char == '"') {
                 inQuotes = !inQuotes
             } else if (enableWildcard && (char == '?' || char == '_')) {
@@ -167,7 +171,7 @@ class SearchEngine {
             } else if (enableWildcard && (char == '*' || char == '%')) {
                 flushText()
                 queuedText.add(MultiWildcard(char.toString()))
-            } else if (char == '-') {
+            } else if (char == '-' && !inQuotes && (queuedRawText.isBlank() || queuedRawText.last() == ' ')) {
                 nextIsExcluded = true
             } else if (char == '$') {
                 nextIsExact = true

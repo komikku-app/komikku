@@ -19,18 +19,26 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
+import exh.isNamespaceSource
+import exh.metadata.metadata.base.RaisedTag
+import exh.util.SourceTagsUtil.Companion.TAG_TYPE_EXCLUDE
+import exh.util.SourceTagsUtil.Companion.getRaisedTags
+import exh.util.SourceTagsUtil.Companion.parseTag
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.card
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.gradient
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Preference<DisplayMode>) :
-    AbstractFlexibleItem<LibraryHolder>(), IFilterable<String> {
+    AbstractFlexibleItem<LibraryHolder>(), IFilterable<Pair<String, Boolean>> {
 
     private val sourceManager: SourceManager = Injekt.get()
     // SY -->
     private val trackManager: TrackManager = Injekt.get()
     private val db: DatabaseHelper = Injekt.get()
+    private val source by lazy {
+        sourceManager.get(manga.source)
+    }
     // SY <--
 
     var downloadCount = -1
@@ -96,38 +104,13 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
      * @param constraint the query to apply.
      * @return true if the manga should be included, false otherwise.
      */
-    override fun filter(constraint: String): Boolean {
-        return manga.title.contains(constraint, true) ||
-            (manga.author?.contains(constraint, true) ?: false) ||
-            (manga.artist?.contains(constraint, true) ?: false) ||
-            sourceManager.getOrStub(manga.source).name.contains(constraint, true) ||
-            (Injekt.get<TrackManager>().hasLoggedServices() && filterTracks(constraint, db.getTracks(manga).executeAsBlocking())) ||
-            if (constraint.contains(" ") || constraint.contains("\"")) {
-                val genres = manga.genre?.split(", ")?.map {
-                    it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
-                }
-                var clean_constraint = ""
-                var ignorespace = false
-                for (i in constraint.trim().toLowerCase()) {
-                    if (i == ' ') {
-                        if (!ignorespace) {
-                            clean_constraint = clean_constraint + ","
-                        } else {
-                            clean_constraint = clean_constraint + " "
-                        }
-                    } else if (i == '"') {
-                        ignorespace = !ignorespace
-                    } else {
-                        clean_constraint = clean_constraint + Character.toString(i)
-                    }
-                }
-                clean_constraint.split(",").all { containsGenre(it.trim(), genres) }
-            } else containsGenre(
-                constraint,
-                manga.genre?.split(", ")?.map {
-                    it.drop(it.indexOfFirst { it == ':' } + 1).toLowerCase().trim() // tachiEH tag namespaces
-                }
-            )
+    override fun filter(constraint: Pair<String, Boolean>): Boolean {
+        return manga.title.contains(constraint.first, true) ||
+            (manga.author?.contains(constraint.first, true) ?: false) ||
+            (manga.artist?.contains(constraint.first, true) ?: false) ||
+            (source?.name?.contains(constraint.first, true) ?: false) ||
+            (Injekt.get<TrackManager>().hasLoggedServices() && filterTracks(constraint.first, db.getTracks(manga).executeAsBlocking())) ||
+            constraint.second && ehContainsGenre(constraint.first)
     }
 
     private fun filterTracks(constraint: String, tracks: List<Track>): Boolean {
@@ -139,6 +122,54 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
                 return@any status.contains(constraint, true) || name.contains(constraint, true)
             }
             return@any false
+        }
+    }
+
+    private fun ehContainsGenre(constraint: String): Boolean {
+        val genres = manga.getGenres()
+        val raisedTags = if (source?.isNamespaceSource() == true) {
+            manga.getRaisedTags(genres)
+        } else null
+        return if (constraint.contains(" ") || constraint.contains("\"")) {
+            var cleanConstraint = ""
+            var ignoreSpace = false
+            for (i in constraint.trim().toLowerCase()) {
+                when (i) {
+                    ' ' -> {
+                        cleanConstraint = if (!ignoreSpace) {
+                            "$cleanConstraint,"
+                        } else {
+                            "$cleanConstraint "
+                        }
+                    }
+                    '"' -> {
+                        ignoreSpace = !ignoreSpace
+                    }
+                    else -> {
+                        cleanConstraint += i.toString()
+                    }
+                }
+            }
+            cleanConstraint.split(",").all {
+                if (raisedTags == null) containsGenre(it.trim(), genres) else containsRaisedGenre(
+                    parseTag(it.trim()), raisedTags
+                )
+            }
+        } else if (raisedTags == null) {
+            containsGenre(constraint, genres)
+        } else {
+            containsRaisedGenre(parseTag(constraint), raisedTags)
+        }
+    }
+
+    private fun containsRaisedGenre(tag: RaisedTag, genres: List<RaisedTag>): Boolean {
+        val genre = genres.find {
+            (it.namespace?.toLowerCase() == tag.namespace?.toLowerCase() && it.name.toLowerCase() == tag.name.toLowerCase())
+        }
+        return if (tag.type == TAG_TYPE_EXCLUDE) {
+            genre == null
+        } else {
+            genre != null
         }
     }
     // SY <--
