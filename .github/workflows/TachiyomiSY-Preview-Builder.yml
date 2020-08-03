@@ -2,6 +2,8 @@ name: Remote Dispatch Action Initiator
  
 on:
   push:
+   branches: 
+    - 'master'
   repository_dispatch:
  
 jobs:
