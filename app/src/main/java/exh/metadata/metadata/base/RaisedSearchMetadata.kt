@@ -1,6 +1,7 @@
 package exh.metadata.metadata.base
 
 import android.content.Context
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.forEach
@@ -121,7 +122,7 @@ abstract class RaisedSearchMetadata {
             (this).filter { it.type != TAG_TYPE_VIRTUAL }
                 .joinToString { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
 
-        val raiseFlattenGson = GsonBuilder().create()
+        val raiseFlattenGson: Gson = GsonBuilder().create()
 
         fun titleDelegate(type: Int) = object : ReadWriteProperty<RaisedSearchMetadata, String?> {
             /**

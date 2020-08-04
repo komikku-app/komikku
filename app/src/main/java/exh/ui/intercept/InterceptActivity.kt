@@ -93,13 +93,13 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
 
     private val galleryAdder = GalleryAdder()
 
-    val status = BehaviorSubject.create<InterceptResult>(InterceptResult.Idle())
+    val status: BehaviorSubject<InterceptResult> = BehaviorSubject.create<InterceptResult>(InterceptResult.Idle)
 
     @Synchronized
     fun loadGallery(gallery: String) {
         // Do not load gallery if already loading
         if (status.value is InterceptResult.Idle) {
-            status.onNext(InterceptResult.Loading())
+            status.onNext(InterceptResult.Loading)
 
             // Load gallery async
             thread {
@@ -119,8 +119,8 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
 }
 
 sealed class InterceptResult {
-    class Idle : InterceptResult()
-    class Loading : InterceptResult()
+    object Idle : InterceptResult()
+    object Loading : InterceptResult()
     data class Success(val mangaId: Long) : InterceptResult()
     data class Failure(val reason: String) : InterceptResult()
 }

@@ -30,13 +30,13 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
 
         testedGalleries = if (regex.containsMatchIn(galleries)) {
             regex.findAll(galleries).map { galleryKeys ->
-                val LinkParts = galleryKeys.value.split(".")
-                val Link = "${if (Injekt.get<PreferencesHelper>().enableExhentai().get()) {
+                val linkParts = galleryKeys.value.split(".")
+                val link = "${if (Injekt.get<PreferencesHelper>().enableExhentai().get()) {
                     "https://exhentai.org/g/"
                 } else {
                     "https://e-hentai.org/g/"
-                }}${LinkParts[0]}/${LinkParts[1].replace(":", "")}"
-                Link
+                }}${linkParts[0]}/${linkParts[1].replace(":", "")}"
+                link
             }.joinToString(separator = "\n")
         } else {
             galleries

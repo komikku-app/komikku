@@ -7,7 +7,7 @@ import exh.metadata.sql.tables.SearchTitleTable
 class SearchEngine {
     private val queryCache = mutableMapOf<String, List<QueryComponent>>()
 
-    private fun textToSubQueries(
+    fun textToSubQueries(
         namespace: String?,
         component: Text?
     ): Pair<String, List<String>>? {
@@ -69,7 +69,7 @@ class SearchEngine {
         val include = mutableListOf<Pair<String, List<String>>>()
         val exclude = mutableListOf<Pair<String, List<String>>>()
 
-        for (component in q) {
+        q.forEach { component ->
             val query = if (component is Text) {
                 textToSubQueries(null, component)
             } else if (component is Namespace) {

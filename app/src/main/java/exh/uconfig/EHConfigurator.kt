@@ -85,7 +85,7 @@ class EHConfigurator(val context: Context) {
         configure(exhSource, hathPerks)
     }
 
-    fun configure(source: EHentai, hathPerks: EHHathPerksResponse) {
+    private fun configure(source: EHentai, hathPerks: EHHathPerksResponse) {
         // Delete old app profiles
         val scanReq = source.requestWithCreds().url(source.uconfigUrl).build()
         val resp = configuratorClient.newCall(scanReq).execute().asJsoup()

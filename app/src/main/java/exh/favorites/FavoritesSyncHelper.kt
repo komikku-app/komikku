@@ -53,7 +53,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private val logger = XLog.tag("EHFavSync").build()
 
-    val status = BehaviorSubject.create<FavoritesSyncStatus>(FavoritesSyncStatus.Idle(context))
+    val status: BehaviorSubject<FavoritesSyncStatus> = BehaviorSubject.create<FavoritesSyncStatus>(FavoritesSyncStatus.Idle(context))
 
     @Synchronized
     fun runSync() {

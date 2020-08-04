@@ -50,7 +50,7 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
         return view
     }
 
-    fun buildInfo() =
+    private fun buildInfo() =
         """
         <font color='green'>===[ ${context.getString(R.string.app_name)} ]===</font><br>
         <b>Build type:</b> ${BuildConfig.BUILD_TYPE}<br>

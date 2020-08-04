@@ -13,18 +13,14 @@ import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
-class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartSearchBinding, SmartSearchPresenter>(), CoroutineScope {
-    override val coroutineContext = Job() + Dispatchers.Main
-
+class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartSearchBinding, SmartSearchPresenter>() {
     private val sourceManager: SourceManager by injectLazy()
 
     private val source = sourceManager.get(bundle?.getLong(ARG_SOURCE_ID, -1) ?: -1) as? CatalogueSource
@@ -55,7 +51,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
         // Init presenter now to resolve threading issues
         presenter
 
-        launch(Dispatchers.Default) {
+        scope.launch(Dispatchers.Default) {
             for (event in presenter.smartSearchChannel) {
                 if (event is SmartSearchPresenter.SearchResults.Found) {
                     val transaction = MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
@@ -81,7 +77,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
     override fun onDestroy() {
         super.onDestroy()
 
-        cancel()
+        scope.cancel()
     }
 
     companion object {

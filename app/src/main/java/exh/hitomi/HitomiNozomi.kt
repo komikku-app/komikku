@@ -112,7 +112,7 @@ class HitomiNozomi(
 
     private fun BSearch(field: String, key: ByteArray, node: Node?): Single<DataPair?> {
         fun compareByteArrays(dv1: ByteArray, dv2: ByteArray): Int {
-            val top = Math.min(dv1.size, dv2.size)
+            val top = dv1.size.coerceAtMost(dv2.size)
             for (i in 0 until top) {
                 val dv1i = dv1[i].toInt() and 0xFF
                 val dv2i = dv2[i].toInt() and 0xFF

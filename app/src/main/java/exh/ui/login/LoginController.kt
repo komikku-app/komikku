@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.uconfig.WarnConfigureDialogController
 import java.net.HttpCookie
 import timber.log.Timber
@@ -39,53 +40,50 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        with(view) {
-            binding.btnCancel.setOnClickListener { router.popCurrentController() }
+        binding.btnCancel.setOnClickListener { router.popCurrentController() }
 
-            binding.btnAdvanced.setOnClickListener {
-                binding.advancedOptions.isVisible = true
-                binding.webview.isVisible = false
-                binding.btnAdvanced.isEnabled = false
-                binding.btnCancel.isEnabled = false
-            }
+        binding.btnAdvanced.setOnClickListener {
+            binding.advancedOptions.isVisible = true
+            binding.webview.isVisible = false
+            binding.btnAdvanced.isEnabled = false
+            binding.btnCancel.isEnabled = false
+        }
 
-            binding.btnClose.setOnClickListener {
-                hideAdvancedOptions(this)
-            }
+        binding.btnClose.setOnClickListener {
+            hideAdvancedOptions()
+        }
 
-            binding.btnRecheck.setOnClickListener {
-                hideAdvancedOptions(this)
-                binding.webview.loadUrl("https://exhentai.org/")
-            }
+        binding.btnRecheck.setOnClickListener {
+            hideAdvancedOptions()
+            binding.webview.loadUrl("https://exhentai.org/")
+        }
 
-            binding.btnAltLogin.setOnClickListener {
-                hideAdvancedOptions(this)
-                binding.webview.loadUrl("https://e-hentai.org/bounce_login.php")
-            }
+        binding.btnAltLogin.setOnClickListener {
+            hideAdvancedOptions()
+            binding.webview.loadUrl("https://e-hentai.org/bounce_login.php")
+        }
 
-            binding.btnSkipRestyle.setOnClickListener {
-                hideAdvancedOptions(this)
-                binding.webview.loadUrl("https://forums.e-hentai.org/index.php?act=Login&$PARAM_SKIP_INJECT=true")
-            }
+        binding.btnSkipRestyle.setOnClickListener {
+            hideAdvancedOptions()
+            binding.webview.loadUrl("https://forums.e-hentai.org/index.php?act=Login&$PARAM_SKIP_INJECT=true")
+        }
 
-            CookieManager.getInstance().removeAllCookies {
-                launchUI {
-                    startWebview(view)
-                }
+        CookieManager.getInstance().removeAllCookies {
+            launchUI {
+                startWebview()
             }
         }
     }
 
-    private fun hideAdvancedOptions(view: View) {
+    private fun hideAdvancedOptions() {
         binding.advancedOptions.isVisible = false
         binding.webview.isVisible = true
         binding.btnAdvanced.isEnabled = true
         binding.btnCancel.isEnabled = true
     }
 
-    fun startWebview(view: View) {
-        binding.webview.settings.javaScriptEnabled = true
-        binding.webview.settings.domStorageEnabled = true
+    private fun startWebview() {
+        binding.webview.setDefaultSettings()
 
         binding.webview.loadUrl("https://forums.e-hentai.org/index.php?act=Login")
 
@@ -169,9 +167,9 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
         return false
     }
 
-    fun getCookies(url: String): List<HttpCookie>? =
-        CookieManager.getInstance().getCookie(url)?.let {
-            it.split("; ").flatMap {
+    private fun getCookies(url: String): List<HttpCookie>? =
+        CookieManager.getInstance().getCookie(url)?.let { cookie ->
+            cookie.split("; ").flatMap {
                 HttpCookie.parse(it)
             }
         }

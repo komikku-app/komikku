@@ -460,10 +460,6 @@ class MigrationListController(bundle: Bundle? = null) :
         return true
     }
 
-    override fun onDestroyView(view: View) {
-        super.onDestroyView(view)
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.migration_list, menu)
     }

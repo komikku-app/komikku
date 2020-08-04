@@ -18,7 +18,7 @@ import uy.kohesive.injekt.injectLazy
 
 class SmartSearchEngine(
     parentContext: CoroutineContext,
-    val extraSearchParams: String? = null
+    private val extraSearchParams: String? = null
 ) : CoroutineScope {
     override val coroutineContext: CoroutineContext = parentContext + Job() + Dispatchers.Default
 

@@ -127,7 +127,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
         return true
     }
 
-    suspend fun startUpdating() {
+    private suspend fun startUpdating() {
         logger.d("Update job started!")
         val startTime = System.currentTimeMillis()
 
@@ -254,7 +254,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
     }
 
     // New, current
-    suspend fun updateEntryAndGetChapters(manga: Manga): Pair<List<Chapter>, List<Chapter>> {
+    private suspend fun updateEntryAndGetChapters(manga: Manga): Pair<List<Chapter>, List<Chapter>> {
         val source = sourceManager.get(manga.source) as? EHentai
             ?: throw GalleryNotUpdatedException(false, IllegalStateException("Missing EH-based source (${manga.source})!"))
 
@@ -339,12 +339,12 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
 
         fun launchBackgroundTest(context: Context): String {
             val jobScheduler = context.jobScheduler
-            if (jobScheduler.schedule(context.testBackgroundJobInfo()) == JobScheduler.RESULT_FAILURE) {
+            return if (jobScheduler.schedule(context.testBackgroundJobInfo()) == JobScheduler.RESULT_FAILURE) {
                 logger.e("Failed to schedule background test job!")
-                return "Failed"
+                "Failed"
             } else {
                 logger.d("Successfully scheduled background test job!")
-                return "Success"
+                "Success"
             }
         }
 

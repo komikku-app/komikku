@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.source.DelegatedHttpSource
 import exh.util.melt
 import java.io.Serializable
@@ -33,7 +34,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import rx.Observable
 import rx.Single
 import rx.schedulers.Schedulers
@@ -81,7 +82,7 @@ class BrowserActionActivity : AppCompatActivity() {
         val url: String? = intent.getStringExtra(URL_EXTRA)
         val actionName = intent.getStringExtra(ACTION_NAME_EXTRA)
 
-        @Suppress("NOT_NULL_ASSERTION_ON_CALLABLE_REFERENCE")
+        @Suppress("NOT_NULL_ASSERTION_ON_CALLABLE_REFERENCE", "UNCHECKED_CAST")
         val verifyComplete = if (source != null) {
             source::verifyComplete!!
         } else intent.getSerializableExtra(VERIFY_LAMBDA_EXTRA) as? (String) -> Boolean
@@ -106,8 +107,7 @@ class BrowserActionActivity : AppCompatActivity() {
             cm.setCookie(url, cookieString)
         }
 
-        webview.settings.javaScriptEnabled = true
-        webview.settings.domStorageEnabled = true
+        webview.setDefaultSettings()
         headers.entries.find { it.key.equals("user-agent", true) }?.let {
             webview.settings.userAgentString = it.value
         }
@@ -277,7 +277,7 @@ class BrowserActionActivity : AppCompatActivity() {
         }
     }
 
-    fun performRecognize(url: String): Single<String> {
+    private fun performRecognize(url: String): Single<String> {
         return credentialsObservable.flatMap { token ->
             httpClient.newCall(
                 Request.Builder()
@@ -304,7 +304,11 @@ class BrowserActionActivity : AppCompatActivity() {
                             .addFormDataPart(
                                 "audio.mp3",
                                 "audio.mp3",
-                                RequestBody.create("audio/mp3".toMediaTypeOrNull(), audioFile)
+                                audioFile.toRequestBody(
+                                    "audio/mp3".toMediaTypeOrNull(),
+                                    0,
+                                    audioFile.size
+                                )
                             )
                             .build()
                     )
@@ -315,7 +319,7 @@ class BrowserActionActivity : AppCompatActivity() {
         }.toSingle()
     }
 
-    fun doStageCheckbox(loopId: String) {
+    private fun doStageCheckbox(loopId: String) {
         if (loopId != currentLoopId) return
 
         webview.evaluateJavascript(
@@ -346,7 +350,7 @@ class BrowserActionActivity : AppCompatActivity() {
         )
     }
 
-    fun getAudioButtonLocation(loopId: String) {
+    private fun getAudioButtonLocation(loopId: String) {
         webview.evaluateJavascript(
             """
             (function() {
@@ -381,7 +385,7 @@ class BrowserActionActivity : AppCompatActivity() {
         )
     }
 
-    fun doStageDownloadAudio(loopId: String) {
+    private fun doStageDownloadAudio(loopId: String) {
         webview.evaluateJavascript(
             """
             (function() {
@@ -409,7 +413,7 @@ class BrowserActionActivity : AppCompatActivity() {
         )
     }
 
-    fun typeResult(loopId: String, result: String) {
+    private fun typeResult(loopId: String, result: String) {
         webview.evaluateJavascript(
             """
             (function() {
@@ -478,7 +482,7 @@ class BrowserActionActivity : AppCompatActivity() {
         }
     }
 
-    fun runValidateCaptcha(loopId: String) {
+    private fun runValidateCaptcha(loopId: String) {
         if (loopId != validateCurrentLoopId) return
 
         webview.evaluateJavascript(

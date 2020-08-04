@@ -93,32 +93,36 @@ class EHentaiUpdateHelper(context: Context) {
 
                         val newLastPageRead = chainsAsChapters.maxBy { it.last_page_read }?.last_page_read
 
-                        if (existing != null) {
-                            existing.read = existing.read || chapter.read
-                            existing.last_page_read = existing.last_page_read.coerceAtLeast(chapter.last_page_read)
-                            if (newLastPageRead != null && existing.last_page_read <= 0) {
-                                existing.last_page_read = newLastPageRead
-                            }
-                            existing.bookmark = existing.bookmark || chapter.bookmark
-                            curChapters
-                        } else if (chapter.date_upload > 0) { // Ignore chapters using the old system
-                            new = true
-                            curChapters + ChapterImpl().apply {
-                                manga_id = accepted.manga.id
-                                url = chapter.url
-                                name = chapter.name
-                                read = chapter.read
-                                bookmark = chapter.bookmark
-
-                                last_page_read = chapter.last_page_read
-                                if (newLastPageRead != null && last_page_read <= 0) {
-                                    last_page_read = newLastPageRead
+                        when {
+                            existing != null -> {
+                                existing.read = existing.read || chapter.read
+                                existing.last_page_read = existing.last_page_read.coerceAtLeast(chapter.last_page_read)
+                                if (newLastPageRead != null && existing.last_page_read <= 0) {
+                                    existing.last_page_read = newLastPageRead
                                 }
-
-                                date_fetch = chapter.date_fetch
-                                date_upload = chapter.date_upload
+                                existing.bookmark = existing.bookmark || chapter.bookmark
+                                curChapters
                             }
-                        } else curChapters
+                            chapter.date_upload > 0 -> { // Ignore chapters using the old system
+                                new = true
+                                curChapters + ChapterImpl().apply {
+                                    manga_id = accepted.manga.id
+                                    url = chapter.url
+                                    name = chapter.name
+                                    read = chapter.read
+                                    bookmark = chapter.bookmark
+
+                                    last_page_read = chapter.last_page_read
+                                    if (newLastPageRead != null && last_page_read <= 0) {
+                                        last_page_read = newLastPageRead
+                                    }
+
+                                    date_fetch = chapter.date_fetch
+                                    date_upload = chapter.date_upload
+                                }
+                            }
+                            else -> curChapters
+                        }
                     }
                     .filter { it.date_upload > 0 } // Ignore chapters using the old system (filter after to prevent dupes from insert)
                     .sortedBy { it.date_upload }

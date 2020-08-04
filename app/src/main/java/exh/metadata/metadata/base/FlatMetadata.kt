@@ -16,7 +16,7 @@ data class FlatMetadata(
 ) {
     inline fun <reified T : RaisedSearchMetadata> raise(): T = raise(T::class)
 
-    fun <T : RaisedSearchMetadata> raise(clazz: KClass<T>) =
+    fun <T : RaisedSearchMetadata> raise(clazz: KClass<T>): T =
         RaisedSearchMetadata.raiseFlattenGson
             .fromJson(metadata.extra, clazz.java).apply {
                 fillBaseFields(this@FlatMetadata)
@@ -84,7 +84,7 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
     }
 }
 
-fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata) = Completable.fromCallable {
+fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata): Completable = Completable.fromCallable {
     require(flatMetadata.metadata.mangaId != -1L)
 
     inTransaction {
