@@ -27,6 +27,8 @@ import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
+import exh.EH_SOURCE_ID
+import exh.EXH_SOURCE_ID
 import exh.util.defaultReaderType
 import java.io.File
 import java.util.Date
@@ -360,6 +362,16 @@ class ReaderPresenter(
         selectedChapter.chapter.last_page_read = page.index
         if (selectedChapter.pages?.lastIndex == page.index) {
             selectedChapter.chapter.read = true
+            // SY -->
+            if (manga?.source == EH_SOURCE_ID || manga?.source == EXH_SOURCE_ID) {
+                chapterList
+                    .filter { it.chapter.source_order > selectedChapter.chapter.source_order }
+                    .onEach {
+                        it.chapter.read = true
+                        saveChapterProgress(it)
+                    }
+            }
+            // SY <--
             updateTrackChapterRead(selectedChapter)
             deleteChapterIfNeeded(selectedChapter)
         }
