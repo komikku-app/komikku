@@ -41,6 +41,9 @@ import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
+import exh.EH_SOURCE_ID
+import exh.EXH_SOURCE_ID
+import exh.NHENTAI_SOURCE_ID
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.ui.LoaderManager
@@ -522,6 +525,10 @@ class LibraryController(
             mode.title = count.toString()
 
             binding.actionToolbar.findItem(R.id.action_download_unread)?.isVisible = selectedMangas.any { it.source != LocalSource.ID }
+
+            // SY -->
+            binding.actionToolbar.findItem(R.id.action_clean)?.isVisible = selectedMangas.any { it.source == EH_SOURCE_ID || it.source == EXH_SOURCE_ID }
+            // SY <--
         }
         return false
     }
@@ -540,9 +547,11 @@ class LibraryController(
             // SY -->
             R.id.action_migrate -> {
                 val skipPre = preferences.skipPreMigration().get()
-                PreMigrationController.navigateToMigration(skipPre, router, selectedMangas.mapNotNull { it.id })
+                presenter.onOpenManga()
                 destroyActionModeIfNeeded()
+                PreMigrationController.navigateToMigration(skipPre, router, selectedMangas.mapNotNull { it.id })
             }
+            R.id.action_clean -> cleanTitles()
             // SY <--
             else -> return false
         }
@@ -626,6 +635,14 @@ class LibraryController(
     private fun showDeleteMangaDialog() {
         DeleteLibraryMangasDialog(this, selectedMangas.toList()).showDialog(router)
     }
+
+    // SY -->
+    private fun cleanTitles() {
+        val mangas = selectedMangas.filter { it.source == EH_SOURCE_ID || it.source == EXH_SOURCE_ID || it.source == NHENTAI_SOURCE_ID }.toList()
+        presenter.cleanTitles(mangas)
+        destroyActionModeIfNeeded()
+    }
+    // SY <--
 
     override fun updateCategoriesForMangas(mangas: List<Manga>, categories: List<Category>) {
         presenter.moveMangasToCategories(categories, mangas)

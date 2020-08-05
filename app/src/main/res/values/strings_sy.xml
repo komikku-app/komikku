@@ -13,6 +13,7 @@
     <string name="action_search_manually">Search manually</string>
     <string name="action_migrate_now">Migrate now</string>
     <string name="action_copy_now">Copy now</string>
+    <string name="clean_titles">Clean titles</string>
 
     <!-- Manga Type -->
     <string name="manhwa">Manhwa</string>

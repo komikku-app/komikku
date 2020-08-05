@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_EXCLUDE
@@ -25,6 +26,7 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
 import exh.util.isLewd
+import exh.util.nullIfBlank
 import java.util.Collections
 import java.util.Comparator
 import rx.Observable
@@ -52,7 +54,10 @@ class LibraryPresenter(
     private val preferences: PreferencesHelper = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
-    private val downloadManager: DownloadManager = Injekt.get()
+    private val downloadManager: DownloadManager = Injekt.get(),
+    // SY -->
+    private val customMangaManager: CustomMangaManager = Injekt.get()
+    // SY <--
 ) : BasePresenter<LibraryController>() {
 
     private val context = preferences.context
@@ -365,6 +370,34 @@ class LibraryPresenter(
             }
         }
     }
+
+    // SY -->
+    fun cleanTitles(mangas: List<Manga>) {
+        mangas.forEach { manga ->
+            val editedTitle = manga.title.replace("\\[.*?]".toRegex(), "").trim().replace("\\(.*?\\)".toRegex(), "").trim().replace("\\{.*?\\}".toRegex(), "").trim().let {
+                if (it.contains("|")) {
+                    it.replace(".*\\|".toRegex(), "").trim()
+                } else {
+                    it
+                }
+            }
+            if (manga.title == editedTitle) return@forEach
+            val mangaJson = manga.id?.let {
+                CustomMangaManager.MangaJson(
+                    it,
+                    editedTitle.nullIfBlank(),
+                    (if (manga.author != manga.originalAuthor) manga.author else null),
+                    (if (manga.artist != manga.originalArtist) manga.artist else null),
+                    (if (manga.description != manga.originalDescription) manga.description else null),
+                    (if (manga.genre != manga.originalGenre) manga.getGenres()?.toTypedArray() else null)
+                )
+            }
+            mangaJson?.let {
+                customMangaManager.saveMangaInfo(it)
+            }
+        }
+    }
+    // SY <--
 
     /**
      * Remove the selected manga from the library.

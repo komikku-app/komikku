@@ -24,6 +24,13 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/action_clean"
+        android:icon="@drawable/baseline_swap_calls_24"
+        android:title="@string/clean_titles"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_select_inverse"
         android:icon="@drawable/ic_flip_to_back_24dp"
         android:title="@string/action_select_inverse"
