@@ -1,10 +1,9 @@
-name: Remote Dispatch Action Initiator
+name: Release Builder
  
 on:
   push:
    branches: 
     - 'release'
-  repository_dispatch:
  
 jobs:
   apk:
