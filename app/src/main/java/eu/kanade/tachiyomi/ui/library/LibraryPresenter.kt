@@ -357,7 +357,7 @@ class LibraryPresenter(
             launchIO {
                 /* SY --> */ val chapters = if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
                     val chapter = db.getChapters(manga).executeAsBlocking().minBy { it.source_order }
-                    if (chapter != null) listOf(chapter) else emptyList()
+                    if (chapter != null && !chapter.read) listOf(chapter) else emptyList()
                 } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
                     .filter { !it.read }
 
