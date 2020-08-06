@@ -13,9 +13,13 @@ import kotlinx.android.synthetic.main.source_comfortable_grid_item.badges
 import kotlinx.android.synthetic.main.source_comfortable_grid_item.card
 import kotlinx.android.synthetic.main.source_comfortable_grid_item.download_text
 import kotlinx.android.synthetic.main.source_comfortable_grid_item.local_text
+import kotlinx.android.synthetic.main.source_comfortable_grid_item.play_layout
 import kotlinx.android.synthetic.main.source_comfortable_grid_item.thumbnail
 import kotlinx.android.synthetic.main.source_comfortable_grid_item.title
 import kotlinx.android.synthetic.main.source_comfortable_grid_item.unread_text
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 
 /**
  * Class used to hold the displayed data of a manga in the library, like the cover or the title.
@@ -31,6 +35,16 @@ class LibraryComfortableGridHolder(
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 ) : LibraryCompactGridHolder(view, adapter) {
 
+    // SY -->
+    init {
+        play_layout.clicks()
+            .onEach {
+                playButtonClicked()
+            }
+            .launchIn((adapter as LibraryCategoryAdapter).controller.scope)
+    }
+    // SY <--
+
     /**
      * Method called from [LibraryCategoryAdapter.onBindViewHolder]. It updates the data for this
      * holder with the given manga.
@@ -38,6 +52,9 @@ class LibraryComfortableGridHolder(
      * @param item the manga item to bind.
      */
     override fun onSetValues(item: LibraryItem) {
+        // SY -->
+        manga = item.manga
+        // SY <--
         // Update the title of the manga.
         title.text = item.manga.title
 
@@ -56,6 +73,10 @@ class LibraryComfortableGridHolder(
         }
         // set local visibility if its local manga
         local_text.isVisible = item.manga.isLocal()
+
+        // SY -->
+        play_layout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
+        // SY <--
 
         // For rounded corners
         card.clipToOutline = true

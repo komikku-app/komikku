@@ -5,6 +5,7 @@ import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
+import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -181,6 +182,7 @@ class LibraryPresenter(
     private fun setBadges(map: LibraryMap) {
         val showDownloadBadges = preferences.downloadBadge().get()
         val showUnreadBadges = preferences.unreadBadge().get()
+        val startReadingButton = preferences.startReadingButton().get()
 
         for ((_, itemList) in map) {
             for (item in itemList) {
@@ -197,6 +199,10 @@ class LibraryPresenter(
                     // Unset unread count if not enabled
                     -1
                 }
+
+                // SY -->
+                item.startReadingButton = startReadingButton
+                // SY <--
             }
         }
     }
@@ -443,4 +449,17 @@ class LibraryPresenter(
 
         db.setMangaCategories(mc, mangas)
     }
+
+    // SY -->
+    /** Returns first unread chapter of a manga */
+    fun getFirstUnread(manga: Manga): Chapter? {
+        val chapters = db.getChapters(manga).executeAsBlocking()
+        return if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
+            val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
+            if (chapter?.read == false) chapter else null
+        } else {
+            chapters.sortedByDescending { it.source_order }.find { !it.read }
+        }
+    }
+    // SY <--
 }

@@ -278,4 +278,6 @@ object PreferenceKeys {
     const val enhancedEHentaiView = "enhanced_e_hentai_view"
 
     const val webtoonEnableZoomOut = "webtoon_enable_zoom_out"
+
+    const val startReadingButton = "start_reading_button"
 }

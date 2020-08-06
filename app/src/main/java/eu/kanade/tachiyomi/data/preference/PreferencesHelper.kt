@@ -382,4 +382,6 @@ class PreferencesHelper(val context: Context) {
     fun enhancedEHentaiView() = flowPrefs.getBoolean(Keys.enhancedEHentaiView, true)
 
     fun webtoonEnableZoomOut() = flowPrefs.getBoolean(Keys.webtoonEnableZoomOut, false)
+
+    fun startReadingButton() = flowPrefs.getBoolean(Keys.startReadingButton, true)
 }

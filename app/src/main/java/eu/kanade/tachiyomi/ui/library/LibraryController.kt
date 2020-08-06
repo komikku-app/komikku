@@ -21,6 +21,7 @@ import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
 import com.tfcporciuncula.flow.Preference
+import eu.davidea.flexibleadapter.SelectableAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -39,6 +40,7 @@ import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
@@ -69,7 +71,8 @@ class LibraryController(
     TabbedController,
     ActionMode.Callback,
     ChangeMangaCategoriesDialog.Listener,
-    DeleteLibraryMangasDialog.Listener {
+    DeleteLibraryMangasDialog.Listener,
+    LibraryCategoryAdapter.LibraryListener {
 
     /**
      * Position of the active category.
@@ -791,6 +794,18 @@ class LibraryController(
             }
         }
         oldSyncStatus = status
+    }
+
+    override fun startReading(manga: Manga, adapter: LibraryCategoryAdapter) {
+        if (adapter.mode == SelectableAdapter.Mode.MULTI) {
+            toggleSelection(manga)
+            return
+        }
+        val activity = activity ?: return
+        val chapter = presenter.getFirstUnread(manga) ?: return
+        val intent = ReaderActivity.newIntent(activity, manga, chapter)
+        destroyActionModeIfNeeded()
+        startActivity(intent)
     }
     // <-- EXH
 }

@@ -28,6 +28,32 @@
                 tools:ignore="ContentDescription"
                 tools:src="@mipmap/ic_launcher" />
 
+            <FrameLayout
+                android:id="@+id/play_layout"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="bottom|end"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/play_button"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/round_play_background"
+                    android:contentDescription="@string/start_reading"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_start_reading_24dp"
+                    android:tint="@android:color/white" />
+            </FrameLayout>
+
             <LinearLayout
                 android:id="@+id/badges"
                 android:layout_width="wrap_content"

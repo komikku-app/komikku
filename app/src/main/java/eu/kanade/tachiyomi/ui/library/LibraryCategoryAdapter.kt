@@ -36,7 +36,7 @@ import uy.kohesive.injekt.injectLazy
  *
  * @param view the fragment containing this adapter.
  */
-class LibraryCategoryAdapter(view: LibraryCategoryView) :
+class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryController) :
     FlexibleAdapter<LibraryItem>(null, view, true) {
     // EXH -->
     private val db: DatabaseHelper by injectLazy()
@@ -60,6 +60,8 @@ class LibraryCategoryAdapter(view: LibraryCategoryView) :
      * The list of manga in this category.
      */
     private var mangas: List<LibraryItem> = emptyList()
+
+    val libraryListener: LibraryListener = controller
 
     // SY -->
     val onItemReleaseListener: CategoryAdapter.OnItemReleaseListener = view
@@ -225,6 +227,10 @@ class LibraryCategoryAdapter(view: LibraryCategoryView) :
             }
             return@any false
         }
+    }
+
+    interface LibraryListener {
+        fun startReading(manga: Manga, adapter: LibraryCategoryAdapter)
     }
     // EXH <--
 }

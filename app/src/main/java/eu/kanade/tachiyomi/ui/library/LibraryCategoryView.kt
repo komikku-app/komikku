@@ -106,7 +106,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             }
         }
 
-        adapter = LibraryCategoryAdapter(this)
+        adapter = LibraryCategoryAdapter(this, controller)
 
         recycler.setHasFixedSize(true)
         recycler.adapter = adapter
