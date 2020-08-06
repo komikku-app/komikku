@@ -268,7 +268,7 @@ class SettingsAdvancedController : SettingsController() {
             val sourceManager: SourceManager = Injekt.get()
             val downloadManager: DownloadManager = Injekt.get()
             var foldersCleared = 0
-            for (manga in mangaList) {
+            mangaList.forEach { manga ->
                 val chapterList = db.getChapters(manga).executeAsBlocking()
                 val source = sourceManager.getOrStub(manga.source)
                 foldersCleared += downloadManager.cleanupChapters(chapterList, manga, source)

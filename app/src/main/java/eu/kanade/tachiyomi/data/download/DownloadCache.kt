@@ -204,7 +204,7 @@ class DownloadCache(
     fun removeFolders(folders: List<String>, manga: Manga) {
         val sourceDir = rootDir.files[manga.source] ?: return
         val mangaDir = sourceDir.files[provider.getMangaDirName(manga)] ?: return
-        for (chapter in folders) {
+        folders.forEach { chapter ->
             if (chapter in mangaDir.files) {
                 mangaDir.files -= chapter
             }
