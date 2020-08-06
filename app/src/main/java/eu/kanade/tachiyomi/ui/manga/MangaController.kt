@@ -150,13 +150,14 @@ class MangaController :
     private var chaptersHeaderAdapter: MangaChaptersHeaderAdapter? = null
     private var chaptersAdapter: ChaptersAdapter? = null
 
-    /**
-     * Sheet containing filter/sort/display items.
-     */
+    // Sheet containing filter/sort/display items.
     private var settingsSheet: ChaptersSettingsSheet? = null
 
     private var actionFab: ExtendedFloatingActionButton? = null
     private var actionFabScrollListener: RecyclerView.OnScrollListener? = null
+
+    // Snackbar to add manga to library after downloading chapter(s)
+    private var addSnackbar: Snackbar? = null
 
     /**
      * Action mode for multiple selection.
@@ -373,6 +374,7 @@ class MangaController :
         mangaInfoItemAdapter = null
         mangaMetaInfoAdapter = null
         // SY <--
+        addSnackbar?.dismiss()
         updateToolbarTitleAlpha(255)
         super.onDestroyView(view)
     }
@@ -533,12 +535,10 @@ class MangaController :
         if (manga.favorite) {
             toggleFavorite()
             activity?.toast(activity?.getString(R.string.manga_removed_library))
+            activity?.invalidateOptionsMenu()
         } else {
             addToLibrary(manga)
         }
-
-        // Update menu to show migrate option
-        activity?.invalidateOptionsMenu()
     }
 
     fun onTrackingClick() {
@@ -556,6 +556,7 @@ class MangaController :
                 toggleFavorite()
                 presenter.moveMangaToCategory(manga, defaultCategory)
                 activity?.toast(activity?.getString(R.string.manga_added_library))
+                activity?.invalidateOptionsMenu()
             }
 
             // Automatic 'Default' or no categories
@@ -563,6 +564,7 @@ class MangaController :
                 toggleFavorite()
                 presenter.moveMangaToCategory(manga, null)
                 activity?.toast(activity?.getString(R.string.manga_added_library))
+                activity?.invalidateOptionsMenu()
             }
 
             // Choose a category
@@ -686,6 +688,7 @@ class MangaController :
         if (!manga.favorite) {
             toggleFavorite()
             activity?.toast(activity?.getString(R.string.manga_added_library))
+            activity?.invalidateOptionsMenu()
         }
 
         presenter.moveMangaToCategories(manga, categories)
@@ -1069,7 +1072,7 @@ class MangaController :
         val manga = presenter.manga
         presenter.downloadChapters(chapters)
         if (view != null && !manga.favorite) {
-            activity!!.root_coordinator?.snack(view.context.getString(R.string.snack_add_to_library), Snackbar.LENGTH_INDEFINITE) {
+            addSnackbar = activity!!.root_coordinator?.snack(view.context.getString(R.string.snack_add_to_library), Snackbar.LENGTH_INDEFINITE) {
                 setAction(R.string.action_add) {
                     addToLibrary(manga)
                 }
