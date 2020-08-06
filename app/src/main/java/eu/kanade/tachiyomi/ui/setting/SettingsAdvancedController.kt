@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
@@ -14,13 +15,16 @@ import com.afollestad.materialdialogs.MaterialDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.onChange
@@ -42,9 +46,16 @@ import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.debug.SettingsDebugController
 import exh.log.EHLogLevel
 import exh.source.BlacklistedSources
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class SettingsAdvancedController : SettingsController() {
@@ -142,6 +153,17 @@ class SettingsAdvancedController : SettingsController() {
 
         // --> EXH
         preferenceCategory {
+            titleRes = R.string.group_downloader
+
+            preference {
+                titleRes = R.string.clean_up_downloaded_chapters
+                summaryRes = R.string.delete_unused_chapters
+
+                onClick { cleanupDownloads() }
+            }
+        }
+
+        preferenceCategory {
             titleRes = R.string.developer_tools
             isPersistent = false
 
@@ -237,6 +259,35 @@ class SettingsAdvancedController : SettingsController() {
         // <-- EXH
     }
 
+    // SY -->
+    private fun cleanupDownloads() {
+        if (job?.isActive == true) return
+        activity?.toast(R.string.starting_cleanup)
+        job = GlobalScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
+            val mangaList = db.getMangas().executeAsBlocking()
+            val sourceManager: SourceManager = Injekt.get()
+            val downloadManager: DownloadManager = Injekt.get()
+            var foldersCleared = 0
+            for (manga in mangaList) {
+                val chapterList = db.getChapters(manga).executeAsBlocking()
+                val source = sourceManager.getOrStub(manga.source)
+                foldersCleared += downloadManager.cleanupChapters(chapterList, manga, source)
+            }
+            launchUI {
+                val activity = activity ?: return@launchUI
+                val cleanupString =
+                    if (foldersCleared == 0) activity.getString(R.string.no_folders_to_cleanup)
+                    else resources!!.getQuantityString(
+                        R.plurals.cleanup_done,
+                        foldersCleared,
+                        foldersCleared
+                    )
+                activity.toast(cleanupString, Toast.LENGTH_LONG)
+            }
+        }
+    }
+    // SY <--
+
     private fun clearChapterCache() {
         if (activity == null) return
         val files = chapterCache.cacheDir.listFiles() ?: return
@@ -281,5 +332,7 @@ class SettingsAdvancedController : SettingsController() {
 
     private companion object {
         const val CLEAR_CACHE_KEY = "pref_clear_cache_key"
+
+        private var job: Job? = null
     }
 }
