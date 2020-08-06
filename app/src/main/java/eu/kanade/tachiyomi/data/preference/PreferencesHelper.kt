@@ -380,4 +380,6 @@ class PreferencesHelper(val context: Context) {
     fun hitomiAlwaysWebp() = flowPrefs.getBoolean(Keys.hitomiAlwaysWebp, true)
 
     fun enhancedEHentaiView() = flowPrefs.getBoolean(Keys.enhancedEHentaiView, true)
+
+    fun webtoonEnableZoomOut() = flowPrefs.getBoolean(Keys.webtoonEnableZoomOut, false)
 }

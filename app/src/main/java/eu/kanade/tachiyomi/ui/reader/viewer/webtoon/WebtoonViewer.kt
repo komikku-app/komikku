@@ -139,6 +139,12 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             refreshAdapter()
         }
 
+        // SY -->
+        config.zoomPropertyChangedListener = {
+            frame.enableZoomOut = it
+        }
+        // SY <--
+
         frame.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         frame.addView(recycler)
     }

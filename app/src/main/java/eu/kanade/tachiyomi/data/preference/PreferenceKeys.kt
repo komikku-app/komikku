@@ -276,4 +276,6 @@ object PreferenceKeys {
     const val hitomiAlwaysWebp = "hitomi_always_webp"
 
     const val enhancedEHentaiView = "enhanced_e_hentai_view"
+
+    const val webtoonEnableZoomOut = "webtoon_enable_zoom_out"
 }

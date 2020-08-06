@@ -294,6 +294,11 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_crop_borders
                 defaultValue = false
             }
+            switchPreference {
+                key = Keys.webtoonEnableZoomOut
+                titleRes = R.string.enable_zoom_out
+                defaultValue = false
+            }
         }
 
         preferenceCategory {

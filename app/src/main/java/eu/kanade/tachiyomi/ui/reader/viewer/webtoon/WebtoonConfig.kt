@@ -16,11 +16,21 @@ class WebtoonConfig(preferences: PreferencesHelper = Injekt.get()) : ViewerConfi
     var sidePadding = 0
         private set
 
+    // SY -->
+    var enableZoomOut = false
+        private set
+    var zoomPropertyChangedListener: ((Boolean) -> Unit)? = null
+    // SY <--
     init {
         preferences.cropBordersWebtoon()
             .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
 
         preferences.webtoonSidePadding()
             .register({ sidePadding = it }, { imagePropertyChangedListener?.invoke() })
+
+        // SY -->
+        preferences.webtoonEnableZoomOut()
+            .register({ enableZoomOut = it }, { zoomPropertyChangedListener?.invoke(it) })
+        // SY <--
     }
 }
