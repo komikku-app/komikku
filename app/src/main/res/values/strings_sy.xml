@@ -187,6 +187,8 @@
     <string name="auto_webtoon_mode">Auto Webtoon Mode</string>
     <string name="auto_webtoon_mode_summary">Use auto webtoon mode for manga that are detected to likely use the long strip format</string>
     <string name="enable_zoom_out">Enable zoom out</string>
+    <string name="smart_based_on_page">Smart (based on page)</string>
+    <string name="smart_based_on_page_and_theme">Smart (based on page and theme)</string>
 
     <!-- Reader -->
     <!-- Reader Actions -->
