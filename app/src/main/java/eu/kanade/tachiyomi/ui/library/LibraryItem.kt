@@ -34,6 +34,10 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
     var downloadCount = -1
     var unreadCount = -1
 
+    // SY -->
+    var startReadingButton = false
+    // SY <--
+
     override fun getLayoutRes(): Int {
         return when (libraryDisplayMode.get()) {
             DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item

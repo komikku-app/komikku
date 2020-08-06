@@ -751,6 +751,10 @@
     <string name="lewd">Lewd</string>
     <string name="ext_redundant">Redundant</string>
     <string name="redundant_extension_message">This extension is redundant and will not be used inside this fork of Tachiyomi.</string>
+    <string name="action_start_reading_button">Start reading button</string>
+
+    <!-- Library fragment -->
+    <string name="buttons_header">Buttons</string>
 
     <!-- Manga Type -->
     <!--<string name="manga">Manga</string>-->

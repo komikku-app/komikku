@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -14,9 +15,13 @@ import eu.kanade.tachiyomi.util.view.visibleIf
 import kotlinx.android.synthetic.main.source_compact_grid_item.card
 import kotlinx.android.synthetic.main.source_compact_grid_item.download_text
 import kotlinx.android.synthetic.main.source_compact_grid_item.local_text
+import kotlinx.android.synthetic.main.source_compact_grid_item.play_layout
 import kotlinx.android.synthetic.main.source_compact_grid_item.thumbnail
 import kotlinx.android.synthetic.main.source_compact_grid_item.title
 import kotlinx.android.synthetic.main.source_compact_grid_item.unread_text
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -32,9 +37,22 @@ import uy.kohesive.injekt.api.get
 open class LibraryGridHolder(
     private val view: View,
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
-
 ) : LibraryHolder(view, adapter) {
+
     private val preferences: PreferencesHelper = Injekt.get()
+
+    var manga: Manga? = null
+
+    // SY -->
+    init {
+        play_layout.clicks()
+            .onEach {
+                playButtonClicked()
+            }
+            .launchIn((adapter as LibraryCategoryAdapter).controller.scope)
+    }
+    // SY <--
+
     /**
      * Method called from [LibraryCategoryAdapter.onBindViewHolder]. It updates the data for this
      * holder with the given manga.
@@ -42,6 +60,9 @@ open class LibraryGridHolder(
      * @param item the manga item to bind.
      */
     override fun onSetValues(item: LibraryItem) {
+        // SY -->
+        manga = item.manga
+        // SY <--
         // Update the title of the manga.
         title.text = item.manga.title
 
@@ -64,7 +85,12 @@ open class LibraryGridHolder(
             view.context.resources.displayMetrics
         )
 
+        // SY -->
+        play_layout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
+        // SY <--
+
         // Setting this via XML doesn't work
+        // For rounded corners
         card.clipToOutline = true
 
         // Update the cover.
@@ -75,4 +101,10 @@ open class LibraryGridHolder(
             .centerCrop()
             .into(thumbnail)
     }
+
+    // SY -->
+    fun playButtonClicked() {
+        manga?.let { (adapter as LibraryCategoryAdapter).controller.startReading(it, (adapter as LibraryCategoryAdapter)) }
+    }
+    // SY <--
 }

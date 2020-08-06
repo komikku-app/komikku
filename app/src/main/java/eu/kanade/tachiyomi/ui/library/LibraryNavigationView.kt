@@ -31,7 +31,7 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
     /**
      * List of groups shown in the view.
      */
-    private val groups = listOf(FilterGroup(), SortGroup(), DisplayGroup(), BadgeGroup())
+    private val groups = listOf(FilterGroup(), SortGroup(), DisplayGroup(), ButtonsGroup(), BadgeGroup())
 
     /**
      * Adapter instance.
@@ -238,6 +238,29 @@ class LibraryNavigationView @JvmOverloads constructor(context: Context, attrs: A
             adapter.notifyItemChanged(item)
         }
     }
+
+    // SY -->
+    inner class ButtonsGroup : Group {
+        private val startReadingButton = Item.CheckboxGroup(R.string.action_start_reading_button, this)
+
+        override val header = Item.Header(R.string.buttons_header)
+        override val items = listOf(startReadingButton)
+        override val footer = null
+
+        override fun initModels() {
+            startReadingButton.checked = preferences.startReadingButton().get()
+        }
+
+        override fun onItemClicked(item: Item) {
+            item as Item.CheckboxGroup
+            item.checked = !item.checked
+            when (item) {
+                startReadingButton -> preferences.startReadingButton().set((item.checked))
+            }
+            adapter.notifyItemChanged(item)
+        }
+    }
+    // SY <--
 
     /**
      * Display group, to show the library as a list or a grid.
