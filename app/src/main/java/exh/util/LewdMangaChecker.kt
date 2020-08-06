@@ -11,8 +11,7 @@ import uy.kohesive.injekt.api.get
 
 fun Manga.isLewd(): Boolean {
     val sourceName = Injekt.get<SourceManager>().getOrStub(source).name
-    val currentTags =
-        genre?.split(",")?.map { it.trim().toLowerCase(Locale.US) } ?: emptyList()
+    val currentTags = getGenres() ?: emptyList()
 
     if (source == EH_SOURCE_ID || source == EXH_SOURCE_ID || source == NHENTAI_SOURCE_ID) {
         return !currentTags.any { tag -> isNonHentaiTag(tag) }

@@ -100,7 +100,7 @@ class EditMangaDialog : DialogController {
             view.manga_author.append(manga.author ?: "")
             view.manga_artist.append(manga.artist ?: "")
             view.manga_description.append(manga.description ?: "")
-            view.manga_genres_tags.setChips(manga.genre?.split(",")?.map { it.trim() } ?: emptyList())
+            view.manga_genres_tags.setChips(manga.getGenres())
         } else {
             if (manga.title != manga.originalTitle) {
                 view.title.append(manga.title)
@@ -114,7 +114,7 @@ class EditMangaDialog : DialogController {
             if (manga.description != manga.originalDescription) {
                 view.manga_description.append(manga.description ?: "")
             }
-            view.manga_genres_tags.setChips(manga.genre?.split(",")?.map { it.trim() } ?: emptyList())
+            view.manga_genres_tags.setChips(manga.getGenres())
 
             view.title.hint = "${resources?.getString(R.string.title)}: ${manga.originalTitle}"
             if (manga.originalAuthor != null) {
@@ -147,7 +147,7 @@ class EditMangaDialog : DialogController {
         if (manga.genre.isNullOrBlank() || manga.source == LocalSource.ID) dialogView?.manga_genres_tags?.setChips(
             emptyList()
         )
-        else dialogView?.manga_genres_tags?.setChips(manga.originalGenre?.split(", "))
+        else dialogView?.manga_genres_tags?.setChips(manga.getOriginalGenres())
     }
 
     fun updateCover(uri: Uri) {

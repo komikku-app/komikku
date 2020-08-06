@@ -32,6 +32,12 @@ interface Manga : SManga {
         return genre?.split(", ")?.map { it.trim() }
     }
 
+    // SY -->
+    fun getOriginalGenres(): List<String>? {
+        return originalGenre?.split(", ")?.map { it.trim() }
+    }
+    // SY <--
+
     private fun setFlags(flag: Int, mask: Int) {
         chapter_flags = chapter_flags and mask.inv() or (flag and mask)
     }
