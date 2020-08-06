@@ -46,8 +46,8 @@ class SettingsReaderController : SettingsController() {
             intListPreference {
                 key = Keys.readerTheme
                 titleRes = R.string.pref_reader_theme
-                entriesRes = arrayOf(R.string.black_background, R.string.gray_background, R.string.white_background)
-                entryValues = arrayOf("1", "2", "0")
+                entriesRes = arrayOf(R.string.black_background, R.string.gray_background, R.string.white_background, R.string.smart_based_on_page, R.string.smart_based_on_page_and_theme)
+                entryValues = arrayOf("1", "2", "0", "3", "4")
                 defaultValue = "1"
                 summary = "%s"
             }

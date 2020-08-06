@@ -886,10 +886,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
                 .launchIn(scope)
 
-            preferences.readerTheme().asFlow()
+            // SY -->
+            /*preferences.readerTheme().asFlow()
                 .drop(1) // We only care about updates
                 .onEach { recreate() }
-                .launchIn(scope)
+                .launchIn(scope)*/
+            // SY <--
 
             preferences.showPageNumber().asFlow()
                 .onEach { setPageNumberVisibility(it) }
