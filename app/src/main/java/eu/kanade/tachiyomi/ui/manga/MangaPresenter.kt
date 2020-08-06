@@ -265,12 +265,12 @@ class MangaPresenter(
             manga.author = author?.trimOrNull()
             manga.artist = artist?.trimOrNull()
             manga.description = description?.trimOrNull()
-            val tagsString = tags?.joinToString(", ")
+            val tagsString = tags?.joinToString()
             manga.genre = if (tags.isNullOrEmpty()) null else tagsString?.trim()
             LocalSource(downloadManager.context).updateMangaInfo(manga)
             db.updateMangaInfo(manga).executeAsBlocking()
         } else {
-            val genre = if (!tags.isNullOrEmpty() && tags.joinToString(", ") != manga.genre) {
+            val genre = if (!tags.isNullOrEmpty() && tags.joinToString() != manga.genre) {
                 tags.toTypedArray()
             } else {
                 null

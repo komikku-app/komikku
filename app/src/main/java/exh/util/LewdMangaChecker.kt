@@ -5,12 +5,11 @@ import eu.kanade.tachiyomi.source.SourceManager
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
-import java.util.Locale
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 fun Manga.isLewd(): Boolean {
-    val sourceName = Injekt.get<SourceManager>().getOrStub(source).name
+    val sourceName = Injekt.get<SourceManager>().get(source)?.name
     val currentTags = getGenres() ?: emptyList()
 
     if (source == EH_SOURCE_ID || source == EXH_SOURCE_ID || source == NHENTAI_SOURCE_ID) {
@@ -19,7 +18,7 @@ fun Manga.isLewd(): Boolean {
 
     return source in 6905L..6913L ||
         // source in lewdDelegatedSourceIds ||
-        isHentaiSource(sourceName) ||
+        (sourceName != null && isHentaiSource(sourceName)) ||
         currentTags.any { tag -> isHentaiTag(tag) }
 }
 
