@@ -716,7 +716,7 @@ class MangaPresenter(
     }
 
     private fun downloadNewChapters(chapters: List<Chapter>) {
-        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences)) return
+        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences) || source.isEhBasedSource()) return
 
         downloadChapters(chapters)
     }
