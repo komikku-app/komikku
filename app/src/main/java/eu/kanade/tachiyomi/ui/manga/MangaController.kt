@@ -142,9 +142,11 @@ class MangaController :
     private val toolbarTextColor by lazy { view!!.context.getResourceColor(R.attr.colorOnPrimary) }
 
     private var mangaInfoAdapter: MangaInfoHeaderAdapter? = null
+    // SY >--
     private var mangaInfoItemAdapter: MangaInfoItemAdapter? = null
     private var mangaInfoButtonsAdapter: MangaInfoButtonsAdapter? = null
     private var mangaMetaInfoAdapter: RecyclerView.Adapter<*>? = null
+    // SY <--
     private var chaptersHeaderAdapter: MangaChaptersHeaderAdapter? = null
     private var chaptersAdapter: ChaptersAdapter? = null
 
@@ -225,6 +227,7 @@ class MangaController :
         val adapters: MutableList<RecyclerView.Adapter<out RecyclerView.ViewHolder>?> = mutableListOf()
 
         // Init RecyclerView and adapter
+        // SY -->
         mangaInfoAdapter = MangaInfoHeaderAdapter(this)
 
         adapters += mangaInfoAdapter
@@ -253,6 +256,7 @@ class MangaController :
         binding.recycler.adapter = ConcatAdapter(adapters)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.addItemDecoration(ChapterDividerItemDecoration(view.context, if ((!preferences.recommendsInOverflow().get() || smartSearchConfig != null) && thisSourceAsLewdSource != null) 4 else if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null || thisSourceAsLewdSource != null) 3 else 2))
+        // SY <--
         binding.recycler.setHasFixedSize(true)
         chaptersAdapter?.fastScroller = binding.fastScroller
 
@@ -364,6 +368,11 @@ class MangaController :
         chaptersHeaderAdapter = null
         chaptersAdapter = null
         settingsSheet = null
+        // SY -->
+        mangaInfoButtonsAdapter = null
+        mangaInfoItemAdapter = null
+        mangaMetaInfoAdapter = null
+        // SY <--
         updateToolbarTitleAlpha(255)
         super.onDestroyView(view)
     }
