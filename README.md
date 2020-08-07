@@ -22,7 +22,6 @@ Features of Tachiyomi(original) include:
 
 Features of TachiyomiSY include:
 * Uses the new Tachiyomi Stable UI
-* Custom manga page, all your needs, such as info and chapters, in front of your face
 * Latest tab, store up to 5 sources where you can easily view the latest manga by viewing the tab
 * Hentai features enable/disable, in advanced settings
 * Automatic webtoon detection, allowing the reader to switch to webtoon mode automatically when viewing one
