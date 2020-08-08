@@ -381,8 +381,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
 
     override fun shouldMoveItem(fromPosition: Int, toPosition: Int): Boolean {
         if (adapter.isSelected(fromPosition)) toggleSelection(fromPosition)
-        if (toPosition < 1) return false
-        return adapter.getItem(fromPosition) is LibraryItem
+        return true
     }
 
     override fun onActionStateChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
