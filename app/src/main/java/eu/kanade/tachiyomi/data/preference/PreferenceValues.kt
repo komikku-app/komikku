@@ -32,4 +32,10 @@ object PreferenceValues {
         COMFORTABLE_GRID,
         LIST,
     }
+
+    enum class NsfwAllowance {
+        ALLOWED,
+        PARTIAL,
+        BLOCKED
+    }
 }
