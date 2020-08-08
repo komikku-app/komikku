@@ -61,8 +61,6 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
      */
     private var mangas: List<LibraryItem> = emptyList()
 
-    val libraryListener: LibraryListener = controller
-
     // SY -->
     val onItemReleaseListener: CategoryAdapter.OnItemReleaseListener = view
     // SY <--
@@ -93,6 +91,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
     //   (well technically we can cancel it by invoking filterItems again but that doesn't work when
     //    we want to perform a no-op filter)
     suspend fun performFilter(scope: CoroutineScope) {
+        isLongPressDragEnabled = mode != Mode.MULTI && searchText.isBlank()
         lastFilterJob?.cancel()
         if (mangas.isNotEmpty() && searchText.isNotBlank()) {
             val savedSearchText = searchText
@@ -227,10 +226,6 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
             }
             return@any false
         }
-    }
-
-    interface LibraryListener {
-        fun startReading(manga: Manga, adapter: LibraryCategoryAdapter)
     }
     // EXH <--
 }

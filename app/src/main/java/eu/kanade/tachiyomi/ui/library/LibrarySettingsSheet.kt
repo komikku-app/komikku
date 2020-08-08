@@ -37,6 +37,10 @@ class LibrarySettingsSheet(
         display.onGroupClicked = onGroupClickListener
     }
 
+    fun refreshSort() {
+        sort.refreshMode()
+    }
+
     override fun getTabViews(): List<View> = listOf(
         filters,
         sort,
@@ -138,6 +142,12 @@ class LibrarySettingsSheet(
         Settings(context, attrs) {
 
         init {
+            setGroups(listOf(SortGroup()))
+        }
+
+        fun refreshMode() {
+            recycler.adapter = null
+            removeView(recycler)
             setGroups(listOf(SortGroup()))
         }
 

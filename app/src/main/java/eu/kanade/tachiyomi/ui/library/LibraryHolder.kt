@@ -38,5 +38,12 @@ abstract class LibraryHolder(
         super.onItemReleased(position)
         (adapter as? LibraryCategoryAdapter)?.onItemReleaseListener?.onItemReleased(position)
     }
+
+    override fun onLongClick(view: View?): Boolean {
+        return if (adapter.isLongPressDragEnabled) {
+            super.onLongClick(view)
+            false
+        } else super.onLongClick(view)
+    }
     // SY <--
 }

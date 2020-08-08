@@ -71,8 +71,7 @@ class LibraryController(
     TabbedController,
     ActionMode.Callback,
     ChangeMangaCategoriesDialog.Listener,
-    DeleteLibraryMangasDialog.Listener,
-    LibraryCategoryAdapter.LibraryListener {
+    DeleteLibraryMangasDialog.Listener {
 
     /**
      * Position of the active category.
@@ -118,13 +117,6 @@ class LibraryController(
      * Relay to notify the library's viewpager to select the inverse
      */
     val selectInverseRelay: PublishRelay<Int> = PublishRelay.create()
-
-    // SY -->
-    /**
-     * Relay to notify the library's viewpager to reotagnize all
-     */
-    val reorganizeRelay: PublishRelay<Pair<Int, Int>> = PublishRelay.create()
-    // SY <--
 
     /**
      * Number of manga per row in grid mode.
@@ -397,11 +389,6 @@ class LibraryController(
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.library, menu)
 
-        // SY -->
-        val reorganizeItem = menu.findItem(R.id.action_reorganize)
-        reorganizeItem.isVisible = preferences.librarySortingMode().get() == LibrarySort.DRAG_AND_DROP
-        // SY <--
-
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
         searchView.maxWidth = Int.MAX_VALUE
@@ -489,23 +476,11 @@ class LibraryController(
                     presenter.favoritesSync.runSync()
                 }
             }
-            R.id.action_alpha_asc -> reOrder(1)
-            R.id.action_alpha_dsc -> reOrder(2)
-            R.id.action_update_asc -> reOrder(3)
-            R.id.action_update_dsc -> reOrder(4)
             // SY <--
         }
 
         return super.onOptionsItemSelected(item)
     }
-
-    // SY -->
-    private fun reOrder(type: Int) {
-        adapter?.categories?.getOrNull(binding.libraryPager.currentItem)?.id?.let {
-            reorganizeRelay.call(it to type)
-        }
-    }
-    // SY <--
 
     /**
      * Invalidates the action mode, forcing it to refresh its content.
@@ -796,7 +771,7 @@ class LibraryController(
         oldSyncStatus = status
     }
 
-    override fun startReading(manga: Manga, adapter: LibraryCategoryAdapter) {
+    fun startReading(manga: Manga, adapter: LibraryCategoryAdapter) {
         if (adapter.mode == SelectableAdapter.Mode.MULTI) {
             toggleSelection(manga)
             return
@@ -806,6 +781,10 @@ class LibraryController(
         val intent = ReaderActivity.newIntent(activity, manga, chapter)
         destroyActionModeIfNeeded()
         startActivity(intent)
+    }
+
+    fun refreshSort() {
+        settingsSheet?.refreshSort()
     }
     // <-- EXH
 }
