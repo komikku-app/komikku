@@ -306,7 +306,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         }
     }
 
-    fun canDrag() = adapter.mode != SelectableAdapter.Mode.MULTI && adapter.searchText.isBlank()
+    private fun canDrag() = ((adapter.mode == SelectableAdapter.Mode.MULTI && adapter.selectedItemCount == 1) || adapter.mode != SelectableAdapter.Mode.MULTI) && adapter.searchText.isBlank()
 
     /**
      * Toggles the selection for the given manga and updates the view if needed.
@@ -348,7 +348,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     override fun onItemLongClick(position: Int) {
         controller.createActionModeIfNeeded()
         // SY -->
-        adapter.isLongPressDragEnabled = false
+        adapter.isLongPressDragEnabled = canDrag()
         // SY <--
         when {
             lastClickPosition == -1 -> setSelection(position)
