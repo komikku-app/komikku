@@ -117,6 +117,8 @@ object PreferenceKeys {
 
     const val automaticExtUpdates = "automatic_ext_updates"
 
+    const val allowNsfwSources = "allow_nsfw_sources"
+
     const val startScreen = "start_screen"
 
     const val secureScreen = "secure_screen"

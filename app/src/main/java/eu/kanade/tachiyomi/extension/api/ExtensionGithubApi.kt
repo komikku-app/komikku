@@ -77,11 +77,12 @@ internal class ExtensionGithubApi {
                 val versionName = element.jsonObject["version"]!!.jsonPrimitive.content
                 val versionCode = element.jsonObject["code"]!!.jsonPrimitive.int
                 val lang = element.jsonObject["lang"]!!.jsonPrimitive.content
+                val nsfw = element.jsonObject["nsfw"]!!.jsonPrimitive.int == 1
                 // SY -->
                 val icon = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"
                 // SY <--
 
-                Extension.Available(name, pkgName, versionName, versionCode, lang, apkName, icon /* SY --> */, repoUrl /* SY <-- */)
+                Extension.Available(name, pkgName, versionName, versionCode, lang, nsfw, apkName, icon /* SY --> */, repoUrl /* SY <-- */)
             }
     }
 
