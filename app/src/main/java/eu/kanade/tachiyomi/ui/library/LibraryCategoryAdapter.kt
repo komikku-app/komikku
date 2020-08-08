@@ -86,12 +86,14 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         return currentItems.indexOfFirst { it.manga.id == manga.id }
     }
 
+    fun canDrag() = (mode != Mode.MULTI || (mode == Mode.MULTI && selectedItemCount == 1)) && searchText.isBlank()
+
     // EXH -->
     // Note that we cannot use FlexibleAdapter's built in filtering system as we cannot cancel it
     //   (well technically we can cancel it by invoking filterItems again but that doesn't work when
     //    we want to perform a no-op filter)
     suspend fun performFilter(scope: CoroutineScope) {
-        isLongPressDragEnabled = mode != Mode.MULTI && searchText.isBlank()
+        isLongPressDragEnabled = canDrag()
         lastFilterJob?.cancel()
         if (mangas.isNotEmpty() && searchText.isNotBlank()) {
             val savedSearchText = searchText

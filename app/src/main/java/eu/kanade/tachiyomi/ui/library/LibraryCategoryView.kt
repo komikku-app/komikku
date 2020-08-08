@@ -37,7 +37,6 @@ import reactivecircus.flowbinding.recyclerview.scrollStateChanges
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
@@ -56,6 +55,8 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     private val preferences: PreferencesHelper by injectLazy()
+
+    private val db: DatabaseHelper by injectLazy()
 
     /**
      * The fragment containing this view.
@@ -146,7 +147,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             SelectableAdapter.Mode.SINGLE
         }
         // SY -->
-        adapter.isLongPressDragEnabled = canDrag()
+        adapter.isLongPressDragEnabled = adapter.canDrag()
         // SY <--
 
         // EXH -->
@@ -237,18 +238,16 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         // Get the manga list for this category.
         // SY -->
         val sortingMode = preferences.librarySortingMode().get()
-        adapter.isLongPressDragEnabled = canDrag()
+        adapter.isLongPressDragEnabled = adapter.canDrag()
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
         if (sortingMode == LibrarySort.DRAG_AND_DROP) {
-            if (category.name == "Default") {
-                category.mangaOrder = preferences.defaultMangaOrder().get().split("/")
+            if (category.id == 0) {
+                category.mangaOrder = preferences.defaultMangaOrder().get()
+                    .split("/")
                     .mapNotNull { it.toLongOrNull() }
             }
             mangaForCategory = mangaForCategory.sortedBy {
-                category.mangaOrder.indexOf(
-                    it.manga
-                        .id
-                )
+                category.mangaOrder.indexOf(it.manga.id)
             }
         }
         // SY <--
@@ -280,7 +279,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 if (adapter.mode != SelectableAdapter.Mode.MULTI) {
                     adapter.mode = SelectableAdapter.Mode.MULTI
                     // SY -->
-                    adapter.isLongPressDragEnabled = canDrag()
+                    adapter.isLongPressDragEnabled = adapter.canDrag()
                     // SY <--
                 }
                 findAndToggleSelection(event.manga)
@@ -291,7 +290,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 if (controller.selectedMangas.isEmpty()) {
                     adapter.mode = SelectableAdapter.Mode.SINGLE
                     // SY -->
-                    adapter.isLongPressDragEnabled = canDrag()
+                    adapter.isLongPressDragEnabled = adapter.canDrag()
                     // SY <--
                 }
             }
@@ -300,13 +299,11 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 adapter.clearSelection()
                 lastClickPosition = -1
                 // SY -->
-                adapter.isLongPressDragEnabled = canDrag()
+                adapter.isLongPressDragEnabled = adapter.canDrag()
                 // SY <--
             }
         }
     }
-
-    private fun canDrag() = ((adapter.mode == SelectableAdapter.Mode.MULTI && adapter.selectedItemCount == 1) || adapter.mode != SelectableAdapter.Mode.MULTI) && adapter.searchText.isBlank()
 
     /**
      * Toggles the selection for the given manga and updates the view if needed.
@@ -348,7 +345,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     override fun onItemLongClick(position: Int) {
         controller.createActionModeIfNeeded()
         // SY -->
-        adapter.isLongPressDragEnabled = canDrag()
+        adapter.isLongPressDragEnabled = adapter.canDrag()
         // SY <--
         when {
             lastClickPosition == -1 -> setSelection(position)
@@ -367,10 +364,10 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         controller.invalidateActionMode()
         val mangaIds = adapter.currentItems.mapNotNull { it.manga.id }
         category.mangaOrder = mangaIds
-        if (category.name == "Default") {
+        if (category.id == 0) {
             preferences.defaultMangaOrder().set(mangaIds.joinToString("/"))
         } else {
-            Injekt.get<DatabaseHelper>().insertCategory(category).asRxObservable().subscribe()
+            db.insertCategory(category).asRxObservable().subscribe()
         }
         if (preferences.librarySortingMode().get() != LibrarySort.DRAG_AND_DROP) {
             preferences.librarySortingAscending().set(true)
