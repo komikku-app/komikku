@@ -381,6 +381,36 @@ class LibraryPresenter(
     }
 
     /**
+     * Marks mangas' chapters read status.
+     *
+     * @param mangas the list of manga.
+     */
+    fun markReadStatus(mangas: List<Manga>, read: Boolean) {
+        mangas.forEach { manga ->
+            launchIO {
+                val chapters = db.getChapters(manga).executeAsBlocking()
+                chapters.forEach {
+                    it.read = read
+                    if (!read) {
+                        it.last_page_read = 0
+                    }
+                }
+                db.updateChaptersProgress(chapters).executeAsBlocking()
+
+                if (preferences.removeAfterMarkedAsRead()) {
+                    deleteChapters(manga, chapters)
+                }
+            }
+        }
+    }
+
+    private fun deleteChapters(manga: Manga, chapters: List<Chapter>) {
+        sourceManager.get(manga.source)?.let { source ->
+            downloadManager.deleteChapters(chapters, manga, source)
+        }
+    }
+
+    /**
      * Remove the selected manga from the library.
      *
      * @param mangas the list of manga to delete.
