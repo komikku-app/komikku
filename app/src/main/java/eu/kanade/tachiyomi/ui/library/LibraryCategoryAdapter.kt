@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
@@ -44,6 +45,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
     private var lastFilterJob: Job? = null
     private val sourceManager: SourceManager by injectLazy()
     private val trackManager: TrackManager by injectLazy()
+    private val preferences: PreferencesHelper by injectLazy()
     private val hasLoggedServices by lazy {
         trackManager.hasLoggedServices()
     }
@@ -86,7 +88,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         return currentItems.indexOfFirst { it.manga.id == manga.id }
     }
 
-    fun canDrag() = (mode != Mode.MULTI || (mode == Mode.MULTI && selectedItemCount == 1)) && searchText.isBlank()
+    fun canDrag() = (mode != Mode.MULTI || (mode == Mode.MULTI && selectedItemCount == 1)) && searchText.isBlank() && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT
 
     // EXH -->
     // Note that we cannot use FlexibleAdapter's built in filtering system as we cannot cancel it

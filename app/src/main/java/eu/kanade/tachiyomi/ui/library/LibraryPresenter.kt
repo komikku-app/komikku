@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.library
 
 import android.os.Bundle
 import com.jakewharton.rxrelay.BehaviorRelay
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -11,6 +12,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_EXCLUDE
 import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_IGNORE
@@ -89,9 +91,26 @@ class LibraryPresenter(
      */
     private var librarySubscription: Subscription? = null
 
-    // --> EXH
+    // SY -->
     val favoritesSync = FavoritesSyncHelper(context)
-    // <-- EXH
+
+    private var groupType = preferences.groupLibraryBy().get()
+
+    private val libraryIsGrouped
+        get() = groupType != LibraryGroup.UNGROUPED
+
+    private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
+
+    /**
+     * Relay used to apply the UI update to the last emission of the library.
+     */
+    private val buttonTriggerRelay = BehaviorRelay.create(Unit)
+
+    /**
+     * Relay used to apply the UI update to the last emission of the library.
+     */
+    private val groupingTriggerRelay = BehaviorRelay.create(Unit)
+    // SY <--
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
@@ -107,6 +126,15 @@ class LibraryPresenter(
                 .combineLatest(badgeTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
                     lib.apply { setBadges(mangaMap) }
                 }
+                // SY -->
+                .combineLatest(buttonTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
+                    lib.apply { setButtons(mangaMap) }
+                }
+                .combineLatest(groupingTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
+                    val (map, categories) = applyGrouping(lib.mangaMap, lib.categories)
+                    lib.copy(mangaMap = map, categories = categories)
+                }
+                // SY <--
                 .combineLatest(filterTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
                     lib.copy(mangaMap = applyFilters(lib.mangaMap))
                 }
@@ -172,6 +200,21 @@ class LibraryPresenter(
 
         return map.mapValues { entry -> entry.value.filter(filterFn) }
     }
+
+    /**
+     * Sets the button on each manga.
+     *
+     * @param map the map of manga.
+     */
+    private fun setButtons(map: LibraryMap) {
+        val startReadingButton = preferences.startReadingButton().get()
+
+        for ((_, itemList) in map) {
+            for (item in itemList) {
+                item.startReadingButton = startReadingButton
+            }
+        }
+    }
     // SY <--
 
     /**
@@ -182,7 +225,6 @@ class LibraryPresenter(
     private fun setBadges(map: LibraryMap) {
         val showDownloadBadges = preferences.downloadBadge().get()
         val showUnreadBadges = preferences.unreadBadge().get()
-        val startReadingButton = preferences.startReadingButton().get()
 
         for ((_, itemList) in map) {
             for (item in itemList) {
@@ -199,10 +241,6 @@ class LibraryPresenter(
                     // Unset unread count if not enabled
                     -1
                 }
-
-                // SY -->
-                item.startReadingButton = startReadingButton
-                // SY <--
             }
         }
     }
@@ -294,6 +332,27 @@ class LibraryPresenter(
         }
     }
 
+    // SY -->
+    private fun applyGrouping(map: LibraryMap, categories: List<Category>): Pair<LibraryMap, List<Category>> {
+        groupType = preferences.groupLibraryBy().get()
+        var editedCategories: List<Category> = categories
+        val libraryMangaAsList = map.flatMap { it.value }.distinctBy { it.manga.id }
+        val items = if (groupType == LibraryGroup.BY_DEFAULT) {
+            map
+        } else if (!libraryIsGrouped) {
+            editedCategories = listOf(Category.create("All").apply { this.id = 0 })
+            libraryMangaAsList
+                .groupBy { 0 }
+        } else {
+            val (items, customCategories) = getGroupedMangaItems(libraryMangaAsList)
+            editedCategories = customCategories
+            items
+        }
+
+        return items to editedCategories
+    }
+    // SY <--
+
     /**
      * Get the categories from the database.
      *
@@ -330,6 +389,23 @@ class LibraryPresenter(
     fun requestBadgesUpdate() {
         badgeTriggerRelay.call(Unit)
     }
+
+    // SY -->
+    /**
+     * Requests the library to have buttons toggled.
+     */
+    fun requestButtonsUpdate() {
+        buttonTriggerRelay.call(Unit)
+    }
+
+    /**
+     * Requests the library to have groups refreshed.
+     */
+    fun requestGroupsUpdate() {
+        groupingTriggerRelay.call(Unit)
+    }
+
+    // SY <--
 
     /**
      * Requests the library to be sorted.
@@ -490,6 +566,110 @@ class LibraryPresenter(
         } else {
             chapters.sortedByDescending { it.source_order }.find { !it.read }
         }
+    }
+
+    private fun getGroupedMangaItems(libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
+        val grouping: MutableList<Triple<String, Int, String>> = mutableListOf()
+        when (groupType) {
+            LibraryGroup.BY_STATUS -> libraryManga.distinctBy { it.manga.status }.map { it.manga.status }.forEachIndexed { index, status ->
+                grouping += Triple(status.toString(), index, mapStatus(status))
+            }
+            LibraryGroup.BY_SOURCE -> libraryManga.distinctBy { it.manga.source }.map { it.manga.source }.forEachIndexed { index, sourceLong ->
+                grouping += Triple(sourceLong.toString(), index, sourceManager.getOrStub(sourceLong).name)
+            }
+            LibraryGroup.BY_TRACK_STATUS -> {
+                grouping += Triple("1", 1, context.getString(R.string.reading))
+                grouping += Triple("2", 2, context.getString(R.string.repeating))
+                grouping += Triple("3", 3, context.getString(R.string.plan_to_read))
+                grouping += Triple("4", 4, context.getString(R.string.on_hold))
+                grouping += Triple("5", 5, context.getString(R.string.completed))
+                grouping += Triple("6", 6, context.getString(R.string.dropped))
+                grouping += Triple("7", 7, context.getString(R.string.not_tracked))
+            }
+        }
+        val map: MutableMap<Int, MutableList<LibraryItem>> = mutableMapOf()
+
+        libraryManga.forEach { libraryItem ->
+            when (groupType) {
+                LibraryGroup.BY_TRACK_STATUS -> {
+                    val status: String = {
+                        val tracks = db.getTracks(libraryItem.manga).executeAsBlocking()
+                        val track = tracks.find { track ->
+                            loggedServices.any { it.id == track?.sync_id }
+                        }
+                        val service = loggedServices.find { it.id == track?.sync_id }
+                        if (track != null && service != null) {
+                            service.getStatus(track.status)
+                        } else {
+                            "not tracked"
+                        }
+                    }()
+                    val group = grouping.find { it.first == mapTrackingOrder(status) }
+                    if (group != null) {
+                        map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
+                    } else {
+                        map[7]?.plusAssign(libraryItem) ?: map.put(7, mutableListOf(libraryItem))
+                    }
+                }
+                LibraryGroup.BY_SOURCE -> {
+                    val group = grouping.find { it.first.toLongOrNull() == libraryItem.manga.source }
+                    if (group != null) {
+                        map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
+                    } else {
+                        if (grouping.all { it.second != Int.MAX_VALUE }) grouping += Triple(Int.MAX_VALUE.toString(), Int.MAX_VALUE, context.getString(R.string.unknown))
+                        map[Int.MAX_VALUE]?.plusAssign(libraryItem) ?: map.put(Int.MAX_VALUE, mutableListOf(libraryItem))
+                    }
+                }
+                else -> {
+                    val group = grouping.find { it.first == libraryItem.manga.status.toString() }
+                    if (group != null) {
+                        map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
+                    } else {
+                        if (grouping.all { it.second != Int.MAX_VALUE }) grouping += Triple(Int.MAX_VALUE.toString(), Int.MAX_VALUE, context.getString(R.string.unknown))
+                        map[Int.MAX_VALUE]?.plusAssign(libraryItem) ?: map.put(Int.MAX_VALUE, mutableListOf(libraryItem))
+                    }
+                }
+            }
+        }
+
+        val categories = (
+            when (groupType) {
+                LibraryGroup.BY_SOURCE -> grouping.sortedBy { it.third.toLowerCase() }
+                LibraryGroup.BY_TRACK_STATUS -> grouping.filter { it.second in map.keys }
+                else -> grouping
+            }
+            ).map {
+            val category = Category.create(it.third)
+            category.id = it.second
+            category
+        }
+
+        return map to categories
+    }
+
+    private fun mapTrackingOrder(status: String): String {
+        with(context) {
+            return when (status) {
+                getString(R.string.reading), getString(R.string.currently_reading) -> "1"
+                getString(R.string.repeating) -> "2"
+                getString(R.string.plan_to_read), getString(R.string.want_to_read) -> "3"
+                getString(R.string.on_hold), getString(R.string.paused) -> "4"
+                getString(R.string.completed) -> "5"
+                getString(R.string.dropped) -> "6"
+                else -> "7"
+            }
+        }
+    }
+
+    private fun mapStatus(status: Int): String {
+        return context.getString(
+            when (status) {
+                SManga.LICENSED -> R.string.licensed
+                SManga.ONGOING -> R.string.ongoing
+                SManga.COMPLETED -> R.string.completed
+                else -> R.string.unknown
+            }
+        )
     }
     // SY <--
 }

@@ -109,6 +109,22 @@ open class ExtendedNavigationView @JvmOverloads constructor(
         }
 
         // SY -->
+        class DrawableSelection(val id: Int, group: Group, stringResId: Int, val drawable: Int) : MultiStateGroup(stringResId, group) {
+
+            companion object {
+                const val NOT_SELECTED = 0
+                const val SELECTED = 1
+            }
+
+            override fun getStateDrawable(context: Context): Drawable? {
+                return when (state) {
+                    SELECTED -> tintVector(context, drawable, R.attr.colorAccent)
+                    NOT_SELECTED -> tintVector(context, drawable, R.attr.colorOnSurface)
+                    else -> null
+                }
+            }
+        }
+
         class TriStateGroup(resId: Int, group: Group) : MultiStateGroup(resId, group) {
 
             companion object {

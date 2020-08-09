@@ -282,4 +282,6 @@ object PreferenceKeys {
     const val webtoonEnableZoomOut = "webtoon_enable_zoom_out"
 
     const val startReadingButton = "start_reading_button"
+
+    const val groupLibraryBy = "group_library_by"
 }

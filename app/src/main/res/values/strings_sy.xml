@@ -286,6 +286,11 @@
     <string name="tracked">Tracked</string>
     <string name="lewd">Lewd</string>
 
+    <!-- Library Grouping -->
+    <string name="tracking_status">Tracking status</string>
+    <string name="ungrouped">Ungrouped</string>
+    <string name="not_tracked">Not tracked</string>
+
     <!-- Favorites Sync -->
     <string name="sync_favorites">Sync favorites</string>
     <string name="favorites_sync_error">Favorites sync error</string>

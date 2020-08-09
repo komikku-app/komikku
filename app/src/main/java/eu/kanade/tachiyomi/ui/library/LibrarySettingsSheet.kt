@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -25,6 +26,7 @@ class LibrarySettingsSheet(
     val filters: Filter
     private val sort: Sort
     private val display: Display
+    private val grouping: Grouping
 
     init {
         filters = Filter(activity)
@@ -35,6 +37,9 @@ class LibrarySettingsSheet(
 
         display = Display(activity)
         display.onGroupClicked = onGroupClickListener
+
+        grouping = Grouping(activity)
+        grouping.onGroupClicked = onGroupClickListener
     }
 
     fun refreshSort() {
@@ -44,13 +49,15 @@ class LibrarySettingsSheet(
     override fun getTabViews(): List<View> = listOf(
         filters,
         sort,
-        display
+        display,
+        grouping
     )
 
     override fun getTabTitles(): List<Int> = listOf(
         R.string.action_filter,
         R.string.action_sort,
-        R.string.action_display
+        R.string.action_display,
+        R.string.group
     )
 
     /**
@@ -198,6 +205,9 @@ class LibrarySettingsSheet(
 
             override fun onItemClicked(item: Item) {
                 item as Item.MultiStateGroup
+                // SY -->
+                if (item == dragAndDrop && preferences.groupLibraryBy().get() != LibraryGroup.BY_DEFAULT) return
+                // SY <--
                 val prevState = item.state
 
                 item.group.items.forEach {
@@ -354,6 +364,80 @@ class LibrarySettingsSheet(
             }
         }
     }
+
+    // SY -->
+    inner class Grouping @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+        Settings(context, attrs) {
+
+        init {
+            setGroups(listOf(InternalGroup()))
+        }
+
+        inner class InternalGroup : Group {
+            private val groupItems = mutableListOf<Item.DrawableSelection>()
+            private val db: DatabaseHelper = Injekt.get()
+            private val trackManager: TrackManager = Injekt.get()
+            private val hasCategories = db.getCategories().executeAsBlocking().size != 0
+
+            init {
+                val groupingItems = mutableListOf(
+                    LibraryGroup.BY_DEFAULT,
+                    LibraryGroup.BY_SOURCE,
+                    LibraryGroup.BY_STATUS
+                )
+                if (trackManager.hasLoggedServices()) {
+                    groupingItems.add(LibraryGroup.BY_TRACK_STATUS)
+                }
+                if (hasCategories) {
+                    groupingItems.add(LibraryGroup.UNGROUPED)
+                }
+                groupItems += groupingItems.map { id ->
+                    Item.DrawableSelection(
+                        id,
+                        this,
+                        LibraryGroup.groupTypeStringRes(id, hasCategories),
+                        LibraryGroup.groupTypeDrawableRes(id)
+                    )
+                }
+            }
+
+            override val header = null
+            override val items = groupItems
+            override val footer = null
+
+            override fun initModels() {
+                val groupType = preferences.groupLibraryBy().get()
+
+                items.forEach {
+                    it.state = if (it.id == groupType) {
+                        Item.DrawableSelection.SELECTED
+                    } else {
+                        Item.DrawableSelection.NOT_SELECTED
+                    }
+                }
+            }
+
+            override fun onItemClicked(item: Item) {
+                item as Item.DrawableSelection
+                if (item.id != LibraryGroup.BY_DEFAULT && preferences.librarySortingMode().get() == LibrarySort.DRAG_AND_DROP) {
+                    preferences.librarySortingMode().set(LibrarySort.ALPHA)
+                    preferences.librarySortingAscending().set(true)
+                    refreshSort()
+                }
+
+                item.group.items.forEach {
+                    (it as Item.DrawableSelection).state =
+                        Item.DrawableSelection.NOT_SELECTED
+                }
+                item.state = Item.DrawableSelection.SELECTED
+
+                preferences.groupLibraryBy().set(item.id)
+
+                item.group.items.forEach { adapter.notifyItemChanged(it) }
+            }
+        }
+    }
+    // SY <--
 
     open inner class Settings(context: Context, attrs: AttributeSet?) :
         ExtendedNavigationView(context, attrs) {

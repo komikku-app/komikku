@@ -213,7 +213,13 @@ class LibraryController(
                 is LibrarySettingsSheet.Sort.SortGroup -> onSortChanged()
                 is LibrarySettingsSheet.Display.DisplayGroup -> reattachAdapter()
                 is LibrarySettingsSheet.Display.BadgeGroup -> onBadgeSettingChanged()
+                // SY -->
+                is LibrarySettingsSheet.Display.ButtonsGroup -> onButtonSettingChanged()
+                // SY <--
                 is LibrarySettingsSheet.Display.TabsGroup -> onTabsSettingsChanged()
+                // SY -->
+                is LibrarySettingsSheet.Grouping.InternalGroup -> onGroupSettingChanged()
+                // SY <--
             }
         }
 
@@ -335,6 +341,16 @@ class LibraryController(
     private fun onBadgeSettingChanged() {
         presenter.requestBadgesUpdate()
     }
+
+    // SY -->
+    private fun onButtonSettingChanged() {
+        presenter.requestButtonsUpdate()
+    }
+
+    private fun onGroupSettingChanged() {
+        presenter.requestGroupsUpdate()
+    }
+    // SY <--
 
     private fun onTabsSettingsChanged() {
         tabsVisibilityRelay.call(preferences.categoryTabs().get() && adapter?.categories?.size ?: 0 > 1)
