@@ -217,6 +217,7 @@ class NHentai(val context: Context) : HttpSource(), LewdSource<NHentaiSearchMeta
                 url = manga.url
                 name = "Chapter"
                 chapter_number = 1f
+                getOrLoadMetadata(mangaId, NHentaiSearchMetadata.nhUrlToId(manga.url)).toBlocking().value().uploadDate?.let { date_upload = it * 1000 }
             }
         )
     )
