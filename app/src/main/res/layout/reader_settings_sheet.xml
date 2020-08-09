@@ -366,7 +366,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="webtoon_prefs,crop_borders_webtoon,webtoon_side_padding_text,webtoon_side_padding" />
+        app:constraint_referenced_ids="webtoon_prefs,crop_borders_webtoon,webtoon_side_padding_text,webtoon_side_padding,zoom_out_webtoon" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/verticalcenter"
