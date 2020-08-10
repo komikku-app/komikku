@@ -369,7 +369,6 @@ class Hitomi : HttpSource(), LewdSource<HitomiSearchMetadata, Document>, UrlImpo
      * @param response the response from the site.
      */
     override fun pageListParse(response: Response): List<Page> {
-        val hlId = response.request.url.pathSegments.last().removeSuffix(".js").toLong()
         val str = response.body!!.string()
         val json = JsonParser.parseString(str.removePrefix("var galleryinfo = "))
         return json["files"].array.mapIndexed { index, jsonElement ->
@@ -381,13 +380,24 @@ class Hitomi : HttpSource(), LewdSource<HitomiSearchMetadata, Document>, UrlImpo
             Page(
                 index,
                 "",
-                "https://${subdomainFromGalleryId(hlId)}a.hitomi.la/$path/$hashPath1/$hashPath2/$hash.$ext"
+                "https://${subdomainFromGalleryId(hashPath2)}a.hitomi.la/$path/$hashPath1/$hashPath2/$hash.$ext"
             )
         }
     }
 
-    private fun subdomainFromGalleryId(id: Long): Char {
-        return (97 + id.rem(NUMBER_OF_FRONTENDS)).toChar()
+    // https://ltn.hitomi.la/common.js
+    private fun subdomainFromGalleryId(pathSegment: String): Char {
+        var numberOfFrontends = 3
+        val b = 16
+        var g = Integer.parseInt(pathSegment, b)
+        if (g < 0x30) {
+            numberOfFrontends = 2
+        }
+        if (g < 0x09) {
+            g = 1
+        }
+
+        return (97 + g.rem(numberOfFrontends)).toChar()
     }
 
     /**
@@ -424,7 +434,6 @@ class Hitomi : HttpSource(), LewdSource<HitomiSearchMetadata, Document>, UrlImpo
     companion object {
         private val INDEX_VERSION_CACHE_TIME_MS = 1000 * 60 * 10
         private val PAGE_SIZE = 25
-        private val NUMBER_OF_FRONTENDS = 2
 
         private val DATE_FORMAT by lazy {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
