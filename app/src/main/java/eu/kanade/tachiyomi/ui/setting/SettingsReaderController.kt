@@ -80,7 +80,7 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_reader_theme
                 entriesRes = arrayOf(R.string.black_background, R.string.gray_background, R.string.white_background, R.string.smart_based_on_page, R.string.smart_based_on_page_and_theme)
                 entryValues = arrayOf("1", "2", "0", "3", "4")
-                defaultValue = "1"
+                defaultValue = "3"
                 summary = "%s"
             }
             switchPreference {

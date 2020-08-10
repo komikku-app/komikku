@@ -114,7 +114,7 @@ class PreferencesHelper(val context: Context) {
 
     fun zoomStart() = flowPrefs.getInt(Keys.zoomStart, 1)
 
-    fun readerTheme() = flowPrefs.getInt(Keys.readerTheme, 1)
+    fun readerTheme() = flowPrefs.getInt(Keys.readerTheme, 3)
 
     fun alwaysShowChapterTransition() = flowPrefs.getBoolean(Keys.alwaysShowChapterTransition, true)
 
