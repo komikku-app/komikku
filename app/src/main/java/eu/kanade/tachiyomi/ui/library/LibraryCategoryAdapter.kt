@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import exh.isLewdSource
 import exh.metadata.sql.models.SearchTag
@@ -88,7 +89,15 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         return currentItems.indexOfFirst { it.manga.id == manga.id }
     }
 
-    fun canDrag() = (mode != Mode.MULTI || (mode == Mode.MULTI && selectedItemCount == 1)) && searchText.isBlank() && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT
+    fun canDrag() = (mode != Mode.MULTI || (mode == Mode.MULTI && selectedItemCount == 1)) &&
+        searchText.isBlank() &&
+        preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT &&
+        !preferences.downloadedOnly().get() &&
+        preferences.filterDownloaded().get() == Filter.TriState.STATE_IGNORE &&
+        preferences.filterCompleted().get() == Filter.TriState.STATE_IGNORE &&
+        preferences.filterUnread().get() == Filter.TriState.STATE_IGNORE &&
+        preferences.filterTracked().get() == Filter.TriState.STATE_IGNORE &&
+        preferences.filterLewd().get() == Filter.TriState.STATE_IGNORE
 
     // EXH -->
     // Note that we cannot use FlexibleAdapter's built in filtering system as we cannot cancel it
