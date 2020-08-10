@@ -361,19 +361,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     }
     // SY -->
     override fun onItemReleased(position: Int) {
-        controller.invalidateActionMode()
-        val mangaIds = adapter.currentItems.mapNotNull { it.manga.id }
-        category.mangaOrder = mangaIds
-        if (category.id == 0) {
-            preferences.defaultMangaOrder().set(mangaIds.joinToString("/"))
-        } else {
-            db.insertCategory(category).asRxObservable().subscribe()
-        }
-        if (preferences.librarySortingMode().get() != LibrarySort.DRAG_AND_DROP) {
-            preferences.librarySortingAscending().set(true)
-            preferences.librarySortingMode().set(LibrarySort.DRAG_AND_DROP)
-            controller.refreshSort()
-        }
+        return
     }
 
     override fun shouldMoveItem(fromPosition: Int, toPosition: Int): Boolean {
@@ -389,7 +377,20 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     }
 
     override fun onItemMove(fromPosition: Int, toPosition: Int) {
-        return
+        if (fromPosition == toPosition) return
+        controller.invalidateActionMode()
+        val mangaIds = adapter.currentItems.mapNotNull { it.manga.id }
+        category.mangaOrder = mangaIds
+        if (category.id == 0) {
+            preferences.defaultMangaOrder().set(mangaIds.joinToString("/"))
+        } else {
+            db.insertCategory(category).asRxObservable().subscribe()
+        }
+        if (preferences.librarySortingMode().get() != LibrarySort.DRAG_AND_DROP) {
+            preferences.librarySortingAscending().set(true)
+            preferences.librarySortingMode().set(LibrarySort.DRAG_AND_DROP)
+            controller.refreshSort()
+        }
     }
     // SY <--
 
