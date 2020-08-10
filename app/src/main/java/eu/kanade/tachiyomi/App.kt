@@ -77,6 +77,7 @@ open class App : Application(), LifecycleObserver {
         Injekt.importModule(AppModule(this))
 
         setupNotificationChannels()
+        Realm.init(this)
         GlobalScope.launch { deleteOldMetadataRealm() } // Delete old metadata DB (EH)
         // Reprint.initialize(this) //Setup fingerprint (EH)
         if ((BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest") && DebugToggles.ENABLE_DEBUG_OVERLAY.enabled) {
@@ -133,7 +134,6 @@ open class App : Application(), LifecycleObserver {
 
     // EXH
     private fun deleteOldMetadataRealm() {
-        Realm.init(this)
         val config = RealmConfiguration.Builder()
             .name("gallery-metadata.realm")
             .schemaVersion(3)
