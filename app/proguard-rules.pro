@@ -37,6 +37,14 @@
       public *;
 }
 
+# Hitomi extension crash fix
+-keepclassmembers class rx.Single {
+      *** onSubscribe;
+      final *;
+      protected *;
+      public *;
+}
+
 # RxJava 1.1.0
 -dontwarn sun.misc.**
 
