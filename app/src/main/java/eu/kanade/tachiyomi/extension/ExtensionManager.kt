@@ -20,7 +20,6 @@ import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import exh.HITOMI_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
 import exh.PERV_EDEN_EN_SOURCE_ID
@@ -85,7 +84,6 @@ class ExtensionManager(
             PERV_EDEN_EN_SOURCE_ID -> context.getDrawable(R.mipmap.ic_perveden_source)
             PERV_EDEN_IT_SOURCE_ID -> context.getDrawable(R.mipmap.ic_perveden_source)
             NHENTAI_SOURCE_ID -> context.getDrawable(R.mipmap.ic_nhentai_source)
-            HITOMI_SOURCE_ID -> context.getDrawable(R.mipmap.ic_hitomi_source)
             MERGED_SOURCE_ID -> context.getDrawable(R.mipmap.ic_merged_source)
             else -> null
         }

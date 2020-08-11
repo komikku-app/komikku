@@ -3,20 +3,20 @@ package exh.util
 import eu.kanade.tachiyomi.data.database.models.Manga
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import exh.HITOMI_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
 import exh.PURURIN_SOURCE_ID
 import exh.TSUMINO_SOURCE_ID
+import exh.hitomiSourceIds
 import exh.metadata.metadata.base.RaisedTag
 import java.util.Locale
 
 class SourceTagsUtil {
     fun getWrappedTag(sourceId: Long, namespace: String? = null, tag: String? = null, fullTag: String? = null): String? {
-        return if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId == NHENTAI_SOURCE_ID || sourceId == HITOMI_SOURCE_ID) {
+        return if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId == NHENTAI_SOURCE_ID || sourceId in hitomiSourceIds) {
             val parsed = if (fullTag != null) parseTag(fullTag) else if (namespace != null && tag != null) RaisedTag(namespace, tag, TAG_TYPE_DEFAULT) else null
             if (parsed?.namespace != null) {
                 when (sourceId) {
-                    HITOMI_SOURCE_ID -> wrapTagHitomi(parsed.namespace, parsed.name.substringBefore('|').trim())
+                    in hitomiSourceIds -> wrapTagHitomi(parsed.namespace, parsed.name.substringBefore('|').trim())
                     NHENTAI_SOURCE_ID -> wrapTagNHentai(parsed.namespace, parsed.name.substringBefore('|').trim())
                     PURURIN_SOURCE_ID -> parsed.name.substringBefore('|').trim()
                     TSUMINO_SOURCE_ID -> parsed.name.substringBefore('|').trim()

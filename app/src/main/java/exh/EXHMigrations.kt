@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
+import eu.kanade.tachiyomi.source.online.all.Hitomi
 import exh.source.BlacklistedSources
 import java.io.File
 import java.net.URI
@@ -83,6 +84,23 @@ object EXHMigrations {
                             .withPutResolver(MangaUrlPutResolver())
                             .prepare()
                             .executeAsBlocking()
+                    }
+                }
+                if (oldVersion < 5) {
+                    db.inTransaction {
+                        // Migrate Tsumino source IDs
+                        db.lowLevel().executeSQL(
+                            RawQuery.builder()
+                                .query(
+                                    """
+                                    UPDATE ${MangaTable.TABLE}
+                                        SET ${MangaTable.COL_SOURCE} = ${Hitomi.otherId}
+                                        WHERE ${MangaTable.COL_SOURCE} = 6910
+                                    """.trimIndent()
+                                )
+                                .affectsTables(MangaTable.TABLE)
+                                .build()
+                        )
                     }
                 }
 

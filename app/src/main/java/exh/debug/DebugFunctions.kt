@@ -41,7 +41,7 @@ object DebugFunctions {
     val sourceManager: SourceManager by injectLazy()
 
     fun forceUpgradeMigration() {
-        prefs.eh_lastVersionCode().set(0)
+        prefs.eh_lastVersionCode().set(1)
         EXHMigrations.upgrade(prefs)
     }
 
@@ -68,7 +68,7 @@ object DebugFunctions {
     }
     private val throttleManager = EHentaiThrottleManager()
 
-    fun getDelegatedSourceList(): String = currentDelegatedSources.map { it.value.sourceName }.joinToString(separator = "\n")
+    fun getDelegatedSourceList(): String = currentDelegatedSources.map { it.value.sourceName + " : " + it.value.sourceId + " : " + it.value.factory }.joinToString(separator = "\n")
 
     fun resetEHGalleriesForUpdater() {
         throttleManager.resetThrottle()

@@ -104,7 +104,7 @@ open class SourceManager(private val context: Context) {
                 source,
                 delegate.newSourceClass.constructors.find { it.parameters.size == 2 }!!.call(source, context)
             )
-            val map = listOf(DelegatedSource(enhancedSource.originalSource.name, enhancedSource.originalSource.id, enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName, (enhancedSource.enhancedSource as DelegatedHttpSource)::class, delegate.factory)).associateBy { it.originalSourceQualifiedClassName }
+            val map = listOf(DelegatedSource(enhancedSource.originalSource.name, enhancedSource.originalSource.id, enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName, (enhancedSource.enhancedSource as DelegatedHttpSource)::class, delegate.factory)).associateBy { it.sourceId }
             currentDelegatedSources.plusAssign(map)
             enhancedSource
         } else source
@@ -139,7 +139,6 @@ open class SourceManager(private val context: Context) {
         exSrcs += PervEden(PERV_EDEN_EN_SOURCE_ID, PervEdenLang.en, context)
         exSrcs += PervEden(PERV_EDEN_IT_SOURCE_ID, PervEdenLang.it, context)
         exSrcs += NHentai(context)
-        exSrcs += Hitomi(context)
         return exSrcs
     }
     // SY <--
@@ -210,10 +209,17 @@ open class SourceManager(private val context: Context) {
                 1802675169972965535,
                 "eu.kanade.tachiyomi.extension.all.eromuse.EroMuse",
                 EightMuses::class
+            ),
+            DelegatedSource(
+                "Hitomi",
+                fillInSourceId,
+                "eu.kanade.tachiyomi.extension.all.hitomi.Hitomi",
+                Hitomi::class,
+                true
             )
         ).associateBy { it.originalSourceQualifiedClassName }
 
-        var currentDelegatedSources = mutableMapOf<String, DelegatedSource>()
+        var currentDelegatedSources = mutableMapOf<Long, DelegatedSource>()
 
         data class DelegatedSource(
             val sourceName: String,

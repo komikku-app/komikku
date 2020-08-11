@@ -44,7 +44,6 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import exh.EH_SOURCE_ID
 import exh.EXHMigrations
 import exh.EXH_SOURCE_ID
-import exh.HITOMI_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
 import exh.PERV_EDEN_EN_SOURCE_ID
 import exh.PERV_EDEN_IT_SOURCE_ID
@@ -220,9 +219,6 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             }
             if (NHENTAI_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
                 BlacklistedSources.HIDDEN_SOURCES += NHENTAI_SOURCE_ID
-            }
-            if (HITOMI_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
-                BlacklistedSources.HIDDEN_SOURCES += HITOMI_SOURCE_ID
             }
         }
         // SY -->
