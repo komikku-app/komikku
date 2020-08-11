@@ -201,6 +201,13 @@ class EnhancedHttpSource(
     override fun fetchImageUrl(page: Page) = source().fetchImageUrl(page)
 
     /**
+     * Returns an observable with the response of the source image.
+     *
+     * @param page the page whose source image has to be downloaded.
+     */
+    override fun fetchImage(page: Page) = source().fetchImage(page)
+
+    /**
      * Called before inserting a new chapter into database. Use it if you need to override chapter
      * fields, like the title or the chapter number. Do not change anything to [manga].
      *
