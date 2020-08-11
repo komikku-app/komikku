@@ -2,298 +2,43 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
-import com.kizitonwose.time.hours
-import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
-import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
-import exh.EIGHTMUSES_SOURCE_ID
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
+import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.EightMusesDescriptionAdapter
-import exh.util.CachedField
-import exh.util.NakedTrie
-import exh.util.await
 import exh.util.urlImportFetchSearchManga
-import hu.akarnokd.rxjava.interop.RxJavaInterop
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.rx2.asSingle
-import kotlinx.coroutines.withContext
-import okhttp3.Headers
-import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import rx.Observable
-import rx.schedulers.Schedulers
 
-typealias SiteMap = NakedTrie<Unit>
-
-class EightMuses(val context: Context) :
-    HttpSource(),
+class EightMuses(delegate: HttpSource, val context: Context) :
+    DelegatedHttpSource(delegate),
     LewdSource<EightMusesSearchMetadata, Document>,
     UrlImportableSource {
-    override val id = EIGHTMUSES_SOURCE_ID
-
-    /**
-     * Name of the source.
-     */
-    override val name = "8muses"
-    /**
-     * Whether the source has support for latest updates.
-     */
-    override val supportsLatest = true
-    /**
-     * An ISO 639-1 compliant language code (two letters in lower case).
-     */
-    override val lang: String = "en"
-
     override val metaClass = EightMusesSearchMetadata::class
+    override val lang = "en"
 
-    /**
-     * Base url of the website without the trailing slash, like: http://mysite.com
-     */
-    override val baseUrl = EightMusesSearchMetadata.BASE_URL
-
-    private val siteMapCache = CachedField<SiteMap>(1.hours.inMilliseconds.longValue)
-
-    override val client: OkHttpClient
-        get() = network.cloudflareClient
-
-    private suspend fun obtainSiteMap() = siteMapCache.obtain {
-        withContext(Dispatchers.IO) {
-            val result = client.newCall(eightMusesGet("$baseUrl/sitemap/1.xml"))
-                .asObservableSuccess()
-                .toSingle()
-                .await(Schedulers.io())
-                .body!!.string()
-
-            val parsed = Jsoup.parse(result)
-
-            val seen = NakedTrie<Unit>()
-
-            parsed.getElementsByTag("loc").forEach { item ->
-                seen[item.text().substring(22)] = Unit
-            }
-
-            seen
-        }
-    }
-
-    override fun headersBuilder(): Headers.Builder {
-        return Headers.Builder()
-            .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;")
-            .add("Accept-Language", "en-GB,en-US;q=0.9,en;q=0.8")
-            .add("Referer", "https://www.8muses.com")
-            .add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36")
-    }
-
-    private fun eightMusesGet(url: String): Request {
-        return GET(url, headers = headersBuilder().build())
-    }
-
-    /**
-     * Returns the request for the popular manga given the page.
-     *
-     * @param page the page number to retrieve.
-     */
-    override fun popularMangaRequest(page: Int) = eightMusesGet("$baseUrl/comics/$page")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    override fun popularMangaParse(response: Response): MangasPage {
-        throw UnsupportedOperationException("Should not be called!")
-    }
-
-    /**
-     * Returns the request for the search manga given the page.
-     *
-     * @param page the page number to retrieve.
-     * @param query the search query.
-     * @param filters the list of filters to apply.
-     */
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        val urlBuilder = if (!query.isBlank()) {
-            "$baseUrl/search".toHttpUrlOrNull()!!
-                .newBuilder()
-                .addQueryParameter("q", query)
-        } else {
-            "$baseUrl/comics".toHttpUrlOrNull()!!
-                .newBuilder()
+    // Support direct URL importing
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
+        urlImportFetchSearchManga(context, query) {
+            super.fetchSearchManga(page, query, filters)
         }
 
-        urlBuilder.addQueryParameter("page", page.toString())
-
-        filters.filterIsInstance<SortFilter>().map {
-            it.addToUri(urlBuilder)
-        }
-
-        return eightMusesGet(urlBuilder.toString())
-    }
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    override fun searchMangaParse(response: Response): MangasPage {
-        throw UnsupportedOperationException("Should not be called!")
-    }
-
-    /**
-     * Returns the request for latest manga given the page.
-     *
-     * @param page the page number to retrieve.
-     */
-    override fun latestUpdatesRequest(page: Int) = eightMusesGet("$baseUrl/comics/lastupdate?page=$page")
-
-    /**
-     * Parses the response from the site and returns a [MangasPage] object.
-     *
-     * @param response the response from the site.
-     */
-    override fun latestUpdatesParse(response: Response): MangasPage {
-        throw UnsupportedOperationException("Should not be called!")
-    }
-
-//    override fun fetchLatestUpdates(page: Int) = fetchListing(latestUpdatesRequest(page), false)
-    override fun fetchLatestUpdates(page: Int) = fetchListing(popularMangaRequest(page), false)
-
-    override fun fetchPopularManga(page: Int) = fetchListing(popularMangaRequest(page), false) // TODO Dig
-
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return urlImportFetchSearchManga(context, query) {
-            fetchListing(searchMangaRequest(page, query, filters), false)
-        }
-    }
-
-    private fun fetchListing(request: Request, dig: Boolean): Observable<MangasPage> {
-        return client.newCall(request)
-            .asObservableSuccess()
-            .flatMapSingle { response ->
-                RxJavaInterop.toV1Single(
-                    GlobalScope.async(Dispatchers.IO) {
-                        parseResultsPage(response, dig)
-                    }.asSingle(GlobalScope.coroutineContext)
-                )
-            }
-    }
-
-    private suspend fun parseResultsPage(response: Response, dig: Boolean): MangasPage {
-        val doc = response.asJsoup()
-        val contents = parseSelf(doc)
-
-        val onLastPage = doc.selectFirst(".current:nth-last-child(2)") != null
-
-        return MangasPage(
-            if (dig) {
-                contents.albums.flatMap {
-                    val href = it.attr("href")
-                    val splitHref = href.split('/')
-                    obtainSiteMap().subMap(href).filter {
-                        it.key.split('/').size - splitHref.size == 1
-                    }.map { (key, _) ->
-                        SManga.create().apply {
-                            url = key
-
-                            title = key.substringAfterLast('/').replace('-', ' ')
-                        }
-                    }
-                }
-            } else {
-                contents.albums.map {
-                    SManga.create().apply {
-                        url = it.attr("href")
-
-                        title = it.select(".title-text").text()
-
-                        thumbnail_url = baseUrl + it.select(".lazyload").attr("data-src")
-                    }
-                }
-            },
-            !onLastPage
-        )
-    }
-
-    /**
-     * Parses the response from the site and returns the details of a manga.
-     *
-     * @param response the response from the site.
-     */
-    override fun mangaDetailsParse(response: Response): SManga {
-        throw UnsupportedOperationException("Should not be called!")
-    }
-
-    /**
-     * Returns an observable with the updated details for a manga. Normally it's not needed to
-     * override this method.
-     *
-     * @param manga the manga to be updated.
-     */
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
             .asObservableSuccess()
             .flatMap {
                 parseToManga(manga, it.asJsoup()).andThen(Observable.just(manga))
             }
-    }
-
-    /**
-     * Parses the response from the site and returns a list of chapters.
-     *
-     * @param response the response from the site.
-     */
-    override fun chapterListParse(response: Response): List<SChapter> {
-        throw UnsupportedOperationException("Should not be called!")
-    }
-
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return RxJavaInterop.toV1Single(
-            GlobalScope.async(Dispatchers.IO) {
-                fetchAndParseChapterList("", manga.url)
-            }.asSingle(GlobalScope.coroutineContext)
-        ).toObservable()
-    }
-
-    private suspend fun fetchAndParseChapterList(prefix: String, url: String): List<SChapter> {
-        // Request
-        val req = eightMusesGet(baseUrl + url)
-
-        return client.newCall(req).asObservableSuccess().toSingle().toBlocking().value().use { response ->
-            val contents = parseSelf(response.asJsoup())
-
-            val out = mutableListOf<SChapter>()
-            if (contents.images.isNotEmpty()) {
-                out += SChapter.create().apply {
-                    this.url = url
-                    this.name = if (prefix.isBlank()) ">" else prefix
-                }
-            }
-
-            val builtPrefix = if (prefix.isBlank()) "> " else "$prefix > "
-
-            out + contents.albums.flatMap { ele ->
-                fetchAndParseChapterList(builtPrefix + ele.selectFirst(".title-text").text(), ele.attr("href"))
-            }
-        }
     }
 
     data class SelfContents(val albums: List<Element>, val images: List<Element>)
@@ -307,22 +52,6 @@ class EightMuses(val context: Context) :
         val selfImages = gc.filter { it.attr("href").startsWith("/comics/picture") }
 
         return SelfContents(selfAlbums, selfImages)
-    }
-
-    /**
-     * Parses the response from the site and returns a list of pages.
-     *
-     * @param response the response from the site.
-     */
-    override fun pageListParse(response: Response): List<Page> {
-        val contents = parseSelf(response.asJsoup())
-        return contents.images.mapIndexed { index, element ->
-            Page(
-                index,
-                element.attr("href"),
-                "$baseUrl/image/fl" + element.select(".lazyload").attr("data-src").substring(9)
-            )
-        }
     }
 
     override fun parseIntoMetadata(metadata: EightMusesSearchMetadata, input: Document) {
@@ -355,40 +84,9 @@ class EightMuses(val context: Context) :
         }
     }
 
-    class SortFilter : Filter.Select<String>(
-        "Sort",
-        SORT_OPTIONS.map { it.second }.toTypedArray()
-    ) {
-        fun addToUri(url: HttpUrl.Builder) {
-            url.addQueryParameter("sort", SORT_OPTIONS[state].first)
-        }
-
-        companion object {
-            // <Internal, Display>
-            private val SORT_OPTIONS = listOf(
-                "" to "Views",
-                "like" to "Likes",
-                "date" to "Date",
-                "az" to "A-Z"
-            )
-        }
-    }
-
-    override fun getFilterList() = FilterList(
-        SortFilter()
-    )
-
-    /**
-     * Parses the response from the site and returns the absolute url to the source image.
-     *
-     * @param response the response from the site.
-     */
-    override fun imageUrlParse(response: Response): String {
-        throw UnsupportedOperationException("Should not be called!")
-    }
-
     override val matchingHosts = listOf(
         "www.8muses.com",
+        "comics.8muses.com",
         "8muses.com"
     )
 

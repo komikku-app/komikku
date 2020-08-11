@@ -140,7 +140,6 @@ open class SourceManager(private val context: Context) {
         exSrcs += PervEden(PERV_EDEN_IT_SOURCE_ID, PervEdenLang.it, context)
         exSrcs += NHentai(context)
         exSrcs += Hitomi(context)
-        exSrcs += EightMuses(context)
         return exSrcs
     }
     // SY <--
@@ -173,7 +172,7 @@ open class SourceManager(private val context: Context) {
 
     // SY -->
     companion object {
-        private const val fillInSourceId = 9999L
+        private const val fillInSourceId = Long.MAX_VALUE
         val DELEGATED_SOURCES = listOf(
             DelegatedSource(
                 "Hentai Cafe",
@@ -205,6 +204,12 @@ open class SourceManager(private val context: Context) {
                 1401584337232758222,
                 "eu.kanade.tachiyomi.extension.en.hbrowse.HBrowse",
                 HBrowse::class
+            ),
+            DelegatedSource(
+                "8Muses",
+                1802675169972965535,
+                "eu.kanade.tachiyomi.extension.all.eromuse.EroMuse",
+                EightMuses::class
             )
         ).associateBy { it.originalSourceQualifiedClassName }
 

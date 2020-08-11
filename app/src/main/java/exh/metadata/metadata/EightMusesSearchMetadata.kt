@@ -53,8 +53,6 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
 
         const val TAG_TYPE_DEFAULT = 0
 
-        const val BASE_URL = "https://www.8muses.com"
-
         const val TAGS_NAMESPACE = "tags"
         const val ARTIST_NAMESPACE = "artist"
     }
