@@ -183,6 +183,10 @@ object DebugFunctions {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
     }
 
+    fun listAllSourcesClassName() = sourceManager.getCatalogueSources().joinToString("\n") {
+        "${it::class.qualifiedName}: ${it.name} (${it.lang.toUpperCase()})"
+    }
+
     fun listVisibleSources() = sourceManager.getVisibleCatalogueSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
     }
