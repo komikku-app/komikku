@@ -20,10 +20,14 @@ import eu.kanade.tachiyomi.source.online.english.HentaiCafe
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
 import exh.EH_SOURCE_ID
+import exh.EIGHTMUSES_SOURCE_ID
 import exh.EXH_SOURCE_ID
+import exh.HBROWSE_SOURCE_ID
+import exh.HENTAI_CAFE_SOURCE_ID
 import exh.PERV_EDEN_EN_SOURCE_ID
 import exh.PERV_EDEN_IT_SOURCE_ID
-import exh.metadata.metadata.PervEdenLang
+import exh.PURURIN_SOURCE_ID
+import exh.TSUMINO_SOURCE_ID
 import exh.source.BlacklistedSources
 import exh.source.DelegatedHttpSource
 import exh.source.EnhancedHttpSource
@@ -136,8 +140,6 @@ open class SourceManager(private val context: Context) {
         if (prefs.enableExhentai().get()) {
             exSrcs += EHentai(EXH_SOURCE_ID, true, context)
         }
-        exSrcs += PervEden(PERV_EDEN_EN_SOURCE_ID, PervEdenLang.en, context)
-        exSrcs += PervEden(PERV_EDEN_IT_SOURCE_ID, PervEdenLang.it, context)
         exSrcs += NHentai(context)
         return exSrcs
     }
@@ -175,19 +177,19 @@ open class SourceManager(private val context: Context) {
         val DELEGATED_SOURCES = listOf(
             DelegatedSource(
                 "Hentai Cafe",
-                260868874183818481,
+                HENTAI_CAFE_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.all.foolslide.HentaiCafe",
                 HentaiCafe::class
             ),
             DelegatedSource(
                 "Pururin",
-                2221515250486218861,
+                PURURIN_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.pururin.Pururin",
                 Pururin::class
             ),
             DelegatedSource(
                 "Tsumino",
-                6707338697138388238,
+                TSUMINO_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.tsumino.Tsumino",
                 Tsumino::class
             )/*,
@@ -200,13 +202,13 @@ open class SourceManager(private val context: Context) {
             )*/,
             DelegatedSource(
                 "HBrowse",
-                1401584337232758222,
+                HBROWSE_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.hbrowse.HBrowse",
                 HBrowse::class
             ),
             DelegatedSource(
                 "8Muses",
-                1802675169972965535,
+                EIGHTMUSES_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.all.eromuse.EroMuse",
                 EightMuses::class
             ),
@@ -216,6 +218,18 @@ open class SourceManager(private val context: Context) {
                 "eu.kanade.tachiyomi.extension.all.hitomi.Hitomi",
                 Hitomi::class,
                 true
+            ),
+            DelegatedSource(
+                "PervEden English",
+                PERV_EDEN_EN_SOURCE_ID,
+                "eu.kanade.tachiyomi.extension.en.perveden.Perveden",
+                PervEden::class
+            ),
+            DelegatedSource(
+                "PervEden Italian",
+                PERV_EDEN_IT_SOURCE_ID,
+                "eu.kanade.tachiyomi.extension.it.perveden.Perveden",
+                PervEden::class
             )
         ).associateBy { it.originalSourceQualifiedClassName }
 

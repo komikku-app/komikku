@@ -39,8 +39,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
-import exh.PERV_EDEN_EN_SOURCE_ID
-import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.debug.SettingsDebugController
 import exh.log.EHLogLevel
 import exh.source.BlacklistedSources
@@ -179,12 +177,6 @@ class SettingsAdvancedController : SettingsController() {
                         if (EXH_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
                             BlacklistedSources.HIDDEN_SOURCES += EXH_SOURCE_ID
                         }
-                        if (PERV_EDEN_EN_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
-                            BlacklistedSources.HIDDEN_SOURCES += PERV_EDEN_EN_SOURCE_ID
-                        }
-                        if (PERV_EDEN_IT_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
-                            BlacklistedSources.HIDDEN_SOURCES += PERV_EDEN_IT_SOURCE_ID
-                        }
                         if (NHENTAI_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
                             BlacklistedSources.HIDDEN_SOURCES += NHENTAI_SOURCE_ID
                         }
@@ -194,12 +186,6 @@ class SettingsAdvancedController : SettingsController() {
                         }
                         if (EXH_SOURCE_ID in BlacklistedSources.HIDDEN_SOURCES) {
                             BlacklistedSources.HIDDEN_SOURCES -= EXH_SOURCE_ID
-                        }
-                        if (PERV_EDEN_EN_SOURCE_ID in BlacklistedSources.HIDDEN_SOURCES) {
-                            BlacklistedSources.HIDDEN_SOURCES -= PERV_EDEN_EN_SOURCE_ID
-                        }
-                        if (PERV_EDEN_IT_SOURCE_ID in BlacklistedSources.HIDDEN_SOURCES) {
-                            BlacklistedSources.HIDDEN_SOURCES -= PERV_EDEN_IT_SOURCE_ID
                         }
                         if (NHENTAI_SOURCE_ID in BlacklistedSources.HIDDEN_SOURCES) {
                             BlacklistedSources.HIDDEN_SOURCES -= NHENTAI_SOURCE_ID

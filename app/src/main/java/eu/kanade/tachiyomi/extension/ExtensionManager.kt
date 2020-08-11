@@ -22,8 +22,6 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.NHENTAI_SOURCE_ID
-import exh.PERV_EDEN_EN_SOURCE_ID
-import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.async
 import rx.Observable
@@ -81,8 +79,6 @@ class ExtensionManager(
         return when (source.id) {
             EH_SOURCE_ID -> context.getDrawable(R.mipmap.ic_ehentai_source)
             EXH_SOURCE_ID -> context.getDrawable(R.mipmap.ic_ehentai_source)
-            PERV_EDEN_EN_SOURCE_ID -> context.getDrawable(R.mipmap.ic_perveden_source)
-            PERV_EDEN_IT_SOURCE_ID -> context.getDrawable(R.mipmap.ic_perveden_source)
             NHENTAI_SOURCE_ID -> context.getDrawable(R.mipmap.ic_nhentai_source)
             MERGED_SOURCE_ID -> context.getDrawable(R.mipmap.ic_merged_source)
             else -> null

@@ -3,6 +3,7 @@ package exh
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.Hitomi
+import eu.kanade.tachiyomi.source.online.all.PervEden
 import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.HentaiCafe
@@ -17,14 +18,14 @@ import eu.kanade.tachiyomi.source.online.english.Tsumino
 const val LEWD_SOURCE_SERIES = 6900L
 const val EH_SOURCE_ID = LEWD_SOURCE_SERIES + 1
 const val EXH_SOURCE_ID = LEWD_SOURCE_SERIES + 2
-const val PERV_EDEN_EN_SOURCE_ID = LEWD_SOURCE_SERIES + 5
-const val PERV_EDEN_IT_SOURCE_ID = LEWD_SOURCE_SERIES + 6
+const val PERV_EDEN_EN_SOURCE_ID = 4673633799850248749
+const val PERV_EDEN_IT_SOURCE_ID = 1433898225963724122
 const val NHENTAI_SOURCE_ID = LEWD_SOURCE_SERIES + 7
-val HENTAI_CAFE_SOURCE_ID = delegatedSourceId<HentaiCafe>()
-val PURURIN_SOURCE_ID = delegatedSourceId<Pururin>()
-val TSUMINO_SOURCE_ID = delegatedSourceId<Tsumino>()
-val EIGHTMUSES_SOURCE_ID = delegatedSourceId<EightMuses>()
-val HBROWSE_SOURCE_ID = delegatedSourceId<HBrowse>()
+const val HENTAI_CAFE_SOURCE_ID = 260868874183818481
+const val PURURIN_SOURCE_ID = 2221515250486218861
+const val TSUMINO_SOURCE_ID = 6707338697138388238
+const val EIGHTMUSES_SOURCE_ID = 1802675169972965535
+const val HBROWSE_SOURCE_ID = 1401584337232758222
 const val MERGED_SOURCE_ID = LEWD_SOURCE_SERIES + 69
 
 private val DELEGATED_LEWD_SOURCES = listOf(
@@ -33,16 +34,11 @@ private val DELEGATED_LEWD_SOURCES = listOf(
     Tsumino::class,
     HBrowse::class,
     EightMuses::class,
-    Hitomi::class
+    Hitomi::class,
+    PervEden::class
 )
 
 private val hitomiClass = listOf(Hitomi::class)
-
-private inline fun <reified T> delegatedSourceId(): Long? {
-    return SourceManager.DELEGATED_SOURCES.entries.find {
-        it.value.newSourceClass == T::class
-    }?.value?.sourceId
-}
 
 // Used to speed up isLewdSource
 val lewdDelegatedSourceIds = SourceManager.currentDelegatedSources.filter {

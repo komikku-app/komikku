@@ -50,7 +50,6 @@ object EXHMigrations {
                 }
                 if (oldVersion < 4) {
                     db.inTransaction {
-                        // Migrate Tsumino source IDs
                         db.lowLevel().executeSQL(
                             RawQuery.builder()
                                 .query(
@@ -103,6 +102,34 @@ object EXHMigrations {
                         )
                     }
                 }
+                if (oldVersion < 6) {
+                    db.inTransaction {
+                        db.lowLevel().executeSQL(
+                            RawQuery.builder()
+                                .query(
+                                    """
+                                    UPDATE ${MangaTable.TABLE}
+                                        SET ${MangaTable.COL_SOURCE} = $PERV_EDEN_EN_SOURCE_ID
+                                        WHERE ${MangaTable.COL_SOURCE} = 6905
+                                    """.trimIndent()
+                                )
+                                .affectsTables(MangaTable.TABLE)
+                                .build()
+                        )
+                        db.lowLevel().executeSQL(
+                            RawQuery.builder()
+                                .query(
+                                    """
+                                    UPDATE ${MangaTable.TABLE}
+                                        SET ${MangaTable.COL_SOURCE} = $PERV_EDEN_IT_SOURCE_ID
+                                        WHERE ${MangaTable.COL_SOURCE} = 6906
+                                    """.trimIndent()
+                                )
+                                .affectsTables(MangaTable.TABLE)
+                                .build()
+                        )
+                    }
+                }
 
                 // if (oldVersion < 1) { }
                 // do stuff here when releasing changed crap
@@ -120,18 +147,30 @@ object EXHMigrations {
     }
 
     fun migrateBackupEntry(manga: MangaImpl): MangaImpl {
+        if (manga.source == 6905L) {
+            manga.source = PERV_EDEN_EN_SOURCE_ID
+        }
+
+        if (manga.source == 6906L) {
+            manga.source = PERV_EDEN_IT_SOURCE_ID
+        }
+
         // Migrate HentaiCafe source IDs
         if (manga.source == 6908L) {
-            manga.source = HENTAI_CAFE_SOURCE_ID!!
+            manga.source = HENTAI_CAFE_SOURCE_ID
         }
 
         // Migrate Tsumino source IDs
         if (manga.source == 6909L) {
-            manga.source = TSUMINO_SOURCE_ID!!
+            manga.source = TSUMINO_SOURCE_ID
+        }
+
+        if (manga.source == 6910L) {
+            manga.source = Hitomi.otherId
         }
 
         if (manga.source == 6912L) {
-            manga.source = HBROWSE_SOURCE_ID!!
+            manga.source = HBROWSE_SOURCE_ID
         }
 
         // Migrate nhentai URLs
@@ -142,16 +181,6 @@ object EXHMigrations {
         // Allow importing of nhentai extension backups
         if (manga.source in BlacklistedSources.NHENTAI_EXT_SOURCES) {
             manga.source = NHENTAI_SOURCE_ID
-        }
-
-        // Allow importing of English PervEden extension backups
-        if (manga.source in BlacklistedSources.PERVEDEN_EN_EXT_SOURCES) {
-            manga.source = PERV_EDEN_EN_SOURCE_ID
-        }
-
-        // Allow importing of Italian PervEden extension backups
-        if (manga.source in BlacklistedSources.PERVEDEN_IT_EXT_SOURCES) {
-            manga.source = PERV_EDEN_IT_SOURCE_ID
         }
 
         // Allow importing of EHentai extension backups

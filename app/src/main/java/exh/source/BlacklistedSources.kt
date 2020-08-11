@@ -8,8 +8,6 @@ object BlacklistedSources {
         4726175775739752699,
         2203215402871965477
     )
-    val PERVEDEN_EN_EXT_SOURCES = listOf(4673633799850248749)
-    val PERVEDEN_IT_EXT_SOURCES = listOf(1433898225963724122)
     val EHENTAI_EXT_SOURCES = listOf(
         8100626124886895451,
         57122881048805941,
@@ -31,15 +29,11 @@ object BlacklistedSources {
     )
 
     val BLACKLISTED_EXT_SOURCES = NHENTAI_EXT_SOURCES +
-        PERVEDEN_EN_EXT_SOURCES +
-        PERVEDEN_IT_EXT_SOURCES +
         EHENTAI_EXT_SOURCES
 
     val BLACKLISTED_EXTENSIONS = listOf(
         "eu.kanade.tachiyomi.extension.all.ehentai",
-        "eu.kanade.tachiyomi.extension.all.nhentai",
-        "eu.kanade.tachiyomi.extension.en.perveden",
-        "eu.kanade.tachiyomi.extension.it.perveden"
+        "eu.kanade.tachiyomi.extension.all.nhentai"
     )
 
     var HIDDEN_SOURCES = listOf(
