@@ -23,7 +23,6 @@ const val NHENTAI_SOURCE_ID = LEWD_SOURCE_SERIES + 7
 val HENTAI_CAFE_SOURCE_ID = delegatedSourceId<HentaiCafe>()
 val PURURIN_SOURCE_ID = delegatedSourceId<Pururin>()
 val TSUMINO_SOURCE_ID = delegatedSourceId<Tsumino>()
-const val HITOMI_OLD_SOURCE_ID = LEWD_SOURCE_SERIES + 10
 val EIGHTMUSES_SOURCE_ID = delegatedSourceId<EightMuses>()
 val HBROWSE_SOURCE_ID = delegatedSourceId<HBrowse>()
 const val MERGED_SOURCE_ID = LEWD_SOURCE_SERIES + 69

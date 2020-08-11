@@ -30,7 +30,6 @@
     <string name="pref_category_all_sources">All Sources</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_nh">nhentai</string>
-    <string name="pref_category_hl">hitomi.la</string>
     <string name="pref_category_fork">Fork Settings</string>
 
     <!-- EH Settings -->
@@ -151,11 +150,6 @@
 
     <!-- Library settings -->
     <string name="pref_skip_pre_migration_summary">Use last saved pre-migration preferences and sources to mass migrate</string>
-
-    <!-- Hitomi.la settings -->
-    <string name="always_download_webp">Always download webp</string>
-    <string name="always_download_webp_summary_on">Will always try to download images as webp when possible</string>
-    <string name="always_download_webp_summary_off">Will only download images as webp if its the only option, most images will be jpg</string>
 
     <!-- Other Settings -->
     <string name="high_quality_thumbnails">Use high-quality thumbnails</string>

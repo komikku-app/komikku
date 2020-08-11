@@ -356,8 +356,6 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_aggressivePageLoading() = flowPrefs.getBoolean(Keys.eh_aggressivePageLoading, false)
 
-    fun eh_hl_useHighQualityThumbs() = flowPrefs.getBoolean(Keys.eh_hl_useHighQualityThumbs, false)
-
     fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, 4)
 
     fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
@@ -381,8 +379,6 @@ class PreferencesHelper(val context: Context) {
     fun sourceSorting() = flowPrefs.getInt(Keys.sourcesSort, 0)
 
     fun recommendsInOverflow() = flowPrefs.getBoolean(Keys.recommendsInOverflow, false)
-
-    fun hitomiAlwaysWebp() = flowPrefs.getBoolean(Keys.hitomiAlwaysWebp, true)
 
     fun enhancedEHentaiView() = flowPrefs.getBoolean(Keys.enhancedEHentaiView, true)
 

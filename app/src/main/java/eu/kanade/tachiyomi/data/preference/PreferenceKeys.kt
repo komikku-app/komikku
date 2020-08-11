@@ -241,8 +241,6 @@ object PreferenceKeys {
 
     const val eh_aggressivePageLoading = "eh_aggressive_page_loading"
 
-    const val eh_hl_useHighQualityThumbs = "eh_hl_hq_thumbs"
-
     const val eh_preload_size = "eh_preload_size"
 
     const val eh_tag_filtering_value = "eh_tag_filtering_value"
@@ -276,8 +274,6 @@ object PreferenceKeys {
     const val sourcesSort = "sources_sort"
 
     const val recommendsInOverflow = "recommends_in_overflow"
-
-    const val hitomiAlwaysWebp = "hitomi_always_webp"
 
     const val enhancedEHentaiView = "enhanced_e_hentai_view"
 

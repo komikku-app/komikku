@@ -25,7 +25,6 @@
     <string name="pref_category_all_sources">Todas as fontes</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_nh">nhentai</string>
-    <string name="pref_category_hl">hitomi.la</string>
     <string name="pref_category_fork">Configurações do fork</string>
 
     <!-- EH Settings -->
@@ -136,12 +135,6 @@
 
     <!-- Library settings -->
     <string name="pref_skip_pre_migration_summary">Use as últimas fontes e preferências da pré-migração salvas para migrar em massa</string>
-
-
-    <!-- Hitomi.la settings -->
-    <string name="always_download_webp">Sempre baixar em webp</string>
-    <string name="always_download_webp_summary_on">Sempre tentará baixar imagens como webp quando possível</string>
-    <string name="always_download_webp_summary_off">Apenas baixará imagens webp se for a única opção, a maioria das imagens será jpg</string>
 
     <!-- Other Settings -->
     <string name="high_quality_thumbnails">Usar miniaturas de alta qualidade</string>
