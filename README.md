@@ -42,14 +42,14 @@ Inherited from TachiyomiAZ or TachiyomiEH and are included and possibly modified
 * Custom hentai sources:
 * * E-Hentai/ExHentai
 * * nHentai
-* * Hitomi.la
-* * 8Muses
-* * Perv Eden
+* * Perv Eden (EN and IT)
 * Additional features for some extensions, features include custom description, opening in app, batch add to library:
+* * 8Muses (EroMuse)
+* * HBrowse
+* * HentaiCafe (Foolside)
+* * Hitomi.la
 * * Puruin
 * * Tsumino
-* * HentaiCafe (Foolside)
-* * HBrowse
 * Saving searches
 * Autoscroll
 * Page preload customization
