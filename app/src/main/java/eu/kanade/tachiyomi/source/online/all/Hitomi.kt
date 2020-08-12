@@ -106,7 +106,11 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                 }
             }
 
-            uploadDate = DATE_FORMAT.parse(input.selectFirst(".gallery-info .date").text())!!.time
+            uploadDate = try {
+                DATE_FORMAT.parse(input.selectFirst(".gallery-info .date").text())!!.time
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
