@@ -43,31 +43,39 @@ private val hitomiClass = listOf(Hitomi::class)
 private val nHentaiClass = listOf(NHentai::class)
 
 // Used to speed up isLewdSource
-val lewdDelegatedSourceIds = SourceManager.currentDelegatedSources.filter {
-    it.value.newSourceClass in DELEGATED_LEWD_SOURCES
-}.map { it.value.sourceId }.sorted()
+val lewdDelegatedSourceIds by lazy {
+    SourceManager.currentDelegatedSources.filter {
+        it.value.newSourceClass in DELEGATED_LEWD_SOURCES
+    }.map { it.value.sourceId }.sorted()
+}
 
-val hitomiSourceIds = SourceManager.currentDelegatedSources.filter {
-    it.value.newSourceClass in hitomiClass
-}.map { it.value.sourceId }.sorted()
+val hitomiSourceIds by lazy {
+    SourceManager.currentDelegatedSources.filter {
+        it.value.newSourceClass in hitomiClass
+    }.map { it.value.sourceId }.sorted()
+}
 
-val nHentaiSourceIds = SourceManager.currentDelegatedSources.filter {
-    it.value.newSourceClass in nHentaiClass
-}.map { it.value.sourceId }.sorted()
+val nHentaiSourceIds by lazy {
+    SourceManager.currentDelegatedSources.filter {
+        it.value.newSourceClass in nHentaiClass
+    }.map { it.value.sourceId }.sorted()
+}
 
 // This method MUST be fast!
 fun isLewdSource(source: Long) = source in 6900..6999 ||
     lewdDelegatedSourceIds.binarySearch(source) >= 0
 
-val LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
-    EH_SOURCE_ID,
-    EXH_SOURCE_ID,
-    HENTAI_CAFE_SOURCE_ID,
-    TSUMINO_SOURCE_ID,
-    PURURIN_SOURCE_ID,
-    *hitomiSourceIds.toTypedArray(),
-    *nHentaiSourceIds.toTypedArray()
-)
+val LIBRARY_UPDATE_EXCLUDED_SOURCES by lazy {
+    listOf(
+        EH_SOURCE_ID,
+        EXH_SOURCE_ID,
+        HENTAI_CAFE_SOURCE_ID,
+        TSUMINO_SOURCE_ID,
+        PURURIN_SOURCE_ID,
+        *hitomiSourceIds.toTypedArray(),
+        *nHentaiSourceIds.toTypedArray()
+    )
+}
 
 fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
 
