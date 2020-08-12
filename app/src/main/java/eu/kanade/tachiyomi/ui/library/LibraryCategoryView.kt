@@ -128,7 +128,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         swipe_refresh.setDistanceToTriggerSync((2 * 64 * resources.displayMetrics.density).toInt())
         swipe_refresh.refreshes()
             .onEach {
-                if (LibraryUpdateService.start(context, category)) {
+                if (LibraryUpdateService.start(context, if (preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT) category else null)) {
                     context.toast(R.string.updating_category)
                 }
 
