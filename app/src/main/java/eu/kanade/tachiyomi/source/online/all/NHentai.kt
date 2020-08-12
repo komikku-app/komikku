@@ -100,6 +100,8 @@ open class NHentai(delegate: HttpSource, val context: Context) :
         }
     }
 
+    override fun toString() = "${delegate.name} (${lang.toUpperCase()})"
+
     override val matchingHosts = listOf(
         "nhentai.net"
     )
