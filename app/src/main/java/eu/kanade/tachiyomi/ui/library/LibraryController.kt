@@ -545,9 +545,9 @@ class LibraryController(
             // SY -->
             R.id.action_migrate -> {
                 val skipPre = preferences.skipPreMigration().get()
-                presenter.onOpenManga()
+                val selectedMangaIds = selectedMangas.mapNotNull { it.id }
                 destroyActionModeIfNeeded()
-                PreMigrationController.navigateToMigration(skipPre, router, selectedMangas.mapNotNull { it.id })
+                PreMigrationController.navigateToMigration(skipPre, router, selectedMangaIds)
             }
             R.id.action_clean -> cleanTitles()
             // SY <--
