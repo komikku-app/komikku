@@ -41,13 +41,13 @@ Inherited from TachiyomiAZ or TachiyomiEH and are included and possibly modified
 * Source migration, migrate all your manga from one source to another
 * Custom hentai sources:
 * * E-Hentai/ExHentai
-* * nHentai
-* * Perv Eden (EN and IT)
 * Additional features for some extensions, features include custom description, opening in app, batch add to library:
 * * 8Muses (EroMuse)
 * * HBrowse
 * * HentaiCafe (Foolside)
 * * Hitomi.la
+* * NHentai
+* * PervEden (EN and IT)
 * * Puruin
 * * Tsumino
 * Saving searches
