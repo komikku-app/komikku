@@ -100,12 +100,6 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     override val baseUrl get() = delegate.baseUrl
 
     /**
-     * Version id used to generate the source id. If the site completely changes and urls are
-     * incompatible, you may increase this value and it'll be considered as a new source.
-     */
-    override val versionId get() = delegate.versionId
-
-    /**
      * Whether the source has support for latest updates.
      */
     override val supportsLatest get() = delegate.supportsLatest
@@ -254,8 +248,8 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      */
     override fun getFilterList() = delegate.getFilterList()
 
-    private fun ensureDelegateCompatible() {
-        if ((versionId != delegate.versionId || lang != delegate.lang) && id != delegate.id) {
+    protected open fun ensureDelegateCompatible() {
+        if (versionId != delegate.versionId || lang != delegate.lang) {
             throw IncompatibleDelegateException("Delegate source is not compatible (versionId: $versionId <=> ${delegate.versionId}, lang: $lang <=> ${delegate.lang})!")
         }
     }

@@ -25,14 +25,12 @@ import exh.util.urlImportFetchSearchManga
 import okhttp3.Response
 import rx.Observable
 
-open class NHentai(delegate: HttpSource, val context: Context) :
+class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     LewdSource<NHentaiSearchMetadata, Response>,
     UrlImportableSource {
     override val metaClass = NHentaiSearchMetadata::class
-    override val lang = if (delegate.lang == "other") "all" else delegate.lang
-    override val id: Long
-        get() = if (delegate.lang == "other") otherId else delegate.id
+    override val lang = if (id == otherId) "all" else delegate.lang
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
@@ -100,7 +98,13 @@ open class NHentai(delegate: HttpSource, val context: Context) :
         }
     }
 
-    override fun toString() = "${delegate.name} (${lang.toUpperCase()})"
+    override fun toString() = "$name (${lang.toUpperCase()})"
+
+    override fun ensureDelegateCompatible() {
+        if (versionId != delegate.versionId) {
+            throw IncompatibleDelegateException("Delegate source is not compatible (versionId: $versionId <=> ${delegate.versionId})!")
+        }
+    }
 
     override val matchingHosts = listOf(
         "nhentai.net"
