@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.2.0" changeDate="Aug 12,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.4(from 0.10.2)[/b] </changelogtext>
+        <changelogtext>[b]New[/b] cleanup orphaned downloads option (from J2k)</changelogtext>
+        <changelogtext>[b]New[/b] delegate Hitomi, please download the extension to continue using your Hitomi manga</changelogtext>
+        <changelogtext>[b]New[/b] delegate NHentai, please download the extension to continue using your NHentai manga</changelogtext>
+        <changelogtext>[b]New[/b] delegate PervEden, please download the extension to continue using your PervEden manga</changelogtext>
+        <changelogtext>[b]New[/b] delegate 8Muses, manga in your library cannot be migrated because of the extension format, 8Muses is in the EroMuse extension</changelogtext>
+        <changelogtext>[b]New[/b] Dynamic Categories, inspired by J2ks feature, but written from the ground up, quickly organize your library into different sets of categories, by source, status, and tracking, or totally ungrouped, its in the library bottom sheet</changelogtext>
+        <changelogtext>[b]New[/b] Continue reading button, inspired by the J2k feature, it will take you to the first unread chapter, can be toggled in the library bottom sheet</changelogtext>
+        <changelogtext>[b]Rewritten[/b] Redo drag and drop, now you can drag and drop in any mode, and it will switch your mode to it when you drag and drop something</changelogtext>
+        <changelogtext>[b]New[/b] quick clean Titles, adds a quick clean that will clean titles from manga from certain sources, it will quickly remove unnecessary bloat</changelogtext>
+        <changelogtext>[b]Rewritten[/b] rewrite the library search engine (that was inherited from EH), it now can exclude, use quotes for absolute searches, it supports namespace tags, and a bunch more, its probably the most advanced search engine any Tachi fork has</changelogtext>
+        <changelogtext>Fix pressing download unread chapters on an Exh manga would download the latest chapter even if it was read</changelogtext>
+        <changelogtext>[b]New[/b] smart Background, when using a pager like LTR, the background will now change color depending on the page (from J2k)</changelogtext>
+        <changelogtext>[b]New[/b] force disable zoom out option for webtoon mode, no more do you accidently zoom out, on by default but can be toggled off (from J2k)</changelogtext>
+        <changelogtext>[b]New[/b] finishing an Exh chapter will mark previous chapters as read</changelogtext>
+        <changelogtext>Don’t download new chapters after refreshing Exh manga</changelogtext>
+        <changelogtext>Fix a migration crash that happened when the chapter list threw an exception</changelogtext>
+        <changelogtext>Fix a start-up crash that made the app unusable for some people</changelogtext>
+        <changelogtext>Some icon fixes</changelogtext>
+        <changelogtext>Change the way releases are built, likely fixes problems with installing the app for some people</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.1.1" changeDate="Aug 2,2020">
         <changelogtext>[b]Based on Tachiyomi stable 0.10.2(from 0.10.1)[/b] </changelogtext>
         <changelogtext>Delegated HBrowse, if you used that source please install the extension to continue using your manga</changelogtext>

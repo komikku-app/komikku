@@ -1,6 +1,6 @@
 | Preview Builds | Release Builds | Tachiyomi Support Server |
 |-------|----------|----------|
-| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![stable release](https://img.shields.io/github/release/jobobby04/tachiyomisy.svg?maxAge=3600&label=download)](https://github.com/jobobby04/tachiyomisy/releases) | [![Discord](https://img.shields.io/discord/349436576037732353.svg)](https://discord.gg/tachiyomi) |
+| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![stable release](https://img.shields.io/github/release/jobobby04/tachiyomisy.svg?maxAge=3600&label=download)](https://github.com/jobobby04/tachiyomisy/releases/latest) | [![Discord](https://img.shields.io/discord/349436576037732353.svg)](https://discord.gg/tachiyomi) |
 
 
 # ![app icon](./.github/readme-images/app-icon.png)TachiyomiSY
@@ -36,6 +36,11 @@ Features of TachiyomiSY include:
 * Manga info edit
 * Enhanced views for internal and integrated sources
 * Enhanced usability for internal and delegated sources
+* Dynamic Categories, view the library in multiple ways
+* Smart background for reading modes like LTR or Vertical, changes the backgorund based on the page color
+* Force disable webtoon zoom
+* Continue reading button in library
+* Quick clean titles
 
 Inherited from TachiyomiAZ or TachiyomiEH and are included and possibly modified in TachiyomiSY
 * Source migration, migrate all your manga from one source to another
@@ -63,10 +68,11 @@ Inherited from TachiyomiAZ or TachiyomiEH and are included and possibly modified
 * Click tag for local search, long click tag for global search
 * Merge multiple of the same manga from different sources
 * Drag and drop library sorting
+* Library search engine, includes exclude, quotes as absolute, and a bunch of other ways to search
 
 
 ## Download
-Get the app from our [releases page](https://github.com/jobobby04/tachiyomisy/releases).
+Get the app from our [releases page](https://github.com/jobobby04/tachiyomisy/releases/latest).
 
 If you want to try new features before they get to the stable release, you can download the preview version [here](https://github.com/jobobby04/tachiyomisypreview/releases).
 
