@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.source.online.all.Hitomi
+import eu.kanade.tachiyomi.source.online.all.NHentai
 import exh.source.BlacklistedSources
 import java.io.File
 import java.net.URI
@@ -128,10 +129,22 @@ object EXHMigrations {
                                 .affectsTables(MangaTable.TABLE)
                                 .build()
                         )
+                        db.lowLevel().executeSQL(
+                            RawQuery.builder()
+                                .query(
+                                    """
+                                    UPDATE ${MangaTable.TABLE}
+                                        SET ${MangaTable.COL_SOURCE} = ${NHentai.otherId}
+                                        WHERE ${MangaTable.COL_SOURCE} = 6907
+                                    """.trimIndent()
+                                )
+                                .affectsTables(MangaTable.TABLE)
+                                .build()
+                        )
                     }
                 }
 
-                // if (oldVersion < 1) { }
+                // if (oldVersion < 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
 
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
@@ -155,6 +168,13 @@ object EXHMigrations {
             manga.source = PERV_EDEN_IT_SOURCE_ID
         }
 
+        if (manga.source == 6907L) {
+            // Migrate the old source to the delegated one
+            manga.source = NHentai.otherId
+            // Migrate nhentai URLs
+            manga.url = getUrlWithoutDomain(manga.url)
+        }
+
         // Migrate HentaiCafe source IDs
         if (manga.source == 6908L) {
             manga.source = HENTAI_CAFE_SOURCE_ID
@@ -171,16 +191,6 @@ object EXHMigrations {
 
         if (manga.source == 6912L) {
             manga.source = HBROWSE_SOURCE_ID
-        }
-
-        // Migrate nhentai URLs
-        if (manga.source == NHENTAI_SOURCE_ID) {
-            manga.url = getUrlWithoutDomain(manga.url)
-        }
-
-        // Allow importing of nhentai extension backups
-        if (manga.source in BlacklistedSources.NHENTAI_EXT_SOURCES) {
-            manga.source = NHENTAI_SOURCE_ID
         }
 
         // Allow importing of EHentai extension backups

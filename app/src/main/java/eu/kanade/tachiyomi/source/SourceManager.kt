@@ -140,7 +140,6 @@ open class SourceManager(private val context: Context) {
         if (prefs.enableExhentai().get()) {
             exSrcs += EHentai(EXH_SOURCE_ID, true, context)
         }
-        exSrcs += NHentai(context)
         return exSrcs
     }
     // SY <--
@@ -230,6 +229,13 @@ open class SourceManager(private val context: Context) {
                 PERV_EDEN_IT_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.it.perveden.Perveden",
                 PervEden::class
+            ),
+            DelegatedSource(
+                "NHentai",
+                fillInSourceId,
+                "eu.kanade.tachiyomi.extension.all.nhentai.NHentai",
+                NHentai::class,
+                true
             )
         ).associateBy { it.originalSourceQualifiedClassName }
 

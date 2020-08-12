@@ -187,8 +187,6 @@ object PreferenceKeys {
 
     const val eh_lock_manually = "eh_lock_manually"
 
-    const val eh_nh_useHighQualityThumbs = "eh_nh_hq_thumbs"
-
     const val eh_showSyncIntro = "eh_show_sync_intro"
 
     const val eh_readOnlySync = "eh_sync_read_only"

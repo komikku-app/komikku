@@ -29,7 +29,6 @@
     <!-- Subsections -->
     <string name="pref_category_all_sources">All Sources</string>
     <string name="pref_category_eh">E-Hentai</string>
-    <string name="pref_category_nh">nhentai</string>
     <string name="pref_category_fork">Fork Settings</string>
 
     <!-- EH Settings -->
@@ -150,10 +149,6 @@
 
     <!-- Library settings -->
     <string name="pref_skip_pre_migration_summary">Use last saved pre-migration preferences and sources to mass migrate</string>
-
-    <!-- Other Settings -->
-    <string name="high_quality_thumbnails">Use high-quality thumbnails</string>
-    <string name="high_quality_thumbnails_summary">May slow down search results</string>
 
     <!-- Reader Settings -->
     <string name="download_threads">Download threads</string>

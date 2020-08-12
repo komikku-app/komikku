@@ -2,13 +2,11 @@ package exh.metadata.metadata
 
 import android.content.Context
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.ONGOING_SUFFIX
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import java.util.Date
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class NHentaiSearchMetadata : RaisedSearchMetadata() {
@@ -41,13 +39,8 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         nhId?.let { manga.url = nhIdToPath(it) }
 
         if (mediaId != null) {
-            val hqThumbs = Injekt.get<PreferencesHelper>().eh_nh_useHighQualityThumbs().get()
-            typeToExtension(if (hqThumbs) coverImageType else thumbnailImageType)?.let {
-                manga.thumbnail_url = "https://t.nhentai.net/galleries/$mediaId/${if (hqThumbs) {
-                    "cover"
-                } else {
-                    "thumb"
-                }}.$it"
+            typeToExtension(coverImageType)?.let {
+                manga.thumbnail_url = "https://t.nhentai.net/galleries/$mediaId/cover.$it"
             }
         }
 

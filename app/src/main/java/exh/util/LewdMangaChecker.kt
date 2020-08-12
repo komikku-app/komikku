@@ -4,7 +4,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import exh.NHENTAI_SOURCE_ID
+import exh.nHentaiSourceIds
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -12,7 +12,7 @@ fun Manga.isLewd(): Boolean {
     val sourceName = Injekt.get<SourceManager>().get(source)?.name
     val currentTags = getGenres() ?: emptyList()
 
-    if (source == EH_SOURCE_ID || source == EXH_SOURCE_ID || source == NHENTAI_SOURCE_ID) {
+    if (source == EH_SOURCE_ID || source == EXH_SOURCE_ID || source in nHentaiSourceIds) {
         return !currentTags.any { tag -> isNonHentaiTag(tag) }
     }
 

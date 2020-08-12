@@ -312,8 +312,6 @@ class PreferencesHelper(val context: Context) {
     fun eh_sessionCookie() = flowPrefs.getString(Keys.eh_sessionCookie, "")
     fun eh_hathPerksCookies() = flowPrefs.getString(Keys.eh_hathPerksCookie, "")
 
-    fun eh_nh_useHighQualityThumbs() = flowPrefs.getBoolean(Keys.eh_nh_useHighQualityThumbs, false)
-
     fun eh_showSyncIntro() = flowPrefs.getBoolean(Keys.eh_showSyncIntro, true)
 
     fun eh_readOnlySync() = flowPrefs.getBoolean(Keys.eh_readOnlySync, false)

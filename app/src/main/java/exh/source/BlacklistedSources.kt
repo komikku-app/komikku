@@ -3,11 +3,6 @@ package exh.source
 import exh.MERGED_SOURCE_ID
 
 object BlacklistedSources {
-    val NHENTAI_EXT_SOURCES = listOf(
-        3122156392225024195,
-        4726175775739752699,
-        2203215402871965477
-    )
     val EHENTAI_EXT_SOURCES = listOf(
         8100626124886895451,
         57122881048805941,
@@ -28,12 +23,10 @@ object BlacklistedSources {
         6140480779421365791
     )
 
-    val BLACKLISTED_EXT_SOURCES = NHENTAI_EXT_SOURCES +
-        EHENTAI_EXT_SOURCES
+    val BLACKLISTED_EXT_SOURCES = EHENTAI_EXT_SOURCES
 
     val BLACKLISTED_EXTENSIONS = listOf(
-        "eu.kanade.tachiyomi.extension.all.ehentai",
-        "eu.kanade.tachiyomi.extension.all.nhentai"
+        "eu.kanade.tachiyomi.extension.all.ehentai"
     )
 
     var HIDDEN_SOURCES = listOf(

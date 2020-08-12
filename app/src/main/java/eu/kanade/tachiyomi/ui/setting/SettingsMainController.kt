@@ -73,12 +73,6 @@ class SettingsMainController : SettingsController() {
                 titleRes = R.string.pref_category_eh
                 onClick { navigateTo(SettingsEhController()) }
             }
-            preference {
-                iconRes = R.drawable.eh_ic_nhlogo_color
-                iconTint = tintColor
-                titleRes = R.string.pref_category_nh
-                onClick { navigateTo(SettingsNhController()) }
-            }
         }
         // SY <--
         preference {
