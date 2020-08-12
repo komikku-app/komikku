@@ -523,7 +523,13 @@ class LibraryController(
             binding.actionToolbar.findItem(R.id.action_download_unread)?.isVisible = selectedMangas.any { it.source != LocalSource.ID }
 
             // SY -->
-            binding.actionToolbar.findItem(R.id.action_clean)?.isVisible = selectedMangas.any { it.source == EH_SOURCE_ID || it.source == EXH_SOURCE_ID || it.source in nHentaiSourceIds || it.source == PERV_EDEN_EN_SOURCE_ID || it.source == PERV_EDEN_IT_SOURCE_ID }
+            binding.actionToolbar.findItem(R.id.action_clean)?.isVisible = selectedMangas.any {
+                it.source == EH_SOURCE_ID ||
+                    it.source == EXH_SOURCE_ID ||
+                    it.source in nHentaiSourceIds ||
+                    it.source == PERV_EDEN_EN_SOURCE_ID ||
+                    it.source == PERV_EDEN_IT_SOURCE_ID
+            }
             // SY <--
         }
         return false
@@ -642,7 +648,13 @@ class LibraryController(
 
     // SY -->
     private fun cleanTitles() {
-        val mangas = selectedMangas.filter { it.source == EH_SOURCE_ID || it.source == EXH_SOURCE_ID || it.source in nHentaiSourceIds }.toList()
+        val mangas = selectedMangas.filter {
+            it.source == EH_SOURCE_ID ||
+                it.source == EXH_SOURCE_ID ||
+                it.source in nHentaiSourceIds ||
+                it.source == PERV_EDEN_EN_SOURCE_ID ||
+                it.source == PERV_EDEN_IT_SOURCE_ID
+        }.toList()
         presenter.cleanTitles(mangas)
         destroyActionModeIfNeeded()
     }
