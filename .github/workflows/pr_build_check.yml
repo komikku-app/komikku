@@ -13,6 +13,11 @@ jobs:
         with:
           java-version: 1.8
       - name: Install NDK
-        run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;21.3.6528147"
+        run: sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;21.0.6113669"
       - name: Build project
         run: ./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: TachiyomiSY-${{ github.sha }}.apk
+          path: app/build/outputs/apk/dev/debug/app-dev-debug.apk
