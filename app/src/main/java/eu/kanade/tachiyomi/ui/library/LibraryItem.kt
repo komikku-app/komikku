@@ -51,7 +51,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
     override fun getLayoutRes(): Int {
         return when (libraryDisplayMode.get()) {
             DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item
-            DisplayMode.COMFORTABLE_GRID -> R.layout.source_comfortable_grid_item
+            DisplayMode.COMFORTABLE_GRID /* SY --> */, DisplayMode.NO_TITLE_GRID /* SY <-- */ -> R.layout.source_comfortable_grid_item
             DisplayMode.LIST -> R.layout.source_list_item
         }
     }
@@ -69,7 +69,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
                 }
                 LibraryCompactGridHolder(view, adapter)
             }
-            DisplayMode.COMFORTABLE_GRID -> {
+            DisplayMode.COMFORTABLE_GRID /* SY --> */, DisplayMode.NO_TITLE_GRID /* SY <-- */ -> {
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
                 view.apply {
@@ -77,7 +77,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
                         MATCH_PARENT, coverHeight
                     )
                 }
-                LibraryComfortableGridHolder(view, adapter)
+                LibraryComfortableGridHolder(view, adapter, libraryDisplayMode.get() != DisplayMode.NO_TITLE_GRID)
             }
             DisplayMode.LIST -> {
                 LibraryListHolder(view, adapter)

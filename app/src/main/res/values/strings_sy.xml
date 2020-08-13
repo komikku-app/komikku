@@ -10,6 +10,7 @@
     <string name="action_copy_now">Copy now</string>
     <string name="clean_titles">Clean titles</string>
     <string name="action_start_reading_button">Start reading button</string>
+    <string name="action_display_no_title_grid">No title grid</string>
 
     <!-- Library fragment -->
     <string name="buttons_header">Buttons</string>

@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.view.View
+import androidx.core.view.isVisible
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -20,7 +21,7 @@ import kotlinx.android.synthetic.main.source_comfortable_grid_item.title
  * @param adapter the adapter handling this holder.
  * @constructor creates a new catalogue holder.
  */
-class SourceComfortableGridHolder(private val view: View, private val adapter: FlexibleAdapter<*>) :
+class SourceComfortableGridHolder(private val view: View, private val adapter: FlexibleAdapter<*> /* SY --> */, private val hasTitle: Boolean /* SY <-- */) :
     SourceGridHolder(view, adapter) {
 
     /**
@@ -32,6 +33,9 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
     override fun onSetValues(manga: Manga) {
         // Set manga title
         title.text = manga.title
+        // SY -->
+        title.isVisible = hasTitle
+        // SY <--
 
         // Set alpha of thumbnail.
         thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f

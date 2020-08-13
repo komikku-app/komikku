@@ -431,6 +431,9 @@ open class BrowseSourceController(bundle: Bundle) :
         val displayItem = when (preferences.sourceDisplayMode().get()) {
             DisplayMode.COMPACT_GRID -> R.id.action_compact_grid
             DisplayMode.COMFORTABLE_GRID -> R.id.action_comfortable_grid
+            // SY -->
+            DisplayMode.NO_TITLE_GRID -> R.id.action_no_title_grid
+            // SY <--
             DisplayMode.LIST -> R.id.action_list
         }
         menu.findItem(displayItem).isChecked = true
@@ -464,6 +467,9 @@ open class BrowseSourceController(bundle: Bundle) :
             R.id.action_search -> expandActionViewFromInteraction = true
             R.id.action_compact_grid -> setDisplayMode(DisplayMode.COMPACT_GRID)
             R.id.action_comfortable_grid -> setDisplayMode(DisplayMode.COMFORTABLE_GRID)
+            // SY -->
+            R.id.action_no_title_grid -> setDisplayMode(DisplayMode.NO_TITLE_GRID)
+            // SY <--
             R.id.action_list -> setDisplayMode(DisplayMode.LIST)
             R.id.action_open_in_web_view -> openInWebView()
             // SY -->

@@ -24,7 +24,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
     override fun getLayoutRes(): Int {
         return /* SY --> */ if (metadata == null) /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item
-            DisplayMode.COMFORTABLE_GRID -> R.layout.source_comfortable_grid_item
+            DisplayMode.COMFORTABLE_GRID, /* SY --> */ DisplayMode.NO_TITLE_GRID /* SY <-- */ -> R.layout.source_comfortable_grid_item
             DisplayMode.LIST -> R.layout.source_list_item
         } /* SY --> */ else R.layout.source_enhanced_ehentai_list_item /* SY <-- */
     }
@@ -47,7 +47,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
                 }
                 SourceGridHolder(view, adapter)
             }
-            DisplayMode.COMFORTABLE_GRID -> {
+            DisplayMode.COMFORTABLE_GRID /* SY --> */, DisplayMode.NO_TITLE_GRID /* SY <-- */ -> {
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
                 view.apply {
@@ -55,7 +55,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
                         MATCH_PARENT, coverHeight
                     )
                 }
-                SourceComfortableGridHolder(view, adapter)
+                SourceComfortableGridHolder(view, adapter, displayMode.get() != DisplayMode.NO_TITLE_GRID)
             }
             DisplayMode.LIST -> {
                 SourceListHolder(view, adapter)
