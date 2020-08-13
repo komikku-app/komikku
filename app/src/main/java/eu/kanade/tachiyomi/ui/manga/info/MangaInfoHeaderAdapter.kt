@@ -85,6 +85,11 @@ class MangaInfoHeaderAdapter(
         fun bind() {
             // For rounded corners
             binding.mangaCover.clipToOutline = true
+            // SY -->
+            binding.mangaCover.clicks()
+                .onEach { controller.onThumbnailClick(binding.mangaCover) }
+                .launchIn(scope)
+            // SY <--
 
             binding.btnFavorite.clicks()
                 .onEach { controller.onFavoriteClick() }

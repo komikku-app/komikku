@@ -2,9 +2,14 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Point
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -12,6 +17,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.graphics.blue
@@ -23,6 +30,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -34,6 +42,8 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.data.glide.GlideApp
+import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MangaControllerBinding
 import eu.kanade.tachiyomi.source.LocalSource
@@ -184,6 +194,8 @@ class MangaController :
     )
 
     private var editMangaDialog: EditMangaDialog? = null
+
+    private var currentAnimator: Animator? = null
     // EXH <--
 
     init {
@@ -469,6 +481,13 @@ class MangaController :
             // Update view.
             mangaInfoAdapter?.update(manga, source)
             mangaInfoItemAdapter?.update(manga, source, presenter.meta)
+
+            val mangaThumbnail = manga.toMangaThumbnail()
+            GlideApp.with(activity!!)
+                .load(mangaThumbnail)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .fitCenter()
+                .into(binding.expandedImage)
         } else {
             // Initialize manga.
             fetchMangaInfoFromSource()
@@ -695,6 +714,103 @@ class MangaController :
 
         presenter.moveMangaToCategories(manga, categories)
     }
+
+    // SY -->
+    fun onThumbnailClick(thumbView: ImageView) {
+        if (!presenter.manga.initialized) return
+        currentAnimator?.cancel()
+
+        val startBoundsInt = Rect()
+        val finalBoundsInt = Rect()
+        val globalOffset = Point()
+
+        thumbView.getGlobalVisibleRect(startBoundsInt)
+        binding.root.getGlobalVisibleRect(finalBoundsInt, globalOffset)
+        startBoundsInt.offset(-globalOffset.x, -globalOffset.y)
+        finalBoundsInt.offset(-globalOffset.x, -globalOffset.y)
+
+        val startBounds = RectF(startBoundsInt)
+        val finalBounds = RectF(finalBoundsInt)
+
+        val startScale: Float
+        if ((finalBounds.width() / finalBounds.height() > startBounds.width() / startBounds.height())) {
+            startScale = startBounds.height() / finalBounds.height()
+            val startWidth: Float = startScale * finalBounds.width()
+            val deltaWidth: Float = (startWidth - startBounds.width()) / 2
+            startBounds.left -= deltaWidth.toInt()
+            startBounds.right += deltaWidth.toInt()
+        } else {
+            startScale = startBounds.width() / finalBounds.width()
+            val startHeight: Float = startScale * finalBounds.height()
+            val deltaHeight: Float = (startHeight - startBounds.height()) / 2f
+            startBounds.top -= deltaHeight.toInt()
+            startBounds.bottom += deltaHeight.toInt()
+        }
+        thumbView.alpha = 0f
+        binding.expandedImage.isVisible = true
+
+        binding.expandedImage.pivotX = 0f
+        binding.expandedImage.pivotY = 0f
+
+        currentAnimator = AnimatorSet().apply {
+            play(
+                ObjectAnimator.ofFloat(
+                    binding.expandedImage,
+                    View.X,
+                    startBounds.left,
+                    finalBounds.left
+                )
+            ).apply {
+                with(ObjectAnimator.ofFloat(binding.expandedImage, View.Y, startBounds.top, finalBounds.top))
+                with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_X, startScale, 1f))
+                with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_Y, startScale, 1f))
+            }
+            duration = resources?.getInteger(android.R.integer.config_shortAnimTime)?.toLong() ?: 150L
+            interpolator = DecelerateInterpolator()
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    currentAnimator = null
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                    currentAnimator = null
+                }
+            })
+            start()
+        }
+
+        binding.expandedImage.clicks()
+            .onEach {
+                currentAnimator?.cancel()
+
+                currentAnimator = AnimatorSet().apply {
+                    play(ObjectAnimator.ofFloat(binding.expandedImage, View.X, startBounds.left)).apply {
+                        with(ObjectAnimator.ofFloat(binding.expandedImage, View.Y, startBounds.top))
+                        with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_X, startScale))
+                        with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_Y, startScale))
+                    }
+                    duration = resources?.getInteger(android.R.integer.config_shortAnimTime)?.toLong() ?: 150L
+                    interpolator = DecelerateInterpolator()
+                    addListener(object : AnimatorListenerAdapter() {
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            thumbView.alpha = 1f
+                            binding.expandedImage.isVisible = false
+                            currentAnimator = null
+                        }
+
+                        override fun onAnimationCancel(animation: Animator) {
+                            thumbView.alpha = 1f
+                            binding.expandedImage.isVisible = false
+                            currentAnimator = null
+                        }
+                    })
+                    start()
+                }
+            }
+            .launchIn(scope)
+    }
+    // SY <--
 
     /**
      * Perform a global search using the provided query.
