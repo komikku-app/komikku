@@ -87,8 +87,6 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import exh.isEhBasedSource
 import exh.metadata.metadata.base.FlatMetadata
-import java.io.IOException
-import kotlin.math.min
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.android.synthetic.main.main_activity.toolbar
 import kotlinx.coroutines.CancellationException
@@ -104,6 +102,8 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.io.IOException
+import kotlin.math.min
 
 class MangaController :
     NucleusController<MangaControllerBinding, MangaPresenter>,
@@ -747,6 +747,7 @@ class MangaController :
             startBounds.bottom += deltaHeight.toInt()
         }
         thumbView.alpha = 0f
+        actionFab?.isVisible = false
         binding.expandedImage.isVisible = true
 
         binding.expandedImage.pivotX = 0f
@@ -796,12 +797,14 @@ class MangaController :
                         override fun onAnimationEnd(animation: Animator) {
                             thumbView.alpha = 1f
                             binding.expandedImage.isVisible = false
+                            actionFab?.isVisible = true
                             currentAnimator = null
                         }
 
                         override fun onAnimationCancel(animation: Animator) {
                             thumbView.alpha = 1f
                             binding.expandedImage.isVisible = false
+                            actionFab?.isVisible = true
                             currentAnimator = null
                         }
                     })
