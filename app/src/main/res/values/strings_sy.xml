@@ -149,6 +149,8 @@
 
     <!-- Library settings -->
     <string name="pref_skip_pre_migration_summary">Use last saved pre-migration preferences and sources to mass migrate</string>
+    <string name="library_settings_sheet">Library settings sheet</string>
+    <string name="library_settings_sheet_summary">More library display settings</string>
 
     <!-- Reader Settings -->
     <string name="download_threads">Download threads</string>

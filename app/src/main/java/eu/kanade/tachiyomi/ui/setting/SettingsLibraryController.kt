@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.CategoryController
+import eu.kanade.tachiyomi.ui.library.LibrarySettingsSheet
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -40,11 +41,17 @@ class SettingsLibraryController : SettingsController() {
 
     private val db: DatabaseHelper = Injekt.get()
 
+    /**
+     * Sheet containing filter/sort/display items.
+     */
+    private var settingsSheet: LibrarySettingsSheet? = null
+
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.pref_category_library
 
         val dbCategories = db.getCategories().executeAsBlocking()
         val categories = listOf(Category.createDefault()) + dbCategories
+        settingsSheet = LibrarySettingsSheet(activity!!) {}
 
         preferenceCategory {
             titleRes = R.string.pref_category_display
@@ -77,6 +84,17 @@ class SettingsLibraryController : SettingsController() {
                 titleRes = R.string.pref_jump_to_chapters
                 defaultValue = false
             }
+            // SY -->
+            preference {
+                titleRes = R.string.library_settings_sheet
+
+                summaryRes = R.string.library_settings_sheet_summary
+
+                onClick {
+                    settingsSheet?.show()
+                }
+            }
+            // Sy <--
         }
 
         preferenceCategory {
