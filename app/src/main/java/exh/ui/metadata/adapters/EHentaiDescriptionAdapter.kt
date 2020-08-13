@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterEhBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.humanReadableByteCount
@@ -23,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
 
 class EHentaiDescriptionAdapter(
     private val controller: MangaController
@@ -109,6 +111,27 @@ class EHentaiDescriptionAdapter(
                 itemView.context.getString(R.string.rating_view, itemView.context.getString(name), (ratingFloat ?: 0F).toString(), meta.ratingCount ?: 0)
             } else {
                 itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (ratingFloat ?: 0F).toString())
+            }
+
+            listOf(
+                binding.favorites,
+                binding.genre,
+                binding.language,
+                binding.pages,
+                binding.rating,
+                binding.size,
+                binding.uploader,
+                binding.visible,
+                binding.whenPosted
+            ).forEach { textView ->
+                textView.longClicks()
+                    .onEach {
+                        itemView.context.copyToClipboard(
+                            textView.text.toString(),
+                            textView.text.toString()
+                        )
+                    }
+                    .launchIn(scope)
             }
 
             binding.moreInfo.clicks()

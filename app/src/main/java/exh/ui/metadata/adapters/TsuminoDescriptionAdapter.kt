@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterTsBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.ui.metadata.MetadataViewController
@@ -21,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
 
 class TsuminoDescriptionAdapter(
     private val controller: MangaController
@@ -92,6 +94,24 @@ class TsuminoDescriptionAdapter(
                 itemView.context.getString(R.string.rating_view, itemView.context.getString(name), (meta.averageRating ?: 0F).toString(), meta.userRatings ?: 0L)
             } else {
                 itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (meta.averageRating ?: 0F).toString())
+            }
+
+            listOf(
+                binding.favorites,
+                binding.genre,
+                binding.pages,
+                binding.rating,
+                binding.uploader,
+                binding.whenPosted
+            ).forEach { textView ->
+                textView.longClicks()
+                    .onEach {
+                        itemView.context.copyToClipboard(
+                            textView.text.toString(),
+                            textView.text.toString()
+                        )
+                    }
+                    .launchIn(scope)
             }
 
             binding.moreInfo.clicks()

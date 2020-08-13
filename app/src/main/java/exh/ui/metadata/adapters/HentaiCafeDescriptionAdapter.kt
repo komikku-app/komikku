@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterHcBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.HentaiCafeSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
 
 class HentaiCafeDescriptionAdapter(
     private val controller: MangaController
@@ -42,6 +44,15 @@ class HentaiCafeDescriptionAdapter(
             if (meta == null || meta !is HentaiCafeSearchMetadata) return
 
             binding.artist.text = meta.artist ?: itemView.context.getString(R.string.unknown)
+
+            binding.artist.longClicks()
+                .onEach {
+                    itemView.context.copyToClipboard(
+                        binding.artist.text.toString(),
+                        binding.artist.text.toString()
+                    )
+                }
+                .launchIn(scope)
 
             binding.moreInfo.clicks()
                 .onEach {

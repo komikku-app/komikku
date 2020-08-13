@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterNhBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.NHentaiSearchMetadata
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
 
 class NHentaiDescriptionAdapter(
     private val controller: MangaController
@@ -89,6 +91,23 @@ class NHentaiDescriptionAdapter(
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pageImageTypes.size, meta.pageImageTypes.size)
             @SuppressLint("SetTextI18n")
             binding.id.text = "#" + (meta.nhId ?: 0)
+
+            listOf(
+                binding.favorites,
+                binding.genre,
+                binding.id,
+                binding.pages,
+                binding.whenPosted
+            ).forEach { textView ->
+                textView.longClicks()
+                    .onEach {
+                        itemView.context.copyToClipboard(
+                            textView.text.toString(),
+                            textView.text.toString()
+                        )
+                    }
+                    .launchIn(scope)
+            }
 
             binding.moreInfo.clicks()
                 .onEach {

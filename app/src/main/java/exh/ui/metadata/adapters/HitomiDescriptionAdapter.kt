@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterHiBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.ui.metadata.MetadataViewController
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
 
 class HitomiDescriptionAdapter(
     private val controller: MangaController
@@ -70,6 +72,22 @@ class HitomiDescriptionAdapter(
             binding.whenPosted.text = EX_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
             binding.group.text = meta.group ?: itemView.context.getString(R.string.unknown)
             binding.language.text = meta.language ?: itemView.context.getString(R.string.unknown)
+
+            listOf(
+                binding.genre,
+                binding.group,
+                binding.language,
+                binding.whenPosted
+            ).forEach { textView ->
+                textView.longClicks()
+                    .onEach {
+                        itemView.context.copyToClipboard(
+                            textView.text.toString(),
+                            textView.text.toString()
+                        )
+                    }
+                    .launchIn(scope)
+            }
 
             binding.moreInfo.clicks()
                 .onEach {

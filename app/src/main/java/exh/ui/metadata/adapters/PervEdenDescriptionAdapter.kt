@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterPeBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.PervEdenSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import exh.util.SourceTagsUtil
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
 
 class PervEdenDescriptionAdapter(
     private val controller: MangaController
@@ -84,6 +86,21 @@ class PervEdenDescriptionAdapter(
             }
             binding.ratingBar.rating = meta.rating ?: 0F
             binding.rating.text = itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (meta.rating ?: 0F).toString())
+
+            listOf(
+                binding.genre,
+                binding.language,
+                binding.rating
+            ).forEach { textView ->
+                textView.longClicks()
+                    .onEach {
+                        itemView.context.copyToClipboard(
+                            textView.text.toString(),
+                            textView.text.toString()
+                        )
+                    }
+                    .launchIn(scope)
+            }
 
             binding.moreInfo.clicks()
                 .onEach {

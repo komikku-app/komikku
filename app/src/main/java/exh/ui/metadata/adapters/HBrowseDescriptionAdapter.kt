@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterHbBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.view.longClicks
 
 class HBrowseDescriptionAdapter(
     private val controller: MangaController
@@ -42,6 +44,15 @@ class HBrowseDescriptionAdapter(
             if (meta == null || meta !is HBrowseSearchMetadata) return
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+
+            binding.pages.longClicks()
+                .onEach {
+                    itemView.context.copyToClipboard(
+                        binding.pages.text.toString(),
+                        binding.pages.text.toString()
+                    )
+                }
+                .launchIn(scope)
 
             binding.moreInfo.clicks()
                 .onEach {
