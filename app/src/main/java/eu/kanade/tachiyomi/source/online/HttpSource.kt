@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import exh.log.maybeInjectEHLogger
 import exh.patch.injectPatches
 import exh.source.DelegatedHttpSource
 import java.net.URI
@@ -41,12 +42,14 @@ abstract class HttpSource : CatalogueSource {
                 get() = delegate?.networkHttpClient ?: original.client
                     .newBuilder()
                     .injectPatches { id }
+                    .maybeInjectEHLogger()
                     .build()
 
             override val cloudflareClient: OkHttpClient
                 get() = delegate?.networkCloudflareClient ?: original.cloudflareClient
                     .newBuilder()
                     .injectPatches { id }
+                    .maybeInjectEHLogger()
                     .build()
 
             override val cookieManager: AndroidCookieJar
