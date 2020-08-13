@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.MERGED_SOURCE_ID
-import java.text.DecimalFormat
 import kotlinx.android.synthetic.main.migration_manga_card.view.gradient
 import kotlinx.android.synthetic.main.migration_manga_card.view.loading_group
 import kotlinx.android.synthetic.main.migration_manga_card.view.manga_chapters
@@ -37,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.text.DecimalFormat
 
 class MigrationProcessHolder(
     private val view: View,

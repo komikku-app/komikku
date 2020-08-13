@@ -20,10 +20,10 @@ import exh.ui.metadata.adapters.TsuminoDescriptionAdapter
 import exh.util.dropBlank
 import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
-import java.text.SimpleDateFormat
-import java.util.Locale
 import org.jsoup.nodes.Document
 import rx.Observable
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class Tsumino(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),

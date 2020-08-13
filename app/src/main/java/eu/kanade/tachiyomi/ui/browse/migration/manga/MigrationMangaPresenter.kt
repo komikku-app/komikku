@@ -11,12 +11,12 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.debug.DebugFunctions.sourceManager
-import java.util.Date
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Date
 
 class MigrationMangaPresenter(
     private val sourceId: Long,

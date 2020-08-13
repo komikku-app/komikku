@@ -7,10 +7,10 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import exh.MERGED_SOURCE_ID
-import java.util.Locale
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Locale
 
 class MigrationSourcesPresenter(
     private val sourceManager: SourceManager = Injekt.get(),

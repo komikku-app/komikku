@@ -30,14 +30,14 @@ import exh.EXH_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
 import exh.util.isLewd
 import exh.util.nullIfBlank
-import java.util.Collections
-import java.util.Comparator
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Collections
+import java.util.Comparator
 
 /**
  * Class containing library information.

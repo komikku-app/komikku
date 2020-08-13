@@ -8,8 +8,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
-import kotlin.concurrent.thread
 import timber.log.Timber
+import kotlin.concurrent.thread
 
 class ConfiguringDialogController : DialogController() {
     private var materialDialog: MaterialDialog? = null

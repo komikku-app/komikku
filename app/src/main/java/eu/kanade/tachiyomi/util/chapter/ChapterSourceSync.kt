@@ -9,10 +9,10 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import java.util.Date
-import java.util.TreeSet
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Date
+import java.util.TreeSet
 
 /**
  * Helper method for syncing the list of chapters from the source with the ones from the database.

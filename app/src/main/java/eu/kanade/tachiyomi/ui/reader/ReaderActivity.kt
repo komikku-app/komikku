@@ -65,10 +65,6 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
 import exh.util.defaultReaderType
-import java.io.File
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
-import kotlin.math.roundToLong
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
@@ -86,6 +82,10 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
+import java.io.File
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
+import kotlin.math.roundToLong
 
 /**
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the

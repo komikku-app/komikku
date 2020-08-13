@@ -50,7 +50,6 @@ import exh.util.await
 import exh.util.nullIfBlank
 import exh.util.trans
 import humanize.Humanize
-import java.util.Date
 import kotlinx.android.synthetic.main.eh_dialog_categories.view.artist_cg_checkbox
 import kotlinx.android.synthetic.main.eh_dialog_categories.view.asian_porn_checkbox
 import kotlinx.android.synthetic.main.eh_dialog_categories.view.cosplay_checkbox
@@ -120,6 +119,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.injectLazy
+import java.util.Date
 
 /**
  * EH Settings fragment

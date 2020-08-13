@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.ui.recent.history
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.source.SourceManager
+import uy.kohesive.injekt.injectLazy
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import uy.kohesive.injekt.injectLazy
 
 /**
  * Adapter of HistoryHolder.

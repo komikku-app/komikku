@@ -29,8 +29,6 @@ import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.await
 import exh.util.cancellable
 import exh.util.jobScheduler
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -44,6 +42,8 @@ import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 class EHentaiUpdateWorker : JobService(), CoroutineScope {
     override val coroutineContext: CoroutineContext

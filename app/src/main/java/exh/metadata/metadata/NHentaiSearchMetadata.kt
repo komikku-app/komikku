@@ -6,8 +6,8 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.ONGOING_SUFFIX
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import java.util.Date
 import uy.kohesive.injekt.api.get
+import java.util.Date
 
 class NHentaiSearchMetadata : RaisedSearchMetadata() {
     var url get() = nhId?.let { BASE_URL + nhIdToPath(it) }

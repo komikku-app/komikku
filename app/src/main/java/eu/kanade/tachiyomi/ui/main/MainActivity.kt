@@ -48,14 +48,14 @@ import exh.EXH_SOURCE_ID
 import exh.eh.EHentaiUpdateWorker
 import exh.source.BlacklistedSources
 import exh.uconfig.WarnConfigureDialogController
-import java.util.Date
-import java.util.LinkedList
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.appbar
 import kotlinx.android.synthetic.main.main_activity.tabs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import timber.log.Timber
+import java.util.Date
+import java.util.LinkedList
+import java.util.concurrent.TimeUnit
 
 class MainActivity : BaseActivity<MainActivityBinding>() {
 

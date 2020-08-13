@@ -36,11 +36,6 @@ import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
 import io.realm.Realm
 import io.realm.RealmConfiguration
-import java.io.File
-import java.security.NoSuchAlgorithmException
-import java.security.Security
-import javax.net.ssl.SSLContext
-import kotlin.concurrent.thread
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.conscrypt.Conscrypt
@@ -49,6 +44,11 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.InjektScope
 import uy.kohesive.injekt.injectLazy
 import uy.kohesive.injekt.registry.default.DefaultRegistrar
+import java.io.File
+import java.security.NoSuchAlgorithmException
+import java.security.Security
+import javax.net.ssl.SSLContext
+import kotlin.concurrent.thread
 
 open class App : Application(), LifecycleObserver {
 

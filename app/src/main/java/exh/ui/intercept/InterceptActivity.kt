@@ -14,10 +14,10 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.GalleryAddEvent
 import exh.GalleryAdder
-import kotlin.concurrent.thread
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.subjects.BehaviorSubject
+import kotlin.concurrent.thread
 
 class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
     private var statusSubscription: Subscription? = null

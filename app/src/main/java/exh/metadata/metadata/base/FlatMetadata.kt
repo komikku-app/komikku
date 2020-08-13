@@ -5,9 +5,9 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
-import kotlin.reflect.KClass
 import rx.Completable
 import rx.Single
+import kotlin.reflect.KClass
 
 data class FlatMetadata(
     val metadata: SearchMetadata,

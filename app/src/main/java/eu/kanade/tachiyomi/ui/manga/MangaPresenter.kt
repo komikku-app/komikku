@@ -42,7 +42,6 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.EnhancedHttpSource
 import exh.util.await
 import exh.util.trimOrNull
-import java.util.Date
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import rx.Observable
@@ -53,6 +52,7 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.util.Date
 
 class MangaPresenter(
     val manga: Manga,

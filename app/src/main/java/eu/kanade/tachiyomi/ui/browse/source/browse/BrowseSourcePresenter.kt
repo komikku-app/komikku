@@ -39,8 +39,6 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.EXHSavedSearch
 import exh.isEhBasedSource
-import java.lang.RuntimeException
-import java.util.Date
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -50,6 +48,8 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
+import java.lang.RuntimeException
+import java.util.Date
 
 /**
  * Presenter of [BrowseSourceController].

@@ -5,9 +5,9 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.ui.captcha.BrowserActionActivity.Companion.CROSS_WINDOW_SCRIPT_INNER
-import java.nio.charset.Charset
 import org.jsoup.nodes.DataNode
 import org.jsoup.nodes.Element
+import java.nio.charset.Charset
 
 class AutoSolvingWebViewClient(
     activity: BrowserActionActivity,

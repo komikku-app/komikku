@@ -15,9 +15,9 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.uconfig.WarnConfigureDialogController
-import java.net.HttpCookie
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
+import java.net.HttpCookie
 
 /**
  * LoginController

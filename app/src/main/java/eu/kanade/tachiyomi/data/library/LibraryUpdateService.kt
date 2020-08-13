@@ -28,14 +28,14 @@ import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
-import java.io.File
-import java.util.concurrent.atomic.AtomicInteger
 import rx.Observable
 import rx.Subscription
 import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * This class will take care of updating the chapters of the manga from the library. It can be

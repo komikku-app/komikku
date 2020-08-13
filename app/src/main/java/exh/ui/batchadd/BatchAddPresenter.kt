@@ -9,9 +9,9 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.util.trimOrNull
-import kotlin.concurrent.thread
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.concurrent.thread
 
 class BatchAddPresenter : BasePresenter<BatchAddController>() {
 

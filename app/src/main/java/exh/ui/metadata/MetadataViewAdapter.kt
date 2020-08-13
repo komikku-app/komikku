@@ -6,13 +6,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.databinding.MetadataViewItemBinding
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import kotlin.math.floor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import kotlin.math.floor
 
 class MetadataViewAdapter(private var data: List<Pair<String, String>>) :
     RecyclerView.Adapter<MetadataViewAdapter.ViewHolder>() {
