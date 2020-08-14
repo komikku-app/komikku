@@ -65,25 +65,24 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
 import exh.util.defaultReaderType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.observeOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.launch
 import nucleus.factory.RequiresPresenter
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.widget.checkedChanges
 import reactivecircus.flowbinding.android.widget.textChanges
-import rx.Observable
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.subscriptions.CompositeSubscription
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.io.File
-import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.roundToLong
 
@@ -115,16 +114,14 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     var menuVisible = false
         private set
 
-    // --> EH
+    // SY -->
     private var ehUtilsVisible = false
 
-    private val exhSubscriptions = CompositeSubscription()
-
-    private var autoscrollSubscription: Subscription? = null
+    private var autoscrollScope: CoroutineScope? = null
     private val sourceManager: SourceManager by injectLazy()
 
     private val logger = XLog.tag("ReaderActivity")
-    // <-- EH
+    // SY <--
 
     /**
      * Configuration at reader level, like background color or forced orientation.
@@ -197,7 +194,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         }
     }
 
-    // --> EH
+    // SY -->
     private fun setEhUtilsVisibility(visible: Boolean) {
         if (visible) {
             binding.ehUtils.isVisible = true
@@ -207,30 +204,24 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_down_white_32dp)
         }
     }
-    // <-- EH
 
-    // --> EH
     private fun setupAutoscroll(interval: Float) {
-        exhSubscriptions.remove(autoscrollSubscription)
-        autoscrollSubscription = null
-
+        autoscrollScope?.cancel()
         if (interval == -1f) return
 
         val intervalMs = (interval * 1000).roundToLong()
-        val sub = Observable.interval(intervalMs, intervalMs, TimeUnit.MILLISECONDS)
-            .onBackpressureDrop()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+        autoscrollScope = CoroutineScope(Job() + Dispatchers.Main)
+        autoscrollScope?.launch {
+            while (true) {
+                delay(intervalMs)
                 viewer.let { v ->
                     if (v is PagerViewer) v.moveToNext()
                     else if (v is WebtoonViewer) v.scrollDown()
                 }
             }
-
-        autoscrollSubscription = sub
-        exhSubscriptions += sub
+        }
     }
-    // <-- EH
+    // SY <--
 
     /**
      * Called when the activity is destroyed. Cleans up the viewer, configuration and any view.
@@ -242,6 +233,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         config = null
         progressDialog?.dismiss()
         progressDialog = null
+        autoscrollScope?.cancel()
+        autoscrollScope = null
     }
 
     /**
@@ -417,7 +410,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         )
 
         binding.ehAutoscroll.checkedChanges()
-            // .observeOn(AndroidSchedulers.mainThread())
             .onEach {
                 setupAutoscroll(
                     if (it) {
@@ -430,7 +422,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .launchIn(scope)
 
         binding.ehAutoscrollFreq.textChanges()
-            // .observeOn(AndroidSchedulers.mainThread())
             .onEach {
                 val parsed = it.toString().toFloatOrNull()
 
