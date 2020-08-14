@@ -412,7 +412,7 @@ class FavoritesSyncHelper(val context: Context) {
         }
     }
 
-    fun needWarnThrottle() =
+    private fun needWarnThrottle() =
         throttleManager.throttleTime >= THROTTLE_WARN
 
     class IgnoredException : RuntimeException()
@@ -422,7 +422,6 @@ class FavoritesSyncHelper(val context: Context) {
     }
 }
 
-// TODO String resources
 sealed class FavoritesSyncStatus(val message: String) {
     class Error(message: String) : FavoritesSyncStatus(message)
     class Idle(context: Context) : FavoritesSyncStatus(context.getString(R.string.favorites_sync_waiting_for_start))

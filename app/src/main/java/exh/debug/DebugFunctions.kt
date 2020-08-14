@@ -45,24 +45,26 @@ object DebugFunctions {
         EXHMigrations.upgrade(prefs)
     }
 
+    fun forceSetupJobs() {
+        prefs.eh_lastVersionCode().set(0)
+        EXHMigrations.upgrade(prefs)
+    }
+
     fun resetAgedFlagInEXHManga() {
         runBlocking {
             val metadataManga = db.getFavoriteMangaWithMetadata().await()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    return@mapNotNull null
-                }
-                manga
+                    null
+                } else manga
             }.toList()
 
-            for (manga in allManga) {
-                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>()
-                if (meta != null) {
-                    // remove age flag
-                    meta.aged = false
-                    db.insertFlatMetadata(meta.flatten()).await()
-                }
+            allManga.forEach { manga ->
+                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                // remove age flag
+                meta.aged = false
+                db.insertFlatMetadata(meta.flatten()).await()
             }
         }
     }
@@ -77,27 +79,24 @@ object DebugFunctions {
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    return@mapNotNull null
-                }
-                manga
+                    null
+                } else manga
             }.toList()
-            val eh = sourceManager.getOrStub(EH_SOURCE_ID)
-            val ex = sourceManager.getOrStub(EXH_SOURCE_ID)
+            val eh = sourceManager.get(EH_SOURCE_ID)
+            val ex = sourceManager.get(EXH_SOURCE_ID)
 
-            for (manga in allManga) {
+            allManga.forEach { manga ->
                 throttleManager.throttle()
-                if (manga.source == EH_SOURCE_ID) {
-                    eh.fetchMangaDetails(manga).map { networkManga ->
-                        manga.copyFrom(networkManga)
-                        manga.initialized = true
-                        db.insertManga(manga).executeAsBlocking()
+                (
+                    when (manga.source) {
+                        EH_SOURCE_ID -> eh
+                        EXH_SOURCE_ID -> ex
+                        else -> return@forEach
                     }
-                } else if (manga.source == EXH_SOURCE_ID) {
-                    ex.fetchMangaDetails(manga).map { networkManga ->
-                        manga.copyFrom(networkManga)
-                        manga.initialized = true
-                        db.insertManga(manga).executeAsBlocking()
-                    }
+                    )?.fetchMangaDetails(manga)?.map { networkManga ->
+                    manga.copyFrom(networkManga)
+                    manga.initialized = true
+                    db.insertManga(manga).executeAsBlocking()
                 }
             }
         }
@@ -110,17 +109,13 @@ object DebugFunctions {
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    return@mapNotNull null
-                }
-                manga
+                    null
+                } else manga
             }.toList()
 
-            for (manga in allManga) {
-                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>()
-                if (meta != null) {
-                    // remove age flag
-                    galleries += "Aged: ${meta.aged}\t Title: ${manga.title}"
-                }
+            allManga.forEach { manga ->
+                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                galleries += "Aged: ${meta.aged}\t Title: ${manga.title}"
             }
         }
         return galleries.joinToString(",\n")
@@ -133,14 +128,13 @@ object DebugFunctions {
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    return@mapNotNull null
-                }
-                manga
+                    null
+                } else manga
             }.toList()
 
-            for (manga in allManga) {
-                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>()
-                if (meta != null && meta.aged) {
+            allManga.forEach { manga ->
+                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                if (meta.aged) {
                     // remove age flag
                     agedAmount++
                 }
@@ -241,8 +235,8 @@ object DebugFunctions {
     fun copyEHentaiSavedSearchesToExhentai() {
         runBlocking {
             val filterSerializer = FilterSerializer()
-            val source = sourceManager.getOrStub(EH_SOURCE_ID) as CatalogueSource
-            val newSource = sourceManager.getOrStub(EXH_SOURCE_ID) as CatalogueSource
+            val source = sourceManager.get(EH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
+            val newSource = sourceManager.get(EXH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
@@ -301,8 +295,8 @@ object DebugFunctions {
     fun copyExhentaiSavedSearchesToEHentai() {
         runBlocking {
             val filterSerializer = FilterSerializer()
-            val source = sourceManager.getOrStub(EXH_SOURCE_ID) as CatalogueSource
-            val newSource = sourceManager.getOrStub(EH_SOURCE_ID) as CatalogueSource
+            val source = sourceManager.get(EXH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
+            val newSource = sourceManager.get(EH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
