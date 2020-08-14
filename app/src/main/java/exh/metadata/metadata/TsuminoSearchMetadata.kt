@@ -115,8 +115,6 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
         fun tmIdFromUrl(url: String) =
             Uri.parse(url).lastPathSegment
 
-        fun mangaUrlFromId(id: String) = "/Book/Info/$id"
-
         fun thumbUrlFromId(id: String) = "/thumbs/$id/1"
     }
 }

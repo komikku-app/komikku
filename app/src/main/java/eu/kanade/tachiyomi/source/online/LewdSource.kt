@@ -55,8 +55,7 @@ interface LewdSource<M : RaisedSearchMetadata, I> : CatalogueSource {
             Single.fromCallable {
                 db.getFlatMetadataForManga(mangaId).executeAsBlocking()
             }.map {
-                if (it != null) it.raise(metaClass)
-                else newMetaInstance()
+                it?.raise(metaClass) ?: newMetaInstance()
             }
         } else {
             Single.just(newMetaInstance())
@@ -115,14 +114,11 @@ interface LewdSource<M : RaisedSearchMetadata, I> : CatalogueSource {
         fun Source.isLewdSource() = (this is LewdSource<*, *> || (this is EnhancedHttpSource && this.enhancedSource is LewdSource<*, *>))
 
         fun Source.getLewdSource(): LewdSource<*, *>? {
-            return if (!this.isLewdSource()) {
-                null
-            } else if (this is LewdSource<*, *>) {
-                this
-            } else if (this is EnhancedHttpSource && this.enhancedSource is LewdSource<*, *>) {
-                this.enhancedSource
-            } else {
-                null
+            return when {
+                !this.isLewdSource() -> null
+                this is LewdSource<*, *> -> this
+                this is EnhancedHttpSource && this.enhancedSource is LewdSource<*, *> -> this.enhancedSource
+                else -> null
             }
         }
     }

@@ -154,9 +154,9 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
                 pathSegments.filterNot(String::isNullOrBlank)
             }
 
-        fun galleryId(url: String) = splitGalleryUrl(url)[1]
+        fun galleryId(url: String): String = splitGalleryUrl(url)[1]
 
-        fun galleryToken(url: String) =
+        fun galleryToken(url: String): String =
             splitGalleryUrl(url)[2]
 
         fun normalizeUrl(url: String) =

@@ -120,7 +120,6 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
 
         const val TAG_TYPE_DEFAULT = 0
 
-        const val LTN_BASE_URL = "https://ltn.hitomi.la"
         const val BASE_URL = "https://hitomi.la"
 
         fun hlIdFromUrl(url: String) =
