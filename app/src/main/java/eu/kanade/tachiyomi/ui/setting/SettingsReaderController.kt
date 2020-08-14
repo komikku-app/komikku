@@ -301,6 +301,19 @@ class SettingsReaderController : SettingsController() {
             }
         }
 
+        // SY -->
+        preferenceCategory {
+            titleRes = R.string.vertical_plus_viewer
+
+            switchPreference {
+                key = Keys.continuousVerticalTappingByPage
+                titleRes = R.string.tap_scroll_page
+                summaryRes = R.string.tap_scroll_page_summary
+                defaultValue = false
+            }
+        }
+        // SY <--
+
         preferenceCategory {
             titleRes = R.string.pref_reader_navigation
 

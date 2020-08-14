@@ -385,4 +385,6 @@ class PreferencesHelper(val context: Context) {
     fun startReadingButton() = flowPrefs.getBoolean(Keys.startReadingButton, true)
 
     fun groupLibraryBy() = flowPrefs.getInt(Keys.groupLibraryBy, 0)
+
+    fun continuousVerticalTappingByPage() = flowPrefs.getBoolean(Keys.continuousVerticalTappingByPage, false)
 }

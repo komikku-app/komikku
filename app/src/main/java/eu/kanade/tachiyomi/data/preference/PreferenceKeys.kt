@@ -280,4 +280,6 @@ object PreferenceKeys {
     const val startReadingButton = "start_reading_button"
 
     const val groupLibraryBy = "group_library_by"
+
+    const val continuousVerticalTappingByPage = "continuous_vertical_tapping_by_page"
 }

@@ -180,6 +180,8 @@
     <string name="enable_zoom_out">Enable zoom out</string>
     <string name="smart_based_on_page">Smart (based on page)</string>
     <string name="smart_based_on_page_and_theme">Smart (based on page and theme)</string>
+    <string name="tap_scroll_page">Tap scroll by page</string>
+    <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>
 
     <!-- Reader -->
     <!-- Reader Actions -->

@@ -23,7 +23,7 @@ import kotlin.math.min
 /**
  * Implementation of a [BaseViewer] to display pages with a [RecyclerView].
  */
-class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = true) : BaseViewer {
+class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = true, private val tapByPage: Boolean = false) : BaseViewer {
 
     /**
      * Recycler view used by this viewer.
@@ -266,6 +266,27 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
      * Scrolls down by [scrollDistance].
      */
     /* [EXH] private */ fun scrollDown() {
+        // SY -->
+        if (!isContinuous && tapByPage) {
+            val currentPage = currentPage
+            if (currentPage is ReaderPage) {
+                val position = adapter.items.indexOf(currentPage)
+                val nextItem = adapter.items.getOrNull(position + 1)
+                if (nextItem is ReaderPage) {
+                    if (config.usePageTransitions) {
+                        recycler.smoothScrollToPosition(position + 1)
+                    } else {
+                        recycler.scrollToPosition(position + 1)
+                    }
+                    return
+                }
+            }
+        }
+        scrollDownBy()
+    }
+
+    private fun scrollDownBy() {
+        // SY <--
         if (config.usePageTransitions) {
             recycler.smoothScrollBy(0, scrollDistance)
         } else {
