@@ -2,7 +2,7 @@ plugins {
     id("com.android.application") version BuildPluginsVersion.AGP apply false
     id("com.android.library") version BuildPluginsVersion.AGP apply false
     kotlin("android") version BuildPluginsVersion.KOTLIN apply false
-    id("org.jlleitschuh.gradle.ktlint") version BuildPluginsVersion.KTLINT_PLUGIN
+    id("org.jlleitschuh.gradle.ktlint") version BuildPluginsVersion.KTLINT
     id("com.github.ben-manes.versions") version BuildPluginsVersion.VERSIONS_PLUGIN
 }
 
@@ -42,7 +42,7 @@ buildscript {
         classpath("com.github.ben-manes:gradle-versions-plugin:0.28.0")
         classpath("com.github.zellius:android-shortcut-gradle-plugin:0.1.2")
         classpath("com.google.gms:google-services:4.3.3")
-        classpath("com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:8.3.0")
+        classpath("com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:8.2.0")
         // Realm (EH)
         classpath("io.realm:realm-gradle-plugin:7.0.1")
 
