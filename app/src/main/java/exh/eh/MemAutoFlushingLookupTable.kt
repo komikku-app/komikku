@@ -3,6 +3,13 @@ package exh.eh
 import android.util.SparseArray
 import androidx.core.util.AtomicFile
 import com.elvishew.xlog.XLog
+import java.io.Closeable
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.InputStream
+import java.nio.ByteBuffer
+import kotlin.concurrent.thread
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,13 +22,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.io.Closeable
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.InputStream
-import java.nio.ByteBuffer
-import kotlin.concurrent.thread
-import kotlin.coroutines.CoroutineContext
 
 /**
  * In memory Int -> Obj lookup table implementation that

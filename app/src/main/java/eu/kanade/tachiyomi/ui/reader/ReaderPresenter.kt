@@ -30,6 +30,9 @@ import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.util.defaultReaderType
+import java.io.File
+import java.util.Date
+import java.util.concurrent.TimeUnit
 import rx.Completable
 import rx.Observable
 import rx.Subscription
@@ -38,9 +41,6 @@ import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.File
-import java.util.Date
-import java.util.concurrent.TimeUnit
 
 /**
  * Presenter used by the activity to perform background operations.

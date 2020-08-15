@@ -31,13 +31,13 @@ import exh.TSUMINO_SOURCE_ID
 import exh.source.BlacklistedSources
 import exh.source.DelegatedHttpSource
 import exh.source.EnhancedHttpSource
+import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
-import kotlin.reflect.KClass
 
 open class SourceManager(private val context: Context) {
 

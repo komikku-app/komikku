@@ -14,6 +14,7 @@ import exh.metadata.metadata.PururinSearchMetadata
 import exh.metadata.metadata.PururinSearchMetadata.Companion.TAG_NAMESPACE_CATEGORY
 import exh.ui.metadata.MetadataViewController
 import exh.util.SourceTagsUtil
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
-import kotlin.math.roundToInt
 
 class PururinDescriptionAdapter(
     private val controller: MangaController

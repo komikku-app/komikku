@@ -8,8 +8,8 @@ import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.EHentaiSearchMetadata
 import io.realm.Realm
 import io.realm.RealmConfiguration
-import uy.kohesive.injekt.injectLazy
 import java.util.Date
+import uy.kohesive.injekt.injectLazy
 
 class LocalFavoritesStorage {
     private val db: DatabaseHelper by injectLazy()

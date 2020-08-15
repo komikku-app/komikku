@@ -20,10 +20,10 @@ import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import exh.source.BlacklistedSources
-import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
+import uy.kohesive.injekt.injectLazy
 
 object EXHMigrations {
     private val db: DatabaseHelper by injectLazy()

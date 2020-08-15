@@ -14,6 +14,7 @@ import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import exh.util.SourceTagsUtil
+import java.util.Date
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
-import java.util.Date
 
 class HitomiDescriptionAdapter(
     private val controller: MangaController

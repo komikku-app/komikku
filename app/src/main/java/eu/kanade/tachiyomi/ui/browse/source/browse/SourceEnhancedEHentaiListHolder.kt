@@ -17,6 +17,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
 import exh.util.SourceTagsUtil.Companion.getLocaleSourceUtil
+import java.util.Date
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.date_posted
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.genre
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.language
@@ -24,7 +25,6 @@ import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.rating_b
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.thumbnail
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.title
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.uploader
-import java.util.Date
 
 /**
  * Class used to hold the displayed data of a manga in the catalogue, like the cover or the title.

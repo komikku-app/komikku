@@ -38,6 +38,8 @@ import exh.smartsearch.SmartSearchEngine
 import exh.util.RecyclerWindowInsetsListener
 import exh.util.await
 import exh.util.executeOnIO
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,8 +53,6 @@ import kotlinx.coroutines.withContext
 import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.CoroutineContext
 
 class MigrationListController(bundle: Bundle? = null) :
     BaseController<MigrationListControllerBinding>(bundle),

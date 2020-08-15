@@ -18,10 +18,10 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.HitomiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
-import org.jsoup.nodes.Document
-import rx.Observable
 import java.text.SimpleDateFormat
 import java.util.Locale
+import org.jsoup.nodes.Document
+import rx.Observable
 
 class Hitomi(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),

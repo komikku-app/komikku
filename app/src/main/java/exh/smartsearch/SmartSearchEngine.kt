@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.util.await
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,7 +15,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
-import kotlin.coroutines.CoroutineContext
 
 class SmartSearchEngine(
     parentContext: CoroutineContext,

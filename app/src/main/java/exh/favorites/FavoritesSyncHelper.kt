@@ -24,13 +24,13 @@ import exh.eh.EHentaiUpdateWorker
 import exh.util.ignore
 import exh.util.trans
 import exh.util.wifiManager
+import kotlin.concurrent.thread
 import okhttp3.FormBody
 import okhttp3.Request
 import rx.subjects.BehaviorSubject
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import kotlin.concurrent.thread
 
 class FavoritesSyncHelper(val context: Context) {
     private val db: DatabaseHelper by injectLazy()

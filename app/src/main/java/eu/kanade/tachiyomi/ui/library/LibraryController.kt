@@ -51,6 +51,7 @@ import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.nHentaiSourceIds
 import exh.ui.LoaderManager
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.main_activity.tabs
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
@@ -63,7 +64,6 @@ import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.concurrent.TimeUnit
 
 class LibraryController(
     bundle: Bundle? = null,

@@ -64,6 +64,9 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
 import exh.util.defaultReaderType
+import java.io.File
+import kotlin.math.abs
+import kotlin.math.roundToLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -81,9 +84,6 @@ import reactivecircus.flowbinding.android.widget.checkedChanges
 import reactivecircus.flowbinding.android.widget.textChanges
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
-import java.io.File
-import kotlin.math.abs
-import kotlin.math.roundToLong
 
 /**
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the
