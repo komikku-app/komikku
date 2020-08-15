@@ -23,6 +23,7 @@
 -keep class com.google.android.material.** { *; }
 -keep interface com.google.android.material.** { *; }
 -keep public class com.google.android.material.R$* { *; }
+-keep class androidx.appcompat.graphics.drawable.DrawerArrowDrawable { *; }
 
 -keep class com.hippo.image.** { *; }
 -keep interface com.hippo.image.** { *; }
