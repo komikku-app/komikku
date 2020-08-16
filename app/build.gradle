@@ -277,13 +277,12 @@ dependencies {
     implementation "io.github.reactivecircus.flowbinding:flowbinding-viewpager:$flowbinding_version"
 
     // Licenses
-    final aboutlibraries_version = '8.3.0'
-    implementation "com.mikepenz:aboutlibraries-core:$aboutlibraries_version"
-    implementation "com.mikepenz:aboutlibraries:$aboutlibraries_version"
+    // NOTE: REMEMBER TO UPDATE GRADLE PLUGIN
+    implementation "com.mikepenz:aboutlibraries:8.3.0"
 
     // Tests
     testImplementation 'junit:junit:4.13'
-    testImplementation 'org.assertj:assertj-core:3.12.2'
+    testImplementation 'org.assertj:assertj-core:3.16.1'
     testImplementation 'org.mockito:mockito-core:1.10.19'
 
     final robolectric_version = '3.1.4'
@@ -291,8 +290,8 @@ dependencies {
     testImplementation "org.robolectric:shadows-multidex:$robolectric_version"
     testImplementation "org.robolectric:shadows-play-services:$robolectric_version"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$BuildPluginsVersion.KOTLIN"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$BuildPluginsVersion.KOTLIN"
 
 
     final coroutines_version = '1.3.8'
@@ -311,13 +310,6 @@ dependencies {
     // Text distance (EH)
     implementation 'info.debatty:java-string-similarity:1.2.1'
 
-    // Reprint (EH)
-    implementation 'com.github.ajalt.reprint:core:3.2.1@aar'
-    implementation 'com.github.ajalt.reprint:rxjava:3.2.1@aar' // optional: the RxJava 1 interface
-
-    // Swirl (EH)
-    implementation 'com.mattprecious.swirl:swirl:1.2.0'
-
     // RxJava 2 interop for Realm (EH)
     implementation 'com.github.akarnokd:rxjava2-interop:0.13.7'
 
@@ -328,15 +320,16 @@ dependencies {
     implementation 'com.elvishew:xlog:1.6.1'
 
     // Time utils (EH)
-    def typed_time_version = '1.0.2'
+    final def typed_time_version = '1.0.4'
     implementation "com.github.kizitonwose.time:time:$typed_time_version"
     implementation "com.github.kizitonwose.time:time-android:$typed_time_version"
 
     // Debug utils (EH)
-    debugImplementation 'com.ms-square:debugoverlay:1.1.3'
-    releaseTestImplementation 'com.ms-square:debugoverlay:1.1.3'
-    releaseImplementation 'com.ms-square:debugoverlay-no-op:1.1.3'
-    testImplementation 'com.ms-square:debugoverlay-no-op:1.1.3'
+    final def debug_overlay_version = '1.1.3'
+    debugImplementation "com.ms-square:debugoverlay:$debug_overlay_version"
+    releaseTestImplementation "com.ms-square:debugoverlay:$debug_overlay_version"
+    releaseImplementation "com.ms-square:debugoverlay-no-op:$debug_overlay_version"
+    testImplementation "com.ms-square:debugoverlay-no-op:$debug_overlay_version"
 
     // Humanize (EH)
     implementation 'com.github.mfornos:humanize-slim:1.2.2'
@@ -346,7 +339,7 @@ dependencies {
 
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
 
-    final def markwon_version = '4.1.0'
+    final def markwon_version = '4.5.1'
 
     implementation "io.noties.markwon:core:$markwon_version"
     implementation "io.noties.markwon:ext-strikethrough:$markwon_version"
@@ -355,16 +348,15 @@ dependencies {
     implementation "io.noties.markwon:image:$markwon_version"
     implementation "io.noties.markwon:linkify:$markwon_version"
 
-    implementation 'com.google.guava:guava:27.0.1-android'
+    implementation 'com.google.guava:guava:29.0-android'
 }
 
 buildscript {
-    ext.kotlin_version = '1.3.72'
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$BuildPluginsVersion.KOTLIN"
     }
 }
 

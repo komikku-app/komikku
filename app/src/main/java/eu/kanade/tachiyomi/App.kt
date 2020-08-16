@@ -79,7 +79,6 @@ open class App : Application(), LifecycleObserver {
         setupNotificationChannels()
         Realm.init(this)
         GlobalScope.launch { deleteOldMetadataRealm() } // Delete old metadata DB (EH)
-        // Reprint.initialize(this) //Setup fingerprint (EH)
         if ((BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest") && DebugToggles.ENABLE_DEBUG_OVERLAY.enabled) {
             setupDebugOverlay()
         }
