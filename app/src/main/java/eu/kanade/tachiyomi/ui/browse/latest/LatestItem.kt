@@ -8,7 +8,6 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchItem
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestAdapter
 
 /**
  * Item that contains search result information.

@@ -14,8 +14,6 @@ import eu.kanade.tachiyomi.databinding.LatestControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestAdapter
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestPresenter
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import kotlinx.coroutines.flow.launchIn

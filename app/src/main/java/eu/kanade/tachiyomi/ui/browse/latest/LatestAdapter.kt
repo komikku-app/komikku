@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.source.globalsearch
+package eu.kanade.tachiyomi.ui.browse.latest
 
 import android.os.Bundle
 import android.os.Parcelable
@@ -6,8 +6,6 @@ import android.util.SparseArray
 import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.browse.latest.LatestController
-import eu.kanade.tachiyomi.ui.browse.latest.LatestItem
 
 /**
  * Adapter that holds the search cards.

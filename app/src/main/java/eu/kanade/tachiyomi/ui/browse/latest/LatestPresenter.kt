@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.source.globalsearch
+package eu.kanade.tachiyomi.ui.browse.latest
 
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -9,9 +9,6 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.ui.browse.latest.LatestCardItem
-import eu.kanade.tachiyomi.ui.browse.latest.LatestController
-import eu.kanade.tachiyomi.ui.browse.latest.LatestItem
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers

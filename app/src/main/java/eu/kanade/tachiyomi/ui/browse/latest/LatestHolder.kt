@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import eu.kanade.tachiyomi.ui.browse.source.globalsearch.LatestAdapter
 import kotlinx.android.synthetic.main.latest_controller_card.no_results_found
 import kotlinx.android.synthetic.main.latest_controller_card.progress
 import kotlinx.android.synthetic.main.latest_controller_card.recycler
