@@ -278,7 +278,7 @@ dependencies {
 
     // Licenses
     // NOTE: REMEMBER TO UPDATE GRADLE PLUGIN
-    implementation "com.mikepenz:aboutlibraries:8.3.0"
+    implementation 'com.mikepenz:aboutlibraries:8.3.0'
 
     // Tests
     testImplementation 'junit:junit:4.13'
@@ -290,7 +290,6 @@ dependencies {
     testImplementation "org.robolectric:shadows-multidex:$robolectric_version"
     testImplementation "org.robolectric:shadows-play-services:$robolectric_version"
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$BuildPluginsVersion.KOTLIN"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$BuildPluginsVersion.KOTLIN"
 
 
