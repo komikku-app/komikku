@@ -37,24 +37,24 @@ abstract class HttpSource : CatalogueSource {
      */
     // SY -->
     protected val network: NetworkHelper by lazy {
-        val original = Injekt.get<NetworkHelper>()
+        val network = Injekt.get<NetworkHelper>()
         object : NetworkHelper(Injekt.get<Application>()) {
             override val client: OkHttpClient
-                get() = delegate?.networkHttpClient ?: original.client
+                get() = delegate?.networkHttpClient ?: network.client
                     .newBuilder()
                     .injectPatches { id }
                     .maybeInjectEHLogger()
                     .build()
 
             override val cloudflareClient: OkHttpClient
-                get() = delegate?.networkCloudflareClient ?: original.cloudflareClient
+                get() = delegate?.networkCloudflareClient ?: network.cloudflareClient
                     .newBuilder()
                     .injectPatches { id }
                     .maybeInjectEHLogger()
                     .build()
 
             override val cookieManager: AndroidCookieJar
-                get() = original.cookieManager
+                get() = network.cookieManager
         }
     }
     // SY <--

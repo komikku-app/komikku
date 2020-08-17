@@ -52,6 +52,8 @@ import exh.util.ignore
 import exh.util.nullIfBlank
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
+import java.net.URLEncoder
+import java.util.ArrayList
 import kotlinx.coroutines.runBlocking
 import okhttp3.CacheControl
 import okhttp3.CookieJar
@@ -67,8 +69,6 @@ import org.jsoup.nodes.TextNode
 import rx.Observable
 import rx.Single
 import uy.kohesive.injekt.injectLazy
-import java.net.URLEncoder
-import java.util.ArrayList
 
 // TODO Consider gallery updating when doing tabbed browsing
 @Nsfw
