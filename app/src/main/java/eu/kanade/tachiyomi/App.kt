@@ -158,10 +158,10 @@ open class App : Application(), LifecycleObserver {
     private fun setupExhLogging() {
         EHLogLevel.init(this)
 
-        val logLevel = if (EHLogLevel.shouldLog(EHLogLevel.EXTRA)) {
-            LogLevel.ALL
-        } else {
-            LogLevel.WARN
+        val logLevel = when {
+            EHLogLevel.shouldLog(EHLogLevel.EXTRA) -> LogLevel.ALL
+            BuildConfig.DEBUG -> LogLevel.DEBUG
+            else -> LogLevel.WARN
         }
 
         val logConfig = LogConfiguration.Builder()
