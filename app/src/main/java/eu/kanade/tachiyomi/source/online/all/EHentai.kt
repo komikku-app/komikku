@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -79,7 +80,7 @@ class EHentai(
 ) : HttpSource(), LewdSource<EHentaiSearchMetadata, Document>, UrlImportableSource {
     override val metaClass = EHentaiSearchMetadata::class
 
-    val domain: String
+    private val domain: String
         get() = if (exh) {
             "exhentai.org"
         } else {
@@ -92,7 +93,7 @@ class EHentai(
     override val lang = "all"
     override val supportsLatest = true
 
-    private val prefs: PreferencesHelper by injectLazy()
+    private val preferences: PreferencesHelper by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
     /**
@@ -105,11 +106,11 @@ class EHentai(
         val parsedMangas = select(".itg > tbody > tr").filter {
             // Do not parse header and ads
             it.selectFirst("th") == null && it.selectFirst(".itd") == null
-        }.map {
-            val thumbnailElement = it.selectFirst(".gl1e img, .gl2c .glthumb img")
-            val column2 = it.selectFirst(".gl3e, .gl2c")
-            val linkElement = it.selectFirst(".gl3c > a, .gl2e > div > a")
-            val infoElement = it.selectFirst(".gl3e")
+        }.map { body ->
+            val thumbnailElement = body.selectFirst(".gl1e img, .gl2c .glthumb img")
+            val column2 = body.selectFirst(".gl3e, .gl2c")
+            val linkElement = body.selectFirst(".gl3c > a, .gl2e > div > a")
+            val infoElement = body.selectFirst(".gl3e")
 
             val favElement = column2.children().find { it.attr("style").startsWith("border-color") }
             val infoElements = infoElement?.select("div")
@@ -144,7 +145,7 @@ class EHentai(
                             )
                         }
                     } else {
-                        val tagElement = it.selectFirst(".gl3c > a")
+                        val tagElement = body.selectFirst(".gl3c > a")
                         val tagElements = tagElement.select("div")
                         tagElements.forEach { element ->
                             if (element.className() == "gt") {
@@ -174,11 +175,11 @@ class EHentai(
 
                         getPageCount(infoElements.getOrNull(5))?.let { length = it }
                     } else {
-                        val parsedGenre = it.selectFirst(".gl1c div")
+                        val parsedGenre = body.selectFirst(".gl1c div")
                         getGenre(genreString = parsedGenre?.text()?.nullIfBlank()?.toLowerCase()?.replace(" ", ""))?.let { genre = it }
 
-                        val info = it.selectFirst(".gl2c")
-                        val extraInfo = it.selectFirst(".gl4c")
+                        val info = body.selectFirst(".gl2c")
+                        val extraInfo = body.selectFirst(".gl4c")
 
                         val infoList = info.select("div div")
 
@@ -394,7 +395,7 @@ class EHentai(
     }
 
     // Support direct URL importing
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
             searchMangaRequestObservable(page, query, filters).flatMap {
                 client.newCall(it).asObservableSuccess()
@@ -443,14 +444,14 @@ class EHentai(
     override fun searchMangaParse(response: Response) = genericMangaParse(response)
     override fun latestUpdatesParse(response: Response) = genericMangaParse(response)
 
-    fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cache: Boolean = true): Request {
+    private fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cache: Boolean = true): Request {
         return GET(
             page?.let {
                 addParam(url, "page", Integer.toString(page - 1))
             } ?: url,
-            additionalHeaders?.let {
+            additionalHeaders?.let { additionalHeadersNotNull ->
                 val headers = headers.newBuilder()
-                it.toMultimap().forEach { (t, u) ->
+                additionalHeadersNotNull.toMultimap().forEach { (t, u) ->
                     u.forEach {
                         headers.add(t, it)
                     }
@@ -599,12 +600,10 @@ class EHentai(
                             RaisedTag(
                                 namespace,
                                 element.text().trim(),
-                                if (element.hasClass("gtl")) {
-                                    TAG_TYPE_LIGHT
-                                } else if (element.hasClass("gtw")) {
-                                    TAG_TYPE_WEAK
-                                } else {
-                                    TAG_TYPE_NORMAL
+                                when {
+                                    element.hasClass("gtl") -> TAG_TYPE_LIGHT
+                                    element.hasClass("gtw") -> TAG_TYPE_WEAK
+                                    else -> TAG_TYPE_NORMAL
                                 }
                             )
                         }
@@ -629,7 +628,7 @@ class EHentai(
             .map { realImageUrlParse(it, page) }
     }
 
-    fun realImageUrlParse(response: Response, page: Page): String {
+    private fun realImageUrlParse(response: Response, page: Page): String {
         with(response.asJsoup()) {
             val currentImage = getElementById("img").attr("src")
             // Each press of the retry button will choose another server
@@ -680,30 +679,30 @@ class EHentai(
     }
 
     fun spPref() = if (exh) {
-        prefs.eh_exhSettingsProfile()
+        preferences.eh_exhSettingsProfile()
     } else {
-        prefs.eh_ehSettingsProfile()
+        preferences.eh_ehSettingsProfile()
     }
 
-    fun rawCookies(sp: Int): Map<String, String> {
+    private fun rawCookies(sp: Int): Map<String, String> {
         val cookies: MutableMap<String, String> = mutableMapOf()
-        if (prefs.enableExhentai().get()) {
-            cookies[LoginController.MEMBER_ID_COOKIE] = prefs.memberIdVal().get()
-            cookies[LoginController.PASS_HASH_COOKIE] = prefs.passHashVal().get()
-            cookies[LoginController.IGNEOUS_COOKIE] = prefs.igneousVal().get()
+        if (preferences.enableExhentai().get()) {
+            cookies[LoginController.MEMBER_ID_COOKIE] = preferences.memberIdVal().get()
+            cookies[LoginController.PASS_HASH_COOKIE] = preferences.passHashVal().get()
+            cookies[LoginController.IGNEOUS_COOKIE] = preferences.igneousVal().get()
             cookies["sp"] = sp.toString()
 
-            val sessionKey = prefs.eh_settingsKey().get()
+            val sessionKey = preferences.eh_settingsKey().get()
             if (sessionKey.isNotBlank()) {
                 cookies["sk"] = sessionKey
             }
 
-            val sessionCookie = prefs.eh_sessionCookie().get()
+            val sessionCookie = preferences.eh_sessionCookie().get()
             if (sessionCookie.isNotBlank()) {
                 cookies["s"] = sessionCookie
             }
 
-            val hathPerksCookie = prefs.eh_hathPerksCookies().get()
+            val hathPerksCookie = preferences.eh_hathPerksCookies().get()
             if (hathPerksCookie.isNotBlank()) {
                 cookies["hath_perks"] = hathPerksCookie
             }
@@ -723,7 +722,7 @@ class EHentai(
     // Headers
     override fun headersBuilder() = super.headersBuilder().add("Cookie", cookiesHeader())
 
-    fun addParam(url: String, param: String, value: String) = Uri.parse(url)
+    private fun addParam(url: String, param: String, value: String) = Uri.parse(url)
         .buildUpon()
         .appendQueryParameter(param, value)
         .toString()
@@ -750,7 +749,7 @@ class EHentai(
                 EHTags.getNameSpaces().map { "$it:" } + EHTags.getAllTags(),
                 EHTags.getNameSpaces().map { "$it:" }, excludePrefix
             ),
-            if (prefs.eh_watchedListDefaultState().get()) {
+            if (preferences.eh_watchedListDefaultState().get()) {
                 Watched(isEnabled = true)
             } else {
                 Watched(isEnabled = false)
@@ -867,7 +866,7 @@ class EHentai(
         UriFilter {
         override fun addToUri(builder: Uri.Builder) {
             if (state > 0) {
-                builder.appendQueryParameter("f_srdd", Integer.toString(state + 1))
+                builder.appendQueryParameter("f_srdd", (state + 1).toString())
                 builder.appendQueryParameter("f_sr", "on")
             }
         }
