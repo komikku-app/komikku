@@ -59,7 +59,8 @@ class LibraryPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     // SY -->
-    private val customMangaManager: CustomMangaManager = Injekt.get()
+    private val customMangaManager: CustomMangaManager = Injekt.get(),
+    private val trackManager: TrackManager = Injekt.get()
     // SY <--
 ) : BasePresenter<LibraryController>() {
 
@@ -94,12 +95,12 @@ class LibraryPresenter(
     // SY -->
     val favoritesSync = FavoritesSyncHelper(context)
 
-    private var groupType = preferences.groupLibraryBy().get()
+    var groupType = preferences.groupLibraryBy().get()
 
     private val libraryIsGrouped
         get() = groupType != LibraryGroup.UNGROUPED
 
-    private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
+    private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
     /**
      * Relay used to apply the UI update to the last emission of the library.
@@ -571,8 +572,11 @@ class LibraryPresenter(
     private fun getGroupedMangaItems(libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
         val grouping: MutableList<Triple<String, Int, String>> = mutableListOf()
         when (groupType) {
-            LibraryGroup.BY_STATUS -> libraryManga.distinctBy { it.manga.status }.map { it.manga.status }.forEachIndexed { index, status ->
-                grouping += Triple(status.toString(), index, mapStatus(status))
+            LibraryGroup.BY_STATUS -> {
+                grouping += Triple(SManga.ONGOING.toString(), SManga.ONGOING, context.getString(R.string.ongoing))
+                grouping += Triple(SManga.LICENSED.toString(), SManga.LICENSED, context.getString(R.string.licensed))
+                grouping += Triple(SManga.COMPLETED.toString(), SManga.COMPLETED, context.getString(R.string.completed))
+                grouping += Triple(SManga.UNKNOWN.toString(), SManga.UNKNOWN, context.getString(R.string.unknown))
             }
             LibraryGroup.BY_SOURCE -> libraryManga.distinctBy { it.manga.source }.map { it.manga.source }.forEachIndexed { index, sourceLong ->
                 grouping += Triple(sourceLong.toString(), index, sourceManager.getOrStub(sourceLong).name)
@@ -604,7 +608,7 @@ class LibraryPresenter(
                             "not tracked"
                         }
                     }()
-                    val group = grouping.find { it.first == mapTrackingOrder(status) }
+                    val group = grouping.find { it.first == trackManager.mapTrackingOrder(status, context).toString() }
                     if (group != null) {
                         map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
                     } else {
@@ -621,7 +625,7 @@ class LibraryPresenter(
                     }
                 }
                 else -> {
-                    val group = grouping.find { it.first == libraryItem.manga.status.toString() }
+                    val group = grouping.find { it.second == libraryItem.manga.status }
                     if (group != null) {
                         map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
                     } else {
@@ -635,7 +639,7 @@ class LibraryPresenter(
         val categories = (
             when (groupType) {
                 LibraryGroup.BY_SOURCE -> grouping.sortedBy { it.third.toLowerCase() }
-                LibraryGroup.BY_TRACK_STATUS -> grouping.filter { it.second in map.keys }
+                LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.filter { it.second in map.keys }
                 else -> grouping
             }
             ).map {
@@ -645,31 +649,6 @@ class LibraryPresenter(
         }
 
         return map to categories
-    }
-
-    private fun mapTrackingOrder(status: String): String {
-        with(context) {
-            return when (status) {
-                getString(R.string.reading), getString(R.string.currently_reading) -> "1"
-                getString(R.string.repeating) -> "2"
-                getString(R.string.plan_to_read), getString(R.string.want_to_read) -> "3"
-                getString(R.string.on_hold), getString(R.string.paused) -> "4"
-                getString(R.string.completed) -> "5"
-                getString(R.string.dropped) -> "6"
-                else -> "7"
-            }
-        }
-    }
-
-    private fun mapStatus(status: Int): String {
-        return context.getString(
-            when (status) {
-                SManga.LICENSED -> R.string.licensed
-                SManga.ONGOING -> R.string.ongoing
-                SManga.COMPLETED -> R.string.completed
-                else -> R.string.unknown
-            }
-        )
     }
     // SY <--
 }

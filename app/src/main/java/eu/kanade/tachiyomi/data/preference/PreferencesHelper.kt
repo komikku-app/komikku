@@ -387,4 +387,6 @@ class PreferencesHelper(val context: Context) {
     fun groupLibraryBy() = flowPrefs.getInt(Keys.groupLibraryBy, 0)
 
     fun continuousVerticalTappingByPage() = flowPrefs.getBoolean(Keys.continuousVerticalTappingByPage, false)
+
+    fun groupLibraryUpdateType() = flowPrefs.getEnum(Keys.groupLibraryUpdateType, Values.GroupLibraryMode.GLOBAL)
 }

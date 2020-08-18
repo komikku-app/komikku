@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
+import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
@@ -21,6 +22,7 @@ import eu.kanade.tachiyomi.ui.library.LibrarySettingsSheet
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
+import eu.kanade.tachiyomi.util.preference.listPreference
 import eu.kanade.tachiyomi.util.preference.multiSelectListPreference
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.onClick
@@ -194,6 +196,24 @@ class SettingsLibraryController : SettingsController() {
                     }
                     .launchIn(scope)
             }
+            // SY -->
+            listPreference {
+                key = Keys.groupLibraryUpdateType
+                titleRes = R.string.library_group_updates
+                entriesRes = arrayOf(
+                    R.string.library_group_updates_global,
+                    R.string.library_group_updates_all_but_ungrouped,
+                    R.string.library_group_updates_all
+                )
+                entryValues = arrayOf(
+                    PreferenceValues.GroupLibraryMode.GLOBAL.name,
+                    PreferenceValues.GroupLibraryMode.ALL_BUT_UNGROUPED.name,
+                    PreferenceValues.GroupLibraryMode.ALL.name
+                )
+                defaultValue = PreferenceValues.GroupLibraryMode.GLOBAL.name
+                summary = "%s"
+            }
+            // SY <--
             intListPreference {
                 key = Keys.libraryUpdatePrioritization
                 titleRes = R.string.pref_library_update_prioritization

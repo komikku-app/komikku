@@ -17,10 +17,12 @@ import eu.kanade.tachiyomi.data.download.DownloadService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateRanker.rankingScheme
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Companion.start
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -28,6 +30,7 @@ import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
+import exh.util.nullIfBlank
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 import rx.Observable
@@ -87,6 +90,14 @@ class LibraryUpdateService(
          */
         const val KEY_TARGET = "target"
 
+        // SY -->
+        /**
+         * Key for group to update.
+         */
+        const val KEY_GROUP = "group"
+        const val KEY_GROUP_EXTRA = "group_extra"
+        // SY <--
+
         /**
          * Returns the status of the service.
          *
@@ -106,11 +117,15 @@ class LibraryUpdateService(
          * @param target defines what should be updated.
          * @return true if service newly started, false otherwise
          */
-        fun start(context: Context, category: Category? = null, target: Target = Target.CHAPTERS): Boolean {
+        fun start(context: Context, category: Category? = null, target: Target = Target.CHAPTERS /* SY --> */, group: Int = LibraryGroup.BY_DEFAULT, groupExtra: String? = null /* SY <-- */): Boolean {
             if (!isRunning(context)) {
                 val intent = Intent(context, LibraryUpdateService::class.java).apply {
                     putExtra(KEY_TARGET, target)
                     category?.let { putExtra(KEY_CATEGORY, it.id) }
+                    // SY -->
+                    putExtra(KEY_GROUP, group)
+                    groupExtra?.let { putExtra(KEY_GROUP_EXTRA, it) }
+                    // SY <--
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                     context.startService(intent)
@@ -221,10 +236,15 @@ class LibraryUpdateService(
      */
     fun getMangaToUpdate(intent: Intent, target: Target): List<LibraryManga> {
         val categoryId = intent.getIntExtra(KEY_CATEGORY, -1)
+        // SY -->
+        val group = intent.getIntExtra(KEY_GROUP, LibraryGroup.BY_DEFAULT)
+        val groupLibraryUpdateType = preferences.groupLibraryUpdateType().get()
+        // SY <--
 
         var listToUpdate = if (categoryId != -1) {
             db.getLibraryMangas().executeAsBlocking().filter { it.category == categoryId }
-        } else {
+            // SY -->
+        } else if (group == LibraryGroup.BY_DEFAULT || groupLibraryUpdateType == PreferenceValues.GroupLibraryMode.GLOBAL || (groupLibraryUpdateType == PreferenceValues.GroupLibraryMode.ALL_BUT_UNGROUPED && group == LibraryGroup.UNGROUPED)) {
             val categoriesToUpdate = preferences.libraryUpdateCategories().get().map(String::toInt)
             if (categoriesToUpdate.isNotEmpty()) {
                 db.getLibraryMangas().executeAsBlocking()
@@ -233,6 +253,43 @@ class LibraryUpdateService(
             } else {
                 db.getLibraryMangas().executeAsBlocking().distinctBy { it.id }
             }
+        } else {
+            val libraryManga = db.getLibraryMangas().executeAsBlocking().distinctBy { it.id }
+            when (group) {
+                LibraryGroup.BY_TRACK_STATUS -> {
+                    val trackingExtra = intent.getStringExtra(KEY_GROUP_EXTRA)?.toIntOrNull() ?: -1
+                    libraryManga.filter {
+                        val loggedServices = trackManager.services.filter { it.isLogged }
+                        val status: String = {
+                            val tracks = db.getTracks(it).executeAsBlocking()
+                            val track = tracks.find { track ->
+                                loggedServices.any { it.id == track?.sync_id }
+                            }
+                            val service = loggedServices.find { it.id == track?.sync_id }
+                            if (track != null && service != null) {
+                                service.getStatus(track.status)
+                            } else {
+                                "not tracked"
+                            }
+                        }()
+                        trackManager.mapTrackingOrder(status, applicationContext) == trackingExtra
+                    }
+                }
+                LibraryGroup.BY_SOURCE -> {
+                    val sourceExtra = intent.getStringExtra(KEY_GROUP_EXTRA).nullIfBlank()
+                    val source = sourceManager.getCatalogueSources().find { it.name == sourceExtra }
+                    if (source != null) libraryManga.filter { it.source == source.id } else emptyList()
+                }
+                LibraryGroup.BY_STATUS -> {
+                    val statusExtra = intent.getStringExtra(KEY_GROUP_EXTRA)?.toIntOrNull() ?: -1
+                    libraryManga.filter {
+                        it.status == statusExtra
+                    }
+                }
+                LibraryGroup.UNGROUPED -> libraryManga
+                else -> libraryManga
+            }
+            // SY <--
         }
         if (target == Target.CHAPTERS && preferences.updateOnlyNonCompleted()) {
             listToUpdate = listToUpdate.filter { it.status != SManga.COMPLETED }

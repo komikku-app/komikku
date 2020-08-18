@@ -15,6 +15,16 @@ class TrackManager(context: Context) {
         const val KITSU = 3
         const val SHIKIMORI = 4
         const val BANGUMI = 5
+
+        // SY -->
+        const val READING = 1
+        const val REREADING = 2
+        const val PLANTOREAD = 3
+        const val PAUSED = 4
+        const val COMPLETED = 5
+        const val DROPPED = 6
+        const val OTHER = 7
+        // SY <--
     }
 
     val myAnimeList = MyAnimeList(context, MYANIMELIST)
@@ -32,4 +42,20 @@ class TrackManager(context: Context) {
     fun getService(id: Int) = services.find { it.id == id }
 
     fun hasLoggedServices() = services.any { it.isLogged }
+
+    // SY -->
+    fun mapTrackingOrder(status: String, context: Context): Int {
+        with(context) {
+            return when (status) {
+                getString(eu.kanade.tachiyomi.R.string.reading), getString(eu.kanade.tachiyomi.R.string.currently_reading) -> READING
+                getString(eu.kanade.tachiyomi.R.string.repeating) -> REREADING
+                getString(eu.kanade.tachiyomi.R.string.plan_to_read), getString(eu.kanade.tachiyomi.R.string.want_to_read) -> PLANTOREAD
+                getString(eu.kanade.tachiyomi.R.string.on_hold), getString(eu.kanade.tachiyomi.R.string.paused) -> PAUSED
+                getString(eu.kanade.tachiyomi.R.string.completed) -> COMPLETED
+                getString(eu.kanade.tachiyomi.R.string.dropped) -> DROPPED
+                else -> OTHER
+            }
+        }
+    }
+    // SY <--
 }

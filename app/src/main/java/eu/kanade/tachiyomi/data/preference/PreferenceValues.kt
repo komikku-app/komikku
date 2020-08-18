@@ -46,4 +46,12 @@ object PreferenceValues {
         PARTIAL,
         BLOCKED
     }
+
+    // SY -->
+    enum class GroupLibraryMode {
+        GLOBAL,
+        ALL_BUT_UNGROUPED,
+        ALL
+    }
+    // SY <--
 }

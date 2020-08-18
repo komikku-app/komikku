@@ -152,6 +152,10 @@
     <string name="pref_skip_pre_migration_summary">Use last saved pre-migration preferences and sources to mass migrate</string>
     <string name="library_settings_sheet">Library settings sheet</string>
     <string name="library_settings_sheet_summary">More library display settings</string>
+    <string name="library_group_updates">Library dynamic category updates</string>
+    <string name="library_group_updates_global">Always launch global updates</string>
+    <string name="library_group_updates_all_but_ungrouped">Launch global updates only for ungrouped, category updates for others</string>
+    <string name="library_group_updates_all">Launch category updates all the time</string>
 
     <!-- Reader Settings -->
     <string name="download_threads">Download threads</string>

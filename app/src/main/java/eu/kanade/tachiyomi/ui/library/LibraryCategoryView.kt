@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
+import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
@@ -128,9 +129,33 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         swipe_refresh.setDistanceToTriggerSync((2 * 64 * resources.displayMetrics.density).toInt())
         swipe_refresh.refreshes()
             .onEach {
-                if (LibraryUpdateService.start(context, if (preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT) category else null)) {
-                    context.toast(R.string.updating_category)
+                // SY -->
+                if (LibraryUpdateService.start(
+                    context,
+                    if (controller.presenter.groupType == LibraryGroup.BY_DEFAULT) category else null,
+                    group = controller.presenter.groupType,
+                    groupExtra = when (controller.presenter.groupType) {
+                        LibraryGroup.BY_DEFAULT -> null
+                        LibraryGroup.BY_SOURCE -> category.name
+                        LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
+                        else -> null
+                    }
+                )
+                ) {
+                    context.toast(
+                        when {
+                            controller.presenter.groupType == LibraryGroup.BY_DEFAULT ||
+                                (preferences.groupLibraryUpdateType().get() == PreferenceValues.GroupLibraryMode.ALL) -> R.string.updating_category
+                            (
+                                controller.presenter.groupType == LibraryGroup.UNGROUPED &&
+                                    preferences.groupLibraryUpdateType().get() == PreferenceValues.GroupLibraryMode.ALL_BUT_UNGROUPED
+                                ) ||
+                                preferences.groupLibraryUpdateType().get() == PreferenceValues.GroupLibraryMode.GLOBAL -> R.string.updating_library
+                            else -> R.string.updating_category
+                        }
+                    )
                 }
+                // SY <--
 
                 // It can be a very long operation, so we disable swipe refresh and show a toast.
                 swipe_refresh.isRefreshing = false

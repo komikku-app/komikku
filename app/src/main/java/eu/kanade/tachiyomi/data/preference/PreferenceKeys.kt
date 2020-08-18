@@ -282,4 +282,6 @@ object PreferenceKeys {
     const val groupLibraryBy = "group_library_by"
 
     const val continuousVerticalTappingByPage = "continuous_vertical_tapping_by_page"
+
+    const val groupLibraryUpdateType = "group_library_update_type"
 }
