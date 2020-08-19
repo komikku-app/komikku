@@ -284,4 +284,6 @@ object PreferenceKeys {
     const val continuousVerticalTappingByPage = "continuous_vertical_tapping_by_page"
 
     const val groupLibraryUpdateType = "group_library_update_type"
+
+    const val useNewSourceNavigation = "use_new_source_navigation"
 }

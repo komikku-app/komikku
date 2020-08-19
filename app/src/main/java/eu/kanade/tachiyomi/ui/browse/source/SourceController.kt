@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.SourceDividerItemDecoration
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
+import eu.kanade.tachiyomi.ui.browse.source.index.IndexController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.category.sources.ChangeSourceCategoriesDialog
 import eu.kanade.tachiyomi.util.system.toast
@@ -152,7 +153,9 @@ class SourceController(bundle: Bundle? = null) :
         when (mode) {
             Mode.CATALOGUE -> {
                 // Open the catalogue view.
-                openSource(source, BrowseSourceController(source))
+                // SY -->
+                if (source.supportsLatest && preferences.useNewSourceNavigation().get()) openIndexSource(source) else openSource(source, BrowseSourceController(source))
+                // SY <--
             }
             Mode.SMART_SEARCH -> router.pushController(
                 SmartSearchController(
@@ -318,6 +321,16 @@ class SourceController(bundle: Bundle? = null) :
         preferences.lastUsedSource().set(source.id)
         parentController!!.router.pushController(controller.withFadeTransaction())
     }
+
+    // SY -->
+    /**
+     * Opens a catalogue with the index controller.
+     */
+    private fun openIndexSource(source: CatalogueSource) {
+        preferences.lastUsedSource().set(source.id)
+        parentController!!.router.pushController(IndexController(source).withFadeTransaction())
+    }
+    // SY <--
 
     /**
      * Adds items to the options menu.

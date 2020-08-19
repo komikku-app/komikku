@@ -59,6 +59,7 @@ open class BrowseSourcePresenter(
     private val searchQuery: String? = null,
     // SY -->
     private val recommendsMangaId: Long? = null,
+    private val filters: String? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get(),
@@ -115,6 +116,8 @@ open class BrowseSourcePresenter(
 
     // SY -->
     private var manga: Manga? = null
+
+    private val filterSerializer = FilterSerializer()
     // SY <--
 
     /**
@@ -129,6 +132,14 @@ open class BrowseSourcePresenter(
 
         sourceFilters = source.getFilterList()
 
+        // SY -->
+        if (filters != null) {
+            val filters = JsonParser.parseString(filters).obj
+            filterSerializer.deserialize(sourceFilters, filters["filters"].array)
+        }
+        val allDefault = sourceFilters == source.getFilterList()
+        // SY <--
+
         if (savedState != null) {
             query = savedState.getString(::query.name, "")
         }
@@ -137,7 +148,7 @@ open class BrowseSourcePresenter(
             manga = db.getManga(recommendsMangaId).executeAsBlocking()
         }
 
-        restartPager()
+        restartPager(/* SY -->*/ filters = if (allDefault) this.appliedFilters else sourceFilters /* SY <--*/)
     }
 
     override fun onSave(state: Bundle) {
@@ -323,48 +334,54 @@ open class BrowseSourcePresenter(
         return SourcePager(source, query, filters)
     }
 
-    private fun FilterList.toItems(): List<IFlexible<*>> {
-        return mapNotNull { filter ->
-            when (filter) {
-                is Filter.Header -> HeaderItem(filter)
-                // --> EXH
-                is Filter.HelpDialog -> HelpDialogItem(filter)
-                is Filter.AutoComplete -> AutoComplete(filter)
-                // <-- EXH
-                is Filter.Separator -> SeparatorItem(filter)
-                is Filter.CheckBox -> CheckboxItem(filter)
-                is Filter.TriState -> TriStateItem(filter)
-                is Filter.Text -> TextItem(filter)
-                is Filter.Select<*> -> SelectItem(filter)
-                is Filter.Group<*> -> {
-                    val group = GroupItem(filter)
-                    val subItems = filter.state.mapNotNull {
-                        when (it) {
-                            is Filter.CheckBox -> CheckboxSectionItem(it)
-                            is Filter.TriState -> TriStateSectionItem(it)
-                            is Filter.Text -> TextSectionItem(it)
-                            is Filter.Select<*> -> SelectSectionItem(it)
-                            // SY -->
-                            is Filter.AutoComplete -> AutoCompleteSectionItem(it)
-                            // SY <--
-                            else -> null
-                        } as? ISectionable<*, *>
+    // SY -->
+    companion object {
+        // SY <--
+        fun FilterList.toItems(): List<IFlexible<*>> {
+            return mapNotNull { filter ->
+                when (filter) {
+                    is Filter.Header -> HeaderItem(filter)
+                    // --> EXH
+                    is Filter.HelpDialog -> HelpDialogItem(filter)
+                    is Filter.AutoComplete -> AutoComplete(filter)
+                    // <-- EXH
+                    is Filter.Separator -> SeparatorItem(filter)
+                    is Filter.CheckBox -> CheckboxItem(filter)
+                    is Filter.TriState -> TriStateItem(filter)
+                    is Filter.Text -> TextItem(filter)
+                    is Filter.Select<*> -> SelectItem(filter)
+                    is Filter.Group<*> -> {
+                        val group = GroupItem(filter)
+                        val subItems = filter.state.mapNotNull {
+                            when (it) {
+                                is Filter.CheckBox -> CheckboxSectionItem(it)
+                                is Filter.TriState -> TriStateSectionItem(it)
+                                is Filter.Text -> TextSectionItem(it)
+                                is Filter.Select<*> -> SelectSectionItem(it)
+                                // SY -->
+                                is Filter.AutoComplete -> AutoCompleteSectionItem(it)
+                                // SY <--
+                                else -> null
+                            } as? ISectionable<*, *>
+                        }
+                        subItems.forEach { it.header = group }
+                        group.subItems = subItems
+                        group
                     }
-                    subItems.forEach { it.header = group }
-                    group.subItems = subItems
-                    group
-                }
-                is Filter.Sort -> {
-                    val group = SortGroup(filter)
-                    val subItems = filter.values.map {
-                        SortItem(it, group)
+                    is Filter.Sort -> {
+                        val group = SortGroup(filter)
+                        val subItems = filter.values.map {
+                            SortItem(it, group)
+                        }
+                        group.subItems = subItems
+                        group
                     }
-                    group.subItems = subItems
-                    group
                 }
             }
         }
+        // SY -->
     }
+    // SY <--
 
     /**
      * Get user categories.
@@ -422,7 +439,6 @@ open class BrowseSourcePresenter(
     }
 
     // EXH -->
-    private val filterSerializer = FilterSerializer()
     fun saveSearches(searches: List<EXHSavedSearch>) {
         val otherSerialized = prefs.eh_savedSearches().get().filter {
             !it.startsWith("${source.id}:")

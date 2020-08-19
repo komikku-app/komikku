@@ -19,7 +19,8 @@ data class SourceItem(
     val header: LangItem? = null,
     val isPinned: Boolean = false,
     // SY -->
-    val showButtons: Boolean
+    val showLatest: Boolean,
+    val showPins: Boolean
     // SY <--
 ) :
     AbstractSectionableItem<SourceHolder, LangItem>(header) {
@@ -35,7 +36,7 @@ data class SourceItem(
      * Creates a new view holder for this item.
      */
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): SourceHolder {
-        return SourceHolder(view, adapter as SourceAdapter /* SY --> */, showButtons /* SY <-- */)
+        return SourceHolder(view, adapter as SourceAdapter /* SY --> */, showLatest, showPins /* SY <-- */)
     }
 
     /**

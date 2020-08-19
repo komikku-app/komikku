@@ -91,9 +91,13 @@ class SourcePresenter(
         var sourceItems = byLang.flatMap {
             val langItem = LangItem(it.key)
             it.value.map { source ->
+                // SY -->
+                val showPins = controllerMode == SourceController.Mode.CATALOGUE
+                val showLatest = showPins && !preferences.useNewSourceNavigation().get()
+                // SY <--
                 val isPinned = source.id.toString() in pinnedSourceIds
                 if (isPinned) {
-                    pinnedSources.add(SourceItem(source, LangItem(PINNED_KEY), isPinned, controllerMode == SourceController.Mode.CATALOGUE))
+                    pinnedSources.add(SourceItem(source, LangItem(PINNED_KEY), isPinned /* SY --> */, showLatest, showPins /* SY <-- */))
                 }
 
                 // SY -->
@@ -108,7 +112,8 @@ class SourcePresenter(
                                             source,
                                             LangItem("custom|" + SourceAndCategory.second),
                                             isPinned,
-                                            controllerMode == SourceController.Mode.CATALOGUE
+                                            showLatest,
+                                            showPins
                                         )
                                     )
                                 }
@@ -117,7 +122,7 @@ class SourcePresenter(
                 }
                 // SY <--
 
-                SourceItem(source, langItem, isPinned, controllerMode == SourceController.Mode.CATALOGUE)
+                SourceItem(source, langItem, isPinned /* SY --> */, showLatest, showPins /* SY <-- */)
             }
         }
 
@@ -151,7 +156,11 @@ class SourcePresenter(
     private fun updateLastUsedSource(sourceId: Long) {
         val source = (sourceManager.get(sourceId) as? CatalogueSource)?.let {
             val isPinned = it.id.toString() in preferences.pinnedSources().get()
-            SourceItem(it, null, isPinned, controllerMode == SourceController.Mode.CATALOGUE)
+            // SY -->
+            val showPins = controllerMode == SourceController.Mode.CATALOGUE
+            val showLatest = showPins && !preferences.useNewSourceNavigation().get()
+            // SY <--
+            SourceItem(it, null, isPinned /* SY --> */, showLatest, showPins /* SY <-- */)
         }
         source?.let { view?.setLastUsedSource(it) }
     }

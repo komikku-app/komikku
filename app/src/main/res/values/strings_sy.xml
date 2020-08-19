@@ -157,6 +157,13 @@
     <string name="library_group_updates_all_but_ungrouped">Launch global updates only for ungrouped, category updates for others</string>
     <string name="library_group_updates_all">Launch category updates all the time</string>
 
+    <!-- Browse settings -->
+    <string name="pref_latest_tab_language_code">Display language code next to name</string>
+    <string name="pref_latest_position">Latest tab position</string>
+    <string name="pref_latest_position_summery">Do you want the latest tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if your on data or a metered network</string>
+    <string name="pref_source_navigation">Replace latest button</string>
+    <string name="pref_source_navigation_summery">Replace latest button with a custom browse view that includes both latest and browse</string>
+
     <!-- Reader Settings -->
     <string name="download_threads">Download threads</string>
     <string name="download_threads_summary">Higher values can speed up image downloading significantly, but can also trigger bans. Recommended value is 2 or 3. Current value is: %s</string>
@@ -234,9 +241,6 @@
     <string name="unwatch">Unwatch</string>
     <string name="too_many_watched">Too many watched sources, cannot add more then 5</string>
     <string name="latest_tab_empty">You don\'t have any watched sources, go to the sources tab and long press a source to watch it</string>
-    <string name="pref_latest_tab_language_code">Display language code next to name</string>
-    <string name="pref_latest_position">Latest tab position</string>
-    <string name="pref_latest_position_summery">Do you want the latest tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if your on data or a metered network</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>

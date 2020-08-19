@@ -34,6 +34,12 @@ class SettingsBrowseController : SettingsController() {
                     router.pushController(SourceCategoryController().withFadeTransaction())
                 }
             }
+            switchPreference {
+                key = Keys.useNewSourceNavigation
+                titleRes = R.string.pref_source_navigation
+                summaryRes = R.string.pref_source_navigation_summery
+                defaultValue = false
+            }
         }
 
         preferenceCategory {

@@ -82,7 +82,8 @@ open class BrowseSourceController(bundle: Bundle) :
         source: CatalogueSource,
         searchQuery: String? = null,
         // SY -->
-        smartSearchConfig: SourceController.SmartSearchConfig? = null
+        smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        filterList: String? = null
         // SY <--
     ) : this(
         Bundle().apply {
@@ -95,6 +96,10 @@ open class BrowseSourceController(bundle: Bundle) :
             // SY -->
             if (smartSearchConfig != null) {
                 putParcelable(SMART_SEARCH_CONFIG_KEY, smartSearchConfig)
+            }
+
+            if (filterList != null) {
+                putString(FILTERS_CONFIG_KEY, filterList)
             }
             // SY <--
         }
@@ -160,7 +165,8 @@ open class BrowseSourceController(bundle: Bundle) :
         return BrowseSourcePresenter(
             args.getLong(SOURCE_ID_KEY),
             args.getString(SEARCH_QUERY_KEY),
-            recommendsMangaId = if (mode == Mode.RECOMMENDS) recommendsConfig?.mangaId else null
+            recommendsMangaId = if (mode == Mode.RECOMMENDS) recommendsConfig?.mangaId else null,
+            filters = args.getString(FILTERS_CONFIG_KEY)
         )
         // SY <--
     }
@@ -851,6 +857,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
         // SY -->
         const val SMART_SEARCH_CONFIG_KEY = "smartSearchConfig"
+        const val FILTERS_CONFIG_KEY = "filters"
         const val RECOMMENDS_CONFIG = "RECOMMENDS_CONFIG"
         // SY <--
     }

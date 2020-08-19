@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/browse_bar_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground">
+
+            <TextView
+                android:id="@+id/browse"
+                style="@style/TextAppearance.Regular.SubHeading"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/material_component_text_fields_padding_above_and_below_label"
+                android:text="@string/browse"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/browse_bar_more_icon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/browse_bar_more_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/label_more"
+                android:padding="@dimen/material_component_text_fields_padding_above_and_below_label"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_arrow_forward_24dp"
+                app:tint="?android:attr/textColorPrimary" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/browse_no_results_found"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/material_component_text_fields_padding_above_and_below_label"
+            android:paddingEnd="@dimen/material_component_text_fields_padding_above_and_below_label"
+            android:paddingBottom="@dimen/material_component_text_fields_padding_above_and_below_label"
+            android:text="@string/no_results_found"
+            android:visibility="gone" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/browse_card"
+            style="@style/Theme.Widget.CardView.Item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="144dp">
+
+            <ProgressBar
+                android:id="@+id/browse_progress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/browse_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                tools:listitem="@layout/global_search_controller_comfortable_card_item" />
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/latest_bar_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/latest"
+            style="@style/TextAppearance.Regular.SubHeading"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/material_component_text_fields_padding_above_and_below_label"
+            android:text="@string/latest"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/latest_bar_more_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/latest_bar_more_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/label_more"
+            android:padding="@dimen/material_component_text_fields_padding_above_and_below_label"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_arrow_forward_24dp"
+            app:tint="?android:attr/textColorPrimary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/latest_no_results_found"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/material_component_text_fields_padding_above_and_below_label"
+        android:paddingEnd="@dimen/material_component_text_fields_padding_above_and_below_label"
+        android:paddingBottom="@dimen/material_component_text_fields_padding_above_and_below_label"
+        android:text="@string/no_results_found"
+        android:visibility="gone" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/latest_card"
+        style="@style/Theme.Widget.CardView.Item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="144dp">
+
+        <ProgressBar
+            android:id="@+id/latest_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/latest_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            tools:listitem="@layout/global_search_controller_comfortable_card_item" />
+
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>
