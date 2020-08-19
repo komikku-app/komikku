@@ -3,6 +3,7 @@ package exh
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.Hitomi
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.all.PervEden
 import eu.kanade.tachiyomi.source.online.english.EightMuses
@@ -41,6 +42,7 @@ private val DELEGATED_LEWD_SOURCES = listOf(
 
 private val hitomiClass = listOf(Hitomi::class)
 private val nHentaiClass = listOf(NHentai::class)
+private val mangaDexClass = listOf(MangaDex::class)
 
 // Used to speed up isLewdSource
 val lewdDelegatedSourceIds by lazy {
@@ -58,6 +60,12 @@ val hitomiSourceIds by lazy {
 val nHentaiSourceIds by lazy {
     SourceManager.currentDelegatedSources.filter {
         it.value.newSourceClass in nHentaiClass
+    }.map { it.value.sourceId }.sorted()
+}
+
+val mangaDexSourceIds by lazy {
+    SourceManager.currentDelegatedSources.filter {
+        it.value.newSourceClass in mangaDexClass
     }.map { it.value.sourceId }.sorted()
 }
 
