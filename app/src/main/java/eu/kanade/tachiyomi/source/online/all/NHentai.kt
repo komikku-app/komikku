@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.LewdSource
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.NHentaiSearchMetadata
@@ -27,7 +27,7 @@ import rx.Observable
 
 class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
-    LewdSource<NHentaiSearchMetadata, Response>,
+    MetadataSource<NHentaiSearchMetadata, Response>,
     UrlImportableSource {
     override val metaClass = NHentaiSearchMetadata::class
     override val lang = if (id == otherId) "all" else delegate.lang

@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.LewdSource
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
@@ -24,7 +24,7 @@ import rx.Observable
 
 class Pururin(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
-    LewdSource<PururinSearchMetadata, Document>,
+    MetadataSource<PururinSearchMetadata, Document>,
     UrlImportableSource {
     /**
      * An ISO 639-1 compliant language code (two letters in lower case).

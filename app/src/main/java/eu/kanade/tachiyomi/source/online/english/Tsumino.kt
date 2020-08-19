@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.LewdSource
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
@@ -27,7 +27,7 @@ import rx.Observable
 
 class Tsumino(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
-    LewdSource<TsuminoSearchMetadata, Document>,
+    MetadataSource<TsuminoSearchMetadata, Document>,
     UrlImportableSource {
     override val metaClass = TsuminoSearchMetadata::class
     override val lang = "en"

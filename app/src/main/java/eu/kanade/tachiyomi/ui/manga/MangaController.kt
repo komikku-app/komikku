@@ -50,7 +50,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.LewdSource.Companion.getLewdSource
+import eu.kanade.tachiyomi.source.online.MetadataSource.Companion.getMetadataSource
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.ToolbarLiftOnScrollController
@@ -247,7 +247,7 @@ class MangaController :
 
         adapters += mangaInfoAdapter
 
-        val thisSourceAsLewdSource = presenter.source.getLewdSource()
+        val thisSourceAsLewdSource = presenter.source.getMetadataSource()
         if (thisSourceAsLewdSource != null) {
             mangaMetaInfoAdapter = thisSourceAsLewdSource.getDescriptionAdapter(this)
             mangaMetaInfoAdapter?.let { adapters += it }
@@ -460,7 +460,7 @@ class MangaController :
 
     // SY -->
     fun onNextMetaInfo(flatMetadata: FlatMetadata) {
-        val thisSourceAsLewdSource = presenter.source.getLewdSource()
+        val thisSourceAsLewdSource = presenter.source.getMetadataSource()
         if (thisSourceAsLewdSource != null) {
             presenter.meta = flatMetadata.raise(thisSourceAsLewdSource.metaClass)
             mangaMetaInfoAdapter?.notifyDataSetChanged()

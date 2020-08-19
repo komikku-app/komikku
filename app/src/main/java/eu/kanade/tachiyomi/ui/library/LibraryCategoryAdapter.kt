@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
-import exh.isLewdSource
+import exh.isMetadataSource
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
 import exh.search.Namespace
@@ -131,7 +131,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
 
                     // Flow the mangas to allow cancellation of this filter operation
                     mangas.asFlow().cancellable().filter { item ->
-                        if (isLewdSource(item.manga.source)) {
+                        if (isMetadataSource(item.manga.source)) {
                             val mangaId = item.manga.id ?: -1
                             if (mangaWithMetaIds.binarySearch(mangaId) < 0) {
                                 // No meta? Filter using title

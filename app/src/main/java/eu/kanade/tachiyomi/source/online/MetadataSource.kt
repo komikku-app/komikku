@@ -22,7 +22,7 @@ import uy.kohesive.injekt.api.get
 /**
  * LEWD!
  */
-interface LewdSource<M : RaisedSearchMetadata, I> : CatalogueSource {
+interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     val db: DatabaseHelper get() = Injekt.get()
 
     /**
@@ -111,13 +111,13 @@ interface LewdSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     val SChapter.mangaId get() = (this as? Chapter)?.manga_id
 
     companion object {
-        fun Source.isLewdSource() = (this is LewdSource<*, *> || (this is EnhancedHttpSource && this.enhancedSource is LewdSource<*, *>))
+        fun Source.isMetadataSource() = (this is MetadataSource<*, *> || (this is EnhancedHttpSource && this.enhancedSource is MetadataSource<*, *>))
 
-        fun Source.getLewdSource(): LewdSource<*, *>? {
+        fun Source.getMetadataSource(): MetadataSource<*, *>? {
             return when {
-                !this.isLewdSource() -> null
-                this is LewdSource<*, *> -> this
-                this is EnhancedHttpSource && this.enhancedSource is LewdSource<*, *> -> this.enhancedSource
+                !this.isMetadataSource() -> null
+                this is MetadataSource<*, *> -> this
+                this is EnhancedHttpSource && this.enhancedSource is MetadataSource<*, *> -> this.enhancedSource
                 else -> null
             }
         }

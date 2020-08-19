@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.LewdSource
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
@@ -22,7 +22,7 @@ import rx.Observable
 
 class EightMuses(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
-    LewdSource<EightMusesSearchMetadata, Document>,
+    MetadataSource<EightMusesSearchMetadata, Document>,
     UrlImportableSource {
     override val metaClass = EightMusesSearchMetadata::class
     override val lang = "en"

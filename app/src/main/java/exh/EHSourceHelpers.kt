@@ -29,7 +29,7 @@ const val EIGHTMUSES_SOURCE_ID = 1802675169972965535
 const val HBROWSE_SOURCE_ID = 1401584337232758222
 const val MERGED_SOURCE_ID = LEWD_SOURCE_SERIES + 69
 
-private val DELEGATED_LEWD_SOURCES = listOf(
+private val DELEGATED_METADATA_SOURCES = listOf(
     HentaiCafe::class,
     Pururin::class,
     Tsumino::class,
@@ -45,9 +45,9 @@ private val nHentaiClass = listOf(NHentai::class)
 private val mangaDexClass = listOf(MangaDex::class)
 
 // Used to speed up isLewdSource
-val lewdDelegatedSourceIds by lazy {
+val metadataDelegatedSourceIds by lazy {
     SourceManager.currentDelegatedSources.filter {
-        it.value.newSourceClass in DELEGATED_LEWD_SOURCES
+        it.value.newSourceClass in DELEGATED_METADATA_SOURCES
     }.map { it.value.sourceId }.sorted()
 }
 
@@ -70,8 +70,8 @@ val mangaDexSourceIds by lazy {
 }
 
 // This method MUST be fast!
-fun isLewdSource(source: Long) = source in 6900..6999 ||
-    lewdDelegatedSourceIds.binarySearch(source) >= 0
+fun isMetadataSource(source: Long) = source in 6900..6999 ||
+    metadataDelegatedSourceIds.binarySearch(source) >= 0
 
 val LIBRARY_UPDATE_EXCLUDED_SOURCES by lazy {
     listOf(

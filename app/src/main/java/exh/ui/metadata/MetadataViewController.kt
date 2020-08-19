@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MetadataViewControllerBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.LewdSource.Companion.getLewdSource
+import eu.kanade.tachiyomi.source.online.MetadataSource.Companion.getMetadataSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.base.FlatMetadata
@@ -73,7 +73,7 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
     }
 
     fun onNextMetaInfo(flatMetadata: FlatMetadata) {
-        val thisSourceAsLewdSource = presenter.source.getLewdSource()
+        val thisSourceAsLewdSource = presenter.source.getMetadataSource()
         if (thisSourceAsLewdSource != null) {
             presenter.meta = flatMetadata.raise(thisSourceAsLewdSource.metaClass)
         }
