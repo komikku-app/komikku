@@ -100,6 +100,11 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     override val baseUrl get() = delegate.baseUrl
 
     /**
+     * Headers used for requests.
+     */
+    override val headers get() = delegate.headers
+
+    /**
      * Whether the source has support for latest updates.
      */
     override val supportsLatest get() = delegate.supportsLatest

@@ -104,6 +104,11 @@ class EnhancedHttpSource(
     override val baseUrl get() = source().baseUrl
 
     /**
+     * Headers used for requests.
+     */
+    override val headers get() = source().headers
+
+    /**
      * Whether the source has support for latest updates.
      */
     override val supportsLatest get() = source().supportsLatest
@@ -128,7 +133,7 @@ class EnhancedHttpSource(
     /**
      * Default network client for doing requests.
      */
-    override val client get() = source().client
+    override val client get() = originalSource.client // source().client
 
     /**
      * Visible name of the source.
