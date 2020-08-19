@@ -208,7 +208,6 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                         )
                 }
                 is Namespace -> {
-                    Timber.d(manga.title)
                     val tag = queryComponent.tag?.asQuery()
                     searchTags == null || searchTags.all {
                         if (tag == null || tag.isBlank()) {
