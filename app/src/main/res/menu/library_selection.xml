@@ -40,7 +40,7 @@
     <item
         android:id="@+id/action_clean"
         android:icon="@drawable/baseline_swap_calls_24"
-        android:title="@string/clean_titles"
+        android:title="@string/action_clean_titles"
         app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 

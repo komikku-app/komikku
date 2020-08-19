@@ -8,9 +8,10 @@
     <string name="action_search_manually">Search manually</string>
     <string name="action_migrate_now">Migrate now</string>
     <string name="action_copy_now">Copy now</string>
-    <string name="clean_titles">Clean titles</string>
+    <string name="action_clean_titles">Clean titles</string>
     <string name="action_start_reading_button">Start reading button</string>
     <string name="action_display_no_title_grid">No title grid</string>
+    <string name="action_start_reading">Start reading</string>
 
     <!-- Library fragment -->
     <string name="buttons_header">Buttons</string>
@@ -443,7 +444,6 @@
     <string name="rating_view">%1$s (%2$s, %3$d)</string>
     <string name="rating_view_no_count">%1$s (%2$s)</string>
     <string name="language_translated">%1$s TR</string>
-    <string name="start_reading">Start reading</string>
 
     <!-- Enhanced E/ExHentai Browse View -->
     <plurals name="browse_language_and_pages">
