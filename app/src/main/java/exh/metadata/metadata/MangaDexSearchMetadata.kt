@@ -2,13 +2,9 @@ package exh.metadata.metadata
 
 import android.content.Context
 import androidx.core.net.toUri
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.md.utils.setMDUrlWithoutDomain
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import java.net.URI
-import java.net.URISyntaxException
 
 class MangaDexSearchMetadata : RaisedSearchMetadata() {
     var mdId: String? = null

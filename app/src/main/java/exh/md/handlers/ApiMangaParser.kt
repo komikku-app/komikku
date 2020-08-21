@@ -25,7 +25,7 @@ import rx.Single
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class ApiMangaParser(val langs: List<String>) {
+class ApiMangaParser(private val langs: List<String>) {
     val db: DatabaseHelper get() = Injekt.get()
 
     val metaClass = MangaDexSearchMetadata::class
