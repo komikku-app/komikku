@@ -215,6 +215,11 @@
     <string name="az_recommends">See Recommendations</string>
     <string name="merge_with_another_source">Merge With Another</string>
 
+    <!-- Manga info fragment -->
+    <string name="hiatus">Hiatus</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="publication_complete">Publication Complete</string>
+
     <!-- Manga Info Edit -->
     <string name="reset_tags">Reset Tags</string>
     <string name="reset_cover">Reset Cover</string>
@@ -433,6 +438,15 @@
     <string name="rating_string">Rating string</string>
     <string name="collection">Collection</string>
     <string name="parodies">Parodies</string>
+    <string name="author">Author</string>
+    <string name="last_chapter_number">Last chapter number</string>
+    <string name="missing_chapters">Missing chapters</string>
+    <string name="follow_status">Follow status</string>
+    <string name="anilist_id">Anilist id</string>
+    <string name="kitsu_id">Kitsu id</string>
+    <string name="mal_id">Mal id</string>
+    <string name="manga_updates_id">Manga updates id</string>
+    <string name="anime_planet_id">Anime planet id</string>
 
     <!-- Extra gallery info -->
     <plurals name="num_pages">

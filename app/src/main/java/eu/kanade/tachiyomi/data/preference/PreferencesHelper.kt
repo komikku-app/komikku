@@ -391,4 +391,6 @@ class PreferencesHelper(val context: Context) {
     fun groupLibraryUpdateType() = flowPrefs.getEnum(Keys.groupLibraryUpdateType, Values.GroupLibraryMode.GLOBAL)
 
     fun useNewSourceNavigation() = flowPrefs.getBoolean(Keys.useNewSourceNavigation, false)
+
+    fun mangaDexLowQualityCovers() = flowPrefs.getBoolean(Keys.mangaDexLowQualityCovers, false)
 }

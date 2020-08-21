@@ -275,6 +275,11 @@ class MangaInfoHeaderAdapter(
                     SManga.ONGOING -> R.string.ongoing
                     SManga.COMPLETED -> R.string.completed
                     SManga.LICENSED -> R.string.licensed
+                    // SY --> Mangadex specific statuses
+                    SManga.HIATUS -> R.string.hiatus
+                    SManga.PUBLICATION_COMPLETE -> R.string.publication_complete
+                    SManga.CANCELLED -> R.string.cancelled
+                    // SY <--
                     else -> R.string.unknown_status
                 }
             )

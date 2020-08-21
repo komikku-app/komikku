@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.manga
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import com.elvishew.xlog.XLog
 import com.google.gson.Gson
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
@@ -118,7 +119,7 @@ class MangaPresenter(
 
         // SY -->
         if (manga.initialized && source.isMetadataSource()) {
-            getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else Timber.d("Invalid metadata") })
+            getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata") })
         }
         // SY <--
 
@@ -236,7 +237,7 @@ class MangaPresenter(
             // SY -->
             .doOnNext {
                 if (source is MetadataSource<*, *> || (source is EnhancedHttpSource && source.enhancedSource is MetadataSource<*, *>)) {
-                    getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else Timber.d("Invalid metadata") })
+                    getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata") })
                 }
             }
             // SY <--

@@ -286,4 +286,6 @@ object PreferenceKeys {
     const val groupLibraryUpdateType = "group_library_update_type"
 
     const val useNewSourceNavigation = "use_new_source_navigation"
+
+    const val mangaDexLowQualityCovers = "manga_dex_low_quality_covers"
 }

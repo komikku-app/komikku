@@ -46,6 +46,9 @@ buildscript {
         // Realm (EH)
         classpath("io.realm:realm-gradle-plugin:7.0.1")
 
+        // SY for mangadex utils
+        classpath("org.jetbrains.kotlin:kotlin-serialization:${BuildPluginsVersion.KOTLIN}")
+
         // Firebase (EH)
         classpath("io.fabric.tools:gradle:1.31.0")
     }
