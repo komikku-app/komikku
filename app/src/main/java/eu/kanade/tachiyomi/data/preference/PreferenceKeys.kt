@@ -288,4 +288,20 @@ object PreferenceKeys {
     const val useNewSourceNavigation = "use_new_source_navigation"
 
     const val mangaDexLowQualityCovers = "manga_dex_low_quality_covers"
+
+    const val experimentalFeatures = "experimental_features"
+
+    const val dataSaver = "data_saver"
+
+    const val ignoreJpeg = "ignore_jpeg"
+
+    const val ignoreGif = "ignore_gif"
+
+    const val dataSaverImageQuality = "data_saver_image_quality"
+
+    const val dataSaverImageFormatJpeg = "data_saver_image_format_jpeg"
+
+    const val dataSaverServer = "data_saver_server"
+
+    const val dataSaverColorBW = "data_saver_color_bw"
 }

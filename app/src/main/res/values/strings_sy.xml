@@ -32,6 +32,8 @@
     <string name="pref_category_all_sources">All Sources</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_fork">Fork Settings</string>
+    <string name="expermental_feature_sttings">Experimental Features</string>
+
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai Website Account Settings</string>
@@ -119,6 +121,8 @@
     <string name="toggle_hentai_features_summary">This is a experimental feature that will disable all hentai features if toggled off</string>
     <string name="toggle_delegated_sources">Enable delegated sources</string>
     <string name="toggle_delegated_sources_summary">Apply %1$s enhancements to the following sources if they are installed: %2$s</string>
+    <string name="toggle_experimental_features">Show Experimental Features</string>
+    <string name="toggle_experimental_features_summary">Show features that are experimental and not for normal users</string>
     <string name="log_level">Log level</string>
     <string name="log_level_summary">Changing this can impact app performance. Force-restart app after changing. Current value: %s</string>
     <string name="enable_source_blacklist">Enable source blacklist</string>
@@ -464,6 +468,19 @@
         <item quantity="one">%2$s, %1$d page</item>
         <item quantity="other">%2$s, %1$d pages</item>
     </plurals>
+
+    <!-- Experimental Features -->
+    <string name="data_saver">Data Saver</string>
+    <string name="data_saver_summary">Compress images before downloading or loading in reader</string>
+    <string name="enable_data_saver">Enable Data Saver</string>
+    <string name="ignore_jpeg">Ignore Jpeg Images</string>
+    <string name="ignore_gif">Ignore Gif Animation</string>
+    <string name="data_saver_image_quality">Image Quality</string>
+    <string name="data_saver_image_format">Compress to Jpeg</string>
+    <string name="data_saver_color_bw">Convert to Black And White</string>
+    <string name="data_saver_image_format_summary">Compresses to webp if this option is turned off</string>
+    <string name="data_saver_server">Data Saver Server</string>
+    <string name="data_saver_server_summary">It uses Bandwidth Hero Proxy as Server.To use it you need to create a Bandwidth Hero server and give the server URL</string>
 
 
 </resources>

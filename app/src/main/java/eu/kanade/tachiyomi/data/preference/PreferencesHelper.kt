@@ -393,4 +393,20 @@ class PreferencesHelper(val context: Context) {
     fun useNewSourceNavigation() = flowPrefs.getBoolean(Keys.useNewSourceNavigation, false)
 
     fun mangaDexLowQualityCovers() = flowPrefs.getBoolean(Keys.mangaDexLowQualityCovers, false)
+
+    fun experimentalFeatures() = flowPrefs.getBoolean(Keys.experimentalFeatures, false)
+
+    fun dataSaver() = flowPrefs.getBoolean(Keys.dataSaver, false)
+
+    fun ignoreJpeg() = flowPrefs.getBoolean(Keys.ignoreJpeg, false)
+
+    fun ignoreGif() = flowPrefs.getBoolean(Keys.ignoreGif, true)
+
+    fun dataSaverImageQuality() = flowPrefs.getInt(Keys.dataSaverImageQuality, 80)
+
+    fun dataSaverImageFormatJpeg() = flowPrefs.getBoolean(Keys.dataSaverImageFormatJpeg, false)
+
+    fun dataSaverServer() = flowPrefs.getString(Keys.dataSaverServer, "")
+
+    fun dataSaverColorBW() = flowPrefs.getBoolean(Keys.dataSaverColorBW, false)
 }

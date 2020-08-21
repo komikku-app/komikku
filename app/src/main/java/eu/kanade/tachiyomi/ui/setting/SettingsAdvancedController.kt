@@ -195,6 +195,13 @@ class SettingsAdvancedController : SettingsController() {
                 summary = context.getString(R.string.toggle_delegated_sources_summary, context.getString(R.string.app_name), DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString())
             }
 
+            switchPreference {
+                titleRes = R.string.toggle_experimental_features
+                key = Keys.experimentalFeatures
+                defaultValue = false
+                summary = context.getString(R.string.toggle_experimental_features_summary)
+            }
+
             intListPreference {
                 key = Keys.eh_logLevel
                 titleRes = R.string.log_level

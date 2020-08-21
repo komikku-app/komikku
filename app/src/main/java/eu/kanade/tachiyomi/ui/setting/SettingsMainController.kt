@@ -80,12 +80,22 @@ class SettingsMainController : SettingsController() {
                 onClick { navigateTo(SettingsEhController()) }
             }
         }
+
         // SY <--
         preference {
             iconRes = R.drawable.ic_code_24dp
             iconTint = tintColor
             titleRes = R.string.pref_category_advanced
             onClick { navigateTo(SettingsAdvancedController()) }
+        }
+
+        if (preferences.experimentalFeatures().get()) {
+            preference {
+                iconRes = R.drawable.ic_code_24dp
+                iconTint = tintColor
+                titleRes = R.string.expermental_feature_sttings
+                onClick { navigateTo(SettingsExperimentalFeatures()) }
+            }
         }
     }
 
