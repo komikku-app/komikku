@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
@@ -26,6 +27,7 @@ import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.preference.defaultValue
+import eu.kanade.tachiyomi.util.preference.editTextPreference
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.onClick
@@ -45,6 +47,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
@@ -159,6 +162,77 @@ class SettingsAdvancedController : SettingsController() {
         }
 
         preferenceCategory {
+            titleRes = R.string.data_saver
+
+            switchPreference {
+                titleRes = R.string.data_saver
+                summaryRes = R.string.data_saver_summary
+                key = Keys.dataSaver
+                defaultValue = false
+            }
+
+            editTextPreference {
+                titleRes = R.string.data_saver_server
+                key = Keys.dataSaverServer
+                defaultValue = ""
+                summaryRes = R.string.data_saver_server_summary
+
+                preferences.dataSaver().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
+
+            switchPreference {
+                titleRes = R.string.ignore_jpeg
+                key = Keys.ignoreJpeg
+                defaultValue = false
+
+                preferences.dataSaver().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
+
+            switchPreference {
+                titleRes = R.string.ignore_gif
+                key = Keys.ignoreGif
+                defaultValue = true
+
+                preferences.dataSaver().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
+
+            intListPreference {
+                titleRes = R.string.data_saver_image_quality
+                key = Keys.dataSaverImageQuality
+                entries = arrayOf("10", "20", "40", "50", "70", "80", "90", "95")
+                entryValues = entries
+                defaultValue = "80"
+                summaryRes = R.string.data_saver_image_quality_summary
+
+                preferences.dataSaver().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
+
+            switchPreference {
+                titleRes = R.string.data_saver_image_format
+                key = Keys.dataSaverImageFormatJpeg
+                defaultValue = false
+                summaryOn = context.getString(R.string.data_saver_image_format_summary_on)
+                summaryOff = context.getString(R.string.data_saver_image_format_summary_off)
+
+                preferences.dataSaver().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
+
+            switchPreference {
+                titleRes = R.string.data_saver_color_bw
+                key = Keys.dataSaverColorBW
+                defaultValue = false
+
+                preferences.dataSaver().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
+        }
+
+        preferenceCategory {
             titleRes = R.string.developer_tools
             isPersistent = false
 
@@ -193,13 +267,6 @@ class SettingsAdvancedController : SettingsController() {
                 key = Keys.eh_delegateSources
                 defaultValue = true
                 summary = context.getString(R.string.toggle_delegated_sources_summary, context.getString(R.string.app_name), DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString())
-            }
-
-            switchPreference {
-                titleRes = R.string.toggle_experimental_features
-                key = Keys.experimentalFeatures
-                defaultValue = false
-                summary = context.getString(R.string.toggle_experimental_features_summary)
             }
 
             intListPreference {

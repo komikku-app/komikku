@@ -2,22 +2,25 @@ package eu.kanade.tachiyomi.source.model
 
 import android.net.Uri
 import eu.kanade.tachiyomi.network.ProgressListener
-import eu.kanade.tachiyomi.util.DataSaver
+import exh.util.DataSaver
 import rx.subjects.Subject
 
 open class Page(
     val index: Int,
     /* SY --> */
     var /* SY <-- */ url: String = "",
+    /* SY --> var <-- SY */
     imageUrl: String? = null,
     @Transient var uri: Uri? = null // Deprecated but can't be deleted due to extensions
 ) : ProgressListener {
 
+    // SY -->
     var imageUrl = imageUrl
         get() {
             if (field == null) return null
             return DataSaver().compress(field!!)
         }
+    // SY <--
 
     val number: Int
         get() = index + 1

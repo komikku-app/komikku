@@ -289,8 +289,6 @@ object PreferenceKeys {
 
     const val mangaDexLowQualityCovers = "manga_dex_low_quality_covers"
 
-    const val experimentalFeatures = "experimental_features"
-
     const val dataSaver = "data_saver"
 
     const val ignoreJpeg = "ignore_jpeg"

@@ -394,8 +394,6 @@ class PreferencesHelper(val context: Context) {
 
     fun mangaDexLowQualityCovers() = flowPrefs.getBoolean(Keys.mangaDexLowQualityCovers, false)
 
-    fun experimentalFeatures() = flowPrefs.getBoolean(Keys.experimentalFeatures, false)
-
     fun dataSaver() = flowPrefs.getBoolean(Keys.dataSaver, false)
 
     fun ignoreJpeg() = flowPrefs.getBoolean(Keys.ignoreJpeg, false)
