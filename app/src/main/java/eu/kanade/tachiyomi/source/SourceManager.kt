@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.source.online.all.MangaPlus
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.all.PervEden
@@ -236,6 +237,13 @@ open class SourceManager(private val context: Context) {
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.nhentai.NHentai",
                 NHentai::class,
+                true
+            ),
+            DelegatedSource(
+                "MANGA Plus",
+                fillInSourceId,
+                "eu.kanade.tachiyomi.extension.all.mangaplus.MangaPlus",
+                MangaPlus::class,
                 true
             )
         ).associateBy { it.originalSourceQualifiedClassName }

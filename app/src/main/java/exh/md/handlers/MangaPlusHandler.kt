@@ -1,8 +1,8 @@
 package exh.md.handlers
 
-import MangaPlusSerializer
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
+import exh.md.handlers.serializers.MangaPlusSerializer
 import java.util.UUID
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
