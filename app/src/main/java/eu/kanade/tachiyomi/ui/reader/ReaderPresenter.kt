@@ -1,12 +1,14 @@
 package eu.kanade.tachiyomi.ui.reader
 
 import android.app.Application
+import android.content.Context
 import android.os.Bundle
 import android.os.Environment
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -16,6 +18,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -31,8 +34,12 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.util.defaultReaderType
 import java.io.File
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import rx.Completable
 import rx.Observable
 import rx.Subscription
@@ -250,6 +257,30 @@ class ReaderPresenter(
             )
     }
 
+    // SY -->
+    suspend fun getChapters(context: Context): List<ReaderChapterItem> {
+        return withContext(Dispatchers.IO) {
+            val currentChapter = getCurrentChapter()
+            val decimalFormat = DecimalFormat(
+                "#.###",
+                DecimalFormatSymbols()
+                    .apply { decimalSeparator = '.' }
+            )
+
+            chapterList.reversed().map {
+                ReaderChapterItem(
+                    it.chapter,
+                    manga!!,
+                    it.chapter == currentChapter?.chapter,
+                    context,
+                    preferences.dateFormat(),
+                    decimalFormat
+                )
+            }
+        }
+    }
+    // SY <--
+
     /**
      * Returns an observable that loads the given [chapter] with this [loader]. This observable
      * handles main thread synchronization and updating the currently active chapters on
@@ -300,6 +331,11 @@ class ReaderPresenter(
             .onErrorComplete()
             .subscribe()
             .also(::add)
+    }
+
+    fun loadNewChapterFromSheet(chapter: Chapter) {
+        val newChapter = chapterList.firstOrNull { it.chapter.id == chapter.id } ?: return
+        loadAdjacent(newChapter)
     }
 
     /**
@@ -353,8 +389,8 @@ class ReaderPresenter(
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
      * [page]'s chapter is different from the currently active.
      */
-    fun onPageSelected(page: ReaderPage) {
-        val currentChapters = viewerChaptersRelay.value ?: return
+    fun onPageSelected(page: ReaderPage): Boolean {
+        val currentChapters = viewerChaptersRelay.value ?: return /* SY --> */ false /* SY <-- */
 
         val selectedChapter = page.chapter
 
@@ -380,7 +416,14 @@ class ReaderPresenter(
             Timber.d("Setting ${selectedChapter.chapter.url} as active")
             onChapterChanged(currentChapters.currChapter)
             loadNewChapter(selectedChapter)
+            // SY -->
+            Observable.just(selectedChapter).subscribeFirst({ view, _ ->
+                view.refreshSheetChapters()
+            })
+            return true
+            // SY <--
         }
+        return /* SY --> */ false /* SY <-- */
     }
 
     /**
@@ -471,6 +514,14 @@ class ReaderPresenter(
         chapter.bookmark = bookmarked
         db.updateChapterProgress(chapter).executeAsBlocking()
     }
+
+    // SY -->
+    fun toggleBookmark(chapter: Chapter) {
+        chapter.bookmark = !chapter.bookmark
+        db.updateChapterProgress(chapter).executeAsBlocking()
+        chapterList.firstOrNull { it.chapter.id == chapter.id }?.let { it.chapter.bookmark == !chapter.bookmark }
+    }
+    // SY <--
 
     /**
      * Returns the viewer position used by this manga or the default one.

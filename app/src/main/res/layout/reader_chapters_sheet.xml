@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterSheet xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chapters_bottom_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="300dp"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical"
+    app:behavior_peekHeight="?attr/actionBarSize"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topbar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/pill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:contentDescription="@string/action_sort_drag_and_drop"
+            android:src="@drawable/ic_drag_pill_24dp"
+            android:tint="?attr/colorOnSurface"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/chapters_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_next_chapter"
+            android:padding="@dimen/material_layout_keylines_screen_edge_margin"
+            android:tint="?attr/colorOnSurface"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_format_list_numbered_24dp" />
+
+        <ImageButton
+            android:id="@+id/webview_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_open_in_web_view"
+            android:padding="@dimen/material_layout_keylines_screen_edge_margin"
+            android:tint="?attr/colorOnSurface"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:alpha="0.0"
+            app:srcCompat="@drawable/ic_public_24dp" />
+
+        <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
+            android:id="@+id/page_seekbar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/page_text"
+            app:layout_constraintStart_toEndOf="@id/chapters_button"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/page_text"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="100 / 105" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chapter_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:clipToPadding="false"
+        tools:listitem="@layout/reader_chapter_item" />
+</eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterSheet>
