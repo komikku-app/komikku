@@ -19,7 +19,7 @@ class DataSaver {
 
     private fun getUrl(imageUrl: String): String {
         val server = preferences.dataSaverServer().get() + "/?"
-        val format = "jpeg=${if (preferences.dataSaverImageFormatJpeg().get()) "1" else "0"}"
+        val format = "jpg=${if (preferences.dataSaverImageFormatJpeg().get()) "1" else "0"}"
         val quality = "&l=${preferences.dataSaverImageQuality().get()}"
         val colorBW = "&bw=${if (preferences.dataSaverColorBW().get()) "1" else "0"}"
         val url = "$server$format$quality$colorBW&url="
