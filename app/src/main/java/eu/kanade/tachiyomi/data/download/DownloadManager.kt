@@ -287,12 +287,12 @@ class DownloadManager(/* SY private */ val context: Context) {
 
         // Assume there's only 1 version of the chapter name formats present
         val oldFolder = oldNames.asSequence()
-            .mapNotNull { mangaDir.findFile(it) }
+            .mapNotNull { mangaDir.findFile(it) ?: mangaDir.findFile("$it.cbz") }
             .firstOrNull()
 
-        if (oldFolder?.renameTo(newName) == true) {
+        if (oldFolder?.renameTo(newName  + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "") == true) {
             cache.removeChapter(oldChapter, manga)
-            cache.addChapter(newName, mangaDir, manga)
+            cache.addChapter(newName  + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "", mangaDir, manga)
         } else {
             Timber.e("Could not rename downloaded chapter: %s.", oldNames.joinToString())
         }
