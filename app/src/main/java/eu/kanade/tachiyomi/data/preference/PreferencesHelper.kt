@@ -407,4 +407,8 @@ class PreferencesHelper(val context: Context) {
     fun dataSaverServer() = flowPrefs.getString(Keys.dataSaverServer, "")
 
     fun dataSaverColorBW() = flowPrefs.getBoolean(Keys.dataSaverColorBW, false)
+
+    fun saveChaptersAsCBZ() = flowPrefs.getBoolean(Keys.saveChaptersAsCBZ, false)
+
+    fun saveChaptersAsCBZLevel() = flowPrefs.getInt(Keys.saveChaptersAsCBZLevel, 0)
 }

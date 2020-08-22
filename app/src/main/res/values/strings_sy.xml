@@ -478,5 +478,8 @@
         <item quantity="other">%2$s, %1$d pages</item>
     </plurals>
 
+    <string name="save_chapter_as_cbz">Save Chapters as CBZ</string>
+    <string name="save_chapter_as_cbz_level">CBZ Compression level</string>
+
 
 </resources>

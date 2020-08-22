@@ -302,4 +302,8 @@ object PreferenceKeys {
     const val dataSaverServer = "data_saver_server"
 
     const val dataSaverColorBW = "data_saver_color_bw"
+
+    const val saveChaptersAsCBZ = "save_chapter_as_cbz"
+
+    const val saveChaptersAsCBZLevel = "save_chapter_as_cbz_level"
 }
