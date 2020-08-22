@@ -31,7 +31,7 @@ import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-@ExperimentalSerializationApi
+@OptIn(ExperimentalSerializationApi::class)
 class MangaPlus(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     ConfigurableSource {

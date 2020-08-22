@@ -20,17 +20,4 @@
 
     </androidx.recyclerview.widget.RecyclerView>
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab"
-        style="@style/Theme.Widget.FAB"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/ic_arrow_forward_24dp"
-        android:text="@string/action_migrate"
-        app:icon="@drawable/ic_arrow_forward_24dp"
-        app:layout_anchor="@id/recycler"
-        app:layout_anchorGravity="bottom|right|end"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

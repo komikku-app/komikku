@@ -23,22 +23,20 @@ import kotlinx.android.synthetic.main.migration_bottom_sheet.mig_categories
 import kotlinx.android.synthetic.main.migration_bottom_sheet.mig_chapters
 import kotlinx.android.synthetic.main.migration_bottom_sheet.mig_tracking
 import kotlinx.android.synthetic.main.migration_bottom_sheet.use_smart_search
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.injectLazy
 
-class MigrationBottomSheetDialog(
-    activity: Activity,
-    theme: Int,
-    private val listener:
-        StartMigrationListener
-) :
-    BottomSheetDialog(
-        activity,
-        theme
-    ) {
+class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val listener: StartMigrationListener) : BottomSheetDialog(activity, theme) {
     /**
      * Preferences helper.
      */
     private val preferences by injectLazy<PreferencesHelper>()
+    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     init {
         // Use activity theme for this layout
@@ -61,7 +59,7 @@ class MigrationBottomSheetDialog(
 
         initPreferences()
 
-        fab.setOnClickListener {
+        fab.clicks().onEach {
             preferences.skipPreMigration().set(skip_step.isChecked)
             listener.startMigration(
                 if (use_smart_search.isChecked && extra_search_param_text.text.isNotBlank()) {
@@ -69,7 +67,7 @@ class MigrationBottomSheetDialog(
                 } else null
             )
             dismiss()
-        }
+        }.launchIn(scope)
     }
 
     /**

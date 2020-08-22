@@ -34,6 +34,7 @@ import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
+import exh.syDebugVersion
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import java.io.File
@@ -183,7 +184,7 @@ open class App : Application(), LifecycleObserver {
             .Builder(logFolder.absolutePath)
             .fileNameGenerator(object : DateFileNameGenerator() {
                 override fun generateFileName(logLevel: Int, timestamp: Long): String {
-                    return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}"
+                    return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}.log"
                 }
             })
             .cleanStrategy(FileLastModifiedCleanStrategy(7.days.inMilliseconds.longValue))
@@ -201,6 +202,17 @@ open class App : Application(), LifecycleObserver {
         )
 
         XLog.d("Application booting...")
+        XLog.nst().d(
+            "App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})\n" +
+                "Preview build: $syDebugVersion\n" +
+                "Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) \n" +
+                "Android build ID: ${Build.DISPLAY}\n" +
+                "Device brand: ${Build.BRAND}\n" +
+                "Device manufacturer: ${Build.MANUFACTURER}\n" +
+                "Device name: ${Build.DEVICE}\n" +
+                "Device model: ${Build.MODEL}\n" +
+                "Device product name: ${Build.PRODUCT}"
+        )
     }
 
     // EXH

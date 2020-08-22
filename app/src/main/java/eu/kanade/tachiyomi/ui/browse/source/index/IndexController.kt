@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
@@ -245,7 +246,9 @@ open class IndexController :
         filterSheet?.setOnShowListener { actionFab?.isVisible = false }
         filterSheet?.setOnDismissListener { actionFab?.isVisible = true }
 
-        actionFab?.setOnClickListener { filterSheet?.show() }
+        actionFab?.clicks()
+            ?.onEach { filterSheet?.show() }
+            ?.launchIn(scope)
 
         actionFab?.isVisible = true
     }

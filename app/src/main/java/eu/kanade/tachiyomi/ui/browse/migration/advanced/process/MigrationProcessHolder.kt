@@ -33,8 +33,13 @@ import kotlinx.android.synthetic.main.migration_process_item.migration_manga_car
 import kotlinx.android.synthetic.main.migration_process_item.migration_manga_card_to
 import kotlinx.android.synthetic.main.migration_process_item.migration_menu
 import kotlinx.android.synthetic.main.migration_process_item.skip_manga
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
+import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
@@ -47,6 +52,7 @@ class MigrationProcessHolder(
     private val sourceManager: SourceManager by injectLazy()
     private var item: MigrationProcessItem? = null
     private val gson: Gson by injectLazy()
+    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     init {
         // We need to post a Runnable to show the popup to make sure that the PopupMenu is
@@ -80,14 +86,15 @@ class MigrationProcessHolder(
             if (manga != null) {
                 withContext(Dispatchers.Main) {
                     migration_manga_card_from.attachManga(manga, source)
-                    migration_manga_card_from.setOnClickListener {
-                        adapter.controller.router.pushController(
-                            MangaController(
-                                manga,
-                                true
-                            ).withFadeTransaction()
-                        )
-                    }
+                    migration_manga_card_from.clicks()
+                        .onEach {
+                            adapter.controller.router.pushController(
+                                MangaController(
+                                    manga,
+                                    true
+                                ).withFadeTransaction()
+                            )
+                        }.launchIn(scope)
                 }
 
                 /*launchUI {
@@ -115,13 +122,14 @@ class MigrationProcessHolder(
                     }
                     if (searchResult != null && resultSource != null) {
                         migration_manga_card_to.attachManga(searchResult, resultSource)
-                        migration_manga_card_to.setOnClickListener {
-                            adapter.controller.router.pushController(
-                                MangaController(
-                                    searchResult, true
-                                ).withFadeTransaction()
-                            )
-                        }
+                        migration_manga_card_to.clicks()
+                            .onEach {
+                                adapter.controller.router.pushController(
+                                    MangaController(
+                                        searchResult, true
+                                    ).withFadeTransaction()
+                                )
+                            }.launchIn(scope)
                     } else {
                         migration_manga_card_to.loading_group.isVisible = false
                         migration_manga_card_to.title.text = view.context.applicationContext
@@ -143,7 +151,7 @@ class MigrationProcessHolder(
         manga_chapters.text = ""
         manga_chapters.isVisible = false
         manga_last_chapter_label.text = ""
-        migration_manga_card_to.setOnClickListener(null)
+        migration_manga_card_to.clicks()
     }
 
     private fun View.attachManga(manga: Manga, source: Source) {

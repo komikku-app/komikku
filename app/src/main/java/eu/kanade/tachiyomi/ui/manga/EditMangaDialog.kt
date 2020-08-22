@@ -34,6 +34,9 @@ import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_genres_tags
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.reset_cover
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.reset_tags
 import kotlinx.android.synthetic.main.edit_manga_dialog.view.title
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -131,16 +134,19 @@ class EditMangaDialog : DialogController {
             }
         }
         view.manga_genres_tags.clearFocus()
-        view.cover_layout.setOnClickListener {
-            infoController.changeCover()
-        }
-        view.reset_tags.setOnClickListener { resetTags() }
+        view.cover_layout.clicks()
+            .onEach { infoController.changeCover() }
+            .launchIn(infoController.scope)
+        view.reset_tags.clicks()
+            .onEach { resetTags() }
+            .launchIn(infoController.scope)
         view.reset_cover.isVisible = !isLocal
-        view.reset_cover.setOnClickListener {
-            view.context.toast(R.string.cover_reset_toast)
-            customCoverUri = null
-            willResetCover = true
-        }
+        view.reset_cover.clicks()
+            .onEach {
+                view.context.toast(R.string.cover_reset_toast)
+                customCoverUri = null
+                willResetCover = true
+            }.launchIn(infoController.scope)
     }
 
     private fun resetTags() {
@@ -198,7 +204,7 @@ class EditMangaDialog : DialogController {
             chipIcon?.setTint(context.getResourceColor(R.attr.colorAccent))
             textStartPadding = 0F
 
-            setOnClickListener {
+            clicks().onEach {
                 MaterialDialog(context)
                     .title(R.string.add_tag)
                     .input(inputType = InputType.TYPE_CLASS_TEXT)
@@ -210,7 +216,7 @@ class EditMangaDialog : DialogController {
                     }
                     .negativeButton(android.R.string.cancel)
                     .show()
-            }
+            }.launchIn(infoController.scope)
         }
         addView(addTagChip)
     }

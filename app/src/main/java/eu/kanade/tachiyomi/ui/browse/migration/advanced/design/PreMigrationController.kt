@@ -9,9 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bluelinelabs.conductor.Router
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -19,17 +21,23 @@ import eu.kanade.tachiyomi.databinding.PreMigrationControllerBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
+import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
-import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.injectLazy
 
 class PreMigrationController(bundle: Bundle? = null) :
     BaseController<PreMigrationControllerBinding>(bundle),
-    FlexibleAdapter
-    .OnItemClickListener,
+    FlexibleAdapter.OnItemClickListener,
+    FabController,
     StartMigrationListener {
     private val sourceManager: SourceManager by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
@@ -38,7 +46,10 @@ class PreMigrationController(bundle: Bundle? = null) :
 
     private val config: LongArray = args.getLongArray(MANGA_IDS_EXTRA) ?: LongArray(0)
 
-    private var showingOptions = false
+    val scope = CoroutineScope(Job() + Dispatchers.Main)
+
+    private var actionFab: ExtendedFloatingActionButton? = null
+    private var actionFabScrollListener: RecyclerView.OnScrollListener? = null
 
     private var dialog: BottomSheetDialog? = null
 
@@ -64,24 +75,34 @@ class PreMigrationController(bundle: Bundle? = null) :
         ourAdapter.isHandleDragEnabled = true
         dialog = null
 
-        binding.fab.shrinkOnScroll(binding.recycler)
+        actionFabScrollListener = actionFab?.shrinkOnScroll(binding.recycler)
+    }
 
-        binding.fab.setOnClickListener {
-            if (dialog?.isShowing != true) {
-                dialog = MigrationBottomSheetDialog(activity!!, R.style.SheetDialog, this)
-                dialog?.show()
-                val bottomSheet = dialog?.findViewById<FrameLayout>(
-                    com.google.android.material.R.id.design_bottom_sheet
-                )
-                if (bottomSheet != null) {
-                    val behavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheet)
-                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    behavior.skipCollapsed = true
+    override fun configureFab(fab: ExtendedFloatingActionButton) {
+        actionFab = fab
+        fab.setText(R.string.action_migrate)
+        fab.setIconResource(R.drawable.ic_arrow_forward_24dp)
+        fab.clicks()
+            .onEach {
+                if (dialog?.isShowing != true) {
+                    dialog = MigrationBottomSheetDialog(activity!!, R.style.SheetDialog, this)
+                    dialog?.show()
+                    val bottomSheet = dialog?.findViewById<FrameLayout>(
+                        com.google.android.material.R.id.design_bottom_sheet
+                    )
+                    if (bottomSheet != null) {
+                        val behavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheet)
+                        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                        behavior.skipCollapsed = true
+                    }
                 }
             }
-        }
-        binding.fab.shrinkOnScroll(binding.recycler)
-        binding.fab.offsetAppbarHeight(activity!!)
+            .launchIn(scope)
+    }
+
+    override fun cleanupFab(fab: ExtendedFloatingActionButton) {
+        actionFabScrollListener?.let { binding.recycler.removeOnScrollListener(it) }
+        actionFab = null
     }
 
     override fun startMigration(extraParam: String?) {
@@ -127,20 +148,12 @@ class PreMigrationController(bundle: Bundle? = null) :
     private fun getEnabledSources(): List<HttpSource> {
         val languages = prefs.enabledLanguages().get()
         val sourcesSaved = prefs.migrationSources().get().split("/")
-        var sources = sourceManager.getVisibleCatalogueSources()
+        val sources = sourceManager.getVisibleCatalogueSources()
             .filterIsInstance<HttpSource>()
             .filter { it.lang in languages }
             .sortedBy { "(${it.lang}) ${it.name}" }
-        sources =
-            sources.filter { isEnabled(it.id.toString()) }.sortedBy {
-            sourcesSaved.indexOf(
-                it.id
-                    .toString()
-            )
-        } +
-            sources.filterNot { isEnabled(it.id.toString()) }
 
-        return sources
+        return sources.filter { isEnabled(it.id.toString()) }.sortedBy { sourcesSaved.indexOf(it.id.toString()) } + sources.filterNot { isEnabled(it.id.toString()) }
     }
 
     fun isEnabled(id: String): Boolean {
