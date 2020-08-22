@@ -75,7 +75,9 @@ class LocalSource(private val context: Context) : CatalogueSource {
         val time = if (filters === LATEST_FILTERS) System.currentTimeMillis() - LATEST_THRESHOLD else 0L
         var mangaDirs = baseDirs.mapNotNull { it.listFiles()?.toList() }
             .flatten()
-            .filter { it.isDirectory && if (time == 0L) it.name.contains(query, ignoreCase = true) else it.lastModified() >= time }
+            .filter { it.isDirectory }
+            .filterNot { it.name.startsWith('.') }
+            .filter { if (time == 0L) it.name.contains(query, ignoreCase = true) else it.lastModified() >= time }
             .distinctBy { it.name }
 
         val state = ((if (filters.isEmpty()) POPULAR_FILTERS else filters)[0] as OrderBy).state
