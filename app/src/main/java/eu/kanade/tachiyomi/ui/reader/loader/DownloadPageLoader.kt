@@ -40,7 +40,7 @@ class DownloadPageLoader(
     override fun getPages(): Observable<List<ReaderPage>> {
         val chapterPath = downloadProvider.findChapterDir(chapter.chapter, manga, source)
 
-        if (chapterPath?.isFile!!) {
+        if (chapterPath?.isFile == true) {
             val zip = if (!File(chapterPath.filePath!!).canRead()) {
                 val tmpFile = File.createTempFile(chapterPath.name!!.replace(".cbz", ""), ".cbz")
                 val buffer = ByteArray(1024)
@@ -59,7 +59,7 @@ class DownloadPageLoader(
 
             return zip.entries().toList()
                 .filter { !it.isDirectory && ImageUtil.isImage(it.name) { zip.getInputStream(it) } }
-                .sortedWith(Comparator<ZipEntry> { f1, f2 -> f1.name.compareToCaseInsensitiveNaturalOrder(f2.name) })
+                .sortedWith { f1, f2 -> f1.name.compareToCaseInsensitiveNaturalOrder(f2.name) }
                 .mapIndexed { i, entry ->
                     val streamFn = { zip.getInputStream(entry) }
                     ReaderPage(i).apply {
