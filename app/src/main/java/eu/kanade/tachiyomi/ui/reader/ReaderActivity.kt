@@ -509,7 +509,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                         }
 
                         val loader = page.chapter.pageLoader
-                        if (page.index == exh_currentPage()?.index && loader is HttpPageLoader) {
+                        if (page.index == exhCurrentpage()?.index && loader is HttpPageLoader) {
                             loader.boostPage(page)
                         } else {
                             loader?.retryPage(page)
@@ -535,7 +535,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.ehBoostPage.clicks()
             .onEach {
                 viewer?.let { _ ->
-                    val curPage = exh_currentPage() ?: run {
+                    val curPage = exhCurrentpage() ?: run {
                         toast("This page cannot be boosted (invalid page)!")
                         return@let
                     }
@@ -581,13 +581,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     }
 
     // EXH -->
-    private fun exh_currentPage(): ReaderPage? {
-        val currentPage = (
-            (
-                (viewer as? PagerViewer)?.currentPage
-                    ?: (viewer as? WebtoonViewer)?.currentPage
-                ) as? ReaderPage
-            )?.index
+    private fun exhCurrentpage(): ReaderPage? {
+        val currentPage = (((viewer as? PagerViewer)?.currentPage ?: (viewer as? WebtoonViewer)?.currentPage) as? ReaderPage)?.index
         return currentPage?.let { presenter.viewerChaptersRelay.value.currChapter.pages?.getOrNull(it) }
     }
     // EXH <--
@@ -605,6 +600,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 resetDefaultMenuAndBar()
             }
             binding.readerMenu.isVisible = true
+
+            if (readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior.isExpanded()) {
+                readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.isHideable = false
+            }
 
             if (animate) {
                 val toolbarAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_top)

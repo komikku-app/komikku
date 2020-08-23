@@ -1,9 +1,12 @@
 package eu.kanade.tachiyomi.ui.reader.chapter
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
 import android.widget.LinearLayout
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,15 +15,20 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.listeners.ClickEventHook
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ReaderChaptersSheetBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.util.collapse
 import exh.util.expand
 import exh.util.isExpanded
 import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
+import kotlinx.android.synthetic.main.reader_chapters_sheet.view.pill
 
 class ReaderChapterSheet @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     LinearLayout(context, attrs) {
@@ -37,6 +45,8 @@ class ReaderChapterSheet @JvmOverloads constructor(context: Context, attrs: Attr
     fun setup(activity: ReaderActivity) {
         presenter = activity.presenter
         binding = activity.readerBottomSheetBinding
+        val fullPrimary = context.getResourceColor(R.attr.colorSurface)
+        val primary = ColorUtils.setAlphaComponent(fullPrimary, 200)
 
         sheetBehavior = BottomSheetBehavior.from(this)
         binding.chaptersButton.setOnClickListener {
@@ -52,6 +62,7 @@ class ReaderChapterSheet @JvmOverloads constructor(context: Context, attrs: Attr
         }
 
         post {
+            binding.chapterRecycler.alpha = if (sheetBehavior.isExpanded()) 1f else 0f
             binding.chapterRecycler.isClickable = sheetBehavior.isExpanded()
             binding.chapterRecycler.isFocusable = sheetBehavior.isExpanded()
         }
@@ -59,10 +70,14 @@ class ReaderChapterSheet @JvmOverloads constructor(context: Context, attrs: Attr
         sheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, progress: Float) {
                 val trueProgress = max(progress, 0f)
+                binding.pill.alpha = (1 - trueProgress) * 0.25f
                 binding.chaptersButton.alpha = 1 - trueProgress
                 binding.webviewButton.alpha = trueProgress
                 binding.webviewButton.isVisible = binding.webviewButton.alpha > 0
                 binding.chaptersButton.isInvisible = binding.chaptersButton.alpha <= 0
+                backgroundTintList =
+                    ColorStateList.valueOf(lerpColor(primary, fullPrimary, trueProgress))
+                binding.chapterRecycler.alpha = trueProgress
             }
 
             override fun onStateChanged(p0: View, state: Int) {
@@ -77,6 +92,7 @@ class ReaderChapterSheet @JvmOverloads constructor(context: Context, attrs: Attr
                     binding.webviewButton.alpha = 0f
                 }
                 if (state == BottomSheetBehavior.STATE_EXPANDED) {
+                    binding.chapterRecycler.alpha = 1F
                     binding.chaptersButton.alpha = 0f
                     binding.webviewButton.alpha = 1f
                 }
@@ -120,6 +136,11 @@ class ReaderChapterSheet @JvmOverloads constructor(context: Context, attrs: Attr
             }
         })
 
+        backgroundTintList = ColorStateList.valueOf(
+            if (!sheetBehavior.isExpanded()) primary
+            else fullPrimary
+        )
+
         binding.chapterRecycler.layoutManager = LinearLayoutManager(context)
         refreshList()
     }
@@ -137,5 +158,23 @@ class ReaderChapterSheet @JvmOverloads constructor(context: Context, attrs: Attr
                 binding.chapterRecycler.height / 2 - 30.dpToPx
             )
         }
+    }
+
+    fun lerpColor(colorStart: Int, colorEnd: Int, percent: Float): Int {
+        val perc = (percent * 100).roundToInt()
+        return Color.argb(
+            lerpColorCalc(Color.alpha(colorStart), Color.alpha(colorEnd), perc),
+            lerpColorCalc(Color.red(colorStart), Color.red(colorEnd), perc),
+            lerpColorCalc(Color.green(colorStart), Color.green(colorEnd), perc),
+            lerpColorCalc(Color.blue(colorStart), Color.blue(colorEnd), perc)
+        )
+    }
+
+    fun lerpColorCalc(colorStart: Int, colorEnd: Int, percent: Int): Int {
+        return (
+            min(colorStart, colorEnd) * (100 - percent) + max(
+                colorStart, colorEnd
+            ) * percent
+            ) / 100
     }
 }

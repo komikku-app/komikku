@@ -7,6 +7,7 @@
     android:layout_height="300dp"
     android:background="?attr/colorSurface"
     android:orientation="vertical"
+    android:alpha="1"
     app:behavior_peekHeight="?attr/actionBarSize"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
@@ -22,6 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
+            android:alpha="0.25"
             android:contentDescription="@string/action_sort_drag_and_drop"
             android:src="@drawable/ic_drag_pill_24dp"
             android:tint="?attr/colorOnSurface"
@@ -84,5 +86,6 @@
         android:layout_height="match_parent"
         android:background="?attr/colorSurface"
         android:clipToPadding="false"
+        android:alpha="0"
         tools:listitem="@layout/reader_chapter_item" />
 </eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterSheet>

@@ -1,4 +1,4 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/reader_layout"
@@ -42,7 +42,7 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-    <FrameLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/reader_menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -151,11 +151,11 @@
                 app:srcCompat="@drawable/ic_keyboard_arrow_down_white_32dp" />
         </com.google.android.material.appbar.AppBarLayout>
 
-    </FrameLayout>
+        <include
+            android:id="@+id/reader_chapters_sheet"
+            layout="@layout/reader_chapters_sheet" />
 
-    <include
-        android:id="@+id/reader_chapters_sheet"
-        layout="@layout/reader_chapters_sheet" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <View
         android:id="@+id/brightness_overlay"
@@ -163,4 +163,4 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</FrameLayout>
