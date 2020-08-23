@@ -290,9 +290,9 @@ class DownloadManager(/* SY private */ val context: Context) {
             .mapNotNull { mangaDir.findFile(it) ?: mangaDir.findFile("$it.cbz") }
             .firstOrNull()
 
-        if (oldFolder?.renameTo(newName  + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "") == true) {
+        if (oldFolder?.renameTo(newName + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "") == true) {
             cache.removeChapter(oldChapter, manga)
-            cache.addChapter(newName  + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "", mangaDir, manga)
+            cache.addChapter(newName + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "", mangaDir, manga)
         } else {
             Timber.e("Could not rename downloaded chapter: %s.", oldNames.joinToString())
         }

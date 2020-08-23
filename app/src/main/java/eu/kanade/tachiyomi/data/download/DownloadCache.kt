@@ -196,7 +196,7 @@ class DownloadCache(
         provider.getValidChapterDirNames(chapter).forEach {
             if (it in mangaDir.files) {
                 mangaDir.files -= it
-            }  else if ("$it.cbz" in mangaDir.files) {
+            } else if ("$it.cbz" in mangaDir.files) {
                 mangaDir.files -= "$it.cbz"
             }
         }
