@@ -49,13 +49,12 @@ buildscript {
         // SY for mangadex utils
         classpath("org.jetbrains.kotlin:kotlin-serialization:${BuildPluginsVersion.KOTLIN}")
 
-        // Firebase (EH)
-        classpath("io.fabric.tools:gradle:1.31.0")
+        // Firebase Crashlytics
+        classpath("com.google.firebase:firebase-crashlytics-gradle:2.2.0")
     }
     repositories {
         google()
         jcenter()
-        maven { setUrl("https://maven.fabric.io/public") }
     }
 }
 

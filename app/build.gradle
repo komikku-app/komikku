@@ -66,7 +66,6 @@ android {
         debug {
             versionNameSuffix "-${getCommitCount()}"
             applicationIdSuffix ".debug"
-            ext.enableCrashlytics = false
         }
         releaseTest {
             applicationIdSuffix ".rt"
@@ -310,7 +309,7 @@ dependencies {
     // Debug tool; see https://fbflipper.com/
 //    debugImplementation 'com.facebook.flipper:flipper:0.50.0'
 //    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
-    
+
     // Text distance (EH)
     implementation 'info.debatty:java-string-similarity:1.2.1'
 
@@ -318,7 +317,8 @@ dependencies {
     implementation 'com.github.akarnokd:rxjava2-interop:0.13.7'
 
     // Firebase (EH)
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
+    implementation 'com.google.firebase:firebase-analytics-ktx:17.5.0'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx:17.2.1'
 
     // Better logging (EH)
     implementation 'com.elvishew:xlog:1.6.1'
@@ -335,7 +335,7 @@ dependencies {
     releaseImplementation "com.ms-square:debugoverlay-no-op:$debug_overlay_version"
     testImplementation "com.ms-square:debugoverlay-no-op:$debug_overlay_version"
 
-    // Humanize (EH)
+    // Humanize (EH) used for E-Hentai updater statistics
     implementation 'com.github.mfornos:humanize-slim:1.2.2'
 
     // RatingBar (SY)
@@ -370,7 +370,7 @@ repositories {
 
 // See https://kotlinlang.org/docs/reference/experimental.html#experimental-status-of-experimental-api-markers
 tasks.withType(AbstractKotlinCompile).all {
-    kotlinOptions.freeCompilerArgs += ["-Xuse-experimental=kotlin.Experimental"]
+    kotlinOptions.freeCompilerArgs += ["-Xopt-in=kotlin.Experimental"]
 }
 
 // Duplicating Hebrew string assets due to some locale code issues on different devices
@@ -382,8 +382,8 @@ task copyResources(type: Copy) {
 
 preBuild.dependsOn(ktlintFormat, copyResources)
 
-if (!getGradle().getStartParameter().getTaskRequests().toString().contains("Debug")) {
+if (!getGradle().getStartParameter().getTaskRequests().toString().contains("Dev")) {
     apply plugin: 'com.google.gms.google-services'
-    // Firebase (EH)
-    apply plugin: 'io.fabric'
+    // Firebase Crashlytics
+    apply plugin: 'com.google.firebase.crashlytics'
 }

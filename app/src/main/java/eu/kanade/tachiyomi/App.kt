@@ -23,6 +23,9 @@ import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.security.ProviderInstaller
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import com.kizitonwose.time.days
 import com.ms_square.debugoverlay.DebugOverlay
 import com.ms_square.debugoverlay.modules.FpsModule
@@ -53,10 +56,13 @@ import uy.kohesive.injekt.registry.default.DefaultRegistrar
 
 open class App : Application(), LifecycleObserver {
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         setupExhLogging() // EXH logging
+        if (!BuildConfig.DEBUG) addAnalytics()
 
         workaroundAndroid7BrokenSSL()
 
@@ -116,6 +122,13 @@ open class App : Application(), LifecycleObserver {
             } catch (e: GooglePlayServicesNotAvailableException) {
                 XLog.e("Could not install Android 7 broken SSL workaround!", e)
             }
+        }
+    }
+
+    private fun addAnalytics() {
+        firebaseAnalytics = Firebase.analytics
+        if (syDebugVersion != "0") {
+            firebaseAnalytics.setUserProperty("preview_version", syDebugVersion)
         }
     }
 
