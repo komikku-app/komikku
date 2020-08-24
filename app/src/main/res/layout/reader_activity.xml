@@ -42,7 +42,7 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <FrameLayout
         android:id="@+id/reader_menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -151,11 +151,44 @@
                 app:srcCompat="@drawable/ic_keyboard_arrow_down_white_32dp" />
         </com.google.android.material.appbar.AppBarLayout>
 
-        <include
-            android:id="@+id/reader_chapters_sheet"
-            layout="@layout/reader_chapters_sheet" />
+        <LinearLayout
+            android:id="@+id/reader_menu_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="bottom"
+            android:background="?attr/colorPrimary"
+            android:clickable="true"
+            android:focusable="true">
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+            <ImageButton
+                android:id="@+id/chapters_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_next_chapter"
+                android:padding="@dimen/material_layout_keylines_screen_edge_margin"
+                android:tint="?attr/colorOnSurface"
+                app:srcCompat="@drawable/ic_format_list_numbered_24dp" />
+
+            <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
+                android:id="@+id/page_seekbar"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:maxHeight="?attr/actionBarSize"
+                android:minHeight="?attr/actionBarSize"/>
+
+            <TextView
+                android:id="@+id/page_text"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="15sp"
+                tools:text="100 / 105" />
+        </LinearLayout>
+
+    </FrameLayout>
 
     <View
         android:id="@+id/brightness_overlay"

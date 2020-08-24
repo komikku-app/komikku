@@ -267,7 +267,7 @@ class ReaderPresenter(
                     .apply { decimalSeparator = '.' }
             )
 
-            chapterList.reversed().map {
+            chapterList.map {
                 ReaderChapterItem(
                     it.chapter,
                     manga!!,
@@ -389,8 +389,8 @@ class ReaderPresenter(
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
      * [page]'s chapter is different from the currently active.
      */
-    fun onPageSelected(page: ReaderPage): Boolean {
-        val currentChapters = viewerChaptersRelay.value ?: return /* SY --> */ false /* SY <-- */
+    fun onPageSelected(page: ReaderPage) {
+        val currentChapters = viewerChaptersRelay.value ?: return
 
         val selectedChapter = page.chapter
 
@@ -420,10 +420,8 @@ class ReaderPresenter(
             Observable.just(selectedChapter).subscribeFirst({ view, _ ->
                 view.refreshSheetChapters()
             })
-            return true
             // SY <--
         }
-        return /* SY --> */ false /* SY <-- */
     }
 
     /**

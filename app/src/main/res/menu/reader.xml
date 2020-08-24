@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
+    <!--<item
         android:id="@+id/action_bookmark"
         android:icon="@drawable/ic_bookmark_border_24dp"
         android:title="@string/action_bookmark"
@@ -14,7 +14,7 @@
         android:icon="@drawable/ic_bookmark_24dp"
         android:title="@string/action_remove_bookmark"
         app:iconTint="?attr/colorOnPrimary"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" />-->
 
     <item
         android:id="@+id/action_custom_filter"

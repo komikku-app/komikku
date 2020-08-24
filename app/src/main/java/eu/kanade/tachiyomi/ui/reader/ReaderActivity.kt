@@ -26,7 +26,6 @@ import androidx.core.view.setPadding
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.elvishew.xlog.XLog
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -36,7 +35,6 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
-import eu.kanade.tachiyomi.databinding.ReaderChaptersSheetBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -45,6 +43,7 @@ import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.AddToLibraryFirst
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Error
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Success
+import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterSheet
 import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -67,10 +66,7 @@ import eu.kanade.tachiyomi.util.view.showBar
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
-import exh.util.collapse
 import exh.util.defaultReaderType
-import exh.util.hide
-import exh.util.isExpanded
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.roundToLong
@@ -128,7 +124,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
     private val logger = XLog.tag("ReaderActivity")
 
-    lateinit var readerBottomSheetBinding: ReaderChaptersSheetBinding
+    private lateinit var chapterBottomSheet: ReaderChapterSheet
     // SY <--
 
     /**
@@ -193,11 +189,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             // <-- EH
         }
 
-        // SY -->
-        readerBottomSheetBinding = ReaderChaptersSheetBinding.bind(binding.readerChaptersSheet.root)
-        readerBottomSheetBinding.chaptersBottomSheet.setup(this)
-        // SY <--
-
         config = ReaderConfig()
         initializeMenu()
 
@@ -244,7 +235,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         viewer?.destroy()
         viewer = null
         // SY -->
-        readerBottomSheetBinding.chaptersBottomSheet.adapter = null
+        chapterBottomSheet.adapter = null
         // SY <--
         config = null
         progressDialog?.dismiss()
@@ -294,9 +285,9 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.reader, menu)
 
-        val isChapterBookmarked = presenter?.getCurrentChapter()?.chapter?.bookmark ?: false
+        /*val isChapterBookmarked = presenter?.getCurrentChapter()?.chapter?.bookmark ?: false
         menu.findItem(R.id.action_bookmark).isVisible = !isChapterBookmarked
-        menu.findItem(R.id.action_remove_bookmark).isVisible = isChapterBookmarked
+        menu.findItem(R.id.action_remove_bookmark).isVisible = isChapterBookmarked*/
 
         return true
     }
@@ -307,22 +298,15 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_bookmark -> {
+            /*R.id.action_bookmark -> {
                 presenter.bookmarkCurrentChapter(true)
                 invalidateOptionsMenu()
-            }
+            }*/
             R.id.action_remove_bookmark -> {
                 presenter.bookmarkCurrentChapter(false)
                 invalidateOptionsMenu()
             }
-            R.id.action_settings -> {
-                ReaderSettingsSheet(this).show()
-                // SY -->
-                if (readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-                    readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.collapse()
-                }
-                // SY <--
-            }
+            R.id.action_settings -> ReaderSettingsSheet(this).show()
             R.id.action_custom_filter -> {
                 val sheet = ReaderColorFilterSheet(this)
                     // Remove dimmed backdrop so changes can be previewed
@@ -333,11 +317,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 setMenuVisibility(false)
 
                 sheet.show()
-                // SY -->
-                if (readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-                    readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.collapse()
-                }
-                // SY <--
             }
         }
         return super.onOptionsItemSelected(item)
@@ -393,7 +372,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         }
 
         // Init listeners on bottom menu
-        /* SY --> */readerBottomSheetBinding.pageSeekbar.setOnSeekBarChangeListener(object : SimpleSeekBarListener() { /* SY <-- */
+        binding.pageSeekbar.setOnSeekBarChangeListener(object : SimpleSeekBarListener() {
             override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
                 if (viewer != null && fromUser) {
                     moveToPageIndex(value)
@@ -568,14 +547,18 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     .show()
             }
             .launchIn(scope)
+
+        chapterBottomSheet = ReaderChapterSheet(this)
+        binding.chaptersButton.clicks()
+            .onEach {
+                chapterBottomSheet.show()
+            }.launchIn(scope)
         // <-- EH
 
         // Set initial visibility
         setMenuVisibility(menuVisible)
 
         // --> EH
-        readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.isHideable = !menuVisible
-        if (!menuVisible) readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.hide()
         setEhUtilsVisibility(ehUtilsVisible)
         // <-- EH
     }
@@ -601,10 +584,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
             binding.readerMenu.isVisible = true
 
-            if (readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-                readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.isHideable = false
-            }
-
             if (animate) {
                 val toolbarAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_top)
                 toolbarAnimation.setAnimationListener(object : SimpleAnimationListener() {
@@ -617,9 +596,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 binding.header.startAnimation(toolbarAnimation)
                 // EXH <--
 
-                // SY -->
-                readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.collapse()
-                // SY <--
+                val bottomAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_bottom)
+                binding.readerMenuBottom.startAnimation(bottomAnimation)
             }
 
             if (preferences.showPageNumber().get()) {
@@ -643,10 +621,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 binding.header.startAnimation(toolbarAnimation)
                 // EXH <--
 
-                // SY -->
-                BottomSheetBehavior.from(readerBottomSheetBinding.chaptersBottomSheet).isHideable = true
-                readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.hide()
-                // SY <--
+                val bottomAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_bottom)
+                binding.readerMenuBottom.startAnimation(bottomAnimation)
             }
 
             if (preferences.showPageNumber().get()) {
@@ -671,7 +647,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     }
 
     fun refreshSheetChapters() {
-        readerBottomSheetBinding.chaptersBottomSheet.refreshList()
+        chapterBottomSheet.refreshList()
     }
     // SY <--
 
@@ -716,9 +692,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.toolbar.title = manga.title
 
-        // SY -->
-        readerBottomSheetBinding.pageSeekbar.isRTL = newViewer is R2LPagerViewer
-        // SY <--
+        binding.pageSeekbar.isRTL = newViewer is R2LPagerViewer
 
         binding.pleaseWait.isVisible = true
         binding.pleaseWait.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_long))
@@ -804,22 +778,19 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         val newChapter = presenter.onPageSelected(page)
         val pages = page.chapter.pages ?: return
 
+        // SY -->
+        if (chapterBottomSheet.selectedChapterId != page.chapter.chapter.id) {
+            chapterBottomSheet.refreshList()
+        }
+        // SY <--
+
         // Set bottom page number
         binding.pageNumber.text = "${page.number}/${pages.size}"
-        // SY -->
-        readerBottomSheetBinding.pageText.text = "${page.number}/${pages.size}"
-        if (!newChapter && readerBottomSheetBinding.chaptersBottomSheet.shouldCollapse && readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-            readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.collapse()
-        }
-        if (readerBottomSheetBinding.chaptersBottomSheet.selectedChapterId != page.chapter.chapter.id) {
-            readerBottomSheetBinding.chaptersBottomSheet.refreshList()
-        }
-        readerBottomSheetBinding.chaptersBottomSheet.shouldCollapse = true
+        binding.pageText.text = "${page.number}/${pages.size}"
         // Set seekbar progress
 
-        readerBottomSheetBinding.pageSeekbar.max = pages.lastIndex
-        readerBottomSheetBinding.pageSeekbar.progress = page.index
-        // SY <--
+        binding.pageSeekbar.max = pages.lastIndex
+        binding.pageSeekbar.progress = page.index
     }
 
     /**
@@ -834,9 +805,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             // EXH -->
         } catch (e: WindowManager.BadTokenException) {
             logger.e("Caught and ignoring reader page sheet launch exception!", e)
-        }
-        if (readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior.isExpanded()) {
-            readerBottomSheetBinding.chaptersBottomSheet.sheetBehavior?.collapse()
         }
         // EXH <--
     }
