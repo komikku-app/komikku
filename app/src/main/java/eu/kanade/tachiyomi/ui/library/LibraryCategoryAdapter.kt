@@ -95,6 +95,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         !preferences.downloadedOnly().get() &&
         preferences.filterDownloaded().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterCompleted().get() == Filter.TriState.STATE_IGNORE &&
+        preferences.filterStarted().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterUnread().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterTracked().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterLewd().get() == Filter.TriState.STATE_IGNORE

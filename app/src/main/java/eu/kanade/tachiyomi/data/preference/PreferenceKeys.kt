@@ -115,6 +115,8 @@ object PreferenceKeys {
 
     const val filterCompleted = "pref_filter_completed_key"
 
+    const val filterStarted = "pref_filter_started_key"
+
     const val filterTracked = "pref_filter_tracked_key"
 
     const val filterLewd = "pref_filter_lewd_key"

@@ -87,6 +87,7 @@ class LibrarySettingsSheet(
             private val downloaded = Item.TriStateGroup(R.string.action_filter_downloaded, this)
             private val unread = Item.TriStateGroup(R.string.action_filter_unread, this)
             private val completed = Item.TriStateGroup(R.string.completed, this)
+            private val started = Item.TriStateGroup(R.string.started, this)
             private val tracked = Item.TriStateGroup(R.string.tracked, this)
             private val lewd = Item.TriStateGroup(R.string.lewd, this)
             // SY <--
@@ -95,9 +96,9 @@ class LibrarySettingsSheet(
             // SY -->
             override val items = (
                 if (Injekt.get<TrackManager>().hasLoggedServices()) {
-                    listOf(downloaded, unread, completed, tracked, lewd)
+                    listOf(downloaded, unread, completed, started, tracked, lewd)
                 } else {
-                    listOf(downloaded, unread, completed, lewd)
+                    listOf(downloaded, unread, completed, started, lewd)
                 }
                 )
             // SY <--
@@ -109,6 +110,7 @@ class LibrarySettingsSheet(
                     downloaded.state = preferences.filterDownloaded().get()
                     unread.state = preferences.filterUnread().get()
                     completed.state = preferences.filterCompleted().get()
+                    completed.state = preferences.filterStarted().get()
                     if (Injekt.get<TrackManager>().hasLoggedServices()) {
                         tracked.state = preferences.filterTracked().get()
                     } else {
@@ -132,6 +134,7 @@ class LibrarySettingsSheet(
                     downloaded -> preferences.filterDownloaded().set(item.state)
                     unread -> preferences.filterUnread().set(item.state)
                     completed -> preferences.filterCompleted().set(item.state)
+                    started -> preferences.filterStarted().set(item.state)
                     tracked -> preferences.filterTracked().set(item.state)
                     lewd -> preferences.filterLewd().set(item.state)
                 }

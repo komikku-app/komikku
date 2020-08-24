@@ -215,6 +215,8 @@ class PreferencesHelper(val context: Context) {
 
     fun filterCompleted() = flowPrefs.getInt(Keys.filterCompleted, 0)
 
+    fun filterStarted() = flowPrefs.getInt(Keys.filterStarted, 0)
+
     fun filterTracked() = flowPrefs.getInt(Keys.filterTracked, 0)
 
     fun filterLewd() = flowPrefs.getInt(Keys.filterLewd, 0)

@@ -160,8 +160,11 @@ class LibraryPresenter(
         val filterDownloadedOnly = preferences.downloadedOnly().get()
         val filterUnread = preferences.filterUnread().get()
         val filterCompleted = preferences.filterCompleted().get()
+        // SY -->
+        val filterStarted = preferences.filterStarted().get()
         val filterTracked = preferences.filterTracked().get()
         val filterLewd = preferences.filterLewd().get()
+        // SY <--
 
         val filterFn: (LibraryItem) -> Boolean = f@{ item ->
             // Filter when there isn't unread chapters.
@@ -175,6 +178,13 @@ class LibraryPresenter(
                 return@f false
             }
             if (filterCompleted == STATE_EXCLUDE && item.manga.status == SManga.COMPLETED) {
+                return@f false
+            }
+            // SY -->
+            if (filterStarted == STATE_INCLUDE && item.manga.read == 0) {
+                return@f false
+            }
+            if (filterStarted == STATE_EXCLUDE && item.manga.read > 0) {
                 return@f false
             }
             if (filterTracked != STATE_IGNORE) {
@@ -196,6 +206,7 @@ class LibraryPresenter(
                 }
                 return@f if (filterDownloaded == STATE_INCLUDE || filterDownloadedOnly) isDownloaded else !isDownloaded
             }
+            // SY <--
             true
         }
 

@@ -18,6 +18,9 @@ class LibraryMangaGetResolver : DefaultGetResolver<LibraryManga>(), BaseMangaGet
         mapBaseFromCursor(manga, cursor)
         manga.unread = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_UNREAD))
         manga.category = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_CATEGORY))
+        // SY -->
+        manga.read = cursor.getInt(cursor.getColumnIndex(MangaTable.COL_READ))
+        // SY <--
 
         return manga
     }

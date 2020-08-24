@@ -38,6 +38,10 @@ object MangaTable {
 
     const val COL_UNREAD = "unread"
 
+    // SY ->>
+    const val COL_READ = "read"
+    // SY <--
+
     const val COL_CATEGORY = "category"
 
     const val COL_COVER_LAST_MODIFIED = "cover_last_modified"
