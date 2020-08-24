@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.6.1-AZ" changeDate="">
+        <changelogtext>This entire update is just minor bugfixes</changelogtext>
+        <changelogtext>Fixed migration icon colours</changelogtext>
+        <changelogtext>Fix batch add for delegated sources</changelogtext>
+        <changelogtext>Fix batch add log display</changelogtext>
+        <changelogtext>Fix some pururin URL thing</changelogtext>
+        <changelogtext>Fix nhentai galleries with gifs</changelogtext>
+        <changelogtext>Fix hitomi.la</changelogtext>
+        <changelogtext>Fix mangaeden auto-captcha</changelogtext>
+        <changelogtext>Fix lollipop crash on start</changelogtext>
+        <changelogtext>Fix the hamburger back button animation</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.6.0-AZ" changeDate="">
         <changelogtext>Manga recommendations</changelogtext>
         <changelogtext>Fixed nhentai</changelogtext>
