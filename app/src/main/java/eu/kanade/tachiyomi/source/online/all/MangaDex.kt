@@ -51,7 +51,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
 
         return if (lcFirstPathSegment == "title" || lcFirstPathSegment == "manga") {
-            "/manga/${uri.pathSegments[1]}"
+            "/manga/${uri.pathSegments[1]}/"
         } else {
             null
         }

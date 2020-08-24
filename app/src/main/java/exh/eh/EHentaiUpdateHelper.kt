@@ -54,7 +54,7 @@ class EHentaiUpdateHelper(context: Context) {
 
         // Accept oldest chain
         val chainsWithAccepted = chainsObservable.map { chains ->
-            val acceptedChain = chains.minBy { it.manga.id!! }!!
+            val acceptedChain = chains.minByOrNull { it.manga.id!! }!!
 
             acceptedChain to chains
         }
@@ -91,7 +91,7 @@ class EHentaiUpdateHelper(context: Context) {
                     .fold(accepted.chapters) { curChapters, chapter ->
                         val existing = curChapters.find { it.url == chapter.url }
 
-                        val newLastPageRead = chainsAsChapters.maxBy { it.last_page_read }?.last_page_read
+                        val newLastPageRead = chainsAsChapters.maxByOrNull { it.last_page_read }?.last_page_read
 
                         when {
                             existing != null -> {

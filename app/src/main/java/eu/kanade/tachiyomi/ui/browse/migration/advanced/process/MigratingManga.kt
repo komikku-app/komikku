@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.util.DeferredField
+import exh.util.await
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,7 +29,7 @@ class MigratingManga(
     @Volatile
     private var manga: Manga? = null
     suspend fun manga(): Manga? {
-        if (manga == null) manga = db.getManga(mangaId).executeAsBlocking()
+        if (manga == null) manga = db.getManga(mangaId).await()
         return manga
     }
 

@@ -21,7 +21,7 @@ class SmartSearchPresenter(private val source: CatalogueSource?, private val con
 
     val smartSearchChannel = Channel<SearchResults>()
 
-    private val smartSearchEngine = SmartSearchEngine(scope.coroutineContext)
+    private val smartSearchEngine = SmartSearchEngine()
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)

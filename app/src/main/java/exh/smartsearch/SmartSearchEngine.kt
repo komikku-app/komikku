@@ -7,21 +7,15 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.util.await
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
 
 class SmartSearchEngine(
-    parentContext: CoroutineContext,
     private val extraSearchParams: String? = null
-) : CoroutineScope {
-    override val coroutineContext: CoroutineContext = parentContext + Job() + Dispatchers.Default
-
+) {
     private val db: DatabaseHelper by injectLazy()
 
     private val normalizedLevenshtein = NormalizedLevenshtein()
@@ -52,7 +46,7 @@ class SmartSearchEngine(
             }.flatMap { it.await() }
         }
 
-        return eligibleManga.maxBy { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.dist }?.manga
     }
 
     suspend fun normalSearch(source: CatalogueSource, title: String): SManga? {
@@ -74,7 +68,7 @@ class SmartSearchEngine(
             }
         }
 
-        return eligibleManga.maxBy { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.dist }?.manga
     }
 
     private fun getSmartSearchQueries(cleanedTitle: String): List<String> {

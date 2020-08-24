@@ -62,8 +62,6 @@ class SourceFilterController : SettingsController() {
             sourcesByLang.keys.filterNot { it in activeLangsCodes }
 
         orderedLangs.forEach { lang ->
-            val sources = sourcesByLang[lang].orEmpty().sortedBy { it.name }
-
             // Create a preference group and set initial state and change listener
             langPrefs.add(
                 Pair(

@@ -3,7 +3,7 @@ package exh.util
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.util.asJsoup
 import okhttp3.Response
-import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.jsoup.nodes.Document
 
 fun Response.interceptAsHtml(block: (Document) -> Unit): Response {
@@ -13,7 +13,7 @@ fun Response.interceptAsHtml(block: (Document) -> Unit): Response {
     ) {
         val bodyString = body.string()
         val rebuiltResponse = newBuilder()
-            .body(ResponseBody.create(body.contentType(), bodyString))
+            .body(bodyString.toResponseBody(body.contentType()))
             .build()
         try {
             // Search for captcha

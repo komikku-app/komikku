@@ -23,7 +23,6 @@ import eu.kanade.tachiyomi.databinding.MigrationListControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationMangaDialog
@@ -39,7 +38,6 @@ import exh.util.RecyclerWindowInsetsListener
 import exh.util.await
 import exh.util.executeOnIO
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,8 +54,7 @@ import uy.kohesive.injekt.injectLazy
 
 class MigrationListController(bundle: Bundle? = null) :
     BaseController<MigrationListControllerBinding>(bundle),
-    MigrationProcessAdapter.MigrationProcessInterface,
-    CoroutineScope {
+    MigrationProcessAdapter.MigrationProcessInterface {
 
     init {
         setHasOptionsMenu(true)
@@ -65,7 +62,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     private var adapter: MigrationProcessAdapter? = null
 
-    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Default
+    val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     val config: MigrationProcedureConfig? = args.getParcelable(CONFIG_EXTRA)
 
@@ -73,7 +70,7 @@ class MigrationListController(bundle: Bundle? = null) :
     private val preferences: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
 
-    private val smartSearchEngine = SmartSearchEngine(coroutineContext, config?.extraSearchParams)
+    private val smartSearchEngine = SmartSearchEngine(config?.extraSearchParams)
 
     var migrationsJob: Job? = null
         private set
@@ -99,7 +96,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
         val newMigratingManga = migratingManga ?: run {
             val new = config.mangaIds.map {
-                MigratingManga(db, sourceManager, it, coroutineContext)
+                MigratingManga(db, sourceManager, it, scope.coroutineContext)
             }
             migratingManga = new.toMutableList()
             new
@@ -115,13 +112,14 @@ class MigrationListController(bundle: Bundle? = null) :
         adapter?.updateDataSet(newMigratingManga.map { it.toModal() })
 
         if (migrationsJob == null) {
-            migrationsJob = launch {
+            migrationsJob = scope.launch {
                 runMigrations(newMigratingManga)
             }
         }
     }
 
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
+        if (config == null) return
         val useSourceWithMost = preferences.useSourceWithMost().get()
         val useSmartSearch = preferences.smartMigration().get()
 
@@ -129,7 +127,6 @@ class MigrationListController(bundle: Bundle? = null) :
             val value = it.toLongOrNull() ?: return
             sourceManager.get(value) as? CatalogueSource
         }
-        if (config == null) return
         for (manga in mangas) {
             if (migrationsJob?.isCancelled == true) {
                 break
@@ -164,40 +161,20 @@ class MigrationListController(bundle: Bundle? = null) :
                                     sourceSemaphore.withPermit {
                                         try {
                                             val searchResult = if (useSmartSearch) {
-                                                smartSearchEngine.smartSearch(
-                                                    source,
-                                                    mangaObj.originalTitle
-                                                )
+                                                smartSearchEngine.smartSearch(source, mangaObj.originalTitle)
                                             } else {
-                                                smartSearchEngine.normalSearch(
-                                                    source,
-                                                    mangaObj.originalTitle
-                                                )
+                                                smartSearchEngine.normalSearch(source, mangaObj.originalTitle)
                                             }
 
-                                            if (searchResult != null &&
-                                                !(
-                                                    searchResult.url == mangaObj.url &&
-                                                        source.id == mangaObj.source
-                                                    )
-                                            ) {
+                                            if (searchResult != null && (searchResult.url == mangaObj.url && source.id == mangaObj.source)) {
                                                 val localManga =
                                                     smartSearchEngine.networkToLocalManga(
                                                         searchResult,
                                                         source.id
                                                     )
-                                                val chapters =
-                                                    source.fetchChapterList(localManga).toSingle()
-                                                        .await(
-                                                            Schedulers.io()
-                                                        )
+                                                val chapters = source.fetchChapterList(localManga).toSingle().await(Schedulers.io())
                                                 try {
-                                                    syncChaptersWithSource(
-                                                        db,
-                                                        chapters,
-                                                        localManga,
-                                                        source
-                                                    )
+                                                    syncChaptersWithSource(db, chapters, localManga, source)
                                                 } catch (e: Exception) {
                                                     return@async null
                                                 }
@@ -214,34 +191,24 @@ class MigrationListController(bundle: Bundle? = null) :
                                         }
                                     }
                                 }
-                            }.mapNotNull { it.await() }.maxBy { it.second }?.first
+                            }.mapNotNull { it.await() }.maxByOrNull { it.second }?.first
                         } else {
                             validSources.forEachIndexed { index, source ->
                                 val searchResult = try {
                                     val searchResult = if (useSmartSearch) {
-                                        smartSearchEngine.smartSearch(
-                                            source,
-                                            mangaObj.originalTitle
-                                        )
+                                        smartSearchEngine.smartSearch(source, mangaObj.originalTitle)
                                     } else {
-                                        smartSearchEngine.normalSearch(
-                                            source,
-                                            mangaObj.originalTitle
-                                        )
+                                        smartSearchEngine.normalSearch(source, mangaObj.originalTitle)
                                     }
 
                                     if (searchResult != null) {
-                                        val localManga = smartSearchEngine.networkToLocalManga(
-                                            searchResult,
-                                            source.id
-                                        )
+                                        val localManga = smartSearchEngine.networkToLocalManga(searchResult, source.id)
                                         val chapters = try {
-                                            source.fetchChapterList(localManga).toSingle()
-                                                .await(Schedulers.io())
+                                            source.fetchChapterList(localManga).toSingle().await(Schedulers.io()) ?: emptyList()
                                         } catch (e: java.lang.Exception) {
                                             Timber.e(e)
-                                            emptyList<SChapter>()
-                                        } ?: emptyList()
+                                            emptyList()
+                                        }
                                         withContext(Dispatchers.IO) {
                                             syncChaptersWithSource(db, chapters, localManga, source)
                                         }
@@ -253,9 +220,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                 } catch (e: Exception) {
                                     null
                                 }
-
                                 manga.progress.send(validSources.size to (index + 1))
-
                                 if (searchResult != null) return@async searchResult
                             }
 
@@ -269,12 +234,10 @@ class MigrationListController(bundle: Bundle? = null) :
 
                 if (result != null && result.thumbnail_url == null) {
                     try {
-                        val newManga =
-                            sourceManager.getOrStub(result.source).fetchMangaDetails(result)
-                                .toSingle().await()
+                        val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).toSingle().await()
                         result.copyFrom(newManga)
 
-                        db.insertManga(result).executeAsBlocking()
+                        db.insertManga(result).await()
                     } catch (e: CancellationException) {
                         // Ignore cancellations
                         throw e
@@ -282,8 +245,7 @@ class MigrationListController(bundle: Bundle? = null) :
                     }
                 }
 
-                manga.migrationStatus =
-                    if (result == null) MigrationStatus.MANGA_NOT_FOUND else MigrationStatus.MANGA_FOUND
+                manga.migrationStatus = if (result == null) MigrationStatus.MANGA_NOT_FOUND else MigrationStatus.MANGA_FOUND
                 adapter?.sourceFinished()
                 manga.searchResult.initialize(result?.id)
             }
@@ -374,9 +336,7 @@ class MigrationListController(bundle: Bundle? = null) :
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
                 val localManga = smartSearchEngine.networkToLocalManga(manga, source.id)
                 try {
-                    val chapters = source.fetchChapterList(localManga).toSingle().await(
-                        Schedulers.io()
-                    )
+                    val chapters = source.fetchChapterList(localManga).toSingle().await(Schedulers.io())
                     syncChaptersWithSource(db, chapters, localManga, source)
                 } catch (e: Exception) {
                     return@async null
@@ -386,12 +346,10 @@ class MigrationListController(bundle: Bundle? = null) :
 
             if (result != null) {
                 try {
-                    val newManga =
-                        sourceManager.getOrStub(result.source).fetchMangaDetails(result).toSingle()
-                            .await()
+                    val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).toSingle().await()
                     result.copyFrom(newManga)
 
-                    db.insertManga(result).executeAsBlocking()
+                    db.insertManga(result).await()
                 } catch (e: CancellationException) {
                     // Ignore cancellations
                     throw e

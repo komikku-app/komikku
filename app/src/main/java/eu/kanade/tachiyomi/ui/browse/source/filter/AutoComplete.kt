@@ -7,6 +7,7 @@ import android.widget.AutoCompleteTextView
 import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.RecyclerView
+import com.elvishew.xlog.XLog
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -16,7 +17,6 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.widget.AutoCompleteAdapter
-import timber.log.Timber
 
 open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<AutoComplete.Holder>() {
 
@@ -43,8 +43,6 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
         )
         holder.autoComplete.threshold = 3
 
-        var text: String = ""
-
         // select from auto complete
         holder.autoComplete.setOnItemClickListener { adapterView, _, chipPosition, _ ->
             val name = adapterView.getItemAtPosition(chipPosition) as String
@@ -55,7 +53,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
         }
 
         // done keyboard button is pressed
-        holder.autoComplete.setOnEditorActionListener { textView, actionId, keyEvent ->
+        holder.autoComplete.setOnEditorActionListener { textView, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.toString() !in if (filter.excludePrefix != null && textView.text.toString().startsWith(filter.excludePrefix)) filter.skipAutoFillTags.map { filter.excludePrefix + it } else filter.skipAutoFillTags) {
                 textView.text = null
                 addTag(textView.text.toString(), holder)
@@ -69,14 +67,12 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
             if (it == null || it.isEmpty()) {
                 return@addTextChangedListener
             }
-            text = it.toString()
 
             if (it.last() == ',') {
                 val name = it.substring(0, it.length - 1)
                 addTag(name, holder)
 
                 holder.autoComplete.text = null
-                // mainTagAutoCompleteTextView.removeTextChangedListener(this)
             }
         }
 
@@ -101,7 +97,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
             addChipToGroup(name, holder)
             filter.state += name
         } else {
-            Timber.d("Invalid tag: $name")
+            XLog.d("Invalid tag: $name")
         }
     }
 
