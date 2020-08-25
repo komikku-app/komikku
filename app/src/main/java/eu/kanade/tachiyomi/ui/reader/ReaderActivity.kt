@@ -301,11 +301,11 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             /*R.id.action_bookmark -> {
                 presenter.bookmarkCurrentChapter(true)
                 invalidateOptionsMenu()
-            }*/
+            }
             R.id.action_remove_bookmark -> {
                 presenter.bookmarkCurrentChapter(false)
                 invalidateOptionsMenu()
-            }
+            }*/
             R.id.action_settings -> ReaderSettingsSheet(this).show()
             R.id.action_custom_filter -> {
                 val sheet = ReaderColorFilterSheet(this)

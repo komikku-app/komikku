@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.chapter
 
+import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
@@ -10,6 +11,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.listeners.ClickEventHook
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.ReaderChaptersSheetBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
@@ -81,8 +83,10 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
             .launchIn(activity.scope)
 
         binding.pageSeekbar.setOnSeekBarChangeListener(object : SimpleSeekBarListener() {
+            @SuppressLint("SetTextI18n")
             override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
                 if (activity.viewer != null && fromUser) {
+                    binding.pageText.text = "${value + 1}/${binding.pageSeekbar.max + 1}"
                     binding.pageSeekbar.progress = value
                     activity.moveToPageIndex(value)
                 }
@@ -105,7 +109,14 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
 
     fun refreshList() {
         launchUI {
-            val chapters = presenter.getChapters(context).sortedBy { it.source_order }
+            val chapters = with(presenter.getChapters(context)) {
+                when (activity.presenter.manga?.sorting) {
+                    Manga.SORTING_SOURCE -> sortedBy { it.source_order }
+                    Manga.SORTING_NUMBER -> sortedByDescending { it.chapter_number }
+                    Manga.SORTING_UPLOAD_DATE -> sortedBy { it.date_upload }
+                    else -> sortedBy { it.source_order }
+                }
+            }
 
             selectedChapterId = chapters.find { it.isCurrent }?.chapter?.id ?: -1L
             itemAdapter.clear()
