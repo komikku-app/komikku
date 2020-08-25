@@ -94,6 +94,17 @@ interface ChapterQueries : DbProvider {
                 .build()
         )
         .prepare()
+
+    fun getChaptersReadWithUrls(urls: List<String>) = db.get()
+        .listOfObjects(Chapter::class.java)
+        .withQuery(
+            Query.builder()
+                .table(ChapterTable.TABLE)
+                .where("${ChapterTable.COL_URL} IN (?) AND ${ChapterTable.COL_READ} = 1")
+                .whereArgs(urls.joinToString { "\"$it\"" })
+                .build()
+        )
+        .prepare()
     // SY <--
 
     fun insertChapter(chapter: Chapter) = db.put().`object`(chapter).prepare()
