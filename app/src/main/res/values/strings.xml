@@ -752,6 +752,7 @@
     <string name="ext_redundant">Redundant</string>
     <string name="redundant_extension_message">This extension is redundant and will not be used inside this fork of Tachiyomi.</string>
     <string name="action_start_reading_button">Start reading button</string>
+    <string name="start_reading">Start reading</string>
 
     <!-- Library fragment -->
     <string name="buttons_header">Buttons</string>
