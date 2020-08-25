@@ -1,7 +1,6 @@
 package exh.util
 
 import android.content.Context
-import android.util.Log
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
@@ -28,24 +27,17 @@ fun Manga.mangaType(context: Context): String {
 fun Manga.mangaType(): MangaType {
     val sourceName = Injekt.get<SourceManager>().getOrStub(source).name
     val currentTags = getGenres() ?: emptyList()
-    Log.d("MangaType", currentTags.joinToString(separator = "\n"))
     return if (currentTags.any { tag -> isMangaTag(tag) }) {
-        Log.d("MangaType", "isManga")
         MangaType.TYPE_MANGA
     } else if (currentTags.any { tag -> isWebtoonTag(tag) } || isWebtoonSource(sourceName)) {
-        Log.d("MangaType", "isWebtoon")
         MangaType.TYPE_WEBTOON
     } else if (currentTags.any { tag -> isComicTag(tag) } || isComicSource(sourceName)) {
-        Log.d("MangaType", "isComic")
         MangaType.TYPE_COMIC
     } else if (currentTags.any { tag -> isManhuaTag(tag) } || isManhuaSource(sourceName)) {
-        Log.d("MangaType", "isManhua")
         MangaType.TYPE_MANHUA
     } else if (currentTags.any { tag -> isManhwaTag(tag) } || isManhwaSource(sourceName)) {
-        Log.d("MangaType", "isManhwa")
         MangaType.TYPE_MANHWA
     } else {
-        Log.d("MangaType", "ended up as isManga")
         MangaType.TYPE_MANGA
     }
 }
@@ -59,8 +51,6 @@ fun Manga.defaultReaderType(): Int? {
     val type = mangaType()
     return if (type == MangaType.TYPE_MANHWA || type == MangaType.TYPE_WEBTOON) {
         ReaderActivity.WEBTOON
-    /* } else if (type == MangaType.TYPE_MANHUA || (type == MangaType.TYPE_COMIC && !sourceName.contains("tapastic", ignoreCase = true))) {
-             ReaderActivity.LEFT_TO_RIGHT*/
     } else null
 }
 
