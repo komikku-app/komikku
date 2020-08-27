@@ -5,17 +5,40 @@ import eu.kanade.tachiyomi.data.database.tables.ChapterTable as Chapter
 import eu.kanade.tachiyomi.data.database.tables.HistoryTable as History
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable as MangaCategory
 import eu.kanade.tachiyomi.data.database.tables.MangaTable as Manga
-import eu.kanade.tachiyomi.data.database.tables.MergedTable as Merged
+import exh.merged.sql.tables.MergedTable as Merged
 
 // SY -->
 /**
  * Query to get the manga merged into a merged manga
  */
-fun getMergedMangaQuery(id: Long) =
+fun getMergedMangaQuery() =
     """
     SELECT ${Manga.TABLE}.*
     FROM (
-        SELECT ${Merged.COL_MANGA_ID} FROM ${Merged.TABLE} WHERE $(Merged.COL_MERGE_ID} = $id
+        SELECT ${Merged.COL_MANGA_ID} FROM ${Merged.TABLE} WHERE ${Merged.COL_MERGE_ID} = ?
+    ) AS M
+    JOIN ${Manga.TABLE}
+    ON ${Manga.TABLE}.${Manga.COL_ID} = M.${Merged.COL_MANGA_ID}
+"""
+
+fun getAllMergedMangaQuery() =
+    """
+    SELECT ${Manga.TABLE}.*
+    FROM (
+        SELECT ${Merged.COL_MANGA_ID} FROM ${Merged.TABLE}
+    ) AS M
+    JOIN ${Manga.TABLE}
+    ON ${Manga.TABLE}.${Manga.COL_ID} = M.${Merged.COL_MANGA_ID}
+"""
+
+/**
+ * Query to get the manga merged into a merged manga using the Url
+ */
+fun getMergedMangaFromUrlQuery() =
+    """
+    SELECT ${Manga.TABLE}.*
+    FROM (
+        SELECT ${Merged.COL_MANGA_ID} FROM ${Merged.TABLE} WHERE ${Merged.COL_MERGE_URL} = ?
     ) AS M
     JOIN ${Manga.TABLE}
     ON ${Manga.TABLE}.${Manga.COL_ID} = M.${Merged.COL_MANGA_ID}
@@ -24,11 +47,11 @@ fun getMergedMangaQuery(id: Long) =
 /**
  * Query to get the chapters of all manga in a merged manga
  */
-fun getMergedChaptersQuery(id: Long) =
+fun getMergedChaptersQuery() =
     """
     SELECT ${Chapter.TABLE}.*
     FROM (
-        SELECT ${Merged.COL_MANGA_ID} FROM ${Merged.TABLE} WHERE $(Merged.COL_MERGE_ID} = $id
+        SELECT ${Merged.COL_MANGA_ID} FROM ${Merged.TABLE} WHERE ${Merged.COL_MERGE_ID} = ?
     ) AS M
     JOIN ${Chapter.TABLE}
     ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = M.${Merged.COL_MANGA_ID}

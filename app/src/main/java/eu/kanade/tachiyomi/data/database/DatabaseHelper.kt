@@ -21,6 +21,9 @@ import eu.kanade.tachiyomi.data.database.queries.HistoryQueries
 import eu.kanade.tachiyomi.data.database.queries.MangaCategoryQueries
 import eu.kanade.tachiyomi.data.database.queries.MangaQueries
 import eu.kanade.tachiyomi.data.database.queries.TrackQueries
+import exh.merged.sql.mappers.MergedMangaTypeMapping
+import exh.merged.sql.models.MergedMangaReference
+import exh.merged.sql.queries.MergedQueries
 import exh.metadata.sql.mappers.SearchMetadataTypeMapping
 import exh.metadata.sql.mappers.SearchTagTypeMapping
 import exh.metadata.sql.mappers.SearchTitleTypeMapping
@@ -36,7 +39,7 @@ import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
  * This class provides operations to manage the database through its interfaces.
  */
 open class DatabaseHelper(context: Context) :
-    MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQueries, HistoryQueries /* EXH --> */, SearchMetadataQueries, SearchTagQueries, SearchTitleQueries /* EXH <-- */ {
+    MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQueries, HistoryQueries /* SY --> */, SearchMetadataQueries, SearchTagQueries, SearchTitleQueries, MergedQueries /* SY <-- */ {
 
     private val configuration = SupportSQLiteOpenHelper.Configuration.builder(context)
         .name(DbOpenCallback.DATABASE_NAME)
@@ -51,11 +54,12 @@ open class DatabaseHelper(context: Context) :
         .addTypeMapping(Category::class.java, CategoryTypeMapping())
         .addTypeMapping(MangaCategory::class.java, MangaCategoryTypeMapping())
         .addTypeMapping(History::class.java, HistoryTypeMapping())
-        // EXH -->
+        // SY -->
         .addTypeMapping(SearchMetadata::class.java, SearchMetadataTypeMapping())
         .addTypeMapping(SearchTag::class.java, SearchTagTypeMapping())
         .addTypeMapping(SearchTitle::class.java, SearchTitleTypeMapping())
-        // EXH <--
+        .addTypeMapping(MergedMangaReference::class.java, MergedMangaTypeMapping())
+        // SY <--
         .build()
 
     inline fun inTransaction(block: () -> Unit) = db.inTransaction(block)

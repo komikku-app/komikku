@@ -27,15 +27,6 @@ interface ChapterQueries : DbProvider {
                 .build()
         )
         .prepare()
-
-    fun getChaptersByMergedMangaId(mangaId: Long) = db.get()
-        .listOfObjects(Chapter::class.java)
-        .withQuery(
-            RawQuery.builder()
-                .query(getMergedChaptersQuery(mangaId))
-                .build()
-        )
-        .prepare()
     // SY <--
 
     fun getRecentChapters(date: Date) = db.get()

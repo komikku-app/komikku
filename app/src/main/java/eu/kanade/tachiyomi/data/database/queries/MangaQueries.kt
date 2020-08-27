@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.data.database.tables.CategoryTable
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
+import exh.merged.sql.tables.MergedTable
 import exh.metadata.sql.tables.SearchMetadataTable
 
 interface MangaQueries : DbProvider {
@@ -77,15 +78,6 @@ interface MangaQueries : DbProvider {
         .prepare()
 
     // SY -->
-    fun getMergedMangas(id: Long) = db.get()
-        .listOfObjects(Manga::class.java)
-        .withQuery(
-            RawQuery.builder()
-                .query(getMergedMangaQuery(id))
-                .build()
-        )
-        .prepare()
-
     fun updateMangaInfo(manga: Manga) = db.put()
         .`object`(manga)
         .withPutResolver(MangaInfoPutResolver())
@@ -139,7 +131,7 @@ interface MangaQueries : DbProvider {
         .byQuery(
             DeleteQuery.builder()
                 .table(MangaTable.TABLE)
-                .where("${MangaTable.COL_FAVORITE} = ?")
+                .where("${MangaTable.COL_FAVORITE} = ? AND ${MangaTable.COL_ID} NOT IN (SELECT ${MergedTable.COL_MANGA_ID} FROM ${MergedTable.TABLE})")
                 .whereArgs(0)
                 .build()
         )
