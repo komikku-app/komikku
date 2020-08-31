@@ -199,6 +199,23 @@
         <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.Amoled</item>
     </style>
 
+    <style name="Theme.Tachiyomi.Red" parent="Theme.Tachiyomi.Amoled">
+        <item name="actionBarTheme">@style/Theme.Toolbar.Red</item>
+        <item name="colorPrimary">@color/md_black_1000</item>
+        <item name="colorPrimaryVariant">@color/red</item>
+        <item name="colorSecondary">@color/dark_red</item>
+        <item name="colorOnSurface">@color/red</item>
+        <item name="colorAccent">@color/dark_red</item>
+        <item name="colorOnPrimary">@color/red</item>
+        <item name="android:navigationBarColor">@color/red</item>
+        <item name="android:textColor">@color/red</item>
+        <item name="android:textColorPrimary">@color/red</item>
+        <item name="android:textColorSecondary">@color/dark_red</item>
+        <item name="android:textColorHint">@color/dark_red</item>
+        <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.Red</item>
+        <item name="md_color_title">@color/red</item>
+    </style>
+
     <!--==============-->
     <!-- Reader Theme -->
     <!--==============-->

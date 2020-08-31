@@ -141,6 +141,7 @@
             android:maxLines="2"
             android:padding="4dp"
             android:shadowColor="@color/textColorPrimaryLight"
+            android:textColor="?md_color_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/card"
             tools:text="Sample name" />
