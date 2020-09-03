@@ -31,10 +31,10 @@ import eu.kanade.tachiyomi.util.updateCoverLastModified
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_EXCLUDE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
-import exh.favorites.FavoritesSyncHelper
-import exh.util.isLewd
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
+import exh.favorites.FavoritesSyncHelper
+import exh.util.isLewd
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
