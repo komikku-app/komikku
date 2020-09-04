@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
-        android:paddingTop="4dp"
+        android:paddingTop="8dp"
         android:paddingBottom="@dimen/action_toolbar_list_padding"
         tools:listitem="@layout/latest_controller_card" />
 
