@@ -217,7 +217,7 @@ class SourceFilterController : SettingsController() {
     }
 
     private fun sortedSources(sources: List<HttpSource>?): List<HttpSource> {
-        val sourceAlpha = sources.orEmpty().sortedBy { it.name }
+        val sourceAlpha = sources.orEmpty().sortedBy { it.name.toLowerCase() }
         return if (sorting == SourcesSort.Enabled) {
             val disabledSourceIds = preferences.disabledSources().get()
             sourceAlpha.filter { it.id.toString() !in disabledSourceIds } +

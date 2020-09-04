@@ -32,7 +32,7 @@ class MigrationSourcesPresenter(
         return library.map { it.source }.toSet()
             // SY -->
             .mapNotNull { if (it != LocalSource.ID && it != MERGED_SOURCE_ID) sourceManager.getOrStub(it) else null }
-            .sortedBy { it.name.toLowerCase(Locale.ROOT) }
+            .sortedBy { it.name.toLowerCase() }
             // SY <--
             .map { SourceItem(it, header) }
     }
