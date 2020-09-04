@@ -831,4 +831,8 @@ z
     <string name="spen_previous_page">Previous page</string>
     <string name="spen_next_page">Next page</string>
 
+    <plurals name="missing_chapters_warning">
+        <item quantity="one">There is 1 missing chapter</item>
+        <item quantity="other">There are %d missing chapters</item>
+    </plurals>
 </resources>

@@ -7,6 +7,7 @@ import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -17,6 +18,9 @@ import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.view.visibleIf
+import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.view.setVectorCompat
+import kotlin.math.floor
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 
@@ -33,12 +37,37 @@ class WebtoonTransitionHolder(
      */
     private var statusSubscription: Subscription? = null
 
-    /**
-     * Text view used to display the text of the current and next/prev chapters.
-     */
-    private var textView = TextView(context).apply {
-        textSize = 17.5F
+    private var warningContainer: LinearLayout = LinearLayout(context).apply {
+        val layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        layoutParams.bottomMargin = 16.dpToPx
+        setLayoutParams(layoutParams)
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+    }
+
+    private var warningImageView: ImageView = ImageView(context).apply {
+        val tintColor = context.getResourceColor(R.attr.colorOnBackground)
+        setVectorCompat(R.drawable.ic_warning_white_24dp, tintColor)
         wrapContent()
+    }
+
+    private var warningTextView: TextView = TextView(context).apply {
+        wrapContent()
+    }
+
+    private var upperTextView: TextView = TextView(context).apply {
+        val layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        layoutParams.topMargin = 16.dpToPx
+        layoutParams.bottomMargin = 16.dpToPx
+        setLayoutParams(layoutParams)
+        textSize = 17.5F
+    }
+
+    private var lowerTextView: TextView = TextView(context).apply {
+        val layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        layoutParams.bottomMargin = 16.dpToPx
+        setLayoutParams(layoutParams)
+        textSize = 17.5F
     }
 
     /**
@@ -64,7 +93,11 @@ class WebtoonTransitionHolder(
             setMargins(0, childMargins, 0, childMargins)
         }
 
-        layout.addView(textView, childParams)
+        layout.addView(upperTextView)
+        warningContainer.addView(warningImageView)
+        warningContainer.addView(warningTextView)
+        layout.addView(warningContainer)
+        layout.addView(lowerTextView)
         layout.addView(pagesContainer, childParams)
     }
 
@@ -76,6 +109,33 @@ class WebtoonTransitionHolder(
             is ChapterTransition.Prev -> bindPrevChapterTransition(transition)
             is ChapterTransition.Next -> bindNextChapterTransition(transition)
         }
+
+        missingChapterWarning(transition)
+    }
+
+    private fun missingChapterWarning(transition: ChapterTransition) {
+        if (transition.to == null) {
+            showMissingChapterWarning(false)
+            return
+        }
+
+        val fromChapterNumber: Float = floor(transition.from.chapter.chapter_number)
+        val toChapterNumber: Float = floor(transition.to!!.chapter.chapter_number)
+
+        val chapterDifference = when (transition) {
+            is ChapterTransition.Prev -> fromChapterNumber - toChapterNumber - 1f
+            is ChapterTransition.Next -> toChapterNumber - fromChapterNumber - 1f
+        }
+
+        val hasMissingChapters = chapterDifference > 0f
+
+        warningTextView.text = itemView.resources.getQuantityString(R.plurals.missing_chapters_warning, chapterDifference.toInt(), chapterDifference.toInt())
+        showMissingChapterWarning(hasMissingChapters)
+    }
+
+    private fun showMissingChapterWarning(visible: Boolean) {
+        warningImageView.isVisible = visible
+        warningTextView.isVisible = visible
     }
 
     /**
@@ -91,18 +151,21 @@ class WebtoonTransitionHolder(
     private fun bindNextChapterTransition(transition: ChapterTransition.Next) {
         val nextChapter = transition.to
 
-        textView.text = if (nextChapter != null) {
-            SpannableStringBuilder().apply {
-                append(context.getString(R.string.transition_finished))
-                setSpan(StyleSpan(Typeface.BOLD), 0, length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-                append("\n${transition.from.chapter.name}\n\n")
-                val currSize = length
-                append(context.getString(R.string.transition_next))
-                setSpan(StyleSpan(Typeface.BOLD), currSize, length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-                append("\n${nextChapter.chapter.name}\n\n")
+        val hasNextChapter = nextChapter != null
+        lowerTextView.isVisible = hasNextChapter
+        if (hasNextChapter) {
+            layout.gravity = Gravity.CENTER_VERTICAL
+            upperTextView.text = buildSpannedString {
+                bold { append(context.getString(R.string.transition_finished)) }
+                append("\n${transition.from.chapter.name}")
+            }
+            lowerTextView.text = buildSpannedString {
+                bold { append(context.getString(R.string.transition_next)) }
+                append("\n${nextChapter!!.chapter.name}")
             }
         } else {
-            context.getString(R.string.transition_no_next)
+            layout.gravity = Gravity.CENTER
+            upperTextView.text = context.getString(R.string.transition_no_next)
         }
 
         if (nextChapter != null) {
@@ -116,18 +179,21 @@ class WebtoonTransitionHolder(
     private fun bindPrevChapterTransition(transition: ChapterTransition.Prev) {
         val prevChapter = transition.to
 
-        textView.text = if (prevChapter != null) {
-            SpannableStringBuilder().apply {
-                append(context.getString(R.string.transition_current))
-                setSpan(StyleSpan(Typeface.BOLD), 0, length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-                append("\n${transition.from.chapter.name}\n\n")
-                val currSize = length
-                append(context.getString(R.string.transition_previous))
-                setSpan(StyleSpan(Typeface.BOLD), currSize, length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-                append("\n${prevChapter.chapter.name}\n\n")
+        val hasPrevChapter = prevChapter != null
+        lowerTextView.isVisible = hasPrevChapter
+        if (hasPrevChapter) {
+            layout.gravity = Gravity.CENTER_VERTICAL
+            upperTextView.text = buildSpannedString {
+                bold { append(context.getString(R.string.transition_current)) }
+                append("\n${transition.from.chapter.name}")
+            }
+            lowerTextView.text = buildSpannedString {
+                bold { append(context.getString(R.string.transition_previous)) }
+                append("\n${prevChapter!!.chapter.name}")
             }
         } else {
-            context.getString(R.string.transition_no_previous)
+            layout.gravity = Gravity.CENTER
+            upperTextView.text = context.getString(R.string.transition_no_previous)
         }
 
         if (prevChapter != null) {
