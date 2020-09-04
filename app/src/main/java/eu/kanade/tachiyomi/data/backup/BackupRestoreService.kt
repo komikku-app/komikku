@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.EXHMigrations
@@ -454,7 +455,12 @@ class BackupRestoreService : Service() {
         return backupManager.restoreChapterFetchObservable(source, manga, chapters /* SY --> */, throttleManager /* SY <-- */)
             // If there's any error, return empty update and continue.
             .onErrorReturn {
-                errors.add(Date() to "${manga.title} - ${it.message}")
+                val errorMessage = if (it is NoChaptersException) {
+                    getString(R.string.no_chapters_error)
+                } else {
+                    it.message
+                }
+                errors.add(Date() to "${manga.title} - $errorMessage")
                 Pair(emptyList(), emptyList())
             }
     }

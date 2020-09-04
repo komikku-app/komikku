@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -24,6 +25,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
+import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -336,7 +338,12 @@ class LibraryUpdateService(
                     updateManga(manga)
                         // If there's any error, return empty update and continue.
                         .onErrorReturn {
-                            failedUpdates.add(Pair(manga, it.message))
+                            val errorMessage = if (it is NoChaptersException) {
+                                getString(R.string.no_chapters_error)
+                            } else {
+                                it.message
+                            }
+                            failedUpdates.add(Pair(manga, errorMessage))
                             Pair(emptyList(), emptyList())
                         }
                         // Filter out mangas without new chapters (or failed).
@@ -404,7 +411,7 @@ class LibraryUpdateService(
      * @return a pair of the inserted and removed chapters.
      */
     fun updateManga(manga: Manga): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        val source = sourceManager.get(manga.source) ?: return Observable.empty()
+        val source = sourceManager.getOrStub(manga.source)
 
         // Update manga details metadata in the background
         if (preferences.autoUpdateMetadata()) {
@@ -504,7 +511,8 @@ class LibraryUpdateService(
 
                 destFile.bufferedWriter().use { out ->
                     errors.forEach { (manga, error) ->
-                        out.write("${manga.title}: $error\n")
+                        val source = sourceManager.getOrStub(manga.source)
+                        out.write("${manga.title} ($source): $error\n")
                     }
                 }
                 return destFile

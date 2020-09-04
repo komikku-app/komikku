@@ -31,7 +31,7 @@ fun syncChaptersWithSource(
     source: Source
 ): Pair<List<Chapter>, List<Chapter>> {
     if (rawSourceChapters.isEmpty()) {
-        throw Exception("No chapters found")
+        throw NoChaptersException()
     }
 
     val downloadManager: DownloadManager = Injekt.get()
