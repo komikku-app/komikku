@@ -166,7 +166,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                 smartSearchEngine.normalSearch(source, mangaObj.originalTitle)
                                             }
 
-                                            if (searchResult != null && (searchResult.url == mangaObj.url && source.id == mangaObj.source)) {
+                                            if (searchResult != null && !(searchResult.url == mangaObj.url && source.id == mangaObj.source)) {
                                                 val localManga =
                                                     smartSearchEngine.networkToLocalManga(
                                                         searchResult,
