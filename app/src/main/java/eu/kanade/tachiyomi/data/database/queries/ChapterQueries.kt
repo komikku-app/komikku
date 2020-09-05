@@ -86,12 +86,12 @@ interface ChapterQueries : DbProvider {
         )
         .prepare()
 
-    fun getChaptersReadWithUrls(urls: List<String>) = db.get()
+    fun getChaptersReadByUrls(urls: List<String>) = db.get()
         .listOfObjects(Chapter::class.java)
         .withQuery(
             Query.builder()
                 .table(ChapterTable.TABLE)
-                .where("${ChapterTable.COL_URL} IN (?) AND ${ChapterTable.COL_READ} = 1")
+                .where("${ChapterTable.COL_URL} IN (?) AND (${ChapterTable.COL_READ} = 1 OR ${ChapterTable.COL_LAST_PAGE_READ} != 0)")
                 .whereArgs(urls.joinToString { "\"$it\"" })
                 .build()
         )

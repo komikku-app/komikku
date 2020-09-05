@@ -145,12 +145,13 @@ fun syncChaptersWithSource(
                         }
                     }
                 }
-                if (readded.isEmpty() && !DebugToggles.INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS.enabled) {
-                    val readChapters = db.getChaptersReadWithUrls(finalAdded.map { it.url }).executeAsBlocking()
+                if (dbChapters.isEmpty() && !DebugToggles.INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS.enabled) {
+                    val readChapters = db.getChaptersReadByUrls(finalAdded.map { it.url }).executeAsBlocking()
+                    val readChapterUrls = readChapters.map { it.url }
                     if (readChapters.isNotEmpty()) {
-                        finalAdded.onEach { chapter ->
+                        toAdd.filter { it.url in readChapterUrls }.onEach { chapter ->
                             readChapters.firstOrNull { it.url == chapter.url }?.let {
-                                chapter.read = true
+                                chapter.read = it.read
                                 chapter.last_page_read = it.last_page_read
                             }
                         }
