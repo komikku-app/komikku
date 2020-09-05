@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -157,7 +158,11 @@ class SettingsAdvancedController : SettingsController() {
                 titleRes = R.string.clean_up_downloaded_chapters
                 summaryRes = R.string.delete_unused_chapters
 
-                onClick { cleanupDownloads() }
+                onClick {
+                    val ctrl = CleanupDownloadsDialogController()
+                    ctrl.targetController = this@SettingsAdvancedController
+                    ctrl.showDialog(router)
+                }
             }
         }
 
@@ -299,7 +304,22 @@ class SettingsAdvancedController : SettingsController() {
     }
 
     // SY -->
-    private fun cleanupDownloads() {
+    class CleanupDownloadsDialogController : DialogController() {
+        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+            return MaterialDialog(activity!!).show {
+                title(R.string.clean_up_downloaded_chapters)
+                    .listItemsMultiChoice(R.array.clean_up_downloads, disabledIndices = intArrayOf(0), initialSelection = intArrayOf(0, 1, 2)) { _, selections, _ ->
+                        val deleteRead = selections.contains(1)
+                        val deleteNonFavorite = selections.contains(2)
+                        (targetController as? SettingsAdvancedController)?.cleanupDownloads(deleteRead, deleteNonFavorite)
+                    }
+                positiveButton(android.R.string.ok)
+                negativeButton(android.R.string.cancel)
+            }
+        }
+    }
+
+    private fun cleanupDownloads(removeRead: Boolean, removeNonFavorite: Boolean) {
         if (job?.isActive == true) return
         activity?.toast(R.string.starting_cleanup)
         job = GlobalScope.launch(Dispatchers.IO, CoroutineStart.DEFAULT) {
@@ -307,10 +327,23 @@ class SettingsAdvancedController : SettingsController() {
             val sourceManager: SourceManager = Injekt.get()
             val downloadManager: DownloadManager = Injekt.get()
             var foldersCleared = 0
-            mangaList.forEach { manga ->
-                val chapterList = db.getChapters(manga).executeAsBlocking()
-                val source = sourceManager.getOrStub(manga.source)
-                foldersCleared += downloadManager.cleanupChapters(chapterList, manga, source)
+            val sources = sourceManager.getOnlineSources()
+
+            for (source in sources) {
+                val mangaFolders = downloadManager.getMangaFolders(source)
+                val sourceManga = mangaList.filter { it.source == source.id }
+
+                for (mangaFolder in mangaFolders) {
+                    val manga = sourceManga.find { it.originalTitle == mangaFolder.name }
+                    if (manga == null) {
+                        // download is orphaned delete it
+                        foldersCleared += 1 + (mangaFolder.listFiles()?.size ?: 0)
+                        mangaFolder.delete()
+                        continue
+                    }
+                    val chapterList = db.getChapters(manga).executeAsBlocking()
+                    foldersCleared += downloadManager.cleanupChapters(chapterList, manga, source, removeRead, removeNonFavorite)
+                }
             }
             launchUI {
                 val activity = activity ?: return@launchUI

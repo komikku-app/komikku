@@ -130,7 +130,7 @@ class DownloadProvider(private val context: Context) {
                         mangaDir.findFile(dir) ?: mangaDir.findFile("$dir.cbz") != null
                     }
                 } == null
-                ) || it.name?.endsWith("_tmp") == true
+                ) || it.name?.endsWith(Downloader.TMP_DIR_SUFFIX) == true
         }
     }
     // SY <--
