@@ -9,6 +9,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
+import exh.EH_SOURCE_ID
+import exh.EXH_SOURCE_ID
 import java.util.Date
 import kotlinx.android.synthetic.main.chapters_item.bookmark_icon
 import kotlinx.android.synthetic.main.chapters_item.chapter_description
@@ -47,7 +49,7 @@ class ChapterHolder(
         if (chapter.date_upload > 0) {
             descriptions.add(adapter.dateFormat.format(Date(chapter.date_upload)))
         }
-        if (!chapter.read && chapter.last_page_read > 0) {
+        if ((!chapter.read || (adapter.preserveReadingPosition && (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID))) && chapter.last_page_read > 0) {
             val lastPageRead = SpannableString(itemView.context.getString(R.string.chapter_progress, chapter.last_page_read + 1)).apply {
                 setSpan(ForegroundColorSpan(adapter.readColor), 0, length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
