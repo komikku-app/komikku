@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import com.elvishew.xlog.XLog
-import com.google.gson.Gson
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -20,6 +19,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.MetadataSource.Companion.isMetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -37,10 +37,12 @@ import exh.MERGED_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.isEhBasedSource
+import exh.merged.sql.models.MergedMangaReference
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.EnhancedHttpSource
+import exh.util.asObservable
 import exh.util.await
 import exh.util.trimOrNull
 import java.util.Date
@@ -63,9 +65,7 @@ class MangaPresenter(
     private val trackManager: TrackManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
-    // SY -->
-    private val gson: Gson = Injekt.get()
-    // SY <--
+    private val sourceManager: SourceManager = Injekt.get()
 ) : BasePresenter<MangaController>() {
 
     /**
@@ -112,6 +112,10 @@ class MangaPresenter(
     data class EXHRedirect(val manga: Manga, val update: Boolean)
 
     var meta: RaisedSearchMetadata? = null
+
+    private var mergedManga = emptyList<Manga>()
+
+    var dedupe: Boolean = true
     // EXH <--
 
     override fun onCreate(savedState: Bundle?) {
@@ -120,6 +124,10 @@ class MangaPresenter(
         // SY -->
         if (manga.initialized && source.isMetadataSource()) {
             getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata") })
+        }
+
+        if (source is MergedSource) {
+            launchIO { mergedManga = db.getMergedMangas(manga.id!!).await() }
         }
         // SY <--
 
@@ -145,7 +153,7 @@ class MangaPresenter(
         // Add the subscription that retrieves the chapters from the database, keeps subscribed to
         // changes, and sends the list of chapters to the relay.
         add(
-            db.getChapters(manga).asRxObservable()
+            (/* SY --> */if (source is MergedSource) source.getChaptersFromDB(manga, true, dedupe).asObservable() else /* SY <-- */ db.getChapters(manga).asRxObservable())
                 .map { chapters ->
                     // Convert every chapter to a model.
                     chapters.map { it.toModel() }
@@ -334,64 +342,138 @@ class MangaPresenter(
     }
 
     suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
-        val originalManga = db.getManga(originalMangaId).await()
-            ?: throw IllegalArgumentException("Unknown manga ID: $originalMangaId")
-        val toInsert = if (originalManga.source == MERGED_SOURCE_ID) {
-            originalManga.apply {
-                val originalChildren = MergedSource.MangaConfig.readFromUrl(gson, url).children
-                if (originalChildren.any { it.source == manga.source && it.url == manga.url }) {
-                    throw IllegalArgumentException("This manga is already merged with the current manga!")
-                }
-
-                url = MergedSource.MangaConfig(
-                    originalChildren + MergedSource.MangaSource(
-                        manga.source,
-                        manga.url
-                    )
-                ).writeAsUrl(gson)
+        val originalManga = db.getManga(originalMangaId).await() ?: throw IllegalArgumentException("Unknown manga ID: $originalMangaId")
+        if (originalManga.source == MERGED_SOURCE_ID) {
+            val children = db.getMergedMangaReferences(originalMangaId).await()
+            if (children.any { it.mangaSourceId == manga.source && it.mangaUrl == manga.url }) {
+                throw IllegalArgumentException("This manga is already merged with the current manga!")
             }
-        } else {
-            val newMangaConfig = MergedSource.MangaConfig(
-                listOf(
-                    MergedSource.MangaSource(
-                        originalManga.source,
-                        originalManga.url
-                    ),
-                    MergedSource.MangaSource(
-                        manga.source,
-                        manga.url
-                    )
+
+            val mangaReferences = mutableListOf(
+                MergedMangaReference(
+                    id = null,
+                    isInfoManga = false,
+                    getChapterUpdates = true,
+                    chapterSortMode = 0,
+                    chapterPriority = 0,
+                    downloadChapters = true,
+                    mergeId = originalManga.id!!,
+                    mergeUrl = originalManga.url,
+                    mangaId = manga.id!!,
+                    mangaUrl = manga.url,
+                    mangaSourceId = manga.source
                 )
             )
-            Manga.create(newMangaConfig.writeAsUrl(gson), originalManga.title, MERGED_SOURCE_ID).apply {
+
+            if (children.isEmpty() || children.all { it.mangaSourceId != MERGED_SOURCE_ID }) {
+                mangaReferences += MergedMangaReference(
+                    id = null,
+                    isInfoManga = false,
+                    getChapterUpdates = false,
+                    chapterSortMode = 0,
+                    chapterPriority = -1,
+                    downloadChapters = false,
+                    mergeId = originalManga.id!!,
+                    mergeUrl = originalManga.url,
+                    mangaId = originalManga.id!!,
+                    mangaUrl = originalManga.url,
+                    mangaSourceId = MERGED_SOURCE_ID
+                )
+            }
+
+            db.insertMergedMangas(mangaReferences).await()
+
+            return originalManga
+        } else {
+            val mergedManga = Manga.create(originalManga.url, originalManga.title, MERGED_SOURCE_ID).apply {
                 copyFrom(originalManga)
                 favorite = true
                 last_update = originalManga.last_update
                 viewer = originalManga.viewer
                 chapter_flags = originalManga.chapter_flags
                 sorting = Manga.SORTING_NUMBER
+                date_added = Date().time
             }
+            var existingManga = db.getManga(mergedManga.url, mergedManga.source).await()
+            while (existingManga != null) {
+                if (existingManga.favorite) {
+                    throw IllegalArgumentException("This merged manga is a duplicate!")
+                } else if (!existingManga.favorite) {
+                    withContext(NonCancellable) {
+                        db.deleteManga(existingManga!!).await()
+                        db.deleteMangaForMergedManga(existingManga!!.id!!).await()
+                    }
+                }
+                existingManga = db.getManga(mergedManga.url, mergedManga.source).await()
+            }
+
+            // Reload chapters immediately
+            mergedManga.initialized = false
+
+            val newId = db.insertManga(mergedManga).await().insertedId()
+            if (newId != null) mergedManga.id = newId
+
+            val originalMangaReference = MergedMangaReference(
+                id = null,
+                isInfoManga = true,
+                getChapterUpdates = true,
+                chapterSortMode = 0,
+                chapterPriority = 0,
+                downloadChapters = true,
+                mergeId = mergedManga.id!!,
+                mergeUrl = mergedManga.url,
+                mangaId = originalManga.id!!,
+                mangaUrl = originalManga.url,
+                mangaSourceId = originalManga.source
+            )
+
+            val newMangaReference = MergedMangaReference(
+                id = null,
+                isInfoManga = false,
+                getChapterUpdates = true,
+                chapterSortMode = 0,
+                chapterPriority = 0,
+                downloadChapters = true,
+                mergeId = mergedManga.id!!,
+                mergeUrl = mergedManga.url,
+                mangaId = manga.id!!,
+                mangaUrl = manga.url,
+                mangaSourceId = manga.source
+            )
+
+            val mergedMangaReference = MergedMangaReference(
+                id = null,
+                isInfoManga = false,
+                getChapterUpdates = false,
+                chapterSortMode = 0,
+                chapterPriority = -1,
+                downloadChapters = false,
+                mergeId = mergedManga.id!!,
+                mergeUrl = mergedManga.url,
+                mangaId = mergedManga.id!!,
+                mangaUrl = mergedManga.url,
+                mangaSourceId = MERGED_SOURCE_ID
+            )
+
+            db.insertMergedMangas(listOf(originalMangaReference, newMangaReference, mergedMangaReference)).await()
+
+            return mergedManga
         }
 
         // Note that if the manga are merged in a different order, this won't trigger, but I don't care lol
-        val existingManga = db.getManga(toInsert.url, toInsert.source).await()
-        if (existingManga != null) {
-            withContext(NonCancellable) {
-                if (toInsert.id != null) {
-                    db.deleteManga(toInsert).await()
-                }
+    }
+
+    fun updateMergeSettings(mergeReference: MergedMangaReference?, mergedMangaReferences: List<MergedMangaReference>) {
+        launchIO {
+            mergeReference?.let {
+                db.updateMergeMangaSettings(it).await()
             }
-
-            return existingManga
+            if (mergedMangaReferences.isNotEmpty()) db.updateMergedMangaSettings(mergedMangaReferences).await()
         }
+    }
 
-        // Reload chapters immediately
-        toInsert.initialized = false
-
-        val newId = db.insertManga(toInsert).await().insertedId()
-        if (newId != null) toInsert.id = newId
-
-        return toInsert
+    fun toggleDedupe() {
+        // I cant find any way to call the chapter list subscription to get the chapters again
     }
     // SY <--
 
@@ -424,7 +506,13 @@ class MangaPresenter(
      * Deletes all the downloads for the manga.
      */
     fun deleteDownloads() {
-        downloadManager.deleteManga(manga, source)
+        // SY -->
+        if (source is MergedSource) {
+            val mergedManga = mergedManga.map { it to sourceManager.getOrStub(it.source) }
+            mergedManga.forEach { (manga, source) ->
+                downloadManager.deleteManga(manga, source)
+            }
+        } else /* SY <-- */ downloadManager.deleteManga(manga, source)
     }
 
     /**
@@ -515,10 +603,14 @@ class MangaPresenter(
     // Chapters list - start
 
     private fun observeDownloads() {
+        // SY -->
+        val isMergedSource = source is MergedSource
+        val mergedIds = if (isMergedSource) mergedManga.mapNotNull { it.id } else emptyList()
+        // SY <--
         observeDownloadsSubscription?.let { remove(it) }
         observeDownloadsSubscription = downloadManager.queue.getStatusObservable()
             .observeOn(AndroidSchedulers.mainThread())
-            .filter { download -> download.manga.id == manga.id }
+            .filter { download -> /* SY --> */ if (isMergedSource) download.manga.id in mergedIds else /* SY <-- */ download.manga.id == manga.id }
             .doOnNext { onDownloadStatusChange(it) }
             .subscribeLatestCache(MangaController::onChapterStatusChange) { _, error ->
                 Timber.e(error)
@@ -548,8 +640,11 @@ class MangaPresenter(
      * @param chapters the list of chapter from the database.
      */
     private fun setDownloadedChapters(chapters: List<ChapterItem>) {
+        // SY -->
+        val isMergedSource = source is MergedSource
+        // SY <--
         chapters
-            .filter { downloadManager.isChapterDownloaded(it, manga) }
+            .filter { downloadManager.isChapterDownloaded(it, /* SY --> */ if (isMergedSource) mergedManga.firstOrNull { manga -> it.manga_id == manga.id } ?: manga else /* SY <-- */ manga) }
             .forEach { it.status = Download.DOWNLOADED }
     }
 
@@ -560,21 +655,38 @@ class MangaPresenter(
         hasRequested = true
 
         if (!fetchChaptersSubscription.isNullOrUnsubscribed()) return
-        fetchChaptersSubscription = Observable.defer { source.fetchChapterList(manga) }
-            .subscribeOn(Schedulers.io())
-            .map { syncChaptersWithSource(db, it, manga, source) }
-            .doOnNext {
-                if (manualFetch) {
-                    downloadNewChapters(it.first)
+        fetchChaptersSubscription = /* SY --> */ if (source !is MergedSource) {
+            // SY <--
+            Observable.defer { source.fetchChapterList(manga) }
+                .subscribeOn(Schedulers.io())
+                .map { syncChaptersWithSource(db, it, manga, source) }
+                .doOnNext {
+                    if (manualFetch) {
+                        downloadNewChapters(it.first)
+                    }
                 }
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, _ ->
-                    view.onFetchChaptersDone()
-                },
-                MangaController::onFetchChaptersError
-            )
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeFirst(
+                    { view, _ ->
+                        view.onFetchChaptersDone()
+                    },
+                    MangaController::onFetchChaptersError
+                )
+            // SY -->
+        } else {
+            Observable.defer { source.fetchChaptersForMergedManga(manga, manualFetch, true, dedupe).asObservable() }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext {
+                }
+                .subscribeFirst(
+                    { view, _ ->
+                        view.onFetchChaptersDone()
+                    },
+                    MangaController::onFetchChaptersError
+                )
+        }
+        // SY <--
     }
 
     /**
@@ -680,7 +792,13 @@ class MangaPresenter(
      * @param chapters the list of chapters to download.
      */
     fun downloadChapters(chapters: List<Chapter>) {
-        downloadManager.downloadChapters(manga, chapters)
+        // SY -->
+        if (source is MergedSource) {
+            chapters.groupBy { it.manga_id }.forEach { map ->
+                val manga = mergedManga.firstOrNull { it.id == map.key } ?: return@forEach
+                downloadManager.downloadChapters(manga, map.value)
+            }
+        } else /* SY <-- */ downloadManager.downloadChapters(manga, chapters)
     }
 
     /**

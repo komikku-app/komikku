@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_IGNORE
 import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_INCLUDE
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.combineLatest
@@ -27,11 +28,15 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
+import exh.MERGED_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
+import exh.util.await
 import exh.util.isLewd
 import exh.util.nullIfBlank
 import java.util.Collections
 import java.util.Comparator
+import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -241,7 +246,10 @@ class LibraryPresenter(
         for ((_, itemList) in map) {
             for (item in itemList) {
                 item.downloadCount = if (showDownloadBadges) {
-                    downloadManager.getDownloadCount(item.manga)
+                    // SY -->
+                    if (item.manga.source == MERGED_SOURCE_ID) {
+                        item.manga.id?.let { mergeMangaId -> db.getMergedMangas(mergeMangaId).executeAsBlocking().map { downloadManager.getDownloadCount(it) }.sum() } ?: 0
+                    } else /* SY <-- */ downloadManager.getDownloadCount(item.manga)
                 } else {
                     // Unset download count if not enabled
                     -1
@@ -455,8 +463,10 @@ class LibraryPresenter(
         mangas.forEach { manga ->
             launchIO {
                 /* SY --> */ val chapters = if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
-                    val chapter = db.getChapters(manga).executeAsBlocking().minByOrNull { it.source_order }
+                    val chapter = db.getChapters(manga).await().minByOrNull { it.source_order }
                     if (chapter != null && !chapter.read) listOf(chapter) else emptyList()
+                } else if (manga.source == MERGED_SOURCE_ID) {
+                    (sourceManager.getOrStub(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.singleOrNull()?.filter { !it.read } ?: emptyList()
                 } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
                     .filter { !it.read }
 
@@ -501,7 +511,7 @@ class LibraryPresenter(
     fun markReadStatus(mangas: List<Manga>, read: Boolean) {
         mangas.forEach { manga ->
             launchIO {
-                val chapters = db.getChapters(manga).executeAsBlocking()
+                val chapters = if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.singleOrNull() ?: emptyList() else db.getChapters(manga).executeAsBlocking()
                 chapters.forEach {
                     it.read = read
                     if (!read) {
@@ -519,7 +529,16 @@ class LibraryPresenter(
 
     private fun deleteChapters(manga: Manga, chapters: List<Chapter>) {
         sourceManager.get(manga.source)?.let { source ->
-            downloadManager.deleteChapters(chapters, manga, source)
+            // SY -->
+            if (source is MergedSource) {
+                val mergedMangas = db.getMergedMangas(manga.id!!).executeAsBlocking()
+                val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
+                chapters.groupBy { it.manga_id }.forEach { map ->
+                    val mergedManga = mergedMangas.firstOrNull { it.id == map.key } ?: return@forEach
+                    val mergedMangaSource = sources.firstOrNull { it.id == mergedManga.source } ?: return@forEach
+                    downloadManager.deleteChapters(map.value, mergedManga, mergedMangaSource)
+                }
+            } else /* SY <-- */ downloadManager.deleteChapters(chapters, manga, source)
         }
     }
 
@@ -543,7 +562,14 @@ class LibraryPresenter(
                 mangaToDelete.forEach { manga ->
                     val source = sourceManager.get(manga.source) as? HttpSource
                     if (source != null) {
-                        downloadManager.deleteManga(manga, source)
+                        if (source is MergedSource) {
+                            val mergedMangas = db.getMergedMangas(manga.id!!).await()
+                            val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
+                            mergedMangas.forEach merge@{ mergedManga ->
+                                val mergedSource = sources.firstOrNull { mergedManga.source == it.id } ?: return@merge
+                                downloadManager.deleteManga(mergedManga, mergedSource)
+                            }
+                        } else downloadManager.deleteManga(manga, source)
                     }
                 }
             }
@@ -571,7 +597,7 @@ class LibraryPresenter(
     // SY -->
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
-        val chapters = db.getChapters(manga).executeAsBlocking()
+        val chapters = (if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource).let { runBlocking { it?.getChaptersFromDB(manga)?.singleOrNull() } ?: emptyList() } else db.getChapters(manga).executeAsBlocking())
         return if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
             val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
             if (chapter?.read == false) chapter else null

@@ -57,4 +57,18 @@
         android:title="@string/az_recommends"
         android:visible="false"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_merged"
+        android:icon="@drawable/ic_edit_24dp"
+        android:title="@string/merge_settings"
+        android:visible="false"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_toggle_dedupe"
+        android:icon="@drawable/ic_edit_24dp"
+        android:title="@string/toggle_dedupe"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

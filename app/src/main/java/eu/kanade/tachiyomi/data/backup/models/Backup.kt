@@ -19,6 +19,7 @@ object Backup {
     const val VERSION = "version"
     // SY -->
     const val SAVEDSEARCHES = "savedsearches"
+    const val MERGEDMANGAREFERENCES = "mergedmangareferences"
     // SY <--
 
     fun getDefaultFilename(): String {

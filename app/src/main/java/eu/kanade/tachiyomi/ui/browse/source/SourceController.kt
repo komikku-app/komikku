@@ -441,6 +441,7 @@ class SourceController(bundle: Bundle? = null) :
 
     companion object {
         const val SMART_SEARCH_CONFIG = "SMART_SEARCH_CONFIG"
+        const val SMART_SEARCH_SOURCE_TAG = "smart_search_source_tag"
     }
     // SY <--
 }

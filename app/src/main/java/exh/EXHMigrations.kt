@@ -2,6 +2,9 @@ package exh
 
 import android.content.Context
 import com.elvishew.xlog.XLog
+import com.github.salomonbrys.kotson.fromJson
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
@@ -12,13 +15,18 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.resolvers.MangaUrlPutResolver
+import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
+import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
+import exh.merged.sql.models.MergedMangaReference
 import exh.source.BlacklistedSources
 import java.io.File
 import java.net.URI
@@ -27,6 +35,8 @@ import uy.kohesive.injekt.injectLazy
 
 object EXHMigrations {
     private val db: DatabaseHelper by injectLazy()
+    private val sourceManager: SourceManager by injectLazy()
+    private val gson: Gson by injectLazy()
 
     private val logger = XLog.tag("EXHMigrations")
 
@@ -143,6 +153,106 @@ object EXHMigrations {
                         )
                     }
                 }
+                if (oldVersion < 7) {
+                    db.inTransaction {
+                        val mergedMangas = db.db.get()
+                            .listOfObjects(Manga::class.java)
+                            .withQuery(
+                                Query.builder()
+                                    .table(MangaTable.TABLE)
+                                    .where("${MangaTable.COL_SOURCE} = $MERGED_SOURCE_ID")
+                                    .build()
+                            )
+                            .prepare()
+                            .executeAsBlocking()
+
+                        if (mergedMangas.isNotEmpty()) {
+                            val mangaConfigs = mergedMangas.mapNotNull { mergedManga -> readMangaConfig(mergedManga, gson)?.let { mergedManga to it } }
+                            if (mangaConfigs.isNotEmpty()) {
+                                val mangaToUpdate = mutableListOf<Manga>()
+                                val mergedMangaReferences = mutableListOf<MergedMangaReference>()
+                                mangaConfigs.onEach { mergedManga ->
+                                    mergedManga.second.children.firstOrNull()?.url?.let {
+                                        if (db.getManga(it, MERGED_SOURCE_ID).executeAsBlocking() != null) return@onEach
+                                        mergedManga.first.url = it
+                                    }
+                                    mangaToUpdate += mergedManga.first
+                                    mergedMangaReferences += MergedMangaReference(
+                                        id = null,
+                                        isInfoManga = false,
+                                        getChapterUpdates = false,
+                                        chapterSortMode = 0,
+                                        chapterPriority = 0,
+                                        downloadChapters = false,
+                                        mergeId = mergedManga.first.id!!,
+                                        mergeUrl = mergedManga.first.url,
+                                        mangaId = mergedManga.first.id!!,
+                                        mangaUrl = mergedManga.first.url,
+                                        mangaSourceId = MERGED_SOURCE_ID
+                                    )
+                                    mergedManga.second.children.distinct().forEachIndexed { index, mangaSource ->
+                                        val load = mangaSource.load(db, sourceManager) ?: return@forEachIndexed
+                                        mergedMangaReferences += MergedMangaReference(
+                                            id = null,
+                                            isInfoManga = index == 0,
+                                            getChapterUpdates = true,
+                                            chapterSortMode = 0,
+                                            chapterPriority = 0,
+                                            downloadChapters = true,
+                                            mergeId = mergedManga.first.id!!,
+                                            mergeUrl = mergedManga.first.url,
+                                            mangaId = load.manga.id!!,
+                                            mangaUrl = load.manga.url,
+                                            mangaSourceId = load.source.id
+                                        )
+                                    }
+                                }
+                                db.db.put()
+                                    .objects(mangaToUpdate)
+                                    // Extremely slow without the resolver :/
+                                    .withPutResolver(MangaUrlPutResolver())
+                                    .prepare()
+                                    .executeAsBlocking()
+                                db.insertMergedMangas(mergedMangaReferences).executeAsBlocking()
+
+                                val loadedMangaList = mangaConfigs.map { it.second.children }.flatten().mapNotNull { it.load(db, sourceManager) }.distinct()
+                                val chapters = db.db.get()
+                                    .listOfObjects(Chapter::class.java)
+                                    .withQuery(
+                                        Query.builder()
+                                            .table(ChapterTable.TABLE)
+                                            .where("${ChapterTable.COL_MANGA_ID} IN (${mergedMangas.filter { it.id != null }.joinToString { it.id.toString() }})")
+                                            .build()
+                                    )
+                                    .prepare()
+                                    .executeAsBlocking()
+                                val mergedMangaChapters = db.db.get()
+                                    .listOfObjects(Chapter::class.java)
+                                    .withQuery(
+                                        Query.builder()
+                                            .table(ChapterTable.TABLE)
+                                            .where("${ChapterTable.COL_MANGA_ID} IN (${loadedMangaList.filter { it.manga.id != null }.joinToString { it.manga.id.toString() }})")
+                                            .build()
+                                    )
+                                    .prepare()
+                                    .executeAsBlocking()
+                                val mergedMangaChaptersMatched = mergedMangaChapters.mapNotNull { chapter -> loadedMangaList.firstOrNull { it.manga.id == chapter.id }?.let { it to chapter } }
+                                val parsedChapters = chapters.filter { it.read || it.last_page_read != 0 }.mapNotNull { chapter -> readUrlConfig(chapter.url, gson)?.let { chapter to it } }
+                                val chaptersToUpdate = mutableListOf<Chapter>()
+                                parsedChapters.forEach { parsedChapter ->
+                                    mergedMangaChaptersMatched.firstOrNull { it.second.url == parsedChapter.second.url && it.first.source.id == parsedChapter.second.source && it.first.manga.url == parsedChapter.second.mangaUrl }?.let {
+                                        chaptersToUpdate += it.second.apply {
+                                            read = parsedChapter.first.read
+                                            last_page_read = parsedChapter.first.last_page_read
+                                        }
+                                    }
+                                }
+                                db.deleteChapters(mergedMangaChapters).executeAsBlocking()
+                                db.updateChaptersProgress(chaptersToUpdate).executeAsBlocking()
+                            }
+                        }
+                    }
+                }
 
                 // if (oldVersion < 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
@@ -228,6 +338,57 @@ object EXHMigrations {
             orig
         }
     }
+
+    private data class UrlConfig(
+        @SerializedName("s")
+        val source: Long,
+        @SerializedName("u")
+        val url: String,
+        @SerializedName("m")
+        val mangaUrl: String
+    )
+
+    private data class MangaConfig(
+        @SerializedName("c")
+        val children: List<MangaSource>
+    ) {
+        companion object {
+            fun readFromUrl(gson: Gson, url: String): MangaConfig? {
+                return try {
+                    gson.fromJson(url)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+    }
+
+    private fun readMangaConfig(manga: SManga, gson: Gson): MangaConfig? {
+        return MangaConfig.readFromUrl(gson, manga.url)
+    }
+
+    private data class MangaSource(
+        @SerializedName("s")
+        val source: Long,
+        @SerializedName("u")
+        val url: String
+    ) {
+        fun load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource? {
+            val manga = db.getManga(url, source).executeAsBlocking() ?: return null
+            val source = sourceManager.getOrStub(source)
+            return LoadedMangaSource(source, manga)
+        }
+    }
+
+    private fun readUrlConfig(url: String, gson: Gson): UrlConfig? {
+        return try {
+            gson.fromJson(url)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private data class LoadedMangaSource(val source: Source, val manga: Manga)
 }
 
 data class BackupEntry(

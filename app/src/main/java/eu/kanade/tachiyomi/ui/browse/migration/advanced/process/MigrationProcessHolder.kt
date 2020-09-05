@@ -5,7 +5,6 @@ import android.widget.PopupMenu
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.gson.Gson
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -13,7 +12,6 @@ import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.ui.manga.MangaController
@@ -21,6 +19,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.MERGED_SOURCE_ID
+import exh.util.await
 import java.text.DecimalFormat
 import kotlinx.android.synthetic.main.migration_manga_card.view.gradient
 import kotlinx.android.synthetic.main.migration_manga_card.view.loading_group
@@ -51,7 +50,6 @@ class MigrationProcessHolder(
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private var item: MigrationProcessItem? = null
-    private val gson: Gson by injectLazy()
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     init {
@@ -154,7 +152,7 @@ class MigrationProcessHolder(
         migration_manga_card_to.clicks()
     }
 
-    private fun View.attachManga(manga: Manga, source: Source) {
+    private suspend fun View.attachManga(manga: Manga, source: Source) {
         loading_group.isVisible = false
         GlideApp.with(view.context.applicationContext)
             .load(manga.toMangaThumbnail())
@@ -171,8 +169,8 @@ class MigrationProcessHolder(
 
         gradient.isVisible = true
         manga_source_label.text = if (source.id == MERGED_SOURCE_ID) {
-            MergedSource.MangaConfig.readFromUrl(gson, manga.url).children.map {
-                sourceManager.getOrStub(it.source).toString()
+            db.getMergedMangaReferences(manga.id!!).await().map {
+                sourceManager.getOrStub(it.mangaSourceId).toString()
             }.distinct().joinToString()
         } else {
             source.toString()

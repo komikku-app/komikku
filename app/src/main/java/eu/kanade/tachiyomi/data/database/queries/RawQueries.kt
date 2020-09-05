@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.data.database.tables.ChapterTable as Chapter
 import eu.kanade.tachiyomi.data.database.tables.HistoryTable as History
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable as MangaCategory
 import eu.kanade.tachiyomi.data.database.tables.MangaTable as Manga
+import exh.MERGED_SOURCE_ID
 import exh.merged.sql.tables.MergedTable as Merged
 
 // SY -->
@@ -21,6 +22,9 @@ fun getMergedMangaQuery() =
     ON ${Manga.TABLE}.${Manga.COL_ID} = M.${Merged.COL_MANGA_ID}
 """
 
+/**
+ * Query to get all the manga that are merged into other manga
+ */
 fun getAllMergedMangaQuery() =
     """
     SELECT ${Manga.TABLE}.*
@@ -56,7 +60,6 @@ fun getMergedChaptersQuery() =
     JOIN ${Chapter.TABLE}
     ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = M.${Merged.COL_MANGA_ID}
 """
-// SY <--
 
 /**
  * Query to get the manga from the library, with their categories and unread count.
@@ -66,29 +69,54 @@ val libraryQuery =
     SELECT M.*, COALESCE(MC.${MangaCategory.COL_CATEGORY_ID}, 0) AS ${Manga.COL_CATEGORY}
     FROM (
         SELECT ${Manga.TABLE}.*, COALESCE(C.unread, 0) AS ${Manga.COL_UNREAD}, COALESCE(R.read, 0) AS ${Manga.COL_READ}
-        FROM ${Manga.TABLE}
-        LEFT JOIN (
-            SELECT ${Chapter.COL_MANGA_ID}, COUNT(*) AS unread
-            FROM ${Chapter.TABLE}
-            WHERE ${Chapter.COL_READ} = 0
-            GROUP BY ${Chapter.COL_MANGA_ID}
-        ) AS C
-        ON ${Manga.COL_ID} = C.${Chapter.COL_MANGA_ID}
-        LEFT JOIN (
-            SELECT ${Chapter.COL_MANGA_ID}, COUNT(*) AS read
-            FROM ${Chapter.TABLE}
-            WHERE ${Chapter.COL_READ} = 1
-            GROUP BY ${Chapter.COL_MANGA_ID}
-        ) AS R
-        ON ${Manga.COL_ID} = R.${Chapter.COL_MANGA_ID}
-        WHERE ${Manga.COL_FAVORITE} = 1
-        GROUP BY ${Manga.COL_ID}
+            FROM ${Manga.TABLE}
+            LEFT JOIN (
+                SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}, COUNT(*) AS unread
+                FROM ${Chapter.TABLE}
+                WHERE ${Chapter.COL_READ} = 0
+                GROUP BY ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}
+            ) AS C
+            ON ${Manga.TABLE}.${Manga.COL_ID} = C.${Chapter.COL_MANGA_ID}
+            LEFT JOIN (
+                SELECT ${Chapter.COL_MANGA_ID}, COUNT(*) AS read
+                FROM ${Chapter.TABLE}
+                WHERE ${Chapter.COL_READ} = 1
+                GROUP BY ${Chapter.COL_MANGA_ID}
+            ) AS R
+            ON ${Manga.TABLE}.${Manga.COL_ID} = R.${Chapter.COL_MANGA_ID}
+            WHERE ${Manga.COL_FAVORITE} = 1 AND ${Manga.COL_SOURCE} <> $MERGED_SOURCE_ID
+            GROUP BY ${Manga.TABLE}.${Manga.COL_ID}
+        UNION
+        SELECT ${Manga.TABLE}.*, COALESCE(C.unread, 0) AS ${Manga.COL_UNREAD}, COALESCE(R.read, 0) AS ${Manga.COL_READ}
+            FROM ${Manga.TABLE}
+            LEFT JOIN (
+                SELECT ${Merged.TABLE}.${Merged.COL_MERGE_ID}, COUNT(*) as unread
+                FROM ${Merged.TABLE}
+                JOIN ${Chapter.TABLE}
+                ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = ${Merged.TABLE}.${Merged.COL_MANGA_ID}
+                WHERE ${Chapter.TABLE}.${Chapter.COL_READ} = 0
+                GROUP BY ${Merged.TABLE}.${Merged.COL_MERGE_ID}
+            ) AS C
+            ON ${Manga.TABLE}.${Manga.COL_ID} = C.${Merged.COL_MERGE_ID}
+            LEFT JOIN (
+                SELECT ${Merged.TABLE}.${Merged.COL_MERGE_ID}, COUNT(*) as read
+                FROM ${Merged.TABLE}
+                JOIN ${Chapter.TABLE}
+                ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = ${Merged.TABLE}.${Merged.COL_MANGA_ID}
+                WHERE ${Chapter.TABLE}.${Chapter.COL_READ} = 1
+                GROUP BY ${Merged.TABLE}.${Merged.COL_MERGE_ID}
+            ) AS R
+            ON ${Manga.TABLE}.${Manga.COL_ID} = R.${Merged.COL_MERGE_ID}
+            WHERE ${Manga.COL_FAVORITE} = 1 AND ${Manga.COL_SOURCE} = $MERGED_SOURCE_ID
+            GROUP BY ${Manga.TABLE}.${Manga.COL_ID}
         ORDER BY ${Manga.COL_TITLE}
     ) AS M
     LEFT JOIN (
-        SELECT * FROM ${MangaCategory.TABLE}) AS MC
-        ON MC.${MangaCategory.COL_MANGA_ID} = M.${Manga.COL_ID}
+            SELECT * FROM ${MangaCategory.TABLE}
+        ) AS MC
+        ON MC.${MangaCategory.COL_MANGA_ID} = M.${Manga.COL_ID};
 """
+// SY <--
 
 /**
  * Query to get the recent chapters of manga from the library up to a date.

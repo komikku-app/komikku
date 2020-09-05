@@ -8,7 +8,10 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import exh.util.asObservable
 import kotlin.jvm.Throws
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import okhttp3.Request
 import okhttp3.Response
@@ -25,13 +28,17 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
-    override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        return Observable.just(runBlocking { fetchPopularMangaSuspended(page) })
+    final override fun fetchPopularManga(page: Int): Observable<MangasPage> {
+        return fetchPopularMangaFlow(page).asObservable()
     }
 
-    open suspend fun fetchPopularMangaSuspended(page: Int): MangasPage {
-        val response = client.newCall(popularMangaRequestSuspended(page)).await()
-        return popularMangaParseSuspended(response)
+    open fun fetchPopularMangaFlow(page: Int): Flow<MangasPage> {
+        return flow {
+            val response = client.newCall(popularMangaRequestSuspended(page)).await()
+            emit(
+                popularMangaParseSuspended(response)
+            )
+        }
     }
 
     /**
@@ -39,7 +46,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
-    override fun popularMangaRequest(page: Int): Request {
+    final override fun popularMangaRequest(page: Int): Request {
         return runBlocking { popularMangaRequestSuspended(page) }
     }
 
@@ -50,7 +57,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param response the response from the site.
      */
-    override fun popularMangaParse(response: Response): MangasPage {
+    final override fun popularMangaParse(response: Response): MangasPage {
         return runBlocking { popularMangaParseSuspended(response) }
     }
 
@@ -64,13 +71,17 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return Observable.just(runBlocking { fetchSearchMangaSuspended(page, query, filters) })
+    final override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+        return fetchSearchMangaSuspended(page, query, filters).asObservable()
     }
 
-    open suspend fun fetchSearchMangaSuspended(page: Int, query: String, filters: FilterList): MangasPage {
-        val response = client.newCall(searchMangaRequestSuspended(page, query, filters)).await()
-        return searchMangaParseSuspended(response)
+    open fun fetchSearchMangaSuspended(page: Int, query: String, filters: FilterList): Flow<MangasPage> {
+        return flow {
+            val response = client.newCall(searchMangaRequestSuspended(page, query, filters)).await()
+            emit(
+                searchMangaParseSuspended(response)
+            )
+        }
     }
 
     /**
@@ -80,7 +91,7 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    final override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         return runBlocking { searchMangaRequestSuspended(page, query, filters) }
     }
 
@@ -91,7 +102,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param response the response from the site.
      */
-    override fun searchMangaParse(response: Response): MangasPage {
+    final override fun searchMangaParse(response: Response): MangasPage {
         return runBlocking { searchMangaParseSuspended(response) }
     }
 
@@ -102,13 +113,17 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
-    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
-        return Observable.just(runBlocking { fetchLatestUpdatesSuspended(page) })
+    final override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
+        return fetchLatestUpdatesFlow(page).asObservable()
     }
 
-    open suspend fun fetchLatestUpdatesSuspended(page: Int): MangasPage {
-        val response = client.newCall(latestUpdatesRequestSuspended(page)).await()
-        return latestUpdatesParseSuspended(response)
+    open fun fetchLatestUpdatesFlow(page: Int): Flow<MangasPage> {
+        return flow {
+            val response = client.newCall(latestUpdatesRequestSuspended(page)).await()
+            emit(
+                latestUpdatesParseSuspended(response)
+            )
+        }
     }
 
     /**
@@ -116,7 +131,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
-    override fun latestUpdatesRequest(page: Int): Request {
+    final override fun latestUpdatesRequest(page: Int): Request {
         return runBlocking { latestUpdatesRequestSuspended(page) }
     }
 
@@ -127,7 +142,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param response the response from the site.
      */
-    override fun latestUpdatesParse(response: Response): MangasPage {
+    final override fun latestUpdatesParse(response: Response): MangasPage {
         return runBlocking { latestUpdatesParseSuspended(response) }
     }
 
@@ -139,13 +154,17 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param manga the manga to be updated.
      */
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return Observable.just(runBlocking { fetchMangaDetailsSuspended(manga) })
+    final override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
+        return fetchMangaDetailsFlow(manga).asObservable()
     }
 
-    open suspend fun fetchMangaDetailsSuspended(manga: SManga): SManga {
-        val response = client.newCall(mangaDetailsRequestSuspended(manga)).await()
-        return mangaDetailsParseSuspended(response).apply { initialized = true }
+    open fun fetchMangaDetailsFlow(manga: SManga): Flow<SManga> {
+        return flow {
+            val response = client.newCall(mangaDetailsRequestSuspended(manga)).await()
+            emit(
+                mangaDetailsParseSuspended(response).apply { initialized = true }
+            )
+        }
     }
 
     /**
@@ -154,7 +173,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param manga the manga to be updated.
      */
-    override fun mangaDetailsRequest(manga: SManga): Request {
+    final override fun mangaDetailsRequest(manga: SManga): Request {
         return runBlocking { mangaDetailsRequestSuspended(manga) }
     }
 
@@ -167,7 +186,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param response the response from the site.
      */
-    override fun mangaDetailsParse(response: Response): SManga {
+    final override fun mangaDetailsParse(response: Response): SManga {
         return runBlocking { mangaDetailsParseSuspended(response) }
     }
 
@@ -179,21 +198,25 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param manga the manga to look for chapters.
      */
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
+    final override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return try {
-            Observable.just(runBlocking { fetchChapterListSuspended(manga) })
+            fetchChapterListFlow(manga).asObservable()
         } catch (e: LicencedException) {
             Observable.error(Exception("Licensed - No chapters to show"))
         }
     }
 
     @Throws(LicencedException::class)
-    open suspend fun fetchChapterListSuspended(manga: SManga): List<SChapter> {
-        return if (manga.status != SManga.LICENSED) {
-            val response = client.newCall(chapterListRequestSuspended(manga)).await()
-            chapterListParseSuspended(response)
-        } else {
-            throw LicencedException("Licensed - No chapters to show")
+    open fun fetchChapterListFlow(manga: SManga): Flow<List<SChapter>> {
+        return flow {
+            if (manga.status != SManga.LICENSED) {
+                val response = client.newCall(chapterListRequestSuspended(manga)).await()
+                emit(
+                    chapterListParseSuspended(response)
+                )
+            } else {
+                throw LicencedException("Licensed - No chapters to show")
+            }
         }
     }
 
@@ -203,7 +226,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param manga the manga to look for chapters.
      */
-    override fun chapterListRequest(manga: SManga): Request {
+    final override fun chapterListRequest(manga: SManga): Request {
         return runBlocking { chapterListRequestSuspended(manga) }
     }
 
@@ -216,7 +239,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param response the response from the site.
      */
-    override fun chapterListParse(response: Response): List<SChapter> {
+    final override fun chapterListParse(response: Response): List<SChapter> {
         return runBlocking { chapterListParseSuspended(response) }
     }
 
@@ -227,13 +250,17 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
-    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return Observable.just(runBlocking { fetchPageListSuspended(chapter) })
+    final override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
+        return fetchPageListFlow(chapter).asObservable()
     }
 
-    open suspend fun fetchPageListSuspended(chapter: SChapter): List<Page> {
-        val response = client.newCall(pageListRequestSuspended(chapter)).await()
-        return pageListParseSuspended(response)
+    open fun fetchPageListFlow(chapter: SChapter): Flow<List<Page>> {
+        return flow {
+            val response = client.newCall(pageListRequestSuspended(chapter)).await()
+            emit(
+                pageListParseSuspended(response)
+            )
+        }
     }
 
     /**
@@ -242,7 +269,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
-    override fun pageListRequest(chapter: SChapter): Request {
+    final override fun pageListRequest(chapter: SChapter): Request {
         return runBlocking { pageListRequestSuspended(chapter) }
     }
 
@@ -255,7 +282,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param response the response from the site.
      */
-    override fun pageListParse(response: Response): List<Page> {
+    final override fun pageListParse(response: Response): List<Page> {
         return runBlocking { pageListParseSuspended(response) }
     }
 
@@ -267,13 +294,17 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page whose source image has to be fetched.
      */
-    override fun fetchImageUrl(page: Page): Observable<String> {
-        return Observable.just(runBlocking { fetchImageUrlSuspended(page) })
+    final override fun fetchImageUrl(page: Page): Observable<String> {
+        return fetchImageUrlFlow(page).asObservable()
     }
 
-    open suspend fun fetchImageUrlSuspended(page: Page): String {
-        val response = client.newCall(imageUrlRequestSuspended(page)).await()
-        return imageUrlParseSuspended(response)
+    open fun fetchImageUrlFlow(page: Page): Flow<String> {
+        return flow {
+            val response = client.newCall(imageUrlRequestSuspended(page)).await()
+            emit(
+                imageUrlParseSuspended(response)
+            )
+        }
     }
 
     /**
@@ -282,7 +313,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the chapter whose page list has to be fetched
      */
-    override fun imageUrlRequest(page: Page): Request {
+    final override fun imageUrlRequest(page: Page): Request {
         return runBlocking { imageUrlRequestSuspended(page) }
     }
 
@@ -295,7 +326,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param response the response from the site.
      */
-    override fun imageUrlParse(response: Response): String {
+    final override fun imageUrlParse(response: Response): String {
         return runBlocking { imageUrlParseSuspended(response) }
     }
 
@@ -306,12 +337,16 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page whose source image has to be downloaded.
      */
-    override fun fetchImage(page: Page): Observable<Response> {
-        return Observable.just(runBlocking { fetchImageSuspended(page) })
+    final override fun fetchImage(page: Page): Observable<Response> {
+        return fetchImageFlow(page).asObservable()
     }
 
-    open suspend fun fetchImageSuspended(page: Page): Response {
-        return client.newCallWithProgress(imageRequestSuspended(page), page).await()
+    open fun fetchImageFlow(page: Page): Flow<Response> {
+        return flow {
+            emit(
+                client.newCallWithProgress(imageRequestSuspended(page), page).await()
+            )
+        }
     }
 
     /**
@@ -320,7 +355,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the chapter whose page list has to be fetched
      */
-    override fun imageRequest(page: Page): Request {
+    final override fun imageRequest(page: Page): Request {
         return runBlocking { imageRequestSuspended(page) }
     }
 
@@ -335,7 +370,7 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param chapter the chapter to be added.
      * @param manga the manga of the chapter.
      */
-    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+    final override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
         runBlocking { prepareNewChapterSuspended(chapter, manga) }
     }
 

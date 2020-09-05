@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.MangaThumbnail
@@ -18,7 +19,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.view.setTooltip
@@ -41,6 +41,10 @@ class MangaInfoHeaderAdapter(
     RecyclerView.Adapter<MangaInfoHeaderAdapter.HeaderViewHolder>() {
 
     private val trackManager: TrackManager by injectLazy()
+    // SY -->
+    private val db: DatabaseHelper by injectLazy()
+    private val sourceManager: SourceManager by injectLazy()
+    // SY <--
 
     private var manga: Manga = controller.presenter.manga
     private var source: Source = controller.presenter.source
@@ -254,9 +258,9 @@ class MangaInfoHeaderAdapter(
             val mangaSource = source?.toString()
             with(binding.mangaSource) {
                 // SY -->
-                if (source != null && source.id == MERGED_SOURCE_ID) {
-                    text = MergedSource.MangaConfig.readFromUrl(Injekt.get(), manga.url).children.map {
-                        Injekt.get<SourceManager>().getOrStub(it.source).toString()
+                if (source?.id == MERGED_SOURCE_ID) {
+                    text = db.getMergedMangaReferences(manga.id!!).executeAsBlocking().map {
+                        sourceManager.getOrStub(it.mangaSourceId).toString()
                     }.distinct().joinToString()
                 } else /* SY <-- */ if (mangaSource != null) {
                     text = mangaSource

@@ -483,4 +483,23 @@
         <item quantity="other">%2$s, %1$d pages</item>
     </plurals>
 
+    <!-- Merged manga -->
+    <string name="merge_settings">Merge settings</string>
+    <string name="fetch_chapter_updates">Fetch chapter updates</string>
+    <string name="delete_merged_manga">Are you sure?</string>
+    <string name="delete_merged_manga_desc">This will remove the manga from the merge, using this will also lose any unsaved changes applied to the merged manga</string>
+    <string name="chapter_updates_merged_manga">Toggle chapter updates</string>
+    <string name="chapter_updates_merged_manga_desc">Toggling this will disable or enable chapter updates for this merged manga</string>
+    <string name="download_merged_manga">Toggle new chapter downloads</string>
+    <string name="download_merged_manga_desc">Toggling this will disable or enable chapter downloads for this merged manga</string>
+    <string name="merged_references_invalid">Merged references invalid</string>
+    <string name="merged_chapter_updates_error">Toggle chapter updates error</string>
+    <string name="merged_toggle_chapter_updates_find_error">Could not find manga to toggle chapter updates</string>
+    <string name="merged_toggle_download_chapters_error">Toggle download chapters error</string>
+    <string name="merged_toggle_download_chapters_find_error">Could not find manga to toggle chapter downloads</string>
+    <string name="allow_deduplication">Allow deduplication:</string>
+    <string name="deduplication_mode">Dedupe mode:</string>
+    <string name="manga_info_manga">Info manga:</string>
+    <string name="toggle_dedupe">Toggle dedupe</string>
+
 </resources>

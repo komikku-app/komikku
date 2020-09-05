@@ -39,16 +39,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="Searching source..."
-                android:textAppearance="@style/TextAppearance.Medium.Title"
-                android:textColor="@android:color/white" />
+                android:textAppearance="@style/TextAppearance.Medium.Title" />
 
             <ProgressBar
                 android:id="@+id/intercept_progress"
                 style="?android:attr/progressBarStyleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:indeterminateTint="@android:color/white" />
+                android:layout_gravity="center" />
         </LinearLayout>
     </LinearLayout>
 

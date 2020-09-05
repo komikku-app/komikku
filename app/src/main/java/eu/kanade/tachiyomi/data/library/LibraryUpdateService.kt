@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
@@ -30,9 +31,12 @@ import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
+import exh.MERGED_SOURCE_ID
+import exh.util.asObservable
 import exh.util.nullIfBlank
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
 import rx.schedulers.Schedulers
@@ -385,7 +389,12 @@ class LibraryUpdateService(
     private fun downloadChapters(manga: Manga, chapters: List<Chapter>) {
         // We don't want to start downloading while the library is updating, because websites
         // may don't like it and they could ban the user.
-        downloadManager.downloadChapters(manga, chapters, false)
+        // SY -->
+        val chapterFilter = if (manga.source == MERGED_SOURCE_ID) {
+            db.getMergedMangaReferences(manga.id!!).executeAsBlocking().filterNot { it.downloadChapters }.mapNotNull { it.mangaId }
+        } else emptyList()
+        // SY <--
+        downloadManager.downloadChapters(manga, /* SY --> */ chapters.filter { it.manga_id !in chapterFilter } /* SY <-- */, false)
     }
 
     /**
@@ -417,7 +426,8 @@ class LibraryUpdateService(
                 .subscribe()
         }
 
-        return source.fetchChapterList(manga)
+        return /* SY --> */ if (source is MergedSource) runBlocking { source.fetchChaptersAndSync(manga, false).asObservable() }
+        else /* SY <-- */ source.fetchChapterList(manga)
             .map { syncChaptersWithSource(db, it, manga, source) }
     }
 

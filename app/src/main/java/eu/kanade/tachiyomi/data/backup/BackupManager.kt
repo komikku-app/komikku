@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.CURRENT_VERSION
 import eu.kanade.tachiyomi.data.backup.models.Backup.EXTENSIONS
 import eu.kanade.tachiyomi.data.backup.models.Backup.HISTORY
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGA
+import eu.kanade.tachiyomi.data.backup.models.Backup.MERGEDMANGAREFERENCES
 import eu.kanade.tachiyomi.data.backup.models.Backup.SAVEDSEARCHES
 import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.models.DHistory
@@ -39,6 +40,7 @@ import eu.kanade.tachiyomi.data.backup.serializer.CategoryTypeAdapter
 import eu.kanade.tachiyomi.data.backup.serializer.ChapterTypeAdapter
 import eu.kanade.tachiyomi.data.backup.serializer.HistoryTypeAdapter
 import eu.kanade.tachiyomi.data.backup.serializer.MangaTypeAdapter
+import eu.kanade.tachiyomi.data.backup.serializer.MergedMangaReferenceTypeAdapter
 import eu.kanade.tachiyomi.data.backup.serializer.TrackTypeAdapter
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.CategoryImpl
@@ -57,11 +59,17 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.EXHSavedSearch
+import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
+import exh.merged.sql.models.MergedMangaReference
+import exh.util.asObservable
 import java.lang.RuntimeException
 import kotlin.math.max
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.runBlocking
 import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -106,6 +114,9 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
                 .registerTypeAdapter<CategoryImpl>(CategoryTypeAdapter.build())
                 .registerTypeAdapter<DHistory>(HistoryTypeAdapter.build())
                 .registerTypeHierarchyAdapter<TrackImpl>(TrackTypeAdapter.build())
+                // SY -->
+                .registerTypeAdapter<MergedMangaReference>(MergedMangaReferenceTypeAdapter.build())
+                // SY <--
                 .create()
         else -> throw Exception("Json version unknown")
     }
@@ -129,15 +140,21 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
         // Create extension ID/name mapping
         val extensionEntries = JsonArray()
 
+        // Merged Manga References
+        val mergedMangaReferenceEntries = JsonArray()
+
         // Add value's to root
         root[Backup.VERSION] = CURRENT_VERSION
         root[Backup.MANGAS] = mangaEntries
         root[CATEGORIES] = categoryEntries
         root[EXTENSIONS] = extensionEntries
+        // SY -->
+        root[MERGEDMANGAREFERENCES] = mergedMangaReferenceEntries
+        // SY <--
 
         databaseHelper.inTransaction {
             // Get manga from database
-            val mangas = getFavoriteManga()
+            val mangas = getFavoriteManga() /* SY --> */ + getMergedManga() /* SY <-- */
 
             val extensions: MutableSet<String> = mutableSetOf()
 
@@ -163,6 +180,8 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             // SY -->
             root[SAVEDSEARCHES] =
                 Injekt.get<PreferencesHelper>().eh_savedSearches().get().joinToString(separator = "***")
+
+            backupMergedMangaReferences(mergedMangaReferenceEntries)
             // SY <--
         }
 
@@ -211,6 +230,13 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             root.add(it)
         }
     }
+
+    // SY -->
+    private fun backupMergedMangaReferences(root: JsonArray) {
+        val mergedMangaReferences = databaseHelper.getMergedMangaReferences().executeAsBlocking()
+        mergedMangaReferences.forEach { root.add(parser.toJsonTree(it)) }
+    }
+    // SY <--
 
     /**
      * Backup the categories of library
@@ -317,29 +343,40 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
      */
     fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
         // SY -->
-        return (
-            if (source is EHentai) {
-                source.fetchChapterList(manga, throttleManager::throttle)
-            } else {
-                source.fetchChapterList(manga)
-            }
-            ).map {
-            if (it.last().chapter_number == -99F) {
-                chapters.forEach { chapter ->
-                    chapter.name = "Chapter ${chapter.chapter_number} restored by dummy source"
-                }
-                syncChaptersWithSource(databaseHelper, chapters, manga, source)
-            } else {
-                syncChaptersWithSource(databaseHelper, it, manga, source)
-            }
-        }
-            // SY <--
-            .doOnNext { pair ->
+        if (source is MergedSource) {
+            val syncedChapters = runBlocking { source.fetchChaptersAndSync(manga, false) }
+            return syncedChapters.onEach { pair ->
                 if (pair.first.isNotEmpty()) {
                     chapters.forEach { it.manga_id = manga.id }
                     insertChapters(chapters)
                 }
+            }.asObservable()
+        } else {
+            return (
+                if (source is EHentai) {
+                    source.fetchChapterList(manga, throttleManager::throttle)
+                } else {
+                    source.fetchChapterList(manga)
+                }
+                ).map {
+                if (it.last().chapter_number == -99F) {
+                    chapters.forEach { chapter ->
+                        chapter.name =
+                            "Chapter ${chapter.chapter_number} restored by dummy source"
+                    }
+                    syncChaptersWithSource(databaseHelper, chapters, manga, source)
+                } else {
+                    syncChaptersWithSource(databaseHelper, it, manga, source)
+                }
             }
+                // SY <--
+                .doOnNext { pair ->
+                    if (pair.first.isNotEmpty()) {
+                        chapters.forEach { it.manga_id = manga.id }
+                        insertChapters(chapters)
+                    }
+                }
+        }
     }
 
     /**
@@ -584,6 +621,49 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
         }
         preferences.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
     }
+
+    /**
+     * Restore the categories from Json
+     *
+     * @param jsonMergedMangaReferences array containing md manga references
+     */
+    internal fun restoreMergedMangaReferences(jsonMergedMangaReferences: JsonArray) {
+        // Get merged manga references from file and from db
+        val dbMergedMangaReferences = databaseHelper.getMergedMangaReferences().executeAsBlocking()
+        val backupMergedMangaReferences = parser.fromJson<List<MergedMangaReference>>(jsonMergedMangaReferences)
+        var lastMergeManga: Manga? = null
+
+        // Iterate over them
+        backupMergedMangaReferences.forEach { mergedMangaReference ->
+            // Used to know if the merged manga reference is already in the db
+            var found = false
+            for (dbMergedMangaReference in dbMergedMangaReferences) {
+                // If the mergedMangaReference is already in the db, assign the id to the file's mergedMangaReference
+                // and do nothing
+                if (mergedMangaReference.mergeUrl == dbMergedMangaReference.mergeUrl && mergedMangaReference.mangaUrl == dbMergedMangaReference.mangaUrl) {
+                    mergedMangaReference.id = dbMergedMangaReference.id
+                    mergedMangaReference.mergeId = dbMergedMangaReference.mergeId
+                    mergedMangaReference.mangaId = dbMergedMangaReference.mangaId
+                    found = true
+                    break
+                }
+            }
+            // If the mergedMangaReference isn't in the db, remove the id and insert a new mergedMangaReference
+            // Store the inserted id in the mergedMangaReference
+            if (!found) {
+                // Let the db assign the id
+                val mergedManga = (if (mergedMangaReference.mergeUrl != lastMergeManga?.url) databaseHelper.getManga(mergedMangaReference.mergeUrl, MERGED_SOURCE_ID).executeAsBlocking() else lastMergeManga) ?: return@forEach
+                val manga = databaseHelper.getManga(mergedMangaReference.mangaUrl, mergedMangaReference.mangaSourceId).executeAsBlocking() ?: return@forEach
+                lastMergeManga = mergedManga
+
+                mergedMangaReference.mergeId = mergedManga.id
+                mergedMangaReference.mangaId = manga.id
+                mergedMangaReference.id = null
+                val result = databaseHelper.insertMergedManga(mergedMangaReference).executeAsBlocking()
+                mergedMangaReference.id = result.insertedId()
+            }
+        }
+    }
     // SY <--
 
     /**
@@ -601,6 +681,9 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
      */
     internal fun getFavoriteManga(): List<Manga> =
         databaseHelper.getFavoriteMangas().executeAsBlocking()
+
+    internal fun getMergedManga(): List<Manga> =
+        databaseHelper.getMergedMangas().executeAsBlocking()
 
     /**
      * Inserts manga and returns id

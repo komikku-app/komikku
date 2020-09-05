@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
@@ -32,6 +33,7 @@ import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
+import exh.MERGED_SOURCE_ID
 import exh.util.defaultReaderType
 import java.io.File
 import java.text.DecimalFormat
@@ -39,6 +41,8 @@ import java.text.DecimalFormatSymbols
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import rx.Completable
 import rx.Observable
@@ -97,7 +101,7 @@ class ReaderPresenter(
      */
     private val chapterList by lazy {
         val manga = manga!!
-        val dbChapters = db.getChapters(manga).executeAsBlocking()
+        val dbChapters = if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.singleOrNull() ?: emptyList() } else db.getChapters(manga).executeAsBlocking()
 
         val selectedChapter = dbChapters.find { it.id == chapterId }
             ?: error("Requested chapter of id $chapterId not found in chapter list")
@@ -236,7 +240,9 @@ class ReaderPresenter(
 
         val context = Injekt.get<Application>()
         val source = sourceManager.getOrStub(manga.source)
-        loader = ChapterLoader(context, downloadManager, manga, source)
+        val mergedReferences = if (source is MergedSource) db.getMergedMangaReferences(manga.id!!).executeAsBlocking() else emptyList()
+        val mergedManga = if (source is MergedSource) db.getMergedMangas(manga.id!!).executeAsBlocking() else emptyList()
+        loader = ChapterLoader(context, downloadManager, manga, source, sourceManager, mergedReferences, mergedManga)
 
         Observable.just(manga).subscribeLatestCache(ReaderActivity::setManga)
         viewerChaptersRelay.subscribeLatestCache(ReaderActivity::setChapters)

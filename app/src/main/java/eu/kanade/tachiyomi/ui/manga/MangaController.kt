@@ -54,9 +54,11 @@ import eu.kanade.tachiyomi.source.online.MetadataSource.Companion.getMetadataSou
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.ToolbarLiftOnScrollController
+import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
+import eu.kanade.tachiyomi.ui.browse.source.SourceController.Companion.SMART_SEARCH_SOURCE_TAG
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
@@ -74,6 +76,7 @@ import eu.kanade.tachiyomi.ui.manga.chapter.MangaChaptersHeaderAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoButtonsAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoHeaderAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoItemAdapter
+import eu.kanade.tachiyomi.ui.manga.merged.EditMergedSettingsDialog
 import eu.kanade.tachiyomi.ui.manga.track.TrackController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
@@ -85,6 +88,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
+import exh.MERGED_SOURCE_ID
 import exh.isEhBasedSource
 import exh.metadata.metadata.base.FlatMetadata
 import java.io.IOException
@@ -194,6 +198,8 @@ class MangaController :
     )
 
     private var editMangaDialog: EditMangaDialog? = null
+
+    private var editMergedSettingsDialog: EditMergedSettingsDialog? = null
 
     private var currentAnimator: Animator? = null
     // EXH <--
@@ -423,6 +429,8 @@ class MangaController :
         // SY -->
         if (presenter.manga.favorite) menu.findItem(R.id.action_edit).isVisible = true
         if (preferences.recommendsInOverflow().get()) menu.findItem(R.id.action_recommend).isVisible = true
+        menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
+        menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
         // SY <--
     }
 
@@ -442,6 +450,16 @@ class MangaController :
 
             R.id.action_recommend -> {
                 openRecommends()
+            }
+            R.id.action_merged -> {
+                editMergedSettingsDialog = EditMergedSettingsDialog(
+                    this, presenter.manga
+                )
+                editMergedSettingsDialog?.showDialog(router)
+            }
+            R.id.action_toggle_dedupe -> {
+                presenter.dedupe = !presenter.dedupe
+                presenter.toggleDedupe()
             }
             // SY <--
 
@@ -633,7 +651,7 @@ class MangaController :
                 Bundle().apply {
                     putParcelable(SourceController.SMART_SEARCH_CONFIG, smartSearchConfig)
                 }
-            ).withFadeTransaction()
+            ).withFadeTransaction().tag(SMART_SEARCH_SOURCE_TAG)
         )
     }
 
@@ -643,7 +661,9 @@ class MangaController :
                 presenter.smartSearchMerge(presenter.manga, smartSearchConfig?.origMangaId!!)
             }
 
-            router?.pushController(
+            router?.popControllerWithTag(SMART_SEARCH_SOURCE_TAG)
+            router?.popCurrentController()
+            router?.replaceTopController(
                 MangaController(
                     mergedManga,
                     true,

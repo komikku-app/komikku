@@ -238,7 +238,7 @@ class BackupRestoreService : Service() {
         }
 
         totalAmount = mangasJson.size()
-        restoreAmount = validManga.count() + 1 // +1 for categories
+        restoreAmount = validManga.count() + 3 // +1 for categories, +1 for saved searches, +1 for merged manga references
         skippedAmount = mangasJson.size() - validManga.count()
         // SY <--
         restoreProgress = 0
@@ -287,6 +287,15 @@ class BackupRestoreService : Service() {
 
         restoreProgress += 1
         showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.saved_searches))
+    }
+
+    private fun restoreMergedMangaReferences(mergedMangaReferencesJson: JsonElement) {
+        db.inTransaction {
+            backupManager.restoreMergedMangaReferences(mergedMangaReferencesJson.asJsonArray)
+        }
+
+        restoreProgress += 1
+        showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.categories))
     }
     // SY <--
 
