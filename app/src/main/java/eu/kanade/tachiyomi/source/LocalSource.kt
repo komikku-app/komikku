@@ -4,6 +4,7 @@ import android.content.Context
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -26,6 +27,8 @@ import junrar.Archive
 import junrar.rarfile.FileHeader
 import rx.Observable
 import timber.log.Timber
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class LocalSource(private val context: Context) : CatalogueSource {
     companion object {
@@ -74,6 +77,9 @@ class LocalSource(private val context: Context) : CatalogueSource {
 
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         val baseDirs = getBaseDirectories(context)
+        // SY -->
+        val allowLocalSourceHiddenFolders = Injekt.get<PreferencesHelper>().allowLocalSourceHiddenFolders().get()
+        // SY <--
 
         val time = if (filters === LATEST_FILTERS) System.currentTimeMillis() - LATEST_THRESHOLD else 0L
         var mangaDirs = baseDirs
@@ -81,7 +87,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
             .mapNotNull { it.listFiles()?.toList() }
             .flatten()
             .filter { it.isDirectory }
-            .filterNot { it.name.startsWith('.') }
+            .filterNot { it.name.startsWith('.') /* SY --> */ && !allowLocalSourceHiddenFolders /* SY <-- */ }
             .filter { if (time == 0L) it.name.contains(query, ignoreCase = true) else it.lastModified() >= time }
             .distinctBy { it.name }
 

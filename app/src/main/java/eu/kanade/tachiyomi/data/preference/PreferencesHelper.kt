@@ -413,4 +413,6 @@ class PreferencesHelper(val context: Context) {
     fun saveChaptersAsCBZ() = flowPrefs.getBoolean(Keys.saveChaptersAsCBZ, false)
 
     fun saveChaptersAsCBZLevel() = flowPrefs.getInt(Keys.saveChaptersAsCBZLevel, 0)
+
+    fun allowLocalSourceHiddenFolders() = flowPrefs.getBoolean(Keys.allowLocalSourceHiddenFolders, false)
 }

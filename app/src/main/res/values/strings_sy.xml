@@ -180,6 +180,8 @@
     <string name="pref_latest_position_summery">Do you want the latest tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if your on data or a metered network</string>
     <string name="pref_source_navigation">Replace latest button</string>
     <string name="pref_source_navigation_summery">Replace latest button with a custom browse view that includes both latest and browse</string>
+    <string name="pref_local_source_hidden_folders">Local source hidden folders</string>
+    <string name="pref_local_source_hidden_folders_summery">Allow local source to read hidden folders</string>
 
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Save Chapters as CBZ</string>

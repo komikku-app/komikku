@@ -308,4 +308,6 @@ object PreferenceKeys {
     const val saveChaptersAsCBZ = "save_chapter_as_cbz"
 
     const val saveChaptersAsCBZLevel = "save_chapter_as_cbz_level"
+
+    const val allowLocalSourceHiddenFolders = "allow_local_source_hidden_folders"
 }

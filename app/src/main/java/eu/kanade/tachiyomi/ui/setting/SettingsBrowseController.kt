@@ -40,6 +40,12 @@ class SettingsBrowseController : SettingsController() {
                 summaryRes = R.string.pref_source_navigation_summery
                 defaultValue = false
             }
+            switchPreference {
+                key = Keys.allowLocalSourceHiddenFolders
+                titleRes = R.string.pref_local_source_hidden_folders
+                summaryRes = R.string.pref_local_source_hidden_folders_summery
+                defaultValue = false
+            }
         }
 
         preferenceCategory {
