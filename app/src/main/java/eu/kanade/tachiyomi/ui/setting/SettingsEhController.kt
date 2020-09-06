@@ -14,9 +14,6 @@ import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import com.github.salomonbrys.kotson.fromJson
 import com.google.gson.Gson
-import com.kizitonwose.time.Interval
-import com.kizitonwose.time.days
-import com.kizitonwose.time.hours
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -51,6 +48,10 @@ import exh.util.nullIfBlank
 import exh.util.trans
 import humanize.Humanize
 import java.util.Date
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.days
+import kotlin.time.hours
 import kotlinx.android.synthetic.main.eh_dialog_categories.view.artist_cg_checkbox
 import kotlinx.android.synthetic.main.eh_dialog_categories.view.asian_porn_checkbox
 import kotlinx.android.synthetic.main.eh_dialog_categories.view.cosplay_checkbox
@@ -663,13 +664,15 @@ class SettingsEhController : SettingsController() {
                                     ?.raise<EHentaiSearchMetadata>()
                             }.toList()
 
-                            fun metaInRelativeDuration(duration: Interval<*>): Int {
-                                val durationMs = duration.inMilliseconds.longValue
+                            @OptIn(ExperimentalTime::class)
+                            fun metaInRelativeDuration(duration: Duration): Int {
+                                val durationMs = duration.toLongMilliseconds()
                                 return allMeta.asSequence().filter {
                                     System.currentTimeMillis() - it.lastUpdateCheck < durationMs
                                 }.count()
                             }
 
+                            @OptIn(ExperimentalTime::class)
                             statsText + "\n\n" + context.getString(
                                 R.string.gallery_updater_stats_time,
                                 metaInRelativeDuration(1.hours),

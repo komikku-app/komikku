@@ -26,7 +26,6 @@ import com.google.android.gms.security.ProviderInstaller
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
-import com.kizitonwose.time.days
 import com.ms_square.debugoverlay.DebugOverlay
 import com.ms_square.debugoverlay.modules.FpsModule
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -45,6 +44,8 @@ import java.security.NoSuchAlgorithmException
 import java.security.Security
 import javax.net.ssl.SSLContext
 import kotlin.concurrent.thread
+import kotlin.time.ExperimentalTime
+import kotlin.time.days
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.conscrypt.Conscrypt
@@ -193,6 +194,7 @@ open class App : Application(), LifecycleObserver {
             "logs"
         )
 
+        @OptIn(ExperimentalTime::class)
         printers += FilePrinter
             .Builder(logFolder.absolutePath)
             .fileNameGenerator(object : DateFileNameGenerator() {
@@ -200,7 +202,7 @@ open class App : Application(), LifecycleObserver {
                     return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}.log"
                 }
             })
-            .cleanStrategy(FileLastModifiedCleanStrategy(7.days.inMilliseconds.longValue))
+            .cleanStrategy(FileLastModifiedCleanStrategy(7.days.toLongMilliseconds()))
             .backupStrategy(NeverBackupStrategy())
             .build()
 

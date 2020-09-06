@@ -9,8 +9,6 @@ import android.content.Context
 import android.os.Build
 import com.elvishew.xlog.XLog
 import com.google.gson.Gson
-import com.kizitonwose.time.days
-import com.kizitonwose.time.hours
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -31,6 +29,9 @@ import exh.util.cancellable
 import exh.util.jobScheduler
 import java.util.ArrayList
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.ExperimentalTime
+import kotlin.time.days
+import kotlin.time.hours
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -284,7 +285,8 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
     companion object {
         private const val MAX_UPDATE_FAILURES = 5
 
-        private val MIN_BACKGROUND_UPDATE_FREQ = 1.days.inMilliseconds.longValue
+        @OptIn(ExperimentalTime::class)
+        private val MIN_BACKGROUND_UPDATE_FREQ = 1.days.toLongMilliseconds()
 
         private const val JOB_ID_UPDATE_BACKGROUND = 700000
         private const val JOB_ID_UPDATE_BACKGROUND_TEST = 700001
@@ -352,14 +354,15 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
             cancelBackground(context)
 
             val preferences = Injekt.get<PreferencesHelper>()
-            val interval = prefInterval ?: preferences.eh_autoUpdateFrequency().get()
-            if (interval > 0) {
+            val duration = prefInterval ?: preferences.eh_autoUpdateFrequency().get()
+            if (duration > 0) {
                 val restrictions = preferences.eh_autoUpdateRequirements()!!
                 val acRestriction = "ac" in restrictions
                 val wifiRestriction = "wifi" in restrictions
 
+                @OptIn(ExperimentalTime::class)
                 val jobInfo = context.periodicBackgroundJobInfo(
-                    interval.hours.inMilliseconds.longValue,
+                    duration.hours.toLongMilliseconds(),
                     acRestriction,
                     wifiRestriction
                 )
@@ -382,5 +385,6 @@ data class UpdateEntry(val manga: Manga, val meta: EHentaiSearchMetadata, val ro
 
 object EHentaiUpdateWorkerConstants {
     const val UPDATES_PER_ITERATION = 50
-    val GALLERY_AGE_TIME = 365.days.inMilliseconds.longValue
+    @OptIn(ExperimentalTime::class)
+    val GALLERY_AGE_TIME = 365.days.toLongMilliseconds()
 }
