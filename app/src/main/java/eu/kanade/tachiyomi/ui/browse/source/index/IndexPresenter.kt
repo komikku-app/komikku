@@ -16,10 +16,12 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
 import exh.EXHSavedSearch
+import exh.util.asFlow
 import java.lang.RuntimeException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rx.Observable
@@ -105,12 +107,17 @@ open class IndexPresenter(
                 })
             }
             if (source.supportsLatest) {
-                val results = source.fetchLatestUpdates(1)
-                    .toBlocking()
-                    .single()
-                    .mangas
-                    .take(10)
-                    .map { networkToLocalManga(it, source.id) }
+                val results = try {
+                    source.fetchLatestUpdates(1)
+                        .asFlow()
+                        .singleOrNull()
+                        ?.mangas
+                        ?.take(10)
+                        ?.map { networkToLocalManga(it, source.id) }
+                        ?: emptyList()
+                } catch (e: Exception) {
+                    emptyList()
+                }
                 fetchImage(results, true)
 
                 withContext(Dispatchers.Main) {
@@ -128,12 +135,17 @@ open class IndexPresenter(
                 })
             }
 
-            val results = source.fetchPopularManga(1)
-                .toBlocking()
-                .single()
-                .mangas
-                .take(10)
-                .map { networkToLocalManga(it, source.id) }
+            val results = try {
+                source.fetchPopularManga(1)
+                    .asFlow()
+                    .singleOrNull()
+                    ?.mangas
+                    ?.take(10)
+                    ?.map { networkToLocalManga(it, source.id) }
+                    ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
             fetchImage(results, false)
 
             withContext(Dispatchers.Main) {
