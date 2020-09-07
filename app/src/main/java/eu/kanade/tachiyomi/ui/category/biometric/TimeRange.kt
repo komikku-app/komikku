@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.ui.category.biometric
 
 import android.content.Context
 import android.text.format.DateFormat
-import com.elvishew.xlog.XLog
-import java.util.Calendar
 import java.util.Date
 import java.util.SimpleTimeZone
 import kotlin.math.floor
@@ -11,7 +9,6 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.hours
-import kotlin.time.milliseconds
 import kotlin.time.minutes
 
 @ExperimentalTime
