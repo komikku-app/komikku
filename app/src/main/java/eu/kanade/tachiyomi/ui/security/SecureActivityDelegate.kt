@@ -6,7 +6,12 @@ import androidx.biometric.BiometricManager
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
+import java.util.Calendar
 import java.util.Date
+import kotlin.time.ExperimentalTime
+import kotlin.time.hours
+import kotlin.time.minutes
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.injectLazy
@@ -19,7 +24,10 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
         preferences.secureScreen().asFlow()
             .onEach {
                 if (it) {
-                    activity.window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+                    activity.window.setFlags(
+                        WindowManager.LayoutParams.FLAG_SECURE,
+                        WindowManager.LayoutParams.FLAG_SECURE
+                    )
                 } else {
                     activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 }
@@ -40,12 +48,19 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     private fun isAppLocked(): Boolean {
         return locked &&
             (
                 preferences.lockAppAfter().get() <= 0 ||
                     Date().time >= preferences.lastAppUnlock().get() + 60 * 1000 * preferences.lockAppAfter().get()
-                )
+                ) && preferences.biometricTimeRanges().get().mapNotNull { TimeRange.fromPreferenceString(it) }.let { timeRanges ->
+            if (timeRanges.isNotEmpty()) {
+                val today: Calendar = Calendar.getInstance()
+                val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes
+                timeRanges.any { now in it.startTime..it.endTime }
+            } else true
+        }
     }
 
     companion object {

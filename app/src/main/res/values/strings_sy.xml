@@ -187,6 +187,20 @@
     <string name="save_chapter_as_cbz">Save Chapters as CBZ</string>
     <string name="save_chapter_as_cbz_level">CBZ Compression level</string>
 
+    <!-- Security settings -->
+    <string name="biometric_lock_times">Biometric lock times</string>
+    <string name="action_edit_biometric_lock_times">Edit lock times</string>
+    <string name="biometric_lock_times_empty">You have biometric lock times. Tap the plus button to create one.</string>
+    <string name="biometric_lock_time_conflicts">A lock time conflicts with one that already exists!</string>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d lock time</item>
+        <item quantity="other">%d lock times</item>
+    </plurals>
+    <string name="biometric_lock_start_time">Enter starting time</string>
+    <string name="biometric_lock_end_time">Enter end time</string>
+    <string name="biometric_lock_time_deleted_snack">Biometric lock time completed</string>
+    <string name="biometric_lock_invalid_time_selected">Invalid time selected</string>
+
     <!-- Reader Settings -->
     <string name="download_threads">Download threads</string>
     <string name="download_threads_summary">Higher values can speed up image downloading significantly, but can also trigger bans. Recommended value is 2 or 3. Current value is: %s</string>

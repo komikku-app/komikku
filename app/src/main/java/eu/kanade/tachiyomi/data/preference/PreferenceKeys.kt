@@ -310,4 +310,6 @@ object PreferenceKeys {
     const val saveChaptersAsCBZLevel = "save_chapter_as_cbz_level"
 
     const val allowLocalSourceHiddenFolders = "allow_local_source_hidden_folders"
+
+    const val biometricTimeRanges = "biometric_time_ranges"
 }

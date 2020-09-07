@@ -415,4 +415,6 @@ class PreferencesHelper(val context: Context) {
     fun saveChaptersAsCBZLevel() = flowPrefs.getInt(Keys.saveChaptersAsCBZLevel, 0)
 
     fun allowLocalSourceHiddenFolders() = flowPrefs.getBoolean(Keys.allowLocalSourceHiddenFolders, false)
+
+    fun biometricTimeRanges() = flowPrefs.getStringSet(Keys.biometricTimeRanges, mutableSetOf())
 }

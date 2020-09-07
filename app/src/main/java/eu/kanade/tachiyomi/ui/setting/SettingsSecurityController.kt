@@ -5,8 +5,12 @@ import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
+import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesController
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.intListPreference
+import eu.kanade.tachiyomi.util.preference.onClick
+import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
@@ -53,6 +57,16 @@ class SettingsSecurityController : SettingsController() {
             key = Keys.hideNotificationContent
             titleRes = R.string.hide_notification_content
             defaultValue = false
+        }
+        preference {
+            titleRes = R.string.action_edit_biometric_lock_times
+
+            val timeRanges = preferences.biometricTimeRanges().get().count()
+            summary = context.resources.getQuantityString(R.plurals.num_lock_times, timeRanges, timeRanges)
+
+            onClick {
+                router.pushController(BiometricTimesController().withFadeTransaction())
+            }
         }
     }
 }
