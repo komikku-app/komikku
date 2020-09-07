@@ -199,24 +199,24 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     val query = queryComponent.asQuery()
                     query.isBlank() || (
                         (!manga.title.contains(query, true)) &&
-                            (manga.author == null || (manga.author?.contains(query, true) == false)) &&
-                            (manga.artist == null || (manga.artist?.contains(query, true) == false)) &&
-                            (source == null || !source.name.contains(query, true)) &&
-                            (hasLoggedServices && tracks != null && !filterTracks(query, tracks)) &&
-                            (genre == null || genre.all { !it.contains(query, true) }) &&
-                            (searchTags == null || searchTags.all { !it.name.contains(query, true) }) ||
-                            (searchTitles == null || searchTitles.all { !it.title.contains(query, true) })
+                            (!(manga.author ?: "").contains(query, true)) &&
+                            (!(manga.artist ?: "").contains(query, true)) &&
+                            (!(source?.name ?: "").contains(query, true)) &&
+                            (!hasLoggedServices || hasLoggedServices && tracks == null || tracks != null && !filterTracks(query, tracks)) &&
+                            ((genre ?: emptyList()).all { !it.contains(query, true) }) &&
+                            ((searchTags ?: emptyList()).all { !it.name.contains(query, true) }) &&
+                            ((searchTitles ?: emptyList()).all { !it.title.contains(query, true) })
                         )
                 }
                 is Namespace -> {
-                    val tag = queryComponent.tag?.asQuery()
-                    searchTags == null || searchTags.all {
-                        if (tag == null || tag.isBlank()) {
-                            it.namespace == null || !it.namespace.contains(queryComponent.namespace, true)
-                        } else if (it.namespace == null) {
+                    val searchedTag = queryComponent.tag?.asQuery()
+                    searchTags == null || searchTags.all { mangaTag ->
+                        if (searchedTag == null || searchedTag.isBlank()) {
+                            mangaTag.namespace == null || !mangaTag.namespace.contains(queryComponent.namespace, true)
+                        } else if (mangaTag.namespace == null) {
                             true
                         } else {
-                            !(it.name.contains(tag, true) && it.namespace.contains(queryComponent.namespace, true))
+                            !(mangaTag.name.contains(searchedTag, true) && mangaTag.namespace.contains(queryComponent.namespace, true))
                         }
                     }
                 }
