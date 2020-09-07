@@ -115,13 +115,27 @@ class MangaInfoHeaderAdapter(
                     isVisible = true
 
                     if (trackCount > 0) {
-                        setIconResource(R.drawable.ic_done_24dp)
-                        text = view.context.resources.getQuantityString(R.plurals.num_trackers, trackCount, trackCount)
-                        isChecked = true
+                        setCompoundDrawablesWithIntrinsicBounds(
+                            null,
+                            ContextCompat.getDrawable(context, R.drawable.ic_done_24dp),
+                            null,
+                            null
+                        )
+                        text = view.context.resources.getQuantityString(
+                            R.plurals.num_trackers,
+                            trackCount,
+                            trackCount
+                        )
+                        isSelected = true
                     } else {
-                        setIconResource(R.drawable.ic_sync_24dp)
+                        setCompoundDrawablesWithIntrinsicBounds(
+                            null,
+                            ContextCompat.getDrawable(context, R.drawable.ic_sync_24dp),
+                            null,
+                            null
+                        )
                         text = view.context.getString(R.string.manga_tracking_tab)
-                        isChecked = false
+                        isSelected = false
                     }
 
                     clicks()
@@ -147,12 +161,6 @@ class MangaInfoHeaderAdapter(
                     .onEach { controller.migrateManga() }
                     .launchIn(scope)
                 binding.btnMigrate.setTooltip(R.string.migrate)
-
-                binding.btnSmartSearch.isVisible = true
-                binding.btnSmartSearch.clicks()
-                    .onEach { controller.openSmartSearch() }
-                    .launchIn(scope)
-                binding.btnSmartSearch.setTooltip(R.string.merge_with_another_source)
             }
             // SY <--
 
@@ -314,13 +322,18 @@ class MangaInfoHeaderAdapter(
             // Set the Favorite drawable to the correct one.
             // Border drawable if false, filled drawable if true.
             binding.btnFavorite.apply {
-                icon = ContextCompat.getDrawable(
-                    context,
-                    if (isFavorite) R.drawable.ic_favorite_24dp else R.drawable.ic_favorite_border_24dp
+                setCompoundDrawablesWithIntrinsicBounds(
+                    null,
+                    ContextCompat.getDrawable(
+                        context,
+                        if (isFavorite) R.drawable.ic_favorite_24dp else R.drawable.ic_favorite_border_24dp
+                    ),
+                    null,
+                    null
                 )
                 text =
                     context.getString(if (isFavorite) R.string.in_library else R.string.add_to_library)
-                isChecked = isFavorite
+                isSelected = isFavorite
             }
         }
     }
