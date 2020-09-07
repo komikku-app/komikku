@@ -85,7 +85,7 @@ open class IndexController :
     }
 
     /**
-     * Initiate the view with [R.layout.global_search_controller].
+     * Initiate the view with [R.layout.latest_controller].
      *
      * @param inflater used to load the layout xml.
      * @param container containing parent views.
@@ -101,9 +101,9 @@ open class IndexController :
     }
 
     /**
-     * Create the [LatestPresenter] used in controller.
+     * Create the [IndexPresenter] used in controller.
      *
-     * @return instance of [LatestPresenter]
+     * @return instance of [IndexPresenter]
      */
     override fun createPresenter(): IndexPresenter {
         return IndexPresenter(source!!)

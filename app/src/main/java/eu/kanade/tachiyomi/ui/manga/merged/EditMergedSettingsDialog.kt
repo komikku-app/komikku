@@ -99,7 +99,6 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
         mangaController.presenter.updateMergeSettings(mergeReference, mergedMangas.map { it.second })
     }
 
-
     override fun onItemReleased(position: Int) {
         val mergedMangaAdapter = mergedMangaAdapter ?: return
         mergedMangas.onEach { mergedManga ->
@@ -176,7 +175,6 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     private fun Pair<Manga?, MergedMangaReference>.toModel(): EditMergedMangaItem {
         return EditMergedMangaItem(first, second)
     }
-
 
     private companion object {
         const val KEY_MANGA = "manga_id"
