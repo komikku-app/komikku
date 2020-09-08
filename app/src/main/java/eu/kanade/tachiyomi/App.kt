@@ -181,7 +181,6 @@ open class App : Application(), LifecycleObserver {
 
         val logConfig = LogConfiguration.Builder()
             .logLevel(logLevel)
-            .t()
             .st(2)
             .nb()
             .build()
