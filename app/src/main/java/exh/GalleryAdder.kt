@@ -26,7 +26,7 @@ class GalleryAdder {
         forceSource: UrlImportableSource? = null,
         throttleFunc: () -> Unit = {}
     ): GalleryAddEvent {
-        XLog.d(context.getString(R.string.gallery_adder_importing_gallery, url, fav.toString(), forceSource))
+        XLog.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
         try {
             val uri = Uri.parse(url)
 
@@ -121,7 +121,7 @@ class GalleryAdder {
 
             return GalleryAddEvent.Success(url, manga, context)
         } catch (e: Exception) {
-            XLog.w(context.getString(R.string.gallery_adder_could_not_add_gallery, url), e)
+            XLog.w(context.getString(R.string.gallery_adder_could_not_add_manga, url), e)
 
             if (e is EHentai.GalleryNotFoundException) {
                 return GalleryAddEvent.Fail.NotFound(url, context)

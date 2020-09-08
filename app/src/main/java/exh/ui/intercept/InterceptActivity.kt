@@ -38,7 +38,7 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
     private fun processLink() {
         if (Intent.ACTION_VIEW == intent.action) {
             binding.interceptProgress.isVisible = true
-            binding.interceptStatus.setText(R.string.loading_gallery)
+            binding.interceptStatus.setText(R.string.loading_manga)
             loadGallery(intent.dataString!!)
         }
     }
@@ -74,7 +74,7 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
                         binding.interceptStatus.text = this.getString(R.string.error_with_reason, it.reason)
                         MaterialDialog(this)
                             .title(R.string.chapter_error)
-                            .message(text = this.getString(R.string.could_not_open_gallery, it.reason))
+                            .message(text = this.getString(R.string.could_not_open_manga, it.reason))
                             .cancelable(true)
                             .cancelOnTouchOutside(true)
                             .positiveButton(android.R.string.ok)
