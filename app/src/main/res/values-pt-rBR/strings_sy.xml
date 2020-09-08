@@ -8,6 +8,13 @@
     <string name="action_search_manually">Pesquisar manualmente</string>
     <string name="action_migrate_now">Migrar agora</string>
     <string name="action_copy_now">Copiar agora</string>
+    <string name="action_clean_titles">Limpar títulos</string>
+    <string name="action_start_reading_button">Botão para iniciar leitura</string>
+    <string name="action_display_no_title_grid">Grade sem título</string>
+    <string name="action_start_reading">Iniciar leitura</string>
+
+    <!-- Library fragment -->
+    <string name="buttons_header">Botões</string>
 
     <!-- Manga Type -->
     <string name="manhwa">Manhwa</string>
@@ -64,6 +71,8 @@
     <string name="eh_image_quality_1280">1280x</string>
     <string name="eh_image_quality_980">980x</string>
     <string name="eh_image_quality_780">780x</string>
+    <string name="pref_enhanced_e_hentai_view">Página inicial melhorada para o E/Exhentai</string>
+    <string name="pref_enhanced_e_hentai_view_summary">Habilitar/Desabilitar a página inicial melhorada feita para o E/Exhentai</string>
     <string name="favorites_sync">Sincronização de favoritos</string>
     <string name="disable_favorites_uploading">Desativar upload de favoritos</string>
     <string name="disable_favorites_uploading_summary">Favoritos são baixados apenas do ExHentai. Quaisquer alterações dos favoritos no aplicativo não serão enviadas. Isso evita a perda acidental de favoritos no ExHentai. Note que as remoções ainda serão baixadas (se você remover um favorito no ExHentai, também será removido no aplicativo).</string>
@@ -116,6 +125,29 @@
     <string name="enable_source_blacklist_summary">Ocultar extensões/fontes incompatíveis com o %1$s. Reinicie o aplicativo ao alterar.</string>
     <string name="open_debug_menu">Abrir menu de depuração</string>
     <string name="open_debug_menu_summary"><![CDATA[NÃO TOQUE NESTE MENU A MENOS QUE SAIBA O QUE ESTÁ FAZENDO! <font color=\'red\'>PODE CORROMPER A SUA BIBLIOTECA!</font>]]></string>
+    <string name="starting_cleanup">Iniciando limpeza</string>
+    <string name="clean_up_downloaded_chapters">Limpar capítulos baixados</string>
+    <string name="delete_unused_chapters">Deleta pastas de capítulos não existentes, parcialmente baixados ou lidos</string>
+    <string name="no_folders_to_cleanup">Sem pastas para limpar</string>
+    <string name="clean_orphaned_downloads">Clean orphaned</string>
+    <string name="clean_read_downloads">Clean read</string>
+    <string name="clean_read_manga_not_in_library">Clean manga not in library</string>
+    <plurals name="cleanup_done">
+        <item quantity="one">Limpeza concluída. %d pasta deletada</item>
+        <item quantity="other">Limpeza concluída.%d pastas deletadas</item>
+    </plurals>
+    <string name="data_saver">Economizar dados</string>
+    <string name="data_saver_summary">Comprimir imagens antes de baixar ou carregar no leitor, requere um servidor Bandwidth Hero Proxy</string>
+    <string name="ignore_jpeg">Ignorar Imagens em Jpeg</string>
+    <string name="ignore_gif">Ingorar Animações Gif</string>
+    <string name="data_saver_image_quality">Qualidade da Imagem</string>
+    <string name="data_saver_image_quality_summary">Maiores valores significam que uma maior porcentagem da qualidade da imagem é preservada, mas também significa que o tamanho do arquivo é maior, 80 porcento é um bom equilíbrio entre o tamanho do arquivo e a qualidade da imagem</string>
+    <string name="data_saver_image_format">Compress to Jpeg</string>
+    <string name="data_saver_image_format_summary_on">O tamanho de arquivo de arquivos Jpeg é consideravelmente menor que Wepb (o que significa que mais dados são economizados), porém faz com que as imagens percam maior qualidade em comparação.\nCurrently compresses to Jpeg</string>
+    <string name="data_saver_image_format_summary_off">O tamanho de arquivo de arquivos Jpeg é consideravelmente menor que Wepb (o que significa que mais dados são economizados), porém faz com que as imagens percam maior qualidade em comparação.\nCurrently compresses to Webp</string>
+    <string name="data_saver_color_bw">Converter para Branco e Preto</string>
+    <string name="data_saver_server">Servidor Bandwidth Hero Proxy</string>
+    <string name="data_saver_server_summary">Insira a url do Servidor Bandwidth Hero Proxy aqui</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Mínimo</string>
@@ -134,6 +166,25 @@
 
     <!-- Library settings -->
     <string name="pref_skip_pre_migration_summary">Use as últimas fontes e preferências da pré-migração salvas para migrar em massa</string>
+    <string name="library_settings_sheet">Library settings sheet</string>
+    <string name="library_settings_sheet_summary">More library display settings</string>
+    <string name="library_group_updates">Library dynamic category updates</string>
+    <string name="library_group_updates_global">Always launch global updates</string>
+    <string name="library_group_updates_all_but_ungrouped">Launch global updates only for ungrouped, category updates for others</string>
+    <string name="library_group_updates_all">Launch category updates all the time</string>
+    
+    <!-- Browse settings -->
+    <string name="pref_latest_tab_language_code">Exibir código do idioma ao lado do nome</string>
+    <string name="pref_latest_position">Posição da aba "Recentes"</string>
+    <string name="pref_latest_position_summery">Quer que a aba Recentes seja a primeira em Navegar? Isso fará a aba padrão ao tocar em Navegar, não recomendável se estiver usando com dados móveis ou uma rede medida</string>
+    <string name="pref_source_navigation">Replace latest button</string>
+    <string name="pref_source_navigation_summery">Replace latest button with a custom browse view that includes both latest and browse</string>
+    <string name="pref_local_source_hidden_folders">Local source hidden folders</string>
+    <string name="pref_local_source_hidden_folders_summery">Allow local source to read hidden folders</string>
+
+    <!-- Download settings -->
+    <string name="save_chapter_as_cbz">Salvar Capítulos como CBZ</string>
+    <string name="save_chapter_as_cbz_level">Nível de Compressão do CBZ</string>
 
     <!-- Reader Settings -->
     <string name="download_threads">Downloads simultâneos</string>
@@ -159,6 +210,11 @@
     <string name="preserve_reading_position">Preservar posição de leitura no mangá lido</string>
     <string name="auto_webtoon_mode">Modo Auto Webtoon</string>
     <string name="auto_webtoon_mode_summary">Use o modo webtoon automático para mangás que são detectados provavelmente no formato longstrip</string>
+    <string name="enable_zoom_out">Enable zoom out</string>
+    <string name="smart_based_on_page">Inteligente (Baseado na página)</string>
+    <string name="smart_based_on_page_and_theme">Inteligente (baseado na página e no tema)</string>
+    <string name="tap_scroll_page">Tap scroll by page</string>
+    <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>
 
     <!-- Reader -->
     <!-- Reader Actions -->
@@ -180,6 +236,11 @@
     <string name="az_recommends">Ver recomendações</string>
     <string name="merge_with_another_source">Mesclar com outro</string>
 
+     <!-- Manga info fragment -->
+    <string name="hiatus">Hiato</string>
+    <string name="cancelled">Cancelado</string>
+    <string name="publication_complete">Publicação Finalizada</string>
+    
     <!-- Manga Info Edit -->
     <string name="reset_tags">Redefinir Tags</string>
     <string name="reset_cover">Redefinir Capa</string>
@@ -207,9 +268,6 @@
     <string name="unwatch">Remover dos observados</string>
     <string name="too_many_watched">Muitas fontes oservadas, não é possível adicionar mais de 5</string>
     <string name="latest_tab_empty">Você não tem fontes observadas, vá para a aba "Fontes" e mantenha pressionado em uma fonte para oservá-la</string>
-    <string name="pref_latest_tab_language_code">Exibir código do idioma ao lado do nome</string>
-    <string name="pref_latest_position">Posição da aba "Recentes"</string>
-    <string name="pref_latest_position_summery">Quer que a aba Recentes seja a primeira em Navegar? Isso fará a aba padrão ao tocar em Navegar, não recomendável se estiver usando com dados móveis ou uma rede medida</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundante</string>
@@ -314,18 +372,18 @@
     <string name="batch_add_success_log_message">Galeria adicionada: %1$s</string>
     <string name="batch_add_unknown_type_log_message">Galeria ou tipo de galeria desconhecida: %1$s</string>
     <string name="batch_add_not_exist_log_message">Galeria não existe: %1$s</string>
-    <string name="gallery_adder_importing_gallery">Importando galeria (url: %1$s, fav: %2$s, forceSource: %3$s)â€¦</string>
+    <string name="gallery_adder_importing_manga">Importando galeria (url: %1$s, fav: %2$s, forceSource: %3$s)â€¦</string>
     <string name="gallery_adder_source_uri_must_match">Erro ao verificar correspondência do URI da fonte!</string>
     <string name="gallery_adder_uri_map_to_manga_error">Erro de mapeamento para manga do URI da fonte!</string>
     <string name="gallery_adder_uri_clean_error">Erro so limpar URI da fonte!</string>
     <string name="gallery_adder_chapter_fetch_error">Falha ao atualizar capítulos para a galeria: %1$s!</string>
-    <string name="gallery_adder_could_not_add_gallery">Não foi possível adicionar galeria (url: %1$s)!</string>
+    <string name="gallery_adder_could_not_add_manga">Não foi possível adicionar galeria (url: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Iniciando aplicativo…</string>
     <string name="error_with_reason">Erro: %1$s</string>
-    <string name="could_not_open_gallery">Não foi possível abrir esta galeria:\n\n%1$s</string>
+    <string name="could_not_open_manga">Não foi possível abrir esta galeria:\n\n%1$s</string>
     <string name="manga_id_is_null">O ID do mangá é nulo!</string>
-    <string name="loading_gallery">Carregando galeria…</string>
+    <string name="loading_manga">Carregando galeria…</string>
 
 </resources>

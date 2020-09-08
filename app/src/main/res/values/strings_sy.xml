@@ -205,7 +205,7 @@
     <string name="download_threads">Download threads</string>
     <string name="download_threads_summary">Higher values can speed up image downloading significantly, but can also trigger bans. Recommended value is 2 or 3. Current value is: %s</string>
     <string name="aggressively_load_pages">Aggressively load pages</string>
-    <string name="aggressively_load_pages_summary">Slowly download the entire gallery while reading instead of just loading the pages you are viewing.</string>
+    <string name="aggressively_load_pages_summary">Slowly download the entire chapter while reading instead of just loading the pages you are viewing.</string>
     <string name="skip_queue_on_retry">Skip queue on retry</string>
     <string name="skip_queue_on_retry_summary">Normally, pressing the retry button on a failed download will wait until the downloader has finished downloading the last page before beginning to re-download the failed page. Enabling this will force the downloader to begin re-downloading the failed page as soon as you press the retry button.</string>
     <string name="reader_preload_amount">Reader Preload amount</string>
@@ -386,27 +386,27 @@
     <string name="eh_batch_add_adding_galleries">Adding galleries…</string>
     <string name="eh_batch_add_finish">Finish</string>
     <string name="batch_add_no_valid_galleries">No galleries to add!</string>
-    <string name="batch_add_no_valid_galleries_message">You must specify at least one gallery to add!</string>
+    <string name="batch_add_no_valid_galleries_message">You must specify at least one manga to add!</string>
     <string name="batch_add">Batch add</string>
     <string name="batch_add_ok">[OK]</string>
     <string name="batch_add_error">[ERROR]</string>
     <string name="batch_add_summary">\nSummary:\nAdded: %1$d gallerie(s)\nFailed: %2$d gallerie(s)</string>
-    <string name="batch_add_success_log_message">Added gallery: %1$s</string>
-    <string name="batch_add_unknown_type_log_message">Unknown gallery type for gallery: %1$s</string>
-    <string name="batch_add_not_exist_log_message">Gallery does not exist: %1$s</string>
-    <string name="gallery_adder_importing_gallery">Importing gallery (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
+    <string name="batch_add_success_log_message">Added manga: %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Unknown manga type for manga: %1$s</string>
+    <string name="batch_add_not_exist_log_message">Manga does not exist: %1$s</string>
+    <string name="gallery_adder_importing_manga">Importing manga (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Source URI match check error!</string>
     <string name="gallery_adder_uri_map_to_manga_error">Source URI map-to-manga error!</string>
     <string name="gallery_adder_uri_clean_error">Source URI clean error!</string>
-    <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for gallery: %1$s!</string>
-    <string name="gallery_adder_could_not_add_gallery">Could not add gallery (url: %1$s)!</string>
+    <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for manga: %1$s!</string>
+    <string name="gallery_adder_could_not_add_manga">Could not add manga (url: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Launching app…</string>
     <string name="error_with_reason">Error: %1$s</string>
-    <string name="could_not_open_gallery">Could not open this gallery:\n\n%1$s</string>
+    <string name="could_not_open_manga">Could not open this manga:\n\n%1$s</string>
     <string name="manga_id_is_null">Manga ID is null!</string>
-    <string name="loading_gallery">Loading gallery…</string>
+    <string name="loading_manga">Loading manga…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Masterpiece</string>
