@@ -368,7 +368,7 @@ task copyResources(type: Copy) {
 
 preBuild.dependsOn(ktlintFormat, copyResources)
 
-if (!getGradle().getStartParameter().getTaskRequests().toString().contains("Dev")) {
+if (!getGradle().getStartParameter().getTaskRequests().toString().contains("Debug")) {
     apply plugin: 'com.google.gms.google-services'
     // Firebase Crashlytics
     apply plugin: 'com.google.firebase.crashlytics'
