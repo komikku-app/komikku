@@ -202,7 +202,6 @@
         <item name="colorOnSurface">@color/red</item>
         <item name="colorAccent">@color/dark_red</item>
         <item name="colorOnPrimary">@color/red</item>
-        <item name="android:navigationBarColor">@color/red</item>
         <item name="android:textColor">@color/red</item>
         <item name="android:textColorPrimary">@color/red</item>
         <item name="android:textColorSecondary">@color/dark_red</item>
