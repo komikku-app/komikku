@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import exh.md.utils.MdUtil
 
 class SettingsMainController : SettingsController() {
 
@@ -78,6 +79,14 @@ class SettingsMainController : SettingsController() {
                 iconTint = tintColor
                 titleRes = R.string.pref_category_eh
                 onClick { navigateTo(SettingsEhController()) }
+            }
+        }
+        if (MdUtil.getEnabledMangaDex(preferences) != null) {
+            preference {
+                iconRes = R.drawable.ic_tracker_mangadex_logo
+                iconTint = tintColor
+                titleRes = R.string.mangadex_specific_settings
+                onClick { navigateTo(SettingsMangaDexController()) }
             }
         }
         // SY <--

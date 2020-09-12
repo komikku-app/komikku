@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.notification
@@ -65,7 +66,7 @@ class LibraryUpdateNotifier(private val context: Context) {
      * @param current the current progress.
      * @param total the total progress.
      */
-    fun showProgressNotification(manga: Manga, current: Int, total: Int) {
+    fun showProgressNotification(manga: /* SY --> */ SManga /* SY <-- */, current: Int, total: Int) {
         val title = if (preferences.hideNotificationContent()) {
             context.getString(R.string.notification_check_updates)
         } else {

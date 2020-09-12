@@ -4,6 +4,7 @@ import android.view.View
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
+import exh.metadata.metadata.base.RaisedSearchMetadata
 
 /**
  * Generic class used to hold the displayed data of a manga in the catalogue.
@@ -29,4 +30,8 @@ abstract class SourceHolder(view: View, adapter: FlexibleAdapter<*>) :
      * @param manga the manga to bind.
      */
     abstract fun setImage(manga: Manga)
+
+    // SY -->
+    abstract fun onSetMetadataValues(manga: Manga, metadata: RaisedSearchMetadata)
+    // SY <--
 }

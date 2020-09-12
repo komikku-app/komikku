@@ -50,7 +50,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.MetadataSource.Companion.getMetadataSource
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.ToolbarLiftOnScrollController
@@ -92,6 +92,7 @@ import eu.kanade.tachiyomi.util.view.snack
 import exh.MERGED_SOURCE_ID
 import exh.isEhBasedSource
 import exh.metadata.metadata.base.FlatMetadata
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import java.io.IOException
 import kotlin.math.min
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
@@ -254,9 +255,9 @@ class MangaController :
 
         adapters += mangaInfoAdapter
 
-        val thisSourceAsLewdSource = presenter.source.getMetadataSource()
-        if (thisSourceAsLewdSource != null) {
-            mangaMetaInfoAdapter = thisSourceAsLewdSource.getDescriptionAdapter(this)
+        val mainSource = presenter.source.getMainSource()
+        if (mainSource is MetadataSource<*, *>) {
+            mangaMetaInfoAdapter = mainSource.getDescriptionAdapter(this)
             mangaMetaInfoAdapter?.let { adapters += it }
         }
         mangaInfoItemAdapter = MangaInfoItemAdapter(this, fromSource)
@@ -277,7 +278,7 @@ class MangaController :
 
         binding.recycler.adapter = ConcatAdapter(adapters)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.addItemDecoration(ChapterDividerItemDecoration(view.context, if ((!preferences.recommendsInOverflow().get() || smartSearchConfig != null) && thisSourceAsLewdSource != null) 4 else if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null || thisSourceAsLewdSource != null) 3 else 2))
+        binding.recycler.addItemDecoration(ChapterDividerItemDecoration(view.context, if ((!preferences.recommendsInOverflow().get() || smartSearchConfig != null) && mainSource is MetadataSource<*, *>) 4 else if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null || mainSource is MetadataSource<*, *>) 3 else 2))
         // SY <--
         binding.recycler.setHasFixedSize(true)
         chaptersAdapter?.fastScroller = binding.fastScroller
@@ -481,9 +482,9 @@ class MangaController :
 
     // SY -->
     fun onNextMetaInfo(flatMetadata: FlatMetadata) {
-        val thisSourceAsLewdSource = presenter.source.getMetadataSource()
-        if (thisSourceAsLewdSource != null) {
-            presenter.meta = flatMetadata.raise(thisSourceAsLewdSource.metaClass)
+        val mainSource = presenter.source.getMainSource()
+        if (mainSource is MetadataSource<*, *>) {
+            presenter.meta = flatMetadata.raise(mainSource.metaClass)
             mangaMetaInfoAdapter?.notifyDataSetChanged()
         }
     }

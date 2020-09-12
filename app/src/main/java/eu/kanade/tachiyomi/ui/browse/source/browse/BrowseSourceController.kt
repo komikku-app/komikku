@@ -36,6 +36,7 @@ import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -55,6 +56,7 @@ import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
 import exh.EXHSavedSearch
 import exh.isEhBasedSource
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.coroutines.Job
@@ -187,6 +189,14 @@ open class BrowseSourceController(bundle: Bundle) :
         setupRecycler(view)
 
         binding.progress.isVisible = true
+
+        // SY -->
+        val mainSource = presenter.source.getMainSource()
+        if (mainSource is LoginSource && mainSource.needsLogin && !mainSource.isLogged()) {
+            val dialog = mainSource.getLoginDialog(mainSource, activity!!)
+            dialog.showDialog(router)
+        }
+        // SY <--
     }
 
     open fun initFilterSheet() {
@@ -205,6 +215,8 @@ open class BrowseSourceController(bundle: Bundle) :
         filterSheet = SourceFilterSheet(
             activity!!,
             // SY -->
+            this,
+            presenter.source,
             presenter.loadSearches(),
             // SY <--
             onFilterClicked = {

@@ -396,6 +396,10 @@ class PreferencesHelper(val context: Context) {
 
     fun mangaDexLowQualityCovers() = flowPrefs.getBoolean(Keys.mangaDexLowQualityCovers, false)
 
+    fun mangaDexForceLatestCovers() = flowPrefs.getBoolean(Keys.mangaDexForceLatestCovers, false)
+
+    fun preferredMangaDexId() = flowPrefs.getString(Keys.preferredMangaDexId, "0")
+
     fun dataSaver() = flowPrefs.getBoolean(Keys.dataSaver, false)
 
     fun ignoreJpeg() = flowPrefs.getBoolean(Keys.ignoreJpeg, false)

@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservable
+import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.handlers.serializers.FollowsPageResult
@@ -16,26 +17,24 @@ import exh.md.utils.MdUtil
 import exh.md.utils.MdUtil.Companion.baseUrl
 import exh.md.utils.MdUtil.Companion.getMangaId
 import exh.metadata.metadata.MangaDexSearchMetadata
-import kotlin.math.floor
+import exh.util.floor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.CacheControl
 import okhttp3.FormBody
 import okhttp3.Headers
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 
-// Unused, kept for future featues todo
 class FollowsHandler(val client: OkHttpClient, val headers: Headers, val preferences: PreferencesHelper) {
 
     /**
      * fetch follows by page
      */
-    fun fetchFollows(page: Int): Observable<MetadataMangasPage> {
-        return client.newCall(followsListRequest(page))
+    fun fetchFollows(): Observable<MangasPage> {
+        return client.newCall(followsListRequest())
             .asObservable()
             .map { response ->
                 followsParseMangaPage(response)
@@ -96,9 +95,9 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             val follow = result.first()
             track.status = follow.follow_type
             if (result[0].chapter.isNotBlank()) {
-                track.last_chapter_read = floor(follow.chapter.toFloat()).toInt()
+                track.last_chapter_read = follow.chapter.toFloat().floor()
             }
-            track.tracking_url = MdUtil.baseUrl + follow.manga_id.toString()
+            track.tracking_url = baseUrl + follow.manga_id.toString()
             track.title = follow.title
         }
         return track
@@ -107,11 +106,8 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     /**build Request for follows page
      *
      */
-    private fun followsListRequest(page: Int): Request {
-        val url = "${MdUtil.baseUrl}${MdUtil.followsAllApi}".toHttpUrlOrNull()!!.newBuilder()
-            .addQueryParameter("page", page.toString())
-
-        return GET(url.toString(), headers, CacheControl.FORCE_NETWORK)
+    private fun followsListRequest(): Request {
+        return GET("$baseUrl${MdUtil.followsAllApi}", headers, CacheControl.FORCE_NETWORK)
     }
 
     /**
@@ -126,7 +122,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             title = MdUtil.cleanString(result.title)
             mdUrl = "/manga/${result.manga_id}/"
             thumbnail_url = MdUtil.formThumbUrl(manga.url, lowQualityCovers)
-            follow_status = FollowStatus.fromInt(result.follow_type)?.ordinal
+            follow_status = FollowStatus.fromInt(result.follow_type)?.int
         }
     }
 
@@ -205,21 +201,16 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     /**
      * fetch all manga from all possible pages
      */
-    suspend fun fetchAllFollows(forceHd: Boolean): List<SManga> {
+    suspend fun fetchAllFollows(forceHd: Boolean): List<Pair<SManga, MangaDexSearchMetadata>> {
         return withContext(Dispatchers.IO) {
-            val listManga = mutableListOf<SManga>()
-            loop@ for (i in 1..10000) {
-                val response = client.newCall(followsListRequest(i))
-                    .execute()
-                val mangasPage = followsParseMangaPage(response, forceHd)
-
-                if (mangasPage.mangas.isNotEmpty()) {
-                    listManga.addAll(mangasPage.mangas)
+            val listManga = mutableListOf<Pair<SManga, MangaDexSearchMetadata>>()
+            val response = client.newCall(followsListRequest()).execute()
+            val mangasPage = followsParseMangaPage(response, forceHd)
+            listManga.addAll(
+                mangasPage.mangas.mapIndexed { index, sManga ->
+                    sManga to mangasPage.mangasMetadata[index] as MangaDexSearchMetadata
                 }
-                if (!mangasPage.hasNextPage) {
-                    break@loop
-                }
-            }
+            )
             listManga
         }
     }
@@ -227,7 +218,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     suspend fun fetchTrackingInfo(url: String): Track {
         return withContext(Dispatchers.IO) {
             val request = GET(
-                "${MdUtil.baseUrl}${MdUtil.followsMangaApi}" + getMangaId(url),
+                "$baseUrl${MdUtil.followsMangaApi}" + getMangaId(url),
                 headers,
                 CacheControl.FORCE_NETWORK
             )

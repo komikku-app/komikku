@@ -291,6 +291,10 @@ object PreferenceKeys {
 
     const val mangaDexLowQualityCovers = "manga_dex_low_quality_covers"
 
+    const val mangaDexForceLatestCovers = "manga_dex_force_latest_covers"
+
+    const val preferredMangaDexId = "preferred_mangaDex_id"
+
     const val dataSaver = "data_saver"
 
     const val ignoreJpeg = "ignore_jpeg"

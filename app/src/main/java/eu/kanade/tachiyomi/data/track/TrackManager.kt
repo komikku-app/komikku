@@ -4,6 +4,7 @@ import android.content.Context
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
+import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 
@@ -16,8 +17,8 @@ class TrackManager(context: Context) {
         const val SHIKIMORI = 4
         const val BANGUMI = 5
 
-        // SY --> Mangadex from Neko todo
-        const val MDLIST = 60
+        // SY --> Mangadex from Neko
+        const val MDLIST = 6
         // SY <--
 
         // SY -->
@@ -31,6 +32,8 @@ class TrackManager(context: Context) {
         // SY <--
     }
 
+    val mdList = MdList(context, MDLIST)
+
     val myAnimeList = MyAnimeList(context, MYANIMELIST)
 
     val aniList = Anilist(context, ANILIST)
@@ -41,11 +44,11 @@ class TrackManager(context: Context) {
 
     val bangumi = Bangumi(context, BANGUMI)
 
-    val services = listOf(myAnimeList, aniList, kitsu, shikimori, bangumi)
+    val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi)
 
     fun getService(id: Int) = services.find { it.id == id }
 
-    fun hasLoggedServices() = services.any { it.isLogged }
+    fun hasLoggedServices(isMangaDexManga: Boolean = true) = services.any { it.isLogged && ((it.id == MDLIST && isMangaDexManga) || it.id != MDLIST) }
 
     // SY -->
     fun mapTrackingOrder(status: String, context: Context): Int {

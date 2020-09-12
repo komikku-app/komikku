@@ -56,7 +56,7 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
         setImage(manga)
     }
 
-    fun onSetMetadataValues(manga: Manga, metadata: RaisedSearchMetadata) {
+    override fun onSetMetadataValues(manga: Manga, metadata: RaisedSearchMetadata) {
         if (metadata !is EHentaiSearchMetadata) return
 
         if (metadata.uploader != null) {
@@ -64,17 +64,17 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
         }
 
         val pair = when (metadata.genre) {
-            "doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
-            "manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
-            "artistcg" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.artist_cg)
-            "gamecg" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.game_cg)
-            "western" -> Pair(SourceTagsUtil.WESTERN_COLOR, R.string.western)
-            "non-h" -> Pair(SourceTagsUtil.NON_H_COLOR, R.string.non_h)
-            "imageset" -> Pair(SourceTagsUtil.IMAGE_SET_COLOR, R.string.image_set)
-            "cosplay" -> Pair(SourceTagsUtil.COSPLAY_COLOR, R.string.cosplay)
-            "asianporn" -> Pair(SourceTagsUtil.ASIAN_PORN_COLOR, R.string.asian_porn)
-            "misc" -> Pair(SourceTagsUtil.MISC_COLOR, R.string.misc)
-            else -> Pair("", 0)
+            "doujinshi" -> SourceTagsUtil.DOUJINSHI_COLOR to R.string.doujinshi
+            "manga" -> SourceTagsUtil.MANGA_COLOR to R.string.manga
+            "artistcg" -> SourceTagsUtil.ARTIST_CG_COLOR to R.string.artist_cg
+            "gamecg" -> SourceTagsUtil.GAME_CG_COLOR to R.string.game_cg
+            "western" -> SourceTagsUtil.WESTERN_COLOR to R.string.western
+            "non-h" -> SourceTagsUtil.NON_H_COLOR to R.string.non_h
+            "imageset" -> SourceTagsUtil.IMAGE_SET_COLOR to R.string.image_set
+            "cosplay" -> SourceTagsUtil.COSPLAY_COLOR to R.string.cosplay
+            "asianporn" -> SourceTagsUtil.ASIAN_PORN_COLOR to R.string.asian_porn
+            "misc" -> SourceTagsUtil.MISC_COLOR to R.string.misc
+            else -> "" to 0
         }
 
         if (pair.first.isNotBlank()) {

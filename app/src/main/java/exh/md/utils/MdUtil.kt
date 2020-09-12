@@ -1,12 +1,17 @@
 package exh.md.utils
 
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.online.all.MangaDex
+import exh.util.floor
 import java.net.URI
 import java.net.URISyntaxException
-import kotlin.math.floor
 import kotlinx.serialization.json.Json
 import org.jsoup.parser.Parser
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class MdUtil {
 
@@ -63,10 +68,15 @@ class MdUtil {
             "[b][u]Spanish",
             "[Espa&ntilde;ol]:",
             "[b] Spanish: [/ b]",
+            "정보",
             "Spanish/Espa&ntilde;ol",
             "Espa&ntilde;ol / Spanish",
             "Italian / Italiano",
+            "Italian/Italiano",
+            "\r\n\r\nItalian\r\n",
             "Pasta-Pizza-Mandolino/Italiano",
+            "Persian /فارسی",
+            "Farsi/Persian/",
             "Polish / polski",
             "Polish / Polski",
             "Polish Summary / Polski Opis",
@@ -89,6 +99,7 @@ class MdUtil {
             "French - Français:",
             "Turkish / T&uuml;rk&ccedil;e",
             "Turkish/T&uuml;rk&ccedil;e",
+            "T&uuml;rk&ccedil;e",
             "[b][u]Chinese",
             "Arabic / العربية",
             "العربية",
@@ -191,11 +202,11 @@ class MdUtil {
             }.sortedByDescending { it.chapter_number }
 
             remove0ChaptersFromCount.firstOrNull()?.let {
-                val chpNumber = floor(it.chapter_number).toInt()
+                val chpNumber = it.chapter_number.floor()
                 val allChapters = (1..chpNumber).toMutableSet()
 
                 remove0ChaptersFromCount.forEach {
-                    allChapters.remove(floor(it.chapter_number).toInt())
+                    allChapters.remove(it.chapter_number.floor())
                 }
 
                 if (allChapters.size <= 0) return null
@@ -203,6 +214,25 @@ class MdUtil {
             }
             return null
         }
+
+        fun getEnabledMangaDex(preferences: PreferencesHelper = Injekt.get(), sourceManager: SourceManager = Injekt.get()): MangaDex? {
+            return getEnabledMangaDexs(preferences, sourceManager).let { mangadexs ->
+                val preferredMangaDexId = preferences.preferredMangaDexId().get().toLongOrNull()
+                mangadexs.firstOrNull { preferredMangaDexId != null && preferredMangaDexId != 0L && it.id == preferredMangaDexId } ?: mangadexs.firstOrNull()
+            }
+        }
+
+        fun getEnabledMangaDexs(preferences: PreferencesHelper = Injekt.get(), sourceManager: SourceManager = Injekt.get()): List<MangaDex> {
+            val languages = preferences.enabledLanguages().get()
+            val disabledSourceIds = preferences.disabledSources().get()
+
+            return sourceManager.getDelegatedCatalogueSources()
+                .filter { it.lang in languages }
+                .filterNot { it.id.toString() in disabledSourceIds }
+                .filterIsInstance(MangaDex::class.java)
+        }
+
+        fun mapMdIdToMangaUrl(id: Int) = "/manga/$id/"
     }
 }
 

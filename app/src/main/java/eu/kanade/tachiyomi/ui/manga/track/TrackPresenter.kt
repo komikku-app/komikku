@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.system.toast
+import exh.mangaDexSourceIds
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -35,6 +36,10 @@ class TrackPresenter(
 
     private var refreshSubscription: Subscription? = null
 
+    // SY -->
+    var needsRefresh = false
+    // SY <--
+
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
         fetchTrackings()
@@ -50,9 +55,35 @@ class TrackPresenter(
                 }
             }
             .observeOn(AndroidSchedulers.mainThread())
+            // SY -->
+            .map { trackItems ->
+                if (manga.source in mangaDexSourceIds) {
+                    val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
+                    when {
+                        mdTrack == null -> {
+                            needsRefresh = true
+                            trackItems + createMdListTrack()
+                        }
+                        mdTrack.track == null -> {
+                            needsRefresh = true
+                            trackItems - mdTrack + createMdListTrack()
+                        }
+                        else -> trackItems
+                    }
+                } else trackItems
+            }
+            // SY <--
             .doOnNext { trackList = it }
             .subscribeLatestCache(TrackController::onNextTrackings)
     }
+
+    // SY -->
+    private fun createMdListTrack(): TrackItem {
+        val track = trackManager.mdList.createInitialTracker(manga)
+        track.id = db.insertTrack(track).executeAsBlocking().insertedId()
+        return TrackItem(track, trackManager.mdList)
+    }
+    // SY <--
 
     fun refresh() {
         refreshSubscription?.let { remove(it) }

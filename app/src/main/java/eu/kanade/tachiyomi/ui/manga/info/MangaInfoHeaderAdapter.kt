@@ -19,10 +19,12 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.view.setTooltip
 import exh.MERGED_SOURCE_ID
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import exh.util.SourceTagsUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -106,7 +108,10 @@ class MangaInfoHeaderAdapter(
             }
 
             with(binding.btnTracking) {
-                if (trackManager.hasLoggedServices()) {
+                // SY -->
+                val sourceIsMangaDex = source.let { it.getMainSource() is MangaDex }
+                // SY <--
+                if (trackManager.hasLoggedServices(/* SY --> */sourceIsMangaDex/* SY <-- */)) {
                     isVisible = true
 
                     if (trackCount > 0) {

@@ -21,7 +21,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.source.online.MetadataSource.Companion.isMetadataSource
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
@@ -37,11 +37,12 @@ import exh.MERGED_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.isEhBasedSource
+import exh.md.utils.FollowStatus
 import exh.merged.sql.models.MergedMangaReference
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.source.EnhancedHttpSource
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import exh.util.asObservable
 import exh.util.await
 import exh.util.trimOrNull
@@ -122,7 +123,7 @@ class MangaPresenter(
         super.onCreate(savedState)
 
         // SY -->
-        if (manga.initialized && source.isMetadataSource()) {
+        if (manga.initialized && source.getMainSource() is MetadataSource<*, *>) {
             getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata") })
         }
 
@@ -207,14 +208,21 @@ class MangaPresenter(
     }
 
     private fun getTrackingObservable(): Observable<Int> {
-        if (!trackManager.hasLoggedServices()) {
+        // SY -->
+        val sourceIsMangaDex = source.getMainSource() is MangaDex
+        // SY <--
+        if (!trackManager.hasLoggedServices(/* SY --> */sourceIsMangaDex/* SY <-- */)) {
             return Observable.just(0)
         }
 
         return db.getTracks(manga).asRxObservable()
             .map { tracks ->
-                val loggedServices = trackManager.services.filter { it.isLogged }.map { it.id }
-                tracks.filter { it.sync_id in loggedServices }
+                val loggedServices = trackManager.services.filter { it.isLogged /* SY --> */ && ((it.id == TrackManager.MDLIST && sourceIsMangaDex) || it.id != TrackManager.MDLIST) /* SY <-- */ }.map { it.id }
+                tracks
+                    // SY -->
+                    .filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }
+                    // SY <--
+                    .filter { it.sync_id in loggedServices }
             }
             .map { it.size }
     }
@@ -244,7 +252,7 @@ class MangaPresenter(
             }
             // SY -->
             .doOnNext {
-                if (source is MetadataSource<*, *> || (source is EnhancedHttpSource && source.enhancedSource is MetadataSource<*, *>)) {
+                if (source.getMainSource() is MetadataSource<*, *>) {
                     getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata") })
                 }
             }

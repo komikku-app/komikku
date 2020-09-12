@@ -91,7 +91,7 @@ class EHentai(
         get() = "https://$domain"
 
     override val lang = "all"
-    override val supportsLatest = true
+    override val supportsLatest = !exh
 
     private val preferences: PreferencesHelper by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()

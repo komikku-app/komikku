@@ -15,9 +15,9 @@ import java.util.Date
 
 interface ChapterQueries : DbProvider {
     // SY -->
-    fun getChapters(manga: Manga) = getChaptersByMangaId(manga.id)
+    fun getChapters(manga: Manga) = getChapters(manga.id)
 
-    fun getChaptersByMangaId(mangaId: Long?) = db.get()
+    fun getChapters(mangaId: Long?) = db.get()
         .listOfObjects(Chapter::class.java)
         .withQuery(
             Query.builder()

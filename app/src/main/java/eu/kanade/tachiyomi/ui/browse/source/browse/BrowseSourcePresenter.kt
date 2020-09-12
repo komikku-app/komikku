@@ -38,7 +38,6 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.EXHSavedSearch
-import exh.isEhBasedSource
 import java.lang.RuntimeException
 import java.util.Date
 import rx.Observable
@@ -188,7 +187,7 @@ open class BrowseSourcePresenter(
             // SY <--
             .doOnNext { initializeMangas(it.second) }
             // SY -->
-            .map { triple -> triple.first to triple.second.mapIndexed { index, manga -> SourceItem(manga, sourceDisplayMode, if (prefs.enhancedEHentaiView().get() && source.isEhBasedSource()) triple.third?.getOrNull(index) else null) } }
+            .map { triple -> triple.first to triple.second.mapIndexed { index, manga -> SourceItem(manga, sourceDisplayMode, triple.third?.getOrNull(index)) } }
             // SY <--
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeReplay(

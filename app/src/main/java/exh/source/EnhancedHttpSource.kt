@@ -1,6 +1,7 @@
 package exh.source
 
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -232,6 +233,23 @@ class EnhancedHttpSource(
             enhancedSource
         } else {
             originalSource
+        }
+    }
+
+    companion object {
+        fun Source.getMainSource(): Source {
+            return if (this is EnhancedHttpSource) {
+                this.source()
+            } else {
+                this
+            }
+        }
+        fun Source.getOriginalSource(): Source {
+            return if (this is EnhancedHttpSource) {
+                this.originalSource
+            } else {
+                this
+            }
         }
     }
 }

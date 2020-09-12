@@ -42,7 +42,7 @@ class PopularHandler(val client: OkHttpClient, private val headers: Headers) {
 
         val mangas = document.select(popularMangaSelector).map { element ->
             popularMangaFromElement(element)
-        }.distinct()
+        }.distinctBy { it.url }
 
         val hasNextPage = popularMangaNextPageSelector.let { selector ->
             document.select(selector).first()

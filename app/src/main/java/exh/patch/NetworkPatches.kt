@@ -36,10 +36,5 @@ private const val EH_UNIVERSAL_INTERCEPTOR = -1L
 private val EH_INTERCEPTORS: Map<Long, List<EHInterceptor>> = mapOf(
     EH_UNIVERSAL_INTERCEPTOR to listOf(
         CAPTCHA_DETECTION_PATCH // Auto captcha detection
-    ),
-
-    // MangaDex login support
-    *MANGADEX_SOURCE_IDS.map { id ->
-        id to listOf(MANGADEX_LOGIN_PATCH)
-    }.toTypedArray()
+    )
 )

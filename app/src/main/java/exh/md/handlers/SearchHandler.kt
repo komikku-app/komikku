@@ -33,7 +33,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                     .map { response ->
                         val details = SManga.create()
                         details.url = "/manga/$realQuery/"
-                        ApiMangaParser(langs).parseToManga(details, response).await()
+                        ApiMangaParser(langs).parseToManga(details, response, preferences.mangaDexForceLatestCovers().get()).await()
                         MangasPage(listOf(details), false)
                     }
             }

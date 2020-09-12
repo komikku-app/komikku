@@ -171,7 +171,8 @@ class FilterHandler {
             Tag("81", "Virtual Reality"),
             Tag("82", "Zombies"),
             Tag("83", "Incest"),
-            Tag("84", "Mafia")
+            Tag("84", "Mafia"),
+            Tag("85", "Villainess")
         ).sortedWith(compareBy { it.name })
 
         val allTypes = (contentType() + formats() + genre() + themes()).map { it.id to it.name }.toMap()

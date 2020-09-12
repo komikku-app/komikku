@@ -51,4 +51,11 @@
         app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_push_to_mdlist"
+        android:icon="@drawable/baseline_swap_calls_24"
+        android:title="@string/mangadex_add_to_follows"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="ifRoom" />
+
 </menu>

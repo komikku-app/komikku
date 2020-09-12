@@ -152,7 +152,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                 return@mapNotNull null
             }
 
-            val chapter = db.getChaptersByMangaId(manga.id!!).asRxSingle().await().minByOrNull {
+            val chapter = db.getChapters(manga.id!!).asRxSingle().await().minByOrNull {
                 it.date_upload
             }
 

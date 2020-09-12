@@ -198,6 +198,8 @@ open class IndexController :
         filterSheet = SourceFilterSheet(
             activity!!,
             // SY -->
+            this,
+            presenter.source,
             presenter.loadSearches(),
             // SY <--
             onFilterClicked = {

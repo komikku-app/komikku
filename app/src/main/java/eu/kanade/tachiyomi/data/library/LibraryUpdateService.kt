@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
@@ -34,9 +35,16 @@ import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.MERGED_SOURCE_ID
+import exh.md.utils.FollowStatus
+import exh.md.utils.MdUtil
+import exh.metadata.metadata.base.insertFlatMetadata
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import exh.util.asObservable
+import exh.util.await
+import exh.util.awaitSingle
 import exh.util.nullIfBlank
 import java.io.File
+import java.util.Date
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
 import rx.Observable
@@ -81,7 +89,10 @@ class LibraryUpdateService(
     enum class Target {
         CHAPTERS, // Manga chapters
         COVERS, // Manga covers
-        TRACKING // Tracking metadata
+        TRACKING, // Tracking metadata
+        // SY -->
+        SYNC_FOLLOWS // MangaDex specific, pull mangadex manga in reading, rereading
+        // SY <--
     }
 
     companion object {
@@ -215,6 +226,9 @@ class LibraryUpdateService(
                     Target.CHAPTERS -> updateChapterList(mangaList)
                     Target.COVERS -> updateCovers(mangaList)
                     Target.TRACKING -> updateTrackings(mangaList)
+                    // SY -->
+                    Target.SYNC_FOLLOWS -> syncFollows()
+                    // SY <--
                 }
             }
             .subscribeOn(Schedulers.io())
@@ -433,9 +447,34 @@ class LibraryUpdateService(
                 .subscribe()
         }
 
-        return /* SY --> */ if (source is MergedSource) runBlocking { source.fetchChaptersAndSync(manga, false).asObservable() }
-        else /* SY <-- */ source.fetchChapterList(manga)
-            .map { syncChaptersWithSource(db, it, manga, source) }
+        // SY -->
+        if (source.getMainSource() is MangaDex) {
+            val tracks = db.getTracks(manga).executeAsBlocking()
+            if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
+                var track = trackManager.mdList.createInitialTracker(manga)
+                track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
+                db.insertTrack(track).executeAsBlocking()
+            }
+        }
+        // SY <--
+
+        return (
+            /* SY --> */ if (source is MergedSource) runBlocking { source.fetchChaptersAndSync(manga, false).asObservable() }
+            else /* SY <-- */ source.fetchChapterList(manga)
+                .map { syncChaptersWithSource(db, it, manga, source) }
+            // SY -->
+            )
+            .doOnNext {
+                if (source.getMainSource() is MangaDex) {
+                    val tracks = db.getTracks(manga).executeAsBlocking()
+                    if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
+                        var track = trackManager.mdList.createInitialTracker(manga)
+                        track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
+                        db.insertTrack(track).executeAsBlocking()
+                    }
+                }
+            }
+        // SY <--
     }
 
     private fun updateCovers(mangaToUpdate: List<LibraryManga>): Observable<LibraryManga> {
@@ -500,6 +539,48 @@ class LibraryUpdateService(
                 notifier.cancelProgressNotification()
             }
     }
+
+    // SY -->
+    // filter all follows from Mangadex and only add reading or rereading manga to library
+    private fun syncFollows(): Observable<LibraryManga> {
+        val count = AtomicInteger(0)
+        val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager)!!
+        return mangaDex.fetchAllFollows(true)
+            .asObservable()
+            .map { listManga ->
+                listManga.filter { (_, metadata) ->
+                    metadata.follow_status == FollowStatus.RE_READING.int || metadata.follow_status == FollowStatus.READING.int
+                }
+            }
+            .doOnNext { listManga ->
+                listManga.forEach { (networkManga, metadata) ->
+                    notifier.showProgressNotification(networkManga, count.andIncrement, listManga.size)
+                    var dbManga = db.getManga(networkManga.url, mangaDex.id)
+                        .executeAsBlocking()
+                    if (dbManga == null) {
+                        dbManga = Manga.create(
+                            networkManga.url,
+                            networkManga.title,
+                            mangaDex.id
+                        )
+                        dbManga.date_added = Date().time
+                    }
+
+                    dbManga.copyFrom(networkManga)
+                    dbManga.favorite = true
+                    val id = db.insertManga(dbManga).executeAsBlocking().insertedId()
+                    if (id != null) {
+                        metadata.mangaId = id
+                        db.insertFlatMetadata(metadata.flatten()).await()
+                    }
+                }
+            }
+            .doOnCompleted {
+                notifier.cancelProgressNotification()
+            }
+            .map { LibraryManga() }
+    }
+    // SY <--
 
     /**
      * Writes basic file of update errors to cache dir.

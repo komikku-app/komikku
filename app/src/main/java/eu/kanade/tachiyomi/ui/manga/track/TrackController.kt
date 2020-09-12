@@ -9,6 +9,7 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.databinding.TrackControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -91,6 +92,10 @@ class TrackController :
         val atLeastOneLink = trackings.any { it.track != null }
         adapter?.items = trackings
         binding.swipeRefresh.isEnabled = atLeastOneLink
+        if (presenter.needsRefresh) {
+            presenter.needsRefresh = false
+            presenter.refresh()
+        }
     }
 
     fun onSearchResults(results: List<TrackSearch>) {
@@ -126,6 +131,9 @@ class TrackController :
 
     override fun onSetClick(position: Int) {
         val item = adapter?.getItem(position) ?: return
+        // SY --> Kill search for now until cesco puts MdList into stable
+        if (item.service.id == TrackManager.MDLIST) return
+        // SY <--
         TrackSearchDialog(this, item.service).showDialog(router, TAG_SEARCH_CONTROLLER)
     }
 

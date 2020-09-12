@@ -5,4 +5,14 @@
         <item>@string/clean_read_downloads</item>
         <item>@string/clean_read_manga_not_in_library</item>
     </string-array>
+
+    <string-array name="md_follows_options">
+        <item>@string/md_follows_unfollowed</item>
+        <item>@string/reading</item>
+        <item>@string/completed</item>
+        <item>@string/on_hold</item>
+        <item>@string/plan_to_read</item>
+        <item>@string/dropped</item>
+        <item>@string/repeating</item>
+    </string-array>
 </resources>

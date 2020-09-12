@@ -30,11 +30,14 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
+import exh.md.utils.FollowStatus
+import exh.md.utils.MdUtil
 import exh.util.await
 import exh.util.isLewd
 import exh.util.nullIfBlank
 import java.util.Collections
 import java.util.Comparator
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.runBlocking
 import rx.Observable
@@ -194,6 +197,7 @@ class LibraryPresenter(
             }
             if (filterTracked != STATE_IGNORE) {
                 val tracks = db.getTracks(item.manga).executeAsBlocking()
+                    .filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }
                 if (filterTracked == STATE_INCLUDE && tracks.isEmpty()) return@f false
                 else if (filterTracked == STATE_EXCLUDE && tracks.isNotEmpty()) return@f false
             }
@@ -501,6 +505,16 @@ class LibraryPresenter(
             }
         }
     }
+
+    fun syncMangaToDex(mangaList: List<Manga>) {
+        launchIO {
+            MdUtil.getEnabledMangaDex(preferences)?.let { mdex ->
+                mangaList.forEach {
+                    mdex.updateFollowStatus(MdUtil.getMangaId(it.url), FollowStatus.READING).collect()
+                }
+            }
+        }
+    }
     // SY <--
 
     /**
@@ -612,6 +626,9 @@ class LibraryPresenter(
             LibraryGroup.BY_STATUS -> {
                 grouping += Triple(SManga.ONGOING.toString(), SManga.ONGOING, context.getString(R.string.ongoing))
                 grouping += Triple(SManga.LICENSED.toString(), SManga.LICENSED, context.getString(R.string.licensed))
+                grouping += Triple(SManga.CANCELLED.toString(), SManga.CANCELLED, context.getString(R.string.cancelled))
+                grouping += Triple(SManga.HIATUS.toString(), SManga.HIATUS, context.getString(R.string.hiatus))
+                grouping += Triple(SManga.PUBLICATION_COMPLETE.toString(), SManga.PUBLICATION_COMPLETE, context.getString(R.string.publication_complete))
                 grouping += Triple(SManga.COMPLETED.toString(), SManga.COMPLETED, context.getString(R.string.completed))
                 grouping += Triple(SManga.UNKNOWN.toString(), SManga.UNKNOWN, context.getString(R.string.unknown))
             }

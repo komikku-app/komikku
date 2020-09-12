@@ -521,4 +521,20 @@
     <string name="manga_info_manga">Info manga:</string>
     <string name="toggle_dedupe">Toggle dedupe</string>
 
+    <!-- MangaDex -->
+    <string name="md_follows_unfollowed">Unfollowed</string>
+    <string name="mangadex_specific_settings">MangaDex settings</string>
+    <string name="mangadex_sync_follows_to_library">Sync Mangadex manga into Neko</string>
+    <string name="mangadex_sync_follows_to_library_summary">Pulls reading/rereading manga from Mangadex into your Neko library</string>
+    <string name="mangadex_low_quality_covers">Use low quality thumbnails</string>
+    <string name="mangadex_use_latest_cover">Use latest uploaded cover</string>
+    <string name="mangadex_use_latest_cover_summary">When enabled, it uses the latest uploaded manga cover under the /covers url instead of using the cover on MangaDex\'s manga page</string>
+    <string name="mangadex_preffered_source">Preferred MangaDex source</string>
+    <string name="mangadex_preffered_source_summary">Set your chosen mangadex source, this will be used for follows and a bunch more features around the app</string>
+    <string name="two_factor">2FA Code</string>
+    <string name="fields_cannot_be_blank">Fields cannot be blank</string>
+    <string name="mangadex_add_to_follows">Add to MangaDex follows</string>
+    <string name="mangadex_follows">MangaDex follows</string>
+    <string name="random">Random</string>
+
 </resources>

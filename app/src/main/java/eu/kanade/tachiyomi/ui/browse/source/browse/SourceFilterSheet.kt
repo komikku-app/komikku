@@ -8,18 +8,24 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.bluelinelabs.conductor.Controller
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.databinding.SourceFilterSheetBinding
-import eu.kanade.tachiyomi.util.view.inflate
+import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.online.BrowseSourceFilterHeader
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import exh.EXHSavedSearch
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 
 class SourceFilterSheet(
     activity: Activity,
     // SY -->
+    controller: Controller,
+    source: CatalogueSource,
     searches: List<EXHSavedSearch> = emptyList(),
     // SY <--
     onFilterClicked: () -> Unit,
@@ -34,7 +40,7 @@ class SourceFilterSheet(
     private var filterNavView: FilterNavigationView
 
     init {
-        filterNavView = FilterNavigationView(activity /* SY --> */, searches = searches/* SY <-- */)
+        filterNavView = FilterNavigationView(activity /* SY --> */, searches = searches, source = source, controller = controller/* SY <-- */)
         filterNavView.onFilterClicked = {
             onFilterClicked()
             this.dismiss()
@@ -66,7 +72,7 @@ class SourceFilterSheet(
     }
     // SY <--
 
-    class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null /* SY --> */, searches: List<EXHSavedSearch> = emptyList()/* SY <-- */) :
+    class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null /* SY --> */, searches: List<EXHSavedSearch> = emptyList(), source: CatalogueSource? = null, controller: Controller? = null/* SY <-- */) :
         SimpleNavigationView(context, attrs) {
 
         var onFilterClicked = {}
@@ -79,6 +85,8 @@ class SourceFilterSheet(
 
         var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
 
+        val adapters = mutableListOf<RecyclerView.Adapter<*>>()
+
         private val savedSearchesAdapter = SavedSearchesAdapter(getSavedSearchesChips(searches))
         // SY <--
 
@@ -88,7 +96,13 @@ class SourceFilterSheet(
 
         init {
             // SY -->
-            recycler.adapter = ConcatAdapter(savedSearchesAdapter, adapter)
+            val mainSource = source?.getMainSource()
+            if (mainSource is BrowseSourceFilterHeader && controller != null) {
+                adapters += mainSource.getFilterHeader(controller)
+            }
+            adapters += savedSearchesAdapter
+            adapters += adapter
+            recycler.adapter = ConcatAdapter(adapters)
             // SY <--
             recycler.setHasFixedSize(true)
             (binding.root.getChildAt(1) as ViewGroup).addView(recycler)

@@ -1,13 +1,18 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.view.View
+import androidx.core.view.isVisible
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.widget.StateImageViewTarget
+import exh.metadata.metadata.MangaDexSearchMetadata
+import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.android.synthetic.main.source_compact_grid_item.card
+import kotlinx.android.synthetic.main.source_compact_grid_item.local_text
 import kotlinx.android.synthetic.main.source_compact_grid_item.progress
 import kotlinx.android.synthetic.main.source_compact_grid_item.thumbnail
 import kotlinx.android.synthetic.main.source_compact_grid_item.title
@@ -38,6 +43,17 @@ open class SourceGridHolder(private val view: View, private val adapter: Flexibl
 
         setImage(manga)
     }
+
+    // SY -->
+    override fun onSetMetadataValues(manga: Manga, metadata: RaisedSearchMetadata) {
+        if (metadata is MangaDexSearchMetadata) {
+            metadata.follow_status?.let {
+                local_text.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
+                local_text.isVisible = true
+            }
+        }
+    }
+    // SY <--
 
     override fun setImage(manga: Manga) {
         // For rounded corners

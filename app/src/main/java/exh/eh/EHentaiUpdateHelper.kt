@@ -42,7 +42,7 @@ class EHentaiUpdateHelper(context: Context) {
                 mangaIds.map { mangaId ->
                     Single.zip(
                         db.getManga(mangaId).asRxSingle(),
-                        db.getChaptersByMangaId(mangaId).asRxSingle()
+                        db.getChapters(mangaId).asRxSingle()
                     ) { manga, chapters ->
                         ChapterChain(manga, chapters)
                     }.toObservable().filter {

@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.databinding.MetadataViewItemBinding
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import kotlin.math.floor
+import exh.util.floor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,7 +43,7 @@ class MetadataViewAdapter(private var data: List<Pair<String, String>>) :
         private var dataPosition: Int? = null
         fun bind(position: Int) {
             if (data.isEmpty() || !binding.infoText.text.isNullOrBlank()) return
-            dataPosition = floor(position / 2F).toInt()
+            dataPosition = (position / 2F).floor()
             binding.infoText.text = if (position % 2 == 0) data[dataPosition!!].first else data[dataPosition!!].second
             binding.infoText.clicks()
                 .onEach {

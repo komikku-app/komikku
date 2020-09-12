@@ -49,6 +49,7 @@ import exh.PERV_EDEN_EN_SOURCE_ID
 import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
+import exh.mangaDexSourceIds
 import exh.nHentaiSourceIds
 import exh.ui.LoaderManager
 import java.util.concurrent.TimeUnit
@@ -530,6 +531,9 @@ class LibraryController(
                     it.source == PERV_EDEN_EN_SOURCE_ID ||
                     it.source == PERV_EDEN_IT_SOURCE_ID
             }
+            binding.actionToolbar.findItem(R.id.action_push_to_mdlist)?.isVisible = selectedMangas.any {
+                it.source in mangaDexSourceIds
+            }
             // SY <--
         }
         return false
@@ -556,6 +560,7 @@ class LibraryController(
                 PreMigrationController.navigateToMigration(skipPre, router, selectedMangaIds)
             }
             R.id.action_clean -> cleanTitles()
+            R.id.action_push_to_mdlist -> pushToMdList()
             // SY <--
             else -> return false
         }
@@ -657,6 +662,13 @@ class LibraryController(
         }.toList()
         presenter.cleanTitles(mangas)
         destroyActionModeIfNeeded()
+    }
+
+    private fun pushToMdList() {
+        val mangas = selectedMangas.filter {
+            it.source in mangaDexSourceIds
+        }.toList()
+        presenter.syncMangaToDex(mangas)
     }
     // SY <--
 

@@ -17,8 +17,8 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.util.floor
 import java.util.Date
-import kotlin.math.floor
 import okhttp3.Response
 import rx.Completable
 import rx.Single
@@ -41,7 +41,7 @@ class ApiMangaParser(private val langs: List<String>) {
      *
      * Will also save the metadata to the DB if possible
      */
-    fun parseToManga(manga: SManga, input: Response): Completable {
+    fun parseToManga(manga: SManga, input: Response, forceLatestCover: Boolean): Completable {
         val mangaId = (manga as? Manga)?.id
         val metaObservable = if (mangaId != null) {
             // We have to use fromCallable because StorIO messes up the thread scheduling if we use their rx functions
@@ -55,7 +55,7 @@ class ApiMangaParser(private val langs: List<String>) {
         }
 
         return metaObservable.map {
-            parseIntoMetadata(it, input)
+            parseIntoMetadata(it, input, forceLatestCover)
             it.copyTo(manga)
             it
         }.flatMapCompletable {
@@ -66,7 +66,7 @@ class ApiMangaParser(private val langs: List<String>) {
         }
     }
 
-    fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
+    fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, forceLatestCover: Boolean) {
         with(metadata) {
             try {
                 val networkApiManga = MdUtil.jsonParser.decodeFromString(ApiMangaSerializer.serializer(), input.body!!.string())
@@ -74,15 +74,18 @@ class ApiMangaParser(private val langs: List<String>) {
                 mdId = MdUtil.getMangaId(input.request.url.toString())
                 mdUrl = input.request.url.toString()
                 title = MdUtil.cleanString(networkManga.title)
-                thumbnail_url = MdUtil.cdnUrl + MdUtil.removeTimeParamUrl(networkManga.cover_url)
+                val coverList = networkManga.covers
+                thumbnail_url = MdUtil.cdnUrl +
+                    if (forceLatestCover && coverList.isNotEmpty()) {
+                        coverList.last()
+                    } else {
+                        MdUtil.removeTimeParamUrl(networkManga.cover_url)
+                    }
                 description = MdUtil.cleanDescription(networkManga.description)
                 author = MdUtil.cleanString(networkManga.author)
                 artist = MdUtil.cleanString(networkManga.artist)
                 lang_flag = networkManga.lang_flag
-                val lastChapter = networkManga.last_chapter?.toFloatOrNull()
-                lastChapter?.let {
-                    last_chapter_number = floor(it).toInt()
-                }
+                last_chapter_number = networkManga.last_chapter?.toFloatOrNull()?.floor()
 
                 networkManga.rating?.let {
                     rating = it.bayesian ?: it.mean
@@ -107,9 +110,15 @@ class ApiMangaParser(private val langs: List<String>) {
                     status = tempStatus
                 }
 
+                val demographic = FilterHandler.demographics().filter { it.id == networkManga.demographic }.firstOrNull()
+
                 val genres =
                     networkManga.genres.mapNotNull { FilterHandler.allTypes[it.toString()] }
                         .toMutableList()
+
+                if (demographic != null) {
+                    genres.add(0, demographic.name)
+                }
 
                 if (networkManga.hentai == 1) {
                     genres.add("Hentai")
@@ -135,7 +144,9 @@ class ApiMangaParser(private val langs: List<String>) {
         if (filteredChapters.isEmpty() || serializer.manga.last_chapter.isNullOrEmpty()) {
             return false
         }
-        val finalChapterNumber = serializer.manga.last_chapter!!
+        // just to fix the stupid lint
+        val lastMangaChapter: String? = serializer.manga.last_chapter
+        val finalChapterNumber = lastMangaChapter!!
         if (MdUtil.validOneShotFinalChapters.contains(finalChapterNumber)) {
             filteredChapters.firstOrNull()?.let {
                 if (isOneShot(it.value, finalChapterNumber)) {
@@ -144,7 +155,7 @@ class ApiMangaParser(private val langs: List<String>) {
             }
         }
         val removeOneshots = filteredChapters.filter { !it.value.chapter.isNullOrBlank() }
-        return removeOneshots.size.toString() == floor(finalChapterNumber.toDouble()).toInt().toString()
+        return removeOneshots.size.toString() == finalChapterNumber.toDouble().floor().toString()
     }
 
     private fun filterChapterForChecking(serializer: ApiMangaSerializer): List<Map.Entry<String, ChapterSerializer>> {
@@ -269,7 +280,7 @@ class ApiMangaParser(private val langs: List<String>) {
         }
         if ((status == 2 || status == 3)) {
             if ((isOneShot(networkChapter, finalChapterNumber) && totalChapterCount == 1) ||
-                networkChapter.chapter == finalChapterNumber
+                networkChapter.chapter == finalChapterNumber && finalChapterNumber.toIntOrNull() != 0
             ) {
                 chapterName.add("[END]")
             }

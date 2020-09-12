@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.online.HttpSource
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import exh.debug.DebugToggles
 import java.util.Date
 import java.util.TreeSet
 import uy.kohesive.injekt.Injekt
@@ -142,18 +141,6 @@ fun syncChaptersWithSource(
                     if (max != null && max.last_page_read > 0) {
                         for (chapter in finalAdded) {
                             chapter.last_page_read = max.last_page_read
-                        }
-                    }
-                }
-                if (dbChapters.isEmpty() && !DebugToggles.INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS.enabled) {
-                    val readChapters = db.getChaptersReadByUrls(finalAdded.map { it.url }).executeAsBlocking()
-                    val readChapterUrls = readChapters.map { it.url }
-                    if (readChapters.isNotEmpty()) {
-                        toAdd.filter { it.url in readChapterUrls }.onEach { chapter ->
-                            readChapters.firstOrNull { it.url == chapter.url }?.let {
-                                chapter.read = it.read
-                                chapter.last_page_read = it.last_page_read
-                            }
                         }
                     }
                 }

@@ -13,27 +13,38 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
+import exh.EH_SOURCE_ID
+import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.card
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.gradient
+import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
 class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMode> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
     AbstractFlexibleItem<SourceHolder>() {
+    // SY -->
+    val preferences: PreferencesHelper by injectLazy()
+    // SY <--
 
     override fun getLayoutRes(): Int {
-        return /* SY --> */ if (metadata == null) /* SY <-- */ when (displayMode.get()) {
+        return /* SY --> */ if ((manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) && preferences.enhancedEHentaiView().get()) R.layout.source_enhanced_ehentai_list_item
+        else /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item
             DisplayMode.COMFORTABLE_GRID, /* SY --> */ DisplayMode.NO_TITLE_GRID /* SY <-- */ -> R.layout.source_comfortable_grid_item
             DisplayMode.LIST -> R.layout.source_list_item
-        } /* SY --> */ else R.layout.source_enhanced_ehentai_list_item /* SY <-- */
+        }
     }
 
     override fun createViewHolder(
         view: View,
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
     ): SourceHolder {
-        return /* SY --> */ if (metadata == null) /* SY <-- */ when (displayMode.get()) {
+        return /* SY --> */ if ((manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) && preferences.enhancedEHentaiView().get()) {
+            SourceEnhancedEHentaiListHolder(view, adapter)
+        } else /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> {
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
@@ -60,11 +71,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
             DisplayMode.LIST -> {
                 SourceListHolder(view, adapter)
             }
-            // SY -->
-        } else {
-            SourceEnhancedEHentaiListHolder(view, adapter)
         }
-        // SY <--
     }
 
     override fun bindViewHolder(
@@ -76,7 +83,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         holder.onSetValues(manga)
         // SY -->
         if (metadata != null) {
-            (holder as? SourceEnhancedEHentaiListHolder)?.onSetMetadataValues(manga, metadata)
+            holder.onSetMetadataValues(manga, metadata)
         }
         // SY <--
     }
