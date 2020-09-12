@@ -68,7 +68,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             followFromElement(it, lowQualityCovers)
         }
 
-        return MetadataMangasPage(follows.map { it.first }, true, follows.map { it.second })
+        return MetadataMangasPage(follows.map { it.first }, false, follows.map { it.second })
     }
 
     /**fetch follow status used when fetching status for 1 manga
