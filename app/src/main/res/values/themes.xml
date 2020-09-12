@@ -67,7 +67,7 @@
 
         <!-- Material Dialogs -->
         <item name="md_background_color">?attr/colorSurface</item>
-        <item name="md_color_title">?attr/colorOnSurface</item>
+        <item name="md_color_title">@color/md_white_1000</item>
         <item name="md_color_content">?attr/colorOnSurface</item>
         <item name="md_color_button_text">?attr/colorAccent</item>
         <item name="md_button_casing">literal</item>
