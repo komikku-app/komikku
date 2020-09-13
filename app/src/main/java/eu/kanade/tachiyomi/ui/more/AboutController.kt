@@ -10,9 +10,9 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.mikepenz.aboutlibraries.LibsBuilder
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.updater.UpdateChecker
 import eu.kanade.tachiyomi.data.updater.UpdateResult
 import eu.kanade.tachiyomi.data.updater.UpdaterService
+import eu.kanade.tachiyomi.data.updater.github.GithubUpdateChecker
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.main.WhatsNewDialogController
 import eu.kanade.tachiyomi.ui.setting.SettingsController
@@ -37,7 +37,7 @@ class AboutController : SettingsController() {
     /**
      * Checks for new releases
      */
-    private val updateChecker by lazy { UpdateChecker.getUpdateChecker() }
+    private val updateChecker by lazy { GithubUpdateChecker() }
 
     private val dateFormat: DateFormat = preferences.dateFormat()
 
