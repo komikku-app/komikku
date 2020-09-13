@@ -11,10 +11,10 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.system.ImageUtil
-import java.io.File
-import java.util.zip.ZipFile
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
+import java.io.File
+import java.util.zip.ZipFile
 
 /**
  * Loader used to load a chapter from the downloaded chapters.

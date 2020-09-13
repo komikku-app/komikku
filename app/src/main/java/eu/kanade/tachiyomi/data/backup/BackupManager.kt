@@ -66,8 +66,6 @@ import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
 import exh.util.asObservable
-import java.lang.RuntimeException
-import kotlin.math.max
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import rx.Observable
@@ -76,6 +74,8 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
+import java.lang.RuntimeException
+import kotlin.math.max
 
 class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 

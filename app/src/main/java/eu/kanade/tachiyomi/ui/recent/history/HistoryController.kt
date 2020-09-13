@@ -192,15 +192,17 @@ class HistoryController :
             .launchIn(scope)
 
         // Fixes problem with the overflow icon showing up in lieu of search
-        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                return true
-            }
+        searchItem.setOnActionExpandListener(
+            object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                    return true
+                }
 
-            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                activity?.invalidateOptionsMenu()
-                return true
+                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                    activity?.invalidateOptionsMenu()
+                    return true
+                }
             }
-        })
+        )
     }
 }

@@ -6,10 +6,10 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.util.DeferredField
 import exh.util.await
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlin.coroutines.CoroutineContext
 
 class MigratingManga(
     private val db: DatabaseHelper,

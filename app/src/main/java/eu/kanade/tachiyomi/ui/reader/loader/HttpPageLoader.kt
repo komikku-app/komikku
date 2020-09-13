@@ -12,9 +12,6 @@ import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import java.util.concurrent.PriorityBlockingQueue
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.math.min
 import rx.Completable
 import rx.Observable
 import rx.schedulers.Schedulers
@@ -25,6 +22,9 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.util.concurrent.PriorityBlockingQueue
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.min
 
 /**
  * Loader used to load chapters from an online source.
@@ -194,9 +194,9 @@ class HttpPageLoader(
         }
 
         if (prefs.eh_readerInstantRetry().get()) // EXH <--
-        {
-            boostPage(page)
-        } else {
+            {
+                boostPage(page)
+            } else {
             // EXH <--
             queue.offer(PriorityPage(page, 2))
         }
@@ -267,7 +267,9 @@ class HttpPageLoader(
                     val stream = chapterCache.getImageFile(imageUrl).inputStream()
                     val image = BitmapFactory.decodeStream(stream)
                     page.bg = ImageUtil.autoSetBackground(
-                        image, readerTheme == 2, prefs.context
+                        image,
+                        readerTheme == 2,
+                        prefs.context
                     )
                     page.bgType = PagerPageHolder.getBGType(readerTheme, prefs.context)
                     stream.close()

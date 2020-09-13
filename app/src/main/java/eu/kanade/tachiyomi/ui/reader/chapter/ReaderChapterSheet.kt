@@ -56,25 +56,27 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
                 true
             }
         }
-        adapter?.addEventHook(object : ClickEventHook<ReaderChapterItem>() {
-            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is ReaderChapterItem.ViewHolder) {
-                    viewHolder.bookmarkButton
-                } else {
-                    null
+        adapter?.addEventHook(
+            object : ClickEventHook<ReaderChapterItem>() {
+                override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+                    return if (viewHolder is ReaderChapterItem.ViewHolder) {
+                        viewHolder.bookmarkButton
+                    } else {
+                        null
+                    }
+                }
+
+                override fun onClick(
+                    v: View,
+                    position: Int,
+                    fastAdapter: FastAdapter<ReaderChapterItem>,
+                    item: ReaderChapterItem
+                ) {
+                    presenter.toggleBookmark(item.chapter)
+                    refreshList()
                 }
             }
-
-            override fun onClick(
-                v: View,
-                position: Int,
-                fastAdapter: FastAdapter<ReaderChapterItem>,
-                item: ReaderChapterItem
-            ) {
-                presenter.toggleBookmark(item.chapter)
-                refreshList()
-            }
-        })
+        )
 
         binding.chapterRecycler.layoutManager = LinearLayoutManager(context)
         refreshList()
@@ -82,16 +84,19 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
             .onEach { activity.openMangaInBrowser() }
             .launchIn(activity.scope)
 
-        binding.pageSeekbar.setOnSeekBarChangeListener(object : SimpleSeekBarListener() {
-            @SuppressLint("SetTextI18n")
-            override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
-                if (activity.viewer != null && fromUser) {
-                    binding.pageText.text = "${value + 1}/${binding.pageSeekbar.max + 1}"
-                    binding.pageSeekbar.progress = value
-                    activity.moveToPageIndex(value)
+        binding.pageSeekbar.setOnSeekBarChangeListener(
+            object : SimpleSeekBarListener() {
+
+                @SuppressLint("SetTextI18n")
+                override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
+                    if (activity.viewer != null && fromUser) {
+                        binding.pageText.text = "${value + 1}/${binding.pageSeekbar.max + 1}"
+                        binding.pageSeekbar.progress = value
+                        activity.moveToPageIndex(value)
+                    }
                 }
             }
-        })
+        )
     }
 
     override fun onStart() {

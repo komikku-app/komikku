@@ -8,11 +8,11 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import java.io.File
-import java.util.Date
 import rx.Observable
 import rx.Single
 import uy.kohesive.injekt.injectLazy
+import java.io.File
+import java.util.Date
 
 data class ChapterChain(val manga: Manga, val chapters: List<Chapter>)
 

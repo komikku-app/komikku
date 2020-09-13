@@ -35,8 +35,6 @@ import exh.md.utils.MdUtil
 import exh.util.await
 import exh.util.isLewd
 import exh.util.nullIfBlank
-import java.util.Collections
-import java.util.Comparator
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.runBlocking
@@ -46,6 +44,8 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Collections
+import java.util.Comparator
 
 /**
  * Class containing library information.

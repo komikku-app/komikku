@@ -8,11 +8,11 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.lang.launchUI
-import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.injectLazy
+import java.util.Date
 
 class MigrationProcessAdapter(
     val controller: MigrationListController
@@ -80,7 +80,9 @@ class MigrationProcessAdapter(
                     db.getManga(manga.searchResult.get() ?: return@launchUI).executeAsBlocking()
                         ?: return@launchUI
                 migrateMangaInternal(
-                    manga.manga() ?: return@launchUI, toMangaObj, !copy
+                    manga.manga() ?: return@launchUI,
+                    toMangaObj,
+                    !copy
                 )
             }
             removeManga(position)

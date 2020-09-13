@@ -137,11 +137,13 @@ open class ExtendedNavigationView @JvmOverloads constructor(
                 return when (state) {
                     STATE_INCLUDE -> tintVector(context, R.drawable.ic_check_box_24dp)
                     STATE_EXCLUDE -> tintVector(
-                        context, R.drawable.ic_check_box_x_24dp,
+                        context,
+                        R.drawable.ic_check_box_x_24dp,
                         android.R.attr.textColorSecondary
                     )
                     else -> tintVector(
-                        context, R.drawable.ic_check_box_outline_blank_24dp,
+                        context,
+                        R.drawable.ic_check_box_outline_blank_24dp,
                         android.R.attr.textColorSecondary
                     )
                 }

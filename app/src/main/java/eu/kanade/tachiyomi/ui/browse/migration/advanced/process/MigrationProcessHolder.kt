@@ -20,7 +20,6 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.MERGED_SOURCE_ID
 import exh.util.await
-import java.text.DecimalFormat
 import kotlinx.android.synthetic.main.migration_manga_card.view.gradient
 import kotlinx.android.synthetic.main.migration_manga_card.view.loading_group
 import kotlinx.android.synthetic.main.migration_manga_card.view.manga_chapters
@@ -41,6 +40,7 @@ import kotlinx.coroutines.withContext
 import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.text.DecimalFormat
 
 class MigrationProcessHolder(
     private val view: View,
@@ -124,7 +124,8 @@ class MigrationProcessHolder(
                             .onEach {
                                 adapter.controller.router.pushController(
                                     MangaController(
-                                        searchResult, true
+                                        searchResult,
+                                        true
                                     ).withFadeTransaction()
                                 )
                             }.launchIn(scope)

@@ -16,9 +16,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.maybeInjectEHLogger
 import exh.patch.injectPatches
 import exh.source.DelegatedHttpSource
-import java.net.URI
-import java.net.URISyntaxException
-import java.security.MessageDigest
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -26,6 +23,9 @@ import okhttp3.Response
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.net.URI
+import java.net.URISyntaxException
+import java.security.MessageDigest
 
 /**
  * A simple implementation for sources from a website.

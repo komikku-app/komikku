@@ -1,11 +1,11 @@
 package exh.util
 
-import java.util.concurrent.atomic.AtomicBoolean
 import okhttp3.Call
 import okhttp3.Response
 import rx.Observable
 import rx.Producer
 import rx.Subscription
+import java.util.concurrent.atomic.AtomicBoolean
 
 fun Call.asObservableWithAsyncStacktrace(): Observable<Pair<Exception, Response>> {
     // Record stacktrace at creation time for easier debugging

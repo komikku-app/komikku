@@ -44,9 +44,6 @@ import exh.util.asObservable
 import exh.util.await
 import exh.util.awaitSingle
 import exh.util.nullIfBlank
-import java.io.File
-import java.util.Date
-import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
@@ -54,6 +51,9 @@ import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.io.File
+import java.util.Date
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * This class will take care of updating the chapters of the manga from the library. It can be

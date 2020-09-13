@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlin.coroutines.CoroutineContext
 
 abstract class BaseExhController<VB : ViewBinding>(bundle: Bundle? = null) : BaseController<VB>(bundle), CoroutineScope {
     abstract val layoutId: Int

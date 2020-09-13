@@ -22,7 +22,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.ui.LoadingHandle
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.library_category.view.fast_scroller
 import kotlinx.android.synthetic.main.library_category.view.swipe_refresh
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +39,7 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.util.concurrent.TimeUnit
 
 /**
  * Fragment containing the library manga for a certain category.
@@ -131,16 +131,16 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             .onEach {
                 // SY -->
                 if (LibraryUpdateService.start(
-                    context,
-                    if (controller.presenter.groupType == LibraryGroup.BY_DEFAULT) category else null,
-                    group = controller.presenter.groupType,
-                    groupExtra = when (controller.presenter.groupType) {
-                        LibraryGroup.BY_DEFAULT -> null
-                        LibraryGroup.BY_SOURCE -> category.name
-                        LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
-                        else -> null
-                    }
-                )
+                        context,
+                        if (controller.presenter.groupType == LibraryGroup.BY_DEFAULT) category else null,
+                        group = controller.presenter.groupType,
+                        groupExtra = when (controller.presenter.groupType) {
+                            LibraryGroup.BY_DEFAULT -> null
+                            LibraryGroup.BY_SOURCE -> category.name
+                            LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
+                            else -> null
+                        }
+                    )
                 ) {
                     context.toast(
                         when {

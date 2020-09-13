@@ -15,9 +15,9 @@ abstract class Pager(var currentPage: Int = 1) {
     var hasNextPage = true
         private set
 
-    protected val results: PublishRelay< /* SY --> */ Triple /* SY <-- */ <Int, List<SManga> /* SY --> */, List<RaisedSearchMetadata>? /* SY <-- */ >> = PublishRelay.create()
+    protected val results: PublishRelay</* SY --> */ Triple /* SY <-- */<Int, List<SManga> /* SY --> */, List<RaisedSearchMetadata>? /* SY <-- */>> = PublishRelay.create()
 
-    fun results(): Observable< /* SY --> */ Triple /* SY <-- */ <Int, List<SManga> /* SY --> */, List<RaisedSearchMetadata>?> /* SY <-- */> {
+    fun results(): Observable</* SY --> */ Triple /* SY <-- */<Int, List<SManga> /* SY --> */, List<RaisedSearchMetadata>?> /* SY <-- */> {
         return results.asObservable()
     }
 

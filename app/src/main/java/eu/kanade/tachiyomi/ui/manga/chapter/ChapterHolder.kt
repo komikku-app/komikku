@@ -11,11 +11,11 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import java.util.Date
 import kotlinx.android.synthetic.main.chapters_item.bookmark_icon
 import kotlinx.android.synthetic.main.chapters_item.chapter_description
 import kotlinx.android.synthetic.main.chapters_item.chapter_title
 import kotlinx.android.synthetic.main.chapters_item.download_text
+import java.util.Date
 
 class ChapterHolder(
     view: View,

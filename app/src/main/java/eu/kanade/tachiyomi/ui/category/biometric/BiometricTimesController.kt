@@ -20,12 +20,12 @@ import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * Controller to manage the lock times for the biometric lock.
@@ -197,8 +197,11 @@ class BiometricTimesController :
             R.id.action_delete -> {
                 undoHelper = UndoHelper(adapter, this)
                 undoHelper?.start(
-                    adapter.selectedPositions, activity!!.root_coordinator,
-                    R.string.biometric_lock_time_deleted_snack, R.string.action_undo, 3000
+                    adapter.selectedPositions,
+                    activity!!.root_coordinator,
+                    R.string.biometric_lock_time_deleted_snack,
+                    R.string.action_undo,
+                    3000
                 )
 
                 mode.finish()

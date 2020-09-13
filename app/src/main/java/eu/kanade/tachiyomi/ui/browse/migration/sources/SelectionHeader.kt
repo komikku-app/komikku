@@ -45,7 +45,7 @@ class SelectionHeader : AbstractHeaderItem<SelectionHeader.Holder>() {
         // Intentionally empty
     }
 
-    class Holder(view: View, adapter: FlexibleAdapter</* SY --> */ IFlexible<RecyclerView.ViewHolder> /* SY <-- */ >) : BaseFlexibleViewHolder(view, adapter) {
+    class Holder(view: View, adapter: FlexibleAdapter</* SY --> */ IFlexible<RecyclerView.ViewHolder> /* SY <-- */>) : BaseFlexibleViewHolder(view, adapter) {
         init {
             title.text = view.context.getString(/* SY --> */ R.string.select_a_source_to_migrate_from /* SY <-- */)
         }

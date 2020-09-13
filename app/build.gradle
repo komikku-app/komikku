@@ -366,7 +366,7 @@ task copyResources(type: Copy) {
     include '**/*'
 }
 
-preBuild.dependsOn(ktlintFormat, copyResources)
+preBuild.dependsOn(formatKotlin, copyResources)
 
 if (!getGradle().getStartParameter().getTaskRequests().toString().contains("Debug")) {
     apply plugin: 'com.google.gms.google-services'

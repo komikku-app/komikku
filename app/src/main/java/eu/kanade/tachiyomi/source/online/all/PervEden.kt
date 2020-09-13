@@ -77,7 +77,8 @@ class PervEden(delegate: HttpSource, val context: Context) :
                             if (it is Element && it.tagName() == "a") {
                                 artist = it.text()
                                 tags += RaisedTag(
-                                    "artist", it.text().toLowerCase(),
+                                    "artist",
+                                    it.text().toLowerCase(),
                                     RaisedSearchMetadata.TAG_TYPE_VIRTUAL
                                 )
                             }
@@ -85,7 +86,8 @@ class PervEden(delegate: HttpSource, val context: Context) :
                         "Genres" -> {
                             if (it is Element && it.tagName() == "a") {
                                 tags += RaisedTag(
-                                    null, it.text().toLowerCase(),
+                                    null,
+                                    it.text().toLowerCase(),
                                     PervEdenSearchMetadata.TAG_TYPE_DEFAULT
                                 )
                             }

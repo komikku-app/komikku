@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.data.database.queries
 
+import exh.MERGED_SOURCE_ID
 import eu.kanade.tachiyomi.data.database.tables.CategoryTable as Category
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable as Chapter
 import eu.kanade.tachiyomi.data.database.tables.HistoryTable as History
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable as MangaCategory
 import eu.kanade.tachiyomi.data.database.tables.MangaTable as Manga
-import exh.MERGED_SOURCE_ID
 import exh.merged.sql.tables.MergedTable as Merged
 
 // SY -->

@@ -13,11 +13,11 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.source.EnhancedHttpSource
-import kotlin.reflect.KClass
 import rx.Completable
 import rx.Single
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.reflect.KClass
 
 /**
  * LEWD!

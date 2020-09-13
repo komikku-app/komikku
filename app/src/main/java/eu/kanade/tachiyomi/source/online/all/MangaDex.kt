@@ -41,7 +41,6 @@ import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import exh.widget.preference.MangadexLoginDialog
-import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -57,6 +56,7 @@ import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import kotlin.reflect.KClass
 
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),

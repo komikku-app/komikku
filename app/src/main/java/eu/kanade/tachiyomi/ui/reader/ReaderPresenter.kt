@@ -35,11 +35,6 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.util.defaultReaderType
-import java.io.File
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.util.Date
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.runBlocking
@@ -52,6 +47,11 @@ import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.io.File
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Date
+import java.util.concurrent.TimeUnit
 
 /**
  * Presenter used by the activity to perform background operations.

@@ -38,7 +38,8 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
     inner class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bind() {
             val dedupeAdapter: ArrayAdapter<String> = ArrayAdapter(
-                itemView.context, android.R.layout.simple_spinner_item,
+                itemView.context,
+                android.R.layout.simple_spinner_item,
                 listOf(
                     "No dedupe",
                     "Dedupe by priority",

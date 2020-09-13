@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.MetadataViewController
-import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,6 +19,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
+import kotlin.math.roundToInt
 
 class MangaDexDescriptionAdapter(
     private val controller: MangaController

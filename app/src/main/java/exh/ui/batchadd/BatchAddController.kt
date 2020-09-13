@@ -93,8 +93,8 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
                             ?.subscribeUntilDestroy {
                                 binding.progressLog.append("$it\n")
                             }?.let {
-                            progressSubscriptions += it
-                        }
+                                progressSubscriptions += it
+                            }
                     } else if (it == BatchAddPresenter.STATE_PROGRESS_TO_INPUT) {
                         hideProgress(this)
                         presenter.currentlyAddingRelay.call(BatchAddPresenter.STATE_IDLE)

@@ -2,8 +2,6 @@ package exh.util
 
 import com.pushtorefresh.storio.operations.PreparedOperation
 import com.pushtorefresh.storio.sqlite.operations.get.PreparedGetObject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -28,6 +26,8 @@ import rx.SingleSubscriber
 import rx.Subscriber
 import rx.Subscription
 import rx.subjects.ReplaySubject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * Transform a cold single to a hot single
@@ -103,32 +103,36 @@ suspend fun Completable.awaitSuspending(subscribeOn: Scheduler? = null) {
 }
 
 suspend fun Completable.awaitCompleted(): Unit = suspendCancellableCoroutine { cont ->
-    subscribe(object : CompletableSubscriber {
-        override fun onSubscribe(s: Subscription) {
-            cont.unsubscribeOnCancellation(s)
-        }
+    subscribe(
+        object : CompletableSubscriber {
+            override fun onSubscribe(s: Subscription) {
+                cont.unsubscribeOnCancellation(s)
+            }
 
-        override fun onCompleted() {
-            cont.resume(Unit)
-        }
+            override fun onCompleted() {
+                cont.resume(Unit)
+            }
 
-        override fun onError(e: Throwable) {
-            cont.resumeWithException(e)
+            override fun onError(e: Throwable) {
+                cont.resumeWithException(e)
+            }
         }
-    })
+    )
 }
 
 suspend fun <T> Single<T>.await(): T = suspendCancellableCoroutine { cont ->
     cont.unsubscribeOnCancellation(
-        subscribe(object : SingleSubscriber<T>() {
-            override fun onSuccess(t: T) {
-                cont.resume(t)
-            }
+        subscribe(
+            object : SingleSubscriber<T>() {
+                override fun onSuccess(t: T) {
+                    cont.resume(t)
+                }
 
-            override fun onError(error: Throwable) {
-                cont.resumeWithException(error)
+                override fun onError(error: Throwable) {
+                    cont.resumeWithException(error)
+                }
             }
-        })
+        )
     )
 }
 
@@ -157,35 +161,37 @@ suspend fun <T> Observable<T>.awaitSingle(): T = single().awaitOne()
 @OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 private suspend fun <T> Observable<T>.awaitOne(): T = suspendCancellableCoroutine { cont ->
     cont.unsubscribeOnCancellation(
-        subscribe(object : Subscriber<T>() {
-            override fun onStart() {
-                request(1)
-            }
+        subscribe(
+            object : Subscriber<T>() {
+                override fun onStart() {
+                    request(1)
+                }
 
-            override fun onNext(t: T) {
-                cont.resume(t)
-            }
+                override fun onNext(t: T) {
+                    cont.resume(t)
+                }
 
-            override fun onCompleted() {
-                if (cont.isActive) cont.resumeWithException(
-                    IllegalStateException(
-                        "Should have invoked onNext"
+                override fun onCompleted() {
+                    if (cont.isActive) cont.resumeWithException(
+                        IllegalStateException(
+                            "Should have invoked onNext"
+                        )
                     )
-                )
-            }
+                }
 
-            override fun onError(e: Throwable) {
-                /*
+                override fun onError(e: Throwable) {
+          /*
              * Rx1 observable throws NoSuchElementException if cancellation happened before
              * element emission. To mitigate this we try to atomically resume continuation with exception:
              * if resume failed, then we know that continuation successfully cancelled itself
              */
-                val token = cont.tryResumeWithException(e)
-                if (token != null) {
-                    cont.completeResume(token)
+                    val token = cont.tryResumeWithException(e)
+                    if (token != null) {
+                        cont.completeResume(token)
+                    }
                 }
             }
-        })
+        )
     )
 }
 

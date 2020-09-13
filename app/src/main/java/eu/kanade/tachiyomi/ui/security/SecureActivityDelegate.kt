@@ -7,14 +7,14 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
 import java.util.Date
 import kotlin.time.ExperimentalTime
 import kotlin.time.hours
 import kotlin.time.minutes
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import uy.kohesive.injekt.injectLazy
 
 class SecureActivityDelegate(private val activity: FragmentActivity) {
 

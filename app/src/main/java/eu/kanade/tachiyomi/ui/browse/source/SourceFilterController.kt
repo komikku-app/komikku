@@ -20,13 +20,13 @@ import eu.kanade.tachiyomi.util.preference.switchPreferenceCategory
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.widget.preference.SwitchPreferenceCategory
-import java.util.TreeMap
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextChanges
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.TreeMap
 
 class SourceFilterController : SettingsController() {
 
@@ -194,16 +194,18 @@ class SourceFilterController : SettingsController() {
             .launchIn(scope)
 
         // Fixes problem with the overflow icon showing up in lieu of search
-        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                return true
-            }
+        searchItem.setOnActionExpandListener(
+            object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                    return true
+                }
 
-            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                activity?.invalidateOptionsMenu()
-                return true
+                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                    activity?.invalidateOptionsMenu()
+                    return true
+                }
             }
-        })
+        )
     }
 
     private fun drawSources() {

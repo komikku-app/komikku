@@ -25,9 +25,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.source.DelegatedHttpSource
 import exh.util.melt
-import java.io.Serializable
-import java.net.URL
-import java.util.UUID
 import kotlinx.android.synthetic.main.eh_activity_captcha.toolbar
 import kotlinx.android.synthetic.main.eh_activity_captcha.webview
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -40,6 +37,9 @@ import rx.Single
 import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
+import java.io.Serializable
+import java.net.URL
+import java.util.UUID
 
 class BrowserActionActivity : AppCompatActivity() {
     private val sourceManager: SourceManager by injectLazy()

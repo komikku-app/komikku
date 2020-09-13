@@ -18,10 +18,10 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.HitomiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
-import java.text.SimpleDateFormat
-import java.util.Locale
 import org.jsoup.nodes.Document
 import rx.Observable
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class Hitomi(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -85,7 +85,8 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                         characters = content.select("a").map { it.text() }
                         tags += characters.map {
                             RaisedTag(
-                                "character", it,
+                                "character",
+                                it,
                                 HitomiSearchMetadata.TAG_TYPE_DEFAULT
                             )
                         }
@@ -96,7 +97,8 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                             else if (it.attr("href").startsWith("/tag/female")) "female"
                             else "misc"
                             RaisedTag(
-                                ns, it.text().dropLast(if (ns == "misc") 0 else 2),
+                                ns,
+                                it.text().dropLast(if (ns == "misc") 0 else 2),
                                 HitomiSearchMetadata.TAG_TYPE_DEFAULT
                             )
                         }

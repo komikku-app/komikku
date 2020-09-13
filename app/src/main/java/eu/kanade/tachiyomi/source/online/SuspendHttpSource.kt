@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.util.asObservable
-import kotlin.jvm.Throws
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -17,6 +16,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
+import kotlin.jvm.Throws
 
 /**
  * A simple implementation for sources from a website, but for Coroutines.

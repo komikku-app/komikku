@@ -39,13 +39,6 @@ import exh.log.EHLogLevel
 import exh.syDebugVersion
 import io.realm.Realm
 import io.realm.RealmConfiguration
-import java.io.File
-import java.security.NoSuchAlgorithmException
-import java.security.Security
-import javax.net.ssl.SSLContext
-import kotlin.concurrent.thread
-import kotlin.time.ExperimentalTime
-import kotlin.time.days
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.conscrypt.Conscrypt
@@ -54,6 +47,13 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.InjektScope
 import uy.kohesive.injekt.injectLazy
 import uy.kohesive.injekt.registry.default.DefaultRegistrar
+import java.io.File
+import java.security.NoSuchAlgorithmException
+import java.security.Security
+import javax.net.ssl.SSLContext
+import kotlin.concurrent.thread
+import kotlin.time.ExperimentalTime
+import kotlin.time.days
 
 open class App : Application(), LifecycleObserver {
 
@@ -196,11 +196,13 @@ open class App : Application(), LifecycleObserver {
         @OptIn(ExperimentalTime::class)
         printers += FilePrinter
             .Builder(logFolder.absolutePath)
-            .fileNameGenerator(object : DateFileNameGenerator() {
-                override fun generateFileName(logLevel: Int, timestamp: Long): String {
-                    return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}.log"
+            .fileNameGenerator(
+                object : DateFileNameGenerator() {
+                    override fun generateFileName(logLevel: Int, timestamp: Long): String {
+                        return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}.log"
+                    }
                 }
-            })
+            )
             .cleanStrategy(FileLastModifiedCleanStrategy(7.days.toLongMilliseconds()))
             .backupStrategy(NeverBackupStrategy())
             .build()

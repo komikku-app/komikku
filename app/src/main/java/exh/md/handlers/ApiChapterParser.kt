@@ -3,8 +3,8 @@ package exh.md.handlers
 import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonParser
 import eu.kanade.tachiyomi.source.model.Page
-import java.util.Date
 import okhttp3.Response
+import java.util.Date
 
 class ApiChapterParser {
     fun pageListParse(response: Response): List<Page> {

@@ -6,12 +6,12 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.util.floor
-import java.net.URI
-import java.net.URISyntaxException
 import kotlinx.serialization.json.Json
 import org.jsoup.parser.Parser
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.net.URI
+import java.net.URISyntaxException
 
 class MdUtil {
 

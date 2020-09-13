@@ -23,11 +23,6 @@ import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.ImageUtil
-import java.io.BufferedOutputStream
-import java.io.File
-import java.util.zip.CRC32
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.async
 import okhttp3.Response
 import rx.Observable
@@ -37,6 +32,11 @@ import rx.subscriptions.CompositeSubscription
 import timber.log.Timber
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.io.BufferedOutputStream
+import java.io.File
+import java.util.zip.CRC32
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * This class is the one in charge of downloading chapters.

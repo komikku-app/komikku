@@ -36,7 +36,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.smartsearch.SmartSearchEngine
 import exh.util.await
 import exh.util.executeOnIO
-import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +50,7 @@ import kotlinx.coroutines.withContext
 import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
+import java.util.concurrent.atomic.AtomicInteger
 
 class MigrationListController(bundle: Bundle? = null) :
     BaseController<MigrationListControllerBinding>(bundle),
@@ -287,7 +287,9 @@ class MigrationListController(bundle: Bundle? = null) :
             if (res != null) {
                 activity?.toast(
                     res.getQuantityString(
-                        R.plurals.manga_migrated, manualMigrations, manualMigrations
+                        R.plurals.manga_migrated,
+                        manualMigrations,
+                        manualMigrations
                     )
                 )
             }
@@ -433,7 +435,9 @@ class MigrationListController(bundle: Bundle? = null) :
 
         if (adapter?.itemCount == 1) {
             menuMigrate.icon = VectorDrawableCompat.create(
-                resources!!, R.drawable.ic_done_24dp, null
+                resources!!,
+                R.drawable.ic_done_24dp,
+                null
             )
         }
 

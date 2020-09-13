@@ -5,7 +5,6 @@ import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,6 +14,7 @@ import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlin.time.ExperimentalTime
 
 /**
  * Presenter of [BiometricTimesController]. Used to manage the categories of the library.

@@ -68,9 +68,6 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
 import exh.util.defaultReaderType
-import java.io.File
-import kotlin.math.abs
-import kotlin.math.roundToLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -88,6 +85,9 @@ import reactivecircus.flowbinding.android.widget.checkedChanges
 import reactivecircus.flowbinding.android.widget.textChanges
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
+import java.io.File
+import kotlin.math.abs
+import kotlin.math.roundToLong
 
 /**
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the
@@ -374,13 +374,15 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         }
 
         // Init listeners on bottom menu
-        binding.pageSeekbar.setOnSeekBarChangeListener(object : SimpleSeekBarListener() {
-            override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
-                if (viewer != null && fromUser) {
-                    moveToPageIndex(value)
+        binding.pageSeekbar.setOnSeekBarChangeListener(
+            object : SimpleSeekBarListener() {
+                override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
+                    if (viewer != null && fromUser) {
+                        moveToPageIndex(value)
+                    }
                 }
             }
-        })
+        )
 
         /* SY --> binding.leftChapter.setOnClickListener {
             if (viewer != null) {
@@ -588,12 +590,14 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
             if (animate) {
                 val toolbarAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_top)
-                toolbarAnimation.setAnimationListener(object : SimpleAnimationListener() {
-                    override fun onAnimationStart(animation: Animation) {
-                        // Fix status bar being translucent the first time it's opened.
-                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+                toolbarAnimation.setAnimationListener(
+                    object : SimpleAnimationListener() {
+                        override fun onAnimationStart(animation: Animation) {
+// Fix status bar being translucent the first time it's opened.
+                            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+                        }
                     }
-                })
+                )
                 // EXH -->
                 binding.header.startAnimation(toolbarAnimation)
                 // EXH <--
@@ -614,11 +618,13 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
             if (animate) {
                 val toolbarAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_top)
-                toolbarAnimation.setAnimationListener(object : SimpleAnimationListener() {
-                    override fun onAnimationEnd(animation: Animation) {
-                        binding.readerMenu.isVisible = false
+                toolbarAnimation.setAnimationListener(
+                    object : SimpleAnimationListener() {
+                        override fun onAnimationEnd(animation: Animation) {
+                            binding.readerMenu.isVisible = false
+                        }
                     }
-                })
+                )
                 // EXH -->
                 binding.header.startAnimation(toolbarAnimation)
                 // EXH <--
@@ -643,7 +649,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         }
 
         val intent = WebViewActivity.newIntent(
-            applicationContext, url, source.id, presenter.manga!!.title
+            applicationContext,
+            url,
+            source.id,
+            presenter.manga!!.title
         )
         startActivity(intent)
     }

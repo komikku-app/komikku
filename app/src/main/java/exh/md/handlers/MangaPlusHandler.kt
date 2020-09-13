@@ -3,7 +3,6 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.handlers.serializers.MangaPlusSerializer
-import java.util.UUID
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
@@ -13,6 +12,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import java.util.UUID
 
 class MangaPlusHandler(currentClient: OkHttpClient) {
     val baseUrl = "https://jumpg-webapi.tokyo-cdn.com/api"

@@ -129,7 +129,8 @@ class EditMangaDialog : DialogController {
             if (manga.originalDescription != null) {
                 view.manga_description.hint =
                     "${resources?.getString(R.string.description)}: ${manga.originalDescription?.replace(
-                        "\n", " "
+                        "\n",
+                        " "
                     )?.chop(20)}"
             }
         }
@@ -174,9 +175,12 @@ class EditMangaDialog : DialogController {
     private fun onPositiveButtonClick() {
         infoController.presenter.updateMangaInfo(
             dialogView?.title?.text.toString(),
-            dialogView?.manga_author?.text.toString(), dialogView?.manga_artist?.text.toString(),
-            dialogView?.manga_description?.text.toString(), dialogView?.manga_genres_tags?.getTextStrings(),
-            customCoverUri, willResetCover
+            dialogView?.manga_author?.text.toString(),
+            dialogView?.manga_artist?.text.toString(),
+            dialogView?.manga_description?.text.toString(),
+            dialogView?.manga_genres_tags?.getTextStrings(),
+            customCoverUri,
+            willResetCover
         )
     }
 

@@ -25,7 +25,6 @@ import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.await
 import exh.util.cancellable
 import exh.util.jobScheduler
-import java.lang.RuntimeException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
@@ -34,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
+import java.lang.RuntimeException
 
 @OptIn(FlowPreview::class)
 object DebugFunctions {

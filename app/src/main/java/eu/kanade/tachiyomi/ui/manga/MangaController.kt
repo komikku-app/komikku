@@ -92,8 +92,6 @@ import exh.MERGED_SOURCE_ID
 import exh.isEhBasedSource
 import exh.metadata.metadata.base.FlatMetadata
 import exh.source.EnhancedHttpSource.Companion.getMainSource
-import java.io.IOException
-import kotlin.math.min
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.android.synthetic.main.main_activity.toolbar
 import kotlinx.coroutines.CancellationException
@@ -109,6 +107,8 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.io.IOException
+import kotlin.math.min
 
 class MangaController :
     NucleusController<MangaControllerBinding, MangaPresenter>,
@@ -362,10 +362,10 @@ class MangaController :
                     // Get coordinates and start animation
                     actionFab?.getCoordinates()?.let { coordinates ->
                         if (!binding.revealView.showRevealEffect(
-                            coordinates.x,
-                            coordinates.y,
-                            revealAnimationListener
-                        )
+                                coordinates.x,
+                                coordinates.y,
+                                revealAnimationListener
+                            )
                         ) {
                             openChapter(item.chapter)
                         }
@@ -445,7 +445,8 @@ class MangaController :
             // SY -->
             R.id.action_edit -> {
                 editMangaDialog = EditMangaDialog(
-                    this, presenter.manga
+                    this,
+                    presenter.manga
                 )
                 editMangaDialog?.showDialog(router)
             }
@@ -455,7 +456,8 @@ class MangaController :
             }
             R.id.action_merged -> {
                 editMergedSettingsDialog = EditMergedSettingsDialog(
-                    this, presenter.manga
+                    this,
+                    presenter.manga
                 )
                 editMergedSettingsDialog?.showDialog(router)
             }
@@ -790,15 +792,17 @@ class MangaController :
             }
             duration = resources?.getInteger(android.R.integer.config_shortAnimTime)?.toLong() ?: 150L
             interpolator = DecelerateInterpolator()
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    currentAnimator = null
-                }
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        currentAnimator = null
+                    }
 
-                override fun onAnimationCancel(animation: Animator) {
-                    currentAnimator = null
+                    override fun onAnimationCancel(animation: Animator) {
+                        currentAnimator = null
+                    }
                 }
-            })
+            )
             start()
         }
 
@@ -814,22 +818,24 @@ class MangaController :
                     }
                     duration = resources?.getInteger(android.R.integer.config_shortAnimTime)?.toLong() ?: 150L
                     interpolator = DecelerateInterpolator()
-                    addListener(object : AnimatorListenerAdapter() {
+                    addListener(
+                        object : AnimatorListenerAdapter() {
 
-                        override fun onAnimationEnd(animation: Animator) {
-                            thumbView.alpha = 1f
-                            binding.expandedImage.isVisible = false
-                            actionFab?.isVisible = true
-                            currentAnimator = null
-                        }
+                            override fun onAnimationEnd(animation: Animator) {
+                                thumbView.alpha = 1f
+                                binding.expandedImage.isVisible = false
+                                actionFab?.isVisible = true
+                                currentAnimator = null
+                            }
 
-                        override fun onAnimationCancel(animation: Animator) {
-                            thumbView.alpha = 1f
-                            binding.expandedImage.isVisible = false
-                            actionFab?.isVisible = true
-                            currentAnimator = null
+                            override fun onAnimationCancel(animation: Animator) {
+                                thumbView.alpha = 1f
+                                binding.expandedImage.isVisible = false
+                                actionFab?.isVisible = true
+                                currentAnimator = null
+                            }
                         }
-                    })
+                    )
                     start()
                 }
             }

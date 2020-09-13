@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.ui.category.biometric
 import android.view.View
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlin.time.ExperimentalTime
 import kotlinx.android.synthetic.main.categories_item.reorder
 import kotlinx.android.synthetic.main.categories_item.title
+import kotlin.time.ExperimentalTime
 
 /**
  * Holder used to display category items.

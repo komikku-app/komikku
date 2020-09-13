@@ -18,12 +18,12 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.floor
-import java.util.Date
 import okhttp3.Response
 import rx.Completable
 import rx.Single
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Date
 
 class ApiMangaParser(private val langs: List<String>) {
     val db: DatabaseHelper get() = Injekt.get()
