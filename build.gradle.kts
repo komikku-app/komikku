@@ -50,7 +50,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-serialization:${BuildPluginsVersion.KOTLIN}")
 
         // Firebase Crashlytics
-        classpath("com.google.firebase:firebase-crashlytics-gradle:2.2.0")
+        classpath("com.google.firebase:firebase-crashlytics-gradle:2.2.1")
     }
     repositories {
         google()
