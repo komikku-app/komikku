@@ -131,6 +131,4 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     override fun search(query: String): Observable<List<TrackSearch>> = throw Exception("not used")
 
     override fun login(username: String, password: String): Completable = throw Exception("not used")
-
-    override val isLogged = mdex?.isLogged() ?: false
 }

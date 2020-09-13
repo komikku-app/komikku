@@ -56,6 +56,7 @@ import okhttp3.Response
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -79,9 +80,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
 
+    val preferences: PreferencesHelper by injectLazy()
+    val trackManager: TrackManager by injectLazy()
+
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
-            ImportIdToMdId(query) {
+            importIdToMdId(query) {
                 super.fetchSearchManga(page, query, filters)
             }
         }
@@ -97,11 +101,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return MangaHandler(client, headers, listOf(mdLang), Injekt.get<PreferencesHelper>().mangaDexForceLatestCovers().get()).fetchMangaDetailsObservable(manga)
+        return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).fetchMangaDetailsObservable(manga)
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return MangaHandler(client, headers, listOf(mdLang), Injekt.get<PreferencesHelper>().mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
+        return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
     }
 
     @ExperimentalSerializationApi
@@ -135,7 +139,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
-        ApiMangaParser(listOf(mdLang)).parseIntoMetadata(metadata, input, Injekt.get<PreferencesHelper>().mangaDexForceLatestCovers().get())
+        ApiMangaParser(listOf(mdLang)).parseIntoMetadata(metadata, input, preferences.mangaDexForceLatestCovers().get())
     }
 
     override fun fetchFollows(): Observable<MangasPage> {
@@ -150,7 +154,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override fun isLogged(): Boolean {
         val httpUrl = MdUtil.baseUrl.toHttpUrlOrNull()!!
-        return network.cookieManager.get(httpUrl).any { it.name == REMEMBER_ME }
+        return trackManager.mdList.isLogged && network.cookieManager.get(httpUrl).any { it.name == REMEMBER_ME }
     }
 
     override suspend fun login(
@@ -196,7 +200,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             val resultStr = result.body!!.string()
             if (resultStr.contains("success", true)) {
                 network.cookieManager.remove(httpUrl)
-                Injekt.get<TrackManager>().mdList.logout()
+                trackManager.mdList.logout()
                 return@withContext true
             }
 
@@ -237,7 +241,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return MangaHandler(client, headers, listOf(mdLang)).fetchRandomMangaId()
     }
 
-    private fun ImportIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
+    private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
         when {
             query.toIntOrNull() != null -> {
                 Observable.fromCallable {

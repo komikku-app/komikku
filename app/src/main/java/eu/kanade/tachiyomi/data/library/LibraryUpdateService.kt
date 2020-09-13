@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -448,12 +449,16 @@ class LibraryUpdateService(
         }
 
         // SY -->
-        if (source.getMainSource() is MangaDex) {
-            val tracks = db.getTracks(manga).executeAsBlocking()
-            if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
-                var track = trackManager.mdList.createInitialTracker(manga)
-                track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
-                db.insertTrack(track).executeAsBlocking()
+        if (source.getMainSource() is MangaDex && trackManager.mdList.isLogged) {
+            try {
+                val tracks = db.getTracks(manga).executeAsBlocking()
+                if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
+                    var track = trackManager.mdList.createInitialTracker(manga)
+                    track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
+                    db.insertTrack(track).executeAsBlocking()
+                }
+            } catch (e: Exception) {
+                XLog.e(e)
             }
         }
         // SY <--
