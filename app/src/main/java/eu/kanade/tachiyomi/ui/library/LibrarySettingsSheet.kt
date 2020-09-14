@@ -9,10 +9,10 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_EXCLUDE
-import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_IGNORE
-import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_INCLUDE
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_EXCLUDE
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
 import eu.kanade.tachiyomi.widget.TabbedBottomSheetDialog
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -76,21 +76,17 @@ class LibrarySettingsSheet(
          * Returns true if there's at least one filter from [FilterGroup] active.
          */
         fun hasActiveFilters(): Boolean {
-            // SY -->
-            return filterGroup.items.any { it.state != STATE_IGNORE }
-            // SY <--
+            return filterGroup.items.any { it.state != Item.TriStateGroup.STATE_IGNORE }
         }
 
         inner class FilterGroup : Group {
 
-            // SY -->
             private val downloaded = Item.TriStateGroup(R.string.action_filter_downloaded, this)
             private val unread = Item.TriStateGroup(R.string.action_filter_unread, this)
             private val completed = Item.TriStateGroup(R.string.completed, this)
             private val started = Item.TriStateGroup(R.string.started, this)
             private val tracked = Item.TriStateGroup(R.string.tracked, this)
             private val lewd = Item.TriStateGroup(R.string.lewd, this)
-            // SY <--
 
             override val header = null
             // SY -->
@@ -104,44 +100,37 @@ class LibrarySettingsSheet(
             // SY <--
             override val footer = null
 
-            // SY -->
-            override fun initModels() { // j2k changes
-                try {
+            override fun initModels() {
+                if (preferences.downloadedOnly().get()) {
+                    downloaded.state = STATE_INCLUDE
+                    downloaded.enabled = false
+                } else {
                     downloaded.state = preferences.filterDownloaded().get()
-                    unread.state = preferences.filterUnread().get()
-                    completed.state = preferences.filterCompleted().get()
-                    completed.state = preferences.filterStarted().get()
-                    if (Injekt.get<TrackManager>().hasLoggedServices()) {
-                        tracked.state = preferences.filterTracked().get()
-                    } else {
-                        tracked.state = STATE_IGNORE
-                    }
-                    lewd.state = preferences.filterLewd().get()
-                } catch (e: Exception) {
-                    preferences.upgradeFilters()
                 }
+                unread.state = preferences.filterUnread().get()
+                completed.state = preferences.filterCompleted().get()
             }
 
-            override fun onItemClicked(item: Item) { // j2k changes
+            override fun onItemClicked(item: Item) {
                 item as Item.TriStateGroup
                 val newState = when (item.state) {
                     STATE_IGNORE -> STATE_INCLUDE
                     STATE_INCLUDE -> STATE_EXCLUDE
-                    else -> STATE_IGNORE
+                    STATE_EXCLUDE -> STATE_IGNORE
+                    else -> throw Exception("Unknown State")
                 }
                 item.state = newState
                 when (item) {
-                    downloaded -> preferences.filterDownloaded().set(item.state)
-                    unread -> preferences.filterUnread().set(item.state)
-                    completed -> preferences.filterCompleted().set(item.state)
-                    started -> preferences.filterStarted().set(item.state)
-                    tracked -> preferences.filterTracked().set(item.state)
-                    lewd -> preferences.filterLewd().set(item.state)
+                    downloaded -> preferences.filterDownloaded().set(newState)
+                    unread -> preferences.filterUnread().set(newState)
+                    completed -> preferences.filterCompleted().set(newState)
+                    started -> preferences.filterStarted().set(newState)
+                    tracked -> preferences.filterTracked().set(newState)
+                    lewd -> preferences.filterLewd().set(newState)
                 }
 
                 adapter.notifyItemChanged(item)
             }
-            // SY <--
         }
     }
 
@@ -155,11 +144,13 @@ class LibrarySettingsSheet(
             setGroups(listOf(SortGroup()))
         }
 
+        // SY -->
         fun refreshMode() {
             recycler.adapter = null
             removeView(recycler)
             setGroups(listOf(SortGroup()))
         }
+        // SY <--
 
         inner class SortGroup : Group {
 

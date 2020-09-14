@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.ViewGroup
+import androidx.annotation.AttrRes
 import androidx.annotation.CallSuper
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
@@ -45,20 +46,20 @@ open class ExtendedNavigationView @JvmOverloads constructor(
         /**
          * A checkbox belonging to a group. The group must handle selections and restrictions.
          */
-        class CheckboxGroup(resTitle: Int, override val group: Group, checked: Boolean = false) :
-            Checkbox(resTitle, checked), GroupedItem
+        class CheckboxGroup(resTitle: Int, override val group: Group, checked: Boolean = false, enabled: Boolean = true) :
+            Checkbox(resTitle, checked, enabled), GroupedItem
 
         /**
          * A radio belonging to a group (a sole radio makes no sense). The group must handle
          * selections and restrictions.
          */
-        class Radio(val resTitle: Int, override val group: Group, var checked: Boolean = false) :
+        class Radio(val resTitle: Int, override val group: Group, var checked: Boolean = false, var enabled: Boolean = true) :
             Item(), GroupedItem
 
         /**
          * An item with which needs more than two states (selected/deselected).
          */
-        abstract class MultiState(val resTitle: Int, var state: Int = 0) : Item() {
+        abstract class MultiState(val resTitle: Int, var state: Int = 0, var enabled: Boolean = true) : Item() {
 
             /**
              * Returns the drawable associated to every possible each state.
@@ -71,21 +72,19 @@ open class ExtendedNavigationView @JvmOverloads constructor(
              * @param context any context.
              * @param resId the vector resource to load and tint
              */
-            // SY -->
-            fun tintVector(context: Context, resId: Int, colorId: Int = R.attr.colorAccent): Drawable {
+            fun tintVector(context: Context, resId: Int, @AttrRes colorAttrRes: Int = R.attr.colorAccent): Drawable {
                 return AppCompatResources.getDrawable(context, resId)!!.apply {
-                    setTint(context.getResourceColor(colorId))
+                    setTint(context.getResourceColor(if (enabled) colorAttrRes else R.attr.colorControlNormal))
                 }
             }
-            // SY <--
         }
 
         /**
          * An item with which needs more than two states (selected/deselected) belonging to a group.
          * The group must handle selections and restrictions.
          */
-        abstract class MultiStateGroup(resTitle: Int, override val group: Group, state: Int = 0) :
-            MultiState(resTitle, state), GroupedItem
+        abstract class MultiStateGroup(resTitle: Int, override val group: Group, state: Int = 0, enabled: Boolean = true) :
+            MultiState(resTitle, state, enabled), GroupedItem
 
         /**
          * A multistate item for sorting lists (unselected, ascending, descending).
@@ -124,7 +123,11 @@ open class ExtendedNavigationView @JvmOverloads constructor(
                 }
             }
         }
+        // SY <--
 
+        /**
+         * A checkbox with 3 states (unselected, checked, explicitly unchecked).
+         */
         class TriStateGroup(resId: Int, group: Group) : MultiStateGroup(resId, group) {
 
             companion object {
@@ -135,21 +138,13 @@ open class ExtendedNavigationView @JvmOverloads constructor(
 
             override fun getStateDrawable(context: Context): Drawable? {
                 return when (state) {
+                    STATE_IGNORE -> tintVector(context, R.drawable.ic_check_box_outline_blank_24dp, R.attr.colorControlNormal)
                     STATE_INCLUDE -> tintVector(context, R.drawable.ic_check_box_24dp)
-                    STATE_EXCLUDE -> tintVector(
-                        context,
-                        R.drawable.ic_check_box_x_24dp,
-                        android.R.attr.textColorSecondary
-                    )
-                    else -> tintVector(
-                        context,
-                        R.drawable.ic_check_box_outline_blank_24dp,
-                        android.R.attr.textColorSecondary
-                    )
+                    STATE_EXCLUDE -> tintVector(context, R.drawable.ic_check_box_x_24dp)
+                    else -> throw Exception("Unknown state")
                 }
             }
         }
-        // SY <--
     }
 
     /**
@@ -258,13 +253,15 @@ open class ExtendedNavigationView @JvmOverloads constructor(
                     val item = items[position] as Item.Radio
                     holder.radio.setText(item.resTitle)
                     holder.radio.isChecked = item.checked
+
+                    holder.itemView.isClickable = item.enabled
+                    holder.radio.isEnabled = item.enabled
                 }
                 is CheckboxHolder -> {
                     val item = items[position] as Item.CheckboxGroup
                     holder.check.setText(item.resTitle)
                     holder.check.isChecked = item.checked
 
-                    // Allow disabling the holder
                     holder.itemView.isClickable = item.enabled
                     holder.check.isEnabled = item.enabled
                 }
@@ -273,6 +270,12 @@ open class ExtendedNavigationView @JvmOverloads constructor(
                     val drawable = item.getStateDrawable(context)
                     holder.text.setText(item.resTitle)
                     holder.text.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null)
+
+                    holder.itemView.isClickable = item.enabled
+                    holder.text.isEnabled = item.enabled
+
+                    // Mimics checkbox/radio button
+                    holder.text.alpha = if (item.enabled) 1f else 0.4f
                 }
             }
         }

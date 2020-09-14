@@ -13,19 +13,18 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_EXCLUDE
-import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_IGNORE
-import eu.kanade.tachiyomi.source.model.Filter.TriState.Companion.STATE_INCLUDE
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.removeCovers
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
@@ -164,8 +163,8 @@ class LibraryPresenter(
      * @param map the map to filter.
      */
     private fun applyFilters(map: LibraryMap): LibraryMap {
+        val downloadedOnly = preferences.downloadedOnly().get()
         val filterDownloaded = preferences.filterDownloaded().get()
-        val filterDownloadedOnly = preferences.downloadedOnly().get()
         val filterUnread = preferences.filterUnread().get()
         val filterCompleted = preferences.filterCompleted().get()
         // SY -->
@@ -174,49 +173,71 @@ class LibraryPresenter(
         val filterLewd = preferences.filterLewd().get()
         // SY <--
 
-        val filterFn: (LibraryItem) -> Boolean = f@{ item ->
-            // Filter when there isn't unread chapters.
-            if (filterUnread == STATE_INCLUDE && item.manga.unread == 0) {
-                return@f false
+        val filterFnUnread: (LibraryItem) -> Boolean = unread@{ item ->
+            if (filterUnread == STATE_IGNORE) return@unread true
+            val isUnread = item.manga.unread != 0
+
+            return@unread if (filterUnread == STATE_INCLUDE) isUnread
+            else !isUnread
+        }
+
+        val filterFnCompleted: (LibraryItem) -> Boolean = completed@{ item ->
+            if (filterCompleted == STATE_IGNORE) return@completed true
+            val isCompleted = item.manga.status == SManga.COMPLETED
+
+            return@completed if (filterCompleted == STATE_INCLUDE) isCompleted
+            else !isCompleted
+        }
+
+        val filterFnDownloaded: (LibraryItem) -> Boolean = downloaded@{ item ->
+            if (filterDownloaded == STATE_IGNORE && !downloadedOnly) return@downloaded true
+            val isDownloaded = when {
+                item.manga.source == LocalSource.ID -> true
+                item.downloadCount != -1 -> item.downloadCount > 0
+                else -> downloadManager.getDownloadCount(item.manga) > 0
             }
-            if (filterUnread == STATE_EXCLUDE && item.manga.unread > 0) {
-                return@f false
-            }
-            if (filterCompleted == STATE_INCLUDE && item.manga.status != SManga.COMPLETED) {
-                return@f false
-            }
-            if (filterCompleted == STATE_EXCLUDE && item.manga.status == SManga.COMPLETED) {
-                return@f false
-            }
-            // SY -->
-            if (filterStarted == STATE_INCLUDE && item.manga.read == 0) {
-                return@f false
-            }
-            if (filterStarted == STATE_EXCLUDE && item.manga.read > 0) {
-                return@f false
-            }
-            if (filterTracked != STATE_IGNORE) {
-                val tracks = db.getTracks(item.manga).executeAsBlocking()
-                    .filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }
-                if (filterTracked == STATE_INCLUDE && tracks.isEmpty()) return@f false
-                else if (filterTracked == STATE_EXCLUDE && tracks.isNotEmpty()) return@f false
-            }
-            if (filterLewd != STATE_IGNORE) {
-                val isLewd = item.manga.isLewd()
-                if (filterLewd == STATE_INCLUDE && !isLewd) return@f false
-                else if (filterLewd == STATE_EXCLUDE && isLewd) return@f false
-            }
-            // Filter when there are no downloads.
-            if (filterDownloaded != STATE_IGNORE || filterDownloadedOnly) {
-                val isDownloaded = when {
-                    item.manga.isLocal() -> true
-                    item.downloadCount != -1 -> item.downloadCount > 0
-                    else -> downloadManager.getDownloadCount(item.manga) > 0
-                }
-                return@f if (filterDownloaded == STATE_INCLUDE || filterDownloadedOnly) isDownloaded else !isDownloaded
-            }
-            // SY <--
-            true
+
+            return@downloaded if (downloadedOnly || filterDownloaded == STATE_INCLUDE) isDownloaded
+            else !isDownloaded
+        }
+
+        // SY -->
+        val filterFnStarted: (LibraryItem) -> Boolean = started@{ item ->
+            if (filterStarted == STATE_IGNORE) return@started true
+            val hasRead = item.manga.read != 0
+
+            return@started if (filterStarted == STATE_INCLUDE) hasRead
+            else !hasRead
+        }
+
+        val filterFnTracked: (LibraryItem) -> Boolean = tracked@{ item ->
+            if (filterTracked == STATE_IGNORE) return@tracked true
+            val hasTracks = db.getTracks(item.manga).executeAsBlocking().filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }.isNotEmpty()
+
+            return@tracked if (filterTracked == STATE_INCLUDE) hasTracks
+            else !hasTracks
+        }
+
+        val filterFnLewd: (LibraryItem) -> Boolean = lewd@{ item ->
+            if (filterLewd == STATE_IGNORE) return@lewd true
+            val isLewd = item.manga.isLewd()
+
+            return@lewd if (filterLewd == STATE_INCLUDE) isLewd
+            else !isLewd
+        }
+        // SY <--
+
+        val filterFn: (LibraryItem) -> Boolean = filter@{ item ->
+            return@filter !(
+                !filterFnUnread(item) ||
+                    !filterFnCompleted(item) ||
+                    !filterFnDownloaded(item) ||
+                    // SY -->
+                    !filterFnStarted(item) ||
+                    !filterFnTracked(item) ||
+                    !filterFnLewd(item)
+                // SY <--
+                )
         }
 
         return map.mapValues { entry -> entry.value.filter(filterFn) }

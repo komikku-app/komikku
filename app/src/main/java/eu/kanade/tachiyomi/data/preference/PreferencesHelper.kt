@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.NsfwAllowance
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
@@ -210,18 +211,17 @@ class PreferencesHelper(val context: Context) {
 
     fun categoryTabs() = flowPrefs.getBoolean(Keys.categoryTabs, true)
 
-    // J2K converted from boolean to integer
-    fun filterDownloaded() = flowPrefs.getInt(Keys.filterDownloaded, 0)
+    fun filterDownloaded() = flowPrefs.getInt(Keys.filterDownloaded, ExtendedNavigationView.Item.TriStateGroup.STATE_IGNORE)
 
-    fun filterUnread() = flowPrefs.getInt(Keys.filterUnread, 0)
+    fun filterUnread() = flowPrefs.getInt(Keys.filterUnread, ExtendedNavigationView.Item.TriStateGroup.STATE_IGNORE)
 
-    fun filterCompleted() = flowPrefs.getInt(Keys.filterCompleted, 0)
+    fun filterCompleted() = flowPrefs.getInt(Keys.filterCompleted, ExtendedNavigationView.Item.TriStateGroup.STATE_IGNORE)
 
-    fun filterStarted() = flowPrefs.getInt(Keys.filterStarted, 0)
+    fun filterStarted() = flowPrefs.getInt(Keys.filterStarted, ExtendedNavigationView.Item.TriStateGroup.STATE_IGNORE)
 
-    fun filterTracked() = flowPrefs.getInt(Keys.filterTracked, 0)
+    fun filterTracked() = flowPrefs.getInt(Keys.filterTracked, ExtendedNavigationView.Item.TriStateGroup.STATE_IGNORE)
 
-    fun filterLewd() = flowPrefs.getInt(Keys.filterLewd, 0)
+    fun filterLewd() = flowPrefs.getInt(Keys.filterLewd, ExtendedNavigationView.Item.TriStateGroup.STATE_IGNORE)
 
     fun librarySortingMode() = flowPrefs.getInt(Keys.librarySortingMode, 0)
 
