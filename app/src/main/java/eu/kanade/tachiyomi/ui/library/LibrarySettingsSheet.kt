@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.ui.library
 
-import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import com.bluelinelabs.conductor.Router
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
@@ -19,9 +19,9 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class LibrarySettingsSheet(
-    activity: Activity,
+    router: Router,
     onGroupClickListener: (ExtendedNavigationView.Group) -> Unit
-) : TabbedBottomSheetDialog(activity) {
+) : TabbedBottomSheetDialog(router) {
 
     val filters: Filter
     private val sort: Sort
@@ -29,16 +29,16 @@ class LibrarySettingsSheet(
     private val grouping: Grouping
 
     init {
-        filters = Filter(activity)
+        filters = Filter(router.activity!!)
         filters.onGroupClicked = onGroupClickListener
 
-        sort = Sort(activity)
+        sort = Sort(router.activity!!)
         sort.onGroupClicked = onGroupClickListener
 
-        display = Display(activity)
+        display = Display(router.activity!!)
         display.onGroupClicked = onGroupClickListener
 
-        grouping = Grouping(activity)
+        grouping = Grouping(router.activity!!)
         grouping.onGroupClicked = onGroupClickListener
     }
 

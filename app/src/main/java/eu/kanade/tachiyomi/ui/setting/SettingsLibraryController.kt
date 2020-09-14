@@ -53,7 +53,7 @@ class SettingsLibraryController : SettingsController() {
 
         val dbCategories = db.getCategories().executeAsBlocking()
         val categories = listOf(Category.createDefault()) + dbCategories
-        settingsSheet = LibrarySettingsSheet(activity!!) {}
+        settingsSheet = LibrarySettingsSheet(router) {}
 
         preferenceCategory {
             titleRes = R.string.pref_category_display

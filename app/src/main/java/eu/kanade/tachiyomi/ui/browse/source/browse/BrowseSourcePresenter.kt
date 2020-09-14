@@ -310,7 +310,7 @@ open class BrowseSourcePresenter(
         if (!manga.favorite) {
             manga.removeCovers(coverCache)
         } else {
-            ChapterSettingsHelper.applySettingDefaultsFromPreferences(manga)
+            ChapterSettingsHelper.applySettingDefaults(manga)
         }
 
         db.insertManga(manga).executeAsBlocking()

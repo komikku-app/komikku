@@ -271,17 +271,15 @@ class PreferencesHelper(val context: Context) {
 
     fun sortChapterByAscendingOrDescending() = prefs.getInt(Keys.defaultChapterSortByAscendingOrDescending, Manga.SORT_DESC)
 
-    fun setChapterSettingsDefault(m: Manga) {
+    fun setChapterSettingsDefault(manga: Manga) {
         prefs.edit {
-            putInt(Keys.defaultChapterFilterByRead, m.readFilter)
-            putInt(Keys.defaultChapterFilterByDownloaded, m.downloadedFilter)
-            putInt(Keys.defaultChapterFilterByBookmarked, m.bookmarkedFilter)
-            putInt(Keys.defaultChapterSortBySourceOrNumber, m.sorting)
-            putInt(Keys.defaultChapterDisplayByNameOrNumber, m.displayMode)
+            putInt(Keys.defaultChapterFilterByRead, manga.readFilter)
+            putInt(Keys.defaultChapterFilterByDownloaded, manga.downloadedFilter)
+            putInt(Keys.defaultChapterFilterByBookmarked, manga.bookmarkedFilter)
+            putInt(Keys.defaultChapterSortBySourceOrNumber, manga.sorting)
+            putInt(Keys.defaultChapterDisplayByNameOrNumber, manga.displayMode)
+            putInt(Keys.defaultChapterSortByAscendingOrDescending, if (manga.sortDescending()) Manga.SORT_DESC else Manga.SORT_ASC)
         }
-
-        if (m.sortDescending()) prefs.edit { putInt(Keys.defaultChapterSortByAscendingOrDescending, Manga.SORT_DESC) }
-        else prefs.edit { putInt(Keys.defaultChapterSortByAscendingOrDescending, Manga.SORT_ASC) }
     }
 
     // --> AZ J2K CHERRYPICKING

@@ -134,7 +134,7 @@ class MangaPresenter(
         // SY <--
 
         if (!manga.favorite) {
-            ChapterSettingsHelper.applySettingDefaultsFromPreferences(manga)
+            ChapterSettingsHelper.applySettingDefaults(manga)
         }
 
         // Manga info - start
