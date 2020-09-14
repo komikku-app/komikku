@@ -49,8 +49,10 @@ import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
+import exh.util.dropBlank
 import exh.util.ignore
 import exh.util.nullIfBlank
+import exh.util.trimAll
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
 import kotlinx.coroutines.runBlocking
@@ -818,14 +820,13 @@ class EHentai(
     private fun combineQuery(filters: FilterList): String {
         val stringBuilder = StringBuilder()
         val advSearch = filters.filterIsInstance<Filter.AutoComplete>().flatMap { filter ->
-            val splitState = filter.state.map(String::trim).filterNot(String::isBlank)
+            val splitState = filter.state.trimAll().dropBlank()
             splitState.mapNotNull { tag ->
-                val split = tag.split(":").filterNot { it.isBlank() }.toMutableList()
+                val split = tag.split(":").filterNot { it.isBlank() }
                 if (split.size > 1) {
                     val namespace = split[0].removePrefix("-")
                     val exclude = split[0].startsWith("-")
-                    split -= namespace
-                    AdvSearchEntry(Pair(namespace, split.joinToString(":")), exclude)
+                    AdvSearchEntry(Pair(namespace, split[1]), exclude)
                 } else {
                     null
                 }
