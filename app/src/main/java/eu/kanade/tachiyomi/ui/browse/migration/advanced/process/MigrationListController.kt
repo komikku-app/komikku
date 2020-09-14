@@ -34,13 +34,13 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import exh.smartsearch.SmartSearchEngine
-import exh.util.RecyclerWindowInsetsListener
 import exh.util.await
 import exh.util.executeOnIO
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
@@ -107,7 +107,6 @@ class MigrationListController(bundle: Bundle? = null) :
         binding.recycler.adapter = adapter
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.setHasFixedSize(true)
-        binding.recycler.setOnApplyWindowInsetsListener(RecyclerWindowInsetsListener)
 
         adapter?.updateDataSet(newMigratingManga.map { it.toModal() })
 
@@ -118,6 +117,7 @@ class MigrationListController(bundle: Bundle? = null) :
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
         if (config == null) return
         val useSourceWithMost = preferences.useSourceWithMost().get()
@@ -157,7 +157,7 @@ class MigrationListController(bundle: Bundle? = null) :
                             val processedSources = AtomicInteger()
 
                             validSources.map { source ->
-                                async {
+                                async async2@{
                                     sourceSemaphore.withPermit {
                                         try {
                                             val searchResult = if (useSmartSearch) {
@@ -176,7 +176,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                 try {
                                                     syncChaptersWithSource(db, chapters, localManga, source)
                                                 } catch (e: Exception) {
-                                                    return@async null
+                                                    return@async2 null
                                                 }
                                                 manga.progress.send(validSources.size to processedSources.incrementAndGet())
                                                 localManga to chapters.size
@@ -327,6 +327,7 @@ class MigrationListController(bundle: Bundle? = null) :
         }
     }
 
+    @ExperimentalCoroutinesApi
     fun useMangaForMigration(manga: Manga, source: Source) {
         val firstIndex = selectedPosition ?: return
         val migratingManga = adapter?.getItem(firstIndex) ?: return

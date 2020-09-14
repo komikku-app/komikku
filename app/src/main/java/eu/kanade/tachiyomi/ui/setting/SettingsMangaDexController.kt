@@ -36,7 +36,7 @@ class SettingsMangaDexController :
                     dialog.targetController = this@SettingsMangaDexController
                     dialog.showDialog(router)
                 } else {
-                    val dialog = MangadexLoginDialog(source, activity)
+                    val dialog = MangadexLoginDialog(source)
                     dialog.targetController = this@SettingsMangaDexController
                     dialog.showDialog(router)
                 }

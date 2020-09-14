@@ -70,12 +70,14 @@ class BrowserActionActivity : AppCompatActivity() {
                 }
         } else null
 
+        @Suppress("UNCHECKED_CAST")
         val headers = (
             (source as? HttpSource)?.headers?.toMultimap()?.mapValues {
                 it.value.joinToString(",")
             } ?: emptyMap()
             ) + (intent.getSerializableExtra(HEADERS_EXTRA) as? HashMap<String, String> ?: emptyMap())
 
+        @Suppress("UNCHECKED_CAST")
         val cookies: HashMap<String, String>? =
             intent.getSerializableExtra(COOKIES_EXTRA) as? HashMap<String, String>
         val script: String? = intent.getStringExtra(SCRIPT_EXTRA)

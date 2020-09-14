@@ -34,6 +34,8 @@ import kotlin.time.days
 import kotlin.time.hours
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.asFlow
@@ -128,6 +130,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
         return true
     }
 
+    @OptIn(FlowPreview::class)
     private suspend fun startUpdating() {
         logger.d("Update job started!")
         val startTime = System.currentTimeMillis()
@@ -255,6 +258,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
     }
 
     // New, current
+    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun updateEntryAndGetChapters(manga: Manga): Pair<List<Chapter>, List<Chapter>> {
         val source = sourceManager.get(manga.source) as? EHentai
             ?: throw GalleryNotUpdatedException(false, IllegalStateException("Missing EH-based source (${manga.source})!"))

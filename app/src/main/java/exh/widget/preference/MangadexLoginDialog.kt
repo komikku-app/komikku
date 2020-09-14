@@ -1,6 +1,5 @@
 package exh.widget.preference
 
-import android.app.Activity
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
@@ -32,7 +31,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
 
     val scope = CoroutineScope(Job() + Dispatchers.Main)
 
-    constructor(source: MangaDex, activity: Activity? = null) : this(
+    constructor(source: MangaDex) : this(
         Bundle().apply {
             putLong(
                 "key",

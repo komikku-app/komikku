@@ -117,7 +117,7 @@ class FavoritesSyncHelper(val context: Context) {
             ignore { wifiLock?.release() }
             wifiLock = ignore {
                 context.wifiManager.createWifiLock(
-                    WifiManager.WIFI_MODE_FULL,
+                    WifiManager.WIFI_MODE_FULL_HIGH_PERF,
                     "teh:ExhFavoritesSyncWifi"
                 )
             }

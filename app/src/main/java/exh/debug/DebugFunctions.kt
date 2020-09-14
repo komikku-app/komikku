@@ -26,6 +26,7 @@ import exh.util.await
 import exh.util.cancellable
 import exh.util.jobScheduler
 import java.lang.RuntimeException
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
@@ -34,6 +35,7 @@ import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
+@OptIn(FlowPreview::class)
 object DebugFunctions {
     val app: Application by injectLazy()
     val db: DatabaseHelper by injectLazy()

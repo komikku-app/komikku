@@ -255,9 +255,9 @@ class SourceController(bundle: Bundle? = null) :
         val sources = preferenceSources.map { it.split("|")[0] }
 
         if (source.id.toString() in sources) {
-            val preferenceSources = preferenceSources.map { it.split("|") }.filter { it[0] == source.id.toString() }.map { Pair(it[0], it[1]) }.toMutableList()
+            val preferenceSourcePairs = preferenceSources.map { it.split("|") }.filter { it[0] == source.id.toString() }.map { it[0] to it[1] }.toMutableList()
 
-            val preselected = preferenceSources.map { category ->
+            val preselected = preferenceSourcePairs.map { category ->
                 categories.indexOf(category.second)
             }.toTypedArray()
 

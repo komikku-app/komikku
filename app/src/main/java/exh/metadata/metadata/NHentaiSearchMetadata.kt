@@ -51,11 +51,6 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             if (it.isNotEmpty()) manga.artist = it.joinToString(transform = { it.name })
         }
 
-        var category: String? = null
-        tags.filter { it.namespace == NHENTAI_CATEGORIES_NAMESPACE }.let {
-            if (it.isNotEmpty()) category = it.joinToString(transform = { it.name })
-        }
-
         // Copy tags -> genres
         manga.genre = tagsToGenreString()
 
@@ -70,23 +65,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             }
         }
 
-        /*val titleDesc = StringBuilder()
-        englishTitle?.let { titleDesc += "English Title: $it\n" }
-        japaneseTitle?.let { titleDesc += "Japanese Title: $it\n" }
-        shortTitle?.let { titleDesc += "Short Title: $it\n" }
-
-        val detailsDesc = StringBuilder()
-        category?.let { detailsDesc += "Category: $it\n" }
-        uploadDate?.let { detailsDesc += "Upload Date: ${EX_DATE_FORMAT.format(Date(it * 1000))}\n" }
-        pageImageTypes.size.let { detailsDesc += "Length: $it pages\n" }
-        favoritesCount?.let { detailsDesc += "Favorited: $it times\n" }
-        scanlator?.nullIfBlank()?.let { detailsDesc += "Scanlator: $it\n" }
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

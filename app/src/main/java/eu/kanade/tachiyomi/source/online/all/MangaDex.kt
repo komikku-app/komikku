@@ -149,7 +149,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override val needsLogin: Boolean = true
 
     override fun getLoginDialog(source: Source, activity: Activity): DialogController {
-        return MangadexLoginDialog(source as MangaDex, activity)
+        return MangadexLoginDialog(source as MangaDex)
     }
 
     override fun isLogged(): Boolean {

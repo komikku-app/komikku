@@ -1,7 +1,6 @@
 package xyz.nulldev.ts.api.http.serializer
 
 import com.github.salomonbrys.kotson.bool
-import com.github.salomonbrys.kotson.forEach
 import com.github.salomonbrys.kotson.int
 import com.github.salomonbrys.kotson.nullArray
 import com.github.salomonbrys.kotson.nullObj
@@ -152,6 +151,7 @@ class GroupSerializer(override val serializer: FilterSerializer) : Serializer<Fi
             filter.state.forEach {
                 add(
                     if (it is Filter<*>) {
+                        @Suppress("UNCHECKED_CAST")
                         serializer.serialize(it as Filter<Any?>)
                     } else {
                         JsonNull.INSTANCE
@@ -164,6 +164,7 @@ class GroupSerializer(override val serializer: FilterSerializer) : Serializer<Fi
     override fun deserialize(json: JsonObject, filter: Filter.Group<Any?>) {
         json[STATE].asJsonArray.forEachIndexed { index, jsonElement ->
             if (!jsonElement.isJsonNull) {
+                @Suppress("UNCHECKED_CAST")
                 serializer.deserialize(filter.state[index] as Filter<Any?>, jsonElement.asJsonObject)
             }
         }

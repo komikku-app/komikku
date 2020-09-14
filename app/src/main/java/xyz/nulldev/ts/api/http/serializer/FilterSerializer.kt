@@ -20,7 +20,7 @@ import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.isSubclassOf
 
 class FilterSerializer {
-    val serializers = listOf<Serializer<*>>(
+    private val serializers = listOf<Serializer<*>>(
         // EXH -->
         HelpDialogSerializer(this),
         AutoCompleteSerializer(this),
@@ -37,6 +37,7 @@ class FilterSerializer {
 
     fun serialize(filters: FilterList) = JsonArray().apply {
         filters.forEach {
+            @Suppress("UNCHECKED_CAST")
             add(serialize(it as Filter<Any?>))
         }
     }
@@ -46,6 +47,7 @@ class FilterSerializer {
         for (serializer in serializers) {
             if (filter::class.isSubclassOf(serializer.clazz)) {
                 // TODO Not sure how to deal with the mess of types here
+                @Suppress("UNCHECKED_CAST")
                 serializer as Serializer<Filter<Any?>>
 
                 serializer.serialize(out, filter)
@@ -68,6 +70,7 @@ class FilterSerializer {
 
     fun deserialize(filters: FilterList, json: JsonArray) {
         filters.zip(json).forEach { (filter, obj) ->
+            @Suppress("UNCHECKED_CAST")
             deserialize(filter as Filter<Any?>, obj.obj)
         }
     }
@@ -78,6 +81,7 @@ class FilterSerializer {
         } ?: throw IllegalArgumentException("Cannot deserialize this type!")
 
         // TODO Not sure how to deal with the mess of types here
+        @Suppress("UNCHECKED_CAST")
         serializer as Serializer<Filter<Any?>>
 
         serializer.deserialize(json, filter)
@@ -98,6 +102,7 @@ class FilterSerializer {
                     "null" -> null
                     else -> throw IllegalArgumentException("Cannot deserialize this type!")
                 }
+                @Suppress("UNCHECKED_CAST")
                 (it.second as KMutableProperty1<in Filter<Any?>, in Any?>).set(filter, res)
             }
         }

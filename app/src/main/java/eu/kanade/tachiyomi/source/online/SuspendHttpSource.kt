@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.util.asObservable
 import kotlin.jvm.Throws
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
@@ -28,6 +29,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return fetchPopularMangaFlow(page).asObservable()
     }
@@ -71,6 +73,7 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param query the search query.
      * @param filters the list of filters to apply.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         return fetchSearchMangaSuspended(page, query, filters).asObservable()
     }
@@ -113,6 +116,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page number to retrieve.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         return fetchLatestUpdatesFlow(page).asObservable()
     }
@@ -154,6 +158,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param manga the manga to be updated.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return fetchMangaDetailsFlow(manga).asObservable()
     }
@@ -198,6 +203,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param manga the manga to look for chapters.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return try {
             fetchChapterListFlow(manga).asObservable()
@@ -250,6 +256,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return fetchPageListFlow(chapter).asObservable()
     }
@@ -294,6 +301,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page whose source image has to be fetched.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchImageUrl(page: Page): Observable<String> {
         return fetchImageUrlFlow(page).asObservable()
     }
@@ -337,6 +345,7 @@ abstract class SuspendHttpSource : HttpSource() {
      *
      * @param page the page whose source image has to be downloaded.
      */
+    @ExperimentalCoroutinesApi
     final override fun fetchImage(page: Page): Observable<Response> {
         return fetchImageFlow(page).asObservable()
     }

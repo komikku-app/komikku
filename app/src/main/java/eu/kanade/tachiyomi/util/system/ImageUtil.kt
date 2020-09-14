@@ -81,6 +81,7 @@ object ImageUtil {
     }
 
     // SY -->
+    @Suppress("UNUSED_VARIABLE")
     fun autoSetBackground(image: Bitmap?, alwaysUseWhite: Boolean, context: Context): Drawable {
         val backgroundColor = if (alwaysUseWhite) Color.WHITE else {
             context.getResourceColor(R.attr.colorPrimary)

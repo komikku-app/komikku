@@ -66,7 +66,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
             db.execSQL(MangaTable.addDateAdded)
             db.execSQL(MangaTable.backfillDateAdded)
         }
-        if (oldVersion < 4) {
+        if (oldVersion < 12) {
             db.execSQL(MergedTable.dropTableQuery)
             db.execSQL(MergedTable.createTableQuery)
             db.execSQL(MergedTable.createIndexQuery)

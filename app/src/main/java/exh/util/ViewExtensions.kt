@@ -1,9 +1,6 @@
 package exh.util
 
 import android.content.Context
-import android.view.View
-import android.view.WindowInsets
-import androidx.annotation.Px
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import exh.EH_SOURCE_ID
@@ -11,23 +8,6 @@ import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_NORMAL
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
-
-inline fun View.updatePaddingRelative(
-    @Px start: Int = paddingStart,
-    @Px top: Int = paddingTop,
-    @Px end: Int = paddingEnd,
-    @Px bottom: Int = paddingBottom
-) {
-    setPaddingRelative(start, top, end, bottom)
-}
-
-object RecyclerWindowInsetsListener : View.OnApplyWindowInsetsListener {
-    override fun onApplyWindowInsets(v: View, insets: WindowInsets): WindowInsets {
-        v.updatePaddingRelative(bottom = insets.systemWindowInsetBottom)
-        // v.updatePaddingRelative(bottom = v.paddingBottom + insets.systemWindowInsetBottom)
-        return insets
-    }
-}
 
 /**
  * Replaces chips in a ChipGroup.
