@@ -22,7 +22,7 @@ class SettingsMangaDexController :
     MangadexLoginDialog.Listener,
     MangadexLogoutDialog.Listener {
 
-    private val mdex by lazy { MdUtil.getEnabledMangaDex() }
+    private val mdex by lazy { MdUtil.getEnabledMangaDex(preferences) }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
         titleRes = R.string.mangadex_specific_settings
@@ -49,13 +49,9 @@ class SettingsMangaDexController :
             titleRes = R.string.mangadex_preffered_source
             summaryRes = R.string.mangadex_preffered_source_summary
             key = PreferenceKeys.preferredMangaDexId
-            val mangaDexs = MdUtil.getEnabledMangaDexs()
+            val mangaDexs = MdUtil.getEnabledMangaDexs(preferences)
             entries = mangaDexs.map { it.toString() }.toTypedArray()
             entryValues = mangaDexs.map { it.id.toString() }.toTypedArray()
-            /*setOnPreferenceChangeListener { preference, newValue ->
-                preferences.preferredMangaDexId().set((newValue as? String)?.toLongOrNull() ?: 0)
-                true
-            }*/
         }
 
         switchPreference {
