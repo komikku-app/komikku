@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
+import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
@@ -131,6 +132,10 @@ class MangaPresenter(
             launchIO { mergedManga = db.getMergedMangas(manga.id!!).await() }
         }
         // SY <--
+
+        if (!manga.favorite) {
+            ChapterSettingsHelper.applySettingDefaultsFromPreferences(manga)
+        }
 
         // Manga info - start
 
