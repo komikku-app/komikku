@@ -34,7 +34,7 @@
             android:background="?selectableItemBackgroundBorderless"
             android:contentDescription="@string/action_open_in_web_view"
             android:padding="@dimen/material_layout_keylines_screen_edge_margin"
-            android:tint="?attr/colorOnSurface"
+            android:tint="?attr/colorOnBackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -54,7 +54,7 @@
             android:layout_width="100dp"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="?attr/colorOnBackground"
             android:textSize="15sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -66,7 +66,6 @@
         android:id="@+id/chapter_recycler"
         android:layout_width="match_parent"
         android:layout_height="244dp"
-        android:background="?attr/colorSurface"
         android:clipToPadding="false"
         tools:listitem="@layout/reader_chapter_item" />
 

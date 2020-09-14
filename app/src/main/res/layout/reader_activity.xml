@@ -167,7 +167,7 @@
                 android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/action_next_chapter"
                 android:padding="@dimen/material_layout_keylines_screen_edge_margin"
-                android:tint="?attr/colorOnSurface"
+                android:tint="?attr/colorOnPrimary"
                 app:srcCompat="@drawable/ic_format_list_numbered_24dp" />
 
             <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
@@ -183,7 +183,7 @@
                 android:layout_width="100dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="?attr/colorOnPrimary"
                 android:textSize="15sp"
                 tools:text="100 / 105" />
         </LinearLayout>
