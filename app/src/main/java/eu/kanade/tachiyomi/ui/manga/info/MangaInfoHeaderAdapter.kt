@@ -155,13 +155,11 @@ class MangaInfoHeaderAdapter(
             }
 
             // SY -->
-            if (controller.presenter.manga.favorite) {
-                binding.btnMigrate.isVisible = true
-                binding.btnMigrate.clicks()
-                    .onEach { controller.migrateManga() }
-                    .launchIn(scope)
-                binding.btnMigrate.setTooltip(R.string.migrate)
-            }
+            binding.btnMigrate.isVisible = controller.presenter.manga.favorite
+            binding.btnMigrate.clicks()
+                .onEach { controller.migrateManga() }
+                .launchIn(scope)
+            binding.btnMigrate.setTooltip(R.string.migrate)
             // SY <--
 
             binding.mangaFullTitle.longClicks()
