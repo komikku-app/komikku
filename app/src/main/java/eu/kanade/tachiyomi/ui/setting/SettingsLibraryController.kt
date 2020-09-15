@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.CategoryController
+import eu.kanade.tachiyomi.ui.category.genre.SortTagController
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsSheet
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
@@ -278,6 +279,10 @@ class SettingsLibraryController : SettingsController() {
                     titleRes = R.string.skip_pre_migration
                     summaryRes = R.string.pref_skip_pre_migration_summary
                     defaultValue = false
+
+                    onClick {
+                        router.pushController(SortTagController().withFadeTransaction())
+                    }
                 }
             }
         }
