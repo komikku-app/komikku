@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.3.1" changeDate="Sept 14,2020">
+        <changelogtext>[b]New[/b] Share manga info when you share a page</changelogtext>
+        <changelogtext>Tweak preload settings, make the max 20, defaults to 10</changelogtext>
+        <changelogtext>Set the new browse + latest view as default</changelogtext>
+        <changelogtext>Fix Mangadex 2FA input</changelogtext>
+        <changelogtext>Fix backup for merged manga</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.3.0" changeDate="Sept 14,2020">
         <changelogtext>[b]Based on Tachiyomi stable 0.10.5(from 0.10.4)[/b] </changelogtext>
         <changelogtext>[b]New[/b] Delegate MangaDex, add Mangadex Follows browse, import, push, and tracking, as well as a custom manga view!</changelogtext>
