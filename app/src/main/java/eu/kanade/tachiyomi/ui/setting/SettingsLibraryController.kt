@@ -257,14 +257,14 @@ class SettingsLibraryController : SettingsController() {
             }
         }
 
-        preferenceCategory {
+        /*preferenceCategory {
             titleRes = R.string.pref_sorting_settings
             preference {
                 titleRes = R.string.pref_tag_sorting
                 val count = preferences.sortTagsForLibrary().get().size
                 summary = resources!!.getQuantityString(R.plurals.pref_tag_sorting_desc, count, count)
             }
-        }
+        }*/
 
         // SY -->
         if (preferences.skipPreMigration().get() || preferences.migrationSources().get()
