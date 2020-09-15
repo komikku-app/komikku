@@ -13,12 +13,12 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -156,7 +156,6 @@ class LibraryPresenter(
         }
     }
 
-    // SY -->
     /**
      * Applies library filters to the given map of manga.
      *
@@ -190,9 +189,9 @@ class LibraryPresenter(
         }
 
         val filterFnDownloaded: (LibraryItem) -> Boolean = downloaded@{ item ->
-            if (filterDownloaded == STATE_IGNORE && !downloadedOnly) return@downloaded true
+            if (!downloadedOnly && filterDownloaded == STATE_IGNORE) return@downloaded true
             val isDownloaded = when {
-                item.manga.source == LocalSource.ID -> true
+                item.manga.isLocal() -> true
                 item.downloadCount != -1 -> item.downloadCount > 0
                 else -> downloadManager.getDownloadCount(item.manga) > 0
             }
@@ -243,6 +242,7 @@ class LibraryPresenter(
         return map.mapValues { entry -> entry.value.filter(filterFn) }
     }
 
+    // SY -->
     /**
      * Sets the button on each manga.
      *
@@ -311,9 +311,11 @@ class LibraryPresenter(
             db.getLatestChapterManga().executeAsBlocking().associate { it.id!! to counter++ }
         }
 
+        // SY -->
         val listOfTags by lazy {
             preferences.sortTagsForLibrary().get().toList().map { ("(, |^)$it").toRegex(RegexOption.IGNORE_CASE) }
         }
+        // SY <--
 
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
             when (sortingMode) {
@@ -361,12 +363,6 @@ class LibraryPresenter(
 
         return map.mapValues { entry -> entry.value.sortedWith(comparator) }
     }
-
-    /*private fun sortAlphabetical(i1: LibraryItem, i2: LibraryItem): Int {
-        // return if (preferences.removeArticles().getOrDefault())
-        return i1.manga.title.removeArticles().compareTo(i2.manga.title.removeArticles(), true)
-        // else i1.manga.title.compareTo(i2.manga.title, true)
-    }*/
 
     /**
      * Get the categories and all its manga from the database.
