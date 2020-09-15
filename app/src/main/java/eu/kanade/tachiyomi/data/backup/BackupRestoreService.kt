@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.data.backup.models.Backup.CHAPTERS
 import eu.kanade.tachiyomi.data.backup.models.Backup.HISTORY
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGA
 import eu.kanade.tachiyomi.data.backup.models.Backup.MANGAS
+import eu.kanade.tachiyomi.data.backup.models.Backup.MERGEDMANGAREFERENCES
 import eu.kanade.tachiyomi.data.backup.models.Backup.SAVEDSEARCHES
 import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.models.Backup.VERSION
@@ -250,6 +251,8 @@ class BackupRestoreService : Service() {
 
         // SY -->
         json.get(SAVEDSEARCHES)?.let { restoreSavedSearches(it) }
+
+        json.get(MERGEDMANGAREFERENCES)?.let { restoreMergedMangaReferences(it) }
         // SY <--
 
         // Store source mapping for error messages
@@ -296,7 +299,7 @@ class BackupRestoreService : Service() {
         }
 
         restoreProgress += 1
-        showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.categories))
+        showRestoreProgress(restoreProgress, restoreAmount, getString(R.string.merged_references))
     }
     // SY <--
 

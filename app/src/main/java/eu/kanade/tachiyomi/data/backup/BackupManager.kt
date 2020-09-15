@@ -17,6 +17,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.hippo.unifile.UniFile
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CHAPTER
@@ -154,7 +155,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
         databaseHelper.inTransaction {
             // Get manga from database
-            val mangas = getFavoriteManga() /* SY --> */ + getMergedManga() /* SY <-- */
+            val mangas = getFavoriteManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY --> */ + getMergedManga() /* SY <-- */
 
             val extensions: MutableSet<String> = mutableSetOf()
 
@@ -652,7 +653,15 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             // Store the inserted id in the mergedMangaReference
             if (!found) {
                 // Let the db assign the id
-                val mergedManga = (if (mergedMangaReference.mergeUrl != lastMergeManga?.url) databaseHelper.getManga(mergedMangaReference.mergeUrl, MERGED_SOURCE_ID).executeAsBlocking() else lastMergeManga) ?: return@forEach
+                var mergedManga = if (mergedMangaReference.mergeUrl != lastMergeManga?.url) databaseHelper.getManga(mergedMangaReference.mergeUrl, MERGED_SOURCE_ID).executeAsBlocking() else lastMergeManga
+                if (mergedManga == null) {
+                    mergedManga = Manga.create(MERGED_SOURCE_ID).apply {
+                        url = mergedMangaReference.mergeUrl
+                        title = context.getString(R.string.refresh_merge)
+                    }
+                    mergedManga.id = databaseHelper.insertManga(mergedManga).executeAsBlocking().insertedId()
+                }
+
                 val manga = databaseHelper.getManga(mergedMangaReference.mangaUrl, mergedMangaReference.mangaSourceId).executeAsBlocking() ?: return@forEach
                 lastMergeManga = mergedManga
 

@@ -194,9 +194,6 @@
     <string name="skip_queue_on_retry">Ignorar fila ao tentar novamente</string>
     <string name="skip_queue_on_retry_summary">Normalmente, tocar no botão Tentar novamente, aguardará até terminar de baixar a última página antes de baixar novamente a página com falha. Ativar isso forçará a baixar a página falhada assim que tocar em Tentar novamente.</string>
     <string name="reader_preload_amount">Quantidade de pré-carregamento do leitor</string>
-    <string name="reader_preload_amount_1_page">1 Página</string>
-    <string name="reader_preload_amount_2_pages">2 Páginas</string>
-    <string name="reader_preload_amount_3_pages">3 Páginas</string>
     <string name="reader_preload_amount_4_pages">4 Páginas</string>
     <string name="reader_preload_amount_6_pages">6 Páginas</string>
     <string name="reader_preload_amount_8_pages">8 Páginas</string>
@@ -204,6 +201,8 @@
     <string name="reader_preload_amount_12_pages">12 Páginas</string>
     <string name="reader_preload_amount_14_pages">14 Páginas</string>
     <string name="reader_preload_amount_16_pages">16 Páginas</string>
+    <string name="reader_preload_amount_18_pages">18 Páginas</string>
+    <string name="reader_preload_amount_20_pages">20 Páginas</string>
     <string name="reader_preload_amount_summary">Quantidade de páginas a serem pré-carregadas enquanto lê. Valores mais altos resultarão em uma experiência de leitura mais suave, ao custo do uso do cache mais alto, é recomendável aumentar a quantidade de cache que você aloca ao usar valores maiores</string>
     <string name="reader_cache_size">Tamanho de cache do leitor</string>
     <string name="reader_cache_size_summary">Quantidade de imagens para salvar no dispositivo enquanto lê. Valores mais altos resultarão em uma experiência de leitura mais suave, com o custo do uso de espaço maior em disco</string>

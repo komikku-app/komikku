@@ -172,11 +172,12 @@ class LibrarySettingsSheet(
             private val dateAdded = Item.MultiSort(R.string.action_sort_date_added, this)
             // SY -->
             private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
+            private val tagList = Item.MultiSort(R.string.tag_sorting, this)
             // SY <--
 
             override val header = null
             override val items =
-                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, dateAdded /* SY --> */, dragAndDrop /* SY <-- */)
+                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, dateAdded /* SY --> */, dragAndDrop) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() /* SY <-- */
             override val footer = null
 
             override fun initModels() {
@@ -203,6 +204,8 @@ class LibrarySettingsSheet(
                     if (sorting == LibrarySort.DATE_ADDED) order else Item.MultiSort.SORT_NONE
                 // SY -->
                 dragAndDrop.state = if (sorting == LibrarySort.DRAG_AND_DROP) order else Item.MultiSort.SORT_NONE
+                tagList.state =
+                    if (sorting == LibrarySort.TAG_LIST) order else Item.MultiSort.SORT_NONE
                 // SY <--
             }
 
@@ -241,6 +244,7 @@ class LibrarySettingsSheet(
                         dateAdded -> LibrarySort.DATE_ADDED
                         // SY -->
                         dragAndDrop -> LibrarySort.DRAG_AND_DROP
+                        tagList -> LibrarySort.TAG_LIST
                         // SY <--
                         else -> throw Exception("Unknown sorting")
                     }

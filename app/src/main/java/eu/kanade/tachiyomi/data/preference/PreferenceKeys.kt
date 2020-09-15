@@ -316,4 +316,6 @@ object PreferenceKeys {
     const val allowLocalSourceHiddenFolders = "allow_local_source_hidden_folders"
 
     const val biometricTimeRanges = "biometric_time_ranges"
+
+    const val sortTagsForLibrary = "sort_tags_for_library"
 }

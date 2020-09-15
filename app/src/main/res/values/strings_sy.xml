@@ -166,6 +166,7 @@
     <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the manga page</string>
 
     <!-- Library settings -->
+    <string name="pref_sorting_settings">Sorting Settings</string>
     <string name="pref_skip_pre_migration_summary">Use last saved pre-migration preferences and sources to mass migrate</string>
     <string name="library_settings_sheet">Library settings sheet</string>
     <string name="library_settings_sheet_summary">More library display settings</string>
@@ -209,9 +210,6 @@
     <string name="skip_queue_on_retry">Skip queue on retry</string>
     <string name="skip_queue_on_retry_summary">Normally, pressing the retry button on a failed download will wait until the downloader has finished downloading the last page before beginning to re-download the failed page. Enabling this will force the downloader to begin re-downloading the failed page as soon as you press the retry button.</string>
     <string name="reader_preload_amount">Reader Preload amount</string>
-    <string name="reader_preload_amount_1_page">1 Page</string>
-    <string name="reader_preload_amount_2_pages">2 Pages</string>
-    <string name="reader_preload_amount_3_pages">3 Pages</string>
     <string name="reader_preload_amount_4_pages">4 Pages</string>
     <string name="reader_preload_amount_6_pages">6 Pages</string>
     <string name="reader_preload_amount_8_pages">8 Pages</string>
@@ -219,6 +217,8 @@
     <string name="reader_preload_amount_12_pages">12 Pages</string>
     <string name="reader_preload_amount_14_pages">14 Pages</string>
     <string name="reader_preload_amount_16_pages">16 Pages</string>
+    <string name="reader_preload_amount_18_pages">18 Pages</string>
+    <string name="reader_preload_amount_20_pages">20 Pages</string>
     <string name="reader_preload_amount_summary">The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to increase the amount of cache you allocate when using larger values</string>
     <string name="reader_cache_size">Reader cache size</string>
     <string name="reader_cache_size_summary">The amount of images to save on device while reading. Higher values will result in a smoother reading experience, at the cost of higher disk space usage</string>
@@ -283,6 +283,22 @@
     <string name="unwatch">Unwatch</string>
     <string name="too_many_watched">Too many watched sources, cannot add more then 5</string>
     <string name="latest_tab_empty">You don\'t have any watched sources, go to the sources tab and long press a source to watch it</string>
+
+    <!-- Sort by tags -->
+    <string name="pref_tag_sorting">Tag sorting tags</string>
+    <string name="tag_sorting">Tag sorting</string>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">No tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="one">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
+        <item quantity="other">%1$d tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
+    </plurals>
+    <string name="pref_tag_sorting_desc">Tag sorting list</string>
+    <string name="action_add_tags">Add tag</string>
+    <string name="action_add_tags_message">Read this! Tags must be exact, there are no partial matches, you cannot do netorare to filter out female:netorare or similar!\nThe style for namespace tags is "female: sole female" without quotes!\nAdding multiple variants of the same tag is supported, so feel free to do "tag: netorare" for NHentai and "female: netorare" for E-Hentai!</string>
+    <string name="action_edit_tags">Edit tags</string>
+    <string name="information_empty_tags">You have no tags. Tap the plus button to create one for sorting your library by tags</string>
+    <string name="error_tag_exists">This tag exists!</string>
+    <string name="snack_tags_deleted">Tags deleted</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>
@@ -513,6 +529,7 @@
     <string name="download_merged_manga_desc">Toggling this will disable or enable chapter downloads for this merged manga</string>
     <string name="merged_references_invalid">Merged references invalid</string>
     <string name="merged_chapter_updates_error">Toggle chapter updates error</string>
+    <string name="merged_references">Merged references</string>
     <string name="merged_toggle_chapter_updates_find_error">Could not find manga to toggle chapter updates</string>
     <string name="merged_toggle_download_chapters_error">Toggle download chapters error</string>
     <string name="merged_toggle_download_chapters_find_error">Could not find manga to toggle chapter downloads</string>
@@ -520,6 +537,7 @@
     <string name="deduplication_mode">Dedupe mode:</string>
     <string name="manga_info_manga">Info manga:</string>
     <string name="toggle_dedupe">Toggle dedupe</string>
+    <string name="refresh_merge">Refresh to get proper info</string>
 
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Unfollowed</string>
@@ -536,5 +554,6 @@
     <string name="mangadex_add_to_follows">Add to MangaDex follows</string>
     <string name="mangadex_follows">MangaDex follows</string>
     <string name="random">Random</string>
+
 
 </resources>

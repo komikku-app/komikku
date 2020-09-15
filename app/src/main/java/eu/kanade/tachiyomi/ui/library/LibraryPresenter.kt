@@ -290,6 +290,10 @@ class LibraryPresenter(
             db.getLatestChapterManga().executeAsBlocking().associate { it.id!! to counter++ }
         }
 
+        val listOfTags by lazy {
+            preferences.sortTagsForLibrary().get().toList().map { ("(, |^)$it").toRegex(RegexOption.IGNORE_CASE) }
+        }
+
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
             when (sortingMode) {
                 LibrarySort.ALPHA -> i1.manga.title.compareTo(i2.manga.title, true)
@@ -317,6 +321,11 @@ class LibraryPresenter(
                 // SY -->
                 LibrarySort.DRAG_AND_DROP -> {
                     0
+                }
+                LibrarySort.TAG_LIST -> {
+                    val manga1IndexOfTag = listOfTags.indexOfFirst { i1.manga.genre?.let { tagString -> it.containsMatchIn(tagString) } ?: false }
+                    val manga2IndexOfTag = listOfTags.indexOfFirst { i2.manga.genre?.let { tagString -> it.containsMatchIn(tagString) } ?: false }
+                    manga1IndexOfTag.compareTo(manga2IndexOfTag)
                 }
                 // SY <--
                 else -> throw Exception("Unknown sorting mode")

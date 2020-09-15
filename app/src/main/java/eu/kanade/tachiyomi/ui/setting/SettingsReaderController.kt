@@ -162,30 +162,26 @@ class SettingsReaderController : SettingsController() {
                 key = Keys.eh_preload_size
                 titleRes = R.string.reader_preload_amount
                 entryValues = arrayOf(
-                    "1",
-                    "2",
-                    "3",
                     "4",
                     "6",
                     "8",
                     "10",
                     "12",
                     "14",
-                    "16"
+                    "16",
+                    "20",
                 )
                 entriesRes = arrayOf(
-                    R.string.reader_preload_amount_1_page,
-                    R.string.reader_preload_amount_2_pages,
-                    R.string.reader_preload_amount_3_pages,
                     R.string.reader_preload_amount_4_pages,
                     R.string.reader_preload_amount_6_pages,
                     R.string.reader_preload_amount_8_pages,
                     R.string.reader_preload_amount_10_pages,
                     R.string.reader_preload_amount_12_pages,
                     R.string.reader_preload_amount_14_pages,
-                    R.string.reader_preload_amount_16_pages
+                    R.string.reader_preload_amount_16_pages,
+                    R.string.reader_preload_amount_20_pages
                 )
-                defaultValue = "4"
+                defaultValue = "10"
                 summaryRes = R.string.reader_preload_amount_summary
             }
             listPreference {

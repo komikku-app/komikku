@@ -356,7 +356,7 @@ class PreferencesHelper(val context: Context) {
 
     fun eh_aggressivePageLoading() = flowPrefs.getBoolean(Keys.eh_aggressivePageLoading, false)
 
-    fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, 4)
+    fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, 10)
 
     fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
 
@@ -392,7 +392,7 @@ class PreferencesHelper(val context: Context) {
 
     fun groupLibraryUpdateType() = flowPrefs.getEnum(Keys.groupLibraryUpdateType, Values.GroupLibraryMode.GLOBAL)
 
-    fun useNewSourceNavigation() = flowPrefs.getBoolean(Keys.useNewSourceNavigation, false)
+    fun useNewSourceNavigation() = flowPrefs.getBoolean(Keys.useNewSourceNavigation, true)
 
     fun mangaDexLowQualityCovers() = flowPrefs.getBoolean(Keys.mangaDexLowQualityCovers, false)
 
@@ -421,4 +421,6 @@ class PreferencesHelper(val context: Context) {
     fun allowLocalSourceHiddenFolders() = flowPrefs.getBoolean(Keys.allowLocalSourceHiddenFolders, false)
 
     fun biometricTimeRanges() = flowPrefs.getStringSet(Keys.biometricTimeRanges, mutableSetOf())
+
+    fun sortTagsForLibrary() = flowPrefs.getStringSet(Keys.sortTagsForLibrary, mutableSetOf())
 }

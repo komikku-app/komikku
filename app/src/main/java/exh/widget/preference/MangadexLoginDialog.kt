@@ -3,6 +3,7 @@ package exh.widget.preference
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import eu.kanade.tachiyomi.R
@@ -15,7 +16,9 @@ import exh.md.utils.MdUtil
 import kotlinx.android.synthetic.main.pref_account_login.view.login
 import kotlinx.android.synthetic.main.pref_account_login.view.password
 import kotlinx.android.synthetic.main.pref_account_login.view.username
-import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.*
+import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_check
+import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_edit
+import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_holder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,6 +51,15 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
         onViewCreated(dialog.view)
 
         return dialog
+    }
+
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+        v?.apply {
+            two_factor_check?.setOnCheckedChangeListener { _, isChecked ->
+                two_factor_holder.isVisible = isChecked
+            }
+        }
     }
 
     override fun setCredentialsOnView(view: View) = with(view) {

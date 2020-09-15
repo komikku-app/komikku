@@ -45,7 +45,7 @@ abstract class LoginDialogPreference(
         return dialog
     }
 
-    fun onViewCreated(view: View) {
+    /* SY --> */ open /* SY <-- */ fun onViewCreated(view: View) {
         v = view.apply {
             if (usernameLabelRes != null) {
                 username_label.hint = context.getString(usernameLabelRes)
