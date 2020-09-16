@@ -23,7 +23,7 @@ class SortTagPresenter : BasePresenter<SortTagController>() {
     /**
      * List containing categories.
      */
-    private var tags: List<String> = emptyList()
+    private var tags: List<Pair<Int, String>> = emptyList()
 
     val preferences: PreferencesHelper = Injekt.get()
 
@@ -38,10 +38,12 @@ class SortTagPresenter : BasePresenter<SortTagController>() {
         super.onCreate(savedState)
 
         preferences.sortTagsForLibrary().asFlow().onEach { tags ->
-            this.tags = tags.toList()
+            this.tags = tags.map { it.split("|") }
+                .mapNotNull { (it.getOrNull(0)?.toIntOrNull() ?: return@mapNotNull null) to (it.getOrNull(1) ?: return@mapNotNull null) }
+                .sortedBy { it.first }
 
             Observable.just(this.tags)
-                .map { it.map(::SortTagItem) }
+                .map { tagPairs -> tagPairs.map { it.second }.map(::SortTagItem) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(SortTagController::setCategories)
         }.launchIn(scope)
@@ -52,40 +54,45 @@ class SortTagPresenter : BasePresenter<SortTagController>() {
      *
      * @param name The name of the category to create.
      */
-    fun createCategory(name: String) {
+    fun createTag(name: String) {
         // Do not allow duplicate categories.
         if (tagExists(name)) {
             Observable.just(Unit).subscribeFirst({ view, _ -> view.onTagExistsError() })
             return
         }
 
-        preferences.sortTagsForLibrary() += name
+        val size = preferences.sortTagsForLibrary().get().size
+
+        preferences.sortTagsForLibrary() += "$size|$name"
     }
 
     /**
      * Deletes the given categories from the database.
      *
-     * @param categories The list of categories to delete.
+     * @param tags The list of categories to delete.
      */
-    fun deleteTags(categories: List<String>) {
-        categories.forEach {
-            preferences.sortTagsForLibrary() -= it
+    fun deleteTags(tags: List<String>) {
+        val preferenceTags = preferences.sortTagsForLibrary().get()
+        tags.forEach { tag ->
+            preferenceTags.firstOrNull { it.endsWith(tag) }?.let {
+                preferences.sortTagsForLibrary() -= it
+            }
         }
     }
 
     /**
      * Reorders the given categories in the database.
      *
-     * @param categories The list of categories to reorder.
+     * @param tags The list of categories to reorder.
      */
-    fun reorderTags(categories: List<String>) {
-        preferences.sortTagsForLibrary().set(categories.toSet())
+    fun reorderTags(tags: List<String>) {
+        preferences.sortTagsForLibrary().set(tags.mapIndexed { index, tag -> "$index|$tag" }.toSet())
     }
 
     /**
      * Returns true if a category with the given name already exists.
      */
     private fun tagExists(name: String): Boolean {
-        return tags.any { it.equals(name, true) }
+        return tags.any { it.equals(name) }
     }
 }

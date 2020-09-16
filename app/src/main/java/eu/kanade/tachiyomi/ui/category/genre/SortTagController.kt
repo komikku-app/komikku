@@ -352,7 +352,7 @@ class SortTagController :
      * @param name The name of the new category.
      */
     override fun createCategory(name: String) {
-        presenter.createCategory(name)
+        presenter.createTag(name)
     }
 
     /**
