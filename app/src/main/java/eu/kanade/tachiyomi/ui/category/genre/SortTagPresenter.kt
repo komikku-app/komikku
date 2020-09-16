@@ -56,14 +56,14 @@ class SortTagPresenter : BasePresenter<SortTagController>() {
      */
     fun createTag(name: String) {
         // Do not allow duplicate categories.
-        if (tagExists(name)) {
+        if (tagExists(name.trim())) {
             Observable.just(Unit).subscribeFirst({ view, _ -> view.onTagExistsError() })
             return
         }
 
         val size = preferences.sortTagsForLibrary().get().size
 
-        preferences.sortTagsForLibrary() += "$size|$name"
+        preferences.sortTagsForLibrary() += "$size|${name.trim()}"
     }
 
     /**
