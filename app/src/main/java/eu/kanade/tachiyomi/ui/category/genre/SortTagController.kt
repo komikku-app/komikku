@@ -231,10 +231,6 @@ class SortTagController :
                 )
                 mode.finish()
             }
-            R.id.action_help -> {
-                shownHelpDialog = true
-                helpDialog()
-            }
             else -> return false
         }
         return true
