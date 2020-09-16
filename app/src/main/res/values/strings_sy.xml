@@ -294,7 +294,7 @@
     </plurals>
     <string name="pref_tag_sorting_desc">Tag sorting list</string>
     <string name="action_add_tags">Add tag</string>
-    <string name="action_add_tags_message">Read this! Tags must be exact, there are no partial matches, you cannot do netorare to filter out female:netorare or similar!\nThe style for namespace tags is "female: sole female" without quotes!\nAdding multiple variants of the same tag is supported, so feel free to do "tag: netorare" for NHentai and "female: netorare" for E-Hentai!</string>
+    <string name="action_add_tags_message">Read this! Tags must be exact, there are no partial matches, you cannot do netorare to filter out female:netorare or similar!\nThe style for namespace tags is\n\"female: sole female\"\nwithout quotes!\nAdding multiple variants of the same tag is supported, so feel free to do \"tag: netorare\" for NHentai and \"female: netorare\" for E-Hentai!</string>
     <string name="action_edit_tags">Edit tags</string>
     <string name="information_empty_tags">You have no tags. Tap the plus button to create one for sorting your library by tags</string>
     <string name="error_tag_exists">This tag exists!</string>

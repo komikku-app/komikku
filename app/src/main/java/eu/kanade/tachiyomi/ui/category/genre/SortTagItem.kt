@@ -60,6 +60,9 @@ class SortTagItem(val tag: String) : AbstractFlexibleItem<SortTagHolder>() {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
+        if (other is SortTagItem) {
+            return tag == other.tag
+        }
         return false
     }
 

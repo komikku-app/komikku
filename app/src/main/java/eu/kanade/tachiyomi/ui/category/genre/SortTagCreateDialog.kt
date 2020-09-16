@@ -32,7 +32,6 @@ class SortTagCreateDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         return MaterialDialog(activity!!)
             .title(R.string.action_add_category)
-            .message(R.string.action_add_tags_message)
             .negativeButton(android.R.string.cancel)
             .input(
                 hint = resources?.getString(R.string.name),

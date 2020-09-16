@@ -264,6 +264,9 @@ class SettingsLibraryController : SettingsController() {
                 titleRes = R.string.pref_tag_sorting
                 val count = preferences.sortTagsForLibrary().get().size
                 summary = resources!!.getQuantityString(R.plurals.pref_tag_sorting_desc, count, count)
+                onClick {
+                    router.pushController(SortTagController().withFadeTransaction())
+                }
             }
         }
 
@@ -279,10 +282,6 @@ class SettingsLibraryController : SettingsController() {
                     titleRes = R.string.skip_pre_migration
                     summaryRes = R.string.pref_skip_pre_migration_summary
                     defaultValue = false
-
-                    onClick {
-                        router.pushController(SortTagController().withFadeTransaction())
-                    }
                 }
             }
         }

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.category.genre
 
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.afollestad.materialdialogs.MaterialDialog
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -43,6 +45,8 @@ class SortTagController :
      */
     private var actionMode: ActionMode? = null
 
+    private var shownHelpDialog = false
+
     /**
      * Adapter containing category items.
      */
@@ -68,6 +72,10 @@ class SortTagController :
         return resources?.getString(R.string.action_edit_tags)
     }
 
+    init {
+        setHasOptionsMenu(true)
+    }
+
     /**
      * Returns the view of this controller.
      *
@@ -91,6 +99,7 @@ class SortTagController :
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.setHasFixedSize(true)
         binding.recycler.adapter = adapter
+        adapter?.isHandleDragEnabled = true
         adapter?.isPermanentDelete = false
 
         actionFabScrollListener = actionFab?.shrinkOnScroll(binding.recycler)
@@ -102,7 +111,12 @@ class SortTagController :
         fab.setIconResource(R.drawable.ic_add_24dp)
         fab.clicks()
             .onEach {
-                SortTagCreateDialog(this@SortTagController).showDialog(router, null)
+                if (!shownHelpDialog) {
+                    shownHelpDialog = true
+                    helpDialog(true)
+                } else {
+                    SortTagCreateDialog(this@SortTagController).showDialog(router, null)
+                }
             }
             .launchIn(scope)
     }
@@ -143,6 +157,21 @@ class SortTagController :
         } else {
             binding.emptyView.show(R.string.information_empty_tags)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.sort_tags, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_help -> {
+                shownHelpDialog = true
+                helpDialog()
+            }
+            else -> return false
+        }
+        return true
     }
 
     /**
@@ -202,9 +231,25 @@ class SortTagController :
                 )
                 mode.finish()
             }
+            R.id.action_help -> {
+                shownHelpDialog = true
+                helpDialog()
+            }
             else -> return false
         }
         return true
+    }
+
+    private fun helpDialog(hasPositive: Boolean = false) {
+        MaterialDialog(activity!!)
+            .title(R.string.add_tag)
+            .message(R.string.action_add_tags_message)
+            .positiveButton(android.R.string.ok) {
+                if (hasPositive) {
+                    SortTagCreateDialog(this@SortTagController).showDialog(router, null)
+                }
+            }
+            .show()
     }
 
     /**
