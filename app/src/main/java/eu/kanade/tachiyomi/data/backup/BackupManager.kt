@@ -155,7 +155,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
 
         databaseHelper.inTransaction {
             // Get manga from database
-            val mangas = getFavoriteManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY --> */ + getMergedManga() /* SY <-- */
+            val mangas = getFavoriteManga()/* SY --> */.filterNot { it.source == MERGED_SOURCE_ID } + getMergedManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY <-- */
 
             val extensions: MutableSet<String> = mutableSetOf()
 
