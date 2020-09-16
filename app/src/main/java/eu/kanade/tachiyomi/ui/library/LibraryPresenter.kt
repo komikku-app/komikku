@@ -313,7 +313,14 @@ class LibraryPresenter(
 
         // SY -->
         val listOfTags by lazy {
-            preferences.sortTagsForLibrary().get().toList().mapNotNull { it.split("|").getOrNull(1) }.map { ("(, |^)$it").toRegex(RegexOption.IGNORE_CASE) }
+            preferences.sortTagsForLibrary().get().toList()
+                .mapNotNull {
+                    val list = it.split("|")
+                    (list.getOrNull(0)?.toIntOrNull() ?: return@mapNotNull null) to (list.getOrNull(1) ?: return@mapNotNull null)
+                }
+                .sortedBy { it.first }
+                .map { it.second }
+                .map { ("(, |^)$it").toRegex(RegexOption.IGNORE_CASE) }
         }
         // SY <--
 
