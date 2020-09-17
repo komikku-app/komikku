@@ -13,12 +13,12 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.preference.LoginDialogPreference
 import exh.md.utils.MdUtil
-import kotlinx.android.synthetic.main.pref_account_login.view.login
-import kotlinx.android.synthetic.main.pref_account_login.view.password
-import kotlinx.android.synthetic.main.pref_account_login.view.username
+import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.login
+import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.password
 import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_check
 import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_edit
 import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_holder
+import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.username
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
