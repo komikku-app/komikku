@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.source.online.all
 import android.app.Activity
 import android.content.Context
 import android.net.Uri
+import androidx.core.text.HtmlCompat
 import com.bluelinelabs.conductor.Controller
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -180,7 +181,15 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                     formBody.build()
                 )
             ).execute()
-            response.body!!.string().isEmpty()
+
+            response.body!!.string().let {
+                if (it.isEmpty()) {
+                    true
+                } else {
+                    val error = HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                    throw Exception(error)
+                }
+            }
         }
     }
 
