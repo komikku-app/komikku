@@ -1,6 +1,7 @@
 package exh.ui.metadata
 
 import android.os.Bundle
+import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -11,7 +12,6 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -27,7 +27,7 @@ class MetadataViewPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else Timber.d("Invalid metadata") })
+        getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.nst().d("Invalid metadata") })
 
         getMangaObservable()
             .observeOn(AndroidSchedulers.mainThread())

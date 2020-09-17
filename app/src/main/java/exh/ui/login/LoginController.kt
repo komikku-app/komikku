@@ -8,6 +8,7 @@ import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.view.isVisible
+import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
 import eu.kanade.tachiyomi.source.SourceManager
@@ -15,7 +16,6 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.uconfig.WarnConfigureDialogController
-import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
 
@@ -90,7 +90,7 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
         binding.webview.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
-                Timber.d(url)
+                XLog.nst().d(url)
                 val parsedUrl = Uri.parse(url)
                 if (parsedUrl.host.equals("forums.e-hentai.org", ignoreCase = true)) {
                     // Hide distracting content

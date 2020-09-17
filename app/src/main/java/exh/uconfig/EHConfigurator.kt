@@ -1,6 +1,7 @@
 package exh.uconfig
 
 import android.content.Context
+import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
@@ -12,7 +13,6 @@ import exh.log.maybeInjectEHLogger
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 
 class EHConfigurator(val context: Context) {
@@ -79,7 +79,7 @@ class EHConfigurator(val context: Context) {
             }
         }
 
-        Timber.d("Hath perks: $hathPerks")
+        XLog.nst().d("Hath perks: $hathPerks")
 
         configure(ehSource, hathPerks)
         configure(exhSource, hathPerks)

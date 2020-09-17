@@ -1,6 +1,7 @@
 package exh.debug
 
 import android.app.Application
+import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.array
 import com.github.salomonbrys.kotson.jsonObject
 import com.github.salomonbrys.kotson.obj
@@ -30,7 +31,6 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.lang.RuntimeException
@@ -254,7 +254,7 @@ object DebugFunctions {
                     )
                 } catch (t: RuntimeException) {
                     // Load failed
-                    Timber.e(t, "Failed to load saved search!")
+                    XLog.e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -274,7 +274,7 @@ object DebugFunctions {
                     )
                 } catch (t: RuntimeException) {
                     // Load failed
-                    Timber.e(t, "Failed to load saved search!")
+                    XLog.e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -314,7 +314,7 @@ object DebugFunctions {
                     )
                 } catch (t: RuntimeException) {
                     // Load failed
-                    Timber.e(t, "Failed to load saved search!")
+                    XLog.e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -334,7 +334,7 @@ object DebugFunctions {
                     )
                 } catch (t: RuntimeException) {
                     // Load failed
-                    Timber.e(t, "Failed to load saved search!")
+                    XLog.e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }

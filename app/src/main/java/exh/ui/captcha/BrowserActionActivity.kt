@@ -12,6 +12,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import com.afollestad.materialdialogs.MaterialDialog
+import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.get
 import com.github.salomonbrys.kotson.string
 import com.google.gson.JsonParser
@@ -35,7 +36,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import rx.Observable
 import rx.Single
 import rx.schedulers.Schedulers
-import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.io.Serializable
 import java.net.URL
@@ -179,7 +179,7 @@ class BrowserActionActivity : AppCompatActivity() {
     fun captchaSolveFail() {
         currentLoopId = null
         validateCurrentLoopId = null
-        Timber.e(IllegalStateException("Captcha solve failure!"))
+        XLog.e(IllegalStateException("Captcha solve failure!"))
         runOnUiThread {
             webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             MaterialDialog(this)
@@ -223,7 +223,7 @@ class BrowserActionActivity : AppCompatActivity() {
                     val ih = splitResult[3]
                     val x = webview.x + origX / iw * webview.width
                     val y = webview.y + origY / ih * webview.height
-                    Timber.d("Found audio button coords: %f %f", x, y)
+                    XLog.nst().d("Found audio button coords: %f %f", x, y)
                     simulateClick(x + 50, y + 50)
                     webview.post {
                         doStageDownloadAudio(loopId)
@@ -239,12 +239,12 @@ class BrowserActionActivity : AppCompatActivity() {
             }
             STAGE_DOWNLOAD_AUDIO -> {
                 if (result != null) {
-                    Timber.d("Got audio URL: $result")
+                    XLog.nst().d("Got audio URL: $result")
                     performRecognize(result)
                         .observeOn(Schedulers.io())
                         .subscribe(
                             {
-                                Timber.d("Got audio transcript: $it")
+                                XLog.nst().d("Got audio transcript: $it")
                                 webview.post {
                                     typeResult(
                                         loopId,
@@ -457,7 +457,7 @@ class BrowserActionActivity : AppCompatActivity() {
         if (loopId != validateCurrentLoopId) return
 
         if (result) {
-            Timber.d("Captcha solved!")
+            XLog.nst().d("Captcha solved!")
             webview.post {
                 webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             }

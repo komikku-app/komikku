@@ -4,11 +4,11 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import com.afollestad.materialdialogs.MaterialDialog
+import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
-import timber.log.Timber
 import kotlin.concurrent.thread
 
 class ConfiguringDialogController : DialogController() {
@@ -32,7 +32,7 @@ class ConfiguringDialogController : DialogController() {
                                 .show()
                         }
                     }
-                    Timber.e(e, "Configuration error!")
+                    XLog.e("Configuration error!", e)
                 }
                 launchUI {
                     finish()
