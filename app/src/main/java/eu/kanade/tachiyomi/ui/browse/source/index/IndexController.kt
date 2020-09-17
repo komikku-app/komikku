@@ -11,7 +11,6 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
-import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.jsonObject
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.kanade.tachiyomi.R
@@ -29,7 +28,6 @@ import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -153,14 +151,13 @@ open class IndexController :
 
         searchView.queryTextEvents()
             .filter { router.backstack.lastOrNull()?.controller() == this@IndexController }
-            .filterIsInstance<QueryTextEvent.QuerySubmitted>()
-            .onEach { onBrowseClick(presenter.query.nullIfBlank()) }
-            .launchIn(scope)
-
-        searchView.queryTextEvents()
-            .filter { router.backstack.lastOrNull()?.controller() == this@IndexController }
-            .filterIsInstance<QueryTextEvent.QueryChanged>()
-            .onEach { presenter.query = it.queryText.toString() }
+            .onEach {
+                if (it is QueryTextEvent.QueryChanged) {
+                    presenter.query = it.queryText.toString()
+                } else if (it is QueryTextEvent.QuerySubmitted) {
+                    onBrowseClick(presenter.query.nullIfBlank())
+                }
+            }
             .launchIn(scope)
 
         searchItem.fixExpand(
@@ -207,7 +204,6 @@ open class IndexController :
                 filterSheet?.dismiss()
                 if (!allDefault) {
                     val json = jsonObject("filters" to filterSerializer.serialize(presenter.sourceFilters))
-                    XLog.nst().json(json.toString())
                     onBrowseClick(presenter.query.nullIfBlank(), json.toString())
                 }
             },
