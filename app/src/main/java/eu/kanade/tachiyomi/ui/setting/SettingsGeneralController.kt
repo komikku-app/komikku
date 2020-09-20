@@ -202,6 +202,7 @@ class SettingsGeneralController : SettingsController() {
                     "pt-BR",
                     "ro",
                     "ru",
+                    "sah",
                     "sc",
                     "sk",
                     "sr",
