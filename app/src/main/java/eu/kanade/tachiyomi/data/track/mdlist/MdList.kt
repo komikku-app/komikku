@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
@@ -96,7 +97,8 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         return mdex.fetchTrackingInfo(track.tracking_url).asObservable()
             .doOnNext { remoteTrack ->
                 track.copyPersonalFrom(remoteTrack)
-                track.total_chapters = if (remoteTrack.total_chapters == 0) {
+                val manga = db.getManga(track.manga_id).executeAsBlocking()
+                track.total_chapters = if (manga != null && manga.status == SManga.COMPLETED && remoteTrack.total_chapters == 0) {
                     db.getChapters(track.manga_id).executeAsBlocking().maxOfOrNull { it.chapter_number }?.floor() ?: remoteTrack.total_chapters
                 } else {
                     remoteTrack.total_chapters
@@ -110,7 +112,8 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         return mdex.fetchTrackingInfo(track.tracking_url).asObservable()
             .map { remoteTrack ->
                 track.copyPersonalFrom(remoteTrack)
-                track.total_chapters = if (remoteTrack.total_chapters == 0) {
+                val manga = db.getManga(track.manga_id).executeAsBlocking()
+                track.total_chapters = if (manga != null && manga.status == SManga.COMPLETED && remoteTrack.total_chapters == 0) {
                     db.getChapters(track.manga_id).executeAsBlocking().maxOfOrNull { it.chapter_number }?.floor() ?: remoteTrack.total_chapters
                 } else {
                     remoteTrack.total_chapters
