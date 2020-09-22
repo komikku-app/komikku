@@ -57,12 +57,11 @@ class TrackPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             // SY -->
             .map { trackItems ->
+                val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
                 if (manga.source in mangaDexSourceIds) {
-                    val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
                     when {
                         mdTrack == null -> {
-                            needsRefresh = true
-                            trackItems + createMdListTrack()
+                            trackItems
                         }
                         mdTrack.track == null -> {
                             needsRefresh = true
@@ -70,7 +69,7 @@ class TrackPresenter(
                         }
                         else -> trackItems
                     }
-                } else trackItems
+                } else mdTrack?.let { trackItems - it } ?: trackItems
             }
             // SY <--
             .doOnNext { trackList = it }

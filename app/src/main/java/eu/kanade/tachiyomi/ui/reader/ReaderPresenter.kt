@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
+import exh.md.utils.FollowStatus
 import exh.util.defaultReaderType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.singleOrNull
@@ -716,7 +717,7 @@ class ReaderPresenter(
                 Completable.concat(
                     trackList.map { track ->
                         val service = trackManager.getService(track.sync_id)
-                        if (service != null && service.isLogged && chapterRead > track.last_chapter_read) {
+                        if (service != null && service.isLogged && chapterRead > track.last_chapter_read /* SY --> */ && ((service.id == TrackManager.MDLIST && track.status != FollowStatus.UNFOLLOWED.int) || service.id != TrackManager.MDLIST)/* SY <-- */) {
                             track.last_chapter_read = chapterRead
 
                             // We wan't these to execute even if the presenter is destroyed and leaks

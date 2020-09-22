@@ -541,7 +541,7 @@ class LibraryPresenter(
 
     fun syncMangaToDex(mangaList: List<Manga>) {
         launchIO {
-            MdUtil.getEnabledMangaDex(preferences)?.let { mdex ->
+            MdUtil.getEnabledMangaDex(preferences, sourceManager)?.let { mdex ->
                 mangaList.forEach {
                     mdex.updateFollowStatus(MdUtil.getMangaId(it.url), FollowStatus.READING).collect()
                 }
