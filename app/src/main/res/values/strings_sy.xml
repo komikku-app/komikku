@@ -547,8 +547,8 @@
     <!-- MangaDex -->
     <string name="md_follows_unfollowed">Unfollowed</string>
     <string name="mangadex_specific_settings">MangaDex settings</string>
-    <string name="mangadex_sync_follows_to_library">Sync Mangadex manga into your library</string>
-    <string name="mangadex_sync_follows_to_library_summary">Pulls reading/rereading manga from Mangadex into your library</string>
+    <string name="mangadex_sync_follows_to_library">Sync Mangadex manga to your library</string>
+    <string name="mangadex_sync_follows_to_library_summary">Pulls reading/rereading manga from MangaDex into your library if they are not already added.</string>
     <string name="mangadex_low_quality_covers">Use low quality thumbnails</string>
     <string name="mangadex_use_latest_cover">Use latest uploaded cover</string>
     <string name="mangadex_use_latest_cover_summary">When enabled, it uses the latest uploaded manga cover under the /covers url instead of using the cover on MangaDex\'s manga page</string>
@@ -559,5 +559,8 @@
     <string name="mangadex_add_to_follows">Add to MangaDex follows</string>
     <string name="mangadex_follows">MangaDex follows</string>
     <string name="random">Random</string>
+    <string name="mangadex_push_favorites_to_mangadex">Sync library manga to MangaDex</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked manga to MangaDex as reading.</string>
+    <string name="mangadex_push_favorites_to_mangadex_toast">Pushed %d manga to MangaDex</string>
 
 </resources>

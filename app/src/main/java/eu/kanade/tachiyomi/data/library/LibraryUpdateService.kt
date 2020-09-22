@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
+import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
@@ -92,7 +93,8 @@ class LibraryUpdateService(
         COVERS, // Manga covers
         TRACKING, // Tracking metadata
         // SY -->
-        SYNC_FOLLOWS // MangaDex specific, pull mangadex manga in reading, rereading
+        SYNC_FOLLOWS, // MangaDex specific, pull mangadex manga in reading, rereading
+        PUSH_FAVORITES // MangaDex specific, push mangadex manga to mangadex
         // SY <--
     }
 
@@ -225,6 +227,7 @@ class LibraryUpdateService(
                     Target.TRACKING -> updateTrackings(mangaList)
                     // SY -->
                     Target.SYNC_FOLLOWS -> syncFollows()
+                    Target.PUSH_FAVORITES -> pushFavorites()
                     // SY <--
                 }
             }
@@ -574,6 +577,40 @@ class LibraryUpdateService(
                         metadata.mangaId = id
                         db.insertFlatMetadata(metadata.flatten()).await()
                     }
+                }
+            }
+            .doOnCompleted {
+                notifier.cancelProgressNotification()
+            }
+            .map { LibraryManga() }
+    }
+
+    /**
+     * Method that updates the all mangas which are not tracked as "reading" on mangadex
+     */
+    private fun pushFavorites(): Observable<LibraryManga> {
+        val count = AtomicInteger(0)
+        val listManga = db.getLibraryMangas().executeAsBlocking()
+
+        // filter all follows from Mangadex and only add reading or rereading manga to library
+        return Observable.from(if (trackManager.mdList.isLogged) listManga else emptyList())
+            .flatMap { manga ->
+                notifier.showProgressNotification(manga, count.andIncrement, listManga.size)
+
+                // Get this manga's trackers from the database
+                val dbTracks = db.getTracks(manga).executeAsBlocking()
+
+                //find the mdlist entry if its unfollowed the follow it
+                val tracker = TrackItem(dbTracks.firstOrNull { it.sync_id == TrackManager.MDLIST } ?: trackManager.mdList.createInitialTracker(manga), trackManager.mdList)
+
+                if (tracker.track?.status == FollowStatus.UNFOLLOWED.int) {
+                    tracker.track.status = FollowStatus.READING.int
+                    tracker.service.update(tracker.track)
+                } else Observable.just(null)
+            }
+            .doOnNext { returnedTracker ->
+                returnedTracker?.let {
+                    db.insertTrack(returnedTracker)
                 }
             }
             .doOnCompleted {

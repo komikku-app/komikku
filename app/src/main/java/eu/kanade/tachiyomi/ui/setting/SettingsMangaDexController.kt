@@ -79,6 +79,18 @@ class SettingsMangaDexController :
                 )
             }
         }
+
+        preference {
+            titleRes = R.string.mangadex_push_favorites_to_mangadex
+            summaryRes = R.string.mangadex_push_favorites_to_mangadex_summary
+
+            onClick {
+                LibraryUpdateService.start(
+                    context,
+                    target = LibraryUpdateService.Target.PUSH_FAVORITES
+                )
+            }
+        }
     }
 
     override fun siteLoginDialogClosed(source: Source) {
