@@ -38,7 +38,7 @@
             android:paddingStart="16dp"
             android:paddingTop="64dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="16dp"
+            android:paddingBottom="8dp"
             app:layout_constraintTop_toTopOf="parent">
 
             <eu.kanade.tachiyomi.ui.manga.info.MangaCoverImageView

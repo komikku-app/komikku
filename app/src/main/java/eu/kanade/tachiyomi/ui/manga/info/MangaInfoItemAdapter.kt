@@ -1,7 +1,5 @@
 package eu.kanade.tachiyomi.ui.manga.info
 
-import android.content.Context
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -141,17 +139,26 @@ class MangaInfoItemAdapter(
                     binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
                     // SY <--
                 } else {
-                    binding.mangaGenresTagsWrapper.isVisible = false
+                    binding.mangaGenresTagsCompactChips.isVisible = false
+                    binding.mangaGenresTagsFullChips.isVisible = false
+                    // SY -->
+                    binding.genreGroups.isVisible = false
+                    // SY <--
                 }
 
                 // Handle showing more or less info
-                merge(binding.mangaSummarySection.clicks(), binding.mangaSummaryText.clicks(), binding.mangaInfoToggle.clicks())
-                    .onEach { toggleMangaInfo(view.context) }
+                merge(
+                    binding.mangaSummarySection.clicks(),
+                    binding.mangaSummaryText.clicks(),
+                    binding.mangaInfoToggleMore.clicks(),
+                    binding.mangaInfoToggleLess.clicks()
+                )
+                    .onEach { toggleMangaInfo() }
                     .launchIn(scope)
 
                 // Expand manga info if navigated from source listing
                 if (initialLoad && fromSource) {
-                    toggleMangaInfo(view.context)
+                    toggleMangaInfo()
                     initialLoad = false
                 }
             }
@@ -161,48 +168,25 @@ class MangaInfoItemAdapter(
             binding.mangaSummarySection.isVisible = visible
         }
 
-        private fun toggleMangaInfo(context: Context) {
-            val isExpanded =
-                binding.mangaInfoToggle.contentDescription == context.getString(R.string.manga_info_collapse)
+        private fun toggleMangaInfo() {
+            val isCurrentlyExpanded = binding.mangaSummaryText.maxLines != 2
 
-            with(binding.mangaInfoToggle) {
-                contentDescription = if (isExpanded) {
-                    context.getString(R.string.manga_info_expand)
-                } else {
-                    context.getString(R.string.manga_info_collapse)
-                }
+            binding.mangaInfoToggleMoreScrim.isVisible = isCurrentlyExpanded
+            binding.mangaInfoToggleMore.isVisible = isCurrentlyExpanded
+            binding.mangaInfoToggleLess.isVisible = !isCurrentlyExpanded
 
-                setImageDrawable(
-                    if (isExpanded) {
-                        context.getDrawable(R.drawable.ic_baseline_expand_more_24dp)
-                    } else {
-                        context.getDrawable(R.drawable.ic_baseline_expand_less_24dp)
-                    }
-                )
+            binding.mangaSummaryText.maxLines = if (isCurrentlyExpanded) {
+                2
+            } else {
+                Int.MAX_VALUE
             }
 
-            with(binding.mangaSummaryText) {
-                maxLines =
-                    if (isExpanded) {
-                        2
-                    } else {
-                        Int.MAX_VALUE
-                    }
-
-                ellipsize =
-                    if (isExpanded) {
-                        TextUtils.TruncateAt.END
-                    } else {
-                        null
-                    }
-            }
-
-            binding.mangaGenresTagsCompact.isVisible = isExpanded
+            binding.mangaGenresTagsCompact.isVisible = isCurrentlyExpanded
             // SY -->
             if (!source.isNamespaceSource()) {
-                binding.mangaGenresTagsFullChips.isVisible = !isExpanded
+                binding.mangaGenresTagsFullChips.isVisible = !isCurrentlyExpanded
             } else {
-                binding.genreGroups.isVisible = !isExpanded
+                binding.genreGroups.isVisible = !isCurrentlyExpanded
             }
             // SY <--
         }
