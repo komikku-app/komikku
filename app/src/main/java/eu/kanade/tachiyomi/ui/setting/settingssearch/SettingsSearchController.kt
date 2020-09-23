@@ -27,7 +27,7 @@ class SettingsSearchController :
      * Adapter containing search results grouped by lang.
      */
     protected var adapter: SettingsSearchAdapter? = null
-    lateinit var searchView: SearchView
+    private lateinit var searchView: SearchView
 
     init {
         setHasOptionsMenu(true)
@@ -106,7 +106,7 @@ class SettingsSearchController :
             }
         )
 
-        searchView.setQuery(presenter.preferences.lastSearchQuerySearchSettings(), true)
+        searchView.setQuery(presenter.preferences.lastSearchQuerySearchSettings().get(), true)
     }
 
     override fun onViewCreated(view: View) {
@@ -164,7 +164,7 @@ class SettingsSearchController :
      */
     override fun onTitleClick(ctrl: SettingsController) {
         searchView.query.let {
-            presenter.preferences.lastSearchQuerySearchSettings(it.toString())
+            presenter.preferences.lastSearchQuerySearchSettings().set(it.toString())
         }
 
         router.pushController(ctrl.withFadeTransaction())

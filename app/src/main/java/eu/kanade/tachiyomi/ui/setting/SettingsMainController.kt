@@ -122,7 +122,7 @@ class SettingsMainController : SettingsController() {
         searchItem.setOnActionExpandListener(
             object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                    preferences.lastSearchQuerySearchSettings("") // reset saved search query
+                    preferences.lastSearchQuerySearchSettings().set("") // reset saved search query
                     router.pushController(SettingsSearchController().withFadeTransaction())
                     return true
                 }
