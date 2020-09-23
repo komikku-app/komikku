@@ -43,10 +43,11 @@ class AboutController : SettingsController() {
 
     private val isUpdaterEnabled = BuildConfig.INCLUDE_UPDATER
 
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_about
 
         preference {
+            key = "pref_about_version"
             titleRes = R.string.version
             summary = if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY --> */) {
                 "Preview r$syDebugVersion (${BuildConfig.COMMIT_SHA})"
@@ -57,17 +58,20 @@ class AboutController : SettingsController() {
             onClick { copyDebugInfo() }
         }
         preference {
+            key = "pref_about_build_time"
             titleRes = R.string.build_time
             summary = getFormattedBuildTime()
         }
         if (isUpdaterEnabled) {
             preference {
+                key = "pref_about_check_for_updates"
                 titleRes = R.string.check_for_updates
 
                 onClick { checkVersion() }
             }
         }
         preference {
+            key = "pref_about_whats_new"
             titleRes = R.string.whats_new
 
             onClick {
@@ -79,6 +83,7 @@ class AboutController : SettingsController() {
 
         preferenceCategory {
             preference {
+                key = "pref_about_website"
                 titleRes = R.string.website
                 val url = "https://tachiyomi.org"
                 summary = url
@@ -88,6 +93,7 @@ class AboutController : SettingsController() {
                 }
             }
             preference {
+                key = "pref_about_discord"
                 title = "Discord"
                 val url = "https://discord.gg/tachiyomi"
                 summary = url
@@ -97,6 +103,7 @@ class AboutController : SettingsController() {
                 }
             }
             preference {
+                key = "pref_about_github"
                 title = "GitHub"
                 // SY -->
                 val url = "https://github.com/jobobby04/TachiyomiSY"
@@ -109,6 +116,7 @@ class AboutController : SettingsController() {
             }
             // SY -->
             preference {
+                key = "pref_about_label_original_tachiyomi_github"
                 title = "Original Tachiyomi GitHub "
                 val url = "https://github.com/inorichi/tachiyomi"
                 summary = url
@@ -119,6 +127,7 @@ class AboutController : SettingsController() {
             }
             // SY <--
             preference {
+                key = "pref_about_label_extensions"
                 titleRes = R.string.label_extensions
                 val url = "https://github.com/inorichi/tachiyomi-extensions"
                 summary = url
@@ -128,6 +137,7 @@ class AboutController : SettingsController() {
                 }
             }
             preference {
+                key = "pref_about_licenses"
                 titleRes = R.string.licenses
 
                 onClick {

@@ -49,17 +49,17 @@ class SettingsLibraryController : SettingsController() {
      */
     private var settingsSheet: LibrarySettingsSheet? = null
 
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_library
 
         val dbCategories = db.getCategories().executeAsBlocking()
         val categories = listOf(Category.createDefault()) + dbCategories
-        settingsSheet = LibrarySettingsSheet(router) {}
 
         preferenceCategory {
             titleRes = R.string.pref_category_display
 
             preference {
+                key = "pref_library_columns"
                 titleRes = R.string.pref_library_columns
                 onClick {
                     LibraryColumnsDialog().showDialog(router)
@@ -89,11 +89,15 @@ class SettingsLibraryController : SettingsController() {
             }
             // SY -->
             preference {
+                key = "pref_library_settings_sheet"
                 titleRes = R.string.library_settings_sheet
 
                 summaryRes = R.string.library_settings_sheet_summary
 
                 onClick {
+                    if (settingsSheet == null) {
+                        settingsSheet = LibrarySettingsSheet(router) {}
+                    }
                     settingsSheet?.show()
                 }
             }
@@ -104,6 +108,7 @@ class SettingsLibraryController : SettingsController() {
             titleRes = R.string.pref_category_library_categories
 
             preference {
+                key = "pref_action_edit_categories"
                 titleRes = R.string.action_edit_categories
 
                 val catCount = dbCategories.size
@@ -258,19 +263,20 @@ class SettingsLibraryController : SettingsController() {
             }
         }
 
+        // SY -->
         preferenceCategory {
             titleRes = R.string.pref_sorting_settings
             preference {
+                key = "pref_tag_sorting"
                 titleRes = R.string.pref_tag_sorting
                 val count = preferences.sortTagsForLibrary().get().size
-                summary = resources!!.getQuantityString(R.plurals.pref_tag_sorting_desc, count, count)
+                summary = context.resources.getQuantityString(R.plurals.pref_tag_sorting_desc, count, count)
                 onClick {
                     router.pushController(SortTagController().withFadeTransaction())
                 }
             }
         }
 
-        // SY -->
         if (preferences.skipPreMigration().get() || preferences.migrationSources().get()
             .isNotEmpty()
         ) {

@@ -58,7 +58,6 @@ import uy.kohesive.injekt.injectLazy
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsAdvancedController : SettingsController() {
-
     private val network: NetworkHelper by injectLazy()
 
     private val chapterCache: ChapterCache by injectLazy()
@@ -66,11 +65,12 @@ class SettingsAdvancedController : SettingsController() {
     private val db: DatabaseHelper by injectLazy()
 
     @SuppressLint("BatteryLife")
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_advanced
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             preference {
+                key = "pref_disable_battery_optimization"
                 titleRes = R.string.pref_disable_battery_optimization
                 summaryRes = R.string.pref_disable_battery_optimization_summary
 
@@ -104,6 +104,7 @@ class SettingsAdvancedController : SettingsController() {
                 onClick { clearChapterCache() }
             }
             preference {
+                key = "pref_clear_database"
                 titleRes = R.string.pref_clear_database
                 summaryRes = R.string.pref_clear_database_summary
 
@@ -119,6 +120,7 @@ class SettingsAdvancedController : SettingsController() {
             titleRes = R.string.label_network
 
             preference {
+                key = "pref_clear_cookies"
                 titleRes = R.string.pref_clear_cookies
 
                 onClick {
@@ -138,11 +140,13 @@ class SettingsAdvancedController : SettingsController() {
             titleRes = R.string.label_library
 
             preference {
+                key = "pref_refresh_library_covers"
                 titleRes = R.string.pref_refresh_library_covers
 
                 onClick { LibraryUpdateService.start(context, target = Target.COVERS) }
             }
             preference {
+                key = "pref_refresh_library_tracking"
                 titleRes = R.string.pref_refresh_library_tracking
                 summaryRes = R.string.pref_refresh_library_tracking_summary
 
@@ -155,6 +159,7 @@ class SettingsAdvancedController : SettingsController() {
             titleRes = R.string.group_downloader
 
             preference {
+                key = "clean_up_downloaded_chapters"
                 titleRes = R.string.clean_up_downloaded_chapters
                 summaryRes = R.string.delete_unused_chapters
 
@@ -295,6 +300,7 @@ class SettingsAdvancedController : SettingsController() {
             }
 
             preference {
+                key = "pref_open_debug_menu"
                 titleRes = R.string.open_debug_menu
                 summary = HtmlCompat.fromHtml(context.getString(R.string.open_debug_menu_summary), HtmlCompat.FROM_HTML_MODE_LEGACY)
                 onClick { router.pushController(SettingsDebugController().withFadeTransaction()) }

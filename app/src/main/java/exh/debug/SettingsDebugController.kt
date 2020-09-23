@@ -20,7 +20,7 @@ import kotlin.reflect.full.declaredFunctions
 
 class SettingsDebugController : SettingsController() {
     @SuppressLint("SetTextI18n")
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         title = "DEBUG MENU"
 
         preferenceCategory {

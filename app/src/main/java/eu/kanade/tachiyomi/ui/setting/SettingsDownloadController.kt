@@ -40,7 +40,7 @@ class SettingsDownloadController : SettingsController() {
 
     private val db: DatabaseHelper by injectLazy()
 
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_downloads
 
         preference {
@@ -65,6 +65,7 @@ class SettingsDownloadController : SettingsController() {
             defaultValue = true
         }
 
+        // SY -->
         switchPreference {
             key = Keys.saveChaptersAsCBZ
             titleRes = R.string.save_chapter_as_cbz
@@ -81,6 +82,7 @@ class SettingsDownloadController : SettingsController() {
             preferences.saveChaptersAsCBZ().asImmediateFlow { isVisible = it }
                 .launchIn(scope)
         }
+        // SY <--
 
         preferenceCategory {
             titleRes = R.string.pref_category_delete_chapters

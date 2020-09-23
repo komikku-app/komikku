@@ -18,7 +18,7 @@ import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsSecurityController : SettingsController() {
 
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_security
 
         if (BiometricManager.from(context).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS) {
@@ -59,6 +59,7 @@ class SettingsSecurityController : SettingsController() {
             defaultValue = false
         }
         preference {
+            key = "pref_edit_lock_times"
             titleRes = R.string.action_edit_biometric_lock_times
 
             val timeRanges = preferences.biometricTimeRanges().get().count()

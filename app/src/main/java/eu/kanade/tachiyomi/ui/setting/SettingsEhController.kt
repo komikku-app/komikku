@@ -144,7 +144,7 @@ class SettingsEhController : SettingsController() {
         return true
     }
 
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_eh
 
         preferenceCategory {
@@ -214,6 +214,7 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
+                key = "pref_watched_tags"
                 titleRes = R.string.watched_tags
                 summaryRes = R.string.watched_tags_summary
                 onClick {
@@ -300,6 +301,7 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
+                key = "pref_language_filtering"
                 titleRes = R.string.language_filtering
                 summaryRes = R.string.language_filtering_summary
 
@@ -438,6 +440,7 @@ class SettingsEhController : SettingsController() {
             }.dependency = PreferenceKeys.eh_enableExHentai
 
             preference {
+                key = "pref_front_page_categories"
                 titleRes = R.string.frong_page_categories
                 summaryRes = R.string.fromt_page_categories_summary
 
@@ -539,6 +542,7 @@ class SettingsEhController : SettingsController() {
             }
 
             preference {
+                key = "pref_show_sync_favorite_notes"
                 titleRes = R.string.show_favorite_sync_notes
                 summaryRes = R.string.show_favorite_sync_notes_summary
 
@@ -557,6 +561,7 @@ class SettingsEhController : SettingsController() {
             }
 
             preference {
+                key = "pref_force_sync_reset"
                 titleRes = R.string.force_sync_state_reset
                 summaryRes = R.string.force_sync_state_reset_summary
 
@@ -638,6 +643,7 @@ class SettingsEhController : SettingsController() {
             }
 
             preference {
+                key = "pref_show_updater_statistics"
                 titleRes = R.string.show_updater_statistics
 
                 onClick {

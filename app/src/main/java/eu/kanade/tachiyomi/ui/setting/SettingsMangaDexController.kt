@@ -24,7 +24,7 @@ class SettingsMangaDexController :
 
     private val mdex by lazy { MdUtil.getEnabledMangaDex(preferences) }
 
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.mangadex_specific_settings
         if (mdex == null) router.popCurrentController()
         val sourcePreference = MangaDexLoginPreference(context, mdex!!).apply {
@@ -68,6 +68,7 @@ class SettingsMangaDexController :
         }
 
         preference {
+            key = "pref_sync_mangadex_into_this"
             titleRes = R.string.mangadex_sync_follows_to_library
             summaryRes = R.string.mangadex_sync_follows_to_library_summary
 

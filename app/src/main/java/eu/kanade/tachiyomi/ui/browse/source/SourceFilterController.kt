@@ -45,7 +45,7 @@ class SourceFilterController : SettingsController() {
     private var sourcesByLang: TreeMap<String, MutableList<HttpSource>> = TreeMap()
     private var sorting = SourcesSort.Alpha
 
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = with(screen) {
+    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.label_sources
 
         sorting = SourcesSort.from(preferences.sourceSorting().get()) ?: SourcesSort.Alpha
