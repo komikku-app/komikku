@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.recent.history
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
@@ -192,17 +191,8 @@ class HistoryController :
             .launchIn(scope)
 
         // Fixes problem with the overflow icon showing up in lieu of search
-        searchItem.setOnActionExpandListener(
-            object : MenuItem.OnActionExpandListener {
-                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                    return true
-                }
-
-                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                    activity?.invalidateOptionsMenu()
-                    return true
-                }
-            }
+        searchItem.fixExpand(
+            onExpand = { invalidateMenuOnExpand() }
         )
     }
 }
