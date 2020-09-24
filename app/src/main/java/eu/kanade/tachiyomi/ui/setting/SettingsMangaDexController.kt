@@ -26,7 +26,7 @@ class SettingsMangaDexController :
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.mangadex_specific_settings
-        if (mdex == null) router.popCurrentController()
+        if (mdex == null) return@apply
         val sourcePreference = MangaDexLoginPreference(context, mdex!!).apply {
             title = mdex!!.name + " Login"
             key = getSourceKey(source.id)
@@ -43,7 +43,7 @@ class SettingsMangaDexController :
             }
         }
 
-        preferenceScreen.addPreference(sourcePreference)
+        addPreference(sourcePreference)
 
         listPreference {
             titleRes = R.string.mangadex_preffered_source

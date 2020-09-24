@@ -7,19 +7,25 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceManager
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.setting.SettingsAdvancedController
 import eu.kanade.tachiyomi.ui.setting.SettingsBackupController
 import eu.kanade.tachiyomi.ui.setting.SettingsBrowseController
 import eu.kanade.tachiyomi.ui.setting.SettingsController
 import eu.kanade.tachiyomi.ui.setting.SettingsDownloadController
+import eu.kanade.tachiyomi.ui.setting.SettingsEhController
 import eu.kanade.tachiyomi.ui.setting.SettingsGeneralController
 import eu.kanade.tachiyomi.ui.setting.SettingsLibraryController
+import eu.kanade.tachiyomi.ui.setting.SettingsMangaDexController
 import eu.kanade.tachiyomi.ui.setting.SettingsParentalControlsController
 import eu.kanade.tachiyomi.ui.setting.SettingsReaderController
 import eu.kanade.tachiyomi.ui.setting.SettingsSecurityController
 import eu.kanade.tachiyomi.ui.setting.SettingsTrackingController
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.system.isLTR
+import exh.md.utils.MdUtil
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -29,18 +35,30 @@ object SettingsSearchHelper {
     /**
      * All subclasses of `SettingsController` should be listed here, in order to have their preferences searchable.
      */
-    private val settingControllersList: List<KClass<out SettingsController>> = listOf(
-        SettingsAdvancedController::class,
-        SettingsBackupController::class,
-        SettingsBrowseController::class,
-        SettingsDownloadController::class,
-        SettingsGeneralController::class,
-        SettingsLibraryController::class,
-        SettingsParentalControlsController::class,
-        SettingsReaderController::class,
-        SettingsSecurityController::class,
-        SettingsTrackingController::class
-    )
+    // SY -->
+    private val settingControllersList: List<KClass<out SettingsController>> = {
+        val controllers = mutableListOf(
+            SettingsAdvancedController::class,
+            SettingsBackupController::class,
+            SettingsBrowseController::class,
+            SettingsDownloadController::class,
+            SettingsGeneralController::class,
+            SettingsLibraryController::class,
+            SettingsParentalControlsController::class,
+            SettingsReaderController::class,
+            SettingsSecurityController::class,
+            SettingsTrackingController::class
+        )
+        val preferences = Injekt.get<PreferencesHelper>()
+        if (MdUtil.getEnabledMangaDexs(preferences).isNotEmpty()) {
+            controllers += SettingsMangaDexController::class
+        }
+        if (preferences.eh_isHentaiEnabled().get()) {
+            controllers += SettingsEhController::class
+        }
+        controllers
+    }()
+    // SY <--
 
     /**
      * Must be called to populate `prefSearchResultList`

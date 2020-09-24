@@ -18,6 +18,7 @@ import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
@@ -191,7 +192,10 @@ class SettingsEhController : SettingsController() {
                 entryValues = arrayOf("0", "1")
 
                 onChange { preferences.useHentaiAtHome().reconfigure() }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             switchPreference {
                 titleRes = R.string.show_japanese_titles
@@ -201,7 +205,10 @@ class SettingsEhController : SettingsController() {
                 defaultValue = false
 
                 onChange { preferences.useJapaneseTitle().reconfigure() }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             switchPreference {
                 titleRes = R.string.use_original_images
@@ -211,7 +218,10 @@ class SettingsEhController : SettingsController() {
                 defaultValue = false
 
                 onChange { preferences.eh_useOriginalImages().reconfigure() }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             preference {
                 key = "pref_watched_tags"
@@ -225,7 +235,10 @@ class SettingsEhController : SettingsController() {
                     }
                     startActivity(intent)
                 }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             preference {
                 titleRes = R.string.tag_filtering_threshold
@@ -261,7 +274,10 @@ class SettingsEhController : SettingsController() {
                         .negativeButton(android.R.string.cancel)
                         .show()
                 }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             preference {
                 titleRes = R.string.tag_watching_threshhold
@@ -298,7 +314,10 @@ class SettingsEhController : SettingsController() {
                         .negativeButton(android.R.string.cancel)
                         .show()
                 }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             preference {
                 key = "pref_language_filtering"
@@ -437,7 +456,10 @@ class SettingsEhController : SettingsController() {
                             }
                         }
                 }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             preference {
                 key = "pref_front_page_categories"
@@ -489,14 +511,20 @@ class SettingsEhController : SettingsController() {
                             }
                         }
                 }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             switchPreference {
                 defaultValue = false
                 key = PreferenceKeys.eh_watched_list_default_state
                 titleRes = R.string.watched_list_default
                 summaryRes = R.string.watched_list_state_summary
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             listPreference {
                 defaultValue = "auto"
@@ -521,7 +549,10 @@ class SettingsEhController : SettingsController() {
                 )
 
                 onChange { preferences.imageQuality().reconfigure() }
-            }.dependency = PreferenceKeys.eh_enableExHentai
+
+                preferences.enableExhentai().asImmediateFlow { isVisible = it }
+                    .launchIn(scope)
+            }
 
             switchPreference {
                 titleRes = R.string.pref_enhanced_e_hentai_view
