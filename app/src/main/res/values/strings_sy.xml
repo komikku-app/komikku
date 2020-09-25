@@ -209,7 +209,7 @@
     <string name="aggressively_load_pages_summary">Slowly download the entire chapter while reading instead of just loading the pages you are viewing.</string>
     <string name="skip_queue_on_retry">Skip queue on retry</string>
     <string name="skip_queue_on_retry_summary">Normally, pressing the retry button on a failed download will wait until the downloader has finished downloading the last page before beginning to re-download the failed page. Enabling this will force the downloader to begin re-downloading the failed page as soon as you press the retry button.</string>
-    <string name="reader_preload_amount">Reader Preload amount</string>
+    <string name="reader_preload_amount">Page Preload amount</string>
     <string name="reader_preload_amount_4_pages">4 Pages</string>
     <string name="reader_preload_amount_6_pages">6 Pages</string>
     <string name="reader_preload_amount_8_pages">8 Pages</string>
