@@ -75,10 +75,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.launch
 import nucleus.factory.RequiresPresenter
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.widget.checkedChanges
@@ -87,7 +87,8 @@ import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import kotlin.math.abs
-import kotlin.math.roundToLong
+import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 /**
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the
@@ -120,7 +121,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     // SY -->
     private var ehUtilsVisible = false
 
-    private var autoscrollScope: CoroutineScope? = null
+    private var autoscrollScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.Main)
+    private var autoScrollJob: Job? = null
     private val sourceManager: SourceManager by injectLazy()
 
     private val logger = XLog.tag("ReaderActivity")
@@ -210,21 +212,25 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         }
     }
 
-    private fun setupAutoscroll(interval: Float) {
-        autoscrollScope?.cancel()
-        if (interval == -1f) return
+    @OptIn(ExperimentalTime::class)
+    private fun setupAutoscroll(interval: Double) {
+        autoScrollJob?.cancel()
+        if (interval == -1.0) return
 
-        val intervalMs = (interval * 1000).roundToLong()
-        autoscrollScope = CoroutineScope(Job() + Dispatchers.Main)
-        autoscrollScope?.launch {
-            while (true) {
-                delay(intervalMs)
+        val duration = interval.seconds
+        autoScrollJob =
+            flow {
+                while (true) {
+                    delay(duration)
+                    emit(Unit)
+                }
+            }.onEach {
                 viewer.let { v ->
                     if (v is PagerViewer) v.moveToNext()
                     else if (v is WebtoonViewer) v.scrollDown()
                 }
             }
-        }
+                .launchIn(autoscrollScope)
     }
     // SY <--
 
@@ -241,8 +247,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         config = null
         progressDialog?.dismiss()
         progressDialog = null
-        autoscrollScope?.cancel()
-        autoscrollScope = null
+        // SY -->
+        autoScrollJob?.cancel()
+        autoScrollJob = null
+        // SY <--
     }
 
     /**
@@ -425,9 +433,9 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .onEach {
                 setupAutoscroll(
                     if (it) {
-                        preferences.eh_utilAutoscrollInterval().get()
+                        preferences.eh_utilAutoscrollInterval().get().toDouble()
                     } else {
-                        -1f
+                        -1.0
                     }
                 )
             }
@@ -435,18 +443,18 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehAutoscrollFreq.textChanges()
             .onEach {
-                val parsed = it.toString().toFloatOrNull()
+                val parsed = it.toString().toDoubleOrNull()
 
                 if (parsed == null || parsed <= 0 || parsed > 9999) {
                     binding.ehAutoscrollFreq.error = "Invalid frequency"
                     preferences.eh_utilAutoscrollInterval().set(-1f)
                     binding.ehAutoscroll.isEnabled = false
-                    setupAutoscroll(-1f)
+                    setupAutoscroll(-1.0)
                 } else {
                     binding.ehAutoscrollFreq.error = null
-                    preferences.eh_utilAutoscrollInterval().set(parsed)
+                    preferences.eh_utilAutoscrollInterval().set(parsed.toFloat())
                     binding.ehAutoscroll.isEnabled = true
-                    setupAutoscroll(if (binding.ehAutoscroll.isChecked) parsed else -1f)
+                    setupAutoscroll(if (binding.ehAutoscroll.isChecked) parsed else -1.0)
                 }
             }
             .launchIn(scope)
