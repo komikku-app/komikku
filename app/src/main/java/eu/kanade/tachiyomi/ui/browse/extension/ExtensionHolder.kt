@@ -8,11 +8,7 @@ import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import eu.kanade.tachiyomi.ui.base.holder.SlicedHolder
-import eu.kanade.tachiyomi.ui.browse.SourceListItem
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import io.github.mthli.slice.Slice
-import kotlinx.android.synthetic.main.extension_card_item.card
 import kotlinx.android.synthetic.main.extension_card_item.ext_button
 import kotlinx.android.synthetic.main.extension_card_item.ext_title
 import kotlinx.android.synthetic.main.extension_card_item.image
@@ -21,17 +17,8 @@ import kotlinx.android.synthetic.main.extension_card_item.version
 import kotlinx.android.synthetic.main.extension_card_item.warning
 import uy.kohesive.injekt.api.get
 
-class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
-    BaseFlexibleViewHolder(view, adapter),
-    SourceListItem,
-    SlicedHolder {
-
-    override val slice = Slice(card).apply {
-        setColor(adapter.cardBackground)
-    }
-
-    override val viewToSlice: View
-        get() = card
+class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
+    BaseFlexibleViewHolder(view, adapter) {
 
     init {
         ext_button.setOnClickListener {
@@ -41,7 +28,6 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
 
     fun bind(item: ExtensionItem) {
         val extension = item.extension
-        setCardEdges(item)
 
         ext_title.text = extension.name
         version.text = extension.versionName

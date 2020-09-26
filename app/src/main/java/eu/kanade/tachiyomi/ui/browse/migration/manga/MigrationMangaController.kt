@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationMangaControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
-import eu.kanade.tachiyomi.ui.browse.SourceDividerItemDecoration
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -60,7 +59,6 @@ class MigrationMangaController :
         adapter = FlexibleAdapter<IFlexible<*>>(null, this)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.adapter = adapter
-        binding.recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
         adapter?.fastScroller = binding.fastScroller
     }
 

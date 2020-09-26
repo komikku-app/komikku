@@ -31,7 +31,6 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
-import eu.kanade.tachiyomi.ui.browse.SourceDividerItemDecoration
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.index.IndexController
@@ -113,7 +112,6 @@ class SourceController(bundle: Bundle? = null) :
         // Create recycler and set adapter.
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.adapter = adapter
-        binding.recycler.addItemDecoration(SourceDividerItemDecoration(view.context))
         adapter?.fastScroller = binding.fastScroller
 
         requestPermissionsSafe(arrayOf(WRITE_EXTERNAL_STORAGE), 301)
