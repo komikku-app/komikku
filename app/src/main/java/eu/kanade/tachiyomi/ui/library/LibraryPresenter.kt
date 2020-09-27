@@ -23,8 +23,7 @@ import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.removeCovers
-import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
-import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
@@ -173,55 +172,55 @@ class LibraryPresenter(
         // SY <--
 
         val filterFnUnread: (LibraryItem) -> Boolean = unread@{ item ->
-            if (filterUnread == STATE_IGNORE) return@unread true
+            if (filterUnread == State.IGNORE.value) return@unread true
             val isUnread = item.manga.unread != 0
 
-            return@unread if (filterUnread == STATE_INCLUDE) isUnread
+            return@unread if (filterUnread == State.INCLUDE.value) isUnread
             else !isUnread
         }
 
         val filterFnCompleted: (LibraryItem) -> Boolean = completed@{ item ->
-            if (filterCompleted == STATE_IGNORE) return@completed true
+            if (filterCompleted == State.IGNORE.value) return@completed true
             val isCompleted = item.manga.status == SManga.COMPLETED
 
-            return@completed if (filterCompleted == STATE_INCLUDE) isCompleted
+            return@completed if (filterCompleted == State.INCLUDE.value) isCompleted
             else !isCompleted
         }
 
         val filterFnDownloaded: (LibraryItem) -> Boolean = downloaded@{ item ->
-            if (!downloadedOnly && filterDownloaded == STATE_IGNORE) return@downloaded true
+            if (!downloadedOnly && filterDownloaded == State.IGNORE.value) return@downloaded true
             val isDownloaded = when {
                 item.manga.isLocal() -> true
                 item.downloadCount != -1 -> item.downloadCount > 0
                 else -> downloadManager.getDownloadCount(item.manga) > 0
             }
 
-            return@downloaded if (downloadedOnly || filterDownloaded == STATE_INCLUDE) isDownloaded
+            return@downloaded if (downloadedOnly || filterDownloaded == State.INCLUDE.value) isDownloaded
             else !isDownloaded
         }
 
         // SY -->
         val filterFnStarted: (LibraryItem) -> Boolean = started@{ item ->
-            if (filterStarted == STATE_IGNORE) return@started true
+            if (filterStarted == State.IGNORE.value) return@started true
             val hasRead = item.manga.read != 0
 
-            return@started if (filterStarted == STATE_INCLUDE) hasRead
+            return@started if (filterStarted == State.INCLUDE.value) hasRead
             else !hasRead
         }
 
         val filterFnTracked: (LibraryItem) -> Boolean = tracked@{ item ->
-            if (filterTracked == STATE_IGNORE) return@tracked true
+            if (filterTracked == State.IGNORE.value) return@tracked true
             val hasTracks = db.getTracks(item.manga).executeAsBlocking().filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }.isNotEmpty()
 
-            return@tracked if (filterTracked == STATE_INCLUDE) hasTracks
+            return@tracked if (filterTracked == State.INCLUDE.value) hasTracks
             else !hasTracks
         }
 
         val filterFnLewd: (LibraryItem) -> Boolean = lewd@{ item ->
-            if (filterLewd == STATE_IGNORE) return@lewd true
+            if (filterLewd == State.IGNORE.value) return@lewd true
             val isLewd = item.manga.isLewd()
 
-            return@lewd if (filterLewd == STATE_INCLUDE) isLewd
+            return@lewd if (filterLewd == State.INCLUDE.value) isLewd
             else !isLewd
         }
         // SY <--

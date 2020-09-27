@@ -10,9 +10,7 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
-import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_EXCLUDE
-import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_IGNORE
-import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Companion.STATE_INCLUDE
+import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
 import eu.kanade.tachiyomi.widget.TabbedBottomSheetDialog
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -76,7 +74,7 @@ class LibrarySettingsSheet(
          * Returns true if there's at least one filter from [FilterGroup] active.
          */
         fun hasActiveFilters(): Boolean {
-            return filterGroup.items.any { it.state != STATE_IGNORE }
+            return filterGroup.items.any { it.state != State.IGNORE.value }
         }
 
         inner class FilterGroup : Group {
@@ -102,7 +100,7 @@ class LibrarySettingsSheet(
 
             override fun initModels() {
                 if (preferences.downloadedOnly().get()) {
-                    downloaded.state = STATE_INCLUDE
+                    downloaded.state = State.INCLUDE.value
                     downloaded.enabled = false
                 } else {
                     downloaded.state = preferences.filterDownloaded().get()
@@ -114,9 +112,9 @@ class LibrarySettingsSheet(
             override fun onItemClicked(item: Item) {
                 item as Item.TriStateGroup
                 val newState = when (item.state) {
-                    STATE_IGNORE -> STATE_INCLUDE
-                    STATE_INCLUDE -> STATE_EXCLUDE
-                    STATE_EXCLUDE -> STATE_IGNORE
+                    State.IGNORE.value -> State.INCLUDE.value
+                    State.INCLUDE.value -> State.EXCLUDE.value
+                    State.EXCLUDE.value -> State.IGNORE.value
                     else -> throw Exception("Unknown State")
                 }
                 item.state = newState
