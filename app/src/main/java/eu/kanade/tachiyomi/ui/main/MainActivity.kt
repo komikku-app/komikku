@@ -114,6 +114,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         bottomNavAnimator = ViewHeightAnimator(binding.bottomNav)
 
         // Set behavior of bottom nav
+        setBottomBarBehaviorOnScroll()
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
             val id = item.itemId
 
@@ -363,6 +364,12 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             !isConfirmingExit
     }
 
+    private fun setBottomBarBehaviorOnScroll() {
+        val layoutParams = binding.bottomNav.layoutParams as CoordinatorLayout.LayoutParams
+        layoutParams.behavior =
+            if (preferences.hideBottomBar().get()) HideBottomViewOnScrollBehavior<View>() else null
+    }
+
     fun setSelectedNavItem(itemId: Int) {
         if (!isFinishing) {
             binding.bottomNav.selectedItemId = itemId
@@ -392,6 +399,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         if (to is RootController) {
             // Always show bottom nav again when returning to a RootController
             showBottomNav(visible = true, collapse = from !is RootController)
+            setBottomBarBehaviorOnScroll()
         }
 
         if (from is TabbedController) {
@@ -429,19 +437,19 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
 
     fun showBottomNav(visible: Boolean, collapse: Boolean = false) {
         val layoutParams = binding.bottomNav.layoutParams as CoordinatorLayout.LayoutParams
-        val bottomViewNavigationBehavior = layoutParams.behavior as HideBottomViewOnScrollBehavior
+        val bottomViewNavigationBehavior = layoutParams.behavior as? HideBottomViewOnScrollBehavior
         if (visible) {
             if (collapse) {
                 bottomNavAnimator.expand()
             }
 
-            bottomViewNavigationBehavior.slideUp(binding.bottomNav)
+            bottomViewNavigationBehavior?.slideUp(binding.bottomNav)
         } else {
             if (collapse) {
                 bottomNavAnimator.collapse()
             }
 
-            bottomViewNavigationBehavior.slideDown(binding.bottomNav)
+            bottomViewNavigationBehavior?.slideDown(binding.bottomNav)
         }
     }
 
