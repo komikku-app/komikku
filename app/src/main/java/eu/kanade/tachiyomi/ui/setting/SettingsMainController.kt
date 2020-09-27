@@ -88,7 +88,7 @@ class SettingsMainController : SettingsController() {
         }
         if (MdUtil.getEnabledMangaDexs(preferences).isNotEmpty()) {
             preference {
-                iconRes = R.drawable.ic_tracker_mangadex_logo
+                iconRes = R.drawable.ic_tracker_mangadex_logo_24dp
                 iconTint = tintColor
                 titleRes = R.string.mangadex_specific_settings
                 onClick { navigateTo(SettingsMangaDexController()) }
