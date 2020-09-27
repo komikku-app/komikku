@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.preference.PreferenceDialogController
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Controller
@@ -114,7 +115,10 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         bottomNavAnimator = ViewHeightAnimator(binding.bottomNav)
 
         // Set behavior of bottom nav
-        setBottomBarBehaviorOnScroll()
+        preferences.hideBottomBar()
+            .asImmediateFlow { setBottomNavBehaviorOnScroll() }
+            .launchIn(scope)
+
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
             val id = item.itemId
 
@@ -364,12 +368,6 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             !isConfirmingExit
     }
 
-    private fun setBottomBarBehaviorOnScroll() {
-        val layoutParams = binding.bottomNav.layoutParams as CoordinatorLayout.LayoutParams
-        layoutParams.behavior =
-            if (preferences.hideBottomBar().get()) HideBottomViewOnScrollBehavior<View>() else null
-    }
-
     fun setSelectedNavItem(itemId: Int) {
         if (!isFinishing) {
             binding.bottomNav.selectedItemId = itemId
@@ -399,7 +397,6 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         if (to is RootController) {
             // Always show bottom nav again when returning to a RootController
             showBottomNav(visible = true, collapse = from !is RootController)
-            setBottomBarBehaviorOnScroll()
         }
 
         if (from is TabbedController) {
@@ -450,6 +447,17 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             }
 
             bottomViewNavigationBehavior?.slideDown(binding.bottomNav)
+        }
+    }
+
+    private fun setBottomNavBehaviorOnScroll() {
+        showBottomNav(visible = true)
+
+        binding.bottomNav.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+            behavior = when {
+                preferences.hideBottomBar().get() -> HideBottomViewOnScrollBehavior<View>()
+                else -> null
+            }
         }
     }
 
