@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.queryTextChanges
-import uy.kohesive.injekt.api.get
 
 /**
  * Fragment that shows recently read manga.
@@ -53,6 +52,10 @@ class HistoryController :
      * Endless loading item.
      */
     private var progressItem: ProgressItem? = null
+
+    /**
+     * Search query.
+     */
     private var query = ""
 
     override fun getTitle(): String? {
@@ -105,6 +108,9 @@ class HistoryController :
         }
     }
 
+    /**
+     * Safely error if next page load fails
+     */
     fun onAddPageError(error: Throwable) {
         adapter?.onLoadMoreComplete(null)
         adapter?.endlessTargetCount = 1
