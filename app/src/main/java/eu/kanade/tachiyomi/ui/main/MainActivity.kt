@@ -139,8 +139,10 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
                     }
                     // SY -->
                     R.id.nav_updates -> {
-                        val controller = router.getControllerWithTag(id.toString()) as? UpdatesController
-                        controller?.router?.pushController(DownloadController().withFadeTransaction())
+                        if (router.backstack.last().controller() !is DownloadController) {
+                            val controller = router.getControllerWithTag(id.toString()) as? UpdatesController
+                            controller?.router?.pushController(DownloadController().withFadeTransaction())
+                        }
                     }
                     // SY <--
                 }
