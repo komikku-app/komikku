@@ -4,7 +4,6 @@ import android.content.Context
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
@@ -35,7 +34,9 @@ import exh.source.EnhancedHttpSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
@@ -56,10 +57,19 @@ open class SourceManager(private val context: Context) {
         createInternalSources().forEach { registerSource(it) }
 
         // SY -->
-        // Recreate sources when they change
-        prefs.enableExhentai().asImmediateFlow {
-            createEHSources().forEach { registerSource(it) }
-        }.launchIn(scope)
+        // Create internal sources
+        createEHSources().forEach { registerSource(it) }
+
+        // Watch the preference and manage Exhentai
+        prefs.enableExhentai().asFlow()
+            .drop(1)
+            .onEach {
+                if (it) {
+                    registerSource(EHentai(EXH_SOURCE_ID, true, context))
+                } else {
+                    sourcesMap.remove(EXH_SOURCE_ID)
+                }
+            }.launchIn(scope)
 
         registerSource(MergedSource())
         // SY <--
