@@ -137,6 +137,12 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
                         val controller = router.getControllerWithTag(id.toString()) as? LibraryController
                         controller?.showSettingsSheet()
                     }
+                    // SY -->
+                    R.id.nav_updates -> {
+                        val controller = router.getControllerWithTag(id.toString()) as? UpdatesController
+                        controller?.router?.pushController(DownloadController().withFadeTransaction())
+                    }
+                    // SY <--
                 }
             }
             true
