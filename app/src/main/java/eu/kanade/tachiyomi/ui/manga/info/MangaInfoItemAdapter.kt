@@ -3,7 +3,9 @@ package eu.kanade.tachiyomi.ui.manga.info
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -28,9 +30,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
-import uy.kohesive.injekt.api.get
 
 class MangaInfoItemAdapter(
     private val controller: MangaController,
@@ -88,6 +90,15 @@ class MangaInfoItemAdapter(
             binding.genreGroups.layoutManager = LinearLayoutManager(itemView.context)
             binding.genreGroups.adapter = mangaTagsInfoAdapter
 
+            // SY -->
+            mangaTagsInfoAdapter?.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, _ ->
+                scope.launch {
+                    toggleMangaInfo()
+                }
+                false
+            }
+            // SY <--
+
             setMangaInfo(manga, source)
         }
 
@@ -110,9 +121,16 @@ class MangaInfoItemAdapter(
                     manga.description
                 }
 
+                // SY -->
                 if (binding.mangaSummaryText.text == "meta") {
-                    binding.mangaSummaryText.isVisible = false
+                    binding.mangaSummaryText.text = ""
+                    binding.mangaSummaryText.maxLines = 1
+                    binding.mangaInfoToggleLess.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                        topToBottom = -1
+                        bottomToBottom = binding.mangaSummaryText.id
+                    }
                 }
+                // SY <--
 
                 // Update genres list
                 if (!manga.genre.isNullOrBlank()) {
@@ -169,14 +187,14 @@ class MangaInfoItemAdapter(
         }
 
         private fun toggleMangaInfo() {
-            val isCurrentlyExpanded = binding.mangaSummaryText.maxLines != 2
+            val isCurrentlyExpanded = binding.mangaSummaryText.maxLines != 2 /* SY --> */ && binding.mangaSummaryText.maxLines != 1 /* SY <-- */
 
             binding.mangaInfoToggleMoreScrim.isVisible = isCurrentlyExpanded
             binding.mangaInfoToggleMore.isVisible = isCurrentlyExpanded
             binding.mangaInfoToggleLess.isVisible = !isCurrentlyExpanded
 
             binding.mangaSummaryText.maxLines = if (isCurrentlyExpanded) {
-                2
+                /* SY --> */ if (binding.mangaSummaryText.text.isBlank()) 1 else /* SY <-- */ 2
             } else {
                 Int.MAX_VALUE
             }
