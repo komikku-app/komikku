@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
@@ -79,7 +80,10 @@ class EHentai(
     override val id: Long,
     val exh: Boolean,
     val context: Context
-) : HttpSource(), MetadataSource<EHentaiSearchMetadata, Document>, UrlImportableSource {
+) : HttpSource(),
+    MetadataSource<EHentaiSearchMetadata, Document>,
+    UrlImportableSource,
+    NamespaceSource {
     override val metaClass = EHentaiSearchMetadata::class
 
     private val domain: String

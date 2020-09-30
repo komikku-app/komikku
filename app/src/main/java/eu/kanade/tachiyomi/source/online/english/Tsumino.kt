@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
@@ -28,7 +29,8 @@ import java.util.Locale
 class Tsumino(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     MetadataSource<TsuminoSearchMetadata, Document>,
-    UrlImportableSource {
+    UrlImportableSource,
+    NamespaceSource {
     override val metaClass = TsuminoSearchMetadata::class
     override val lang = "en"
 

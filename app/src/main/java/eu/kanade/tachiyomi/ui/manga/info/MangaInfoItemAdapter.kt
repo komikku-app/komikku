@@ -14,12 +14,13 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MangaInfoItemBinding
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.isEhBasedSource
-import exh.isNamespaceSource
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import exh.util.SourceTagsUtil.Companion.getRaisedTags
 import exh.util.makeSearchChip
 import exh.util.setChipsExtended
@@ -135,7 +136,7 @@ class MangaInfoItemAdapter(
                 // Update genres list
                 if (!manga.genre.isNullOrBlank()) {
                     // SY -->
-                    if (source != null && source.isNamespaceSource()) {
+                    if (source != null && source.getMainSource() is NamespaceSource) {
                         val metaTags = meta?.tags?.filterNot { it.type == TAG_TYPE_VIRTUAL }?.groupBy { it.namespace }
                         var namespaceTags: List<NamespaceTagsItem> = emptyList()
                         if (source.isEhBasedSource() && metaTags != null && metaTags.all { it.key != null }) {
@@ -201,7 +202,7 @@ class MangaInfoItemAdapter(
 
             binding.mangaGenresTagsCompact.isVisible = isCurrentlyExpanded
             // SY -->
-            if (!source.isNamespaceSource()) {
+            if (source.getMainSource() !is NamespaceSource) {
                 binding.mangaGenresTagsFullChips.isVisible = !isCurrentlyExpanded
             } else {
                 binding.genreGroups.isVisible = !isCurrentlyExpanded

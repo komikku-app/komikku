@@ -86,5 +86,3 @@ val LIBRARY_UPDATE_EXCLUDED_SOURCES by lazy {
 }
 
 fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
-
-fun Source.isNamespaceSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID || id in nHentaiSourceIds || id in hitomiSourceIds || id == PURURIN_SOURCE_ID || id == TSUMINO_SOURCE_ID || id == EIGHTMUSES_SOURCE_ID || id == HBROWSE_SOURCE_ID

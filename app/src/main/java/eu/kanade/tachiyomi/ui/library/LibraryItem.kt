@@ -18,9 +18,10 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
-import exh.isNamespaceSource
 import exh.metadata.metadata.base.RaisedTag
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import exh.util.SourceTagsUtil.Companion.TAG_TYPE_EXCLUDE
 import exh.util.SourceTagsUtil.Companion.getRaisedTags
 import exh.util.SourceTagsUtil.Companion.parseTag
@@ -134,7 +135,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
 
     private fun ehContainsGenre(constraint: String): Boolean {
         val genres = manga.getGenres()
-        val raisedTags = if (source?.isNamespaceSource() == true) {
+        val raisedTags = if (source?.getMainSource() is NamespaceSource) {
             manga.getRaisedTags(genres)
         } else null
         return if (constraint.contains(" ") || constraint.contains("\"")) {
