@@ -73,7 +73,7 @@ class SourcePresenter(
         val sourcesAndCategoriesCombined = preferences.sourcesTabSourcesInCategories().get()
         val sourcesAndCategories = if (sourcesAndCategoriesCombined.isNotEmpty()) sourcesAndCategoriesCombined.map {
             val temp = it.split("|")
-            Pair(temp[0], temp[1])
+            temp[0] to temp[1]
         } else null
 
         val sourcesInCategories = sourcesAndCategories?.map { it.first }
@@ -124,6 +124,10 @@ class SourcePresenter(
 
                 SourceItem(source, langItem, isPinned /* SY --> */, showLatest, showPins /* SY <-- */)
             }
+        }
+
+        if (preferences.sourcesTabCategoriesFilter().get()) {
+            sourcesInCategories?.let { sourcesIds -> sourceItems = sourceItems.filterNot { it.source.id.toString() in sourcesIds } }
         }
 
         // SY -->

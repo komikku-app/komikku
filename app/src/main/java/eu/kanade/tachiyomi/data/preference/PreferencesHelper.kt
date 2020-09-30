@@ -403,6 +403,8 @@ class PreferencesHelper(val context: Context) {
 
     fun sourcesTabCategories() = flowPrefs.getStringSet(Keys.sources_tab_categories, mutableSetOf())
 
+    fun sourcesTabCategoriesFilter() = flowPrefs.getBoolean(Keys.sources_tab_categories_filter, false)
+
     fun sourcesTabSourcesInCategories() = flowPrefs.getStringSet(Keys.sources_tab_source_categories, mutableSetOf())
 
     fun sourceSorting() = flowPrefs.getInt(Keys.sourcesSort, 0)

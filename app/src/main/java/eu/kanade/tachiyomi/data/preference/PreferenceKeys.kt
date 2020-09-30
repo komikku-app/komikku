@@ -283,6 +283,8 @@ object PreferenceKeys {
 
     const val sources_tab_categories = "sources_tab_categories"
 
+    const val sources_tab_categories_filter = "sources_tab_categories_filter"
+
     const val sources_tab_source_categories = "sources_tab_source_categories"
 
     const val sourcesSort = "sources_sort"

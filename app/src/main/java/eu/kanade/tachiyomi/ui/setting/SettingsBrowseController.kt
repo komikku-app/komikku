@@ -36,6 +36,12 @@ class SettingsBrowseController : SettingsController() {
                 }
             }
             switchPreference {
+                key = Keys.sources_tab_categories_filter
+                titleRes = R.string.pref_source_source_filtering
+                summaryRes = R.string.pref_source_source_filtering_summery
+                defaultValue = false
+            }
+            switchPreference {
                 key = Keys.useNewSourceNavigation
                 titleRes = R.string.pref_source_navigation
                 summaryRes = R.string.pref_source_navigation_summery
