@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.databinding.DescriptionAdapterHbBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +45,9 @@ class HBrowseDescriptionAdapter(
             if (meta == null || meta !is HBrowseSearchMetadata) return
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            val pagesDrawable = itemView.context.getDrawable(R.drawable.ic_baseline_menu_book_24)
+            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
 
             binding.pages.longClicks()
                 .onEach {

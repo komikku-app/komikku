@@ -73,7 +73,11 @@ class TsuminoDescriptionAdapter(
             binding.whenPosted.text = TsuminoSearchMetadata.TSUMINO_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
 
             binding.uploader.text = meta.uploader ?: itemView.context.getString(R.string.unknown)
+
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            val pagesDrawable = itemView.context.getDrawable(R.drawable.ic_baseline_menu_book_24)
+            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
 
             val name = when (((meta.averageRating ?: 100F) * 2).roundToInt()) {
                 0 -> R.string.rating0

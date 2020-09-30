@@ -75,7 +75,7 @@ class EHentaiDescriptionAdapter(
             binding.visible.text = itemView.context.getString(R.string.is_visible, meta.visible ?: itemView.context.getString(R.string.unknown))
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
-            val drawable = itemView.context.getDrawable(R.drawable.ic_favorite_24dp)
+            val drawable = itemView.context.getDrawable(R.drawable.ic_book_24dp)
             drawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
             binding.favorites.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null)
 
@@ -83,7 +83,12 @@ class EHentaiDescriptionAdapter(
 
             binding.uploader.text = meta.uploader ?: itemView.context.getString(R.string.unknown)
             binding.size.text = humanReadableByteCount(meta.size ?: 0, true)
+
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            val pagesDrawable = itemView.context.getDrawable(R.drawable.ic_baseline_menu_book_24)
+            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
+
             val language = meta.language ?: itemView.context.getString(R.string.unknown)
             binding.language.text = if (meta.translated == true) {
                 itemView.context.getString(R.string.language_translated, language)

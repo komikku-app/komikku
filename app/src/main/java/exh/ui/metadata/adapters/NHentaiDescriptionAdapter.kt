@@ -89,6 +89,10 @@ class NHentaiDescriptionAdapter(
             binding.whenPosted.text = EX_DATE_FORMAT.format(Date((meta.uploadDate ?: 0) * 1000))
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pageImageTypes.size, meta.pageImageTypes.size)
+            val pagesDrawable = itemView.context.getDrawable(R.drawable.ic_baseline_menu_book_24)
+            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
+
             @SuppressLint("SetTextI18n")
             binding.id.text = "#" + (meta.nhId ?: 0)
 

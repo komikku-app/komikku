@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.databinding.DescriptionAdapterPuBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.metadata.PururinSearchMetadata
 import exh.metadata.metadata.PururinSearchMetadata.Companion.TAG_NAMESPACE_CATEGORY
 import exh.ui.metadata.MetadataViewController
@@ -67,7 +68,11 @@ class PururinDescriptionAdapter(
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader ?: ""
             binding.size.text = meta.fileSize ?: itemView.context.getString(R.string.unknown)
+
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pages ?: 0, meta.pages ?: 0)
+            val pagesDrawable = itemView.context.getDrawable(R.drawable.ic_baseline_menu_book_24)
+            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
 
             val ratingFloat = meta.averageRating?.toFloat()
             val name = when (((ratingFloat ?: 100F) * 2).roundToInt()) {
