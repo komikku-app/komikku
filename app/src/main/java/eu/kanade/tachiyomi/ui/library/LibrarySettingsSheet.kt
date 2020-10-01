@@ -107,6 +107,11 @@ class LibrarySettingsSheet(
                 }
                 unread.state = preferences.filterUnread().get()
                 completed.state = preferences.filterCompleted().get()
+                // SY -->
+                started.state = preferences.filterStarted().get()
+                tracked.state = preferences.filterTracked().get()
+                lewd.state = preferences.filterLewd().get()
+                // SY <--
             }
 
             override fun onItemClicked(item: Item) {
@@ -122,9 +127,11 @@ class LibrarySettingsSheet(
                     downloaded -> preferences.filterDownloaded().set(newState)
                     unread -> preferences.filterUnread().set(newState)
                     completed -> preferences.filterCompleted().set(newState)
+                    // SY -->
                     started -> preferences.filterStarted().set(newState)
                     tracked -> preferences.filterTracked().set(newState)
                     lewd -> preferences.filterLewd().set(newState)
+                    // SY <--
                 }
 
                 adapter.notifyItemChanged(item)
