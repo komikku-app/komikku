@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsMultiChoice
@@ -20,6 +19,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListCon
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationInterface
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -44,10 +44,10 @@ class SearchController(
     }
 
     override fun getTitle(): String? {
-        if (totalProgress > 1) {
-            return "($progress/$totalProgress) ${super.getTitle()}"
+        return if (totalProgress > 1) {
+            "($progress/$totalProgress) ${super.getTitle()}"
         } else {
-            return super.getTitle()
+            super.getTitle()
         }
     }
 
@@ -100,6 +100,7 @@ class SearchController(
         } else router.popController(this)
     }
 
+    @ExperimentalCoroutinesApi
     override fun onMangaClick(manga: Manga) {
         if (targetController is MigrationListController) {
             val migrationListController = targetController as? MigrationListController
@@ -110,8 +111,7 @@ class SearchController(
             return
         }
         newManga = manga
-        val dialog =
-            MigrationDialog()
+        val dialog = MigrationDialog()
         dialog.targetController = this
         dialog.showDialog(router)
     }
@@ -164,25 +164,17 @@ class SearchController(
      */
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         // Inflate menu.
-        inflater.inflate(R.menu.source_browse, menu)
+        inflater.inflate(R.menu.global_search, menu)
 
         // Initialize search menu
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
 
-        searchItem.setOnActionExpandListener(
-            object : MenuItem.OnActionExpandListener {
-                override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                    searchView.onActionViewExpanded() // Required to show the query in the view
-                    searchView.setQuery(presenter.query, false)
-                    return true
-                }
-
-                override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                    return true
-                }
-            }
-        )
+        searchItem.fixExpand({
+            searchView.onActionViewExpanded() // Required to show the query in the view
+            searchView.setQuery(presenter.query, false)
+            true
+        })
 
         searchView.queryTextEvents()
             .filter { it is QueryTextEvent.QuerySubmitted }
