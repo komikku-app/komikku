@@ -4,17 +4,18 @@ import eu.kanade.tachiyomi.R
 
 object MigrationFlags {
 
-    const val CHAPTERS = 0b001
-    const val CATEGORIES = 0b010
-    const val TRACK = 0b100
+    const val CHAPTERS = 0b0001
+    const val CATEGORIES = 0b0010
+    const val TRACK = 0b0100
+    const val EXTRA = 0b1000
 
     private const val CHAPTERS2 = 0x1
     private const val CATEGORIES2 = 0x2
     private const val TRACK2 = 0x4
 
-    val titles get() = arrayOf(R.string.chapters, R.string.categories, R.string.track)
+    val titles get() = arrayOf(R.string.chapters, R.string.categories, R.string.track, R.string.log_extra)
 
-    val flags get() = arrayOf(CHAPTERS, CATEGORIES, TRACK)
+    val flags get() = arrayOf(CHAPTERS, CATEGORIES, TRACK, EXTRA)
 
     fun hasChapters(value: Int): Boolean {
         return value and CHAPTERS != 0
@@ -26,6 +27,10 @@ object MigrationFlags {
 
     fun hasTracks(value: Int): Boolean {
         return value and TRACK != 0
+    }
+
+    fun hasExtra(value: Int): Boolean {
+        return value and EXTRA != 0
     }
 
     fun getEnabledFlagsPositions(value: Int): List<Int> {

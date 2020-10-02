@@ -61,6 +61,7 @@ class MigrationMangaPresenter(
         val migrateChapters = MigrationFlags.hasChapters(flags)
         val migrateCategories = MigrationFlags.hasCategories(flags)
         val migrateTracks = MigrationFlags.hasTracks(flags)
+        val migrateExtra = MigrationFlags.hasExtra(flags)
 
         db.inTransaction {
             // Update chapters read
@@ -99,6 +100,17 @@ class MigrationMangaPresenter(
                 }
                 db.insertTracks(tracks).executeAsBlocking()
             }
+
+            if (migrateExtra) {
+                manga.bookmarkedFilter = prevManga.bookmarkedFilter
+                manga.downloadedFilter = prevManga.downloadedFilter
+                manga.readFilter = prevManga.readFilter
+                manga.viewer = prevManga.viewer
+                manga.chapter_flags = prevManga.chapter_flags
+                manga.displayMode = prevManga.displayMode
+                manga.sorting = prevManga.sorting
+            }
+
             // Update favorite status
             if (replace) {
                 prevManga.favorite = false
@@ -108,6 +120,8 @@ class MigrationMangaPresenter(
             } else {
                 manga.date_added = Date().time
             }
+            // Set extra data
+
             manga.favorite = true
             db.updateMangaFavorite(manga).executeAsBlocking()
 

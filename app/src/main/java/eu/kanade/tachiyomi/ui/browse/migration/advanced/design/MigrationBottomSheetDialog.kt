@@ -14,15 +14,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.android.synthetic.main.migration_bottom_sheet.*
-import kotlinx.android.synthetic.main.migration_bottom_sheet.extra_search_param
-import kotlinx.android.synthetic.main.migration_bottom_sheet.extra_search_param_text
-import kotlinx.android.synthetic.main.migration_bottom_sheet.mig_categories
-import kotlinx.android.synthetic.main.migration_bottom_sheet.mig_chapters
-import kotlinx.android.synthetic.main.migration_bottom_sheet.mig_tracking
-import kotlinx.android.synthetic.main.migration_bottom_sheet.use_smart_search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,15 +32,12 @@ class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val lis
     private val preferences by injectLazy<PreferencesHelper>()
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
-    init {
-        // Use activity theme for this layout
-        val view = activity.layoutInflater.inflate(R.layout.migration_bottom_sheet, null)
-        // val scroll = NestedScrollView(context)
-        // scroll.addView(view)
+    private val binding: MigrationBottomSheetBinding = MigrationBottomSheetBinding.inflate(activity.layoutInflater)
 
-        setContentView(view)
+    init {
+        setContentView(binding.root)
         if (activity.resources.configuration?.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            sourceGroup.orientation = LinearLayout.HORIZONTAL
+            binding.sourceGroup.orientation = LinearLayout.HORIZONTAL
         }
         window?.setBackgroundDrawable(null)
     }
@@ -59,11 +50,11 @@ class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val lis
 
         initPreferences()
 
-        fab.clicks().onEach {
-            preferences.skipPreMigration().set(skip_step.isChecked)
+        binding.fab.clicks().onEach {
+            preferences.skipPreMigration().set(binding.skipStep.isChecked)
             listener.startMigration(
-                if (use_smart_search.isChecked && extra_search_param_text.text.isNotBlank()) {
-                    extra_search_param_text.text.toString()
+                if (binding.useSmartSearch.isChecked && binding.extraSearchParamText.text.isNotBlank()) {
+                    binding.extraSearchParamText.toString()
                 } else null
             )
             dismiss()
@@ -76,23 +67,25 @@ class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val lis
     private fun initPreferences() {
         val flags = preferences.migrateFlags().get()
 
-        mig_chapters.isChecked = MigrationFlags.hasChapters(flags)
-        mig_categories.isChecked = MigrationFlags.hasCategories(flags)
-        mig_tracking.isChecked = MigrationFlags.hasTracks(flags)
+        binding.migChapters.isChecked = MigrationFlags.hasChapters(flags)
+        binding.migCategories.isChecked = MigrationFlags.hasCategories(flags)
+        binding.migTracking.isChecked = MigrationFlags.hasTracks(flags)
+        binding.migExtra.isChecked = MigrationFlags.hasExtra(flags)
 
-        mig_chapters.setOnCheckedChangeListener { _, _ -> setFlags() }
-        mig_categories.setOnCheckedChangeListener { _, _ -> setFlags() }
-        mig_tracking.setOnCheckedChangeListener { _, _ -> setFlags() }
+        binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags() }
+        binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags() }
+        binding.migTracking.setOnCheckedChangeListener { _, _ -> setFlags() }
+        binding.migExtra.setOnCheckedChangeListener { buttonView, isChecked -> setFlags() }
 
-        use_smart_search.bindToPreference(preferences.smartMigration())
-        extra_search_param_text.isVisible = false
-        extra_search_param.setOnCheckedChangeListener { _, isChecked ->
-            extra_search_param_text.isVisible = isChecked
+        binding.useSmartSearch.bindToPreference(preferences.smartMigration())
+        binding.extraSearchParamText.isVisible = false
+        binding.extraSearchParam.setOnCheckedChangeListener { _, isChecked ->
+            binding.extraSearchParamText.isVisible = isChecked
         }
-        sourceGroup.bindToPreference(preferences.useSourceWithMost())
+        binding.sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
-        skip_step.isChecked = preferences.skipPreMigration().get()
-        skip_step.setOnCheckedChangeListener { _, isChecked ->
+        binding.skipStep.isChecked = preferences.skipPreMigration().get()
+        binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 (listener as? Controller)?.activity?.toast(
                     R.string.pre_migration_skip_toast,
@@ -104,9 +97,10 @@ class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val lis
 
     private fun setFlags() {
         var flags = 0
-        if (mig_chapters.isChecked) flags = flags or MigrationFlags.CHAPTERS
-        if (mig_categories.isChecked) flags = flags or MigrationFlags.CATEGORIES
-        if (mig_tracking.isChecked) flags = flags or MigrationFlags.TRACK
+        if (binding.migChapters.isChecked) flags = flags or MigrationFlags.CHAPTERS
+        if (binding.migCategories.isChecked) flags = flags or MigrationFlags.CATEGORIES
+        if (binding.migTracking.isChecked) flags = flags or MigrationFlags.TRACK
+        if (binding.migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
         preferences.migrateFlags().set(flags)
     }
 
