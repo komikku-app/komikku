@@ -160,9 +160,8 @@ fun syncChaptersWithSource(
         // Fix order in source.
         db.fixChaptersSourceOrder(sourceChapters).executeAsBlocking()
 
-        // Set manga's last update time to latest chapter's fetch time if possible
-        val newestChapter = db.getChapters(manga).executeAsBlocking().maxBy { it.date_fetch }
-        manga.last_update = newestChapter?.date_fetch ?: Date().time
+        // Set this manga as updated since chapters were changed
+        manga.last_update = Date().time
         db.updateLastUpdated(manga).executeAsBlocking()
     }
 
