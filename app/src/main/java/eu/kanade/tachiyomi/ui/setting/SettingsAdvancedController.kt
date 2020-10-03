@@ -216,6 +216,17 @@ class SettingsAdvancedController : SettingsController() {
                 summary = "Apply ${context.getString(R.string.app_name)} enhancements to the following sources if they are installed: ${DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString()}"
             }
 
+            preference {
+                titleRes = R.string.pref_clear_history
+                summaryRes = R.string.pref_clear_history_summary
+
+                onClick {
+                    val ctrl = ClearHistoryDialogController()
+                    ctrl.targetController = this@SettingsAdvancedController
+                    ctrl.showDialog(router)
+                }
+            }
+
             intListPreference {
                 key = Keys.eh_logLevel
                 title = "Log level"
@@ -279,6 +290,22 @@ class SettingsAdvancedController : SettingsController() {
                 }
                 .negativeButton(android.R.string.cancel)
         }
+    }
+
+    class ClearHistoryDialogController : DialogController() {
+        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+            return MaterialDialog(activity!!)
+                .message(R.string.clear_history_confirmation)
+                .positiveButton(android.R.string.ok) {
+                    (targetController as? SettingsAdvancedController)?.clearHistory()
+                }
+                .negativeButton(android.R.string.cancel)
+        }
+    }
+
+    private fun clearHistory() {
+        db.deleteHistory().executeAsBlocking()
+        activity?.toast(R.string.clear_history_completed)
     }
 
     private fun clearDatabase() {
