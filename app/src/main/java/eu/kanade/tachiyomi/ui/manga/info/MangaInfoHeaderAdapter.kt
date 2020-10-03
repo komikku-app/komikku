@@ -146,7 +146,6 @@ class MangaInfoHeaderAdapter(
             binding.btnMigrate.clicks()
                 .onEach { controller.migrateManga() }
                 .launchIn(scope)
-            binding.btnMigrate.setTooltip(R.string.migrate)
             // SY <--
 
             binding.mangaFullTitle.longClicks()
