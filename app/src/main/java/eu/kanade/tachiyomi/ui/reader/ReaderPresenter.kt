@@ -417,6 +417,7 @@ class ReaderPresenter(
             // SY <--
             updateTrackChapterRead(selectedChapter)
             deleteChapterIfNeeded(selectedChapter)
+            deleteChapterFromDownloadQueue(currentChapters.currChapter)
         }
 
         if (selectedChapter != currentChapters.currChapter) {
@@ -428,6 +429,16 @@ class ReaderPresenter(
                 view.refreshSheetChapters()
             })
             // SY <--
+        }
+    }
+
+    /**
+     * Removes [currentChapter] from download queue
+     * if setting is enabled and [currentChapter] is queued for download
+     */
+    private fun deleteChapterFromDownloadQueue(currentChapter: ReaderChapter) {
+        downloadManager.getChapterDownloadOrNull(currentChapter.chapter)?.let { download ->
+            downloadManager.deletePendingDownload(download)
         }
     }
 
