@@ -417,6 +417,7 @@ class ReaderPresenter(
             // SY <--
             updateTrackChapterRead(selectedChapter)
             deleteChapterIfNeeded(selectedChapter)
+            deleteChapterFromDownloadQueue(currentChapters.currChapter)
         }
 
         if (selectedChapter != currentChapters.currChapter) {
@@ -428,6 +429,16 @@ class ReaderPresenter(
                 view.refreshSheetChapters()
             })
             // SY <--
+        }
+    }
+
+    /**
+     * Removes [currentChapter] from download queue
+     * if setting is enabled and [currentChapter] is queued for download
+     */
+    private fun deleteChapterFromDownloadQueue(currentChapter: ReaderChapter) {
+        downloadManager.getChapterDownloadOrNull(currentChapter.chapter)?.let { download ->
+            downloadManager.deletePendingDownload(download)
         }
     }
 
@@ -470,11 +481,13 @@ class ReaderPresenter(
      * Saves this [chapter] last read history.
      */
     private fun saveChapterHistory(chapter: ReaderChapter) {
-        val history = History.create(chapter.chapter).apply { last_read = Date().time }
-        db.updateHistoryLastRead(history).asRxCompletable()
-            .onErrorComplete()
-            .subscribeOn(Schedulers.io())
-            .subscribe()
+        if (!preferences.incognitoMode().get()) {
+            val history = History.create(chapter.chapter).apply { last_read = Date().time }
+            db.updateHistoryLastRead(history).asRxCompletable()
+                .onErrorComplete()
+                .subscribeOn(Schedulers.io())
+                .subscribe()
+        }
     }
 
     /**

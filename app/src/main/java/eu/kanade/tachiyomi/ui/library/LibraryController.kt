@@ -226,10 +226,6 @@ class LibraryController(
             }
         }
 
-        if (preferences.downloadedOnly().get()) {
-            binding.downloadedOnly.isVisible = true
-        }
-
         binding.btnGlobalSearch.clicks()
             .onEach {
                 router.pushController(
