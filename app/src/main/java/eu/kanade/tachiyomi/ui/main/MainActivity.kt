@@ -234,6 +234,10 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         preferences.downloadedOnly()
             .asImmediateFlow { binding.downloadedOnly.isVisible = it }
             .launchIn(scope)
+
+        preferences.incognitoMode()
+            .asImmediateFlow { binding.incognitoMode.isVisible = it }
+            .launchIn(scope)
     }
 
     override fun onNewIntent(intent: Intent) {
