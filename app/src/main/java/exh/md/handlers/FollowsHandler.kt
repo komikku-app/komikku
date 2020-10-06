@@ -68,7 +68,11 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             followFromElement(it, lowQualityCovers)
         }
 
-        return MetadataMangasPage(follows.map { it.first }, false, follows.map { it.second })
+        val comparator = compareBy<Pair<SManga, MangaDexSearchMetadata>> { it.second.follow_status }.thenBy { it.first.title }
+
+        val result = follows.sortedWith(comparator)
+
+        return MetadataMangasPage(result.map { it.first }, false, result.map { it.second })
     }
 
     /**fetch follow status used when fetching status for 1 manga
