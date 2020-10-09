@@ -7,34 +7,42 @@ on:
   repository_dispatch:
  
 jobs:
-  ping-pong:
+  check_wrapper:
+    name: Validate Gradle Wrapper
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: '0'
-      - name: Set CISKIP flag to false
-        run: echo ::set-env name=CISKIP::'false'
-      - name: Set CISKIP flag if action has ci skip
-        if: contains(github.event.action, 'skip-ci') || contains(github.event.action, 'skip-ci') || contains(github.event.action, 'skip ci') || contains(github.event.action, 'ci skip') || contains(github.event.action, 'ci-skip')
-        run: echo ::set-env name=CISKIP::'true'
-      - name: Exho
-        run: echo env.CISKIP
+      - name: Clone repo
+        uses: actions/checkout@v2
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+  preview:
+    name: Build app preview
+    needs: check_wrapper
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v2
+
       - name: TAG - Bump version and push tag
         uses: anothrNick/github-tag-action@1.17.2
-        if: github.event.action != 'pong' && env.CISKIP == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           RELEASE_BRANCHES: master
           DEFAULT_BUMP: patch
+
       - name: PING - Dispatch initiating repository event
-        if: github.event.action != 'pong' && env.CISKIP == 'false'
         run: |
           curl -X POST https://api.github.com/repos/jobobby04/TachiyomiSYPreview/dispatches \
           -H 'Accept: application/vnd.github.everest-preview+json' \
           -u ${{ secrets.ACCESS_TOKEN }} \
           --data '{"event_type": "ping", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
+
       - name: ACK - Acknowledge pong from remote repository
         if: github.event.action == 'pong'
         run: |
