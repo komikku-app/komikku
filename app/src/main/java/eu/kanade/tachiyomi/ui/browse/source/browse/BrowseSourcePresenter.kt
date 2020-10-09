@@ -170,7 +170,7 @@ open class BrowseSourcePresenter(
 
         // Create a new pager.
         // SY -->
-        pager = if (recommendsMangaId != null && manga != null) RecommendsPager(
+        pager = if (recommendsMangaId != null) RecommendsPager(
             manga ?: throw Exception("Could not get Manga")
         ) else createPager(query, filters)
         // SY <--
