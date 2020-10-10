@@ -73,6 +73,7 @@ class LibraryUpdateService(
     enum class Target {
         CHAPTERS, // Manga chapters
         COVERS, // Manga covers
+        DETAILS, // Metadata
         TRACKING // Tracking metadata
     }
 
@@ -195,6 +196,7 @@ class LibraryUpdateService(
                     Target.CHAPTERS -> updateChapterList(mangaList)
                     Target.COVERS -> updateCovers(mangaList)
                     Target.TRACKING -> updateTrackings(mangaList)
+                    Target.DETAILS -> updateMangaMetadata(mangaList)
                 }
             }
             .subscribeOn(Schedulers.io())
@@ -361,6 +363,38 @@ class LibraryUpdateService(
 
         return source.fetchChapterList(manga)
             .map { syncChaptersWithSource(db, it, manga, source) }
+    }
+
+    private fun updateMangaMetadata(mangaToUpdate: List<LibraryManga>): Observable<LibraryManga> {
+        var count = 0
+
+        return Observable.from(mangaToUpdate)
+            .doOnNext {
+                notifier.showProgressNotification(it, count++, mangaToUpdate.size)
+            }
+            .flatMap { manga ->
+
+                val source = sourceManager.get(manga.source)
+
+                // Update manga details metadata in the background
+                source?.fetchMangaDetails(manga)
+                    ?.map { updatedManga ->
+                        // Avoid "losing" existing cover
+                        if (!updatedManga.thumbnail_url.isNullOrEmpty()) {
+                            manga.prepUpdateCover(coverCache, updatedManga, false)
+                        } else {
+                            updatedManga.thumbnail_url = manga.thumbnail_url
+                        }
+
+                        manga.copyFrom(updatedManga)
+                        db.insertManga(manga).executeAsBlocking()
+                        manga
+                    }
+                    ?.onErrorReturn { manga }
+            }
+            .doOnCompleted {
+                notifier.cancelProgressNotification()
+            }
     }
 
     private fun updateCovers(mangaToUpdate: List<LibraryManga>): Observable<LibraryManga> {

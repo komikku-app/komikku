@@ -89,6 +89,11 @@ class SettingsAdvancedController : SettingsController() {
             }
         }
         preference {
+            titleRes = R.string.pref_refresh_library_metadata
+
+            onClick { LibraryUpdateService.start(context, target = Target.DETAILS) }
+        }
+        preference {
             titleRes = R.string.pref_refresh_library_covers
 
             onClick { LibraryUpdateService.start(context, target = Target.COVERS) }
