@@ -53,8 +53,8 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
-import exh.EXHSavedSearch
 import exh.isEhBasedSource
+import exh.savedsearches.EXHSavedSearch
 import exh.source.EnhancedHttpSource.Companion.getMainSource
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.main_activity.root_coordinator

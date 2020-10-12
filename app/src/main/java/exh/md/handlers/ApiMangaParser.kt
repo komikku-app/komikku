@@ -1,9 +1,6 @@
 package exh.md.handlers
 
 import com.elvishew.xlog.XLog
-import com.github.salomonbrys.kotson.nullInt
-import com.github.salomonbrys.kotson.obj
-import com.google.gson.JsonParser
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -18,6 +15,11 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.floor
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 import rx.Completable
 import rx.Single
@@ -232,8 +234,8 @@ class ApiMangaParser(private val langs: List<String>) {
                 throw Exception("Null Response")
             }
 
-            val jsonObject = JsonParser.parseString(body).obj
-            return jsonObject["manga_id"]?.nullInt ?: throw Exception("No manga associated with chapter")
+            val jsonObject = Json.decodeFromString<JsonObject>(body)
+            return jsonObject["manga_id"]?.jsonPrimitive?.intOrNull ?: throw Exception("No manga associated with chapter")
         } catch (e: Exception) {
             XLog.e(e)
             throw e

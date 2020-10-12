@@ -1,5 +1,8 @@
 package exh.metadata.sql.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SearchTag(
     // Tag identifier, unique
     val id: Long?,

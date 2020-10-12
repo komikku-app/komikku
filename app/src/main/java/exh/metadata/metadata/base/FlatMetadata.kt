@@ -5,10 +5,15 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.serializer
 import rx.Completable
 import rx.Single
 import kotlin.reflect.KClass
 
+@Serializable
 data class FlatMetadata(
     val metadata: SearchMetadata,
     val tags: List<SearchTag>,
@@ -16,9 +21,10 @@ data class FlatMetadata(
 ) {
     inline fun <reified T : RaisedSearchMetadata> raise(): T = raise(T::class)
 
+    @OptIn(InternalSerializationApi::class)
     fun <T : RaisedSearchMetadata> raise(clazz: KClass<T>): T =
-        RaisedSearchMetadata.raiseFlattenGson
-            .fromJson(metadata.extra, clazz.java).apply {
+        RaisedSearchMetadata.raiseFlattenJson
+            .decodeFromString(clazz.serializer(), metadata.extra).apply {
                 fillBaseFields(this@FlatMetadata)
             }
 }

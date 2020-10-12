@@ -1,14 +1,19 @@
 package eu.kanade.tachiyomi.data.library
 
 import android.content.Context
-import com.github.salomonbrys.kotson.nullLong
-import com.github.salomonbrys.kotson.nullString
-import com.github.salomonbrys.kotson.set
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.longOrNull
 import java.io.File
 import java.util.Scanner
 
@@ -28,25 +33,24 @@ class CustomMangaManager(val context: Context) {
         if (!editJson.exists() || !editJson.isFile) return
 
         val json = try {
-            Gson().fromJson(
-                Scanner(editJson).useDelimiter("\\Z").next(),
-                JsonObject::class.java
+            Json.decodeFromString<JsonObject>(
+                Scanner(editJson).useDelimiter("\\Z").next()
             )
         } catch (e: Exception) {
             null
         } ?: return
 
-        val mangasJson = json.get("mangas").asJsonArray ?: return
+        val mangasJson = json["mangas"] as? JsonArray ?: return
         customMangaMap = mangasJson.mapNotNull { element ->
-            val mangaObject = element.asJsonObject ?: return@mapNotNull null
-            val id = mangaObject["id"]?.nullLong ?: return@mapNotNull null
+            val mangaObject = element as? JsonObject ?: return@mapNotNull null
+            val id = mangaObject["id"]?.jsonPrimitive?.longOrNull ?: return@mapNotNull null
             val manga = MangaImpl().apply {
                 this.id = id
-                title = mangaObject["title"]?.nullString ?: ""
-                author = mangaObject["author"]?.nullString
-                artist = mangaObject["artist"]?.nullString
-                description = mangaObject["description"]?.nullString
-                genre = mangaObject["genre"]?.asJsonArray?.mapNotNull { it.nullString }
+                title = mangaObject["title"]?.jsonPrimitive?.contentOrNull ?: ""
+                author = mangaObject["author"]?.jsonPrimitive?.contentOrNull
+                artist = mangaObject["artist"]?.jsonPrimitive?.contentOrNull
+                description = mangaObject["description"]?.jsonPrimitive?.contentOrNull
+                genre = (mangaObject["genre"] as? JsonArray)?.mapNotNull { it.jsonPrimitive.contentOrNull }
                     ?.joinToString(", ")
             }
             id to manga
@@ -72,17 +76,16 @@ class CustomMangaManager(val context: Context) {
     private fun saveCustomInfo() {
         val jsonElements = customMangaMap.values.map { it.toJson() }
         if (jsonElements.isNotEmpty()) {
-            val gson = GsonBuilder().create()
-            val root = JsonObject()
-            val mangaEntries = gson.toJsonTree(jsonElements)
-
-            root["mangas"] = mangaEntries
+            val mangaEntries = Json.encodeToJsonElement(jsonElements)
+            val root = buildJsonObject {
+                put("mangas", mangaEntries)
+            }
             editJson.delete()
-            editJson.writeText(gson.toJson(root))
+            editJson.writeText(Json.encodeToString(root))
         }
     }
 
-    fun Manga.toJson(): MangaJson {
+    private fun Manga.toJson(): MangaJson {
         return MangaJson(
             id!!,
             title,
@@ -93,6 +96,7 @@ class CustomMangaManager(val context: Context) {
         )
     }
 
+    @Serializable
     data class MangaJson(
         val id: Long,
         val title: String? = null,

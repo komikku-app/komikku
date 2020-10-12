@@ -8,7 +8,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Build
 import com.elvishew.xlog.XLog
-import com.google.gson.Gson
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -38,6 +37,8 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -54,7 +55,6 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
 
     private val db: DatabaseHelper by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
-    private val gson: Gson by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
     private val logger = XLog.tag("EHUpdater")
@@ -242,7 +242,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
             }
         } finally {
             prefs.eh_autoUpdateStats().set(
-                gson.toJson(
+                Json.encodeToString(
                     EHentaiUpdaterStats(
                         startTime,
                         allMeta.size,

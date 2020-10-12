@@ -1,21 +1,20 @@
 package xyz.nulldev.ts.api.http.serializer
 
-import com.github.salomonbrys.kotson.bool
-import com.github.salomonbrys.kotson.byte
-import com.github.salomonbrys.kotson.char
-import com.github.salomonbrys.kotson.double
-import com.github.salomonbrys.kotson.float
-import com.github.salomonbrys.kotson.get
-import com.github.salomonbrys.kotson.int
-import com.github.salomonbrys.kotson.long
-import com.github.salomonbrys.kotson.obj
-import com.github.salomonbrys.kotson.set
-import com.github.salomonbrys.kotson.short
-import com.github.salomonbrys.kotson.string
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.float
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.isSubclassOf
 
@@ -35,7 +34,7 @@ class FilterSerializer {
         SortSerializer(this)
     )
 
-    fun serialize(filters: FilterList) = JsonArray().apply {
+    fun serialize(filters: FilterList) = buildJsonArray {
         filters.forEach {
             @Suppress("UNCHECKED_CAST")
             add(serialize(it as Filter<Any?>))
@@ -43,26 +42,31 @@ class FilterSerializer {
     }
 
     fun serialize(filter: Filter<Any?>): JsonObject {
-        val out = JsonObject()
         for (serializer in serializers) {
             if (filter::class.isSubclassOf(serializer.clazz)) {
                 // TODO Not sure how to deal with the mess of types here
                 @Suppress("UNCHECKED_CAST")
                 serializer as Serializer<Filter<Any?>>
 
-                serializer.serialize(out, filter)
+                return buildJsonObject {
+                    with(serializer) { serialize(filter) }
 
-                out[CLASS_MAPPINGS] = JsonObject()
+                    val classMappings = mutableListOf<Pair<String, Any>>()
 
-                serializer.mappings().forEach {
-                    val res = it.second.get(filter)
-                    out[it.first] = res
-                    out[CLASS_MAPPINGS][it.first] = res?.javaClass?.name ?: "null"
+                    serializer.mappings().forEach {
+                        val res = it.second.get(filter)
+                        put(it.first, res.toString())
+                        classMappings += it.first to (res?.javaClass?.name ?: "null")
+                    }
+
+                    putJsonObject(CLASS_MAPPINGS) {
+                        classMappings.forEach { (t, u) ->
+                            put(t, u.toString())
+                        }
+                    }
+
+                    put(TYPE, serializer.type)
                 }
-
-                out[TYPE] = serializer.type
-
-                return out
             }
         }
         throw IllegalArgumentException("Cannot serialize this Filter object!")
@@ -71,13 +75,13 @@ class FilterSerializer {
     fun deserialize(filters: FilterList, json: JsonArray) {
         filters.zip(json).forEach { (filter, obj) ->
             @Suppress("UNCHECKED_CAST")
-            deserialize(filter as Filter<Any?>, obj.obj)
+            deserialize(filter as Filter<Any?>, obj.jsonObject)
         }
     }
 
     fun deserialize(filter: Filter<Any?>, json: JsonObject) {
         val serializer = serializers.find {
-            it.type == json[TYPE].string
+            it.type == json[TYPE]!!.jsonPrimitive.content
         } ?: throw IllegalArgumentException("Cannot deserialize this type!")
 
         // TODO Not sure how to deal with the mess of types here
@@ -88,17 +92,17 @@ class FilterSerializer {
 
         serializer.mappings().forEach {
             if (it.second is KMutableProperty1) {
-                val obj = json[it.first]
-                val res: Any? = when (json[CLASS_MAPPINGS][it.first].string) {
+                val obj = json[it.first]!!.jsonPrimitive
+                val res: Any? = when (json[CLASS_MAPPINGS]!!.jsonObject[it.first]!!.jsonPrimitive.content) {
                     java.lang.Integer::class.java.name -> obj.int
                     java.lang.Long::class.java.name -> obj.long
                     java.lang.Float::class.java.name -> obj.float
                     java.lang.Double::class.java.name -> obj.double
-                    java.lang.String::class.java.name -> obj.string
-                    java.lang.Boolean::class.java.name -> obj.bool
-                    java.lang.Byte::class.java.name -> obj.byte
-                    java.lang.Short::class.java.name -> obj.short
-                    java.lang.Character::class.java.name -> obj.char
+                    java.lang.String::class.java.name -> obj.content
+                    java.lang.Boolean::class.java.name -> obj.boolean
+                    java.lang.Byte::class.java.name -> obj.content.toByte()
+                    java.lang.Short::class.java.name -> obj.content.toShort()
+                    java.lang.Character::class.java.name -> obj.content[0]
                     "null" -> null
                     else -> throw IllegalArgumentException("Cannot deserialize this type!")
                 }

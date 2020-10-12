@@ -5,9 +5,10 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.plusAssign
+import kotlinx.serialization.Serializable
 import java.util.Date
 
+@Serializable
 class HitomiSearchMetadata : RaisedSearchMetadata() {
     var url get() = hlId?.let { urlFromHlId(it) }
         set(a) {
@@ -26,7 +27,7 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
 
     var group: String? = null
 
-    var type: String? = null
+    var genre: String? = null
 
     var language: String? = null
 
@@ -101,7 +102,7 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
             pairs += Pair(context.getString(R.string.artist), artists)
         }
         group?.let { pairs += Pair(context.getString(R.string.group), it) }
-        type?.let { pairs += Pair(context.getString(R.string.genre), it) }
+        genre?.let { pairs += Pair(context.getString(R.string.genre), it) }
         language?.let { pairs += Pair(context.getString(R.string.language), it) }
         val series = series.joinToString()
         if (series.isNotBlank()) {

@@ -11,7 +11,6 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
-import com.github.salomonbrys.kotson.jsonObject
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -30,6 +29,7 @@ import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.serialization.json.buildJsonObject
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
@@ -203,7 +203,7 @@ open class IndexController :
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
                 filterSheet?.dismiss()
                 if (!allDefault) {
-                    val json = jsonObject("filters" to filterSerializer.serialize(presenter.sourceFilters))
+                    val json = buildJsonObject { put("filters", filterSerializer.serialize(presenter.sourceFilters)) }
                     onBrowseClick(presenter.query.nullIfBlank(), json.toString())
                 }
             },
@@ -232,7 +232,7 @@ open class IndexController :
                 filterSheet?.dismiss()
 
                 if (!allDefault) {
-                    val json = jsonObject("filters" to filterSerializer.serialize(presenter.sourceFilters))
+                    val json = buildJsonObject { put("filters", filterSerializer.serialize(presenter.sourceFilters)) }
                     onBrowseClick(presenter.query.nullIfBlank(), json.toString())
                 }
             },

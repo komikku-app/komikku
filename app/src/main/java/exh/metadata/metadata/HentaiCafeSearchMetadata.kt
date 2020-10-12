@@ -4,7 +4,9 @@ import android.content.Context
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import kotlinx.serialization.Serializable
 
+@Serializable
 class HentaiCafeSearchMetadata : RaisedSearchMetadata() {
     var hcId: String? = null
     var readerId: String? = null

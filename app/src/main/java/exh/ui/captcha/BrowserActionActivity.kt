@@ -13,9 +13,6 @@ import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import com.afollestad.materialdialogs.MaterialDialog
 import com.elvishew.xlog.XLog
-import com.github.salomonbrys.kotson.get
-import com.github.salomonbrys.kotson.string
-import com.google.gson.JsonParser
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -28,6 +25,12 @@ import exh.source.DelegatedHttpSource
 import exh.util.melt
 import kotlinx.android.synthetic.main.eh_activity_captcha.toolbar
 import kotlinx.android.synthetic.main.eh_activity_captcha.webview
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -153,9 +156,9 @@ class BrowserActionActivity : AppCompatActivity() {
                 .asObservableSuccess()
                 .subscribeOn(Schedulers.io())
                 .map {
-                    val json = JsonParser.parseString(it.body!!.string())
+                    val json = Json.decodeFromString<JsonObject>(it.body!!.string())
                     it.close()
-                    json["token"].string
+                    json["token"]!!.jsonPrimitive.content
                 }.melt()
 
             webview.addJavascriptInterface(this@BrowserActionActivity, "exh")
@@ -317,7 +320,7 @@ class BrowserActionActivity : AppCompatActivity() {
                     .build()
             ).asObservableSuccess()
         }.map { response ->
-            JsonParser.parseString(response.body!!.string())["results"][0]["alternatives"][0]["transcript"].string.trim()
+            Json.decodeFromString<JsonObject>(response.body!!.string())["results"]!!.jsonArray[0].jsonObject["alternatives"]!!.jsonArray[0].jsonObject["transcript"]!!.jsonPrimitive.content.trim()
         }.toSingle()
     }
 

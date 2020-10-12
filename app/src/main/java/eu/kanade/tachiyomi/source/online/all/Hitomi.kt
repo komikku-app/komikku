@@ -68,8 +68,8 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                         tags += RaisedTag("group", group!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
                     }
                     "type" -> {
-                        type = content.text()
-                        tags += RaisedTag("type", type!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
+                        genre = content.text()
+                        tags += RaisedTag("type", genre!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
                     }
                     "series" -> {
                         series = content.select("a").map { it.text() }

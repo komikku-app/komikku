@@ -1,5 +1,9 @@
 package exh.metadata.sql.models
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SearchMetadata(
     // Manga ID this gallery is linked to
     val mangaId: Long,
@@ -17,5 +21,6 @@ data class SearchMetadata(
     val extraVersion: Int
 ) {
     // Transient information attached to this piece of metadata, useful for caching
-    var transientCache: Map<String, Any>? = null
+
+    var transientCache: Map<String, @Contextual Any>? = null
 }

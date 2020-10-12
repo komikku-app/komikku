@@ -1,4 +1,4 @@
-package exh
+package exh.savedsearches
 
 import eu.kanade.tachiyomi.source.model.FilterList
 

@@ -1,10 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.source.index
 
 import android.os.Bundle
-import com.github.salomonbrys.kotson.array
-import com.github.salomonbrys.kotson.obj
-import com.github.salomonbrys.kotson.string
-import com.google.gson.JsonParser
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -15,7 +11,8 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
-import exh.EXHSavedSearch
+import exh.savedsearches.EXHSavedSearch
+import exh.savedsearches.JsonSavedSearch
 import exh.util.asFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +20,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -232,12 +231,12 @@ open class IndexPresenter(
             try {
                 val id = it.substringBefore(':').toLong()
                 if (id != source.id) return@map null
-                val content = JsonParser.parseString(it.substringAfter(':')).obj
+                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content["filters"].array)
+                filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
-                    content["name"].string,
-                    content["query"].string,
+                    content.name,
+                    content.query,
                     originalFilters
                 )
             } catch (t: RuntimeException) {

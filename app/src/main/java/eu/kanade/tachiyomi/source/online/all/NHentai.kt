@@ -2,12 +2,7 @@ package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
 import android.net.Uri
-import com.github.salomonbrys.kotson.get
-import com.github.salomonbrys.kotson.nullArray
-import com.github.salomonbrys.kotson.nullLong
-import com.github.salomonbrys.kotson.nullObj
-import com.github.salomonbrys.kotson.nullString
-import com.google.gson.JsonParser
+import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -23,6 +18,10 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.NHentaiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import okhttp3.Response
 import rx.Observable
 
@@ -58,47 +57,89 @@ class NHentai(delegate: HttpSource, val context: Context) :
         val json = GALLERY_JSON_REGEX.find(input.body!!.string())!!.groupValues[1].replace(
             UNICODE_ESCAPE_REGEX
         ) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
-        val obj = JsonParser.parseString(json).asJsonObject
+        val jsonResponse = jsonParser.decodeFromString<JsonResponse>(json)
 
         with(metadata) {
-            nhId = obj["id"].asLong
+            nhId = jsonResponse.id
 
-            uploadDate = obj["upload_date"].nullLong
+            uploadDate = jsonResponse.uploadDate
 
-            favoritesCount = obj["num_favorites"].nullLong
+            favoritesCount = jsonResponse.numFavorites
 
-            mediaId = obj["media_id"].nullString
+            mediaId = jsonResponse.mediaId
 
-            obj["title"].nullObj?.let { title ->
-                japaneseTitle = title["japanese"].nullString
-                shortTitle = title["pretty"].nullString
-                englishTitle = title["english"].nullString
+            jsonResponse.title?.let { title ->
+                japaneseTitle = title.japanese
+                shortTitle = title.pretty
+                englishTitle = title.english
             }
 
-            obj["images"].nullObj?.let { images ->
-                coverImageType = images["cover"]?.get("t").nullString
-                images["pages"].nullArray?.mapNotNull {
-                    it?.asJsonObject?.get("t").nullString
-                }?.let {
+            jsonResponse.images?.let { images ->
+                coverImageType = images.cover?.type
+                images.pages.mapNotNull {
+                    it.type
+                }.let {
                     pageImageTypes = it
                 }
-                thumbnailImageType = images["thumbnail"]?.get("t").nullString
+                thumbnailImageType = images.thumbnail?.type
             }
 
-            scanlator = obj["scanlator"].nullString
+            scanlator = jsonResponse.scanlator
 
-            obj["tags"]?.asJsonArray?.map {
-                val asObj = it.asJsonObject
-                Pair(asObj["type"].nullString, asObj["name"].nullString)
-            }?.apply {
+            jsonResponse.tags.map {
+                it.type to it.name
+            }.apply {
                 tags.clear()
-            }?.forEach {
+            }.forEach {
                 if (it.first != null && it.second != null) {
                     tags.add(RaisedTag(it.first!!, it.second!!, if (it.first == "category") RaisedSearchMetadata.TAG_TYPE_VIRTUAL else NHentaiSearchMetadata.TAG_TYPE_DEFAULT))
                 }
             }
         }
     }
+
+    @Serializable
+    data class JsonResponse(
+        val id: Long,
+        @SerialName("media_id") val mediaId: String? = null,
+        val title: JsonTitle? = null,
+        val images: JsonImages? = null,
+        val scanlator: String? = null,
+        @SerialName("upload_date") val uploadDate: Long? = null,
+        val tags: List<JsonTag> = emptyList(),
+        @SerialName("num_pages") val numPages: Int? = null,
+        @SerialName("num_favorites") val numFavorites: Long? = null
+    )
+
+    @Serializable
+    data class JsonTitle(
+        val english: String? = null,
+        val japanese: String? = null,
+        val pretty: String? = null
+    )
+
+    @Serializable
+    data class JsonImages(
+        val pages: List<JsonPage> = emptyList(),
+        val cover: JsonPage? = null,
+        val thumbnail: JsonPage? = null
+    )
+
+    @Serializable
+    data class JsonPage(
+        @SerialName("t") val type: String? = null,
+        @SerialName("w") val width: String? = null,
+        @SerialName("h") val height: String? = null
+    )
+
+    @Serializable
+    data class JsonTag(
+        val id: Long? = null,
+        val type: String? = null,
+        val name: String? = null,
+        val url: String? = null,
+        val count: Long? = null
+    )
 
     override fun toString() = "$name (${lang.toUpperCase()})"
 
@@ -126,6 +167,10 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
     companion object {
         const val otherId = 7309872737163460316L
+
+        private val jsonParser = Json {
+            ignoreUnknownKeys = true
+        }
 
         private val GALLERY_JSON_REGEX = Regex(".parse\\(\"(.*)\"\\);")
         private val UNICODE_ESCAPE_REGEX = Regex("\\\\u([0-9a-fA-F]{4})")

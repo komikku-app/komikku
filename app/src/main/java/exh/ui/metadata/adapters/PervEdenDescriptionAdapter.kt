@@ -47,7 +47,7 @@ class PervEdenDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is PervEdenSearchMetadata) return
 
-            val genre = meta.type
+            val genre = meta.genre
             if (genre != null) {
                 val pair = when (genre) {
                     "Doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)

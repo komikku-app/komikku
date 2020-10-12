@@ -2,11 +2,6 @@ package exh.debug
 
 import android.app.Application
 import com.elvishew.xlog.XLog
-import com.github.salomonbrys.kotson.array
-import com.github.salomonbrys.kotson.jsonObject
-import com.github.salomonbrys.kotson.obj
-import com.github.salomonbrys.kotson.string
-import com.google.gson.JsonParser
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
@@ -16,13 +11,13 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.SourceManager.Companion.currentDelegatedSources
 import exh.EH_SOURCE_ID
 import exh.EXHMigrations
-import exh.EXHSavedSearch
 import exh.EXH_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.savedsearches.JsonSavedSearch
 import exh.util.await
 import exh.util.cancellable
 import exh.util.jobScheduler
@@ -31,8 +26,10 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.injectLazy
-import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.lang.RuntimeException
 
 @OptIn(FlowPreview::class)
@@ -236,22 +233,13 @@ object DebugFunctions {
 
     fun copyEHentaiSavedSearchesToExhentai() {
         runBlocking {
-            val filterSerializer = FilterSerializer()
             val source = sourceManager.get(EH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val newSource = sourceManager.get(EXH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != source.id) return@mapNotNull null
-                    val content = JsonParser.parseString(it.substringAfter(':')).obj
-
-                    val originalFilters = source.getFilterList()
-                    filterSerializer.deserialize(originalFilters, content["filters"].array)
-                    EXHSavedSearch(
-                        content["name"].string,
-                        content["query"].string,
-                        originalFilters
-                    )
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
@@ -263,15 +251,7 @@ object DebugFunctions {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != newSource.id) return@mapNotNull null
-                    val content = JsonParser.parseString(it.substringAfter(':')).obj
-
-                    val originalFilters = source.getFilterList()
-                    filterSerializer.deserialize(originalFilters, content["filters"].array)
-                    EXHSavedSearch(
-                        content["name"].string,
-                        content["query"].string,
-                        originalFilters
-                    )
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
@@ -284,11 +264,7 @@ object DebugFunctions {
                 !it.startsWith("${newSource.id}:")
             }
             val newSerialized = savedSearches.map {
-                "${newSource.id}:" + jsonObject(
-                    "name" to it.name,
-                    "query" to it.query,
-                    "filters" to filterSerializer.serialize(it.filterList)
-                ).toString()
+                "${newSource.id}:" + Json.encodeToString(it)
             }
             prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
         }
@@ -296,22 +272,13 @@ object DebugFunctions {
 
     fun copyExhentaiSavedSearchesToEHentai() {
         runBlocking {
-            val filterSerializer = FilterSerializer()
             val source = sourceManager.get(EXH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val newSource = sourceManager.get(EH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != source.id) return@mapNotNull null
-                    val content = JsonParser.parseString(it.substringAfter(':')).obj
-
-                    val originalFilters = source.getFilterList()
-                    filterSerializer.deserialize(originalFilters, content["filters"].array)
-                    EXHSavedSearch(
-                        content["name"].string,
-                        content["query"].string,
-                        originalFilters
-                    )
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
@@ -323,15 +290,7 @@ object DebugFunctions {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != newSource.id) return@mapNotNull null
-                    val content = JsonParser.parseString(it.substringAfter(':')).obj
-
-                    val originalFilters = source.getFilterList()
-                    filterSerializer.deserialize(originalFilters, content["filters"].array)
-                    EXHSavedSearch(
-                        content["name"].string,
-                        content["query"].string,
-                        originalFilters
-                    )
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
@@ -344,11 +303,7 @@ object DebugFunctions {
                 !it.startsWith("${newSource.id}:")
             }
             val newSerialized = savedSearches.map {
-                "${newSource.id}:" + jsonObject(
-                    "name" to it.name,
-                    "query" to it.query,
-                    "filters" to filterSerializer.serialize(it.filterList)
-                ).toString()
+                "${newSource.id}:" + Json.encodeToString(it)
             }
             prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
         }

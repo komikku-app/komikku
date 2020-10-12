@@ -5,7 +5,9 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.EightMusesSearchMetadata.Companion.ARTIST_NAMESPACE
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import kotlinx.serialization.Serializable
 
+@Serializable
 class HBrowseSearchMetadata : RaisedSearchMetadata() {
     var hbId: Long? = null
 

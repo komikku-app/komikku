@@ -47,7 +47,7 @@ class HitomiDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is HitomiSearchMetadata) return
 
-            val genre = meta.type
+            val genre = meta.genre
             if (genre != null) {
                 val pair = when (genre) {
                     "doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)

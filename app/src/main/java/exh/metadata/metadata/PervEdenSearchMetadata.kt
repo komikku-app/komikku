@@ -6,7 +6,9 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTitle
+import kotlinx.serialization.Serializable
 
+@Serializable
 class PervEdenSearchMetadata : RaisedSearchMetadata() {
     var pvId: String? = null
 
@@ -23,7 +25,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
 
     var artist: String? = null
 
-    var type: String? = null
+    var genre: String? = null
 
     var rating: Float? = null
 
@@ -102,7 +104,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
             pairs += Pair(context.getString(R.string.alt_titles), altTitles)
         }
         artist?.let { pairs += Pair(context.getString(R.string.artist), it) }
-        type?.let { pairs += Pair(context.getString(R.string.genre), it) }
+        genre?.let { pairs += Pair(context.getString(R.string.genre), it) }
         rating?.let { pairs += Pair(context.getString(R.string.average_rating), it.toString()) }
         status?.let { pairs += Pair(context.getString(R.string.status), it) }
         lang?.let { pairs += Pair(context.getString(R.string.language), it) }

@@ -1,11 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.os.Bundle
-import com.github.salomonbrys.kotson.array
-import com.github.salomonbrys.kotson.jsonObject
-import com.github.salomonbrys.kotson.obj
-import com.github.salomonbrys.kotson.string
-import com.google.gson.JsonParser
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.flexibleadapter.items.ISectionable
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -38,7 +33,14 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.removeCovers
-import exh.EXHSavedSearch
+import exh.savedsearches.EXHSavedSearch
+import exh.savedsearches.JsonSavedSearch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.put
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -134,8 +136,8 @@ open class BrowseSourcePresenter(
 
         // SY -->
         if (filters != null) {
-            val filters = JsonParser.parseString(filters).obj
-            filterSerializer.deserialize(sourceFilters, filters["filters"].array)
+            val filters = Json.decodeFromString<JsonObject>(filters)
+            filterSerializer.deserialize(sourceFilters, filters["filters"]!!.jsonArray)
         }
         val allDefault = sourceFilters == source.getFilterList()
         // SY <--
@@ -446,11 +448,11 @@ open class BrowseSourcePresenter(
             !it.startsWith("${source.id}:")
         }
         val newSerialized = searches.map {
-            "${source.id}:" + jsonObject(
-                "name" to it.name,
-                "query" to it.query,
-                "filters" to filterSerializer.serialize(it.filterList)
-            ).toString()
+            "${source.id}:" + buildJsonObject {
+                put("name", it.name)
+                put("query", it.query)
+                put("filters", filterSerializer.serialize(it.filterList))
+            }.toString()
         }
         prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
     }
@@ -461,12 +463,12 @@ open class BrowseSourcePresenter(
             try {
                 val id = it.substringBefore(':').toLong()
                 if (id != source.id) return@map null
-                val content = JsonParser.parseString(it.substringAfter(':')).obj
+                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content["filters"].array)
+                filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
-                    content["name"].string,
-                    content["query"].string,
+                    content.name,
+                    content.query,
                     originalFilters
                 )
             } catch (t: RuntimeException) {

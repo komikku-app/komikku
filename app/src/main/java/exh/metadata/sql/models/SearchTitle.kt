@@ -1,5 +1,8 @@
 package exh.metadata.sql.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SearchTitle(
     // Title identifier, unique
     val id: Long?,

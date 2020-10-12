@@ -2,20 +2,16 @@ package eu.kanade.tachiyomi.data.backup
 
 import android.content.Context
 import android.net.Uri
-import com.github.salomonbrys.kotson.array
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.jsonObject
-import com.github.salomonbrys.kotson.obj
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.github.salomonbrys.kotson.registerTypeHierarchyAdapter
 import com.github.salomonbrys.kotson.set
-import com.github.salomonbrys.kotson.string
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY
@@ -62,13 +58,16 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import exh.EXHSavedSearch
 import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
+import exh.savedsearches.EXHSavedSearch
+import exh.savedsearches.JsonSavedSearch
 import exh.util.asObservable
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -553,17 +552,17 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
         val newSavedSearches = backupSavedSearches.mapNotNull {
             try {
                 val id = it.substringBefore(':').toLong()
-                val content = JsonParser.parseString(it.substringAfter(':')).obj
+                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 val source = sourceManager.getOrStub(id)
                 if (source !is CatalogueSource) return@mapNotNull null
 
                 val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content["filters"].array)
+                filterSerializer.deserialize(originalFilters, content.filters)
                 Pair(
                     id,
                     EXHSavedSearch(
-                        content["name"].string,
-                        content["query"].string,
+                        content.name,
+                        content.query,
                         originalFilters
                     )
                 )
@@ -580,18 +579,18 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
         newSavedSearches += preferences.eh_savedSearches().get().mapNotNull {
             try {
                 val id = it.substringBefore(':').toLong()
-                val content = JsonParser.parseString(it.substringAfter(':')).obj
+                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 if (id !in currentSources) return@mapNotNull null
                 val source = sourceManager.getOrStub(id)
                 if (source !is CatalogueSource) return@mapNotNull null
 
                 val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content["filters"].array)
+                filterSerializer.deserialize(originalFilters, content.filters)
                 Pair(
                     id,
                     EXHSavedSearch(
-                        content["name"].string,
-                        content["query"].string,
+                        content.name,
+                        content.query,
                         originalFilters
                     )
                 )

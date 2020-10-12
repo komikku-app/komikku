@@ -12,8 +12,6 @@ import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
 import com.bluelinelabs.conductor.RouterTransaction
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
-import com.github.salomonbrys.kotson.fromJson
-import com.google.gson.Gson
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -116,6 +114,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 import kotlin.time.Duration
@@ -128,7 +128,6 @@ import kotlin.time.hours
  */
 
 class SettingsEhController : SettingsController() {
-    private val gson: Gson by injectLazy()
     private val db: DatabaseHelper by injectLazy()
 
     private fun Preference<*>.reconfigure(): Boolean {
@@ -687,7 +686,7 @@ class SettingsEhController : SettingsController() {
                         val updateInfo = try {
                             val stats =
                                 preferences.eh_autoUpdateStats().get().nullIfBlank()?.let {
-                                    gson.fromJson<EHentaiUpdaterStats>(it)
+                                    Json.decodeFromString<EHentaiUpdaterStats>(it)
                                 }
 
                             val statsText = if (stats != null) {

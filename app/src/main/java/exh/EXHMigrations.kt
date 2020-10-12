@@ -2,9 +2,6 @@ package exh
 
 import android.content.Context
 import com.elvishew.xlog.XLog
-import com.github.salomonbrys.kotson.fromJson
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
@@ -28,6 +25,10 @@ import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.BlacklistedSources
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
@@ -36,7 +37,6 @@ import java.net.URISyntaxException
 object EXHMigrations {
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
-    private val gson: Gson by injectLazy()
 
     private val logger = XLog.tag("EXHMigrations")
 
@@ -167,7 +167,7 @@ object EXHMigrations {
                             .executeAsBlocking()
 
                         if (mergedMangas.isNotEmpty()) {
-                            val mangaConfigs = mergedMangas.mapNotNull { mergedManga -> readMangaConfig(mergedManga, gson)?.let { mergedManga to it } }
+                            val mangaConfigs = mergedMangas.mapNotNull { mergedManga -> readMangaConfig(mergedManga)?.let { mergedManga to it } }
                             if (mangaConfigs.isNotEmpty()) {
                                 val mangaToUpdate = mutableListOf<Manga>()
                                 val mergedMangaReferences = mutableListOf<MergedMangaReference>()
@@ -237,7 +237,7 @@ object EXHMigrations {
                                     .prepare()
                                     .executeAsBlocking()
                                 val mergedMangaChaptersMatched = mergedMangaChapters.mapNotNull { chapter -> loadedMangaList.firstOrNull { it.manga.id == chapter.id }?.let { it to chapter } }
-                                val parsedChapters = chapters.filter { it.read || it.last_page_read != 0 }.mapNotNull { chapter -> readUrlConfig(chapter.url, gson)?.let { chapter to it } }
+                                val parsedChapters = chapters.filter { it.read || it.last_page_read != 0 }.mapNotNull { chapter -> readUrlConfig(chapter.url)?.let { chapter to it } }
                                 val chaptersToUpdate = mutableListOf<Chapter>()
                                 parsedChapters.forEach { parsedChapter ->
                                     mergedMangaChaptersMatched.firstOrNull { it.second.url == parsedChapter.second.url && it.first.source.id == parsedChapter.second.source && it.first.manga.url == parsedChapter.second.mangaUrl }?.let {
@@ -339,23 +339,25 @@ object EXHMigrations {
         }
     }
 
+    @Serializable
     private data class UrlConfig(
-        @SerializedName("s")
+        @SerialName("s")
         val source: Long,
-        @SerializedName("u")
+        @SerialName("u")
         val url: String,
-        @SerializedName("m")
+        @SerialName("m")
         val mangaUrl: String
     )
 
+    @Serializable
     private data class MangaConfig(
-        @SerializedName("c")
+        @SerialName("c")
         val children: List<MangaSource>
     ) {
         companion object {
-            fun readFromUrl(gson: Gson, url: String): MangaConfig? {
+            fun readFromUrl(url: String): MangaConfig? {
                 return try {
-                    gson.fromJson(url)
+                    Json.decodeFromString(url)
                 } catch (e: Exception) {
                     null
                 }
@@ -363,14 +365,15 @@ object EXHMigrations {
         }
     }
 
-    private fun readMangaConfig(manga: SManga, gson: Gson): MangaConfig? {
-        return MangaConfig.readFromUrl(gson, manga.url)
+    private fun readMangaConfig(manga: SManga): MangaConfig? {
+        return MangaConfig.readFromUrl(manga.url)
     }
 
+    @Serializable
     private data class MangaSource(
-        @SerializedName("s")
+        @SerialName("s")
         val source: Long,
-        @SerializedName("u")
+        @SerialName("u")
         val url: String
     ) {
         fun load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource? {
@@ -380,9 +383,9 @@ object EXHMigrations {
         }
     }
 
-    private fun readUrlConfig(url: String, gson: Gson): UrlConfig? {
+    private fun readUrlConfig(url: String): UrlConfig? {
         return try {
-            gson.fromJson(url)
+            Json.decodeFromString(url)
         } catch (e: Exception) {
             null
         }

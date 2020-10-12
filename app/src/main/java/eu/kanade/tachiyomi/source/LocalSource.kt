@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.source
 
 import android.content.Context
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -18,6 +17,9 @@ import eu.kanade.tachiyomi.util.storage.EpubFile
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import junrar.Archive
 import junrar.rarfile.FileHeader
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -154,16 +156,19 @@ class LocalSource(private val context: Context) : CatalogueSource {
         val directory = getBaseDirectories(context).mapNotNull { File(it, manga.url) }.find {
             it.exists()
         } ?: return
-        val gson = GsonBuilder().setPrettyPrinting().create()
+        val json = Json {
+            prettyPrint = true
+        }
         val existingFileName = directory.listFiles()?.find { it.extension == "json" }?.name
         val file = File(directory, existingFileName ?: "info.json")
-        file.writeText(gson.toJson(manga.toJson()))
+        file.writeText(json.encodeToString(manga.toJson()))
     }
 
-    fun SManga.toJson(): MangaJson {
+    private fun SManga.toJson(): MangaJson {
         return MangaJson(title, author, artist, description, genre?.split(", ")?.toTypedArray())
     }
 
+    @Serializable
     data class MangaJson(
         val title: String,
         val author: String?,
