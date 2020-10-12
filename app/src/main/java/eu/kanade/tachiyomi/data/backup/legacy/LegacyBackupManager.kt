@@ -1,9 +1,8 @@
-package eu.kanade.tachiyomi.data.backup
+package eu.kanade.tachiyomi.data.backup.legacy
 
 import android.content.Context
 import android.net.Uri
 import com.github.salomonbrys.kotson.fromJson
-import com.github.salomonbrys.kotson.jsonObject
 import com.github.salomonbrys.kotson.registerTypeAdapter
 import com.github.salomonbrys.kotson.registerTypeHierarchyAdapter
 import com.github.salomonbrys.kotson.set
@@ -22,23 +21,24 @@ import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_HIST
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_HISTORY_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_TRACK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_TRACK_MASK
-import eu.kanade.tachiyomi.data.backup.models.Backup
-import eu.kanade.tachiyomi.data.backup.models.Backup.CATEGORIES
-import eu.kanade.tachiyomi.data.backup.models.Backup.CHAPTERS
-import eu.kanade.tachiyomi.data.backup.models.Backup.CURRENT_VERSION
-import eu.kanade.tachiyomi.data.backup.models.Backup.EXTENSIONS
-import eu.kanade.tachiyomi.data.backup.models.Backup.HISTORY
-import eu.kanade.tachiyomi.data.backup.models.Backup.MANGA
-import eu.kanade.tachiyomi.data.backup.models.Backup.MERGEDMANGAREFERENCES
-import eu.kanade.tachiyomi.data.backup.models.Backup.SAVEDSEARCHES
-import eu.kanade.tachiyomi.data.backup.models.Backup.TRACK
-import eu.kanade.tachiyomi.data.backup.models.DHistory
-import eu.kanade.tachiyomi.data.backup.serializer.CategoryTypeAdapter
-import eu.kanade.tachiyomi.data.backup.serializer.ChapterTypeAdapter
-import eu.kanade.tachiyomi.data.backup.serializer.HistoryTypeAdapter
-import eu.kanade.tachiyomi.data.backup.serializer.MangaTypeAdapter
-import eu.kanade.tachiyomi.data.backup.serializer.MergedMangaReferenceTypeAdapter
-import eu.kanade.tachiyomi.data.backup.serializer.TrackTypeAdapter
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.CATEGORIES
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.CHAPTERS
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.CURRENT_VERSION
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.EXTENSIONS
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.HISTORY
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.MANGA
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.MERGEDMANGAREFERENCES
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.SAVEDSEARCHES
+import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.TRACK
+import eu.kanade.tachiyomi.data.backup.legacy.models.DHistory
+import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
+import eu.kanade.tachiyomi.data.backup.legacy.serializer.CategoryTypeAdapter
+import eu.kanade.tachiyomi.data.backup.legacy.serializer.ChapterTypeAdapter
+import eu.kanade.tachiyomi.data.backup.legacy.serializer.HistoryTypeAdapter
+import eu.kanade.tachiyomi.data.backup.legacy.serializer.MangaTypeAdapter
+import eu.kanade.tachiyomi.data.backup.legacy.serializer.MergedMangaReferenceTypeAdapter
+import eu.kanade.tachiyomi.data.backup.legacy.serializer.TrackTypeAdapter
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.CategoryImpl
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -51,7 +51,6 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -61,23 +60,22 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
-import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import exh.util.asObservable
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.lang.RuntimeException
 import kotlin.math.max
 
-class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
+class LegacyBackupManager(val context: Context, version: Int = CURRENT_VERSION) : AbstractBackupManager() {
 
     internal val databaseHelper: DatabaseHelper by injectLazy()
     internal val sourceManager: SourceManager by injectLazy()
@@ -126,7 +124,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
      * @param uri path of Uri
      * @param isJob backup called from job
      */
-    fun createBackup(uri: Uri, flags: Int, isJob: Boolean): String? {
+    override fun createBackup(uri: Uri, flags: Int, isJob: Boolean): String? {
         // Create root object
         val root = JsonObject()
 
@@ -547,25 +545,12 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
     // SY -->
     internal fun restoreSavedSearches(jsonSavedSearches: JsonElement) {
         val backupSavedSearches = jsonSavedSearches.asString.split("***").toSet()
-        val filterSerializer = FilterSerializer()
 
         val newSavedSearches = backupSavedSearches.mapNotNull {
             try {
                 val id = it.substringBefore(':').toLong()
                 val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
-                val source = sourceManager.getOrStub(id)
-                if (source !is CatalogueSource) return@mapNotNull null
-
-                val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content.filters)
-                Pair(
-                    id,
-                    EXHSavedSearch(
-                        content.name,
-                        content.query,
-                        originalFilters
-                    )
-                )
+                id to content
             } catch (t: RuntimeException) {
                 // Load failed
                 Timber.e(t, "Failed to load saved search!")
@@ -580,20 +565,7 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             try {
                 val id = it.substringBefore(':').toLong()
                 val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
-                if (id !in currentSources) return@mapNotNull null
-                val source = sourceManager.getOrStub(id)
-                if (source !is CatalogueSource) return@mapNotNull null
-
-                val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content.filters)
-                Pair(
-                    id,
-                    EXHSavedSearch(
-                        content.name,
-                        content.query,
-                        originalFilters
-                    )
-                )
+                id to content
             } catch (t: RuntimeException) {
                 // Load failed
                 Timber.e(t, "Failed to load saved search!")
@@ -608,15 +580,8 @@ class BackupManager(val context: Context, version: Int = CURRENT_VERSION) {
             it
         }
 
-        /*.filter {
-            !it.startsWith("${newSource.id}:")
-        }*/
         val newSerialized = newSavedSearches.map {
-            "${it.first}:" + jsonObject(
-                "name" to it.second.name,
-                "query" to it.second.query,
-                "filters" to filterSerializer.serialize(it.second.filterList)
-            ).toString()
+            "${it.first}:" + Json.encodeToString(it.second)
         }
         preferences.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
     }

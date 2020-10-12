@@ -5,7 +5,7 @@ import com.elvishew.xlog.XLog
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
-import eu.kanade.tachiyomi.data.backup.models.DHistory
+import eu.kanade.tachiyomi.data.backup.legacy.models.DHistory
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
