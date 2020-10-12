@@ -4,9 +4,9 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.full.FullBackupRestore
 import eu.kanade.tachiyomi.data.backup.legacy.LegacyBackupRestore
@@ -48,11 +48,7 @@ class BackupRestoreService : Service() {
                     putExtra(BackupConst.EXTRA_TYPE, mode)
                     online?.let { putExtra(BackupConst.EXTRA_TYPE, it) }
                 }
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                    context.startService(intent)
-                } else {
-                    context.startForegroundService(intent)
-                }
+                ContextCompat.startForegroundService(context, intent)
             }
         }
 

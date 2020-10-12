@@ -24,6 +24,7 @@ import androidx.appcompat.view.ActionMode
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -124,14 +125,14 @@ class MangaController :
     DeleteChaptersDialog.Listener {
 
     constructor(manga: Manga?, fromSource: Boolean = false, smartSearchConfig: SourceController.SmartSearchConfig? = null, update: Boolean = false) : super(
-        Bundle().apply {
-            putLong(MANGA_EXTRA, manga?.id ?: 0)
-            putBoolean(FROM_SOURCE_EXTRA, fromSource)
+        bundleOf(
+            MANGA_EXTRA to (manga?.id ?: 0),
+            FROM_SOURCE_EXTRA to fromSource,
             // SY -->
-            putParcelable(SMART_SEARCH_CONFIG_EXTRA, smartSearchConfig)
-            putBoolean(UPDATE_EXTRA, update)
+            SMART_SEARCH_CONFIG_EXTRA to smartSearchConfig,
+            UPDATE_EXTRA to update
             // SY <--
-        }
+        )
     ) {
         this.manga = manga
         if (manga != null) {
@@ -362,11 +363,7 @@ class MangaController :
 
                     // Get coordinates and start animation
                     actionFab?.getCoordinates()?.let { coordinates ->
-                        if (!binding.revealView.showRevealEffect(
-                                coordinates.x,
-                                coordinates.y,
-                                revealAnimationListener
-                            )
+                        if (!binding.revealView.showRevealEffect(coordinates.x, coordinates.y, revealAnimationListener)
                         ) {
                             openChapter(item.chapter)
                         }

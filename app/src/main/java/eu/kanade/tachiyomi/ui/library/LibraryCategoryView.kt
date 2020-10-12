@@ -130,18 +130,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         swipe_refresh.refreshes()
             .onEach {
                 // SY -->
-                if (LibraryUpdateService.start(
-                        context,
-                        if (controller.presenter.groupType == LibraryGroup.BY_DEFAULT) category else null,
-                        group = controller.presenter.groupType,
-                        groupExtra = when (controller.presenter.groupType) {
-                            LibraryGroup.BY_DEFAULT -> null
-                            LibraryGroup.BY_SOURCE -> category.name
-                            LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
-                            else -> null
-                        }
-                    )
-                ) {
+                if (LibraryUpdateService.start(context, if (controller.presenter.groupType == LibraryGroup.BY_DEFAULT) category else null, group = controller.presenter.groupType, groupExtra = getGroupExtra())) {
                     context.toast(
                         when {
                             controller.presenter.groupType == LibraryGroup.BY_DEFAULT ||
@@ -385,6 +374,13 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         lastClickPosition = position
     }
     // SY -->
+    private fun getGroupExtra() = when (controller.presenter.groupType) {
+        LibraryGroup.BY_DEFAULT -> null
+        LibraryGroup.BY_SOURCE -> category.name
+        LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
+        else -> null
+    }
+
     override fun onItemReleased(position: Int) {
         return
     }

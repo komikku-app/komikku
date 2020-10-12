@@ -253,11 +253,7 @@ class PagerPageHolder(
                     // SY -->
                     if (viewer.config.readerTheme >= 3) {
                         val imageView = initSubsamplingImageView()
-                        if (page.bg != null && page.bgType == getBGType(
-                                viewer.config.readerTheme,
-                                context
-                            )
-                        ) {
+                        if (page.bg != null && page.bgType == getBGType(viewer.config.readerTheme, context)) {
                             imageView.setImage(ImageSource.inputStream(openStream!!))
                             imageView.background = page.bg
                         }
