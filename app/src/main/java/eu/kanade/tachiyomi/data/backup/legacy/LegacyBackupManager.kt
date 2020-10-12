@@ -32,13 +32,13 @@ import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.MERGEDMANGAREFERENCE
 import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.SAVEDSEARCHES
 import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.TRACK
 import eu.kanade.tachiyomi.data.backup.legacy.models.DHistory
-import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.CategoryTypeAdapter
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.ChapterTypeAdapter
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.HistoryTypeAdapter
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.MangaTypeAdapter
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.MergedMangaReferenceTypeAdapter
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.TrackTypeAdapter
+import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.CategoryImpl
 import eu.kanade.tachiyomi.data.database.models.Chapter

@@ -43,8 +43,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.protobuf.ProtoBuf
 import okio.buffer
 import okio.gzip
@@ -99,7 +97,7 @@ class FullBackupManager(val context: Context) : AbstractBackupManager() {
 
                 // Delete older backups
                 val numberOfBackups = numberOfBackups()
-                val backupRegex = Regex("""tachiyomi_\d+-\d+-\d+_\d+-\d+.json""")
+                val backupRegex = Regex("""tachiyomi_full_\d+-\d+-\d+_\d+-\d+.proto.gz""")
                 dir.listFiles { _, filename -> backupRegex.matches(filename) }
                     .orEmpty()
                     .sortedByDescending { it.name }
