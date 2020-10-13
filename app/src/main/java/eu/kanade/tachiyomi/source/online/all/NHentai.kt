@@ -74,7 +74,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
             }
 
             jsonResponse.images?.let { images ->
-                coverImageType = images.cover?.type
+                coverImageType = NHentaiSearchMetadata.typeToExtension(images.cover?.type)
                 images.pages.mapNotNull {
                     it.type
                 }.let {
@@ -127,8 +127,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
     @Serializable
     data class JsonPage(
         @SerialName("t") val type: String? = null,
-        @SerialName("w") val width: String? = null,
-        @SerialName("h") val height: String? = null
+        @SerialName("w") val width: Long? = null,
+        @SerialName("h") val height: Long? = null
     )
 
     @Serializable

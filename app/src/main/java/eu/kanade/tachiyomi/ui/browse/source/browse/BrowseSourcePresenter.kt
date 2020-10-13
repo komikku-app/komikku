@@ -461,7 +461,7 @@ open class BrowseSourcePresenter(
             try {
                 val id = it.substringBefore(':').toLong()
                 if (id != source.id) return@map null
-                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+                val content = JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
