@@ -168,7 +168,7 @@ class FullBackupManager(val context: Context) : AbstractBackupManager() {
             BackupSavedSearch(
                 content.name,
                 content.query,
-                content.filters,
+                content.filters.toString(),
                 sourceId
             )
         }
@@ -494,7 +494,7 @@ class FullBackupManager(val context: Context) : AbstractBackupManager() {
             BackupSavedSearch(
                 content.name,
                 content.query,
-                content.filters,
+                content.filters.toString(),
                 sourceId
             )
         }
@@ -508,7 +508,7 @@ class FullBackupManager(val context: Context) : AbstractBackupManager() {
                                 JsonSavedSearch(
                                     it.name,
                                     it.query,
-                                    it.filterList
+                                    Json.decodeFromString(it.filterList)
                                 )
                             )
                         } + preferences.eh_savedSearches().get()

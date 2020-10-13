@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.data.backup.full.models
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.protobuf.ProtoNumber
 
 /*
@@ -14,6 +12,6 @@ import kotlinx.serialization.protobuf.ProtoNumber
 data class BackupSavedSearch(
     @ProtoNumber(1) val name: String,
     @ProtoNumber(2) val query: String = "",
-    @ProtoNumber(3) val filterList: JsonArray = buildJsonArray {},
+    @ProtoNumber(3) val filterList: String = "",
     @ProtoNumber(4) val source: Long = 0
 )
