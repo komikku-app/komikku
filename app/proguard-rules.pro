@@ -43,9 +43,9 @@
 }
 
 -keep,includedescriptorclasses class eu.kanade.tachiyomi.**$$serializer { *; }
--keepclassmembers class eu.kanade.tachiyomi.** {
-    *** Companion;
-}
+#-keepclassmembers class eu.kanade.tachiyomi.** {
+#    *** Companion;
+#}
 -keepclasseswithmembers class eu.kanade.tachiyomi.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
