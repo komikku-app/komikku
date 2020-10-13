@@ -49,21 +49,22 @@
 -keepclasseswithmembers class eu.kanade.tachiyomi.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--keep,includedescriptorclasses class exh.**$$serializer { *; }
--keepclassmembers class exh.** {
-    *** Companion;
-}
--keepclasseswithmembers class exh.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
 
--keep,includedescriptorclasses class xyz.nulldev.ts.api.http.serializer.**$$serializer { *; }
--keepclassmembers class xyz.nulldev.ts.api.http.serializer.** {
-    *** Companion;
-}
--keepclasseswithmembers class xyz.nulldev.ts.api.http.serializer.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
+#-keep,includedescriptorclasses class exh.**$$serializer { *; }
+#-keepclassmembers class exh.** {
+#    *** Companion;
+#}
+#-keepclasseswithmembers class exh.** {
+#    kotlinx.serialization.KSerializer serializer(...);
+#}
+#
+#-keep,includedescriptorclasses class xyz.nulldev.ts.api.http.serializer.**$$serializer { *; }
+#-keepclassmembers class xyz.nulldev.ts.api.http.serializer.** {
+#    *** Companion;
+#}
+#-keepclasseswithmembers class xyz.nulldev.ts.api.http.serializer.** {
+#    kotlinx.serialization.KSerializer serializer(...);
+#}
 
 # Madokami extension username and password crash fix
 -keepclassmembers class androidx.preference.EditTextPreference {
