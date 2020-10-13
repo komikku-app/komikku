@@ -112,6 +112,34 @@ class SettingsDownloadController : SettingsController() {
                 titleRes = R.string.pref_remove_bookmarked_chapters
                 defaultValue = false
             }
+            // SY -->
+            multiSelectListPreference {
+                val dbCategories = db.getCategories().executeAsBlocking()
+                val categories = listOf(Category.createDefault()) + dbCategories
+
+                key = Keys.dontDeleteFromCategories
+                titleRes = R.string.pref_dont_delete_from_categories
+                entries = categories.map { it.name }.toTypedArray()
+                entryValues = categories.map { it.id.toString() }.toTypedArray()
+
+                preferences.dontDeleteFromCategories().asFlow()
+                    .onEach { mutableSet ->
+                        val selectedCategories = mutableSet
+                            .mapNotNull { id -> categories.find { it.id == id.toInt() } }
+                            .sortedBy { it.order }
+
+                        summary = context.getString(
+                            R.string.pref_dont_delete_from_categories_summary,
+                            if (selectedCategories.isEmpty()) {
+                                context.getString(R.string.all)
+                            } else {
+                                selectedCategories.joinToString { it.name }
+                            }
+                        )
+                    }
+                    .launchIn(scope)
+            }
+            // SY <--
         }
 
         val dbCategories = db.getCategories().executeAsBlocking()

@@ -30,6 +30,7 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
     private var sheetBehavior: BottomSheetBehavior<*>? = null
 
     private val binding = ReaderChaptersSheetBinding.inflate(activity.layoutInflater, null, false)
+    private var initialized = false
 
     var presenter: ReaderPresenter
     var adapter: FastAdapter<ReaderChapterItem>? = null
@@ -79,7 +80,7 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
         )
 
         binding.chapterRecycler.layoutManager = LinearLayoutManager(context)
-        refreshList()
+        // refreshList()
         binding.webviewButton.clicks()
             .onEach { activity.openMangaInBrowser() }
             .launchIn(activity.scope)
@@ -106,6 +107,10 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
     }
 
     override fun show() {
+        if (!initialized) {
+            refreshList()
+            initialized = true
+        }
         binding.pageText.text = activity.binding.pageText.text
         binding.pageSeekbar.max = activity.binding.pageSeekbar.max
         binding.pageSeekbar.progress = activity.binding.pageSeekbar.progress

@@ -338,4 +338,6 @@ object PreferenceKeys {
     const val sortTagsForLibrary = "sort_tags_for_library"
 
     const val createLegacyBackup = "create_legacy_backup"
+
+    const val dontDeleteFromCategories = "dont_delete_from_categories"
 }

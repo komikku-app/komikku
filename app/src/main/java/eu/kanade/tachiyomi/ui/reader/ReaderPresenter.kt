@@ -36,6 +36,7 @@ import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.md.utils.FollowStatus
 import exh.util.defaultReaderType
+import exh.util.shouldDeleteChapters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.runBlocking
@@ -453,7 +454,10 @@ class ReaderPresenter(
         val removeAfterReadSlots = preferences.removeAfterReadSlots()
         val chapterToDelete = chapterList.getOrNull(currentChapterPosition - removeAfterReadSlots)
         // Check if deleting option is enabled and chapter exists
-        if (removeAfterReadSlots != -1 && chapterToDelete != null) {
+        // SY -->
+        val manga = manga
+        // SY <--
+        if (removeAfterReadSlots != -1 && chapterToDelete != null && (manga == null || manga.shouldDeleteChapters(db, preferences)) /* SY <-- */) {
             enqueueDeleteReadChapters(chapterToDelete)
         }
     }
