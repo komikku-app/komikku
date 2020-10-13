@@ -330,15 +330,6 @@ dependencies {
 
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
 
-    final def markwon_version = '4.5.1'
-
-    implementation "io.noties.markwon:core:$markwon_version"
-    implementation "io.noties.markwon:ext-strikethrough:$markwon_version"
-    implementation "io.noties.markwon:ext-tables:$markwon_version"
-    implementation "io.noties.markwon:html:$markwon_version"
-    implementation "io.noties.markwon:image:$markwon_version"
-    implementation "io.noties.markwon:linkify:$markwon_version"
-
     implementation 'com.google.guava:guava:29.0-android'
 }
 

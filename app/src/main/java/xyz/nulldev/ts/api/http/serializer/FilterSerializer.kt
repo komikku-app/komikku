@@ -20,10 +20,9 @@ import kotlin.reflect.full.isSubclassOf
 
 class FilterSerializer {
     private val serializers = listOf<Serializer<*>>(
-        // EXH -->
-        HelpDialogSerializer(this),
+        // SY -->
         AutoCompleteSerializer(this),
-        // EXH <--
+        // SY <--
         HeaderSerializer(this),
         SeparatorSerializer(this),
         SelectSerializer(this),

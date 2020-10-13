@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.CheckboxItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.CheckboxSectionItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.GroupItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.HeaderItem
-import eu.kanade.tachiyomi.ui.browse.source.filter.HelpDialogItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.SelectItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.SelectSectionItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.SeparatorItem
@@ -346,7 +345,6 @@ open class BrowseSourcePresenter(
                 when (filter) {
                     is Filter.Header -> HeaderItem(filter)
                     // --> EXH
-                    is Filter.HelpDialog -> HelpDialogItem(filter)
                     is Filter.AutoComplete -> AutoComplete(filter)
                     // <-- EXH
                     is Filter.Separator -> SeparatorItem(filter)

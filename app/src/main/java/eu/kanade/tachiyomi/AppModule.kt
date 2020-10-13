@@ -13,7 +13,6 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.eh.EHentaiUpdateHelper
-import io.noties.markwon.Markwon
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import uy.kohesive.injekt.api.InjektModule
@@ -51,8 +50,6 @@ class AppModule(val app: Application) : InjektModule {
 
         // SY -->
         addSingletonFactory { EHentaiUpdateHelper(app) }
-
-        addSingletonFactory { Markwon.create(app) }
         // SY <--
 
         // Asynchronously init expensive components for a faster cold start
