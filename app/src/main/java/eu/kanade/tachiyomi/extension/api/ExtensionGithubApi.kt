@@ -8,6 +8,8 @@ import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
@@ -23,7 +25,8 @@ internal class ExtensionGithubApi {
         val service: ExtensionGithubService = ExtensionGithubService.create()
 
         return withContext(Dispatchers.IO) {
-            val response = service.getRepo()
+            val response = Json.decodeFromString<JsonArray>(service.getRepo().toString())
+
             parseResponse(response)
         }
     }
