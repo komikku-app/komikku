@@ -164,7 +164,7 @@ class FullBackupManager(val context: Context) : AbstractBackupManager() {
     private fun backupSavedSearches(): List<BackupSavedSearch> {
         return preferences.eh_savedSearches().get().map {
             val sourceId = it.substringBefore(':').toLong()
-            val content = JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             BackupSavedSearch(
                 content.name,
                 content.query,
@@ -490,7 +490,7 @@ class FullBackupManager(val context: Context) : AbstractBackupManager() {
     internal fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
         val currentSavedSearches = preferences.eh_savedSearches().get().map {
             val sourceId = it.substringBefore(':').toLong()
-            val content = JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             BackupSavedSearch(
                 content.name,
                 content.query,

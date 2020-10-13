@@ -549,7 +549,7 @@ class LegacyBackupManager(val context: Context, version: Int = CURRENT_VERSION) 
         val newSavedSearches = backupSavedSearches.mapNotNull {
             try {
                 val id = it.substringBefore(':').toLong()
-                val content = JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 id to content
             } catch (t: RuntimeException) {
                 // Load failed
@@ -564,7 +564,7 @@ class LegacyBackupManager(val context: Context, version: Int = CURRENT_VERSION) 
         newSavedSearches += preferences.eh_savedSearches().get().mapNotNull {
             try {
                 val id = it.substringBefore(':').toLong()
-                val content = JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 id to content
             } catch (t: RuntimeException) {
                 // Load failed

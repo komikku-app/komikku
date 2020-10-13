@@ -239,7 +239,7 @@ object DebugFunctions {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != source.id) return@mapNotNull null
-                    JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
@@ -251,7 +251,7 @@ object DebugFunctions {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != newSource.id) return@mapNotNull null
-                    JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
@@ -278,7 +278,7 @@ object DebugFunctions {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != source.id) return@mapNotNull null
-                    JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
@@ -290,7 +290,7 @@ object DebugFunctions {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != newSource.id) return@mapNotNull null
-                    JsonSavedSearch.fromJsonObject(Json.decodeFromString(it.substringAfter(':')))
+                    Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
                     XLog.e("Failed to load saved search!", t)
