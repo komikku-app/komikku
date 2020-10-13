@@ -529,7 +529,7 @@ class LibraryPresenter(
                     (if (manga.author != manga.originalAuthor) manga.author else null),
                     (if (manga.artist != manga.originalArtist) manga.artist else null),
                     (if (manga.description != manga.originalDescription) manga.description else null),
-                    (if (manga.genre != manga.originalGenre) manga.getGenres()?.toTypedArray() else null)
+                    (if (manga.genre != manga.originalGenre) manga.getGenres() else null)
                 )
             }
             mangaJson?.let {

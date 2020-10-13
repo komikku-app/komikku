@@ -42,13 +42,13 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory { DownloadManager(app) }
 
-        addSingletonFactory { CustomMangaManager(app) }
-
         addSingletonFactory { TrackManager(app) }
 
         addSingletonFactory { Gson() }
 
         // SY -->
+        addSingletonFactory { CustomMangaManager(app) }
+
         addSingletonFactory { EHentaiUpdateHelper(app) }
         // SY <--
 

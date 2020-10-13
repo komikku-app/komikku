@@ -295,7 +295,7 @@ class MangaPresenter(
             db.updateMangaInfo(manga).executeAsBlocking()
         } else {
             val genre = if (!tags.isNullOrEmpty() && tags.joinToString() != manga.genre) {
-                tags.toTypedArray()
+                tags
             } else {
                 null
             }
