@@ -39,7 +39,6 @@ import eu.kanade.tachiyomi.data.backup.legacy.serializer.MangaTypeAdapter
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.MergedMangaReferenceTypeAdapter
 import eu.kanade.tachiyomi.data.backup.legacy.serializer.TrackTypeAdapter
 import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.CategoryImpl
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.ChapterImpl
@@ -50,10 +49,8 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
@@ -71,11 +68,10 @@ import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 import java.lang.RuntimeException
 import kotlin.math.max
 
-class LegacyBackupManager(val context: Context, version: Int = CURRENT_VERSION) : AbstractBackupManager() {
+class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : AbstractBackupManager(context) {
     /**
      * Version of parser
      */
@@ -631,45 +627,4 @@ class LegacyBackupManager(val context: Context, version: Int = CURRENT_VERSION) 
         }
     }
     // SY <--
-
-    /**
-     * Returns manga
-     *
-     * @return [Manga], null if not found
-     */
-    internal fun getMangaFromDatabase(manga: Manga): Manga? =
-        databaseHelper.getManga(manga.url, manga.source).executeAsBlocking()
-
-    /**
-     * Returns list containing manga from library
-     *
-     * @return [Manga] from library
-     */
-    internal fun getFavoriteManga(): List<Manga> =
-        databaseHelper.getFavoriteMangas().executeAsBlocking()
-
-    internal fun getMergedManga(): List<Manga> =
-        databaseHelper.getMergedMangas().executeAsBlocking()
-
-    /**
-     * Inserts manga and returns id
-     *
-     * @return id of [Manga], null if not found
-     */
-    internal fun insertManga(manga: Manga): Long? =
-        databaseHelper.insertManga(manga).executeAsBlocking().insertedId()
-
-    /**
-     * Inserts list of chapters
-     */
-    private fun insertChapters(chapters: List<Chapter>) {
-        databaseHelper.updateChaptersBackup(chapters).executeAsBlocking()
-    }
-
-    /**
-     * Return number of backups.
-     *
-     * @return number of backups selected by user
-     */
-    fun numberOfBackups(): Int = preferences.numberOfBackups().get()
 }
