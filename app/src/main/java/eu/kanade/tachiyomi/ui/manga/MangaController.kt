@@ -430,7 +430,6 @@ class MangaController :
         if (preferences.recommendsInOverflow().get()) menu.findItem(R.id.action_recommend).isVisible = true
         menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
         menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
-        menu.findItem(R.id.action_merge).isVisible = presenter.manga.favorite
         // SY <--
     }
 
@@ -464,8 +463,8 @@ class MangaController :
                 presenter.dedupe = !presenter.dedupe
                 presenter.toggleDedupe()
             }
-            R.id.action_merge -> {
-                openSmartSearch()
+            R.id.action_migrate -> {
+                migrateManga()
             }
             // SY <--
 
@@ -966,7 +965,7 @@ class MangaController :
     /**
      * Initiates source migration for the specific manga.
      */
-    /* SY private */fun migrateManga() {
+    private fun migrateManga() {
         // SY -->
         PreMigrationController.navigateToMigration(
             preferences.skipPreMigration().get(),

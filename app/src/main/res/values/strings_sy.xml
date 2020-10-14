@@ -253,6 +253,7 @@
     <!-- Manga Page -->
     <!-- Manga Info -->
     <string name="az_recommends">See Recommendations</string>
+    <string name="merge">Merge</string>
     <string name="merge_with_another_source">Merge With Another</string>
 
     <!-- Manga info fragment -->

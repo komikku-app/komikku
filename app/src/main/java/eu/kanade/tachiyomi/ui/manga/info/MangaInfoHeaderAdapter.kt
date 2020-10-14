@@ -142,9 +142,9 @@ class MangaInfoHeaderAdapter(
             }
 
             // SY -->
-            binding.btnMigrate.isVisible = controller.presenter.manga.favorite
-            binding.btnMigrate.clicks()
-                .onEach { controller.migrateManga() }
+            binding.btnMerge.isVisible = controller.presenter.manga.favorite
+            binding.btnMerge.clicks()
+                .onEach { controller.openSmartSearch() }
                 .launchIn(scope)
             // SY <--
 

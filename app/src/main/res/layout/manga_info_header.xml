@@ -169,20 +169,20 @@
             android:text="@string/action_web_view"
             android:visibility="gone"
             app:icon="@drawable/ic_public_24dp"
-            app:layout_constraintEnd_toStartOf="@+id/btn_migrate"
+            app:layout_constraintEnd_toStartOf="@+id/btn_merge"
             app:layout_constraintStart_toEndOf="@+id/btn_tracking"
             app:layout_constraintTop_toTopOf="parent"
             tools:visibility="visible" />
 
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_migrate"
+            android:id="@+id/btn_merge"
             style="@style/Theme.Widget.Button.Action"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/migrate"
+            android:text="@string/merge"
             android:visibility="gone"
-            app:icon="@drawable/baseline_swap_calls_24"
+            app:icon="@drawable/eh_ic_find_replace_white_24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btn_webview"
             app:layout_constraintTop_toTopOf="parent"
