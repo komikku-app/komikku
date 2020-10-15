@@ -83,4 +83,18 @@
         android:title="@string/toggle_dedupe"
         android:visible="false"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_save"
+        android:icon="@drawable/ic_save_black_24dp"
+        android:title="@string/action_save"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_share_cover"
+        android:icon="@drawable/ic_share_24dp"
+        android:title="@string/share_cover"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
 </menu>

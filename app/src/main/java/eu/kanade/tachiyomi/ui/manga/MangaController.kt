@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Activity
+import android.content.ClipData
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Point
@@ -85,6 +86,7 @@ import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.hasCustomCover
+import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
@@ -205,6 +207,8 @@ class MangaController :
     private var editMergedSettingsDialog: EditMergedSettingsDialog? = null
 
     private var currentAnimator: Animator? = null
+
+    private var isExpanded: Boolean = false
     // EXH <--
 
     init {
@@ -430,6 +434,8 @@ class MangaController :
         if (preferences.recommendsInOverflow().get()) menu.findItem(R.id.action_recommend).isVisible = true
         menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
         menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
+        menu.findItem(R.id.action_share_cover).isVisible = isExpanded
+        menu.findItem(R.id.action_save).isVisible = isExpanded
         // SY <--
     }
 
@@ -463,14 +469,35 @@ class MangaController :
                 presenter.dedupe = !presenter.dedupe
                 presenter.toggleDedupe()
             }
-            R.id.action_migrate -> {
-                migrateManga()
-            }
             // SY <--
 
             R.id.action_edit_categories -> onCategoriesClick()
             // SY --> R.id.action_edit_cover -> handleChangeCover() // SY <--
-            // SY --> R.id.action_migrate -> migrateManga() // SY <--
+            R.id.action_migrate -> migrateManga()
+            // SY -->
+            R.id.action_save -> {
+                if (presenter.saveCover()) {
+                    activity?.toast(R.string.cover_saved)
+                } else {
+                    activity?.toast(R.string.error_saving_cover)
+                }
+            }
+            R.id.action_share_cover -> {
+                val cover = presenter.shareCover(activity!!)
+                if (cover != null) {
+                    val stream = cover.getUriCompat(activity!!)
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        putExtra(Intent.EXTRA_STREAM, stream)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        clipData = ClipData.newRawUri(null, stream)
+                        type = "image/*"
+                    }
+                    startActivity(Intent.createChooser(intent, activity?.getString(R.string.action_share)))
+                } else {
+                    activity?.toast(R.string.error_sharing_cover)
+                }
+            }
+            // SY <--
         }
         return super.onOptionsItemSelected(item)
     }
@@ -742,7 +769,7 @@ class MangaController :
 
     // SY -->
     fun onThumbnailClick(thumbView: ImageView) {
-        if (!presenter.manga.initialized) return
+        if (!presenter.manga.initialized || presenter.manga.thumbnail_url == null) return
         currentAnimator?.cancel()
 
         val startBoundsInt = Rect()
@@ -777,6 +804,7 @@ class MangaController :
 
         binding.expandedImage.pivotX = 0f
         binding.expandedImage.pivotY = 0f
+        isExpanded = true
 
         currentAnimator = AnimatorSet().apply {
             play(
@@ -809,6 +837,7 @@ class MangaController :
 
         binding.expandedImage.clicks()
             .onEach {
+                isExpanded = false
                 currentAnimator?.cancel()
 
                 currentAnimator = AnimatorSet().apply {

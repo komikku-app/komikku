@@ -3,9 +3,11 @@ package eu.kanade.tachiyomi.ui.manga
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -33,6 +35,8 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import eu.kanade.tachiyomi.util.storage.DiskUtil
+import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
 import exh.MERGED_SOURCE_ID
@@ -59,6 +63,7 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.io.File
 import java.util.Date
 
 class MangaPresenter(
@@ -490,6 +495,50 @@ class MangaPresenter(
     fun toggleDedupe() {
         // I cant find any way to call the chapter list subscription to get the chapters again
     }
+
+    fun shareCover(context: Context): File? {
+        return try {
+            val destDir = File(context.cacheDir, "shared_image")
+            val file = saveCover(destDir)
+            file
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun saveCover(): Boolean {
+        return try {
+            val directory = File(
+                Environment.getExternalStorageDirectory().absolutePath +
+                    File.separator + Environment.DIRECTORY_PICTURES +
+                    File.separator + R.string.app_name
+            )
+            saveCover(directory)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun saveCover(directory: File): File {
+        val cover = coverCache.getCoverFile(manga)!!
+        val type = ImageUtil.findImageType(cover.inputStream())
+            ?: throw Exception("Not an image")
+
+        directory.mkdirs()
+
+        // Build destination file.
+        val filename = DiskUtil.buildValidFilename("${manga.title}.${type.extension}")
+
+        val destFile = File(directory, filename)
+        cover.inputStream().use { input ->
+            destFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        return destFile
+    }
+
     // SY <--
 
     /**
