@@ -16,5 +16,5 @@ fun Manga.shouldDeleteChapters(db: DatabaseHelper, prefs: PreferencesHelper): Bo
             .mapNotNull { it.id }
             .takeUnless { it.isEmpty() } ?: listOf(0)
 
-    return categoriesForManga.any { it !in categoriesToNotDeleteFrom }
+    return categoriesForManga.intersect(categoriesToNotDeleteFrom).isNotEmpty()
 }

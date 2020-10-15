@@ -131,7 +131,7 @@ class SettingsDownloadController : SettingsController() {
                         summary = context.getString(
                             R.string.pref_dont_delete_from_categories_summary,
                             if (selectedCategories.isEmpty()) {
-                                context.getString(R.string.all)
+                                context.getString(R.string.tapping_inverted_none)
                             } else {
                                 selectedCategories.joinToString { it.name }
                             }
