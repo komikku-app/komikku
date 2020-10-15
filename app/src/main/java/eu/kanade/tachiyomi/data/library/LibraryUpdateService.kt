@@ -600,7 +600,7 @@ class LibraryUpdateService(
                 // Get this manga's trackers from the database
                 val dbTracks = db.getTracks(manga).executeAsBlocking()
 
-                //find the mdlist entry if its unfollowed the follow it
+                // find the mdlist entry if its unfollowed the follow it
                 val tracker = TrackItem(dbTracks.firstOrNull { it.sync_id == TrackManager.MDLIST } ?: trackManager.mdList.createInitialTracker(manga), trackManager.mdList)
 
                 if (tracker.track?.status == FollowStatus.UNFOLLOWED.int) {
