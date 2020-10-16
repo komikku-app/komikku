@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.databinding.MigrationListControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationMangaDialog
@@ -33,6 +34,7 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
+import exh.eh.EHentaiThrottleManager
 import exh.smartsearch.SmartSearchEngine
 import exh.util.await
 import exh.util.executeOnIO
@@ -78,6 +80,8 @@ class MigrationListController(bundle: Bundle? = null) :
     private var selectedPosition: Int? = null
     private var manualMigrations = 0
 
+    private val throttleManager = EHentaiThrottleManager()
+
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = MigrationListControllerBinding.inflate(inflater)
         return binding.root
@@ -119,6 +123,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
+        throttleManager.resetThrottle()
         if (config == null) return
         val useSourceWithMost = preferences.useSourceWithMost().get()
         val useSmartSearch = preferences.smartMigration().get()
@@ -172,7 +177,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                         searchResult,
                                                         source.id
                                                     )
-                                                val chapters = source.fetchChapterList(localManga).toSingle().await(Schedulers.io())
+                                                val chapters = (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).toSingle().await(Schedulers.io())
                                                 try {
                                                     syncChaptersWithSource(db, chapters, localManga, source)
                                                 } catch (e: Exception) {
@@ -204,7 +209,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                     if (searchResult != null) {
                                         val localManga = smartSearchEngine.networkToLocalManga(searchResult, source.id)
                                         val chapters = try {
-                                            source.fetchChapterList(localManga).toSingle().await(Schedulers.io()) ?: emptyList()
+                                            (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).toSingle().await(Schedulers.io()) ?: emptyList()
                                         } catch (e: java.lang.Exception) {
                                             Timber.e(e)
                                             emptyList()
