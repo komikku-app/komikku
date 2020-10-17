@@ -65,6 +65,9 @@ class SettingsSecurityController : SettingsController() {
             val timeRanges = preferences.biometricTimeRanges().get().count()
             summary = context.resources.getQuantityString(R.plurals.num_lock_times, timeRanges, timeRanges)
 
+            preferences.useBiometricLock().asImmediateFlow { isVisible = it }
+                .launchIn(scope)
+
             onClick {
                 router.pushController(BiometricTimesController().withFadeTransaction())
             }
