@@ -433,6 +433,13 @@ class MangaPresenter(
             val newId = db.insertManga(mergedManga).await().insertedId()
             if (newId != null) mergedManga.id = newId
 
+            db.getCategoriesForManga(originalManga)
+                .await()
+                .map { MangaCategory.create(mergedManga, it) }
+                .let {
+                    db.insertMangasCategories(it).await()
+                }
+
             val originalMangaReference = MergedMangaReference(
                 id = null,
                 isInfoManga = true,
