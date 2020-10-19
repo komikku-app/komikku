@@ -7,8 +7,10 @@ import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onCancel
 import com.afollestad.materialdialogs.callbacks.onDismiss
+import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
+import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
@@ -93,27 +95,41 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
 
     private val galleryAdder = GalleryAdder()
 
-    val status: BehaviorSubject<InterceptResult> = BehaviorSubject.create<InterceptResult>(InterceptResult.Idle)
+    val status: BehaviorSubject<InterceptResult> = BehaviorSubject.create(InterceptResult.Idle)
 
     @Synchronized
     fun loadGallery(gallery: String) {
         // Do not load gallery if already loading
         if (status.value is InterceptResult.Idle) {
             status.onNext(InterceptResult.Loading)
-
-            // Load gallery async
-            thread {
-                val result = galleryAdder.addGallery(this, gallery)
-
-                status.onNext(
-                    when (result) {
-                        is GalleryAddEvent.Success -> result.manga.id?.let {
-                            InterceptResult.Success(it)
-                        } ?: InterceptResult.Failure(this.getString(R.string.manga_id_is_null))
-                        is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
+            val sources = galleryAdder.pickSource(gallery)
+            if (sources.size > 1) {
+                MaterialDialog(this)
+                    .title(R.string.select_source)
+                    .listItemsSingleChoice(items = sources.map { it.toString() }) { _, index, _ ->
+                        loadGalleryEnd(gallery, sources[index])
                     }
-                )
+                    .show()
+            } else {
+                loadGalleryEnd(gallery)
             }
+        }
+    }
+
+    @Synchronized
+    private fun loadGalleryEnd(gallery: String, source: UrlImportableSource? = null) {
+        // Load gallery async
+        thread {
+            val result = galleryAdder.addGallery(this, gallery, forceSource = source)
+
+            status.onNext(
+                when (result) {
+                    is GalleryAddEvent.Success -> result.manga.id?.let {
+                        InterceptResult.Success(it)
+                    } ?: InterceptResult.Failure(this.getString(R.string.manga_id_is_null))
+                    is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
+                }
+            )
         }
     }
 }

@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 
@@ -18,6 +19,20 @@ class GalleryAdder {
     private val db: DatabaseHelper by injectLazy()
 
     private val sourceManager: SourceManager by injectLazy()
+
+    fun pickSource(url: String): List<UrlImportableSource> {
+        val uri = Uri.parse(url)
+        return sourceManager.getVisibleCatalogueSources()
+            .map { it.getMainSource() }
+            .filterIsInstance<UrlImportableSource>()
+            .filter {
+                try {
+                    it.matchesUri(uri)
+                } catch (e: Exception) {
+                    false
+                }
+            }
+    }
 
     fun addGallery(
         context: Context,
@@ -41,21 +56,12 @@ class GalleryAdder {
                 }
             } else {
                 sourceManager.getVisibleCatalogueSources()
+                    .map { it.getMainSource() }
                     .filterIsInstance<UrlImportableSource>()
                     .find {
                         try {
                             it.matchesUri(uri)
                         } catch (e: Exception) {
-                            XLog.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
-                            false
-                        }
-                    } ?: sourceManager.getDelegatedCatalogueSources()
-                    .filterIsInstance<UrlImportableSource>()
-                    .find {
-                        try {
-                            it.matchesUri(uri)
-                        } catch (e: Exception) {
-                            XLog.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
                             false
                         }
                     } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
