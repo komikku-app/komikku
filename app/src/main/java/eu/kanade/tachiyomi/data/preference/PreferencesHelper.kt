@@ -427,8 +427,6 @@ class PreferencesHelper(val context: Context) {
 
     fun useNewSourceNavigation() = flowPrefs.getBoolean(Keys.useNewSourceNavigation, true)
 
-    fun mangaDexLowQualityCovers() = flowPrefs.getBoolean(Keys.mangaDexLowQualityCovers, false)
-
     fun mangaDexForceLatestCovers() = flowPrefs.getBoolean(Keys.mangaDexForceLatestCovers, false)
 
     fun preferredMangaDexId() = flowPrefs.getString(Keys.preferredMangaDexId, "0")

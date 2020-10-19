@@ -28,7 +28,7 @@ import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 
-class FollowsHandler(val client: OkHttpClient, val headers: Headers, val preferences: PreferencesHelper) {
+class FollowsHandler(val client: OkHttpClient, val headers: Headers, val preferences: PreferencesHelper, private val useLowQualityCovers: Boolean) {
 
     /**
      * fetch follows by page
@@ -62,7 +62,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         if (empty == null || empty) {
             return MetadataMangasPage(mutableListOf(), false, mutableListOf())
         }
-        val lowQualityCovers = if (forceHd) false else preferences.mangaDexLowQualityCovers().get()
+        val lowQualityCovers = if (forceHd) false else useLowQualityCovers
 
         val follows = followsPageResult!!.result.map {
             followFromElement(it, lowQualityCovers)

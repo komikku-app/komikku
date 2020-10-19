@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.all
 
 import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.core.text.HtmlCompat
 import com.bluelinelabs.conductor.Controller
@@ -84,6 +85,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     val preferences: PreferencesHelper by injectLazy()
     val trackManager: TrackManager by injectLazy()
 
+    private val sourcePreferences: SharedPreferences by lazy {
+        context.getSharedPreferences("source_$id", 0x0000)
+    }
+
+    private fun useLowQualityThumbnail() = sourcePreferences.getInt(SHOW_THUMBNAIL_PREF, 0) == LOW_QUALITY
+
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
             importIdToMdId(query) {
@@ -144,7 +151,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchFollows(): Observable<MangasPage> {
-        return FollowsHandler(client, headers, Injekt.get()).fetchFollows()
+        return FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchFollows()
     }
 
     override val needsLogin: Boolean = true
@@ -218,15 +225,15 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchAllFollows(forceHd: Boolean): Flow<List<Pair<SManga, MangaDexSearchMetadata>>> {
-        return flow { emit(FollowsHandler(client, headers, Injekt.get()).fetchAllFollows(forceHd)) }
+        return flow { emit(FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchAllFollows(forceHd)) }
     }
 
     fun updateReadingProgress(track: Track): Flow<Boolean> {
-        return flow { FollowsHandler(client, headers, Injekt.get()).updateReadingProgress(track) }
+        return flow { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateReadingProgress(track) }
     }
 
     fun updateRating(track: Track): Flow<Boolean> {
-        return flow { FollowsHandler(client, headers, Injekt.get()).updateRating(track) }
+        return flow { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateRating(track) }
     }
 
     override fun fetchTrackingInfo(url: String): Flow<Track> {
@@ -234,12 +241,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             if (!isLogged()) {
                 throw Exception("Not Logged in")
             }
-            emit(FollowsHandler(client, headers, Injekt.get()).fetchTrackingInfo(url))
+            emit(FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchTrackingInfo(url))
         }
     }
 
     override fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Flow<Boolean> {
-        return flow { emit(FollowsHandler(client, headers, Injekt.get()).updateFollowStatus(mangaID, followStatus)) }
+        return flow { emit(FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateFollowStatus(mangaID, followStatus)) }
     }
 
     override fun getFilterHeader(controller: Controller): MangaDexFabHeaderAdapter {
@@ -273,5 +280,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     companion object {
         private const val REMEMBER_ME = "mangadex_rememberme_token"
+        private const val SHOW_THUMBNAIL_PREF = "showThumbnailDefault"
+        private const val LOW_QUALITY = 1
     }
 }

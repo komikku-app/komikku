@@ -20,7 +20,7 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 // Unused, kept for reference todo
-class SearchHandler(val client: OkHttpClient, private val headers: Headers, val langs: List<String>) {
+class SearchHandler(val client: OkHttpClient, private val headers: Headers, val langs: List<String>, private val useLowQualityCovers: Boolean) {
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -191,7 +191,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
             manga.title = it.text().trim()
         }
 
-        manga.thumbnail_url = MdUtil.formThumbUrl(manga.url, preferences.mangaDexLowQualityCovers().get())
+        manga.thumbnail_url = MdUtil.formThumbUrl(manga.url, useLowQualityCovers)
 
         return manga
     }

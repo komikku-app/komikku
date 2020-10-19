@@ -307,8 +307,6 @@ object PreferenceKeys {
 
     const val useNewSourceNavigation = "use_new_source_navigation"
 
-    const val mangaDexLowQualityCovers = "manga_dex_low_quality_covers"
-
     const val mangaDexForceLatestCovers = "manga_dex_force_latest_covers"
 
     const val preferredMangaDexId = "preferred_mangaDex_id"

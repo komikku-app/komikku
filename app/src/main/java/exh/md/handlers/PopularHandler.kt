@@ -21,7 +21,7 @@ import uy.kohesive.injekt.injectLazy
 /**
  * Returns the latest manga from the updates url since it actually respects the users settings
  */
-class PopularHandler(val client: OkHttpClient, private val headers: Headers) {
+class PopularHandler(val client: OkHttpClient, private val headers: Headers, private val useLowQualityCovers: Boolean) {
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -59,7 +59,7 @@ class PopularHandler(val client: OkHttpClient, private val headers: Headers) {
             manga.title = it.text().trim()
         }
 
-        manga.thumbnail_url = MdUtil.formThumbUrl(manga.url, preferences.mangaDexLowQualityCovers().get())
+        manga.thumbnail_url = MdUtil.formThumbUrl(manga.url, useLowQualityCovers)
 
         return manga
     }

@@ -55,12 +55,6 @@ class SettingsMangaDexController :
         }
 
         switchPreference {
-            key = PreferenceKeys.mangaDexLowQualityCovers
-            titleRes = R.string.mangadex_low_quality_covers
-            defaultValue = false
-        }
-
-        switchPreference {
             key = PreferenceKeys.mangaDexForceLatestCovers
             titleRes = R.string.mangadex_use_latest_cover
             summaryRes = R.string.mangadex_use_latest_cover_summary
