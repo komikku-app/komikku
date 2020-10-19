@@ -335,7 +335,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
             return syncedChapters.onEach { pair ->
                 if (pair.first.isNotEmpty()) {
                     chapters.forEach { it.manga_id = manga.id }
-                    insertChapters(chapters)
+                    updateChapters(chapters)
                 }
             }.asObservable()
         } else {
@@ -360,7 +360,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
                 .doOnNext { pair ->
                     if (pair.first.isNotEmpty()) {
                         chapters.forEach { it.manga_id = manga.id }
-                        insertChapters(chapters)
+                        updateChapters(chapters)
                     }
                 }
         }
@@ -528,7 +528,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
         chapters.filter { it.id != null }
         chapters.map { it.manga_id = manga.id }
 
-        insertChapters(chapters)
+        updateChapters(chapters)
         return true
     }
 
