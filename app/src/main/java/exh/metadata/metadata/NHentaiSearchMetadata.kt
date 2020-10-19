@@ -7,7 +7,6 @@ import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.ONGOING_SUFFIX
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
-import uy.kohesive.injekt.api.get
 import java.util.Date
 
 @Serializable
@@ -37,6 +36,8 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var scanlator: String? = null
 
+    var preferredTitle: Int? = null
+
     override fun copyTo(manga: SManga) {
         nhId?.let { manga.url = nhIdToPath(it) }
 
@@ -46,7 +47,11 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             }
         }
 
-        manga.title = englishTitle ?: japaneseTitle ?: shortTitle!!
+        manga.title = when (preferredTitle) {
+            TITLE_TYPE_SHORT -> shortTitle ?: englishTitle ?: japaneseTitle!!
+            0, TITLE_TYPE_ENGLISH -> englishTitle ?: japaneseTitle ?: shortTitle!!
+            else -> englishTitle ?: japaneseTitle ?: shortTitle!!
+        }
 
         // Set artist (if we can find one)
         tags.filter { it.namespace == NHENTAI_ARTIST_NAMESPACE }.let {
@@ -88,8 +93,8 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     companion object {
         private const val TITLE_TYPE_JAPANESE = 0
-        private const val TITLE_TYPE_ENGLISH = 1
-        private const val TITLE_TYPE_SHORT = 2
+        const val TITLE_TYPE_ENGLISH = 1
+        const val TITLE_TYPE_SHORT = 2
 
         const val TAG_TYPE_DEFAULT = 0
 

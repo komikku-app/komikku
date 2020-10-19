@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -31,6 +32,16 @@ class NHentai(delegate: HttpSource, val context: Context) :
     NamespaceSource {
     override val metaClass = NHentaiSearchMetadata::class
     override val lang = if (id == otherId) "all" else delegate.lang
+
+    private val sourcePreferences: SharedPreferences by lazy {
+        context.getSharedPreferences("source_$id", 0x0000)
+    }
+
+    private val preferredTitle: Int
+        get() = when (sourcePreferences.getString(TITLE_PREF, "full")) {
+            "full" -> NHentaiSearchMetadata.TITLE_TYPE_ENGLISH
+            else -> NHentaiSearchMetadata.TITLE_TYPE_SHORT
+        }
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
@@ -72,6 +83,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
                 shortTitle = title.pretty
                 englishTitle = title.english
             }
+
+            preferredTitle = this@NHentai.preferredTitle
 
             jsonResponse.images?.let { images ->
                 coverImageType = NHentaiSearchMetadata.typeToExtension(images.cover?.type)
@@ -173,5 +186,6 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
         private val GALLERY_JSON_REGEX = Regex(".parse\\(\"(.*)\"\\);")
         private val UNICODE_ESCAPE_REGEX = Regex("\\\\u([0-9a-fA-F]{4})")
+        private const val TITLE_PREF = "Display manga title as:"
     }
 }
