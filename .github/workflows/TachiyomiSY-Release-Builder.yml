@@ -61,7 +61,7 @@ jobs:
           configuration-cache-enabled: true
 
       - name: Sign Android Release
-        uses: r0adkll/sign-android-release@v1
+        uses: jobobby04/sign-android-release@v1.0.2
         with:
           # The directory to find your release to sign
           releaseDirectory: app/build/outputs/apk/standard/release
