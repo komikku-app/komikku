@@ -102,13 +102,8 @@ class MigrationMangaPresenter(
             }
 
             if (migrateExtra) {
-                manga.bookmarkedFilter = prevManga.bookmarkedFilter
-                manga.downloadedFilter = prevManga.downloadedFilter
-                manga.readFilter = prevManga.readFilter
                 manga.viewer = prevManga.viewer
                 manga.chapter_flags = prevManga.chapter_flags
-                manga.displayMode = prevManga.displayMode
-                manga.sorting = prevManga.sorting
             }
 
             // Update favorite status
@@ -123,10 +118,7 @@ class MigrationMangaPresenter(
             // Set extra data
 
             manga.favorite = true
-            db.updateMangaFavorite(manga).executeAsBlocking()
-
-            // SearchPresenter#networkToLocalManga may have updated the manga title, so ensure db gets updated title
-            db.updateMangaTitle(manga).executeAsBlocking()
+            db.updateMangaMigrate(manga).executeAsBlocking()
         }
     }
     // SY <--

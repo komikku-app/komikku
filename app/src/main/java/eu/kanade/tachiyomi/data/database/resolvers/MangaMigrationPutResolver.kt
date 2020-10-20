@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.data.database.inTransactionReturn
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 
-class MangaFavoritePutResolver : PutResolver<Manga>() {
+class MangaMigrationPutResolver : PutResolver<Manga>() {
 
     override fun performPut(db: StorIOSQLite, manga: Manga) = db.inTransactionReturn {
         val updateQuery = mapToUpdateQuery(manga)
@@ -25,8 +25,11 @@ class MangaFavoritePutResolver : PutResolver<Manga>() {
         .whereArgs(manga.id)
         .build()
 
-    fun mapToContentValues(manga: Manga) = ContentValues(2).apply {
+    fun mapToContentValues(manga: Manga) = ContentValues(5).apply {
         put(MangaTable.COL_FAVORITE, manga.favorite)
         put(MangaTable.COL_DATE_ADDED, manga.date_added)
+        put(MangaTable.COL_TITLE, manga.title)
+        put(MangaTable.COL_CHAPTER_FLAGS, manga.chapter_flags)
+        put(MangaTable.COL_VIEWER, manga.viewer)
     }
 }

@@ -135,17 +135,22 @@ class MigrationProcessAdapter(
             }
             db.insertTracks(tracks).executeAsBlocking()
         }
+        // Update extras
+        if (MigrationFlags.hasExtra(flags)) {
+            manga.viewer = prevManga.viewer
+            manga.chapter_flags = prevManga.chapter_flags
+        }
         // Update favorite status
         if (replace) {
             prevManga.favorite = false
             manga.date_added = prevManga.date_added
+            prevManga.date_added = 0
             db.updateMangaFavorite(prevManga).executeAsBlocking()
         } else {
             manga.date_added = Date().time
         }
         manga.favorite = true
 
-        db.updateMangaFavorite(manga).executeAsBlocking()
-        db.updateMangaTitle(manga).executeAsBlocking()
+        db.updateMangaMigrate(manga).executeAsBlocking()
     }
 }
