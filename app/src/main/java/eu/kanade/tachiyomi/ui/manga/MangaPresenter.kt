@@ -116,7 +116,7 @@ class MangaPresenter(
 
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
-    private val redirectUserRelay = BehaviorRelay.create<EXHRedirect>()
+    val redirectUserRelay = BehaviorRelay.create<EXHRedirect>()
 
     data class EXHRedirect(val manga: Manga, val update: Boolean)
 

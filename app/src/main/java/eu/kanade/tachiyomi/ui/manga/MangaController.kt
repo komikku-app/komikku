@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.elvishew.xlog.XLog
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -107,6 +108,7 @@ import kotlinx.coroutines.withContext
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.recyclerview.scrollEvents
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
+import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -148,6 +150,18 @@ class MangaController :
 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(bundle.getLong(MANGA_EXTRA))
+
+    // SY -->
+    constructor(redirect: MangaPresenter.EXHRedirect) : super(Bundle().apply {
+        putLong(MANGA_EXTRA, redirect.manga.id!!)
+        putBoolean(UPDATE_EXTRA, redirect.update)
+    }) {
+        this.manga = redirect.manga
+        if (manga != null) {
+            source = Injekt.get<SourceManager>().getOrStub(redirect.manga.source)
+        }
+    }
+    // SY <--
 
     var manga: Manga? = null
         private set
@@ -320,6 +334,14 @@ class MangaController :
                 chaptersAdapter?.notifyDataSetChanged()
             }
         }
+
+        presenter.redirectUserRelay
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeUntilDestroy { redirect ->
+                XLog.d("Redirecting to updated manga (manga.id: %s, manga.title: %s, update: %s)!", redirect.manga.id, redirect.manga.title, redirect.update)
+                // Replace self
+                router?.replaceTopController(MangaController(redirect).withFadeTransaction())
+            }
 
         updateFilterIconState()
     }
