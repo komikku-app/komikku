@@ -166,6 +166,9 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             when (preferences.readerTheme().get()) {
                 0 -> R.style.Theme_Reader_Light
                 2 -> R.style.Theme_Reader_Dark_Grey
+                // SY -->
+                3, 4 -> R.style.Theme_Reader_Dark_Smart
+                // SY <--
                 else -> R.style.Theme_Reader_Dark
             }
         )

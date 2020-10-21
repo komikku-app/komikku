@@ -254,6 +254,8 @@
 
     <style name="Theme.Reader.Light" parent="Theme.Base.Reader.Light" />
 
+    <style name="Theme.Reader.Dark.Smart" parent="Theme.Base.Reader.Light"/>
+
 
     <!--===============-->
     <!-- Launch Screen -->
