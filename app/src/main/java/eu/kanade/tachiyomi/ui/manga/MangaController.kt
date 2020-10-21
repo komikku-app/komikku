@@ -26,6 +26,7 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import androidx.core.os.bundleOf
+import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -152,10 +153,12 @@ class MangaController :
     constructor(bundle: Bundle) : this(bundle.getLong(MANGA_EXTRA))
 
     // SY -->
-    constructor(redirect: MangaPresenter.EXHRedirect) : super(Bundle().apply {
-        putLong(MANGA_EXTRA, redirect.manga.id!!)
-        putBoolean(UPDATE_EXTRA, redirect.update)
-    }) {
+    constructor(redirect: MangaPresenter.EXHRedirect) : super(
+        Bundle().apply {
+            putLong(MANGA_EXTRA, redirect.manga.id!!)
+            putBoolean(UPDATE_EXTRA, redirect.update)
+        }
+    ) {
         this.manga = redirect.manga
         if (manga != null) {
             source = Injekt.get<SourceManager>().getOrStub(redirect.manga.source)
@@ -456,6 +459,11 @@ class MangaController :
         if (preferences.recommendsInOverflow().get()) menu.findItem(R.id.action_recommend).isVisible = true
         menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
         menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
+        if (isExpanded) {
+            menu.forEach {
+                it.isVisible = false
+            }
+        }
         menu.findItem(R.id.action_share_cover).isVisible = isExpanded
         menu.findItem(R.id.action_save).isVisible = isExpanded
         // SY <--
@@ -827,6 +835,7 @@ class MangaController :
         binding.expandedImage.pivotX = 0f
         binding.expandedImage.pivotY = 0f
         isExpanded = true
+        activity?.invalidateOptionsMenu()
 
         currentAnimator = AnimatorSet().apply {
             play(
@@ -860,6 +869,7 @@ class MangaController :
         binding.expandedImage.clicks()
             .onEach {
                 isExpanded = false
+                activity?.invalidateOptionsMenu()
                 currentAnimator?.cancel()
 
                 currentAnimator = AnimatorSet().apply {
