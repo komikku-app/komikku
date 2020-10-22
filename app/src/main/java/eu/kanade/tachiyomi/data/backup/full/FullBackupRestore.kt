@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.backup.full.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.full.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
+import eu.kanade.tachiyomi.data.backup.full.models.BackupFlatMetadata
 import eu.kanade.tachiyomi.data.backup.models.AbstractBackupRestore
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -109,6 +110,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         val tracks = backupManga.getTrackingImpl()
         // SY -->
         val mergedMangaReferences = backupManga.mergedMangaReferences
+        val flatMetadata = backupManga.flatMetadata
         // SY <--
 
         // SY -->
@@ -118,7 +120,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         try {
             val source = fullBackupManager.sourceManager.get(manga.source)
             if (source != null || !online) {
-                restoreMangaData(manga, source, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, online)
+                restoreMangaData(manga, source, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
             } else {
                 val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
                 errors.add(Date() to "${manga.title} - ${context.getString(R.string.source_not_found_name, sourceName)}")
@@ -150,6 +152,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         tracks: List<Track>,
         backupCategories: List<BackupCategory>,
         mergedMangaReferences: List<BackupMergedMangaReference>,
+        flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
         val dbManga = fullBackupManager.getMangaFromDatabase(manga)
@@ -157,12 +160,12 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         db.inTransaction {
             if (dbManga == null) {
                 // Manga not in database
-                restoreMangaFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, online)
+                restoreMangaFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
             } else { // Manga in database
                 // Copy information from manga already in database
                 fullBackupManager.restoreMangaNoFetch(manga, dbManga)
                 // Fetch rest of manga information
-                restoreMangaNoFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, online)
+                restoreMangaNoFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
             }
         }
     }
@@ -183,6 +186,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         tracks: List<Track>,
         backupCategories: List<BackupCategory>,
         mergedMangaReferences: List<BackupMergedMangaReference>,
+        flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
         fullBackupManager.restoreMangaFetchObservable(source, manga, online)
@@ -207,7 +211,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
                 }
             }
             .doOnNext {
-                restoreExtraForManga(it, categories, history, tracks, backupCategories, mergedMangaReferences)
+                restoreExtraForManga(it, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
             }
             .flatMap {
                 trackingFetchObservable(it, tracks)
@@ -224,6 +228,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         tracks: List<Track>,
         backupCategories: List<BackupCategory>,
         mergedMangaReferences: List<BackupMergedMangaReference>,
+        flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
         Observable.just(backupManga)
@@ -241,7 +246,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
                 }
             }
             .doOnNext {
-                restoreExtraForManga(it, categories, history, tracks, backupCategories, mergedMangaReferences)
+                restoreExtraForManga(it, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
             }
             .flatMap { manga ->
                 trackingFetchObservable(manga, tracks)
@@ -249,7 +254,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
             .subscribe()
     }
 
-    private fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>) {
+    private fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>, flatMetadata: BackupFlatMetadata?) {
         // Restore categories
         fullBackupManager.restoreCategoriesForManga(manga, categories, backupCategories)
 
@@ -262,6 +267,9 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         // SY -->
         // Restore merged manga references if its a merged manga
         fullBackupManager.restoreMergedMangaReferencesForManga(manga, mergedMangaReferences)
+
+        // Restore flat metadata for metadata sources
+        flatMetadata?.let { fullBackupManager.restoreFlatMetadata(manga, it) }
         // SY <--
     }
 

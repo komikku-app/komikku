@@ -37,7 +37,8 @@ data class BackupManga(
     @ProtoNumber(101) var chapterFlags: Int = 0,
     @ProtoNumber(102) var history: List<BackupHistory> = emptyList(),
     // SY specific values
-    @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList()
+    @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
+    @ProtoNumber(601) var flatMetadata: BackupFlatMetadata? = null
 ) {
     fun getMangaImpl(): MangaImpl {
         return MangaImpl().apply {

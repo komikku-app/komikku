@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.data.backup.full.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSource
 import eu.kanade.tachiyomi.data.backup.full.models.BackupTracking
+import eu.kanade.tachiyomi.data.backup.full.models.BackupFlatMetadata
 import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
@@ -29,12 +30,16 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
+import exh.metadata.metadata.base.getFlatMetadataForManga
+import exh.metadata.metadata.base.insertFlatMetadata
 import exh.savedsearches.JsonSavedSearch
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -180,6 +185,15 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 mangaObject.mergedMangaReferences = databaseHelper.getMergedMangaReferences(mangaId)
                     .executeAsBlocking()
                     .map { BackupMergedMangaReference.copyFrom(it) }
+            }
+        }
+
+        val source = sourceManager.get(manga.source)?.getMainSource()
+        if (source is MetadataSource<*, *>) {
+            manga.id?.let { mangaId ->
+                databaseHelper.getFlatMetadataForManga(mangaId).executeAsBlocking()?.let { flatMetadata ->
+                    mangaObject.flatMetadata = BackupFlatMetadata.copyFrom(flatMetadata)
+                }
             }
         }
         // SY <--
@@ -553,6 +567,17 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 mergedMangaReference.mergeId = manga.id
                 mergedMangaReference.mangaId = mergedManga.id
                 databaseHelper.insertMergedManga(mergedMangaReference).executeAsBlocking()
+            }
+        }
+    }
+
+    internal fun restoreFlatMetadata(manga: Manga, backupFlatMetadata: BackupFlatMetadata) {
+        manga.id?.let { mangaId ->
+            databaseHelper.getFlatMetadataForManga(mangaId).executeAsBlocking().let {
+                if (it == null) {
+                    val flatMetadata = backupFlatMetadata.getFlatMetadata(mangaId)
+                    databaseHelper.insertFlatMetadata(flatMetadata).await()
+                }
             }
         }
     }
