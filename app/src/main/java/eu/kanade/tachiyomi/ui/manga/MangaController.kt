@@ -154,10 +154,10 @@ class MangaController :
 
     // SY -->
     constructor(redirect: MangaPresenter.EXHRedirect) : super(
-        Bundle().apply {
-            putLong(MANGA_EXTRA, redirect.manga.id!!)
-            putBoolean(UPDATE_EXTRA, redirect.update)
-        }
+        bundleOf(
+            MANGA_EXTRA to (redirect.manga.id ?: 0),
+            UPDATE_EXTRA to redirect.update
+        )
     ) {
         this.manga = redirect.manga
         if (manga != null) {
@@ -451,21 +451,24 @@ class MangaController :
 
         // Hide options for non-library manga
         menu.findItem(R.id.action_edit_categories).isVisible = presenter.manga.favorite && presenter.getCategories().isNotEmpty()
-        /* SY --> menu.findItem(R.id.action_edit_cover).isVisible = presenter.manga.favorite SY <-- */
-        /* SY --> menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite SY <-- */
+        menu.findItem(R.id.action_edit_cover).isVisible = /* SY --> */ false /* presenter.manga.favorite SY <-- */
+        menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite
 
         // SY -->
-        if (presenter.manga.favorite) menu.findItem(R.id.action_edit).isVisible = true
-        if (preferences.recommendsInOverflow().get()) menu.findItem(R.id.action_recommend).isVisible = true
+        menu.findItem(R.id.action_edit).isVisible = presenter.manga.favorite
+        menu.findItem(R.id.action_recommend).isVisible = preferences.recommendsInOverflow().get()
         menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
         menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
+        val shareCoverItem = menu.findItem(R.id.action_share_cover)
+        val saveCoverItem = menu.findItem(R.id.action_save)
         if (isExpanded) {
             menu.forEach {
-                it.isVisible = false
+                it.isVisible = it == shareCoverItem || it == saveCoverItem
             }
+        } else {
+            shareCoverItem.isVisible = false
+            saveCoverItem.isVisible = false
         }
-        menu.findItem(R.id.action_share_cover).isVisible = isExpanded
-        menu.findItem(R.id.action_save).isVisible = isExpanded
         // SY <--
     }
 
@@ -506,7 +509,7 @@ class MangaController :
             R.id.action_migrate -> migrateManga()
             // SY -->
             R.id.action_save -> {
-                if (presenter.saveCover()) {
+                if (presenter.saveCover(activity!!)) {
                     activity?.toast(R.string.cover_saved)
                 } else {
                     activity?.toast(R.string.error_saving_cover)

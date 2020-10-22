@@ -42,10 +42,10 @@
         android:title="@string/action_edit_categories"
         app:showAsAction="never" />
 
-    <!--<item
+    <item
         android:id="@+id/action_edit_cover"
         android:title="@string/action_edit_cover"
-        app:showAsAction="never" />-->
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_migrate"

@@ -513,12 +513,12 @@ class MangaPresenter(
         }
     }
 
-    fun saveCover(): Boolean {
+    fun saveCover(context: Context): Boolean {
         return try {
             val directory = File(
                 Environment.getExternalStorageDirectory().absolutePath +
                     File.separator + Environment.DIRECTORY_PICTURES +
-                    File.separator + R.string.app_name
+                    File.separator + context.getString(R.string.app_name)
             )
             saveCover(directory)
             true
