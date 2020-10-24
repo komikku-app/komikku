@@ -2,6 +2,7 @@ package exh.md.follows
 
 import android.os.Bundle
 import android.view.Menu
+import androidx.core.os.bundleOf
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
@@ -13,9 +14,9 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
 class MangaDexFollowsController(bundle: Bundle) : BrowseSourceController(bundle) {
 
     constructor(source: CatalogueSource) : this(
-        Bundle().apply {
-            putLong(SOURCE_ID_KEY, source.id)
-        }
+        bundleOf(
+            SOURCE_ID_KEY to source.id
+        )
     )
 
     override fun getTitle(): String? {

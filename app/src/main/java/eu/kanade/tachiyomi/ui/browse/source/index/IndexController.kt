@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -49,9 +50,9 @@ open class IndexController :
     IndexAdapter.ClickListener {
 
     constructor(source: CatalogueSource?) : super(
-        Bundle().apply {
-            putLong(SOURCE_EXTRA, source?.id ?: 0)
-        }
+        bundleOf(
+            SOURCE_EXTRA to (source?.id ?: 0)
+        )
     ) {
         this.source = source
     }

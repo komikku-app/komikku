@@ -2,6 +2,7 @@ package exh.widget.preference
 
 import android.app.Dialog
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import com.afollestad.materialdialogs.MaterialDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -20,7 +21,11 @@ class MangadexLogoutDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     val trackManager: TrackManager by injectLazy()
 
-    constructor(source: Source) : this(Bundle().apply { putLong("key", source.id) })
+    constructor(source: Source) : this(
+        bundleOf(
+            "key" to source.id
+        )
+    )
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         return MaterialDialog(activity!!)

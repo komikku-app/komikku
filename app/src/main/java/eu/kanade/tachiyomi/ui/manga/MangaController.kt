@@ -713,9 +713,9 @@ class MangaController :
 
         router?.pushController(
             SourceController(
-                Bundle().apply {
-                    putParcelable(SourceController.SMART_SEARCH_CONFIG, smartSearchConfig)
-                }
+                bundleOf(
+                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig
+                )
             ).withFadeTransaction().tag(SMART_SEARCH_SOURCE_TAG)
         )
     }
@@ -751,9 +751,9 @@ class MangaController :
 
         router?.pushController(
             BrowseSourceController(
-                Bundle().apply {
-                    putParcelable(BrowseSourceController.RECOMMENDS_CONFIG, recommendsConfig)
-                }
+                bundleOf(
+                    BrowseSourceController.RECOMMENDS_CONFIG to recommendsConfig
+                )
             ).withFadeTransaction()
         )
     }

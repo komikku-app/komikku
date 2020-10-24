@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
@@ -157,10 +158,10 @@ class SourceController(bundle: Bundle? = null) :
             }
             Mode.SMART_SEARCH -> router.pushController(
                 SmartSearchController(
-                    Bundle().apply {
-                        putLong(SmartSearchController.ARG_SOURCE_ID, source.id)
-                        putParcelable(SmartSearchController.ARG_SMART_SEARCH_CONFIG, smartSearchConfig)
-                    }
+                    bundleOf(
+                        SmartSearchController.ARG_SOURCE_ID to source.id,
+                        SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig
+                    )
                 ).withFadeTransaction()
             )
         }

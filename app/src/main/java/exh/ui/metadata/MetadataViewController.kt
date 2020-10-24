@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.GridLayoutManager
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -21,9 +22,9 @@ import uy.kohesive.injekt.api.get
 
 class MetadataViewController : NucleusController<MetadataViewControllerBinding, MetadataViewPresenter> {
     constructor(manga: Manga?) : super(
-        Bundle().apply {
-            putLong(MangaController.MANGA_EXTRA, manga?.id ?: 0)
-        }
+        bundleOf(
+            MangaController.MANGA_EXTRA to (manga?.id ?: 0)
+        )
     ) {
         this.manga = manga
         if (manga != null) {

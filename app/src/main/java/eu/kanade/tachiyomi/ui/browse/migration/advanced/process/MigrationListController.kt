@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.graphics.ColorUtils
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.afollestad.materialdialogs.MaterialDialog
@@ -500,9 +501,9 @@ class MigrationListController(bundle: Bundle? = null) :
 
         fun create(config: MigrationProcedureConfig): MigrationListController {
             return MigrationListController(
-                Bundle().apply {
-                    putParcelable(CONFIG_EXTRA, config)
-                }
+                bundleOf(
+                    CONFIG_EXTRA to config
+                )
             )
         }
     }

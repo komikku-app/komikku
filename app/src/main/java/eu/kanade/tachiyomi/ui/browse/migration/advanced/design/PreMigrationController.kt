@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bluelinelabs.conductor.Router
@@ -214,9 +215,9 @@ class PreMigrationController(bundle: Bundle? = null) :
 
         fun create(mangaIds: List<Long>): PreMigrationController {
             return PreMigrationController(
-                Bundle().apply {
-                    putLongArray(MANGA_IDS_EXTRA, mangaIds.toLongArray())
-                }
+                bundleOf(
+                    MANGA_IDS_EXTRA to mangaIds.toLongArray()
+                )
             )
         }
     }

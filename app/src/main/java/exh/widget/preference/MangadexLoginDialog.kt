@@ -3,6 +3,7 @@ package exh.widget.preference
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
@@ -35,12 +36,9 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
     val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     constructor(source: MangaDex) : this(
-        Bundle().apply {
-            putLong(
-                "key",
-                source.id
-            )
-        }
+        bundleOf(
+            "key" to source.id
+        )
     )
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {

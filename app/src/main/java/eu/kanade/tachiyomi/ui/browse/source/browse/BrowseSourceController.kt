@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -755,9 +756,9 @@ open class BrowseSourceController(bundle: Bundle) :
         val smartSearchConfig = SourceController.SmartSearchConfig(title)
         router.pushController(
             SourceController(
-                Bundle().apply {
-                    putParcelable(SourceController.SMART_SEARCH_CONFIG, smartSearchConfig)
-                }
+                bundleOf(
+                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig
+                )
             ).withFadeTransaction()
         )
     }
