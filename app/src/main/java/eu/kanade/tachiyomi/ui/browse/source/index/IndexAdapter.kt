@@ -43,11 +43,11 @@ class IndexAdapter(val controller: IndexController) :
 
     // stores and recycles views as they are scrolled off screen
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val browseAdapter = IndexCardAdapter(controller)
-        private var browseLastBoundResults: List<IndexCardItem>? = null
-
         private val latestAdapter = IndexCardAdapter(controller)
         private var latestLastBoundResults: List<IndexCardItem>? = null
+
+        private val browseAdapter = IndexCardAdapter(controller)
+        private var browseLastBoundResults: List<IndexCardItem>? = null
 
         init {
             binding.browseBarWrapper.clicks()
@@ -61,32 +61,11 @@ class IndexAdapter(val controller: IndexController) :
                 }
                 .launchIn(scope)
 
-            binding.browseRecycler.layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false)
-            binding.browseRecycler.adapter = browseAdapter
-
             binding.latestRecycler.layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false)
             binding.latestRecycler.adapter = latestAdapter
-        }
 
-        fun bindBrowse(browseResults: List<IndexCardItem>?) {
-            when {
-                browseResults == null -> {
-                    binding.browseProgress.isVisible = true
-                    showBrowseResultsHolder()
-                }
-                browseResults.isEmpty() -> {
-                    binding.browseProgress.isVisible = false
-                    showBrowseNoResults()
-                }
-                else -> {
-                    binding.browseProgress.isVisible = false
-                    showBrowseResultsHolder()
-                }
-            }
-            if (browseResults !== browseLastBoundResults) {
-                browseAdapter.updateDataSet(browseResults)
-                browseLastBoundResults = browseResults
-            }
+            binding.browseRecycler.layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false)
+            binding.browseRecycler.adapter = browseAdapter
         }
 
         fun bindLatest(latestResults: List<IndexCardItem>?) {
@@ -110,24 +89,41 @@ class IndexAdapter(val controller: IndexController) :
             }
         }
 
-        private fun showBrowseResultsHolder() {
-            binding.browseNoResultsFound.isVisible = false
-            binding.browseCard.isVisible = true
-        }
-
-        private fun showBrowseNoResults() {
-            binding.browseNoResultsFound.isVisible = true
-            binding.browseCard.isVisible = false
+        fun bindBrowse(browseResults: List<IndexCardItem>?) {
+            when {
+                browseResults == null -> {
+                    binding.browseProgress.isVisible = true
+                    showBrowseResultsHolder()
+                }
+                browseResults.isEmpty() -> {
+                    binding.browseProgress.isVisible = false
+                    showBrowseNoResults()
+                }
+                else -> {
+                    binding.browseProgress.isVisible = false
+                    showBrowseResultsHolder()
+                }
+            }
+            if (browseResults !== browseLastBoundResults) {
+                browseAdapter.updateDataSet(browseResults)
+                browseLastBoundResults = browseResults
+            }
         }
 
         private fun showLatestResultsHolder() {
             binding.latestNoResultsFound.isVisible = false
-            binding.latestCard.isVisible = true
         }
 
         private fun showLatestNoResults() {
             binding.latestNoResultsFound.isVisible = true
-            binding.latestCard.isVisible = false
+        }
+
+        private fun showBrowseResultsHolder() {
+            binding.browseNoResultsFound.isVisible = false
+        }
+
+        private fun showBrowseNoResults() {
+            binding.browseNoResultsFound.isVisible = true
         }
 
         fun setLatestImage(manga: Manga) {
