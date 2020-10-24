@@ -11,6 +11,7 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.util.await
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -33,9 +34,11 @@ class EHentaiUpdateHelper(context: Context) {
      */
     fun findAcceptedRootAndDiscardOthers(sourceId: Long, chapters: List<Chapter>): Flow<Triple<ChapterChain, List<ChapterChain>, Boolean>> {
         // Find other chains
-        val chainsFlow = chapters.asFlow()
-            .map { chapter ->
-                db.getChapters(chapter.url).await().mapNotNull { it.manga_id }.distinct()
+        val chainsFlow = flowOf(chapters)
+            .map { chapterList ->
+                chapterList.flatMap { chapter ->
+                    db.getChapters(chapter.url).await().mapNotNull { it.manga_id }
+                }.distinct()
             }
             .map { mangaIds ->
                 mangaIds
