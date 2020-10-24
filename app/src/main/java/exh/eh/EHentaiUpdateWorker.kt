@@ -24,6 +24,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.await
+import exh.util.awaitSingle
 import exh.util.cancellable
 import exh.util.jobScheduler
 import kotlinx.coroutines.CoroutineScope
@@ -39,7 +40,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -145,7 +145,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                 return@mapNotNull null
             }
 
-            val meta = db.getFlatMetadataForManga(manga.id!!).asRxSingle().await()
+            val meta = db.getFlatMetadataForManga(manga.id!!).await()
                 ?: return@mapNotNull null
 
             val raisedMeta = meta.raise<EHentaiSearchMetadata>()
@@ -155,7 +155,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                 return@mapNotNull null
             }
 
-            val chapter = db.getChapters(manga.id!!).asRxSingle().await().minByOrNull {
+            val chapter = db.getChapters(manga.id!!).await().minByOrNull {
                 it.date_upload
             }
 
@@ -258,17 +258,16 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
     }
 
     // New, current
-    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun updateEntryAndGetChapters(manga: Manga): Pair<List<Chapter>, List<Chapter>> {
         val source = sourceManager.get(manga.source) as? EHentai
             ?: throw GalleryNotUpdatedException(false, IllegalStateException("Missing EH-based source (${manga.source})!"))
 
         try {
-            val updatedManga = source.fetchMangaDetails(manga).toSingle().await(Schedulers.io())
+            val updatedManga = source.fetchMangaDetails(manga).awaitSingle()
             manga.copyFrom(updatedManga)
-            db.insertManga(manga).asRxSingle().await()
+            db.insertManga(manga).await()
 
-            val newChapters = source.fetchChapterList(manga).toSingle().await(Schedulers.io())
+            val newChapters = source.fetchChapterList(manga).awaitSingle()
             val (new, _) = syncChaptersWithSource(db, newChapters, manga, source) // Not suspending, but does block, maybe fix this?
             return new to db.getChapters(manga).await()
         } catch (t: Throwable) {

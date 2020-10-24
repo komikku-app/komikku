@@ -19,7 +19,7 @@ class LocalFavoritesStorage {
         .deleteRealmIfMigrationNeeded()
         .build()
 
-    fun getRealm() = Realm.getInstance(realmConfig)
+    fun getRealm(): Realm = Realm.getInstance(realmConfig)
 
     fun getChangedDbEntries(realm: Realm) =
         getChangedEntries(
