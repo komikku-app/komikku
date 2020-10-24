@@ -75,7 +75,7 @@
                 android:orientation="horizontal"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp"
-                tools:listitem="@layout/global_search_controller_comfortable_card_item" />
+                tools:listitem="@layout/global_search_controller_card_item" />
 
         </androidx.cardview.widget.CardView>
 
@@ -145,7 +145,7 @@
             android:orientation="horizontal"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
-            tools:listitem="@layout/global_search_controller_comfortable_card_item" />
+            tools:listitem="@layout/global_search_controller_card_item" />
 
     </androidx.cardview.widget.CardView>
 

@@ -7,19 +7,12 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.preference.PreferenceValues
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.browse.latest.LatestCardItem
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 class IndexCardItem(val manga: Manga) : AbstractFlexibleItem<IndexCardHolder>() {
 
     override fun getLayoutRes(): Int {
-        return when (Injekt.get<PreferencesHelper>().sourceDisplayMode().get()) {
-            PreferenceValues.DisplayMode.COMPACT_GRID -> R.layout.global_search_controller_compact_card_item
-            else -> R.layout.global_search_controller_comfortable_card_item
-        }
+        return R.layout.global_search_controller_card_item
     }
 
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): IndexCardHolder {

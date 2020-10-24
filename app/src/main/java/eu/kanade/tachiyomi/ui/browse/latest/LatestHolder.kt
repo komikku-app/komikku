@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import kotlinx.android.synthetic.main.latest_controller_card.no_results_found
 import kotlinx.android.synthetic.main.latest_controller_card.progress
 import kotlinx.android.synthetic.main.latest_controller_card.recycler
-import kotlinx.android.synthetic.main.latest_controller_card.source_card
 import kotlinx.android.synthetic.main.latest_controller_card.title
 import kotlinx.android.synthetic.main.latest_controller_card.title_wrapper
 import uy.kohesive.injekt.Injekt
@@ -106,11 +105,9 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
 
     private fun showResultsHolder() {
         no_results_found.isVisible = false
-        source_card.isVisible = true
     }
 
     private fun showNoResults() {
         no_results_found.isVisible = true
-        source_card.isVisible = false
     }
 }
