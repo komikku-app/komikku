@@ -53,7 +53,12 @@ import exh.util.asObservable
 import exh.util.await
 import exh.util.shouldDeleteChapters
 import exh.util.trimOrNull
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Subscription
@@ -76,6 +81,8 @@ class MangaPresenter(
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get()
 ) : BasePresenter<MangaController>() {
+
+    val scope = CoroutineScope(Job() + Dispatchers.IO)
 
     /**
      * Subscription to update the manga from the source.
@@ -116,7 +123,7 @@ class MangaPresenter(
 
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
-    val redirectUserRelay = BehaviorRelay.create<EXHRedirect>()
+    val redirectUserRelay: BehaviorRelay<EXHRedirect> = BehaviorRelay.create<EXHRedirect>()
 
     data class EXHRedirect(val manga: Manga, val update: Boolean)
 
@@ -185,25 +192,22 @@ class MangaPresenter(
                     if (chapters.isNotEmpty() && (source.isEhBasedSource()) && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
                         // Check for gallery in library and accept manga with lowest id
                         // Find chapters sharing same root
-                        add(
-                            updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
-                                .subscribeOn(Schedulers.io())
-                                .subscribe { (acceptedChain, _) ->
-                                    // Redirect if we are not the accepted root
-                                    if (manga.id != acceptedChain.manga.id) {
-                                        // Update if any of our chapters are not in accepted manga's chapters
-                                        val ourChapterUrls = chapters.map { it.url }.toSet()
-                                        val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
-                                        val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
-                                        redirectUserRelay.call(
-                                            EXHRedirect(
-                                                acceptedChain.manga,
-                                                update
-                                            )
+                        updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
+                            .onEach { (acceptedChain, _) ->
+                                // Redirect if we are not the accepted root
+                                if (manga.id != acceptedChain.manga.id) {
+                                    // Update if any of our chapters are not in accepted manga's chapters
+                                    val ourChapterUrls = chapters.map { it.url }.toSet()
+                                    val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
+                                    val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
+                                    redirectUserRelay.call(
+                                        EXHRedirect(
+                                            acceptedChain.manga,
+                                            update
                                         )
-                                    }
+                                    )
                                 }
-                        )
+                            }.launchIn(scope)
                     }
                     // SY <--
                 }

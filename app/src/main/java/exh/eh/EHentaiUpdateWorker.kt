@@ -29,12 +29,12 @@ import exh.util.cancellable
 import exh.util.jobScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -228,7 +228,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
 
                 // Find accepted root and discard others
                 val (acceptedRoot, discardedRoots, hasNew) =
-                    updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters).await()
+                    updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters).single()
 
                 if ((new.isNotEmpty() && manga.id == acceptedRoot.manga.id) ||
                     (hasNew && updatedManga.none { it.first.id == acceptedRoot.manga.id })

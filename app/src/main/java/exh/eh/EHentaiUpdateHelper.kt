@@ -8,8 +8,10 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import rx.Observable
-import rx.Single
+import exh.util.await
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.util.Date
@@ -29,31 +31,25 @@ class EHentaiUpdateHelper(context: Context) {
      *
      * @return Triple<Accepted, Discarded, HasNew>
      */
-    fun findAcceptedRootAndDiscardOthers(sourceId: Long, chapters: List<Chapter>): Single<Triple<ChapterChain, List<ChapterChain>, Boolean>> {
+    fun findAcceptedRootAndDiscardOthers(sourceId: Long, chapters: List<Chapter>): Flow<Triple<ChapterChain, List<ChapterChain>, Boolean>> {
         // Find other chains
-        val chainsObservable = Observable.merge(
-            chapters.map { chapter ->
-                db.getChapters(chapter.url).asRxSingle().toObservable()
+        val chainsFlow = chapters.asFlow()
+            .map { chapter ->
+                db.getChapters(chapter.url).await().mapNotNull { it.manga_id }.distinct()
             }
-        ).toList().map { allChapters ->
-            allChapters.flatMap { innerChapters -> innerChapters.map { it.manga_id!! } }.distinct()
-        }.flatMap { mangaIds ->
-            Observable.merge(
-                mangaIds.map { mangaId ->
-                    Single.zip(
-                        db.getManga(mangaId).asRxSingle(),
-                        db.getChapters(mangaId).asRxSingle()
-                    ) { manga, chapters ->
-                        ChapterChain(manga, chapters)
-                    }.toObservable().filter {
-                        it.manga.source == sourceId
+            .map { mangaIds ->
+                mangaIds
+                    .mapNotNull { mangaId ->
+                        (db.getManga(mangaId).await() ?: return@mapNotNull null) to db.getChapters(mangaId).await()
                     }
-                }
-            )
-        }.toList()
+                    .map {
+                        ChapterChain(it.first, it.second)
+                    }
+                    .filter { it.manga.source == sourceId }
+            }
 
         // Accept oldest chain
-        val chainsWithAccepted = chainsObservable.map { chains ->
+        val chainsWithAccepted = chainsFlow.map { chains ->
             val acceptedChain = chains.minByOrNull { it.manga.id!! }!!
 
             acceptedChain to chains
@@ -160,7 +156,7 @@ class EHentaiUpdateHelper(context: Context) {
 
                 Triple(newAccepted, toDiscard, new)
             } else Triple(accepted, emptyList(), false)
-        }.toSingle()
+        }
     }
 }
 
