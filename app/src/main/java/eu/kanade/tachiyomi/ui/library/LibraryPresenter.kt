@@ -31,10 +31,10 @@ import exh.favorites.FavoritesSyncHelper
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.util.await
+import exh.util.awaitSingleOrNull
 import exh.util.isLewd
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
@@ -502,7 +502,7 @@ class LibraryPresenter(
                     val chapter = db.getChapters(manga).await().minByOrNull { it.source_order }
                     if (chapter != null && !chapter.read) listOf(chapter) else emptyList()
                 } else if (manga.source == MERGED_SOURCE_ID) {
-                    (sourceManager.getOrStub(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.singleOrNull()?.filter { !it.read } ?: emptyList()
+                    (sourceManager.getOrStub(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull()?.filter { !it.read } ?: emptyList()
                 } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
                     .filter { !it.read }
 
@@ -557,7 +557,7 @@ class LibraryPresenter(
     fun markReadStatus(mangas: List<Manga>, read: Boolean) {
         mangas.forEach { manga ->
             launchIO {
-                val chapters = if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.singleOrNull() ?: emptyList() else db.getChapters(manga).executeAsBlocking()
+                val chapters = if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull() ?: emptyList() else db.getChapters(manga).executeAsBlocking()
                 chapters.forEach {
                     it.read = read
                     if (!read) {
@@ -646,7 +646,7 @@ class LibraryPresenter(
     // SY -->
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
-        val chapters = (if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource).let { runBlocking { it?.getChaptersFromDB(manga)?.singleOrNull() } ?: emptyList() } else db.getChapters(manga).executeAsBlocking())
+        val chapters = (if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource).let { runBlocking { it?.getChaptersFromDB(manga)?.awaitSingleOrNull() } ?: emptyList() } else db.getChapters(manga).executeAsBlocking())
         return if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
             val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
             if (chapter?.read == false) chapter else null

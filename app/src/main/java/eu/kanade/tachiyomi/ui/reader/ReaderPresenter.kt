@@ -35,10 +35,10 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.md.utils.FollowStatus
+import exh.util.awaitSingleOrNull
 import exh.util.defaultReaderType
 import exh.util.shouldDeleteChapters
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import rx.Completable
@@ -103,7 +103,7 @@ class ReaderPresenter(
      */
     private val chapterList by lazy {
         val manga = manga!!
-        val dbChapters = if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.singleOrNull() ?: emptyList() } else db.getChapters(manga).executeAsBlocking()
+        val dbChapters = if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull() ?: emptyList() } else db.getChapters(manga).executeAsBlocking()
 
         val selectedChapter = dbChapters.find { it.id == chapterId }
             ?: error("Requested chapter of id $chapterId not found in chapter list")

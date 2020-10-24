@@ -19,6 +19,8 @@ import exh.MERGED_SOURCE_ID
 import exh.merged.sql.models.MergedMangaReference
 import exh.util.asFlow
 import exh.util.await
+import exh.util.awaitSingle
+import exh.util.awaitSingleOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -28,10 +30,10 @@ import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.Response
+import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class MergedSource : SuspendHttpSource() {
@@ -83,14 +85,13 @@ class MergedSource : SuspendHttpSource() {
         }
     }
 
-    fun getChaptersFromDB(manga: Manga, editScanlators: Boolean = false, dedupe: Boolean = true): Flow<List<Chapter>> {
+    fun getChaptersFromDB(manga: Manga, editScanlators: Boolean = false, dedupe: Boolean = true): Observable<List<Chapter>> {
         // TODO more chapter dedupe
         return db.getChaptersByMergedMangaId(manga.id!!).asRxObservable()
-            .asFlow()
             .map { chapterList ->
-                val mangaReferences = withContext(Dispatchers.IO) { db.getMergedMangaReferences(manga.id!!).await() }
-                val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
+                val mangaReferences = runBlocking(Dispatchers.IO) { db.getMergedMangaReferences(manga.id!!).await() } ?: emptyList()
                 if (editScanlators) {
+                    val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
                     chapterList.onEach { chapter ->
                         val source = sources.firstOrNull { chapter.manga_id == it.second }?.first
                         if (source != null) {
@@ -135,7 +136,7 @@ class MergedSource : SuspendHttpSource() {
                 fetchChaptersAndSync(manga, downloadChapters).collect()
             }
             emit(
-                getChaptersFromDB(manga, editScanlators, dedupe).singleOrNull() ?: emptyList<Chapter>()
+                getChaptersFromDB(manga, editScanlators, dedupe).awaitSingleOrNull() ?: emptyList<Chapter>()
             )
         }
     }
@@ -171,7 +172,7 @@ class MergedSource : SuspendHttpSource() {
             manga = Manga.create(reference.mangaSourceId).apply {
                 url = reference.mangaUrl
             }
-            manga.copyFrom(source.fetchMangaDetails(manga).asFlow().single())
+            manga.copyFrom(source.fetchMangaDetails(manga).awaitSingle())
             try {
                 manga.id = db.insertManga(manga).await().insertedId()
                 reference.mangaId = manga.id

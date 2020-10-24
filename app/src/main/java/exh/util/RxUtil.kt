@@ -158,6 +158,10 @@ suspend fun <T> Observable<T>.awaitLast(): T = last().awaitOne()
 @OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 suspend fun <T> Observable<T>.awaitSingle(): T = single().awaitOne()
 
+suspend fun <T> Observable<T>.awaitSingleOrDefault(default: T): T = singleOrDefault(default).awaitOne()
+
+suspend fun <T> Observable<T>.awaitSingleOrNull(): T? = singleOrDefault(null).awaitOne()
+
 @OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 private suspend fun <T> Observable<T>.awaitOne(): T = suspendCancellableCoroutine { cont ->
     cont.unsubscribeOnCancellation(

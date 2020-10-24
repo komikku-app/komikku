@@ -166,7 +166,7 @@ class MangaPresenter(
         // Add the subscription that retrieves the chapters from the database, keeps subscribed to
         // changes, and sends the list of chapters to the relay.
         add(
-            (/* SY --> */if (source is MergedSource) source.getChaptersFromDB(manga, true, dedupe).asObservable() else /* SY <-- */ db.getChapters(manga).asRxObservable())
+            (/* SY --> */if (source is MergedSource) source.getChaptersFromDB(manga, true, dedupe) else /* SY <-- */ db.getChapters(manga).asRxObservable())
                 .map { chapters ->
                     // Convert every chapter to a model.
                     chapters.map { it.toModel() }
