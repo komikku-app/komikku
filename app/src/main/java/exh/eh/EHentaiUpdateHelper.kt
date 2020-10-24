@@ -6,11 +6,8 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.ChapterImpl
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
-import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.util.await
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import uy.kohesive.injekt.injectLazy
@@ -64,54 +61,8 @@ class EHentaiUpdateHelper(context: Context) {
             val chainsAsChapters = chains.flatMap { it.chapters }
 
             if (toDiscard.isNotEmpty()) {
-                var new = false
-
                 // Copy chain chapters to curChapters
-                val newChapters = toDiscard
-                    .flatMap { chain ->
-                        chain.chapters
-                    }
-                    .fold(accepted.chapters) { curChapters, chapter ->
-                        val existing = curChapters.find { it.url == chapter.url }
-
-                        val newLastPageRead = chainsAsChapters.maxByOrNull { it.last_page_read }?.last_page_read
-
-                        if (existing != null) {
-                            existing.read = existing.read || chapter.read
-                            existing.last_page_read = existing.last_page_read.coerceAtLeast(chapter.last_page_read)
-                            if (newLastPageRead != null && existing.last_page_read <= 0) {
-                                existing.last_page_read = newLastPageRead
-                            }
-                            existing.bookmark = existing.bookmark || chapter.bookmark
-                            curChapters
-                        }
-                        else {
-                            new = true
-                            curChapters + ChapterImpl().apply {
-                                manga_id = accepted.manga.id
-                                url = chapter.url
-                                name = chapter.name
-                                read = chapter.read
-                                bookmark = chapter.bookmark
-
-                                last_page_read = chapter.last_page_read
-                                if (newLastPageRead != null && last_page_read <= 0) {
-                                    last_page_read = newLastPageRead
-                                }
-
-                                date_fetch = chapter.date_fetch
-                                date_upload = chapter.date_upload
-                            }
-                        }
-                    }
-                    .sortedBy { it.date_upload }
-                    .apply {
-                        mapIndexed { index, chapter ->
-                            chapter.name = "v${index + 1}: " + chapter.name.substringAfter(" ")
-                            chapter.chapter_number = index + 1f
-                            chapter.source_order = lastIndex - index
-                        }
-                    }
+                val (newChapters, new) = getChapterList(accepted, toDiscard, chainsAsChapters)
 
                 toDiscard.forEach {
                     it.manga.favorite = false
@@ -138,8 +89,65 @@ class EHentaiUpdateHelper(context: Context) {
                 }
 
                 Triple(newAccepted, toDiscard, new)
-            } else Triple(accepted, emptyList(), false)
+            } else {
+                val notNeeded = chains.filter { it.manga.id != accepted.manga.id }
+                val (newChapters, new) = getChapterList(accepted, notNeeded, chainsAsChapters)
+                val newAccepted = ChapterChain(accepted.manga, newChapters)
+
+                // Insert new chapters for accepted manga
+                db.insertChapters(newAccepted.chapters).await()
+
+                Triple(accepted, emptyList(), false)
+            }
         }
+    }
+
+    private fun getChapterList(accepted: ChapterChain, toDiscard: List<ChapterChain>, chainsAsChapters: List<Chapter>): Pair<List<Chapter>, Boolean> {
+        var new = false
+        return toDiscard
+            .flatMap { chain ->
+                chain.chapters
+            }
+            .fold(accepted.chapters) { curChapters, chapter ->
+                val existing = curChapters.find { it.url == chapter.url }
+
+                val newLastPageRead = chainsAsChapters.maxByOrNull { it.last_page_read }?.last_page_read
+
+                if (existing != null) {
+                    existing.read = existing.read || chapter.read
+                    existing.last_page_read = existing.last_page_read.coerceAtLeast(chapter.last_page_read)
+                    if (newLastPageRead != null && existing.last_page_read <= 0) {
+                        existing.last_page_read = newLastPageRead
+                    }
+                    existing.bookmark = existing.bookmark || chapter.bookmark
+                    curChapters
+                } else {
+                    new = true
+                    curChapters + ChapterImpl().apply {
+                        manga_id = accepted.manga.id
+                        url = chapter.url
+                        name = chapter.name
+                        read = chapter.read
+                        bookmark = chapter.bookmark
+
+                        last_page_read = chapter.last_page_read
+                        if (newLastPageRead != null && last_page_read <= 0) {
+                            last_page_read = newLastPageRead
+                        }
+
+                        date_fetch = chapter.date_fetch
+                        date_upload = chapter.date_upload
+                    }
+                }
+            }
+            .sortedBy { it.date_upload }
+            .apply {
+                mapIndexed { index, chapter ->
+                    chapter.name = "v${index + 1}: " + chapter.name.substringAfter(" ")
+                    chapter.chapter_number = index + 1f
+                    chapter.source_order = lastIndex - index
+                }
+            } to new
     }
 }
 
