@@ -312,14 +312,15 @@ class LibraryPresenter(
 
         // SY -->
         val listOfTags by lazy {
-            preferences.sortTagsForLibrary().get().toList()
+            preferences.sortTagsForLibrary().get()
+                .asSequence()
                 .mapNotNull {
                     val list = it.split("|")
                     (list.getOrNull(0)?.toIntOrNull() ?: return@mapNotNull null) to (list.getOrNull(1) ?: return@mapNotNull null)
                 }
                 .sortedBy { it.first }
                 .map { it.second }
-                .map { ("(, |^)$it").toRegex(RegexOption.IGNORE_CASE) }
+                .toList()
         }
         // SY <--
 
@@ -352,8 +353,8 @@ class LibraryPresenter(
                     0
                 }
                 LibrarySort.TAG_LIST -> {
-                    val manga1IndexOfTag = listOfTags.indexOfFirst { i1.manga.genre?.let { tagString -> it.containsMatchIn(tagString) } ?: false }
-                    val manga2IndexOfTag = listOfTags.indexOfFirst { i2.manga.genre?.let { tagString -> it.containsMatchIn(tagString) } ?: false }
+                    val manga1IndexOfTag = listOfTags.indexOfFirst { i1.manga.getGenres()?.contains(it) ?: false }
+                    val manga2IndexOfTag = listOfTags.indexOfFirst { i2.manga.getGenres()?.contains(it) ?: false }
                     manga1IndexOfTag.compareTo(manga2IndexOfTag)
                 }
                 // SY <--
