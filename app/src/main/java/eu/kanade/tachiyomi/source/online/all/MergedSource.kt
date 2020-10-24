@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -159,7 +160,7 @@ class MergedSource : SuspendHttpSource() {
                             }
                         }
                 } else {
-                    emptyList<Pair<List<Chapter>, List<Chapter>>>().asFlow()
+                    emptyFlow()
                 }
             }
         }.buffer()
