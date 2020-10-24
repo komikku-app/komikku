@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_TRAC
 import eu.kanade.tachiyomi.data.backup.full.models.Backup
 import eu.kanade.tachiyomi.data.backup.full.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.full.models.BackupChapter
+import eu.kanade.tachiyomi.data.backup.full.models.BackupFlatMetadata
 import eu.kanade.tachiyomi.data.backup.full.models.BackupFull
 import eu.kanade.tachiyomi.data.backup.full.models.BackupHistory
 import eu.kanade.tachiyomi.data.backup.full.models.BackupManga
@@ -22,7 +23,6 @@ import eu.kanade.tachiyomi.data.backup.full.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSource
 import eu.kanade.tachiyomi.data.backup.full.models.BackupTracking
-import eu.kanade.tachiyomi.data.backup.full.models.BackupFlatMetadata
 import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
