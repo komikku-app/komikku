@@ -345,17 +345,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
                 } else {
                     source.fetchChapterList(manga)
                 }
-                ).map {
-                if (it.last().chapter_number == -99F) {
-                    chapters.forEach { chapter ->
-                        chapter.name =
-                            "Chapter ${chapter.chapter_number} restored by dummy source"
-                    }
-                    syncChaptersWithSource(databaseHelper, chapters, manga, source)
-                } else {
-                    syncChaptersWithSource(databaseHelper, it, manga, source)
-                }
-            }
+                ).map { syncChaptersWithSource(databaseHelper, it, manga, source) }
                 // SY <--
                 .doOnNext { pair ->
                     if (pair.first.isNotEmpty()) {
