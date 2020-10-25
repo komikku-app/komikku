@@ -61,6 +61,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import rx.Observable
+import rx.Single
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
@@ -138,10 +139,6 @@ class MangaPresenter(
         super.onCreate(savedState)
 
         // SY -->
-        if (manga.initialized && source.getMainSource() is MetadataSource<*, *>) {
-            getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata") })
-        }
-
         if (source is MergedSource) {
             launchIO { mergedManga = db.getMergedMangas(manga.id!!).await() }
         }
@@ -155,7 +152,21 @@ class MangaPresenter(
 
         getMangaObservable()
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeLatestCache({ view, manga -> view.onNextMangaInfo(manga, source) })
+            // SY -->
+            .flatMap { manga ->
+                if (manga.initialized && source.getMainSource() is MetadataSource<*, *>) {
+                    getMangaMetaSingle().map {
+                        manga to it
+                    }.toObservable()
+                } else {
+                    Observable.just(manga to null)
+                }
+            }
+            .subscribeLatestCache({ view, (manga, flatMetadata) ->
+                if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata")
+                // SY <--
+                view.onNextMangaInfo(manga, source)
+            })
 
         getTrackingObservable()
             .observeOn(AndroidSchedulers.mainThread())
@@ -244,12 +255,11 @@ class MangaPresenter(
     }
 
     // SY -->
-    private fun getMangaMetaObservable(): Observable<FlatMetadata?> {
+    private fun getMangaMetaSingle(): Single<FlatMetadata?> {
         val mangaId = manga.id
         return if (mangaId != null) {
-            db.getFlatMetadataForManga(mangaId).asRxObservable()
-                .observeOn(AndroidSchedulers.mainThread())
-        } else Observable.just(null)
+            db.getFlatMetadataForManga(mangaId).asRxSingle()
+        } else Single.just(null)
     }
     // SY <--
 
@@ -266,13 +276,6 @@ class MangaPresenter(
                 db.insertManga(manga).executeAsBlocking()
                 manga
             }
-            // SY -->
-            .doOnNext {
-                if (source.getMainSource() is MetadataSource<*, *>) {
-                    getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.d("Invalid metadata") })
-                }
-            }
-            // SY <--
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
