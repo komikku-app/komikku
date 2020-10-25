@@ -55,8 +55,6 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
             manga.title = it
         }
 
-        // Guess thumbnail URL if manga does not have thumbnail URL
-
         manga.thumbnail_url = thumbnail_url
 
         author?.let {
