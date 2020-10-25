@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import exh.isEhBasedSource
 import kotlinx.coroutines.async
 import okhttp3.Response
 import rx.Observable
@@ -389,7 +390,19 @@ class Downloader(
     private fun downloadImage(page: Page, source: HttpSource, tmpDir: UniFile, filename: String): Observable<UniFile> {
         page.status = Page.DOWNLOAD_IMAGE
         page.progress = 0
-        return source.fetchImage(page)
+        return /* SY --> If the source is E-Hentai request a new page if null */ Observable.just(Unit)
+            .flatMap {
+                if (page.imageUrl == null && source.isEhBasedSource()) {
+                    source.fetchImageUrl(page)
+                } else Observable.just(null)
+            }
+            .doOnNext { imageUrl ->
+                if (imageUrl != null) page.imageUrl = imageUrl
+            }
+            .flatMap {
+                source.fetchImage(page)
+            }
+            // SY <--
             .map { response ->
                 val file = tmpDir.createFile("$filename.tmp")
                 try {
@@ -399,6 +412,9 @@ class Downloader(
                 } catch (e: Exception) {
                     response.close()
                     file.delete()
+                    // SY --> E-Hentai sometimes has dead pages, so we request a new one if it fails
+                    if (source.isEhBasedSource()) page.imageUrl = null
+                    // SY <--
                     throw e
                 }
                 file
