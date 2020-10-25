@@ -195,7 +195,7 @@ class MangaPresenter(
                         updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
                             .onEach { (acceptedChain, _) ->
                                 // Redirect if we are not the accepted root
-                                if (manga.id != acceptedChain.manga.id) {
+                                if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
                                     // Update if any of our chapters are not in accepted manga's chapters
                                     val ourChapterUrls = chapters.map { it.url }.toSet()
                                     val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
