@@ -172,11 +172,11 @@ class SmartSearchEngine(
      * @return a manga from the database.
      */
     suspend fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
-        var localManga = db.getManga(sManga.url, sourceId).executeAsBlocking()
+        var localManga = db.getManga(sManga.url, sourceId).await()
         if (localManga == null) {
             val newManga = Manga.create(sManga.url, sManga.title, sourceId)
             newManga.copyFrom(sManga)
-            val result = db.insertManga(newManga).executeAsBlocking()
+            val result = db.insertManga(newManga).await()
             newManga.id = result.insertedId()
             localManga = newManga
         }

@@ -17,10 +17,10 @@ import java.util.Date
 class MigrationProcessAdapter(
     val controller: MigrationListController
 ) : FlexibleAdapter<MigrationProcessItem>(null, controller, true) {
-
     private val db: DatabaseHelper by injectLazy()
+    private val preferences: PreferencesHelper by injectLazy()
+
     var items: List<MigrationProcessItem> = emptyList()
-    val preferences: PreferencesHelper by injectLazy()
 
     val menuItemListener: MigrationProcessInterface = controller
 
@@ -43,14 +43,10 @@ class MigrationProcessAdapter(
         if (allMangasDone()) menuItemListener.enableButtons()
     }
 
-    fun allMangasDone() = (
-        items.all {
-            it.manga.migrationStatus != MigrationStatus
-                .RUNNING
-        } && items.any { it.manga.migrationStatus == MigrationStatus.MANGA_FOUND }
-        )
+    fun allMangasDone() = items.all { it.manga.migrationStatus != MigrationStatus.RUNNING } &&
+        items.any { it.manga.migrationStatus == MigrationStatus.MANGA_FOUND }
 
-    fun mangasSkipped() = (items.count { it.manga.migrationStatus == MigrationStatus.MANGA_NOT_FOUND })
+    fun mangasSkipped() = items.count { it.manga.migrationStatus == MigrationStatus.MANGA_NOT_FOUND }
 
     suspend fun performMigrations(copy: Boolean) {
         withContext(Dispatchers.IO) {
@@ -108,8 +104,7 @@ class MigrationProcessAdapter(
         // Update chapters read
         if (MigrationFlags.hasChapters(flags)) {
             val prevMangaChapters = db.getChapters(prevManga).executeAsBlocking()
-            val maxChapterRead =
-                prevMangaChapters.filter { it.read }.maxByOrNull { it.chapter_number }?.chapter_number
+            val maxChapterRead = prevMangaChapters.filter { it.read }.maxByOrNull { it.chapter_number }?.chapter_number
             if (maxChapterRead != null) {
                 val dbChapters = db.getChapters(manga).executeAsBlocking()
                 for (chapter in dbChapters) {

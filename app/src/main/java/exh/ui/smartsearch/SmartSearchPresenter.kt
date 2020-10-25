@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class SmartSearchPresenter(private val source: CatalogueSource?, private val config: SourceController.SmartSearchConfig?) :
     BasePresenter<SmartSearchController>() {
 
-    val scope = CoroutineScope(Job() + Dispatchers.Main)
+    val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     val smartSearchChannel = Channel<SearchResults>()
 
@@ -27,7 +27,7 @@ class SmartSearchPresenter(private val source: CatalogueSource?, private val con
         super.onCreate(savedState)
 
         if (source != null && config != null) {
-            scope.launch(Dispatchers.Default) {
+            scope.launch {
                 val result = try {
                     val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
                     if (resultManga != null) {

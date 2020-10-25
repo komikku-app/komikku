@@ -46,9 +46,9 @@ class MigrationProcessHolder(
     private val view: View,
     private val adapter: MigrationProcessAdapter
 ) : BaseFlexibleViewHolder(view, adapter) {
-
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
+
     private var item: MigrationProcessItem? = null
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
@@ -150,7 +150,6 @@ class MigrationProcessHolder(
         manga_chapters.text = ""
         manga_chapters.isVisible = false
         manga_last_chapter_label.text = ""
-        migration_manga_card_to.clicks()
     }
 
     private suspend fun View.attachManga(manga: Manga, source: Source) {
