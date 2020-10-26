@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MetadataViewControllerBinding
@@ -68,7 +68,7 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
         super.onViewCreated(view)
 
         if (manga == null || source == null) return
-        binding.recycler.layoutManager = GridLayoutManager(view.context, 2)
+        binding.recycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.VERTICAL, false)
         adapter = MetadataViewAdapter(data)
         binding.recycler.adapter = adapter
         binding.recycler.setHasFixedSize(true)

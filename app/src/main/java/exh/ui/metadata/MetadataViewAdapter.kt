@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.databinding.MetadataViewItemBinding
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.util.floor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -36,28 +35,26 @@ class MetadataViewAdapter(private var data: List<Pair<String, String>>) :
     }
 
     // total number of cells
-    override fun getItemCount(): Int = data.size * 2
+    override fun getItemCount(): Int = data.size
 
     // stores and recycles views as they are scrolled off screen
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private var dataPosition: Int? = null
         fun bind(position: Int) {
-            if (data.isEmpty() || !binding.infoText.text.isNullOrBlank()) return
-            dataPosition = (position / 2F).floor()
-            binding.infoText.text = if (position % 2 == 0) data[dataPosition!!].first else data[dataPosition!!].second
+            binding.infoTitle.text = data[position].first
+            binding.infoText.text = data[position].second
             binding.infoText.clicks()
                 .onEach {
-                    itemView.context.copyToClipboard(data[dataPosition!!].second, data[dataPosition!!].second)
+                    itemView.context.copyToClipboard(data[position].second, data[position].second)
                 }
                 .launchIn(scope)
         }
 
         override fun equals(other: Any?): Boolean {
-            return dataPosition.hashCode() == other.hashCode()
+            return binding.infoText.hashCode() == other.hashCode()
         }
 
         override fun hashCode(): Int {
-            return dataPosition.hashCode()
+            return binding.infoText.hashCode()
         }
     }
 

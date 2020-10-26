@@ -2,14 +2,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/border">
+    android:layout_margin="8dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/info_title"
+        android:layout_width="140dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        style="@style/TextAppearance.Regular.Body1" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/info_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:layout_margin="5dp"
-        style="@style/TextAppearance.Regular" />
+        android:layout_marginStart="8dp"
+        style="@style/TextAppearance.Regular.Body1.Secondary" />
 
 </LinearLayout>
