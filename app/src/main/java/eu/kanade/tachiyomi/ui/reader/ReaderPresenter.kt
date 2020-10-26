@@ -116,7 +116,7 @@ class ReaderPresenter(
         val manga = manga!!
         // SY -->
         val meta = meta
-        val filteredScanlators = MdUtil.getScanlators(meta?.filteredScanlators.orEmpty())
+        val filteredScanlators = meta?.filteredScanlators?.let { MdUtil.getScanlators(it) }
         // SY <--
         val dbChapters = /* SY --> */if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull() ?: emptyList() } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
 
@@ -139,7 +139,7 @@ class ReaderPresenter(
                                     ) ||
                                 (manga.bookmarkedFilter == Manga.SHOW_BOOKMARKED && !it.bookmark) ||
                                 // SY -->
-                                (meta != null && it.scanlatorList().none { group -> filteredScanlators.contains(group) })
+                                (filteredScanlators != null && it.scanlatorList().none { group -> filteredScanlators.contains(group) })
                                 // SY <--
                             ) {
                                 return@filter false
