@@ -1,5 +1,6 @@
 package exh.ui.metadata.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 class MangaDexDescriptionAdapter(
@@ -63,17 +65,16 @@ class MangaDexDescriptionAdapter(
                 10 -> R.string.rating10
                 else -> R.string.no_rating
             }
-            binding.ratingBar.rating = ratingFloat ?: 0F
-            binding.rating.text = if (meta.users?.toIntOrNull() != null) {
-                itemView.context.getString(R.string.rating_view, itemView.context.getString(name), (meta.rating?.toFloatOrNull() ?: 0F).toString(), meta.users?.toIntOrNull() ?: 0)
-            } else {
-                itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (meta.rating?.toFloatOrNull() ?: 0F).toString())
-            }
 
-            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
-            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
+            binding.ratingBar.rating = ratingFloat ?: 0F
+            @SuppressLint("SetTextI18n")
+            binding.rating.text = (round((meta.rating?.toFloatOrNull() ?: 0F) * 100.0) / 100.0).toString() + " - " + itemView.context.getString(name)
+
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.moreInfo.setCompoundDrawables(this, null, null, null)
+            }
 
             binding.rating.longClicks()
                 .onEach {

@@ -1,5 +1,6 @@
 package exh.ui.metadata.adapters
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 class PururinDescriptionAdapter(
@@ -69,12 +71,20 @@ class PururinDescriptionAdapter(
             } else binding.genre.setText(R.string.unknown)
 
             binding.uploader.text = meta.uploaderDisp ?: meta.uploader ?: ""
+
             binding.size.text = meta.fileSize ?: itemView.context.getString(R.string.unknown)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_sd_card_24)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.size.setCompoundDrawables(this, null, null, null)
+            }
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pages ?: 0, meta.pages ?: 0)
-            val pagesDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)
-            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.pages.setCompoundDrawables(this, null, null, null)
+            }
 
             val ratingFloat = meta.averageRating?.toFloat()
             val name = when (((ratingFloat ?: 100F) * 2).roundToInt()) {
@@ -92,17 +102,14 @@ class PururinDescriptionAdapter(
                 else -> R.string.no_rating
             }
             binding.ratingBar.rating = ratingFloat ?: 0F
-            binding.rating.text = if (meta.ratingCount != null) {
-                itemView.context.getString(R.string.rating_view, itemView.context.getString(name), (ratingFloat ?: 0F).toString(), meta.ratingCount ?: 0)
-            } else {
-                itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (ratingFloat ?: 0F).toString())
+            @SuppressLint("SetTextI18n")
+            binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + itemView.context.getString(name)
+
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.moreInfo.setCompoundDrawables(this, null, null, null)
             }
-
-            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
-            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
-
             listOf(
                 binding.genre,
                 binding.pages,

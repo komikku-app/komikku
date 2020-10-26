@@ -1,5 +1,6 @@
 package exh.ui.metadata.adapters
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import java.util.Locale
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 class PervEdenDescriptionAdapter(
@@ -88,12 +90,14 @@ class PervEdenDescriptionAdapter(
                 else -> R.string.no_rating
             }
             binding.ratingBar.rating = meta.rating ?: 0F
-            binding.rating.text = itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (meta.rating ?: 0F).toString())
+            @SuppressLint("SetTextI18n")
+            binding.rating.text = (round((meta.rating ?: 0F) * 100.0) / 100.0).toString() + " - " + itemView.context.getString(name)
 
-            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
-            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.moreInfo.setCompoundDrawables(this, null, null, null)
+            }
 
             listOf(
                 binding.genre,

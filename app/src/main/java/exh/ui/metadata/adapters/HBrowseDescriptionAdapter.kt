@@ -47,14 +47,17 @@ class HBrowseDescriptionAdapter(
             if (meta == null || meta !is HBrowseSearchMetadata) return
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
-            val pagesDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)
-            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.pages.setCompoundDrawables(this, null, null, null)
+            }
 
-            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
-            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.moreInfo.setCompoundDrawables(this, null, null, null)
+            }
 
             binding.pages.longClicks()
                 .onEach {

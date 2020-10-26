@@ -48,10 +48,11 @@ class HentaiCafeDescriptionAdapter(
 
             binding.artist.text = meta.artist ?: itemView.context.getString(R.string.unknown)
 
-            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
-            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.moreInfo.setCompoundDrawables(this, null, null, null)
+            }
 
             binding.artist.longClicks()
                 .onEach {

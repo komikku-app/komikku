@@ -22,7 +22,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/genre"
-                style="@style/TextAppearance.Regular"
+                style="@style/TextAppearance.Regular.Body1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="8dp"
@@ -31,7 +31,6 @@
                 android:paddingBottom="4dp" />
 
         </androidx.cardview.widget.CardView>
-
 
         <Button
             android:id="@+id/more_info"
@@ -55,34 +54,27 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal">
 
         <me.zhanghai.android.materialratingbar.MaterialRatingBar
             android:id="@+id/rating_bar"
             android:layout_width="wrap_content"
-            android:layout_height="25dp"
-            android:layout_gravity="center_horizontal"
+            android:layout_height="20dp"
             android:numStars="5"
             android:stepSize="0.5"
             android:isIndicator="true"
-            android:focusable="false"
-            android:layout_marginStart="16dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:focusable="false" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/rating"
             style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_marginStart="8dp"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
+    </LinearLayout>
 
 </LinearLayout>

@@ -518,8 +518,6 @@
     </plurals>
     <string name="tags">Tags</string>
     <string name="is_visible">Visible: %1$s</string>
-    <string name="rating_view">%1$s (%2$s, %3$d)</string>
-    <string name="rating_view_no_count">%1$s (%2$s)</string>
     <string name="language_translated">%1$s TR</string>
 
     <!-- Enhanced E/ExHentai Browse View -->

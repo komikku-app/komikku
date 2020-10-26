@@ -1,5 +1,6 @@
 package exh.ui.metadata.adapters
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import java.util.Date
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 class TsuminoDescriptionAdapter(
@@ -68,18 +70,22 @@ class TsuminoDescriptionAdapter(
             } else binding.genre.setText(R.string.unknown)
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
-            val drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_favorite_24dp)
-            drawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            binding.favorites.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_book_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.favorites.setCompoundDrawables(this, null, null, null)
+            }
 
             binding.whenPosted.text = TsuminoSearchMetadata.TSUMINO_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
 
             binding.uploader.text = meta.uploader ?: itemView.context.getString(R.string.unknown)
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
-            val pagesDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)
-            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.pages.setCompoundDrawables(this, null, null, null)
+            }
 
             val name = when (((meta.averageRating ?: 100F) * 2).roundToInt()) {
                 0 -> R.string.rating0
@@ -96,16 +102,14 @@ class TsuminoDescriptionAdapter(
                 else -> R.string.no_rating
             }
             binding.ratingBar.rating = meta.averageRating ?: 0F
-            binding.rating.text = if (meta.userRatings != null) {
-                itemView.context.getString(R.string.rating_view, itemView.context.getString(name), (meta.averageRating ?: 0F).toString(), meta.userRatings ?: 0L)
-            } else {
-                itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (meta.averageRating ?: 0F).toString())
-            }
+            @SuppressLint("SetTextI18n")
+            binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + itemView.context.getString(name)
 
-            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
-            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.moreInfo.setCompoundDrawables(this, null, null, null)
+            }
 
             listOf(
                 binding.favorites,

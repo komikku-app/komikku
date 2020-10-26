@@ -21,7 +21,7 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/genre"
-                style="@style/TextAppearance.Regular"
+                style="@style/TextAppearance.Regular.Body1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="8dp"
@@ -62,8 +62,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="@+id/language"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@+id/language" />
 
 
         <com.google.android.material.textview.MaterialTextView
@@ -71,10 +72,10 @@
             style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/language" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

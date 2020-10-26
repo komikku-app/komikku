@@ -82,26 +82,30 @@ class NHentaiDescriptionAdapter(
                 if (it == 0L) return@let
                 binding.favorites.text = it.toString()
 
-                val drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_favorite_24dp)
-                drawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-
-                binding.favorites.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null)
+                ContextCompat.getDrawable(itemView.context, R.drawable.ic_book_24dp)?.apply {
+                    setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                    setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                    binding.favorites.setCompoundDrawables(this, null, null, null)
+                }
             }
 
             binding.whenPosted.text = EX_DATE_FORMAT.format(Date((meta.uploadDate ?: 0) * 1000))
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pageImageTypes.size, meta.pageImageTypes.size)
-            val pagesDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)
-            pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.pages.setCompoundDrawables(this, null, null, null)
+            }
 
             @SuppressLint("SetTextI18n")
             binding.id.text = "#" + (meta.nhId ?: 0)
 
-            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
-            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
+            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
+                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+                binding.moreInfo.setCompoundDrawables(this, null, null, null)
+            }
 
             listOf(
                 binding.favorites,
