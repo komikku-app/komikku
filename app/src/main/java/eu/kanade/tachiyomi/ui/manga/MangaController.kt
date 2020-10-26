@@ -547,6 +547,7 @@ class MangaController :
         if (mainSource is MetadataSource<*, *>) {
             presenter.meta = flatMetadata.raise(mainSource.metaClass)
             mangaMetaInfoAdapter?.notifyDataSetChanged()
+            updateFilterIconState()
         }
     }
     // SY <--

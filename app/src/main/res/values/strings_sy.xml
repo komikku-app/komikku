@@ -567,4 +567,10 @@
     <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked manga to MangaDex as reading.</string>
     <string name="mangadex_push_favorites_to_mangadex_toast">Pushed %d manga to MangaDex</string>
 
+
+    <!-- Scanlator filters -->
+    <string name="select_scanlators">Scanlator groups to show</string>
+    <string name="metadata_corrupted">Metadata corrupted, please refresh the manga</string>
+    <string name="no_scanlators">No scanlators available</string>
+
 </resources>

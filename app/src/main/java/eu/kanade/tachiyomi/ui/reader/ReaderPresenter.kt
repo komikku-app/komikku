@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
@@ -35,6 +36,11 @@ import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.md.utils.FollowStatus
+import exh.md.utils.MdUtil
+import exh.md.utils.scanlatorList
+import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.metadata.metadata.base.getFlatMetadataForManga
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 import exh.util.awaitSingleOrNull
 import exh.util.defaultReaderType
 import exh.util.shouldDeleteChapters
@@ -72,6 +78,11 @@ class ReaderPresenter(
     var manga: Manga? = null
         private set
 
+    // SY -->
+    var meta: RaisedSearchMetadata? = null
+        private set
+    // SY <--
+
     /**
      * The chapter id of the currently loaded chapter. Used to restore from process kill.
      */
@@ -103,7 +114,11 @@ class ReaderPresenter(
      */
     private val chapterList by lazy {
         val manga = manga!!
-        val dbChapters = if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull() ?: emptyList() } else db.getChapters(manga).executeAsBlocking()
+        // SY -->
+        val meta = meta
+        val filteredScanlators = MdUtil.getScanlators(meta?.filteredScanlators.orEmpty())
+        // SY <--
+        val dbChapters = /* SY --> */if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull() ?: emptyList() } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
 
         val selectedChapter = dbChapters.find { it.id == chapterId }
             ?: error("Requested chapter of id $chapterId not found in chapter list")
@@ -122,7 +137,10 @@ class ReaderPresenter(
                                     manga.downloadedFilter == Manga.SHOW_DOWNLOADED &&
                                         !downloadManager.isChapterDownloaded(it, manga)
                                     ) ||
-                                (manga.bookmarkedFilter == Manga.SHOW_BOOKMARKED && !it.bookmark)
+                                (manga.bookmarkedFilter == Manga.SHOW_BOOKMARKED && !it.bookmark) ||
+                                // SY -->
+                                (meta != null && it.scanlatorList().none { group -> filteredScanlators.contains(group) })
+                                // SY <--
                             ) {
                                 return@filter false
                             }
@@ -221,7 +239,19 @@ class ReaderPresenter(
         db.getManga(mangaId).asRxObservable()
             .first()
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext { init(it, initialChapterId) }
+            // SY -->
+            .flatMap { manga ->
+                val source = sourceManager.get(manga.source)?.getMainSource()
+                if (manga.initialized && source is MetadataSource<*, *>) {
+                    db.getFlatMetadataForManga(mangaId).asRxSingle().map {
+                        manga to it?.raise(source.metaClass)
+                    }.toObservable()
+                } else {
+                    Observable.just(manga to null)
+                }
+            }
+            .doOnNext { init(it.first, initialChapterId, it.second) }
+            // SY <--
             .subscribeFirst(
                 { _, _ ->
                     // Ignore onNext event
@@ -234,10 +264,13 @@ class ReaderPresenter(
      * Initializes this presenter with the given [manga] and [initialChapterId]. This method will
      * set the chapter loader, view subscriptions and trigger an initial load.
      */
-    private fun init(manga: Manga, initialChapterId: Long) {
+    private fun init(manga: Manga, initialChapterId: Long /* SY --> */, metadata: RaisedSearchMetadata?/* SY <-- */) {
         if (!needsInit()) return
 
         this.manga = manga
+        // SY -->
+        this.meta = metadata
+        // SY <--
         if (chapterId == -1L) chapterId = initialChapterId
 
         val context = Injekt.get<Application>()

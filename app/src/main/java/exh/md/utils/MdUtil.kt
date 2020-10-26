@@ -1,5 +1,6 @@
 package exh.md.utils
 
+import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -37,8 +38,7 @@ class MdUtil {
             prettyPrint = true
         }
 
-        private const
-        val scanlatorSeparator = " & "
+        private const val scanlatorSeparator = " & "
 
         val validOneShotFinalChapters = listOf("0", "1")
 
@@ -275,4 +275,10 @@ private fun getMDUrlWithoutDomain(orig: String): String {
     } catch (e: URISyntaxException) {
         orig
     }
+}
+
+fun Chapter.scanlatorList(): List<String> {
+    return this.scanlator?.let {
+        MdUtil.getScanlators(it)
+    } ?: listOf("No scanlator")
 }
