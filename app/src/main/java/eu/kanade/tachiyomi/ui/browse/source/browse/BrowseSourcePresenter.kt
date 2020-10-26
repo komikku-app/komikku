@@ -59,7 +59,6 @@ open class BrowseSourcePresenter(
     private val sourceId: Long,
     private val searchQuery: String? = null,
     // SY -->
-    private val recommendsMangaId: Long? = null,
     private val filters: String? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
@@ -145,10 +144,6 @@ open class BrowseSourcePresenter(
             query = savedState.getString(::query.name, "")
         }
 
-        if (recommendsMangaId != null) {
-            manga = db.getManga(recommendsMangaId).executeAsBlocking()
-        }
-
         restartPager(/* SY -->*/ filters = if (allDefault) this.appliedFilters else sourceFilters /* SY <--*/)
     }
 
@@ -170,11 +165,7 @@ open class BrowseSourcePresenter(
         subscribeToMangaInitializer()
 
         // Create a new pager.
-        // SY -->
-        pager = if (recommendsMangaId != null) RecommendsPager(
-            manga ?: throw Exception("Could not get Manga")
-        ) else createPager(query, filters)
-        // SY <--
+        pager = createPager(query, filters)
 
         val sourceId = source.id
 

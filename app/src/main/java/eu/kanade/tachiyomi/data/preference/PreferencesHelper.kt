@@ -431,6 +431,14 @@ class PreferencesHelper(val context: Context) {
 
     fun preferredMangaDexId() = flowPrefs.getString(Keys.preferredMangaDexId, "0")
 
+    fun mangadexSimilarEnabled() = flowPrefs.getBoolean(Keys.mangadexSimilarEnabled, false)
+
+    fun shownMangaDexSimilarAskDialog() = flowPrefs.getBoolean("shown_similar_ask_dialog", false)
+
+    fun mangadexSimilarOnlyOverWifi() = flowPrefs.getBoolean(Keys.mangadexSimilarOnlyOverWifi, true)
+
+    fun mangadexSimilarUpdateInterval() = flowPrefs.getInt(Keys.mangadexSimilarUpdateInterval, 2)
+
     fun dataSaver() = flowPrefs.getBoolean(Keys.dataSaver, false)
 
     fun ignoreJpeg() = flowPrefs.getBoolean(Keys.ignoreJpeg, false)

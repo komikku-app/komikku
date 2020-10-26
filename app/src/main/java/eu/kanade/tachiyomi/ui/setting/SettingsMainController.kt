@@ -90,7 +90,7 @@ class SettingsMainController : SettingsController() {
             preference {
                 iconRes = R.drawable.ic_tracker_mangadex_logo_24dp
                 iconTint = tintColor
-                titleRes = R.string.mangadex_specific_settings
+                titleRes = R.string.pref_category_mangadex
                 onClick { navigateTo(SettingsMangaDexController()) }
             }
         }

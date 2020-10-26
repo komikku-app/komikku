@@ -1,9 +1,10 @@
-package eu.kanade.tachiyomi.ui.browse.source.browse
+package exh.recs
 
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SMangaImpl
+import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
 import exh.util.MangaType
 import exh.util.mangaType
 import kotlinx.coroutines.CoroutineExceptionHandler

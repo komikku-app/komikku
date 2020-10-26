@@ -328,6 +328,9 @@ dependencies {
     // RatingBar (SY)
     implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
 
+    // JsonReader for similar manga
+    implementation 'com.squareup.moshi:moshi:1.11.0'
+
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
 
     implementation 'com.google.guava:guava:29.0-android'

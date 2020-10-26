@@ -31,6 +31,8 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -50,11 +52,13 @@ import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MangaControllerBinding
+import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.ToolbarLiftOnScrollController
@@ -96,7 +100,9 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import exh.MERGED_SOURCE_ID
 import exh.isEhBasedSource
+import exh.md.similar.ui.MangaDexSimilarController
 import exh.metadata.metadata.base.FlatMetadata
+import exh.recs.RecommendsController
 import exh.source.EnhancedHttpSource.Companion.getMainSource
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.android.synthetic.main.main_activity.toolbar
@@ -748,15 +754,25 @@ class MangaController :
 
     // AZ -->
     fun openRecommends() {
-        val recommendsConfig = BrowseSourceController.RecommendsConfig(presenter.manga.originalTitle, presenter.manga.id)
-
-        router?.pushController(
-            BrowseSourceController(
-                bundleOf(
-                    BrowseSourceController.RECOMMENDS_CONFIG to recommendsConfig
-                )
-            ).withFadeTransaction()
-        )
+        val source = presenter.source.getMainSource()
+        if (source is MangaDex && preferences.mangadexSimilarEnabled().get()) {
+            MaterialDialog(activity!!)
+                .title(R.string.az_recommends)
+                .listItemsSingleChoice(
+                    items = listOf(
+                        "MangaDex similar",
+                        "Community recommendations"
+                    )
+                ) { _, index, _ ->
+                    when (index) {
+                        0 -> router.pushController(MangaDexSimilarController(presenter.manga, source).withFadeTransaction())
+                        1 -> router.pushController(RecommendsController(presenter.manga, source).withFadeTransaction())
+                    }
+                }
+                .show()
+        } else if (source is CatalogueSource) {
+            router.pushController(RecommendsController(presenter.manga, source).withFadeTransaction())
+        }
     }
     // AZ <--
 

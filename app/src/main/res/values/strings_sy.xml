@@ -32,6 +32,7 @@
     <string name="pref_category_all_sources">All Sources</string>
     <string name="pref_category_eh">E-Hentai</string>
     <string name="pref_category_fork">Fork Settings</string>
+    <string name="pref_category_mangadex">MangaDex</string>
 
 
     <!-- EH Settings -->
@@ -572,5 +573,38 @@
     <string name="select_scanlators">Scanlator groups to show</string>
     <string name="metadata_corrupted">Metadata corrupted, please refresh the manga</string>
     <string name="no_scanlators">No scanlators available</string>
+
+    <!-- Similar -->
+    <string name="similar">Similar manga</string>
+    <string name="similar_loading_percent">Updating similar manga (%1$d / %2$d updated)</string>
+    <string name="similar_loading_complete">Updating similar manga complete</string>
+    <string name="similar_loading_complete_error">Error trying to load/process similar manga</string>
+    <string name="similar_loading_progress_start">Downloading similar manga data file…</string>
+    <string name="similar_ask_to_enable_title">Enable Similar Manga?</string>
+    <string name="similar_ask_to_enable">
+        Would you like to enable similar manga recommendations?
+        This will download approximately 9 MB of data if enabled right now.
+        You can always enable it in the Settings / Mangadex menu.
+    </string>
+    <string name="similar_ask_to_enable_yes">Enable</string>
+    <string name="similar_ask_to_enable_no">Skip</string>
+    <string name="similar_settings">Similar Manga Settings</string>
+    <string name="similar_screen">Show similar manga</string>
+    <string name="similar_manually_update">Pull latest database</string>
+    <string name="similar_manually_toast">Starting manual update</string>
+    <string name="similar_manually_update_message">
+        Download the latest similar manga database.
+        This is around 9MB in size and is updated daily.
+    </string>
+    <string name="similar_update_fequency">Similar update frequency</string>
+    <string name="similar_screen_summary_message">
+        This is a feature where one can get manga recommendations.
+        This is a recommendation system outside of MangaDex, and works by matching by genres,
+        demographics, content type, themes, and then using term frequency–inverse document frequency (tf–idf) to get the
+        similarity of two manga\'s descriptions. When enabled this file will download immediately!! The file is about 9 MB in size.
+    </string>
+    <string name="similar_credit_message">
+        For more information and to view the source code:\n%s
+    </string>
 
 </resources>

@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.core.text.HtmlCompat
 import com.bluelinelabs.conductor.Controller
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -35,6 +36,7 @@ import exh.md.handlers.ApiMangaParser
 import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
 import exh.md.handlers.MangaPlusHandler
+import exh.md.handlers.SimilarHandler
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdLang
 import exh.md.utils.MdUtil
@@ -255,6 +257,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override fun fetchRandomMangaUrl(): Flow<String> {
         return MangaHandler(client, headers, listOf(mdLang)).fetchRandomMangaId()
+    }
+
+    fun fetchMangaSimilar(manga: Manga): Observable<MangasPage> {
+        return SimilarHandler(preferences, useLowQualityThumbnail()).fetchSimilar(manga)
     }
 
     private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =

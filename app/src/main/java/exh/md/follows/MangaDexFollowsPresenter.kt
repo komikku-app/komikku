@@ -4,7 +4,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
-import exh.source.EnhancedHttpSource
+import exh.source.EnhancedHttpSource.Companion.getMainSource
 
 /**
  * Presenter of [MangaDexFollowsController]. Inherit BrowseCataloguePresenter.
@@ -12,7 +12,7 @@ import exh.source.EnhancedHttpSource
 class MangaDexFollowsPresenter(sourceId: Long) : BrowseSourcePresenter(sourceId) {
 
     override fun createPager(query: String, filters: FilterList): Pager {
-        val sourceAsMangaDex = (source as EnhancedHttpSource).enhancedSource as MangaDex
+        val sourceAsMangaDex = source.getMainSource() as MangaDex
         return MangaDexFollowsPager(sourceAsMangaDex)
     }
 }

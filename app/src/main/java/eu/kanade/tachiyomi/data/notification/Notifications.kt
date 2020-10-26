@@ -62,6 +62,15 @@ object Notifications {
     const val ID_BACKUP_COMPLETE = -502
     const val ID_RESTORE_COMPLETE = -504
 
+    // SY -->
+    /**
+     * Notification channel and ids used for backup and restore.
+     */
+    const val CHANNEL_SIMILAR = "similar_channel"
+    const val ID_SIMILAR_PROGRESS = -601
+    const val ID_SIMILAR_COMPLETE = -602
+    // SY <--
+
     private val deprecatedChannels = listOf(
         "downloader_channel",
         "backup_restore_complete_channel"
@@ -143,6 +152,13 @@ object Notifications {
                 group = GROUP_BACKUP_RESTORE
                 setShowBadge(false)
                 setSound(null, null)
+            },
+            NotificationChannel(
+                CHANNEL_SIMILAR,
+                context.getString(R.string.similar),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                setShowBadge(false)
             }
         ).forEach(context.notificationManager::createNotificationChannel)
 

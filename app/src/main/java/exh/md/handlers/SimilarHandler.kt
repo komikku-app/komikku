@@ -1,47 +1,41 @@
 package exh.md.handlers
 
-// todo make this work
-/*import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.MangaSimilarImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import exh.md.similar.sql.models.MangaSimilar
+import exh.md.similar.sql.models.MangaSimilarImpl
 import exh.md.utils.MdUtil
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class SimilarHandler(val preferences: PreferencesHelper) {
+class SimilarHandler(val preferences: PreferencesHelper, private val useLowQualityCovers: Boolean) {
 
-    *//**
- * fetch our similar mangas
- *//*
+    /*
+     * fetch our similar mangas
+     */
     fun fetchSimilar(manga: Manga): Observable<MangasPage> {
-
         // Parse the Mangadex id from the URL
-        val mangaid = MdUtil.getMangaId(manga.url).toLong()
-
-        val lowQualityCovers = preferences.mangaDexLowQualityCovers().get()
-
-        // Get our current database
-        val db = Injekt.get<DatabaseHelper>()
-        val similarMangaDb = db.getSimilar(mangaid).executeAsBlocking() ?: return Observable.just(MangasPage(mutableListOf(), false))
-
-        // Check if we have a result
-
-        val similarMangaTitles = similarMangaDb.matched_titles.split(MangaSimilarImpl.DELIMITER)
-        val similarMangaIds = similarMangaDb.matched_ids.split(MangaSimilarImpl.DELIMITER)
-
-        val similarMangas = similarMangaIds.mapIndexed { index, similarId ->
-            SManga.create().apply {
-                title = similarMangaTitles[index]
-                url = "/manga/$similarId/"
-                thumbnail_url = MdUtil.formThumbUrl(url, lowQualityCovers)
+        return Observable.just(MdUtil.getMangaId(manga.url).toLong())
+            .flatMap { mangaId ->
+                val db = Injekt.get<DatabaseHelper>()
+                db.getSimilar(mangaId).asRxObservable()
+            }.map { similarMangaDb: MangaSimilar? ->
+                similarMangaDb?.let { mangaSimilar ->
+                    val similarMangaTitles = mangaSimilar.matched_titles.split(MangaSimilarImpl.DELIMITER)
+                    val similarMangaIds = mangaSimilar.matched_ids.split(MangaSimilarImpl.DELIMITER)
+                    val similarMangas = similarMangaIds.mapIndexed { index, similarId ->
+                        SManga.create().apply {
+                            title = similarMangaTitles[index]
+                            url = "/manga/$similarId/"
+                            thumbnail_url = MdUtil.formThumbUrl(url, useLowQualityCovers)
+                        }
+                    }
+                    MangasPage(similarMangas, false)
+                } ?: MangasPage(mutableListOf(), false)
             }
-        }
-
-        // Return the matches
-        return Observable.just(MangasPage(similarMangas, false))
     }
-}*/
+}
