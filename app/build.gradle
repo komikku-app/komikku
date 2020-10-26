@@ -149,6 +149,11 @@ dependencies {
 
     // Android support library
     implementation 'androidx.appcompat:appcompat:1.2.0'
+
+    // Source models and interfaces from Tachiyomi 1.x
+    implementation 'tachiyomi.sourceapi:source-api:1.1'
+
+    // AndroidX libraries
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.core:core-ktx:1.5.0-alpha01'
@@ -374,6 +379,9 @@ buildscript {
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://dl.bintray.com/tachiyomiorg/maven"
+    }
 }
 
 // See https://kotlinlang.org/docs/reference/experimental.html#experimental-status-of-experimental-api-markers
