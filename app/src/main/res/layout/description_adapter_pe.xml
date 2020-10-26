@@ -37,7 +37,7 @@
             android:id="@+id/more_info"
             style="@style/Theme.Widget.Button"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:layout_marginEnd="16dp"
             android:text="@string/more_info"
             app:layout_constraintEnd_toEndOf="parent"
@@ -74,7 +74,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/rating"
-            style="@style/TextAppearance.Regular"
+            style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

@@ -4,12 +4,14 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterEhBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.humanReadableByteCount
@@ -75,7 +77,7 @@ class EHentaiDescriptionAdapter(
             binding.visible.text = itemView.context.getString(R.string.is_visible, meta.visible ?: itemView.context.getString(R.string.unknown))
 
             binding.favorites.text = (meta.favorites ?: 0).toString()
-            val drawable = itemView.context.getDrawable(R.drawable.ic_book_24dp)
+            val drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_book_24dp)
             drawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
             binding.favorites.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null)
 
@@ -85,7 +87,7 @@ class EHentaiDescriptionAdapter(
             binding.size.text = humanReadableByteCount(meta.size ?: 0, true)
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
-            val pagesDrawable = itemView.context.getDrawable(R.drawable.ic_baseline_menu_book_24)
+            val pagesDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)
             pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
             binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
 
@@ -117,6 +119,11 @@ class EHentaiDescriptionAdapter(
             } else {
                 itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (ratingFloat ?: 0F).toString())
             }
+
+            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
+            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
 
             listOf(
                 binding.favorites,

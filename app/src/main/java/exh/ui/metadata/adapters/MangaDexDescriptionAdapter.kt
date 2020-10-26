@@ -1,15 +1,17 @@
 package exh.ui.metadata.adapters
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterMdBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import kotlinx.coroutines.CoroutineScope
@@ -46,9 +48,6 @@ class MangaDexDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is MangaDexSearchMetadata) return
 
-            @SuppressLint("SetTextI18n")
-            binding.mdId.text = "#" + (meta.mdId ?: 0)
-
             val ratingFloat = meta.rating?.toFloatOrNull()?.div(2F)
             val name = when (((ratingFloat ?: 100F) * 2).roundToInt()) {
                 0 -> R.string.rating0
@@ -71,19 +70,19 @@ class MangaDexDescriptionAdapter(
                 itemView.context.getString(R.string.rating_view_no_count, itemView.context.getString(name), (meta.rating?.toFloatOrNull() ?: 0F).toString())
             }
 
-            listOf(
-                binding.mdId,
-                binding.rating
-            ).forEach { textView ->
-                textView.longClicks()
-                    .onEach {
-                        itemView.context.copyToClipboard(
-                            textView.text.toString(),
-                            textView.text.toString()
-                        )
-                    }
-                    .launchIn(scope)
-            }
+            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
+            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
+
+            binding.rating.longClicks()
+                .onEach {
+                    itemView.context.copyToClipboard(
+                        binding.rating.text.toString(),
+                        binding.rating.text.toString()
+                    )
+                }
+                .launchIn(scope)
 
             binding.moreInfo.clicks()
                 .onEach {

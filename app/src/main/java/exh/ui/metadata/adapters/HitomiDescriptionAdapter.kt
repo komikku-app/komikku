@@ -4,12 +4,15 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterHiBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.ui.metadata.MetadataViewController
@@ -72,6 +75,11 @@ class HitomiDescriptionAdapter(
             binding.whenPosted.text = EX_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
             binding.group.text = meta.group ?: itemView.context.getString(R.string.unknown)
             binding.language.text = meta.language ?: itemView.context.getString(R.string.unknown)
+
+            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
+            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
 
             listOf(
                 binding.genre,

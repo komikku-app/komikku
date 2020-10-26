@@ -5,12 +5,14 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterNhBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.NHentaiSearchMetadata
@@ -51,8 +53,8 @@ class NHentaiDescriptionAdapter(
             if (meta == null || meta !is NHentaiSearchMetadata) return
 
             var category: String? = null
-            meta.tags.filter { it.namespace == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE }.let {
-                if (it.isNotEmpty()) category = it.joinToString(transform = { it.name })
+            meta.tags.filter { it.namespace == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE }.let { tags ->
+                if (tags.isNotEmpty()) category = tags.joinToString(transform = { it.name })
             }
 
             if (category != null) {
@@ -80,7 +82,7 @@ class NHentaiDescriptionAdapter(
                 if (it == 0L) return@let
                 binding.favorites.text = it.toString()
 
-                val drawable = itemView.context.getDrawable(R.drawable.ic_favorite_24dp)
+                val drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_favorite_24dp)
                 drawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
 
                 binding.favorites.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null)
@@ -89,12 +91,17 @@ class NHentaiDescriptionAdapter(
             binding.whenPosted.text = EX_DATE_FORMAT.format(Date((meta.uploadDate ?: 0) * 1000))
 
             binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.pageImageTypes.size, meta.pageImageTypes.size)
-            val pagesDrawable = itemView.context.getDrawable(R.drawable.ic_baseline_menu_book_24)
+            val pagesDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)
             pagesDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
             binding.pages.setCompoundDrawablesWithIntrinsicBounds(pagesDrawable, null, null, null)
 
             @SuppressLint("SetTextI18n")
             binding.id.text = "#" + (meta.nhId ?: 0)
+
+            val infoDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)
+            infoDrawable?.setTint(itemView.context.getResourceColor(R.attr.colorAccent))
+            infoDrawable?.setBounds(0, 0, 20.dpToPx, 20.dpToPx)
+            binding.moreInfo.setCompoundDrawables(infoDrawable, null, null, null)
 
             listOf(
                 binding.favorites,

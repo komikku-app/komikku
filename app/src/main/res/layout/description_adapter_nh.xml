@@ -34,7 +34,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/pages"
-            style="@style/TextAppearance.Regular"
+            style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -47,7 +47,7 @@
             android:id="@+id/more_info"
             style="@style/Theme.Widget.Button"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:layout_marginEnd="16dp"
             android:text="@string/more_info"
             app:layout_constraintEnd_toEndOf="parent"
@@ -61,7 +61,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/id"
-            style="@style/TextAppearance.Regular"
+            style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -70,7 +70,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/favorites"
-            style="@style/TextAppearance.Regular"
+            style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
@@ -79,7 +79,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/when_posted"
-            style="@style/TextAppearance.Regular"
+            style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
