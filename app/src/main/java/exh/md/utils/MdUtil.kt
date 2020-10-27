@@ -169,7 +169,7 @@ class MdUtil {
             englishDescriptionTags.forEach {
                 newDescription = newDescription.replace(it, "")
             }
-            return cleanString(newDescription)
+            return cleanString(newDescription).trim()
         }
 
         fun getImageUrl(attr: String): String {
