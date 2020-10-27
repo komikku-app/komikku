@@ -40,7 +40,7 @@ import exh.MERGED_SOURCE_ID
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import exh.util.asObservable
 import exh.util.await
 import exh.util.awaitSingle
@@ -425,7 +425,7 @@ class LibraryUpdateService(
      * @return a pair of the inserted and removed chapters.
      */
     fun updateManga(manga: Manga): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        val source = sourceManager.getOrStub(manga.source)
+        val source = sourceManager.getOrStub(manga.source).getMainSource()
 
         // Update manga details metadata in the background
         if (preferences.autoUpdateMetadata()) {
@@ -447,21 +447,6 @@ class LibraryUpdateService(
                 .subscribe()
         }
 
-        // SY -->
-        if (source.getMainSource() is MangaDex && trackManager.mdList.isLogged) {
-            try {
-                val tracks = db.getTracks(manga).executeAsBlocking()
-                if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
-                    var track = trackManager.mdList.createInitialTracker(manga)
-                    track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
-                    db.insertTrack(track).executeAsBlocking()
-                }
-            } catch (e: Exception) {
-                XLog.e(e)
-            }
-        }
-        // SY <--
-
         return (
             /* SY --> */ if (source is MergedSource) runBlocking { source.fetchChaptersAndSync(manga, false).asObservable() }
             else /* SY <-- */ source.fetchChapterList(manga)
@@ -469,12 +454,16 @@ class LibraryUpdateService(
             // SY -->
             )
             .doOnNext {
-                if (source.getMainSource() is MangaDex) {
-                    val tracks = db.getTracks(manga).executeAsBlocking()
-                    if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
-                        var track = trackManager.mdList.createInitialTracker(manga)
-                        track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
-                        db.insertTrack(track).executeAsBlocking()
+                if (source is MangaDex && trackManager.mdList.isLogged) {
+                    try {
+                        val tracks = db.getTracks(manga).executeAsBlocking()
+                        if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
+                            var track = trackManager.mdList.createInitialTracker(manga)
+                            track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
+                            db.insertTrack(track).executeAsBlocking()
+                        }
+                    } catch (e: Exception) {
+                        XLog.e(e)
                     }
                 }
             }
@@ -548,7 +537,7 @@ class LibraryUpdateService(
     // filter all follows from Mangadex and only add reading or rereading manga to library
     private fun syncFollows(): Observable<LibraryManga> {
         val count = AtomicInteger(0)
-        val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager)!!
+        val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager) ?: return Observable.empty()
         return mangaDex.fetchAllFollows(true)
             .asObservable()
             .map { listManga ->
@@ -582,7 +571,7 @@ class LibraryUpdateService(
             .doOnCompleted {
                 notifier.cancelProgressNotification()
             }
-            .map { LibraryManga() }
+            .flatMap { Observable.empty() }
     }
 
     /**
@@ -616,7 +605,7 @@ class LibraryUpdateService(
             .doOnCompleted {
                 notifier.cancelProgressNotification()
             }
-            .map { LibraryManga() }
+            .flatMap { Observable.empty() }
     }
     // SY <--
 

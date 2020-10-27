@@ -64,16 +64,16 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
-        prId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
-        title?.let { pairs += Pair(context.getString(R.string.title), it) }
-        altTitle?.let { pairs += Pair(context.getString(R.string.alt_title), it) }
-        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
-        uploaderDisp?.let { pairs += Pair(context.getString(R.string.uploader_capital), it) }
-        uploader?.let { pairs += Pair(context.getString(R.string.uploader), it) }
-        pages?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
-        fileSize?.let { pairs += Pair(context.getString(R.string.gallery_size), it) }
-        ratingCount?.let { pairs += Pair(context.getString(R.string.total_ratings), it.toString()) }
-        averageRating?.let { pairs += Pair(context.getString(R.string.average_rating), it.toString()) }
+        prId?.let { pairs += context.getString(R.string.id) to it.toString() }
+        title?.let { pairs += context.getString(R.string.title) to it }
+        altTitle?.let { pairs += context.getString(R.string.alt_title) to it }
+        thumbnailUrl?.let { pairs += context.getString(R.string.thumbnail_url) to it }
+        uploaderDisp?.let { pairs += context.getString(R.string.uploader_capital) to it }
+        uploader?.let { pairs += context.getString(R.string.uploader) to it }
+        pages?.let { pairs += context.getString(R.string.page_count) to it.toString() }
+        fileSize?.let { pairs += context.getString(R.string.gallery_size) to it }
+        ratingCount?.let { pairs += context.getString(R.string.total_ratings) to it.toString() }
+        averageRating?.let { pairs += context.getString(R.string.average_rating) to it.toString() }
         return pairs
     }
 

@@ -10,7 +10,7 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.nHentaiSourceIds
 import java.util.Locale
 
-class SourceTagsUtil {
+object SourceTagsUtil {
     fun getWrappedTag(sourceId: Long, namespace: String? = null, tag: String? = null, fullTag: String? = null): String? {
         return if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId in nHentaiSourceIds || sourceId in hitomiSourceIds) {
             val parsed = if (fullTag != null) parseTag(fullTag) else if (namespace != null && tag != null) RaisedTag(namespace, tag, TAG_TYPE_DEFAULT) else null
@@ -47,52 +47,53 @@ class SourceTagsUtil {
     } else {
         "$namespace:$tag"
     }
-    companion object {
-        fun Manga.getRaisedTags(genres: List<String>? = null): List<RaisedTag>? = (genres ?: this.getGenres())?.map { parseTag(it) }
 
-        fun parseTag(tag: String) = RaisedTag(
-            (
-                if (tag.startsWith("-")) {
-                    tag.substringAfter("-")
-                } else {
-                    tag
-                }
-                ).substringBefore(':', missingDelimiterValue = "").trimOrNull(),
-            tag.substringAfter(':', missingDelimiterValue = tag).trim(),
-            if (tag.startsWith("-")) TAG_TYPE_EXCLUDE else TAG_TYPE_DEFAULT
-        )
+    fun parseTag(tag: String) = RaisedTag(
+        (
+            if (tag.startsWith("-")) {
+                tag.substringAfter("-")
+            } else {
+                tag
+            }
+            ).substringBefore(':', missingDelimiterValue = "").trimOrNull(),
+        tag.substringAfter(':', missingDelimiterValue = tag).trim(),
+        if (tag.startsWith("-")) TAG_TYPE_EXCLUDE else TAG_TYPE_DEFAULT
+    )
 
-        const val TAG_TYPE_EXCLUDE = 69 // why not
+    const val TAG_TYPE_EXCLUDE = 69 // why not
 
-        const val DOUJINSHI_COLOR = "#f44336"
-        const val MANGA_COLOR = "#ff9800"
-        const val ARTIST_CG_COLOR = "#fbc02d"
-        const val GAME_CG_COLOR = "#4caf50"
-        const val WESTERN_COLOR = "#8bc34a"
-        const val NON_H_COLOR = "#2196f3"
-        const val IMAGE_SET_COLOR = "#3f51b5"
-        const val COSPLAY_COLOR = "#9c27b0"
-        const val ASIAN_PORN_COLOR = "#9575cd"
-        const val MISC_COLOR = "#f06292"
+    const val DOUJINSHI_COLOR = "#f44336"
+    const val MANGA_COLOR = "#ff9800"
+    const val ARTIST_CG_COLOR = "#fbc02d"
+    const val GAME_CG_COLOR = "#4caf50"
+    const val WESTERN_COLOR = "#8bc34a"
+    const val NON_H_COLOR = "#2196f3"
+    const val IMAGE_SET_COLOR = "#3f51b5"
+    const val COSPLAY_COLOR = "#9c27b0"
+    const val ASIAN_PORN_COLOR = "#9575cd"
+    const val MISC_COLOR = "#f06292"
 
-        fun getLocaleSourceUtil(language: String?) = when (language) {
-            "english", "eng" -> Locale("en")
-            "chinese" -> Locale("zh")
-            "spanish" -> Locale("es")
-            "korean" -> Locale("ko")
-            "russian" -> Locale("ru")
-            "french" -> Locale("fr")
-            "portuguese" -> Locale("pt")
-            "thai" -> Locale("th")
-            "german" -> Locale("de")
-            "italian" -> Locale("it")
-            "vietnamese" -> Locale("vi")
-            "polish" -> Locale("pl")
-            "hungarian" -> Locale("hu")
-            "dutch" -> Locale("nl")
-            else -> null
-        }
-
-        private const val TAG_TYPE_DEFAULT = 1
+    fun getLocaleSourceUtil(language: String?) = when (language) {
+        "english", "eng" -> Locale("en")
+        "chinese" -> Locale("zh")
+        "spanish" -> Locale("es")
+        "korean" -> Locale("ko")
+        "russian" -> Locale("ru")
+        "french" -> Locale("fr")
+        "portuguese" -> Locale("pt")
+        "thai" -> Locale("th")
+        "german" -> Locale("de")
+        "italian" -> Locale("it")
+        "vietnamese" -> Locale("vi")
+        "polish" -> Locale("pl")
+        "hungarian" -> Locale("hu")
+        "dutch" -> Locale("nl")
+        else -> null
     }
+
+    private const val TAG_TYPE_DEFAULT = 1
+}
+
+fun Manga.getRaisedTags(genres: List<String>? = null): List<RaisedTag>? = (genres ?: this.getGenres())?.map {
+    SourceTagsUtil.parseTag(it)
 }

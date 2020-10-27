@@ -21,10 +21,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.metadata.metadata.base.RaisedTag
-import exh.source.EnhancedHttpSource.Companion.getMainSource
-import exh.util.SourceTagsUtil.Companion.TAG_TYPE_EXCLUDE
-import exh.util.SourceTagsUtil.Companion.getRaisedTags
-import exh.util.SourceTagsUtil.Companion.parseTag
+import exh.source.getMainSource
+import exh.util.SourceTagsUtil
+import exh.util.getRaisedTags
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.card
 import kotlinx.android.synthetic.main.source_compact_grid_item.view.gradient
 import uy.kohesive.injekt.Injekt
@@ -160,14 +159,14 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
             }
             cleanConstraint.split(",").all {
                 if (raisedTags == null) containsGenre(it.trim(), genres) else containsRaisedGenre(
-                    parseTag(it.trim()),
+                    SourceTagsUtil.parseTag(it.trim()),
                     raisedTags
                 )
             }
         } else if (raisedTags == null) {
             containsGenre(constraint, genres)
         } else {
-            containsRaisedGenre(parseTag(constraint), raisedTags)
+            containsRaisedGenre(SourceTagsUtil.parseTag(constraint), raisedTags)
         }
     }
 
@@ -175,7 +174,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
         val genre = genres.find {
             (it.namespace?.toLowerCase() == tag.namespace?.toLowerCase() && it.name.toLowerCase() == tag.name.toLowerCase())
         }
-        return if (tag.type == TAG_TYPE_EXCLUDE) {
+        return if (tag.type == SourceTagsUtil.TAG_TYPE_EXCLUDE) {
             genre == null
         } else {
             genre != null

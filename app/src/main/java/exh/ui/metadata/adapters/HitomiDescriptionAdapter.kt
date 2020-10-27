@@ -1,22 +1,18 @@
 package exh.ui.metadata.adapters
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterHiBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getResourceColor
-import exh.metadata.EX_DATE_FORMAT
+import exh.metadata.MetadataUtil
+import exh.metadata.bindDrawable
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.ui.metadata.MetadataViewController
-import exh.util.SourceTagsUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -50,37 +46,16 @@ class HitomiDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is HitomiSearchMetadata) return
 
-            val genre = meta.genre
-            if (genre != null) {
-                val pair = when (genre) {
-                    "doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
-                    "manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
-                    "artist CG" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.artist_cg)
-                    "game CG" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.game_cg)
-                    "western" -> Pair(SourceTagsUtil.WESTERN_COLOR, R.string.western)
-                    "non-H" -> Pair(SourceTagsUtil.NON_H_COLOR, R.string.non_h)
-                    "image Set" -> Pair(SourceTagsUtil.IMAGE_SET_COLOR, R.string.image_set)
-                    "cosplay" -> Pair(SourceTagsUtil.COSPLAY_COLOR, R.string.cosplay)
-                    "asian Porn" -> Pair(SourceTagsUtil.ASIAN_PORN_COLOR, R.string.asian_porn)
-                    "misc" -> Pair(SourceTagsUtil.MISC_COLOR, R.string.misc)
-                    else -> Pair("", 0)
-                }
+            binding.genre.text = meta.genre?.let { MetadataUtil.getGenreAndColour(itemView.context, it) }?.let {
+                binding.genre.setBackgroundColor(it.first)
+                it.second
+            } ?: meta.genre ?: itemView.context.getString(R.string.unknown)
 
-                if (pair.first.isNotBlank()) {
-                    binding.genre.setBackgroundColor(Color.parseColor(pair.first))
-                    binding.genre.text = itemView.context.getString(pair.second)
-                } else binding.genre.text = genre
-            } else binding.genre.setText(R.string.unknown)
-
-            binding.whenPosted.text = EX_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
+            binding.whenPosted.text = MetadataUtil.EX_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
             binding.group.text = meta.group ?: itemView.context.getString(R.string.unknown)
             binding.language.text = meta.language ?: itemView.context.getString(R.string.unknown)
 
-            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
-                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-                binding.moreInfo.setCompoundDrawables(this, null, null, null)
-            }
+            binding.moreInfo.bindDrawable(itemView.context, R.drawable.ic_info_24dp)
 
             listOf(
                 binding.genre,

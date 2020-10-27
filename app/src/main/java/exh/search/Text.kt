@@ -1,7 +1,6 @@
 package exh.search
 
 import exh.plusAssign
-import exh.search.SearchEngine.Companion.escapeLike
 
 class Text : QueryComponent() {
     val components = mutableListOf<TextComponent>()
@@ -44,7 +43,7 @@ class Text : QueryComponent() {
         val builder = StringBuilder()
         for (component in components) {
             when (component) {
-                is StringTextComponent -> builder += escapeLike(component.value)
+                is StringTextComponent -> builder += SearchEngine.escapeLike(component.value)
                 is SingleWildcard -> builder += "_"
                 is MultiWildcard -> builder += "%"
             }
@@ -60,5 +59,5 @@ class Text : QueryComponent() {
         rawText!!
     }
 
-    fun rawTextEscapedForLike() = escapeLike(rawTextOnly())
+    fun rawTextEscapedForLike() = SearchEngine.escapeLike(rawTextOnly())
 }

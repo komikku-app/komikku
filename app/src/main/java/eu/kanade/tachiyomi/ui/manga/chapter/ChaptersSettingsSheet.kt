@@ -18,7 +18,7 @@ import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Stat
 import eu.kanade.tachiyomi.widget.TabbedBottomSheetDialog
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 
 class ChaptersSettingsSheet(
     private val router: Router,

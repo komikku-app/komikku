@@ -78,24 +78,24 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
-        mdId?.let { pairs += Pair(context.getString(R.string.id), it) }
-        mdUrl?.let { pairs += Pair(context.getString(R.string.url), it) }
-        thumbnail_url?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
-        title?.let { pairs += Pair(context.getString(R.string.title), it) }
-        author?.let { pairs += Pair(context.getString(R.string.author), it) }
-        artist?.let { pairs += Pair(context.getString(R.string.artist), it) }
-        lang_flag?.let { pairs += Pair(context.getString(R.string.language), it) }
-        last_chapter_number?.let { pairs += Pair(context.getString(R.string.last_chapter_number), it.toString()) }
-        rating?.let { pairs += Pair(context.getString(R.string.average_rating), it) }
-        users?.let { pairs += Pair(context.getString(R.string.total_ratings), it) }
-        status?.let { pairs += Pair(context.getString(R.string.status), it.toString()) }
-        missing_chapters?.let { pairs += Pair(context.getString(R.string.missing_chapters), it) }
-        follow_status?.let { pairs += Pair(context.getString(R.string.follow_status), it.toString()) }
-        anilist_id?.let { pairs += Pair(context.getString(R.string.anilist_id), it) }
-        kitsu_id?.let { pairs += Pair(context.getString(R.string.kitsu_id), it) }
-        my_anime_list_id?.let { pairs += Pair(context.getString(R.string.mal_id), it) }
-        manga_updates_id?.let { pairs += Pair(context.getString(R.string.manga_updates_id), it) }
-        anime_planet_id?.let { pairs += Pair(context.getString(R.string.anime_planet_id), it) }
+        mdId?.let { pairs += context.getString(R.string.id) to it }
+        mdUrl?.let { pairs += context.getString(R.string.url) to it }
+        thumbnail_url?.let { pairs += context.getString(R.string.thumbnail_url) to it }
+        title?.let { pairs += context.getString(R.string.title) to it }
+        author?.let { pairs += context.getString(R.string.author) to it }
+        artist?.let { pairs += context.getString(R.string.artist) to it }
+        lang_flag?.let { pairs += context.getString(R.string.language) to it }
+        last_chapter_number?.let { pairs += context.getString(R.string.last_chapter_number) to it.toString() }
+        rating?.let { pairs += context.getString(R.string.average_rating) to it }
+        users?.let { pairs += context.getString(R.string.total_ratings) to it }
+        status?.let { pairs += context.getString(R.string.status) to it.toString() }
+        missing_chapters?.let { pairs += context.getString(R.string.missing_chapters) to it }
+        follow_status?.let { pairs += context.getString(R.string.follow_status) to it.toString() }
+        anilist_id?.let { pairs += context.getString(R.string.anilist_id) to it }
+        kitsu_id?.let { pairs += context.getString(R.string.kitsu_id) to it }
+        my_anime_list_id?.let { pairs += context.getString(R.string.mal_id) to it }
+        manga_updates_id?.let { pairs += context.getString(R.string.manga_updates_id) to it }
+        anime_planet_id?.let { pairs += context.getString(R.string.anime_planet_id) to it }
         return pairs
     }
 

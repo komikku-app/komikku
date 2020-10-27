@@ -7,17 +7,21 @@ import com.afollestad.materialdialogs.MaterialDialog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.system.toast
-import exh.md.utils.MdUtil
+import exh.source.getMainSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class MangadexLogoutDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
-    val source by lazy { MdUtil.getEnabledMangaDex() }
+    val source = Injekt.get<SourceManager>().get(args.getLong("key", 0))?.getMainSource() as? MangaDex
 
     val trackManager: TrackManager by injectLazy()
 

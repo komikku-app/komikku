@@ -15,6 +15,7 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.floor
+import exh.util.nullIfZero
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -126,7 +127,7 @@ class ApiMangaParser(private val langs: List<String>) {
                     genres.add("Hentai")
                 }
 
-                if (tags.size != 0) tags.clear()
+                if (tags.isNotEmpty()) tags.clear()
                 tags += genres.map { RaisedTag(null, it, MangaDexSearchMetadata.TAG_TYPE_DEFAULT) }
             } catch (e: Exception) {
                 XLog.e(e)
@@ -157,10 +158,8 @@ class ApiMangaParser(private val langs: List<String>) {
             }
         }
         val removeOneshots = filteredChapters.asSequence()
-            .map { it.value.chapter!!.toDoubleOrNull() }
-            .filter { it != null }
-            .map { it!!.floor() }
-            .filter { it != 0 }
+            .map { it.value.chapter?.toDoubleOrNull()?.floor()?.nullIfZero() }
+            .filterNotNull()
             .toList().distinctBy { it }
         return removeOneshots.toList().size == finalChapterNumber.toDouble().floor()
     }

@@ -22,10 +22,10 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
     // TODO make use of this
     suspend fun fetchMangaAndChapterDetails(manga: SManga): Pair<SManga, List<SChapter>> {
         return withContext(Dispatchers.IO) {
-            val response = client.newCall(apiRequest(manga)).execute()
+            val response = client.newCall(apiRequest(manga)).await()
             val parser = ApiMangaParser(langs)
 
-            val jsonData = response.body!!.string()
+            val jsonData = withContext(Dispatchers.IO) { response.body!!.string() }
             if (response.code != 200) {
                 XLog.e("error from MangaDex with response code ${response.code} \n body: \n$jsonData")
                 throw Exception("Error from MangaDex Response code ${response.code} ")
@@ -43,14 +43,14 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
     suspend fun getMangaIdFromChapterId(urlChapterId: String): Int {
         return withContext(Dispatchers.IO) {
             val request = GET(MdUtil.baseUrl + MdUtil.apiChapter + urlChapterId + MdUtil.apiChapterSuffix, headers, CacheControl.FORCE_NETWORK)
-            val response = client.newCall(request).execute()
+            val response = client.newCall(request).await()
             ApiMangaParser(langs).chapterParseForMangaId(response)
         }
     }
 
     suspend fun fetchMangaDetails(manga: SManga): SManga {
         return withContext(Dispatchers.IO) {
-            val response = client.newCall(apiRequest(manga)).execute()
+            val response = client.newCall(apiRequest(manga)).await()
             ApiMangaParser(langs).parseToManga(manga, response, forceLatestCovers).await()
             manga.apply {
                 initialized = true
@@ -82,7 +82,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
 
     suspend fun fetchChapterList(manga: SManga): List<SChapter> {
         return withContext(Dispatchers.IO) {
-            val response = client.newCall(apiRequest(manga)).execute()
+            val response = client.newCall(apiRequest(manga)).await()
             ApiMangaParser(langs).chapterListParse(response)
         }
     }

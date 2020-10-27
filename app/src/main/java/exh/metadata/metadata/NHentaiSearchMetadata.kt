@@ -3,8 +3,7 @@ package exh.metadata.metadata
 import android.content.Context
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.metadata.EX_DATE_FORMAT
-import exh.metadata.ONGOING_SUFFIX
+import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
 import java.util.Date
@@ -65,7 +64,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         // We default to completed
         manga.status = SManga.COMPLETED
         englishTitle?.let { t ->
-            ONGOING_SUFFIX.find {
+            MetadataUtil.ONGOING_SUFFIX.find {
                 t.endsWith(it, ignoreCase = true)
             }?.let {
                 manga.status = SManga.ONGOING
@@ -77,17 +76,17 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
-        nhId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
-        uploadDate?.let { pairs += Pair(context.getString(R.string.date_posted), EX_DATE_FORMAT.format(Date(it * 1000))) }
-        favoritesCount?.let { pairs += Pair(context.getString(R.string.total_favorites), it.toString()) }
-        mediaId?.let { pairs += Pair(context.getString(R.string.media_id), it) }
-        japaneseTitle?.let { pairs += Pair(context.getString(R.string.japanese_title), it) }
-        englishTitle?.let { pairs += Pair(context.getString(R.string.english_title), it) }
-        shortTitle?.let { pairs += Pair(context.getString(R.string.short_title), it) }
-        coverImageType?.let { pairs += Pair(context.getString(R.string.cover_image_file_type), it) }
-        pageImageTypes.size.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
-        thumbnailImageType?.let { pairs += Pair(context.getString(R.string.thumbnail_image_file_type), it) }
-        scanlator?.let { pairs += Pair(context.getString(R.string.scanlator), it) }
+        nhId?.let { pairs += context.getString(R.string.id) to it.toString() }
+        uploadDate?.let { pairs += context.getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) }
+        favoritesCount?.let { pairs += context.getString(R.string.total_favorites) to it.toString() }
+        mediaId?.let { pairs += context.getString(R.string.media_id) to it }
+        japaneseTitle?.let { pairs += context.getString(R.string.japanese_title) to it }
+        englishTitle?.let { pairs += context.getString(R.string.english_title) to it }
+        shortTitle?.let { pairs += context.getString(R.string.short_title) to it }
+        coverImageType?.let { pairs += context.getString(R.string.cover_image_file_type) to it }
+        pageImageTypes.size.let { pairs += context.getString(R.string.page_count) to it.toString() }
+        thumbnailImageType?.let { pairs += context.getString(R.string.thumbnail_image_file_type) to it }
+        scanlator?.let { pairs += context.getString(R.string.scanlator) to it }
         return pairs
     }
 

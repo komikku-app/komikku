@@ -4,7 +4,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 
 /**
  * Presenter of [MangaDexFollowsController]. Inherit BrowseCataloguePresenter.

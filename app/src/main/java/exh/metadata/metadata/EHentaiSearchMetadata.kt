@@ -5,9 +5,7 @@ import android.net.Uri
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.metadata.EX_DATE_FORMAT
-import exh.metadata.ONGOING_SUFFIX
-import exh.metadata.humanReadableByteCount
+import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
 import uy.kohesive.injekt.Injekt
@@ -71,7 +69,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
         // We default to completed
         manga.status = SManga.COMPLETED
         title?.let { t ->
-            ONGOING_SUFFIX.find {
+            MetadataUtil.ONGOING_SUFFIX.find {
                 t.endsWith(it, ignoreCase = true)
             }?.let {
                 manga.status = SManga.ONGOING
@@ -111,25 +109,26 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
-        gId?.let { pairs += Pair(context.getString(R.string.id), it) }
-        gToken?.let { pairs += Pair(context.getString(R.string.token), it) }
-        exh?.let { pairs += Pair(context.getString(R.string.is_exhentai_gallery), context.getString(if (it) android.R.string.yes else android.R.string.no)) }
-        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
-        title?.let { pairs += Pair(context.getString(R.string.title), it) }
-        altTitle?.let { pairs += Pair(context.getString(R.string.alt_title), it) }
-        genre?.let { pairs += Pair(context.getString(R.string.genre), it) }
-        datePosted?.let { pairs += Pair(context.getString(R.string.date_posted), EX_DATE_FORMAT.format(Date(it))) }
-        parent?.let { pairs += Pair(context.getString(R.string.parent), it) }
-        visible?.let { pairs += Pair(context.getString(R.string.visible), it) }
-        language?.let { pairs += Pair(context.getString(R.string.language), it) }
-        translated?.let { pairs += Pair("Translated", context.getString(if (it) android.R.string.yes else android.R.string.no)) }
-        size?.let { pairs += Pair(context.getString(R.string.gallery_size), humanReadableByteCount(it, true)) }
-        length?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
-        favorites?.let { pairs += Pair(context.getString(R.string.total_favorites), it.toString()) }
-        ratingCount?.let { pairs += Pair(context.getString(R.string.total_ratings), it.toString()) }
-        averageRating?.let { pairs += Pair(context.getString(R.string.average_rating), it.toString()) }
-        aged.let { pairs += Pair(context.getString(R.string.aged), context.getString(if (it) android.R.string.yes else android.R.string.no)) }
-        lastUpdateCheck.let { pairs += Pair(context.getString(R.string.last_update_check), EX_DATE_FORMAT.format(Date(it))) }
+
+        gId?.let { pairs += context.getString(R.string.id) to it }
+        gToken?.let { pairs += context.getString(R.string.token) to it }
+        exh?.let { pairs += context.getString(R.string.is_exhentai_gallery) to context.getString(if (it) android.R.string.yes else android.R.string.no) }
+        thumbnailUrl?.let { pairs += context.getString(R.string.thumbnail_url) to it }
+        title?.let { pairs += context.getString(R.string.title) to it }
+        altTitle?.let { pairs += context.getString(R.string.alt_title) to it }
+        genre?.let { pairs += context.getString(R.string.genre) to it }
+        datePosted?.let { pairs += context.getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
+        parent?.let { pairs += context.getString(R.string.parent) to it }
+        visible?.let { pairs += context.getString(R.string.visible) to it }
+        language?.let { pairs += context.getString(R.string.language) to it }
+        translated?.let { pairs += "Translated" to context.getString(if (it) android.R.string.yes else android.R.string.no) }
+        size?.let { pairs += context.getString(R.string.gallery_size) to MetadataUtil.humanReadableByteCount(it, true) }
+        length?.let { pairs += context.getString(R.string.page_count) to it.toString() }
+        favorites?.let { pairs += context.getString(R.string.total_favorites) to it.toString() }
+        ratingCount?.let { pairs += context.getString(R.string.total_ratings) to it.toString() }
+        averageRating?.let { pairs += context.getString(R.string.average_rating) to it.toString() }
+        aged.let { pairs += context.getString(R.string.aged) to context.getString(if (it) android.R.string.yes else android.R.string.no) }
+        lastUpdateCheck.let { pairs += context.getString(R.string.last_update_check) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
 
         return pairs
     }

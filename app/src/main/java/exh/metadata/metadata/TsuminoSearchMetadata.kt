@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.metadata.EX_DATE_FORMAT
+import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
@@ -82,25 +82,25 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
-        tmId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
-        title?.let { pairs += Pair(context.getString(R.string.title), it) }
-        uploader?.let { pairs += Pair(context.getString(R.string.uploader), it) }
-        uploadDate?.let { pairs += Pair(context.getString(R.string.date_posted), EX_DATE_FORMAT.format(Date(it))) }
-        length?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
-        ratingString?.let { pairs += Pair(context.getString(R.string.rating_string), it) }
-        averageRating?.let { pairs += Pair(context.getString(R.string.average_rating), it.toString()) }
-        userRatings?.let { pairs += Pair(context.getString(R.string.total_ratings), it.toString()) }
-        favorites?.let { pairs += Pair(context.getString(R.string.total_favorites), it.toString()) }
-        category?.let { pairs += Pair(context.getString(R.string.genre), it) }
-        collection?.let { pairs += Pair(context.getString(R.string.collection), it) }
-        group?.let { pairs += Pair(context.getString(R.string.group), it) }
+        tmId?.let { pairs += context.getString(R.string.id) to it.toString() }
+        title?.let { pairs += context.getString(R.string.title) to it }
+        uploader?.let { pairs += context.getString(R.string.uploader) to it }
+        uploadDate?.let { pairs += context.getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
+        length?.let { pairs += context.getString(R.string.page_count) to it.toString() }
+        ratingString?.let { pairs += context.getString(R.string.rating_string) to it }
+        averageRating?.let { pairs += context.getString(R.string.average_rating) to it.toString() }
+        userRatings?.let { pairs += context.getString(R.string.total_ratings) to it.toString() }
+        favorites?.let { pairs += context.getString(R.string.total_favorites) to it.toString() }
+        category?.let { pairs += context.getString(R.string.genre) to it }
+        collection?.let { pairs += context.getString(R.string.collection) to it }
+        group?.let { pairs += context.getString(R.string.group) to it }
         val parodiesString = parody.joinToString()
         if (parodiesString.isNotEmpty()) {
-            pairs += Pair(context.getString(R.string.parodies), parodiesString)
+            pairs += context.getString(R.string.parodies) to parodiesString
         }
         val charactersString = character.joinToString()
         if (charactersString.isNotEmpty()) {
-            pairs += Pair(context.getString(R.string.characters), charactersString)
+            pairs += context.getString(R.string.characters) to charactersString
         }
         return pairs
     }

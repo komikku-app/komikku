@@ -48,11 +48,11 @@ class HentaiCafeSearchMetadata : RaisedSearchMetadata() {
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
-        hcId?.let { pairs += Pair(context.getString(R.string.id), it) }
-        readerId?.let { pairs += Pair(context.getString(R.string.reader_id), it) }
-        thumbnailUrl?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
-        title?.let { pairs += Pair(context.getString(R.string.title), it) }
-        artist?.let { pairs += Pair(context.getString(R.string.artist), it) }
+        hcId?.let { pairs += context.getString(R.string.id) to it }
+        readerId?.let { pairs += context.getString(R.string.reader_id) to it }
+        thumbnailUrl?.let { pairs += context.getString(R.string.thumbnail_url) to it }
+        title?.let { pairs += context.getString(R.string.title) to it }
+        artist?.let { pairs += context.getString(R.string.artist) to it }
         return pairs
     }
 

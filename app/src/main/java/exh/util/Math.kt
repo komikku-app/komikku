@@ -1,5 +1,11 @@
 package exh.util
 
-fun Float.floor(): Int = kotlin.math.floor(this).toInt()
+import kotlin.math.floor
 
-fun Double.floor(): Int = kotlin.math.floor(this).toInt()
+fun Float.floor(): Int = floor(this).toInt()
+
+fun Double.floor(): Int = floor(this).toInt()
+
+fun Int.nullIfZero() = if (this == 0) null else this
+
+fun Long.nullIfZero() = if (this == 0L) null else this

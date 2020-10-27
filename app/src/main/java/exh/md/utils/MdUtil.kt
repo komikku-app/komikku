@@ -6,7 +6,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
+import exh.source.getMainSource
 import exh.util.floor
+import exh.util.nullIfZero
 import kotlinx.serialization.json.Json
 import org.jsoup.parser.Parser
 import uy.kohesive.injekt.Injekt
@@ -14,6 +16,7 @@ import uy.kohesive.injekt.api.get
 import java.net.URI
 import java.net.URISyntaxException
 
+@Suppress("unused")
 class MdUtil {
 
     companion object {
@@ -201,8 +204,8 @@ class MdUtil {
                 /*}*/
             }.sortedByDescending { it.chapter_number }
 
-            remove0ChaptersFromCount.firstOrNull()?.let {
-                val chpNumber = it.chapter_number.floor()
+            remove0ChaptersFromCount.firstOrNull()?.let { chapter ->
+                val chpNumber = chapter.chapter_number.floor()
                 val allChapters = (1..chpNumber).toMutableSet()
 
                 remove0ChaptersFromCount.forEach {
@@ -217,8 +220,9 @@ class MdUtil {
 
         fun getEnabledMangaDex(preferences: PreferencesHelper = Injekt.get(), sourceManager: SourceManager = Injekt.get()): MangaDex? {
             return getEnabledMangaDexs(preferences, sourceManager).let { mangadexs ->
-                val preferredMangaDexId = preferences.preferredMangaDexId().get().toLongOrNull()
-                mangadexs.firstOrNull { preferredMangaDexId != null && preferredMangaDexId != 0L && it.id == preferredMangaDexId } ?: mangadexs.firstOrNull()
+                preferences.preferredMangaDexId().get().toLongOrNull()?.nullIfZero()?.let { preferredMangaDexId ->
+                    mangadexs.firstOrNull { it.id == preferredMangaDexId }
+                } ?: mangadexs.firstOrNull()
             }
         }
 
@@ -226,10 +230,11 @@ class MdUtil {
             val languages = preferences.enabledLanguages().get()
             val disabledSourceIds = preferences.disabledSources().get()
 
-            return sourceManager.getDelegatedCatalogueSources()
+            return sourceManager.getVisibleOnlineSources()
+                .map { it.getMainSource() }
+                .filterIsInstance<MangaDex>()
                 .filter { it.lang in languages }
                 .filterNot { it.id.toString() in disabledSourceIds }
-                .filterIsInstance(MangaDex::class.java)
         }
 
         fun mapMdIdToMangaUrl(id: Int) = "/manga/$id/"

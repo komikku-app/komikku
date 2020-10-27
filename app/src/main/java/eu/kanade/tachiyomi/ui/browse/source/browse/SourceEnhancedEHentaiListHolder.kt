@@ -12,11 +12,10 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import exh.metadata.EX_DATE_FORMAT
+import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
-import exh.util.SourceTagsUtil.Companion.getLocaleSourceUtil
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.date_posted
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.genre
 import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.language
@@ -82,11 +81,11 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
             genre.text = view.context.getString(pair.second)
         } else genre.text = metadata.genre
 
-        metadata.datePosted?.let { date_posted.text = EX_DATE_FORMAT.format(Date(it)) }
+        metadata.datePosted?.let { date_posted.text = MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
 
         metadata.averageRating?.let { rating_bar.rating = it.toFloat() }
 
-        val locale = getLocaleSourceUtil(metadata.tags.firstOrNull { it.namespace == "language" }?.name)
+        val locale = SourceTagsUtil.getLocaleSourceUtil(metadata.tags.firstOrNull { it.namespace == "language" }?.name)
         val pageCount = metadata.length
 
         language.text = if (locale != null && pageCount != null) {

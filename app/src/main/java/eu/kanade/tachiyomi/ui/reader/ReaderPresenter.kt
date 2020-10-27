@@ -40,7 +40,7 @@ import exh.md.utils.MdUtil
 import exh.md.utils.scanlatorList
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import exh.util.awaitSingleOrNull
 import exh.util.defaultReaderType
 import exh.util.shouldDeleteChapters

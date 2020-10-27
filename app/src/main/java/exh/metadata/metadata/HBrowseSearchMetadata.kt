@@ -3,7 +3,6 @@ package exh.metadata.metadata
 import android.content.Context
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.metadata.metadata.EightMusesSearchMetadata.Companion.ARTIST_NAMESPACE
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
 
@@ -51,11 +50,11 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
-        hbId?.let { pairs += Pair(context.getString(R.string.id), it.toString()) }
-        hbUrl?.let { pairs += Pair(context.getString(R.string.url), it) }
-        thumbnail?.let { pairs += Pair(context.getString(R.string.thumbnail_url), it) }
-        title?.let { pairs += Pair(context.getString(R.string.title), it) }
-        length?.let { pairs += Pair(context.getString(R.string.page_count), it.toString()) }
+        hbId?.let { pairs += context.getString(R.string.id) to it.toString() }
+        hbUrl?.let { pairs += context.getString(R.string.url) to it }
+        thumbnail?.let { pairs += context.getString(R.string.thumbnail_url) to it }
+        title?.let { pairs += context.getString(R.string.title) to it }
+        length?.let { pairs += context.getString(R.string.page_count) to it.toString() }
         return pairs
     }
 
@@ -65,6 +64,7 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
         private const val TITLE_TYPE_MAIN = 0
 
         const val TAG_TYPE_DEFAULT = 0
+        const val ARTIST_NAMESPACE = "artist"
 
         fun guessThumbnailUrl(hbid: String): String {
             return "$BASE_URL/thumbnails/${hbid}_1.jpg#guessed"

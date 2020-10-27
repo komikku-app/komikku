@@ -34,12 +34,12 @@ class SettingsMangaDexController :
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.mangadex_specific_settings
-        if (mdex == null) return@apply
-        val sourcePreference = MangaDexLoginPreference(context, mdex!!).apply {
-            title = mdex!!.name + " Login"
+        val mdex = mdex ?: return@apply
+        val sourcePreference = MangaDexLoginPreference(context, mdex).apply {
+            title = mdex.name + " Login"
             key = getSourceKey(source.id)
             setOnLoginClickListener {
-                if (mdex!!.isLogged()) {
+                if (mdex.isLogged()) {
                     val dialog = MangadexLogoutDialog(source)
                     dialog.targetController = this@SettingsMangaDexController
                     dialog.showDialog(router)

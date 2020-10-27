@@ -56,7 +56,7 @@ import eu.kanade.tachiyomi.widget.EmptyView
 import exh.isEhBasedSource
 import exh.md.similar.ui.EnableMangaDexSimilarDialogController
 import exh.savedsearches.EXHSavedSearch
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop

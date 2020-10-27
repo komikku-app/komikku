@@ -10,10 +10,11 @@ import com.afollestad.materialdialogs.customview.customView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.preference.LoginDialogPreference
-import exh.md.utils.MdUtil
+import exh.source.getMainSource
 import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.login
 import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.password
 import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_check
@@ -29,7 +30,7 @@ import uy.kohesive.injekt.api.get
 
 class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle = bundle) {
 
-    val source by lazy { MdUtil.getEnabledMangaDex() }
+    val source = Injekt.get<SourceManager>().get(args.getLong("key", 0))?.getMainSource() as? MangaDex
 
     val service = Injekt.get<TrackManager>().mdList
 

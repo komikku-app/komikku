@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

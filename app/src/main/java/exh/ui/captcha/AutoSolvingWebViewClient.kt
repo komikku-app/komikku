@@ -4,7 +4,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import eu.kanade.tachiyomi.util.asJsoup
-import exh.ui.captcha.BrowserActionActivity.Companion.CROSS_WINDOW_SCRIPT_INNER
 import org.jsoup.nodes.DataNode
 import org.jsoup.nodes.Element
 import java.nio.charset.Charset
@@ -24,7 +23,7 @@ class AutoSolvingWebViewClient(
             val oReq = request.toOkHttpRequest()
             val response = activity.httpClient.newCall(oReq).execute()
             val doc = response.asJsoup()
-            doc.body().appendChild(Element("script").appendChild(DataNode(CROSS_WINDOW_SCRIPT_INNER)))
+            doc.body().appendChild(Element("script").appendChild(DataNode(BrowserActionActivity.CROSS_WINDOW_SCRIPT_INNER)))
             return WebResourceResponse(
                 "text/html",
                 "UTF-8",

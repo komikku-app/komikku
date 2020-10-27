@@ -19,7 +19,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.BrowseSourceFilterHeader
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import exh.savedsearches.EXHSavedSearch
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 
 class SourceFilterSheet(
     activity: Activity,

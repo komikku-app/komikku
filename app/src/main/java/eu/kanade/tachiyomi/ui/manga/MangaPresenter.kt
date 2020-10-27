@@ -50,7 +50,7 @@ import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import exh.util.asObservable
 import exh.util.await
 import exh.util.shouldDeleteChapters

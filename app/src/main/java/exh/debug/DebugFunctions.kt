@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.SourceManager.Companion.currentDelegatedSources
 import exh.EH_SOURCE_ID
 import exh.EXHMigrations
 import exh.EXH_SOURCE_ID
@@ -69,7 +68,7 @@ object DebugFunctions {
     }
     private val throttleManager = EHentaiThrottleManager()
 
-    fun getDelegatedSourceList(): String = currentDelegatedSources.map { it.value.sourceName + " : " + it.value.sourceId + " : " + it.value.factory }.joinToString(separator = "\n")
+    fun getDelegatedSourceList(): String = SourceManager.currentDelegatedSources.map { it.value.sourceName + " : " + it.value.sourceId + " : " + it.value.factory }.joinToString(separator = "\n")
 
     fun resetEHGalleriesForUpdater() {
         throttleManager.resetThrottle()

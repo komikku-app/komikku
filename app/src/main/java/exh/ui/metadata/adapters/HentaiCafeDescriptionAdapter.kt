@@ -3,15 +3,13 @@ package exh.ui.metadata.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterHcBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getResourceColor
+import exh.metadata.bindDrawable
 import exh.metadata.metadata.HentaiCafeSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import kotlinx.coroutines.CoroutineScope
@@ -48,11 +46,7 @@ class HentaiCafeDescriptionAdapter(
 
             binding.artist.text = meta.artist ?: itemView.context.getString(R.string.unknown)
 
-            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
-                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-                binding.moreInfo.setCompoundDrawables(this, null, null, null)
-            }
+            binding.moreInfo.bindDrawable(itemView.context, R.drawable.ic_info_24dp)
 
             binding.artist.longClicks()
                 .onEach {

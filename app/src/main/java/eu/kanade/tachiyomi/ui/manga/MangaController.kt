@@ -103,7 +103,7 @@ import exh.isEhBasedSource
 import exh.md.similar.ui.MangaDexSimilarController
 import exh.metadata.metadata.base.FlatMetadata
 import exh.recs.RecommendsController
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import kotlinx.android.synthetic.main.main_activity.root_coordinator
 import kotlinx.android.synthetic.main.main_activity.toolbar
 import kotlinx.coroutines.CancellationException

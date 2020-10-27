@@ -34,20 +34,18 @@ class FilterSerializer {
     )
 
     fun serialize(filters: FilterList) = buildJsonArray {
-        filters.forEach {
-            @Suppress("UNCHECKED_CAST")
-            add(serialize(it as Filter<Any?>))
+        filters.filterIsInstance<Filter<Any?>>().forEach {
+            add(serialize(it))
         }
     }
 
     fun serialize(filter: Filter<Any?>): JsonObject {
-        for (serializer in serializers) {
-            if (filter::class.isSubclassOf(serializer.clazz)) {
-                // TODO Not sure how to deal with the mess of types here
-                @Suppress("UNCHECKED_CAST")
-                serializer as Serializer<Filter<Any?>>
-
-                return buildJsonObject {
+        return serializers
+            .filterIsInstance<Serializer<Filter<Any?>>>()
+            .firstOrNull {
+                filter::class.isSubclassOf(it.clazz)
+            }?.let { serializer ->
+                buildJsonObject {
                     with(serializer) { serialize(filter) }
 
                     val classMappings = mutableListOf<Pair<String, Any>>()
@@ -66,26 +64,21 @@ class FilterSerializer {
 
                     put(TYPE, serializer.type)
                 }
-            }
-        }
-        throw IllegalArgumentException("Cannot serialize this Filter object!")
+            } ?: throw IllegalArgumentException("Cannot serialize this Filter object!")
     }
 
     fun deserialize(filters: FilterList, json: JsonArray) {
-        filters.zip(json).forEach { (filter, obj) ->
-            @Suppress("UNCHECKED_CAST")
-            deserialize(filter as Filter<Any?>, obj.jsonObject)
+        filters.filterIsInstance<Filter<Any?>>().zip(json).forEach { (filter, obj) ->
+            deserialize(filter, obj.jsonObject)
         }
     }
 
     fun deserialize(filter: Filter<Any?>, json: JsonObject) {
-        val serializer = serializers.find {
-            it.type == json[TYPE]!!.jsonPrimitive.content
-        } ?: throw IllegalArgumentException("Cannot deserialize this type!")
-
-        // TODO Not sure how to deal with the mess of types here
-        @Suppress("UNCHECKED_CAST")
-        serializer as Serializer<Filter<Any?>>
+        val serializer = serializers
+            .filterIsInstance<Serializer<Filter<Any?>>>()
+            .firstOrNull {
+                it.type == json[TYPE]!!.jsonPrimitive.content
+            } ?: throw IllegalArgumentException("Cannot deserialize this type!")
 
         serializer.deserialize(json, filter)
 

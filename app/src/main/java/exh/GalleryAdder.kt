@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 

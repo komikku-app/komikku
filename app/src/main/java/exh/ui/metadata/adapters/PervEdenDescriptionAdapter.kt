@@ -1,22 +1,19 @@
 package exh.ui.metadata.adapters
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterPeBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getResourceColor
+import exh.metadata.MetadataUtil
+import exh.metadata.bindDrawable
 import exh.metadata.metadata.PervEdenSearchMetadata
 import exh.ui.metadata.MetadataViewController
-import exh.util.SourceTagsUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,7 +23,6 @@ import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import java.util.Locale
 import kotlin.math.round
-import kotlin.math.roundToInt
 
 class PervEdenDescriptionAdapter(
     private val controller: MangaController
@@ -52,22 +48,10 @@ class PervEdenDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is PervEdenSearchMetadata) return
 
-            val genre = meta.genre
-            if (genre != null) {
-                val pair = when (genre) {
-                    "Doujinshi" -> Pair(SourceTagsUtil.DOUJINSHI_COLOR, R.string.doujinshi)
-                    "Japanese Manga" -> Pair(SourceTagsUtil.MANGA_COLOR, R.string.manga)
-                    "Korean Manhwa" -> Pair(SourceTagsUtil.ARTIST_CG_COLOR, R.string.manhwa)
-                    "Chinese Manhua" -> Pair(SourceTagsUtil.GAME_CG_COLOR, R.string.manhua)
-                    "Comic" -> Pair(SourceTagsUtil.WESTERN_COLOR, R.string.comic)
-                    else -> Pair("", 0)
-                }
-
-                if (pair.first.isNotBlank()) {
-                    binding.genre.setBackgroundColor(Color.parseColor(pair.first))
-                    binding.genre.text = itemView.context.getString(pair.second)
-                } else binding.genre.text = genre
-            } else binding.genre.setText(R.string.unknown)
+            binding.genre.text = meta.genre?.let { MetadataUtil.getGenreAndColour(itemView.context, it) }?.let {
+                binding.genre.setBackgroundColor(it.first)
+                it.second
+            } ?: meta.genre ?: itemView.context.getString(R.string.unknown)
 
             val language = meta.lang
             binding.language.text = if (language != null) {
@@ -75,29 +59,11 @@ class PervEdenDescriptionAdapter(
                 local.displayName
             } else itemView.context.getString(R.string.unknown)
 
-            val name = when (((meta.rating ?: 100F) * 2).roundToInt()) {
-                0 -> R.string.rating0
-                1 -> R.string.rating1
-                2 -> R.string.rating2
-                3 -> R.string.rating3
-                4 -> R.string.rating4
-                5 -> R.string.rating5
-                6 -> R.string.rating6
-                7 -> R.string.rating7
-                8 -> R.string.rating8
-                9 -> R.string.rating9
-                10 -> R.string.rating10
-                else -> R.string.no_rating
-            }
             binding.ratingBar.rating = meta.rating ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((meta.rating ?: 0F) * 100.0) / 100.0).toString() + " - " + itemView.context.getString(name)
+            binding.rating.text = (round((meta.rating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUtil.getRatingString(itemView.context, meta.rating?.times(2))
 
-            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
-                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-                binding.moreInfo.setCompoundDrawables(this, null, null, null)
-            }
+            binding.moreInfo.bindDrawable(itemView.context, R.drawable.ic_info_24dp)
 
             listOf(
                 binding.genre,

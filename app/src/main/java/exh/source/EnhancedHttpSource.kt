@@ -235,21 +235,22 @@ class EnhancedHttpSource(
             originalSource
         }
     }
+}
 
-    companion object {
-        fun Source.getMainSource(): Source {
-            return if (this is EnhancedHttpSource) {
-                this.source()
-            } else {
-                this
-            }
-        }
-        fun Source.getOriginalSource(): Source {
-            return if (this is EnhancedHttpSource) {
-                this.originalSource
-            } else {
-                this
-            }
-        }
-    }
+fun Source.getMainSource(): Source = if (this is EnhancedHttpSource) {
+    this.source()
+} else {
+    this
+}
+
+fun Source.getOriginalSource(): Source = if (this is EnhancedHttpSource) {
+    this.originalSource
+} else {
+    this
+}
+
+fun Source.getEnhancedSource(): Source = if (this is EnhancedHttpSource) {
+    this.enhancedSource
+} else {
+    this
 }

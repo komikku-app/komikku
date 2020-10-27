@@ -26,7 +26,7 @@ import exh.eh.EHTags
 import exh.eh.EHentaiUpdateHelper
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.GalleryEntry
-import exh.metadata.EX_DATE_FORMAT
+import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
@@ -35,7 +35,6 @@ import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
-import exh.metadata.parseHumanReadableByteCount
 import exh.ui.login.LoginController
 import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
@@ -239,7 +238,7 @@ class EHentai(
     private fun getDateTag(element: Element?): Long? {
         val text = element?.text()?.nullIfBlank()
         return if (text != null) {
-            val date = EX_DATE_FORMAT.parse(text)
+            val date = MetadataUtil.EX_DATE_FORMAT.parse(text)
             date?.time
         } else null
     }
@@ -272,8 +271,8 @@ class EHentai(
     /**
      * Parse a list of galleries
      */
-    fun genericMangaParse(response: Response) = extendedGenericMangaParse(response.asJsoup()).let {
-        MetadataMangasPage(it.first.map { it.manga }, it.second, it.first.map { it.metadata })
+    private fun genericMangaParse(response: Response) = extendedGenericMangaParse(response.asJsoup()).let { mangaFromSource ->
+        MetadataMangasPage(mangaFromSource.first.map { it.manga }, mangaFromSource.second, mangaFromSource.first.map { it.metadata })
     }
 
     override fun fetchChapterList(manga: SManga) = fetchChapterList(manga) {}
@@ -331,7 +330,7 @@ class EHentai(
                 url = EHentaiSearchMetadata.normalizeUrl(d.location())
                 name = "v1: " + d.selectFirst("#gn").text()
                 chapter_number = 1f
-                date_upload = EX_DATE_FORMAT.parse(
+                date_upload = MetadataUtil.EX_DATE_FORMAT.parse(
                     d.select("#gdd .gdt1").find { el ->
                         el.text().toLowerCase() == "posted:"
                     }!!.nextElementSibling().text()
@@ -348,7 +347,7 @@ class EHentai(
                         this.url = EHentaiSearchMetadata.normalizeUrl(link)
                         this.name = "v${index + 2}: $name"
                         this.chapter_number = index + 2f
-                        this.date_upload = EX_DATE_FORMAT.parse(posted)!!.time
+                        this.date_upload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time
                     }
                 }.reversed() + self
             }
@@ -455,7 +454,7 @@ class EHentai(
     private fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cache: Boolean = true): Request {
         return GET(
             page?.let {
-                addParam(url, "page", Integer.toString(page - 1))
+                addParam(url, "page", (page - 1).toString())
             } ?: url,
             additionalHeaders?.let { additionalHeadersNotNull ->
                 val headers = headers.newBuilder()
@@ -524,39 +523,35 @@ class EHentai(
     override fun parseIntoMetadata(metadata: EHentaiSearchMetadata, input: Document) {
         with(metadata) {
             with(input) {
-                val url = input.location()
+                val url = location()
                 gId = EHentaiSearchMetadata.galleryId(url)
                 gToken = EHentaiSearchMetadata.galleryToken(url)
 
                 exh = this@EHentai.exh
-                title = select("#gn").text().nullIfBlank()?.trim()
+                title = select("#gn").text().trimOrNull()
 
-                altTitle = select("#gj").text().nullIfBlank()?.trim()
+                altTitle = select("#gj").text().trimOrNull()
 
                 thumbnailUrl = select("#gd1 div").attr("style").nullIfBlank()?.let {
                     it.substring(it.indexOf('(') + 1 until it.lastIndexOf(')'))
                 }
                 genre = select(".cs")
                     .attr("onclick")
-                    .nullIfBlank()
-                    ?.trim()
+                    .trimOrNull()
                     ?.substringAfterLast('/')
                     ?.removeSuffix("'")
 
-                uploader = select("#gdn").text().nullIfBlank()?.trim()
+                uploader = select("#gdn").text().trimOrNull()
 
                 // Parse the table
                 select("#gdd tr").forEach {
-                    val left = it.select(".gdt1").text().nullIfBlank()?.trim()
+                    val left = it.select(".gdt1").text().trimOrNull()
                     val rightElement = it.selectFirst(".gdt2")
-                    val right = rightElement.text().nullIfBlank()?.trim()
+                    val right = rightElement.text().trimOrNull()
                     if (left != null && right != null) {
                         ignore {
-                            when (
-                                left.removeSuffix(":")
-                                    .toLowerCase()
-                            ) {
-                                "posted" -> datePosted = EX_DATE_FORMAT.parse(right)!!.time
+                            when (left.removeSuffix(":").toLowerCase()) {
+                                "posted" -> datePosted = MetadataUtil.EX_DATE_FORMAT.parse(right)!!.time
                                 // Example gallery with parent: https://e-hentai.org/g/1390451/7f181c2426/
                                 // Example JP gallery: https://exhentai.org/g/1375385/03519d541b/
                                 // Parent is older variation of the gallery
@@ -565,12 +560,12 @@ class EHentai(
                                 } else null
                                 "visible" -> visible = right.nullIfBlank()
                                 "language" -> {
-                                    language = right.removeSuffix(TR_SUFFIX).trim().nullIfBlank()
+                                    language = right.removeSuffix(TR_SUFFIX).trimOrNull()
                                     translated = right.endsWith(TR_SUFFIX, true)
                                 }
-                                "file size" -> size = parseHumanReadableByteCount(right)?.toLong()
-                                "length" -> length = right.removeSuffix("pages").trim().nullIfBlank()?.toInt()
-                                "favorited" -> favorites = right.removeSuffix("times").trim().nullIfBlank()?.toInt()
+                                "file size" -> size = MetadataUtil.parseHumanReadableByteCount(right)?.toLong()
+                                "length" -> length = right.removeSuffix("pages").trimOrNull()?.toInt()
+                                "favorited" -> favorites = right.removeSuffix("times").trimOrNull()?.toInt()
                             }
                         }
                     }
@@ -589,13 +584,11 @@ class EHentai(
                     averageRating = select("#rating_label")
                         .text()
                         .removePrefix("Average:")
-                        .trim()
-                        .nullIfBlank()
+                        .trimOrNull()
                         ?.toDouble()
                     ratingCount = select("#rating_count")
                         .text()
-                        .trim()
-                        .nullIfBlank()
+                        .trimOrNull()
                         ?.toInt()
                 }
 

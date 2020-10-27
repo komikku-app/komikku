@@ -104,7 +104,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
                 tags.clear()
             }.forEach {
                 if (it.first != null && it.second != null) {
-                    tags.add(RaisedTag(it.first!!, it.second!!, if (it.first == "category") RaisedSearchMetadata.TAG_TYPE_VIRTUAL else NHentaiSearchMetadata.TAG_TYPE_DEFAULT))
+                    tags.add(RaisedTag(it.first!!, it.second!!, if (it.first == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE) RaisedSearchMetadata.TAG_TYPE_VIRTUAL else NHentaiSearchMetadata.TAG_TYPE_DEFAULT))
                 }
             }
         }

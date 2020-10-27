@@ -39,7 +39,7 @@ import exh.eh.EHentaiThrottleManager
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.savedsearches.JsonSavedSearch
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

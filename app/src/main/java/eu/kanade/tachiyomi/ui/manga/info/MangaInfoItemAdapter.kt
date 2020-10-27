@@ -20,8 +20,8 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.isEhBasedSource
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
-import exh.source.EnhancedHttpSource.Companion.getMainSource
-import exh.util.SourceTagsUtil.Companion.getRaisedTags
+import exh.source.getMainSource
+import exh.util.getRaisedTags
 import exh.util.makeSearchChip
 import exh.util.setChipsExtended
 import kotlinx.coroutines.CoroutineScope

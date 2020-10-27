@@ -22,7 +22,7 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.MERGED_SOURCE_ID
-import exh.source.EnhancedHttpSource.Companion.getMainSource
+import exh.source.getMainSource
 import exh.util.SourceTagsUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -107,7 +107,7 @@ class MangaInfoHeaderAdapter(
 
             with(binding.btnTracking) {
                 // SY -->
-                val sourceIsMangaDex = source.let { it.getMainSource() is MangaDex }
+                val sourceIsMangaDex = source.getMainSource() is MangaDex
                 // SY <--
                 if (trackManager.hasLoggedServices(/* SY --> */sourceIsMangaDex/* SY <-- */)) {
                     isVisible = true
@@ -169,7 +169,7 @@ class MangaInfoHeaderAdapter(
                     val author = binding.mangaAuthor.text.toString()
                     controller.activity?.copyToClipboard(
                         author,
-                        SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = author) ?: author
+                        SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = author) ?: author
                     )
                     // SY <--
                 }
@@ -179,7 +179,7 @@ class MangaInfoHeaderAdapter(
                 .onEach {
                     // SY -->
                     val author = binding.mangaAuthor.text.toString()
-                    controller.performGlobalSearch(SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = author) ?: author)
+                    controller.performGlobalSearch(SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = author) ?: author)
                     // SY <--
                 }
                 .launchIn(scope)
@@ -190,7 +190,7 @@ class MangaInfoHeaderAdapter(
                     val artist = binding.mangaArtist.text.toString()
                     controller.activity?.copyToClipboard(
                         artist,
-                        SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist
+                        SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist
                     )
                     // SY <--
                 }
@@ -200,7 +200,7 @@ class MangaInfoHeaderAdapter(
                 .onEach {
                     // SY -->
                     val artist = binding.mangaArtist.text.toString()
-                    controller.performGlobalSearch(SourceTagsUtil().getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist)
+                    controller.performGlobalSearch(SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist)
                     // SY <--
                 }
                 .launchIn(scope)

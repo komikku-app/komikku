@@ -5,9 +5,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
-import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
-import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_NORMAL
-import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
+import exh.metadata.metadata.EHentaiSearchMetadata
 
 /**
  * Replaces chips in a ChipGroup.
@@ -29,7 +27,7 @@ fun ChipGroup.setChipsExtended(items: List<String>?, onClick: (item: String) -> 
 fun makeSearchChip(item: String, onClick: (item: String) -> Unit = {}, onLongClick: (item: String) -> Unit = {}, sourceId: Long, context: Context, namespace: String? = null, type: Int? = null): Chip {
     return Chip(context).apply {
         text = item
-        val search = (if (namespace != null) SourceTagsUtil().getWrappedTag(sourceId, namespace = namespace, tag = item) else SourceTagsUtil().getWrappedTag(sourceId, fullTag = item)) ?: item
+        val search = (if (namespace != null) SourceTagsUtil.getWrappedTag(sourceId, namespace = namespace, tag = item) else SourceTagsUtil.getWrappedTag(sourceId, fullTag = item)) ?: item
         setOnClickListener { onClick(search) }
         setOnLongClickListener {
             onLongClick(search)
@@ -37,9 +35,9 @@ fun makeSearchChip(item: String, onClick: (item: String) -> Unit = {}, onLongCli
         }
         if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID) {
             chipStrokeWidth = when (type) {
-                TAG_TYPE_NORMAL -> 5F
-                TAG_TYPE_LIGHT -> 3F
-                TAG_TYPE_WEAK -> 0F
+                EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 5F
+                EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 3F
+                EHentaiSearchMetadata.TAG_TYPE_WEAK -> 0F
                 else -> chipStrokeWidth
             }
         }

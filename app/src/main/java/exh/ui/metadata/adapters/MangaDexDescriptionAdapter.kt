@@ -4,15 +4,14 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterMdBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.dpToPx
-import eu.kanade.tachiyomi.util.system.getResourceColor
+import exh.metadata.MetadataUtil.getRatingString
+import exh.metadata.bindDrawable
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.MetadataViewController
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +22,6 @@ import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
 import kotlin.math.round
-import kotlin.math.roundToInt
 
 class MangaDexDescriptionAdapter(
     private val controller: MangaController
@@ -50,31 +48,12 @@ class MangaDexDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is MangaDexSearchMetadata) return
 
-            val ratingFloat = meta.rating?.toFloatOrNull()?.div(2F)
-            val name = when (((ratingFloat ?: 100F) * 2).roundToInt()) {
-                0 -> R.string.rating0
-                1 -> R.string.rating1
-                2 -> R.string.rating2
-                3 -> R.string.rating3
-                4 -> R.string.rating4
-                5 -> R.string.rating5
-                6 -> R.string.rating6
-                7 -> R.string.rating7
-                8 -> R.string.rating8
-                9 -> R.string.rating9
-                10 -> R.string.rating10
-                else -> R.string.no_rating
-            }
-
-            binding.ratingBar.rating = ratingFloat ?: 0F
+            val ratingFloat = meta.rating?.toFloatOrNull()
+            binding.ratingBar.rating = ratingFloat?.div(2F) ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((meta.rating?.toFloatOrNull() ?: 0F) * 100.0) / 100.0).toString() + " - " + itemView.context.getString(name)
+            binding.rating.text = (round((meta.rating?.toFloatOrNull() ?: 0F) * 100.0) / 100.0).toString() + " - " + getRatingString(itemView.context, ratingFloat)
 
-            ContextCompat.getDrawable(itemView.context, R.drawable.ic_info_24dp)?.apply {
-                setTint(itemView.context.getResourceColor(R.attr.colorAccent))
-                setBounds(0, 0, 20.dpToPx, 20.dpToPx)
-                binding.moreInfo.setCompoundDrawables(this, null, null, null)
-            }
+            binding.moreInfo.bindDrawable(itemView.context, R.drawable.ic_info_24dp)
 
             binding.rating.longClicks()
                 .onEach {
