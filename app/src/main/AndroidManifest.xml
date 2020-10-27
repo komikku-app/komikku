@@ -174,39 +174,39 @@
                 <!-- EH -->
                 <data
                     android:host="g.e-hentai.org"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="http" />
                 <data
                     android:host="g.e-hentai.org"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="https" />
                 <data
                     android:host="e-hentai.org"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="http" />
                 <data
                     android:host="e-hentai.org"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="https" />
 
                 <!-- EXH -->
                 <data
                     android:host="exhentai.org"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="http" />
                 <data
                     android:host="exhentai.org"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="https" />
 
                 <!-- nhentai -->
                 <data
                     android:host="nhentai.net"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="http" />
                 <data
                     android:host="nhentai.net"
-                    android:pathPrefix="/g/"
+                    android:pathPattern="/g/.*"
                     android:scheme="https" />
 
                 <!-- Perv Eden -->
@@ -232,47 +232,47 @@
                 <!-- Tsumino -->
                 <data
                     android:host="www.tsumino.com"
-                    android:pathPrefix="/Book/Info/"
+                    android:pathPattern="/Book/Info/.*"
                     android:scheme="http" />
                 <data
                     android:host="www.tsumino.com"
-                    android:pathPrefix="/Book/Info/"
+                    android:pathPattern="/Book/Info/.*"
                     android:scheme="https" />
                 <data
                     android:host="www.tsumino.com"
-                    android:pathPrefix="/Read/View/"
+                    android:pathPattern="/Read/View/.*"
                     android:scheme="http" />
                 <data
                     android:host="www.tsumino.com"
-                    android:pathPrefix="/Read/View/"
+                    android:pathPattern="/Read/View/.*"
                     android:scheme="https" />
 
                  <!-- Hitomi.la -->
                 <data
                     android:host="hitomi.la"
-                    android:pathPrefix="/galleries/"
+                    android:pathPattern="/galleries/.*"
                     android:scheme="http" />
                 <data
                     android:host="hitomi.la"
-                    android:pathPrefix="/reader/"
+                    android:pathPattern="/reader/.*"
                     android:scheme="http" />
                 <data
                     android:host="hitomi.la"
-                    android:pathPrefix="/galleries/"
+                    android:pathPattern="/galleries/.*"
                     android:scheme="https" />
                 <data
                     android:host="hitomi.la"
-                    android:pathPrefix="/reader/"
+                    android:pathPattern="/reader/.*"
                     android:scheme="https" />
 
                 <!-- Pururin.io -->
                 <data
                     android:host="pururin.io"
-                    android:pathPrefix="/gallery/"
+                    android:pathPattern="/gallery/.*"
                     android:scheme="http" />
                 <data
                     android:host="pururin.io"
-                    android:pathPrefix="/gallery/"
+                    android:pathPattern="/gallery/.*"
                     android:scheme="https" />
 
                 <!-- HBrowse -->
