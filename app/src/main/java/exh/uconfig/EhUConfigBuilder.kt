@@ -5,13 +5,13 @@ import okhttp3.FormBody
 import uy.kohesive.injekt.injectLazy
 
 class EhUConfigBuilder {
-    private val prefs: PreferencesHelper by injectLazy()
+    private val preferences: PreferencesHelper by injectLazy()
 
     fun build(hathPerks: EHHathPerksResponse): FormBody {
         val configItems = mutableListOf<ConfigItem>()
 
         configItems += when (
-            prefs.imageQuality()
+            preferences.imageQuality()
                 .get()
                 .toLowerCase()
         ) {
@@ -24,19 +24,19 @@ class EhUConfigBuilder {
             else -> Entry.ImageSize.AUTO
         }
 
-        configItems += when (prefs.useHentaiAtHome().get()) {
+        configItems += when (preferences.useHentaiAtHome().get()) {
             2 -> Entry.UseHentaiAtHome.NO
             1 -> Entry.UseHentaiAtHome.DEFAULTONLY
             else -> Entry.UseHentaiAtHome.ANY
         }
 
-        configItems += if (prefs.useJapaneseTitle().get()) {
+        configItems += if (preferences.useJapaneseTitle().get()) {
             Entry.TitleDisplayLanguage.JAPANESE
         } else {
             Entry.TitleDisplayLanguage.DEFAULT
         }
 
-        configItems += if (prefs.eh_useOriginalImages().get()) {
+        configItems += if (preferences.eh_useOriginalImages().get()) {
             Entry.UseOriginalImages.YES
         } else {
             Entry.UseOriginalImages.NO
@@ -60,12 +60,12 @@ class EhUConfigBuilder {
         configItems += Entry.UseMPV()
         configItems += Entry.ShowPopularRightNowPane()
 
-        configItems += Entry.TagFilteringThreshold(prefs.ehTagFilterValue().get())
-        configItems += Entry.TagWatchingThreshold(prefs.ehTagWatchingValue().get())
+        configItems += Entry.TagFilteringThreshold(preferences.ehTagFilterValue().get())
+        configItems += Entry.TagWatchingThreshold(preferences.ehTagWatchingValue().get())
 
-        configItems += Entry.LanguageSystem().getLanguages(prefs.eh_settingsLanguages().get().split("\n"))
+        configItems += Entry.LanguageSystem().getLanguages(preferences.eh_settingsLanguages().get().split("\n"))
 
-        configItems += Entry.Categories().categoryConfigs(prefs.eh_EnabledCategories().get().split(",").map { it.toBoolean() })
+        configItems += Entry.Categories().categoryConfigs(preferences.eh_EnabledCategories().get().split(",").map { it.toBoolean() })
 
         // Actually build form body
         val formBody = FormBody.Builder()
@@ -157,452 +157,181 @@ object Entry {
         override val value = "$value"
     }
 
-    class Categories() {
+    class Categories {
 
         fun categoryConfigs(list: List<Boolean>): List<ConfigItem> {
             return listOf(
-                Doujinshi(list[0]),
-                Manga(list[1]),
-                ArtistCG(list[2]),
-                GameCG(list[3]),
-                Western(list[4]),
-                NonH(list[5]),
-                ImageSet(list[6]),
-                Cosplay(list[7]),
-                AsianPorn(list[8]),
-                Misc(list[9])
+                GenreConfigItem("ct_doujinshi", list[0]),
+                GenreConfigItem("ct_manga", list[1]),
+                GenreConfigItem("ct_artistcg", list[2]),
+                GenreConfigItem("ct_gamecg", list[3]),
+                GenreConfigItem("ct_western", list[4]),
+                GenreConfigItem("ct_non-h", list[5]),
+                GenreConfigItem("ct_imageset", list[6]),
+                GenreConfigItem("ct_cosplay", list[7]),
+                GenreConfigItem("ct_asianporn", list[8]),
+                GenreConfigItem("ct_misc", list[9])
             )
         }
 
-        private class Doujinshi(exclude: Boolean) : ConfigItem {
+        private class GenreConfigItem(override val key: String, exclude: Boolean) : ConfigItem {
             override val value = if (exclude) "1" else "0"
-            override val key = "ct_doujinshi"
-        }
-        private class Manga(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_manga"
-        }
-        private class ArtistCG(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_artistcg"
-        }
-        private class GameCG(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_gamecg"
-        }
-        private class Western(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_western"
-        }
-        private class NonH(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_non-h"
-        }
-        private class ImageSet(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_imageset"
-        }
-        private class Cosplay(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_cosplay"
-        }
-        private class AsianPorn(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_asianporn"
-        }
-        private class Misc(exclude: Boolean) : ConfigItem {
-            override val value = if (exclude) "1" else "0"
-            override val key = "ct_misc"
         }
     }
 
     class LanguageSystem {
+        private fun transformConfig(values: List<String>) = values.map { pref ->
+            pref.split("*").map { it.toBoolean() }
+        }
 
         fun getLanguages(values: List<String>): List<ConfigItem> {
-            return Japanese(values[0].split("*").map { it.toBoolean() }).configs +
-                English(values[1].split("*").map { it.toBoolean() }).configs +
-                Chinese(values[2].split("*").map { it.toBoolean() }).configs +
-                Dutch(values[3].split("*").map { it.toBoolean() }).configs +
-                French(values[4].split("*").map { it.toBoolean() }).configs +
-                German(values[5].split("*").map { it.toBoolean() }).configs +
-                Hungarian(values[6].split("*").map { it.toBoolean() }).configs +
-                Italian(values[7].split("*").map { it.toBoolean() }).configs +
-                Korean(values[8].split("*").map { it.toBoolean() }).configs +
-                Polish(values[9].split("*").map { it.toBoolean() }).configs +
-                Portuguese(values[10].split("*").map { it.toBoolean() }).configs +
-                Russian(values[11].split("*").map { it.toBoolean() }).configs +
-                Spanish(values[12].split("*").map { it.toBoolean() }).configs +
-                Thai(values[13].split("*").map { it.toBoolean() }).configs +
-                Vietnamese(values[14].split("*").map { it.toBoolean() }).configs +
-                NotAvailable(values[15].split("*").map { it.toBoolean() }).configs +
-                Other(values[16].split("*").map { it.toBoolean() }).configs
+            val config = transformConfig(values)
+            return listOf(
+                Japanese(config[0]),
+                English(config[1]),
+                Chinese(config[2]),
+                Dutch(config[3]),
+                French(config[4]),
+                German(config[5]),
+                Hungarian(config[6]),
+                Italian(config[7]),
+                Korean(config[8]),
+                Polish(config[9]),
+                Portuguese(config[10]),
+                Russian(config[11]),
+                Spanish(config[12]),
+                Thai(config[13]),
+                Vietnamese(config[14]),
+                NotAvailable(config[15]),
+                Other(config[16])
+            ).flatMap { it.configs }
         }
 
-        private class Japanese(values: List<Boolean>) {
+        private abstract class BaseLanguage(val values: List<Boolean>) {
+            abstract val translatedKey: String
+            abstract val rewriteKey: String
 
-            val configs = listOf(
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
+            open val configs: List<LanguageConfigItem>
+                get() = listOf(
+                    LanguageConfigItem(translatedKey, values[1]),
+                    LanguageConfigItem(rewriteKey, values[2])
+                )
 
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1024"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2048"
-                override val value = if (value) "checked" else ""
-            }
-        }
-        private class English(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_1"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1025"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2049"
-                override val value = if (value) "checked" else ""
-            }
-        }
-        private class Chinese(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_10"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1034"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2058"
+            protected class LanguageConfigItem(override val key: String, value: Boolean) : ConfigItem {
                 override val value = if (value) "checked" else ""
             }
         }
 
-        private class Dutch(values: List<Boolean>) {
+        private abstract class Language(values: List<Boolean>) : BaseLanguage(values) {
+            abstract val originalKey: String
 
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_20"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1044"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2068"
-                override val value = if (value) "checked" else ""
-            }
+            override val configs: List<LanguageConfigItem>
+                get() = listOf(
+                    LanguageConfigItem(originalKey, values[0]),
+                    LanguageConfigItem(translatedKey, values[1]),
+                    LanguageConfigItem(rewriteKey, values[2]),
+                )
         }
 
-        private class French(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_30"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1054"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2078"
-                override val value = if (value) "checked" else ""
-            }
+        private class Japanese(values: List<Boolean>) : BaseLanguage(values) {
+            override val translatedKey: String = "xl_1024"
+            override val rewriteKey: String = "xl_2048"
         }
 
-        private class German(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_40"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1064"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2088"
-                override val value = if (value) "checked" else ""
-            }
+        private class English(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_1"
+            override val translatedKey: String = "xl_1025"
+            override val rewriteKey: String = "xl_2049"
         }
 
-        private class Hungarian(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_50"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1074"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2098"
-                override val value = if (value) "checked" else ""
-            }
+        private class Chinese(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_10"
+            override val translatedKey: String = "xl_1034"
+            override val rewriteKey: String = "xl_2058"
         }
 
-        private class Italian(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_60"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1084"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2108"
-                override val value = if (value) "checked" else ""
-            }
+        private class Dutch(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_20"
+            override val translatedKey: String = "xl_1044"
+            override val rewriteKey: String = "xl_2068"
         }
 
-        private class Korean(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_70"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1094"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2118"
-                override val value = if (value) "checked" else ""
-            }
+        private class French(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_30"
+            override val translatedKey: String = "xl_1054"
+            override val rewriteKey: String = "xl_2078"
         }
 
-        private class Polish(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_80"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1104"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2128"
-                override val value = if (value) "checked" else ""
-            }
+        private class German(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_40"
+            override val translatedKey: String = "xl_1064"
+            override val rewriteKey: String = "xl_2088"
         }
 
-        private class Portuguese(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_90"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1114"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2138"
-                override val value = if (value) "checked" else ""
-            }
+        private class Hungarian(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_50"
+            override val translatedKey: String = "xl_1074"
+            override val rewriteKey: String = "xl_2098"
         }
 
-        private class Russian(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_100"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1124"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2148"
-                override val value = if (value) "checked" else ""
-            }
+        private class Italian(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_60"
+            override val translatedKey: String = "xl_1084"
+            override val rewriteKey: String = "xl_2108"
         }
 
-        private class Spanish(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_110"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1134"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2158"
-                override val value = if (value) "checked" else ""
-            }
+        private class Korean(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_70"
+            override val translatedKey: String = "xl_1094"
+            override val rewriteKey: String = "xl_2118"
         }
 
-        private class Thai(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_120"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1144"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2168"
-                override val value = if (value) "checked" else ""
-            }
+        private class Polish(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_80"
+            override val translatedKey: String = "xl_1104"
+            override val rewriteKey: String = "xl_2128"
         }
 
-        private class Vietnamese(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_130"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1154"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2178"
-                override val value = if (value) "checked" else ""
-            }
+        private class Portuguese(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_90"
+            override val translatedKey: String = "xl_1114"
+            override val rewriteKey: String = "xl_2138"
         }
 
-        private class NotAvailable(values: List<Boolean>) {
-
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
-
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_254"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1278"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2302"
-                override val value = if (value) "checked" else ""
-            }
+        private class Russian(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_100"
+            override val translatedKey: String = "xl_1124"
+            override val rewriteKey: String = "xl_2148"
         }
 
-        private class Other(values: List<Boolean>) {
+        private class Spanish(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_110"
+            override val translatedKey: String = "xl_1134"
+            override val rewriteKey: String = "xl_2158"
+        }
 
-            val configs = listOf(
-                Original(values[0]),
-                Translated(values[1]),
-                Rewrite(values[2])
-            )
+        private class Thai(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_120"
+            override val translatedKey: String = "xl_1144"
+            override val rewriteKey: String = "xl_2168"
+        }
 
-            class Original(value: Boolean) : ConfigItem {
-                override val key = "xl_255"
-                override val value = if (value) "checked" else ""
-            }
-            class Translated(value: Boolean) : ConfigItem {
-                override val key = "xl_1279"
-                override val value = if (value) "checked" else ""
-            }
-            class Rewrite(value: Boolean) : ConfigItem {
-                override val key = "xl_2303"
-                override val value = if (value) "checked" else ""
-            }
+        private class Vietnamese(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_130"
+            override val translatedKey: String = "xl_1154"
+            override val rewriteKey: String = "xl_2178"
+        }
+
+        private class NotAvailable(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_254"
+            override val translatedKey: String = "xl_1278"
+            override val rewriteKey: String = "xl_2302"
+        }
+
+        private class Other(values: List<Boolean>) : Language(values) {
+            override val originalKey: String = "xl_255"
+            override val translatedKey: String = "xl_1279"
+            override val rewriteKey: String = "xl_2303"
         }
     }
 }
