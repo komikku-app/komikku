@@ -87,7 +87,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
             preferredTitle = this@NHentai.preferredTitle
 
             jsonResponse.images?.let { images ->
-                coverImageType = NHentaiSearchMetadata.typeToExtension(images.cover?.type)
+                coverImageType = images.cover?.type
                 images.pages.mapNotNull {
                     it.type
                 }.let {
