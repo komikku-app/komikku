@@ -46,7 +46,8 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import uy.kohesive.injekt.injectLazy
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
@@ -105,6 +106,12 @@ class PagerPageHolder(
      * the appropiate image view depending if the image is animated (GIF).
      */
     private var readImageHeaderSubscription: Subscription? = null
+
+    // SY -->
+    private val readerTheme by lazy {
+        Injekt.get<PreferencesHelper>().readerTheme().get()
+    }
+    // SY <--
 
     init {
         addView(progressBar)
@@ -251,9 +258,9 @@ class PagerPageHolder(
             .doOnNext { isAnimated ->
                 if (!isAnimated) {
                     // SY -->
-                    if (viewer.config.readerTheme >= 3) {
+                    if (readerTheme >= 3) {
                         val imageView = initSubsamplingImageView()
-                        if (page.bg != null && page.bgType == getBGType(viewer.config.readerTheme, context)) {
+                        if (page.bg != null && page.bgType == getBGType(readerTheme, context)) {
                             imageView.setImage(ImageSource.inputStream(openStream!!))
                             imageView.background = page.bg
                         }
@@ -267,7 +274,7 @@ class PagerPageHolder(
                             launchUI {
                                 imageView.background = setBG(bytesArray)
                                 page.bg = imageView.background
-                                page.bgType = getBGType(viewer.config.readerTheme, context)
+                                page.bgType = getBGType(readerTheme, context)
                             }
                         }
                     } else {
@@ -287,14 +294,13 @@ class PagerPageHolder(
     // SY -->
     private suspend fun setBG(bytesArray: ByteArray): Drawable {
         return withContext(Dispatchers.Default) {
-            val preferences by injectLazy<PreferencesHelper>()
             ImageUtil.autoSetBackground(
                 BitmapFactory.decodeByteArray(
                     bytesArray,
                     0,
                     bytesArray.size
                 ),
-                preferences.readerTheme().get() == 3,
+                readerTheme == 3,
                 context
             )
         }
@@ -522,8 +528,8 @@ class PagerPageHolder(
     // SY -->
     companion object {
         fun getBGType(readerTheme: Int, context: Context): Int {
-            return if (readerTheme == 3) {
-                if (context.isInNightMode()) 2 else 1
+            return if (readerTheme == 4) {
+                if (context.isInNightMode) 2 else 1
             } else 0
         }
     }

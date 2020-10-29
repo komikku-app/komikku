@@ -166,9 +166,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             when (preferences.readerTheme().get()) {
                 0 -> R.style.Theme_Reader_Light
                 2 -> R.style.Theme_Reader_Dark_Grey
-                // SY -->
-                3, 4 -> R.style.Theme_Reader_Dark_Smart
-                // SY <--
                 else -> R.style.Theme_Reader_Dark
             }
         )
@@ -945,12 +942,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
                 .launchIn(scope)
 
-            // SY -->
-            /*preferences.readerTheme().asFlow()
+            preferences.readerTheme().asFlow()
                 .drop(1) // We only care about updates
                 .onEach { recreate() }
-                .launchIn(scope)*/
-            // SY <--
+                .launchIn(scope)
 
             preferences.showPageNumber().asFlow()
                 .onEach { setPageNumberVisibility(it) }
