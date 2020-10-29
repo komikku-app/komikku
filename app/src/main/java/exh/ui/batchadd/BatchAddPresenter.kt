@@ -1,6 +1,7 @@
 package exh.ui.batchadd
 
 import android.content.Context
+import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.ReplayRelay
 import eu.kanade.tachiyomi.R
@@ -9,13 +10,20 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.util.trimOrNull
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import kotlin.concurrent.thread
 
 class BatchAddPresenter : BasePresenter<BatchAddController>() {
 
     private val galleryAdder by lazy { GalleryAdder() }
+    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     val progressTotalRelay = BehaviorRelay.create(0)!!
     val progressRelay = BehaviorRelay.create(0)!!
@@ -50,12 +58,17 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
 
         currentlyAddingRelay.call(STATE_INPUT_TO_PROGRESS)
 
-        thread {
+        val handler = CoroutineExceptionHandler { _, throwable ->
+            XLog.e(throwable)
+        }
+
+        scope.launch(Dispatchers.IO + handler) {
             val succeeded = mutableListOf<String>()
             val failed = mutableListOf<String>()
 
             splitGalleries.forEachIndexed { i, s ->
-                val result = galleryAdder.addGallery(context, s, true)
+                ensureActive()
+                val result = withContext(Dispatchers.IO) { galleryAdder.addGallery(context, s, true) }
                 if (result is GalleryAddEvent.Success) {
                     succeeded.add(s)
                 } else {

@@ -43,6 +43,7 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
+import exh.util.asObservable
 import exh.util.urlImportFetchSearchManga
 import exh.widget.preference.MangadexLoginDialog
 import kotlinx.coroutines.Dispatchers
@@ -266,20 +267,22 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
         when {
             query.toIntOrNull() != null -> {
-                Observable.fromCallable {
-                    // MdUtil.
-                    val res = GalleryAdder().addGallery(context, MdUtil.baseUrl + MdUtil.mapMdIdToMangaUrl(query.toInt()), false, this)
-                    MangasPage(
-                        (
-                            if (res is GalleryAddEvent.Success) {
-                                listOf(res.manga)
-                            } else {
-                                emptyList()
-                            }
-                            ),
-                        false
-                    )
+                flow {
+                    emit(GalleryAdder().addGallery(context, MdUtil.baseUrl + MdUtil.mapMdIdToMangaUrl(query.toInt()), false, this@MangaDex))
                 }
+                    .asObservable()
+                    .map { res ->
+                        MangasPage(
+                            (
+                                if (res is GalleryAddEvent.Success) {
+                                    listOf(res.manga)
+                                } else {
+                                    emptyList()
+                                }
+                                ),
+                            false
+                        )
+                    }
             }
             else -> fail()
         }

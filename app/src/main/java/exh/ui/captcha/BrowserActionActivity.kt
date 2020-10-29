@@ -25,6 +25,9 @@ import exh.source.DelegatedHttpSource
 import exh.util.melt
 import kotlinx.android.synthetic.main.eh_activity_captcha.toolbar
 import kotlinx.android.synthetic.main.eh_activity_captcha.webview
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -179,13 +182,13 @@ class BrowserActionActivity : AppCompatActivity() {
         return true
     }
 
-    fun captchaSolveFail() {
+    suspend fun captchaSolveFail() {
         currentLoopId = null
         validateCurrentLoopId = null
         XLog.e(IllegalStateException("Captcha solve failure!"))
-        runOnUiThread {
+        withContext(Dispatchers.Main) {
             webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
-            MaterialDialog(this)
+            MaterialDialog(this@BrowserActionActivity)
                 .title(R.string.captcha_solve_failure)
                 .message(R.string.captcha_solve_failure_message)
                 .cancelable(true)
@@ -196,7 +199,7 @@ class BrowserActionActivity : AppCompatActivity() {
     }
 
     @JavascriptInterface
-    fun callback(result: String?, loopId: String, stage: Int) {
+    suspend fun callback(result: String?, loopId: String, stage: Int) {
         if (loopId != currentLoopId) return
 
         when (stage) {
@@ -259,7 +262,7 @@ class BrowserActionActivity : AppCompatActivity() {
                                 }
                             },
                             {
-                                captchaSolveFail()
+                                runBlocking { captchaSolveFail() }
                             }
                         )
                 } else {
@@ -456,7 +459,7 @@ class BrowserActionActivity : AppCompatActivity() {
     }
 
     @JavascriptInterface
-    fun validateCaptchaCallback(result: Boolean, loopId: String) {
+    suspend fun validateCaptchaCallback(result: Boolean, loopId: String) {
         if (loopId != validateCurrentLoopId) return
 
         if (result) {

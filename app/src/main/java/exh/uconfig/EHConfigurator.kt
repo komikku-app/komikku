@@ -4,6 +4,7 @@ import android.content.Context
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.asJsoup
@@ -26,7 +27,7 @@ class EHConfigurator(val context: Context) {
     private fun EHentai.requestWithCreds(sp: Int = 1) = Request.Builder()
         .addHeader("Cookie", cookiesHeader(sp))
 
-    private fun EHentai.execProfileActions(
+    private suspend fun EHentai.execProfileActions(
         action: String,
         name: String,
         set: String,
@@ -44,11 +45,11 @@ class EHConfigurator(val context: Context) {
                 )
                 .build()
         )
-            .execute()
+            .await()
 
     private val EHentai.uconfigUrl get() = baseUrl + UCONFIG_URL
 
-    fun configureAll() {
+    suspend fun configureAll() {
         val ehSource = sources.get(EH_SOURCE_ID) as EHentai
         val exhSource = sources.get(EXH_SOURCE_ID) as EHentai
 
@@ -58,7 +59,7 @@ class EHConfigurator(val context: Context) {
                 .url(HATH_PERKS_URL)
                 .build()
         )
-            .execute().asJsoup()
+            .await().asJsoup()
 
         val hathPerks = EHHathPerksResponse()
 
@@ -85,10 +86,10 @@ class EHConfigurator(val context: Context) {
         configure(exhSource, hathPerks)
     }
 
-    private fun configure(source: EHentai, hathPerks: EHHathPerksResponse) {
+    private suspend fun configure(source: EHentai, hathPerks: EHHathPerksResponse) {
         // Delete old app profiles
         val scanReq = source.requestWithCreds().url(source.uconfigUrl).build()
-        val resp = configuratorClient.newCall(scanReq).execute().asJsoup()
+        val resp = configuratorClient.newCall(scanReq).await().asJsoup()
         var lastDoc = resp
         resp.select(PROFILE_SELECTOR).forEach {
             if (it.text() == PROFILE_NAME) {
@@ -127,7 +128,7 @@ class EHConfigurator(val context: Context) {
                 .url(source.uconfigUrl)
                 .post(form)
                 .build()
-        ).execute()
+        ).await()
 
         // Persist slot + sk
         source.spPref().set(slot)

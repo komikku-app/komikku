@@ -9,22 +9,27 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
-import kotlin.concurrent.thread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ConfiguringDialogController : DialogController() {
     private var materialDialog: MaterialDialog? = null
+    val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         if (savedViewState == null) {
-            thread {
+            scope.launch(Dispatchers.IO) {
                 try {
                     EHConfigurator(activity!!).configureAll()
                     launchUI {
                         activity?.toast(activity?.getString(R.string.eh_settings_successfully_uploaded))
                     }
                 } catch (e: Exception) {
-                    activity?.let {
-                        it.runOnUiThread {
+                    withContext(Dispatchers.Main) {
+                        activity?.let {
                             MaterialDialog(it)
                                 .title(R.string.eh_settings_configuration_failed)
                                 .message(text = it.getString(R.string.eh_settings_configuration_failed_message, e.message))

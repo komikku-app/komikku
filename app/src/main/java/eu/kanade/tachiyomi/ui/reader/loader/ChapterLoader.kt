@@ -91,9 +91,9 @@ class ChapterLoader(
         return when {
             // SY -->
             source is MergedSource -> {
-                val mangaReference = mergedReferences.firstOrNull { it.mangaId == chapter.chapter.manga_id } ?: throw Exception("Merge reference null")
-                val source = sourceManager.get(mangaReference.mangaSourceId) ?: throw Exception("Source ${mangaReference.mangaSourceId} was null")
-                val manga = mergedManga.firstOrNull { it.id == chapter.chapter.manga_id } ?: throw Exception("Manga for merged chapter was null")
+                val mangaReference = mergedReferences.firstOrNull { it.mangaId == chapter.chapter.manga_id } ?: error("Merge reference null")
+                val source = sourceManager.get(mangaReference.mangaSourceId) ?: error("Source ${mangaReference.mangaSourceId} was null")
+                val manga = mergedManga.firstOrNull { it.id == chapter.chapter.manga_id } ?: error("Manga for merged chapter was null")
                 val isMergedMangaDownloaded = downloadManager.isChapterDownloaded(chapter.chapter, manga, true)
                 when {
                     isMergedMangaDownloaded -> DownloadPageLoader(chapter, manga, source, downloadManager)

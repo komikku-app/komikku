@@ -16,10 +16,11 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.GalleryAddEvent
 import exh.GalleryAdder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.subjects.BehaviorSubject
-import kotlin.concurrent.thread
 
 class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
     private var statusSubscription: Subscription? = null
@@ -119,14 +120,14 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
     @Synchronized
     private fun loadGalleryEnd(gallery: String, source: UrlImportableSource? = null) {
         // Load gallery async
-        thread {
-            val result = galleryAdder.addGallery(this, gallery, forceSource = source)
+        scope.launch(Dispatchers.IO) {
+            val result = galleryAdder.addGallery(this@InterceptActivity, gallery, forceSource = source)
 
             status.onNext(
                 when (result) {
                     is GalleryAddEvent.Success -> result.manga.id?.let {
                         InterceptResult.Success(it)
-                    } ?: InterceptResult.Failure(this.getString(R.string.manga_id_is_null))
+                    } ?: InterceptResult.Failure(this@InterceptActivity.getString(R.string.manga_id_is_null))
                     is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
                 }
             )

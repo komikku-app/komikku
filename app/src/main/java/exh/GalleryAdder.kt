@@ -11,6 +11,8 @@ import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.source.getMainSource
+import exh.util.await
+import exh.util.awaitSingle
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 
@@ -34,7 +36,7 @@ class GalleryAdder {
             }
     }
 
-    fun addGallery(
+    suspend fun addGallery(
         context: Context,
         url: String,
         fav: Boolean = false,
@@ -84,7 +86,7 @@ class GalleryAdder {
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
-            val manga = db.getManga(cleanedUrl, source.id).executeAsBlocking()
+            val manga = db.getManga(cleanedUrl, source.id).await()
                 ?: Manga.create(source.id).apply {
                     this.url = cleanedUrl
                     title = realUrl
@@ -93,13 +95,13 @@ class GalleryAdder {
             // Insert created manga if not in DB before fetching details
             // This allows us to keep the metadata when fetching details
             if (manga.id == null) {
-                db.insertManga(manga).executeAsBlocking().insertedId()?.let {
+                db.insertManga(manga).await().insertedId()?.let {
                     manga.id = it
                 }
             }
 
             // Fetch and copy details
-            val newManga = source.fetchMangaDetails(manga).toBlocking().first()
+            val newManga = source.fetchMangaDetails(manga).awaitSingle()
             manga.copyFrom(newManga)
             manga.initialized = true
 
@@ -108,7 +110,7 @@ class GalleryAdder {
                 manga.date_added = Date().time
             }
 
-            db.insertManga(manga).executeAsBlocking()
+            db.insertManga(manga).await()
 
             // Fetch and copy chapters
             try {
@@ -119,7 +121,7 @@ class GalleryAdder {
                 }
                 chapterListObs.map {
                     syncChaptersWithSource(db, it, manga, source)
-                }.toBlocking().first()
+                }.awaitSingle()
             } catch (e: Exception) {
                 XLog.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
                 return GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_chapter_fetch_error, url))

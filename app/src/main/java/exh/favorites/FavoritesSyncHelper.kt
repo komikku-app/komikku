@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -21,21 +22,27 @@ import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
+import exh.util.await
 import exh.util.ignore
 import exh.util.trans
 import exh.util.wifiManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.Request
 import rx.subjects.BehaviorSubject
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import kotlin.concurrent.thread
 
 class FavoritesSyncHelper(val context: Context) {
     private val db: DatabaseHelper by injectLazy()
 
     private val prefs: PreferencesHelper by injectLazy()
+
+    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     private val exh by lazy {
         Injekt.get<SourceManager>().get(EXH_SOURCE_ID) as? EHentai
@@ -53,7 +60,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private val logger = XLog.tag("EHFavSync").build()
 
-    val status: BehaviorSubject<FavoritesSyncStatus> = BehaviorSubject.create<FavoritesSyncStatus>(FavoritesSyncStatus.Idle(context))
+    val status: BehaviorSubject<FavoritesSyncStatus> = BehaviorSubject.create(FavoritesSyncStatus.Idle(context))
 
     @Synchronized
     fun runSync() {
@@ -63,10 +70,10 @@ class FavoritesSyncHelper(val context: Context) {
 
         status.onNext(FavoritesSyncStatus.Initializing(context))
 
-        thread { beginSync() }
+        scope.launch(Dispatchers.IO) { beginSync() }
     }
 
-    private fun beginSync() {
+    private suspend fun beginSync() {
         // Check if logged in
         if (!prefs.enableExhentai().get()) {
             status.onNext(FavoritesSyncStatus.Error(context.getString(R.string.please_login)))
@@ -75,13 +82,13 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Validate library state
         status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context))
-        val libraryManga = db.getLibraryMangas().executeAsBlocking()
+        val libraryManga = db.getLibraryMangas().await()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
             if (it.source != EXH_SOURCE_ID && it.source != EH_SOURCE_ID) return@forEach
 
             if (it.id in seenManga) {
-                val inCategories = db.getCategoriesForManga(it).executeAsBlocking()
+                val inCategories = db.getCategoriesForManga(it).await()
                 status.onNext(
                     FavoritesSyncStatus.BadLibraryState
                         .MangaInMultipleCategories(it, inCategories, context)
@@ -153,9 +160,8 @@ class FavoritesSyncHelper(val context: Context) {
                 }
             }
 
-            val theContext = context
             launchUI {
-                theContext.toast(context.getString(R.string.favorites_sync_complete))
+                context.toast(context.getString(R.string.favorites_sync_complete))
             }
         } catch (e: IgnoredException) {
             // Do not display error as this error has already been reported
@@ -187,8 +193,8 @@ class FavoritesSyncHelper(val context: Context) {
         }
     }
 
-    private fun applyRemoteCategories(categories: List<String>) {
-        val localCategories = db.getCategories().executeAsBlocking()
+    private suspend fun applyRemoteCategories(categories: List<String>) {
+        val localCategories = db.getCategories().await()
 
         val newLocalCategories = localCategories.toMutableList()
 
@@ -226,11 +232,11 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Only insert categories if changed
         if (changed) {
-            db.insertCategories(newLocalCategories).executeAsBlocking()
+            db.insertCategories(newLocalCategories).await()
         }
     }
 
-    private fun addGalleryRemote(errorList: MutableList<String>, gallery: FavoriteEntry) {
+    private suspend fun addGalleryRemote(errorList: MutableList<String>, gallery: FavoriteEntry) {
         val url = "${exh.baseUrl}/gallerypopups.php?gid=${gallery.gid}&t=${gallery.token}&act=addfav"
 
         val request = Request.Builder()
@@ -257,12 +263,12 @@ class FavoritesSyncHelper(val context: Context) {
         }
     }
 
-    private fun explicitlyRetryExhRequest(retryCount: Int, request: Request): Boolean {
+    private suspend fun explicitlyRetryExhRequest(retryCount: Int, request: Request): Boolean {
         var success = false
 
         for (i in 1..retryCount) {
             try {
-                val resp = exh.client.newCall(request).execute()
+                val resp = exh.client.newCall(request).await()
 
                 if (resp.isSuccessful) {
                     success = true
@@ -276,7 +282,7 @@ class FavoritesSyncHelper(val context: Context) {
         return success
     }
 
-    private fun applyChangeSetToRemote(errorList: MutableList<String>, changeSet: ChangeSet) {
+    private suspend fun applyChangeSetToRemote(errorList: MutableList<String>, changeSet: ChangeSet) {
         // Apply removals
         if (changeSet.removed.isNotEmpty()) {
             status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_removing_galleries, changeSet.removed.size), context = context))
@@ -324,7 +330,7 @@ class FavoritesSyncHelper(val context: Context) {
         }
     }
 
-    private fun applyChangeSetToLocal(errorList: MutableList<String>, changeSet: ChangeSet) {
+    private suspend fun applyChangeSetToLocal(errorList: MutableList<String>, changeSet: ChangeSet) {
         val removedManga = mutableListOf<Manga>()
 
         // Apply removals
@@ -337,12 +343,12 @@ class FavoritesSyncHelper(val context: Context) {
                 db.getManga(url, EXH_SOURCE_ID),
                 db.getManga(url, EH_SOURCE_ID)
             ).forEach {
-                val manga = it.executeAsBlocking()
+                val manga = it.await()
 
                 if (manga?.favorite == true) {
                     manga.favorite = false
                     manga.date_added = 0
-                    db.updateMangaFavorite(manga).executeAsBlocking()
+                    db.updateMangaFavorite(manga).await()
                     removedManga += manga
                 }
             }
@@ -350,11 +356,11 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Can't do too many DB OPs in one go
         removedManga.chunked(10).forEach {
-            db.deleteOldMangasCategories(it).executeAsBlocking()
+            db.deleteOldMangasCategories(it).await()
         }
 
         val insertedMangaCategories = mutableListOf<Pair<MangaCategory, Manga>>()
-        val categories = db.getCategories().executeAsBlocking()
+        val categories = db.getCategories().await()
 
         // Apply additions
         throttleManager.resetThrottle()
