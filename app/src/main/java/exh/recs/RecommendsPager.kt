@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SMangaImpl
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
+import exh.log.maybeInjectEHLogger
 import exh.util.MangaType
 import exh.util.mangaType
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -31,7 +32,9 @@ import timber.log.Timber
 
 abstract class API(_endpoint: String) {
     var endpoint: String = _endpoint
-    val client = OkHttpClient.Builder().build()
+    val client = OkHttpClient.Builder()
+        .maybeInjectEHLogger()
+        .build()
     val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     abstract fun getRecsBySearch(
@@ -40,13 +43,12 @@ abstract class API(_endpoint: String) {
     )
 }
 
-class MyAnimeList() : API("https://api.jikan.moe/v3/") {
-    fun getRecsById(
+class MyAnimeList : API("https://api.jikan.moe/v3/") {
+    private fun getRecsById(
         id: String,
         callback: (resolve: List<SMangaImpl>?, reject: Throwable?) -> Unit
     ) {
-        val httpUrl =
-            endpoint.toHttpUrlOrNull()
+        val httpUrl = endpoint.toHttpUrlOrNull()
         if (httpUrl == null) {
             callback.invoke(null, Exception("Could not convert endpoint url"))
             return
@@ -135,7 +137,7 @@ class MyAnimeList() : API("https://api.jikan.moe/v3/") {
     }
 }
 
-class Anilist() : API("https://graphql.anilist.co/") {
+class Anilist : API("https://graphql.anilist.co/") {
     private fun countOccurrence(arr: JsonArray, search: String): Int {
         return arr.count {
             val synonym = it.jsonPrimitive.content
@@ -250,9 +252,9 @@ class Anilist() : API("https://graphql.anilist.co/") {
 }
 
 open class RecommendsPager(
-    val manga: Manga,
-    val smart: Boolean = true,
-    var preferredApi: API = API.MYANIMELIST
+    private val manga: Manga,
+    private val smart: Boolean = true,
+    private var preferredApi: API = API.MYANIMELIST
 ) : Pager() {
     private val apiList = API_MAP.toMutableMap()
     private var currentApi: API? = null
