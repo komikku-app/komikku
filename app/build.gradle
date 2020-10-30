@@ -322,9 +322,6 @@ dependencies {
     releaseImplementation "com.ms-square:debugoverlay-no-op:$debug_overlay_version"
     testImplementation "com.ms-square:debugoverlay-no-op:$debug_overlay_version"
 
-    // Humanize (EH) used for E-Hentai updater statistics
-    implementation 'com.github.mfornos:humanize-slim:1.2.2'
-
     // RatingBar (SY)
     implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
 
@@ -332,8 +329,6 @@ dependencies {
     implementation 'com.squareup.moshi:moshi:1.11.0'
 
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
-
-    implementation 'com.google.guava:guava:29.0-android'
 }
 
 buildscript {

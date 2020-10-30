@@ -606,4 +606,35 @@
         For more information and to view the source code:\n%s
     </string>
 
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d year ago</item>
+        <item quantity="other">%1$d years ago</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d month ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d week ago</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d second ago</item>
+        <item quantity="other">%1$d second ago</item>
+    </plurals>
+    <string name="humanize_fallback">moments ago</string>
+
 </resources>

@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.setting
 
+import android.content.Context
 import android.os.Handler
 import android.text.InputType
 import android.widget.Toast
@@ -45,6 +46,7 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.LoginController
 import exh.util.await
+import exh.util.floor
 import exh.util.nullIfBlank
 import exh.util.trans
 import kotlinx.coroutines.Dispatchers
@@ -57,11 +59,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.injectLazy
-import java.util.Date
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.days
 import kotlin.time.hours
+import kotlin.time.milliseconds
+import kotlin.time.minutes
+import kotlin.time.seconds
 
 /**
  * EH Settings fragment
@@ -626,6 +630,7 @@ class SettingsEhController : SettingsController() {
                         .cancelable(false)
                     progress.show()
 
+                    @OptIn(ExperimentalTime::class)
                     GlobalScope.launch(Dispatchers.IO) {
                         val updateInfo = try {
                             val stats =
@@ -634,7 +639,7 @@ class SettingsEhController : SettingsController() {
                                 }
 
                             val statsText = if (stats != null) {
-                                context.getString(R.string.gallery_updater_stats_text, Humanize.naturalTime(Date(stats.startTime)), stats.updateCount, stats.possibleUpdates)
+                                context.getString(R.string.gallery_updater_stats_text, getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context), stats.updateCount, stats.possibleUpdates)
                             } else context.getString(R.string.gallery_updater_not_ran_yet)
 
                             val allMeta = db.getFavoriteMangaWithMetadata().await().filter {
@@ -644,7 +649,6 @@ class SettingsEhController : SettingsController() {
                                     ?.raise<EHentaiSearchMetadata>()
                             }.toList()
 
-                            @OptIn(ExperimentalTime::class)
                             fun metaInRelativeDuration(duration: Duration): Int {
                                 val durationMs = duration.toLongMilliseconds()
                                 return allMeta.asSequence().filter {
@@ -652,7 +656,6 @@ class SettingsEhController : SettingsController() {
                                 }.count()
                             }
 
-                            @OptIn(ExperimentalTime::class)
                             statsText + "\n\n" + context.getString(
                                 R.string.gallery_updater_stats_time,
                                 metaInRelativeDuration(1.hours),
@@ -680,4 +683,78 @@ class SettingsEhController : SettingsController() {
             }
         }
     }
+
+    @OptIn(ExperimentalTime::class)
+    private fun getRelativeTimeFromNow(then: Duration): RelativeTime {
+        val now = System.currentTimeMillis().milliseconds
+        var period: Duration = now - then
+        val relativeTime = RelativeTime()
+        while (period > 0.milliseconds) {
+            when {
+                period >= 365.days -> {
+                    (period.inDays / 365).floor().let {
+                        relativeTime.years = it
+                        period -= (it * 365).days
+                    }
+                    continue
+                }
+                period >= 30.days -> {
+                    (period.inDays / 30).floor().let {
+                        relativeTime.months = it
+                        period -= (it * 30).days
+                    }
+                }
+                period >= 7.days -> {
+                    (period.inDays / 7).floor().let {
+                        relativeTime.weeks = it
+                        period -= (it * 7).days
+                    }
+                }
+                period >= 1.days -> {
+                    period.inDays.floor().let {
+                        relativeTime.days = it
+                        period -= it.days
+                    }
+                }
+                period >= 1.hours -> {
+                    period.inHours.floor().let {
+                        relativeTime.hours = it
+                        period -= it.hours
+                    }
+                }
+                period >= 1.minutes -> {
+                    period.inMinutes.floor().let {
+                        relativeTime.minutes = it
+                        period -= it.minutes
+                    }
+                }
+                period >= 1.seconds -> {
+                    period.inSeconds.floor().let {
+                        relativeTime.seconds = it
+                        period -= it.seconds
+                    }
+                }
+                period >= 1.milliseconds -> {
+                    period.inMilliseconds.floor().let {
+                        relativeTime.milliseconds = it
+                    }
+                    period = 0.milliseconds
+                }
+            }
+        }
+        return relativeTime
+    }
+
+    private fun getRelativeTimeString(relativeTime: RelativeTime, context: Context): String {
+        return relativeTime.years?.let { context.resources.getQuantityString(R.plurals.humanize_year, it, it) }
+            ?: relativeTime.months?.let { context.resources.getQuantityString(R.plurals.humanize_month, it, it) }
+            ?: relativeTime.weeks?.let { context.resources.getQuantityString(R.plurals.humanize_week, it, it) }
+            ?: relativeTime.days?.let { context.resources.getQuantityString(R.plurals.humanize_day, it, it) }
+            ?: relativeTime.hours?.let { context.resources.getQuantityString(R.plurals.humanize_hour, it, it) }
+            ?: relativeTime.minutes?.let { context.resources.getQuantityString(R.plurals.humanize_minute, it, it) }
+            ?: relativeTime.seconds?.let { context.resources.getQuantityString(R.plurals.humanize_second, it, it) }
+            ?: context.getString(R.string.humanize_fallback)
+    }
+
+    data class RelativeTime(var years: Int? = null, var months: Int? = null, var weeks: Int? = null, var days: Int? = null, var hours: Int? = null, var minutes: Int? = null, var seconds: Int? = null, var milliseconds: Int? = null)
 }
