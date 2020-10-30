@@ -10,12 +10,12 @@ import com.afollestad.materialdialogs.customview.customView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.databinding.EditMergedSettingsDialogBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
 import exh.MERGED_SOURCE_ID
 import exh.merged.sql.models.MergedMangaReference
-import kotlinx.android.synthetic.main.edit_merged_settings_dialog.view.recycler
 import uy.kohesive.injekt.injectLazy
 
 class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMergedMangaItemListener {
@@ -27,6 +27,8 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     val mergedMangas: MutableList<Pair<Manga?, MergedMangaReference>> = mutableListOf()
 
     var mergeReference: MergedMangaReference? = null
+
+    lateinit var binding: EditMergedSettingsDialogBinding
 
     private val db: DatabaseHelper by injectLazy()
 
@@ -68,6 +70,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     }
 
     fun onViewCreated(view: View) {
+        binding = EditMergedSettingsDialogBinding.bind(view)
         val mergedManga = db.getMergedMangas(manga.id!!).executeAsBlocking()
         val mergedReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
         if (mergedReferences.isEmpty() || mergedReferences.size == 1) {
@@ -82,8 +85,8 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
         mergedMangaAdapter = EditMergedMangaAdapter(this, isPriorityOrder)
         mergedHeaderAdapter = EditMergedSettingsHeaderAdapter(this, mergedMangaAdapter!!)
 
-        view.recycler.adapter = ConcatAdapter(mergedHeaderAdapter, mergedMangaAdapter)
-        view.recycler.layoutManager = LinearLayoutManager(view.context)
+        binding.recycler.adapter = ConcatAdapter(mergedHeaderAdapter, mergedMangaAdapter)
+        binding.recycler.layoutManager = LinearLayoutManager(view.context)
 
         mergedMangaAdapter?.isHandleDragEnabled = isPriorityOrder
 

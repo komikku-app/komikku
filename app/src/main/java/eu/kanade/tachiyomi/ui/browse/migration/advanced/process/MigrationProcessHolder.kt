@@ -10,6 +10,8 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
+import eu.kanade.tachiyomi.databinding.MigrationMangaCardBinding
+import eu.kanade.tachiyomi.databinding.MigrationProcessItemBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -20,17 +22,6 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.MERGED_SOURCE_ID
 import exh.util.await
-import kotlinx.android.synthetic.main.migration_manga_card.view.gradient
-import kotlinx.android.synthetic.main.migration_manga_card.view.loading_group
-import kotlinx.android.synthetic.main.migration_manga_card.view.manga_chapters
-import kotlinx.android.synthetic.main.migration_manga_card.view.manga_last_chapter_label
-import kotlinx.android.synthetic.main.migration_manga_card.view.manga_source_label
-import kotlinx.android.synthetic.main.migration_manga_card.view.thumbnail
-import kotlinx.android.synthetic.main.migration_manga_card.view.title
-import kotlinx.android.synthetic.main.migration_process_item.migration_manga_card_from
-import kotlinx.android.synthetic.main.migration_process_item.migration_manga_card_to
-import kotlinx.android.synthetic.main.migration_process_item.migration_menu
-import kotlinx.android.synthetic.main.migration_process_item.skip_manga
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -51,13 +42,14 @@ class MigrationProcessHolder(
 
     private var item: MigrationProcessItem? = null
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
+    private val binding = MigrationProcessItemBinding.bind(view)
 
     init {
         // We need to post a Runnable to show the popup to make sure that the PopupMenu is
         // correctly positioned. The reason being that the view may change position before the
         // PopupMenu is shown.
-        migration_menu.setOnClickListener { it.post { showPopupMenu(it) } }
-        skip_manga.setOnClickListener { it.post { adapter.removeManga(bindingAdapterPosition) } }
+        binding.migrationMenu.setOnClickListener { it.post { showPopupMenu(it) } }
+        binding.skipManga.setOnClickListener { it.post { adapter.removeManga(bindingAdapterPosition) } }
     }
 
     fun bind(item: MigrationProcessItem) {
@@ -66,25 +58,25 @@ class MigrationProcessHolder(
             val manga = item.manga.manga()
             val source = item.manga.mangaSource()
 
-            migration_menu.setVectorCompat(
+            binding.migrationMenu.setVectorCompat(
                 R.drawable.ic_more_vert_24dp,
                 view.context
                     .getResourceColor(R.attr.colorOnPrimary)
             )
-            skip_manga.setVectorCompat(
+            binding.skipManga.setVectorCompat(
                 R.drawable.ic_close_24dp,
                 view.context.getResourceColor(
                     R
                         .attr.colorOnPrimary
                 )
             )
-            migration_menu.isInvisible = true
-            skip_manga.isVisible = true
-            migration_manga_card_to.resetManga()
+            binding.migrationMenu.isInvisible = true
+            binding.skipManga.isVisible = true
+            binding.migrationMangaCardTo.resetManga()
             if (manga != null) {
                 withContext(Dispatchers.Main) {
-                    migration_manga_card_from.attachManga(manga, source)
-                    migration_manga_card_from.clicks()
+                    binding.migrationMangaCardFrom.attachManga(manga, source)
+                    binding.migrationMangaCardFrom.root.clicks()
                         .onEach {
                             adapter.controller.router.pushController(
                                 MangaController(
@@ -119,8 +111,8 @@ class MigrationProcessHolder(
                         return@withContext
                     }
                     if (searchResult != null && resultSource != null) {
-                        migration_manga_card_to.attachManga(searchResult, resultSource)
-                        migration_manga_card_to.clicks()
+                        binding.migrationMangaCardTo.attachManga(searchResult, resultSource)
+                        binding.migrationMangaCardTo.root.clicks()
                             .onEach {
                                 adapter.controller.router.pushController(
                                     MangaController(
@@ -130,30 +122,30 @@ class MigrationProcessHolder(
                                 )
                             }.launchIn(scope)
                     } else {
-                        migration_manga_card_to.loading_group.isVisible = false
-                        migration_manga_card_to.title.text = view.context.applicationContext
+                        binding.migrationMangaCardTo.loadingGroup.isVisible = false
+                        binding.migrationMangaCardTo.title.text = view.context.applicationContext
                             .getString(R.string.no_alternatives_found)
                     }
-                    migration_menu.isVisible = true
-                    skip_manga.isVisible = false
+                    binding.migrationMenu.isVisible = true
+                    binding.skipManga.isVisible = false
                     adapter.sourceFinished()
                 }
             }
         }
     }
 
-    private fun View.resetManga() {
-        loading_group.isVisible = true
+    private fun MigrationMangaCardBinding.resetManga() {
+        loadingGroup.isVisible = true
         thumbnail.setImageDrawable(null)
         title.text = ""
-        manga_source_label.text = ""
-        manga_chapters.text = ""
-        manga_chapters.isVisible = false
-        manga_last_chapter_label.text = ""
+        mangaSourceLabel.text = ""
+        mangaChapters.text = ""
+        mangaChapters.isVisible = false
+        mangaLastChapterLabel.text = ""
     }
 
-    private suspend fun View.attachManga(manga: Manga, source: Source) {
-        loading_group.isVisible = false
+    private suspend fun MigrationMangaCardBinding.attachManga(manga: Manga, source: Source) {
+        loadingGroup.isVisible = false
         GlideApp.with(view.context.applicationContext)
             .load(manga.toMangaThumbnail())
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
@@ -168,7 +160,7 @@ class MigrationProcessHolder(
         }
 
         gradient.isVisible = true
-        manga_source_label.text = if (source.id == MERGED_SOURCE_ID) {
+        mangaSourceLabel.text = if (source.id == MERGED_SOURCE_ID) {
             db.getMergedMangaReferences(manga.id!!).await().map {
                 sourceManager.getOrStub(it.mangaSourceId).toString()
             }.distinct().joinToString()
@@ -176,20 +168,20 @@ class MigrationProcessHolder(
             source.toString()
         }
 
-        val mangaChapters = db.getChapters(manga).executeAsBlocking()
-        manga_chapters.isVisible = true
-        manga_chapters.text = mangaChapters.size.toString()
-        val latestChapter = mangaChapters.maxByOrNull { it.chapter_number }?.chapter_number ?: -1f
+        val chapters = db.getChapters(manga).executeAsBlocking()
+        mangaChapters.isVisible = true
+        mangaChapters.text = chapters.size.toString()
+        val latestChapter = chapters.maxByOrNull { it.chapter_number }?.chapter_number ?: -1f
 
         if (latestChapter > 0f) {
-            manga_last_chapter_label.text = context.getString(
+            mangaLastChapterLabel.text = root.context.getString(
                 R.string.latest_,
                 DecimalFormat("#.#").format(latestChapter)
             )
         } else {
-            manga_last_chapter_label.text = context.getString(
+            mangaLastChapterLabel.text = root.context.getString(
                 R.string.latest_,
-                context.getString(R.string.unknown)
+                root.context.getString(R.string.unknown)
             )
         }
     }

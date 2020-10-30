@@ -3,20 +3,20 @@ package eu.kanade.tachiyomi.ui.browse.migration.sources
 import android.view.View
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.databinding.SourceMainControllerCardItemBinding
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.source_main_controller_card_item.image
-import kotlinx.android.synthetic.main.source_main_controller_card_item.source_latest
-import kotlinx.android.synthetic.main.source_main_controller_card_item.title
 
 class SourceHolder(view: View, val adapter: SourceAdapter) :
     BaseFlexibleViewHolder(view, adapter) {
 
+    val binding = SourceMainControllerCardItemBinding.bind(view)
+
     // SY -->
     init {
-        source_latest.isVisible = true
-        source_latest.text = view.context.getString(R.string.all)
-        source_latest.setOnClickListener {
+        binding.sourceLatest.isVisible = true
+        binding.sourceLatest.text = view.context.getString(R.string.all)
+        binding.sourceLatest.setOnClickListener {
             adapter.allClickListener?.onAllClick(bindingAdapterPosition)
         }
     }
@@ -26,11 +26,11 @@ class SourceHolder(view: View, val adapter: SourceAdapter) :
         val source = item.source
 
         // Set source name
-        title.text = source.name
+        binding.title.text = source.name
 
         // Set source icon
         itemView.post {
-            image.setImageDrawable(source.icon())
+            binding.image.setImageDrawable(source.icon())
         }
     }
 }

@@ -4,7 +4,7 @@ import android.app.Dialog
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
-import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
@@ -19,21 +19,13 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
+import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import exh.util.trimOrNull
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.cover_layout
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_artist
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_author
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_cover
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_description
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.manga_genres_tags
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.reset_cover
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.reset_tags
-import kotlinx.android.synthetic.main.edit_manga_dialog.view.title
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -42,7 +34,7 @@ import uy.kohesive.injekt.api.get
 
 class EditMangaDialog : DialogController {
 
-    private var dialogView: View? = null
+    private lateinit var binding: EditMangaDialogBinding
 
     private val manga: Manga
 
@@ -75,8 +67,8 @@ class EditMangaDialog : DialogController {
             negativeButton(android.R.string.cancel)
             positiveButton(R.string.action_save) { onPositiveButtonClick() }
         }
-        dialogView = dialog.view
-        onViewCreated(dialog.view)
+        binding = EditMangaDialogBinding.bind(dialog.view)
+        onViewCreated()
         dialog.setOnShowListener {
             val dView = (it as? MaterialDialog)?.view
             dView?.contentLayout?.scrollView?.scrollTo(0, 0)
@@ -84,101 +76,96 @@ class EditMangaDialog : DialogController {
         return dialog
     }
 
-    fun onViewCreated(view: View) {
+    fun onViewCreated() {
         val mangaThumbnail = manga.toMangaThumbnail()
 
-        GlideApp.with(view.context)
+        GlideApp.with(binding.root.context)
             .load(mangaThumbnail)
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .centerCrop()
-            .into(view.manga_cover)
+            .into(binding.mangaCover)
 
         val isLocal = manga.source == LocalSource.ID
 
         if (isLocal) {
             if (manga.title != manga.url) {
-                view.title.append(manga.title)
+                binding.title.append(manga.title)
             }
-            view.title.hint = "${resources?.getString(R.string.title)}: ${manga.url}"
-            view.manga_author.append(manga.author ?: "")
-            view.manga_artist.append(manga.artist ?: "")
-            view.manga_description.append(manga.description ?: "")
-            view.manga_genres_tags.setChips(manga.getGenres())
+            binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.url}"
+            binding.mangaAuthor.append(manga.author ?: "")
+            binding.mangaArtist.append(manga.artist ?: "")
+            binding.mangaDescription.append(manga.description ?: "")
+            binding.mangaGenresTags.setChips(manga.getGenres())
         } else {
             if (manga.title != manga.originalTitle) {
-                view.title.append(manga.title)
+                binding.title.append(manga.title)
             }
             if (manga.author != manga.originalAuthor) {
-                view.manga_author.append(manga.author ?: "")
+                binding.mangaAuthor.append(manga.author ?: "")
             }
             if (manga.artist != manga.originalArtist) {
-                view.manga_artist.append(manga.artist ?: "")
+                binding.mangaArtist.append(manga.artist ?: "")
             }
             if (manga.description != manga.originalDescription) {
-                view.manga_description.append(manga.description ?: "")
+                binding.mangaDescription.append(manga.description ?: "")
             }
-            view.manga_genres_tags.setChips(manga.getGenres())
+            binding.mangaGenresTags.setChips(manga.getGenres())
 
-            view.title.hint = "${resources?.getString(R.string.title)}: ${manga.originalTitle}"
+            binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.originalTitle}"
             if (manga.originalAuthor != null) {
-                view.manga_author.hint = "Author: ${manga.originalAuthor}"
+                binding.mangaAuthor.hint = "Author: ${manga.originalAuthor}"
             }
             if (manga.originalArtist != null) {
-                view.manga_artist.hint = "Artist: ${manga.originalArtist}"
+                binding.mangaArtist.hint = "Artist: ${manga.originalArtist}"
             }
             if (manga.originalDescription != null) {
-                view.manga_description.hint =
+                binding.mangaDescription.hint =
                     "${resources?.getString(R.string.description)}: ${manga.originalDescription?.replace(
                         "\n",
                         " "
                     )?.chop(20)}"
             }
         }
-        view.manga_genres_tags.clearFocus()
-        view.cover_layout.clicks()
+        binding.mangaGenresTags.clearFocus()
+        binding.coverLayout.clicks()
             .onEach { infoController.changeCover() }
             .launchIn(infoController.scope)
-        view.reset_tags.clicks()
+        binding.resetTags.clicks()
             .onEach { resetTags() }
             .launchIn(infoController.scope)
-        view.reset_cover.isVisible = !isLocal
-        view.reset_cover.clicks()
+        binding.resetCover.isVisible = !isLocal
+        binding.resetCover.clicks()
             .onEach {
-                view.context.toast(R.string.cover_reset_toast)
+                binding.root.context.toast(R.string.cover_reset_toast)
                 customCoverUri = null
                 willResetCover = true
             }.launchIn(infoController.scope)
     }
 
     private fun resetTags() {
-        if (manga.genre.isNullOrBlank() || manga.source == LocalSource.ID) dialogView?.manga_genres_tags?.setChips(
+        if (manga.genre.isNullOrBlank() || manga.source == LocalSource.ID) binding.mangaGenresTags.setChips(
             emptyList()
         )
-        else dialogView?.manga_genres_tags?.setChips(manga.getOriginalGenres())
+        else binding.mangaGenresTags.setChips(manga.getOriginalGenres())
     }
 
     fun updateCover(uri: Uri) {
         willResetCover = false
-        GlideApp.with(dialogView!!.context)
+        GlideApp.with(binding.root.context)
             .load(uri)
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .centerCrop()
-            .into(dialogView!!.manga_cover)
+            .into(binding.mangaCover)
         customCoverUri = uri
-    }
-
-    override fun onDestroyView(view: View) {
-        super.onDestroyView(view)
-        dialogView = null
     }
 
     private fun onPositiveButtonClick() {
         infoController.presenter.updateMangaInfo(
-            dialogView?.title?.text.toString(),
-            dialogView?.manga_author?.text.toString(),
-            dialogView?.manga_artist?.text.toString(),
-            dialogView?.manga_description?.text.toString(),
-            dialogView?.manga_genres_tags?.getTextStrings(),
+            binding.title.text.toString(),
+            binding.mangaAuthor.text.toString(),
+            binding.mangaArtist.text.toString(),
+            binding.mangaDescription.text.toString(),
+            binding.mangaGenresTags.getTextStrings(),
             customCoverUri,
             willResetCover
         )
@@ -204,7 +191,7 @@ class EditMangaDialog : DialogController {
         val addTagChip = Chip(context).apply {
             setText(R.string.add_tag)
 
-            chipIcon = context.getDrawable(R.drawable.ic_add_24dp)
+            chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_add_24dp)
             chipIcon?.setTint(context.getResourceColor(R.attr.colorAccent))
             textStartPadding = 0F
 

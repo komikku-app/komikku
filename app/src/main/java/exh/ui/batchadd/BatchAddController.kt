@@ -10,8 +10,6 @@ import eu.kanade.tachiyomi.databinding.EhFragmentBatchAddBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.plusAssign
-import kotlinx.android.synthetic.main.eh_fragment_batch_add.view.galleries_box
-import kotlinx.android.synthetic.main.eh_fragment_batch_add.view.progress_log
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -55,7 +53,7 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
                 .subscribeUntilDestroy {
                     progressSubscriptions.clear()
                     if (it == BatchAddPresenter.STATE_INPUT_TO_PROGRESS) {
-                        showProgress(this)
+                        showProgress(binding)
                         progressSubscriptions += presenter.progressRelay
                             .onBackpressureBuffer()
                             .observeOn(AndroidSchedulers.mainThread())
@@ -96,45 +94,45 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
                                 progressSubscriptions += it
                             }
                     } else if (it == BatchAddPresenter.STATE_PROGRESS_TO_INPUT) {
-                        hideProgress(this)
+                        hideProgress(binding)
                         presenter.currentlyAddingRelay.call(BatchAddPresenter.STATE_IDLE)
                     }
                 }
         }
     }
 
-    private val View.progressViews
+    private val EhFragmentBatchAddBinding.progressViews
         get() = listOf(
-            binding.progressTitleView,
-            binding.progressLogWrapper,
-            binding.progressBar,
-            binding.progressText,
-            binding.progressDismissBtn
+            progressTitleView,
+            progressLogWrapper,
+            progressBar,
+            progressText,
+            progressDismissBtn
         )
 
-    private val View.inputViews
+    private val EhFragmentBatchAddBinding.inputViews
         get() = listOf(
-            binding.inputTitleView,
-            binding.galleriesBox,
-            binding.btnAddGalleries
+            inputTitleView,
+            galleriesBox,
+            btnAddGalleries
         )
 
     private var List<View>.visibility: Int
         get() = throw UnsupportedOperationException()
         set(v) { forEach { it.visibility = v } }
 
-    private fun showProgress(target: View? = view) {
-        target?.apply {
+    private fun showProgress(target: EhFragmentBatchAddBinding = binding) {
+        target.apply {
             progressViews.visibility = View.VISIBLE
             inputViews.visibility = View.GONE
-        }?.progress_log?.text = ""
+        }.progressLog.text = ""
     }
 
-    private fun hideProgress(target: View? = view) {
-        target?.apply {
+    private fun hideProgress(target: EhFragmentBatchAddBinding = binding) {
+        target.apply {
             progressViews.visibility = View.GONE
             inputViews.visibility = View.VISIBLE
-        }?.galleries_box?.setText("", TextView.BufferType.EDITABLE)
+        }.galleriesBox.setText("", TextView.BufferType.EDITABLE)
     }
 
     private fun formatProgress(progress: Int, total: Int) = "$progress/$total"

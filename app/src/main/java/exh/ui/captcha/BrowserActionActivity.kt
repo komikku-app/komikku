@@ -15,6 +15,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.databinding.EhActivityCaptchaBinding
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.Source
@@ -23,8 +24,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.source.DelegatedHttpSource
 import exh.util.melt
-import kotlinx.android.synthetic.main.eh_activity_captcha.toolbar
-import kotlinx.android.synthetic.main.eh_activity_captcha.webview
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -59,11 +58,14 @@ class BrowserActionActivity : AppCompatActivity() {
     private var strictValidationStartTime: Long? = null
 
     private lateinit var credentialsObservable: Observable<String>
+    private lateinit var binding: EhActivityCaptchaBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.eh_activity_captcha)
+        binding = EhActivityCaptchaBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
 
         val sourceId = intent.getLongExtra(SOURCE_ID_EXTRA, -1)
         val originalSource = if (sourceId != -1L) sourceManager.get(sourceId) else null
@@ -102,7 +104,7 @@ class BrowserActionActivity : AppCompatActivity() {
 
         val actionStr = actionName ?: "Solve captcha"
 
-        toolbar.title = if (source != null) {
+        binding.toolbar.title = if (source != null) {
             "${source.name}: $actionStr"
         } else actionStr
 
@@ -115,14 +117,14 @@ class BrowserActionActivity : AppCompatActivity() {
             cm.setCookie(url, cookieString)
         }
 
-        webview.setDefaultSettings()
+        binding.webview.setDefaultSettings()
         headers.entries.find { it.key.equals("user-agent", true) }?.let {
-            webview.settings.userAgentString = it.value
+            binding.webview.settings.userAgentString = it.value
         }
 
         var loadedInners = 0
 
-        webview.webChromeClient = object : WebChromeClient() {
+        binding.webview.webChromeClient = object : WebChromeClient() {
             override fun onJsAlert(view: WebView?, url: String?, message: String, result: JsResult): Boolean {
                 if (message.startsWith("exh-")) {
                     loadedInners++
@@ -130,13 +132,13 @@ class BrowserActionActivity : AppCompatActivity() {
                     if (loadedInners >= 2) {
                         // Attempt to autosolve captcha
                         if (preferencesHelper.eh_autoSolveCaptchas().get()) {
-                            webview.post {
+                            binding.webview.post {
                                 // 10 seconds to auto-solve captcha
                                 strictValidationStartTime = System.currentTimeMillis() + 1000 * 10
                                 beginSolveLoop()
                                 beginValidateCaptchaLoop()
-                                webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE) {
-                                    webview.evaluateJavascript(SOLVE_UI_SCRIPT_SHOW, null)
+                                binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE) {
+                                    binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_SHOW, null)
                                 }
                             }
                         }
@@ -148,7 +150,7 @@ class BrowserActionActivity : AppCompatActivity() {
             }
         }
 
-        webview.webViewClient = if (actionName == null && preferencesHelper.eh_autoSolveCaptchas().get()) {
+        binding.webview.webViewClient = if (actionName == null && preferencesHelper.eh_autoSolveCaptchas().get()) {
             // Fetch auto-solve credentials early for speed
             credentialsObservable = httpClient.newCall(
                 Request.Builder()
@@ -164,15 +166,15 @@ class BrowserActionActivity : AppCompatActivity() {
                     json["token"]!!.jsonPrimitive.content
                 }.melt()
 
-            webview.addJavascriptInterface(this@BrowserActionActivity, "exh")
+            binding.webview.addJavascriptInterface(this@BrowserActionActivity, "exh")
             AutoSolvingWebViewClient(this, verifyComplete, script, headers)
         } else {
             HeadersInjectingWebViewClient(this, verifyComplete, script, headers)
         }
 
-        webview.loadUrl(url, headers)
+        binding.webview.loadUrl(url, headers)
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
@@ -187,7 +189,7 @@ class BrowserActionActivity : AppCompatActivity() {
         validateCurrentLoopId = null
         XLog.e(IllegalStateException("Captcha solve failure!"))
         withContext(Dispatchers.Main) {
-            webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
+            binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             MaterialDialog(this@BrowserActionActivity)
                 .title(R.string.captcha_solve_failure)
                 .message(R.string.captcha_solve_failure_message)
@@ -205,14 +207,14 @@ class BrowserActionActivity : AppCompatActivity() {
         when (stage) {
             STAGE_CHECKBOX -> {
                 if (result!!.toBoolean()) {
-                    webview.postDelayed(
+                    binding.webview.postDelayed(
                         {
                             getAudioButtonLocation(loopId)
                         },
                         250
                     )
                 } else {
-                    webview.postDelayed(
+                    binding.webview.postDelayed(
                         {
                             doStageCheckbox(loopId)
                         },
@@ -227,15 +229,15 @@ class BrowserActionActivity : AppCompatActivity() {
                     val origY = splitResult[1]
                     val iw = splitResult[2]
                     val ih = splitResult[3]
-                    val x = webview.x + origX / iw * webview.width
-                    val y = webview.y + origY / ih * webview.height
+                    val x = binding.webview.x + origX / iw * binding.webview.width
+                    val y = binding.webview.y + origY / ih * binding.webview.height
                     XLog.nst().d("Found audio button coords: %f %f", x, y)
                     simulateClick(x + 50, y + 50)
-                    webview.post {
+                    binding.webview.post {
                         doStageDownloadAudio(loopId)
                     }
                 } else {
-                    webview.postDelayed(
+                    binding.webview.postDelayed(
                         {
                             getAudioButtonLocation(loopId)
                         },
@@ -251,7 +253,7 @@ class BrowserActionActivity : AppCompatActivity() {
                         .subscribe(
                             {
                                 XLog.nst().d("Got audio transcript: $it")
-                                webview.post {
+                                binding.webview.post {
                                     typeResult(
                                         loopId,
                                         it!!
@@ -266,7 +268,7 @@ class BrowserActionActivity : AppCompatActivity() {
                             }
                         )
                 } else {
-                    webview.postDelayed(
+                    binding.webview.postDelayed(
                         {
                             doStageDownloadAudio(loopId)
                         },
@@ -330,7 +332,7 @@ class BrowserActionActivity : AppCompatActivity() {
     private fun doStageCheckbox(loopId: String) {
         if (loopId != currentLoopId) return
 
-        webview.evaluateJavascript(
+        binding.webview.evaluateJavascript(
             """
             (function() {
                 $CROSS_WINDOW_SCRIPT_OUTER
@@ -359,7 +361,7 @@ class BrowserActionActivity : AppCompatActivity() {
     }
 
     private fun getAudioButtonLocation(loopId: String) {
-        webview.evaluateJavascript(
+        binding.webview.evaluateJavascript(
             """
             (function() {
                 $CROSS_WINDOW_SCRIPT_OUTER
@@ -394,7 +396,7 @@ class BrowserActionActivity : AppCompatActivity() {
     }
 
     private fun doStageDownloadAudio(loopId: String) {
-        webview.evaluateJavascript(
+        binding.webview.evaluateJavascript(
             """
             (function() {
                 $CROSS_WINDOW_SCRIPT_OUTER
@@ -422,7 +424,7 @@ class BrowserActionActivity : AppCompatActivity() {
     }
 
     private fun typeResult(loopId: String, result: String) {
-        webview.evaluateJavascript(
+        binding.webview.evaluateJavascript(
             """
             (function() {
                 $CROSS_WINDOW_SCRIPT_OUTER
@@ -464,13 +466,13 @@ class BrowserActionActivity : AppCompatActivity() {
 
         if (result) {
             XLog.nst().d("Captcha solved!")
-            webview.post {
-                webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
+            binding.webview.post {
+                binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             }
             val asbtn = intent.getStringExtra(ASBTN_EXTRA)
             if (asbtn != null) {
-                webview.post {
-                    webview.evaluateJavascript("(function() {document.querySelector('$asbtn').click();})();", null)
+                binding.webview.post {
+                    binding.webview.evaluateJavascript("(function() {document.querySelector('$asbtn').click();})();", null)
                 }
             }
         } else {
@@ -480,7 +482,7 @@ class BrowserActionActivity : AppCompatActivity() {
             ) {
                 captchaSolveFail()
             } else {
-                webview.postDelayed(
+                binding.webview.postDelayed(
                     {
                         runValidateCaptcha(loopId)
                     },
@@ -493,7 +495,7 @@ class BrowserActionActivity : AppCompatActivity() {
     private fun runValidateCaptcha(loopId: String) {
         if (loopId != validateCurrentLoopId) return
 
-        webview.evaluateJavascript(
+        binding.webview.evaluateJavascript(
             """
             (function() {
                 $CROSS_WINDOW_SCRIPT_OUTER

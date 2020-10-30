@@ -9,27 +9,28 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
+import eu.kanade.tachiyomi.databinding.SourceListItemBinding
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.source_list_item.thumbnail
-import kotlinx.android.synthetic.main.source_list_item.title
 
 class MangaHolder(
     view: View,
     adapter: FlexibleAdapter<*>
 ) : BaseFlexibleViewHolder(view, adapter) {
 
+    val binding = SourceListItemBinding.bind(view)
+
     fun bind(item: MangaItem) {
         // Update the title of the manga.
-        title.text = item.manga.originalTitle
+        binding.title.text = item.manga.originalTitle
 
         // Create thumbnail onclick to simulate long click
-        thumbnail.setOnClickListener {
+        binding.thumbnail.setOnClickListener {
             // Simulate long click on this view to enter selection mode
             onLongClick(itemView)
         }
 
         // Update the cover.
-        GlideApp.with(itemView.context).clear(thumbnail)
+        GlideApp.with(itemView.context).clear(binding.thumbnail)
 
         val radius = itemView.context.resources.getDimensionPixelSize(R.dimen.card_radius)
         val requestOptions = RequestOptions().transform(CenterCrop(), RoundedCorners(radius))
@@ -38,6 +39,6 @@ class MangaHolder(
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .apply(requestOptions)
             .dontAnimate()
-            .into(thumbnail)
+            .into(binding.thumbnail)
     }
 }

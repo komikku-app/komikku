@@ -6,8 +6,8 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractHeaderItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.databinding.SourceMainControllerCardHeaderBinding
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.source_main_controller_card_header.title
 
 /**
  * Item that contains the selection header.
@@ -46,8 +46,9 @@ class SelectionHeader : AbstractHeaderItem<SelectionHeader.Holder>() {
     }
 
     class Holder(view: View, adapter: FlexibleAdapter</* SY --> */ IFlexible<RecyclerView.ViewHolder> /* SY <-- */>) : BaseFlexibleViewHolder(view, adapter) {
+        val binding = SourceMainControllerCardHeaderBinding.bind(view)
         init {
-            title.text = view.context.getString(/* SY --> */ R.string.select_a_source_to_migrate_from /* SY <-- */)
+            binding.title.text = view.context.getString(/* SY --> */ R.string.select_a_source_to_migrate_from /* SY <-- */)
         }
     }
 

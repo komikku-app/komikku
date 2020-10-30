@@ -24,13 +24,13 @@
         android:contentDescription="@string/migrating_to"
         android:scaleType="center"
         android:layout_marginBottom="45dp"
-        android:tint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/migration_manga_card_to"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/migration_manga_card_from"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_arrow_forward_24dp" />
+        app:srcCompat="@drawable/ic_arrow_forward_24dp"
+        app:tint="?attr/colorOnPrimary" />
 
     <include
         android:id="@+id/migration_manga_card_to"
@@ -64,10 +64,10 @@
         android:id="@+id/skip_manga"
         android:layout_width="48dp"
         android:layout_height="wrap_content"
-        android:tint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/migration_menu"
         app:layout_constraintEnd_toEndOf="@+id/migration_menu"
         app:layout_constraintStart_toStartOf="@+id/migration_menu"
         app:layout_constraintTop_toTopOf="@+id/migration_menu"
-        app:srcCompat="@drawable/ic_close_24dp" />
+        app:srcCompat="@drawable/ic_close_24dp"
+        app:tint="?attr/colorOnPrimary" />
 </androidx.constraintlayout.widget.ConstraintLayout>

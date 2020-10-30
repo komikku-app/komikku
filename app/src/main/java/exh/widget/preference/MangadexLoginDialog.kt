@@ -9,18 +9,13 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.databinding.PrefSiteLoginTwoFactorAuthBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.preference.LoginDialogPreference
 import exh.source.getMainSource
-import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.login
-import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.password
-import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_check
-import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_edit
-import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.two_factor_holder
-import kotlinx.android.synthetic.main.pref_site_login_two_factor_auth.view.username
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,6 +30,8 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
     val service = Injekt.get<TrackManager>().mdList
 
     val scope = CoroutineScope(Job() + Dispatchers.Main)
+
+    var binding: PrefSiteLoginTwoFactorAuthBinding? = null
 
     constructor(source: MangaDex) : this(
         bundleOf(
@@ -54,23 +51,24 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
-        v?.apply {
-            two_factor_check?.setOnCheckedChangeListener { _, isChecked ->
-                two_factor_holder.isVisible = isChecked
+        v?.let { binding = PrefSiteLoginTwoFactorAuthBinding.bind(it) }
+        binding?.apply {
+            twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
+                twoFactorHolder.isVisible = isChecked
             }
         }
     }
 
-    override fun setCredentialsOnView(view: View) = with(view) {
-        username.setText(service.getUsername())
-        password.setText(service.getPassword())
+    override fun setCredentialsOnView(view: View) {
+        binding?.username?.setText(service.getUsername())
+        binding?.password?.setText(service.getPassword())
     }
 
     override fun checkLogin() {
-        v?.apply {
-            if (username.text.isNullOrBlank() || password.text.isNullOrBlank() || (two_factor_check.isChecked && two_factor_edit.text.isNullOrBlank())) {
+        binding?.apply {
+            if (username.text.isNullOrBlank() || password.text.isNullOrBlank() || (twoFactorCheck.isChecked && twoFactorEdit.text.isNullOrBlank())) {
                 errorResult()
-                context.toast(R.string.fields_cannot_be_blank)
+                root.context.toast(R.string.fields_cannot_be_blank)
                 return
             }
 
@@ -84,25 +82,25 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
                     val result = source?.login(
                         username.text.toString(),
                         password.text.toString(),
-                        two_factor_edit.text.toString()
+                        twoFactorEdit.text.toString()
                     ) ?: false
                     if (result) {
                         dialog?.dismiss()
                         preferences.setTrackCredentials(Injekt.get<TrackManager>().mdList, username.toString(), password.toString())
-                        context.toast(R.string.login_success)
+                        root.context.toast(R.string.login_success)
                     } else {
                         errorResult()
                     }
                 } catch (error: Exception) {
                     errorResult()
-                    error.message?.let { context.toast(it) }
+                    error.message?.let { root.context.toast(it) }
                 }
             }
         }
     }
 
     private fun errorResult() {
-        v?.apply {
+        binding?.apply {
             dialog?.setCancelable(true)
             dialog?.setCanceledOnTouchOutside(true)
             login.progress = -1

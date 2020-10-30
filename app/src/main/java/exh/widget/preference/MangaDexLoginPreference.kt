@@ -6,9 +6,9 @@ import androidx.core.view.isVisible
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.databinding.PrefItemMangadexBinding
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import kotlinx.android.synthetic.main.pref_item_mangadex.view.*
 
 class MangaDexLoginPreference @JvmOverloads constructor(
     context: Context,
@@ -20,25 +20,28 @@ class MangaDexLoginPreference @JvmOverloads constructor(
         layoutResource = R.layout.pref_item_mangadex
     }
 
+    var binding: PrefItemMangadexBinding? = null
+
     private var onLoginClick: () -> Unit = {}
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
+        binding = PrefItemMangadexBinding.bind(holder.itemView)
         holder.itemView.setOnClickListener {
             onLoginClick()
         }
-        val loginFrame = holder.itemView.login_frame
+        val loginFrame = binding?.loginFrame
         val color = if (source.isLogged()) {
             context.getResourceColor(R.attr.colorAccent)
         } else {
             context.getResourceColor(R.attr.colorSecondary)
         }
 
-        holder.itemView.login.setImageResource(R.drawable.ic_outline_people_alt_24dp)
-        holder.itemView.login.drawable.setTint(color)
+        binding?.login?.setImageResource(R.drawable.ic_outline_people_alt_24dp)
+        binding?.login?.drawable?.setTint(color)
 
-        loginFrame.isVisible = true
-        loginFrame.setOnClickListener {
+        loginFrame?.isVisible = true
+        loginFrame?.setOnClickListener {
             onLoginClick()
         }
     }
