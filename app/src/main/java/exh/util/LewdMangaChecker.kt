@@ -13,11 +13,10 @@ fun Manga.isLewd(): Boolean {
     val currentTags = getGenres() ?: emptyList()
 
     if (source == EH_SOURCE_ID || source == EXH_SOURCE_ID || source in nHentaiSourceIds) {
-        return !currentTags.any { tag -> isNonHentaiTag(tag) }
+        return currentTags.none { tag -> isNonHentaiTag(tag) }
     }
 
     return source in 6905L..6913L ||
-        // source in lewdDelegatedSourceIds ||
         (sourceName != null && isHentaiSource(sourceName)) ||
         currentTags.any { tag -> isHentaiTag(tag) }
 }
@@ -28,7 +27,10 @@ private fun isNonHentaiTag(tag: String): Boolean {
 
 private fun isHentaiTag(tag: String): Boolean {
     return tag.contains("hentai", true) ||
-        tag.contains("adult", true)
+        tag.contains("adult", true) ||
+        tag.contains("smut", true) ||
+        tag.contains("lewd", true) ||
+        tag.contains("nsfw", true)
 }
 
 private fun isHentaiSource(source: String): Boolean {
@@ -45,5 +47,10 @@ private fun isHentaiSource(source: String): Boolean {
         source.contains("pururin", true) ||
         source.contains("simply hentai", true) ||
         source.contains("tsumino", true) ||
+        source.contains("hitomi.la", true) ||
+        source.contains("8muses", true) ||
+        source.contains("hbrowse", true) ||
+        source.contains("nhentai", true) ||
+        source.contains("erofus", true) ||
         source.contains("hentai", true)
 }
