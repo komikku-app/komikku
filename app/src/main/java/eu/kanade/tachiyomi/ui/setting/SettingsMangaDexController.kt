@@ -6,12 +6,12 @@ import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
+import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.listPreference
-import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
@@ -24,6 +24,8 @@ import exh.md.utils.MdUtil
 import exh.widget.preference.MangaDexLoginPreference
 import exh.widget.preference.MangadexLoginDialog
 import exh.widget.preference.MangadexLogoutDialog
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.launchIn
 
 class SettingsMangaDexController :
     SettingsController(),
@@ -145,10 +147,12 @@ class SettingsMangaDexController :
                 entryValues = arrayOf("0", "1", "2", "7", "30")
                 defaultValue = "2"
 
-                onChange {
-                    SimilarUpdateJob.setupTask(context, true)
-                    true
-                }
+                preferences.mangadexSimilarUpdateInterval()
+                    .asImmediateFlow {
+                        SimilarUpdateJob.setupTask(context, true)
+                    }
+                    .drop(1)
+                    .launchIn(scope)
             }
 
             preference {
