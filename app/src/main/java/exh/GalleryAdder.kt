@@ -14,7 +14,6 @@ import exh.source.getMainSource
 import exh.util.await
 import exh.util.awaitSingle
 import uy.kohesive.injekt.injectLazy
-import java.util.Date
 
 class GalleryAdder {
 
@@ -107,7 +106,7 @@ class GalleryAdder {
 
             if (fav) {
                 manga.favorite = true
-                manga.date_added = Date().time
+                manga.date_added = System.currentTimeMillis()
             }
 
             db.insertManga(manga).await()

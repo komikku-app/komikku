@@ -7,7 +7,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
-import java.util.Date
 
 class ApiChapterParser {
     fun pageListParse(response: Response): List<Page> {
@@ -22,7 +21,7 @@ class ApiChapterParser {
 
         pageArray.forEach {
             val url = "$hash/${it.jsonPrimitive.content}"
-            pages.add(Page(pages.size, "$server,${response.request.url},${Date().time}", url))
+            pages.add(Page(pages.size, "$server,${response.request.url},${System.currentTimeMillis()}", url))
         }
 
         return pages

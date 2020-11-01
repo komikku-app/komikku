@@ -16,7 +16,6 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.Date
 
 class MigrationMangaPresenter(
     private val sourceId: Long,
@@ -113,7 +112,7 @@ class MigrationMangaPresenter(
                 prevManga.date_added = 0
                 db.updateMangaFavorite(prevManga).executeAsBlocking()
             } else {
-                manga.date_added = Date().time
+                manga.date_added = System.currentTimeMillis()
             }
             // Set extra data
 

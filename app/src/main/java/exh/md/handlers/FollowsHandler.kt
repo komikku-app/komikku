@@ -45,25 +45,22 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
      * used when multiple follows
      */
     private fun followsParseMangaPage(response: Response, forceHd: Boolean = false): MetadataMangasPage {
-        var followsPageResult: FollowsPageResult? = null
-
-        try {
-            followsPageResult =
-                MdUtil.jsonParser.decodeFromString(
-                    FollowsPageResult.serializer(),
-                    response.body!!.string()
-                )
+        val followsPageResult = try {
+            MdUtil.jsonParser.decodeFromString(
+                FollowsPageResult.serializer(),
+                response.body?.string() ?: ""
+            )
         } catch (e: Exception) {
             XLog.e("error parsing follows", e)
+            FollowsPageResult(emptyList())
         }
-        val empty = followsPageResult?.result?.isEmpty()
 
-        if (empty == null || empty) {
-            return MetadataMangasPage(mutableListOf(), false, mutableListOf())
+        if (followsPageResult.result.isEmpty()) {
+            return MetadataMangasPage(emptyList(), false, emptyList())
         }
         val lowQualityCovers = if (forceHd) false else useLowQualityCovers
 
-        val follows = followsPageResult!!.result.map {
+        val follows = followsPageResult.result.map {
             followFromElement(it, lowQualityCovers)
         }
 
@@ -79,25 +76,22 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
      */
 
     private fun followStatusParse(response: Response): Track {
-        var followsPageResult: FollowsPageResult? = null
-
-        try {
-            followsPageResult =
-                MdUtil.jsonParser.decodeFromString(
-                    FollowsPageResult.serializer(),
-                    response.body!!.string()
-                )
+        val followsPageResult = try {
+            MdUtil.jsonParser.decodeFromString(
+                FollowsPageResult.serializer(),
+                response.body?.string() ?: ""
+            )
         } catch (e: Exception) {
             XLog.e("error parsing follows", e)
+            FollowsPageResult(emptyList())
         }
         val track = Track.create(TrackManager.MDLIST)
-        val result = followsPageResult?.result
-        if (result.isNullOrEmpty()) {
+        if (followsPageResult.result.isEmpty()) {
             track.status = FollowStatus.UNFOLLOWED.int
         } else {
-            val follow = result.first()
+            val follow = followsPageResult.result.first()
             track.status = follow.follow_type
-            if (result[0].chapter.isNotBlank()) {
+            if (followsPageResult.result[0].chapter.isNotBlank()) {
                 track.last_chapter_read = follow.chapter.toFloat().floor()
             }
             track.tracking_url = MdUtil.baseUrl + follow.manga_id.toString()
@@ -122,9 +116,9 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         manga.url = "/manga/${result.manga_id}/"
         manga.thumbnail_url = MdUtil.formThumbUrl(manga.url, lowQualityCovers)
         return manga to MangaDexSearchMetadata().apply {
-            title = MdUtil.cleanString(result.title)
-            mdUrl = "/manga/${result.manga_id}/"
-            thumbnail_url = MdUtil.formThumbUrl(manga.url, lowQualityCovers)
+            title = manga.title
+            mdUrl = manga.url
+            thumbnail_url = manga.thumbnail_url
             follow_status = FollowStatus.fromInt(result.follow_type)?.int
         }
     }
@@ -156,7 +150,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                         .await()
                 }
 
-            withContext(Dispatchers.IO) { response.body!!.string().isEmpty() }
+            withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
         }
     }
 
@@ -182,7 +176,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             )
                 .await()
 
-            withContext(Dispatchers.IO) { response.body!!.string().isEmpty() }
+            withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
         }
     }
 
@@ -197,7 +191,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             )
                 .await()
 
-            withContext(Dispatchers.IO) { response.body!!.string().isEmpty() }
+            withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
         }
     }
 

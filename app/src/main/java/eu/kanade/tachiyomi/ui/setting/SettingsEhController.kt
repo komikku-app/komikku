@@ -50,7 +50,6 @@ import exh.util.floor
 import exh.util.nullIfBlank
 import exh.util.trans
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
@@ -277,7 +276,7 @@ class SettingsEhController : SettingsController() {
                             val binding = EhDialogLanguagesBinding.bind(customView)
 
                             val languages = with(binding) {
-                                listOfNotNull(
+                                listOf(
                                     "${japaneseOriginal.isChecked}*${japaneseTranslated.isChecked}*${japaneseRewrite.isChecked}",
                                     "${englishOriginal.isChecked}*${englishTranslated.isChecked}*${englishRewrite.isChecked}",
                                     "${chineseOriginal.isChecked}*${chineseTranslated.isChecked}*${chineseRewrite.isChecked}",
@@ -416,8 +415,8 @@ class SettingsEhController : SettingsController() {
                         .title(R.string.frong_page_categories)
                         .message(R.string.fromt_page_categories_summary)
                         .customView(R.layout.eh_dialog_categories, scrollable = true)
-                        .positiveButton {
-                            val customView = it.view.contentLayout.customView!!
+                        .positiveButton { dialog ->
+                            val customView = dialog.view.contentLayout.customView!!
                             val binding = EhDialogCategoriesBinding.bind(customView)
 
                             with(binding) {
@@ -631,7 +630,7 @@ class SettingsEhController : SettingsController() {
                     progress.show()
 
                     @OptIn(ExperimentalTime::class)
-                    GlobalScope.launch(Dispatchers.IO) {
+                    scope.launch(Dispatchers.IO) {
                         val updateInfo = try {
                             val stats =
                                 preferences.eh_autoUpdateStats().get().nullIfBlank()?.let {

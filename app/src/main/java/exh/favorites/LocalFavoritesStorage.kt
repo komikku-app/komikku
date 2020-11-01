@@ -9,7 +9,6 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import uy.kohesive.injekt.injectLazy
-import java.util.Date
 
 class LocalFavoritesStorage {
     private val db: DatabaseHelper by injectLazy()
@@ -42,7 +41,7 @@ class LocalFavoritesStorage {
                         it.fav,
                         it.manga.apply {
                             favorite = true
-                            date_added = Date().time
+                            date_added = System.currentTimeMillis()
                         }
                     )
                 }

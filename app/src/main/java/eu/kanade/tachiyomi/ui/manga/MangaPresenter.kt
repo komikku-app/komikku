@@ -432,7 +432,7 @@ class MangaPresenter(
                 viewer = originalManga.viewer
                 chapter_flags = originalManga.chapter_flags
                 sorting = Manga.SORTING_NUMBER
-                date_added = Date().time
+                date_added = System.currentTimeMillis()
             }
             var existingManga = db.getManga(mergedManga.url, mergedManga.source).await()
             while (existingManga != null) {

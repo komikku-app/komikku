@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.injectLazy
-import java.util.Date
 
 class MigrationProcessAdapter(
     val controller: MigrationListController
@@ -142,7 +141,7 @@ class MigrationProcessAdapter(
             prevManga.date_added = 0
             db.updateMangaFavorite(prevManga).executeAsBlocking()
         } else {
-            manga.date_added = Date().time
+            manga.date_added = System.currentTimeMillis()
         }
         manga.favorite = true
 

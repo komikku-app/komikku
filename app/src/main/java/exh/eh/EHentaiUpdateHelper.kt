@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import uy.kohesive.injekt.injectLazy
 import java.io.File
-import java.util.Date
 
 data class ChapterChain(val manga: Manga, val chapters: List<Chapter>)
 
@@ -69,7 +68,7 @@ class EHentaiUpdateHelper(context: Context) {
                     it.manga.date_added = 0
                 }
                 accepted.manga.favorite = true
-                accepted.manga.date_added = Date().time
+                accepted.manga.date_added = System.currentTimeMillis()
 
                 val newAccepted = ChapterChain(accepted.manga, newChapters)
                 val rootsToMutate = toDiscard + newAccepted

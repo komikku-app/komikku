@@ -26,7 +26,6 @@ import rx.Completable
 import rx.Single
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.Date
 
 class ApiMangaParser(private val langs: List<String>) {
     val db: DatabaseHelper get() = Injekt.get()
@@ -207,9 +206,8 @@ class ApiMangaParser(private val langs: List<String>) {
     }
 
     fun chapterListParse(jsonData: String): List<SChapter> {
-        val now = Date().time
-        val networkApiManga =
-            MdUtil.jsonParser.decodeFromString(ApiMangaSerializer.serializer(), jsonData)
+        val now = System.currentTimeMillis()
+        val networkApiManga = MdUtil.jsonParser.decodeFromString(ApiMangaSerializer.serializer(), jsonData)
         val networkManga = networkApiManga.manga
         val networkChapters = networkApiManga.chapter
         if (networkChapters.isNullOrEmpty()) {

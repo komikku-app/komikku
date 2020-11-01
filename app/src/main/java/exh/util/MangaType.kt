@@ -47,7 +47,6 @@ fun Manga.mangaType(): MangaType {
  * read types
  */
 fun Manga.defaultReaderType(): Int? {
-    // val sourceName = Injekt.get<SourceManager>().getOrStub(source).name
     val type = mangaType()
     return if (type == MangaType.TYPE_MANHWA || type == MangaType.TYPE_WEBTOON) {
         ReaderActivity.WEBTOON

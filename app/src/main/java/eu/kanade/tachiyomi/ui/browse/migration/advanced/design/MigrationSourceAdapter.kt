@@ -7,7 +7,7 @@ import uy.kohesive.injekt.injectLazy
 
 class MigrationSourceAdapter(
     var items: List<MigrationSourceItem>,
-    val controllerPre: PreMigrationController
+    controllerPre: PreMigrationController
 ) : FlexibleAdapter<MigrationSourceItem>(
     items,
     controllerPre,
@@ -30,8 +30,8 @@ class MigrationSourceAdapter(
         val sourceManager: SourceManager by injectLazy()
         savedInstanceState.getParcelableArrayList<MigrationSourceItem.ParcelableSI>(
             SELECTED_SOURCES_KEY
-        )?.let {
-            updateDataSet(it.map { MigrationSourceItem.fromParcelable(sourceManager, it) })
+        )?.let { selectedSources ->
+            updateDataSet(selectedSources.map { MigrationSourceItem.fromParcelable(sourceManager, it) })
         }
 
         super.onRestoreInstanceState(savedInstanceState)
