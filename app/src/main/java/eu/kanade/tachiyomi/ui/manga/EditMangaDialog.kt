@@ -67,7 +67,7 @@ class EditMangaDialog : DialogController {
             negativeButton(android.R.string.cancel)
             positiveButton(R.string.action_save) { onPositiveButtonClick() }
         }
-        binding = EditMangaDialogBinding.bind(dialog.view)
+        binding = EditMangaDialogBinding.bind(dialog.view.contentLayout.customView!!)
         onViewCreated()
         dialog.setOnShowListener {
             val dView = (it as? MaterialDialog)?.view
