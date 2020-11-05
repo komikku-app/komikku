@@ -53,7 +53,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
 
     // Keep compatibility as searchText field was replaced when we upgraded FlexibleAdapter
     var searchText
-        get() = getFilter(String::class.java) ?: ""
+        get() = getFilter(String::class.java).orEmpty()
         set(value) {
             setFilter(value)
         }
@@ -169,7 +169,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         val mappedQueries = queries.groupBy { it.excluded }
         val tracks = if (hasLoggedServices) db.getTracks(manga).await().toList() else null
         val source = sourceManager.get(manga.source)
-        val genre = if (checkGenre) manga.getGenres() else null
+        val genre = if (checkGenre) manga.getGenres().orEmpty() else emptyList()
         val hasNormalQuery = mappedQueries[false]?.all { queryComponent ->
             when (queryComponent) {
                 is Text -> {
@@ -179,9 +179,9 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                         (manga.artist?.contains(query, true) == true) ||
                         (source?.name?.contains(query, true) == true) ||
                         (hasLoggedServices && tracks != null && filterTracks(query, tracks)) ||
-                        (genre != null && genre.any { it.contains(query, true) }) ||
-                        (searchTags != null && searchTags.any { it.name.contains(query, true) }) ||
-                        (searchTitles != null && searchTitles.any { it.title.contains(query, true) })
+                        (genre.any { it.contains(query, true) }) ||
+                        (searchTags.orEmpty().any { it.name.contains(query, true) }) ||
+                        (searchTitles.orEmpty().any { it.title.contains(query, true) })
                 }
                 is Namespace -> {
                     searchTags != null && searchTags.any {
@@ -199,13 +199,13 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     val query = queryComponent.asQuery()
                     query.isBlank() || (
                         (!manga.title.contains(query, true)) &&
-                            (!(manga.author ?: "").contains(query, true)) &&
-                            (!(manga.artist ?: "").contains(query, true)) &&
-                            (!(source?.name ?: "").contains(query, true)) &&
+                            (!manga.author.orEmpty().contains(query, true)) &&
+                            (!manga.artist.orEmpty().contains(query, true)) &&
+                            (!source?.name.orEmpty().contains(query, true)) &&
                             (!hasLoggedServices || hasLoggedServices && tracks == null || tracks != null && !filterTracks(query, tracks)) &&
-                            ((genre ?: emptyList()).all { !it.contains(query, true) }) &&
-                            ((searchTags ?: emptyList()).all { !it.name.contains(query, true) }) &&
-                            ((searchTitles ?: emptyList()).all { !it.title.contains(query, true) })
+                            (genre.none { it.contains(query, true) }) &&
+                            (searchTags.orEmpty().none { it.name.contains(query, true) }) &&
+                            (searchTitles.orEmpty().none { it.title.contains(query, true) })
                         )
                 }
                 is Namespace -> {

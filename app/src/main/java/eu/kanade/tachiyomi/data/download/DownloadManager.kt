@@ -229,13 +229,13 @@ class DownloadManager(/* SY private */ val context: Context) {
      * return the list of all manga folders
      */
     fun getMangaFolders(source: Source): List<UniFile> {
-        return provider.findSourceDir(source)?.listFiles()?.toList() ?: emptyList()
+        return provider.findSourceDir(source)?.listFiles()?.toList().orEmpty()
     }
 
     /**
      * Deletes the directories of chapters that were read or have no match
      *
-     * @param chapters the list of chapters to delete.
+     * @param allChapters the list of chapters to delete.
      * @param manga the manga of the chapters.
      * @param source the source of the chapters.
      */

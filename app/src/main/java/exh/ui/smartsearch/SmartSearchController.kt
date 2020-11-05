@@ -32,7 +32,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
         return binding.root
     }
 
-    override fun getTitle() = source?.name ?: ""
+    override fun getTitle() = source?.name.orEmpty()
 
     override fun createPresenter() = SmartSearchPresenter(source, smartSearchConfig)
 

@@ -83,7 +83,7 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
 
     fun onNextMangaInfo(meta: RaisedSearchMetadata?) {
         val context = view?.context ?: return
-        data = meta?.getExtraInfoPairs(context) ?: emptyList()
+        data = meta?.getExtraInfoPairs(context).orEmpty()
         adapter?.update(data)
     }
 }

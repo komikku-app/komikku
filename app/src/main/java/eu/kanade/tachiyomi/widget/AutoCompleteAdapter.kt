@@ -51,7 +51,7 @@ class AutoCompleteAdapter(context: Context, resource: Int, var objects: List<Str
         override fun publishResults(constraint: CharSequence?, results: FilterResults) {
             objects = if (results.values != null) {
                 @Suppress("UNCHECKED_CAST")
-                results.values as List<String>? ?: emptyList()
+                (results.values as List<String>?).orEmpty()
             } else {
                 emptyList()
             }

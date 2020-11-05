@@ -71,7 +71,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
 
     private fun parseIntoTables(doc: Document): Map<String, Map<String, Element>> {
         return doc.select("#main > .listTable").map { ele ->
-            val tableName = ele.previousElementSibling()?.text()?.toLowerCase() ?: ""
+            val tableName = ele.previousElementSibling()?.text()?.toLowerCase().orEmpty()
             tableName to ele.select("tr").map {
                 it.child(0).text() to it.child(1)
             }.toMap()

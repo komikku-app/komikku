@@ -58,7 +58,7 @@ class CategoryGetResolver : DefaultGetResolver<Category>() {
 
         // SY -->
         val orderString = cursor.getString(cursor.getColumnIndex(COL_MANGA_ORDER))
-        mangaOrder = orderString?.split("/")?.mapNotNull { it.toLongOrNull() } ?: emptyList()
+        mangaOrder = orderString?.split("/")?.mapNotNull { it.toLongOrNull() }.orEmpty()
         // SY <--
     }
 }

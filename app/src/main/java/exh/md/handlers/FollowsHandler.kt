@@ -48,7 +48,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         val followsPageResult = try {
             MdUtil.jsonParser.decodeFromString(
                 FollowsPageResult.serializer(),
-                response.body?.string() ?: ""
+                response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
             XLog.e("error parsing follows", e)
@@ -79,7 +79,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         val followsPageResult = try {
             MdUtil.jsonParser.decodeFromString(
                 FollowsPageResult.serializer(),
-                response.body?.string() ?: ""
+                response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
             XLog.e("error parsing follows", e)

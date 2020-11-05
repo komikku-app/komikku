@@ -90,7 +90,7 @@ class MergedSource : SuspendHttpSource() {
         // TODO more chapter dedupe
         return db.getChaptersByMergedMangaId(manga.id!!).asRxObservable()
             .map { chapterList ->
-                val mangaReferences = runBlocking(Dispatchers.IO) { db.getMergedMangaReferences(manga.id!!).await() } ?: emptyList()
+                val mangaReferences = runBlocking(Dispatchers.IO) { db.getMergedMangaReferences(manga.id!!).await().orEmpty() }
                 if (editScanlators) {
                     val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
                     chapterList.onEach { chapter ->

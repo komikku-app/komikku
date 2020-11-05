@@ -24,7 +24,7 @@ class MigrationProcessAdapter(
     val menuItemListener: MigrationProcessInterface = controller
 
     override fun updateDataSet(items: List<MigrationProcessItem>?) {
-        this.items = items ?: emptyList()
+        this.items = items.orEmpty()
         super.updateDataSet(items)
     }
 

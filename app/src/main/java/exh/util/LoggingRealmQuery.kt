@@ -51,7 +51,7 @@ class LoggingRealmQuery<E : RealmModel>(val query: RealmQuery<E>) {
             "\"$fieldName\" == \"$value\"" + (
                 casing?.let {
                     " CASE ${casing.name}"
-                } ?: ""
+                }.orEmpty()
                 )
         )
     }
@@ -121,7 +121,7 @@ class LoggingRealmQuery<E : RealmModel>(val query: RealmQuery<E>) {
             )}] IN \"$fieldName\"" + (
                 casing?.let {
                     " CASE ${casing.name}"
-                } ?: ""
+                }.orEmpty()
                 )
         )
     }
@@ -181,7 +181,7 @@ class LoggingRealmQuery<E : RealmModel>(val query: RealmQuery<E>) {
             "\"$fieldName\" != \"$value\"" + (
                 casing?.let {
                     " CASE ${casing.name}"
-                } ?: ""
+                }.orEmpty()
                 )
         )
     }
@@ -391,7 +391,7 @@ class LoggingRealmQuery<E : RealmModel>(val query: RealmQuery<E>) {
             "\"$fieldName\" CONTAINS \"$value\"" + (
                 casing?.let {
                     " CASE ${casing.name}"
-                } ?: ""
+                }.orEmpty()
                 )
         )
     }
@@ -411,7 +411,7 @@ class LoggingRealmQuery<E : RealmModel>(val query: RealmQuery<E>) {
             "\"$fieldName\" BEGINS WITH \"$value\"" + (
                 casing?.let {
                     " CASE ${casing.name}"
-                } ?: ""
+                }.orEmpty()
                 )
         )
     }
@@ -431,7 +431,7 @@ class LoggingRealmQuery<E : RealmModel>(val query: RealmQuery<E>) {
             "\"$fieldName\" ENDS WITH \"$value\"" + (
                 casing?.let {
                     " CASE ${casing.name}"
-                } ?: ""
+                }.orEmpty()
                 )
         )
     }
@@ -451,7 +451,7 @@ class LoggingRealmQuery<E : RealmModel>(val query: RealmQuery<E>) {
             "\"$fieldName\" LIKE \"$value\"" + (
                 casing?.let {
                     " CASE ${casing.name}"
-                } ?: ""
+                }.orEmpty()
                 )
         )
     }

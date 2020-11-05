@@ -54,7 +54,7 @@ class PururinDescriptionAdapter(
                 } ?: genre?.name ?: itemView.context.getString(R.string.unknown)
             }
 
-            binding.uploader.text = meta.uploaderDisp ?: meta.uploader ?: ""
+            binding.uploader.text = meta.uploaderDisp ?: meta.uploader.orEmpty()
 
             binding.size.text = meta.fileSize ?: itemView.context.getString(R.string.unknown)
             binding.size.bindDrawable(itemView.context, R.drawable.ic_outline_sd_card_24)

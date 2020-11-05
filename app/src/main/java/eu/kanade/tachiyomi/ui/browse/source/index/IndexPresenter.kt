@@ -111,9 +111,9 @@ open class IndexPresenter(
                         .asFlow()
                         .singleOrNull()
                         ?.mangas
-                        ?.take(10)
-                        ?.map { networkToLocalManga(it, source.id) }
-                        ?: emptyList()
+                        .orEmpty()
+                        .take(10)
+                        .map { networkToLocalManga(it, source.id) }
                 } catch (e: Exception) {
                     emptyList()
                 }
@@ -139,9 +139,9 @@ open class IndexPresenter(
                     .asFlow()
                     .singleOrNull()
                     ?.mangas
-                    ?.take(10)
-                    ?.map { networkToLocalManga(it, source.id) }
-                    ?: emptyList()
+                    .orEmpty()
+                    .take(10)
+                    .map { networkToLocalManga(it, source.id) }
             } catch (e: Exception) {
                 emptyList()
             }

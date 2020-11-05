@@ -118,7 +118,7 @@ class ReaderPresenter(
         val meta = meta
         val filteredScanlators = meta?.filteredScanlators?.let { MdUtil.getScanlators(it) }
         // SY <--
-        val dbChapters = /* SY --> */if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull() ?: emptyList() } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
+        val dbChapters = /* SY --> */if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull().orEmpty() } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
 
         val selectedChapter = dbChapters.find { it.id == chapterId }
             ?: error("Requested chapter of id $chapterId not found in chapter list")

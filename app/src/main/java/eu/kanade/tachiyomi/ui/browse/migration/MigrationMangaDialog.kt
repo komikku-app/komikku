@@ -31,7 +31,7 @@ class MigrationMangaDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
                 if (mangaSkipped > 0) " " + applicationContext?.getString(R.string.skipping_, mangaSkipped)
                 else ""
                 )
-        ) ?: ""
+        ).orEmpty()
         return MaterialDialog(activity!!)
             .message(text = confirmString)
             .positiveButton(if (copy) R.string.copy else R.string.migrate) {

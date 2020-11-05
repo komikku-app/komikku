@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.search.SearchController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.await
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
@@ -50,7 +51,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
-import rx.schedulers.Schedulers
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.atomic.AtomicInteger
@@ -178,7 +178,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                         searchResult,
                                                         source.id
                                                     )
-                                                val chapters = (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).toSingle().await(Schedulers.io())
+                                                val chapters = (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).awaitSingle()
                                                 try {
                                                     syncChaptersWithSource(db, chapters, localManga, source)
                                                 } catch (e: Exception) {
@@ -210,7 +210,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                     if (searchResult != null) {
                                         val localManga = smartSearchEngine.networkToLocalManga(searchResult, source.id)
                                         val chapters = try {
-                                            (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).toSingle().await(Schedulers.io()) ?: emptyList()
+                                            (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).awaitSingle()
                                         } catch (e: java.lang.Exception) {
                                             Timber.e(e)
                                             emptyList()
@@ -240,7 +240,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
                 if (result != null && result.thumbnail_url == null) {
                     try {
-                        val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).toSingle().await()
+                        val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).awaitSingle()
                         result.copyFrom(newManga)
 
                         db.insertManga(result).await()
@@ -345,7 +345,7 @@ class MigrationListController(bundle: Bundle? = null) :
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
                 val localManga = smartSearchEngine.networkToLocalManga(manga, source.id)
                 try {
-                    val chapters = source.fetchChapterList(localManga).toSingle().await(Schedulers.io())
+                    val chapters = source.fetchChapterList(localManga).awaitSingle()
                     syncChaptersWithSource(db, chapters, localManga, source)
                 } catch (e: Exception) {
                     return@async null
@@ -355,7 +355,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
             if (result != null) {
                 try {
-                    val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).toSingle().await()
+                    val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).awaitSingle()
                     result.copyFrom(newManga)
 
                     db.insertManga(result).await()

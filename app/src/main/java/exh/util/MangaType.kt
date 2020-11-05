@@ -26,7 +26,7 @@ fun Manga.mangaType(context: Context): String {
  */
 fun Manga.mangaType(): MangaType {
     val sourceName = Injekt.get<SourceManager>().getOrStub(source).name
-    val currentTags = getGenres() ?: emptyList()
+    val currentTags = getGenres().orEmpty()
     return if (currentTags.any { tag -> isMangaTag(tag) }) {
         MangaType.TYPE_MANGA
     } else if (currentTags.any { tag -> isWebtoonTag(tag) } || isWebtoonSource(sourceName)) {

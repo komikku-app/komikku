@@ -92,22 +92,22 @@ class EditMangaDialog : DialogController {
                 binding.title.append(manga.title)
             }
             binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.url}"
-            binding.mangaAuthor.append(manga.author ?: "")
-            binding.mangaArtist.append(manga.artist ?: "")
-            binding.mangaDescription.append(manga.description ?: "")
+            binding.mangaAuthor.append(manga.author.orEmpty())
+            binding.mangaArtist.append(manga.artist.orEmpty())
+            binding.mangaDescription.append(manga.description.orEmpty())
             binding.mangaGenresTags.setChips(manga.getGenres())
         } else {
             if (manga.title != manga.originalTitle) {
                 binding.title.append(manga.title)
             }
             if (manga.author != manga.originalAuthor) {
-                binding.mangaAuthor.append(manga.author ?: "")
+                binding.mangaAuthor.append(manga.author.orEmpty())
             }
             if (manga.artist != manga.originalArtist) {
-                binding.mangaArtist.append(manga.artist ?: "")
+                binding.mangaArtist.append(manga.artist.orEmpty())
             }
             if (manga.description != manga.originalDescription) {
-                binding.mangaDescription.append(manga.description ?: "")
+                binding.mangaDescription.append(manga.description.orEmpty())
             }
             binding.mangaGenresTags.setChips(manga.getGenres())
 
