@@ -179,7 +179,6 @@
     <string name="library_group_updates_all">Lancer des mises à jour de catégorie tout le temps</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_tab_language_code">Afficher le code de langue à côté du nom</string>
     <string name="pref_latest_position">Dernière position de l\'onglet</string>
     <string name="pref_latest_position_summery">Voulez-vous que le dernier onglet soit le premier onglet de la navigation? Cela en fera l\'onglet par défaut lors de l\'ouverture de la navigation, non recommandé si vous êtes sur des données ou un réseau mesuré</string>
     <string name="pref_source_navigation">Remplacer le dernier bouton</string>

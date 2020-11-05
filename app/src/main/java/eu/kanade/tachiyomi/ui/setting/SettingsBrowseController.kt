@@ -64,12 +64,6 @@ class SettingsBrowseController : SettingsController() {
                 summaryRes = R.string.pref_latest_position_summery
                 defaultValue = false
             }
-
-            switchPreference {
-                key = Keys.latest_tab_language_code
-                titleRes = R.string.pref_latest_tab_language_code
-                defaultValue = false
-            }
         }
         // SY <--
 

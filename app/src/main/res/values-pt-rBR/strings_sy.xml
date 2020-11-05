@@ -174,7 +174,6 @@
     <string name="library_group_updates_all">Launch category updates all the time</string>
     
     <!-- Browse settings -->
-    <string name="pref_latest_tab_language_code">Exibir código do idioma ao lado do nome</string>
     <string name="pref_latest_position">Posição da aba "Recentes"</string>
     <string name="pref_latest_position_summery">Quer que a aba Recentes seja a primeira em Navegar? Isso fará a aba padrão ao tocar em Navegar, não recomendável se estiver usando com dados móveis ou uma rede medida</string>
     <string name="pref_source_navigation">Replace latest button</string>

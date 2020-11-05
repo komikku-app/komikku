@@ -401,8 +401,6 @@ class PreferencesHelper(val context: Context) {
 
     fun latestTabInFront() = flowPrefs.getBoolean(Keys.latest_tab_position, false)
 
-    fun latestTabDisplayLanguageCode() = flowPrefs.getBoolean(Keys.latest_tab_language_code, false)
-
     fun sourcesTabCategories() = flowPrefs.getStringSet(Keys.sources_tab_categories, mutableSetOf())
 
     fun sourcesTabCategoriesFilter() = flowPrefs.getBoolean(Keys.sources_tab_categories_filter, false)

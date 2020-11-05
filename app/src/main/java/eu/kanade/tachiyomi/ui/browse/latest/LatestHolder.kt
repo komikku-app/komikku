@@ -4,15 +4,14 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
+import eu.kanade.tachiyomi.util.system.LocaleHelper
 import kotlinx.android.synthetic.main.latest_controller_card.no_results_found
 import kotlinx.android.synthetic.main.latest_controller_card.progress
 import kotlinx.android.synthetic.main.latest_controller_card.recycler
+import kotlinx.android.synthetic.main.latest_controller_card.subtitle
 import kotlinx.android.synthetic.main.latest_controller_card.title
 import kotlinx.android.synthetic.main.latest_controller_card.title_wrapper
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 
 /**
  * Holder that binds the [LatestItem] containing catalogue cards.
@@ -52,10 +51,10 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
         val results = item.results
 
         val titlePrefix = if (item.highlighted) "▶ " else ""
-        val langSuffix = if (source.lang.isNotEmpty() && Injekt.get<PreferencesHelper>().latestTabDisplayLanguageCode().get()) " (${source.lang})" else ""
 
-        // Set Title with country code if available.
-        title.text = titlePrefix + source.name + langSuffix
+        title.text = titlePrefix + source.name
+        subtitle.isVisible = true
+        subtitle.text = LocaleHelper.getDisplayName(source.lang)
 
         when {
             results == null -> {
