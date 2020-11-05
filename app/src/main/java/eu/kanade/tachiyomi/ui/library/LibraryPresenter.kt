@@ -19,6 +19,8 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.isLocal
+import eu.kanade.tachiyomi.util.lang.await
+import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -30,8 +32,6 @@ import exh.MERGED_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
-import exh.util.await
-import exh.util.awaitSingleOrNull
 import exh.util.isLewd
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.collect

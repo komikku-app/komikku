@@ -11,9 +11,9 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
+import eu.kanade.tachiyomi.util.lang.asFlow
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
-import exh.util.asFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

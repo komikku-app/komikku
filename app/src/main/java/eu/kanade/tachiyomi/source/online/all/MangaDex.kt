@@ -28,6 +28,7 @@ import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.lang.asObservable
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.md.MangaDexFabHeaderAdapter
@@ -43,7 +44,6 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
-import exh.util.asObservable
 import exh.util.urlImportFetchSearchManga
 import exh.widget.preference.MangadexLoginDialog
 import kotlinx.coroutines.Dispatchers

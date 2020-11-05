@@ -14,13 +14,13 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.SuspendHttpSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.lang.asFlow
+import eu.kanade.tachiyomi.util.lang.await
+import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.MERGED_SOURCE_ID
 import exh.merged.sql.models.MergedMangaReference
-import exh.util.asFlow
-import exh.util.await
-import exh.util.awaitSingle
-import exh.util.awaitSingleOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow

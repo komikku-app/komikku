@@ -10,9 +10,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.lang.await
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import exh.source.getMainSource
-import exh.util.await
-import exh.util.awaitSingle
 import uy.kohesive.injekt.injectLazy
 
 class GalleryAdder {

@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
+import eu.kanade.tachiyomi.util.lang.await
 import exh.isMetadataSource
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
@@ -18,7 +19,6 @@ import exh.search.Namespace
 import exh.search.QueryComponent
 import exh.search.SearchEngine
 import exh.search.Text
-import exh.util.await
 import exh.util.cancellable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope

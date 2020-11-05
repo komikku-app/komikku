@@ -14,8 +14,8 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
+import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
-import exh.util.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import rx.schedulers.Schedulers
