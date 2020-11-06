@@ -12,6 +12,7 @@
     <string name="action_start_reading_button">Bouton démarrer la lecture</string>
     <string name="action_display_no_title_grid">Pas de grille de titre</string>
     <string name="action_start_reading">Commencer à lire</string>
+    <string name="action_edit_info">Modifier les informations</string>
 
     <!-- Library fragment -->
     <string name="buttons_header">Boutons</string>
@@ -23,7 +24,7 @@
     <string name="webtoon">Webtoon</string>
 
     <!-- Captcha -->
-<!--    <string name="captcha_solve_failure">Captcha solve failure</string>-->
+    <string name="captcha_solve_failure">Échec de la résolution dû Captcha</string>
     <string name="captcha_solve_failure_message">Échec de la résolution automatique du captcha!</string>
     <string name="please_login">Veuillez vous connecter!</string>
 
@@ -32,6 +33,7 @@
     <string name="pref_category_all_sources">Toute sources</string>
     <string name="pref_category_eh">E-Hentai</string>
 <!--    <string name="pref_category_fork">Fork Settings</string>-->
+    <string name="pref_category_mangadex">MangaDex</string>
 
 
     <!-- EH Settings -->
@@ -100,7 +102,7 @@
     <string name="show_updater_statistics">Afficher les statistiques du programme de mise à jour</string>
     <string name="gallery_updater_statistics_collection">Collecte de statistiques…</string>
     <string name="gallery_updater_statistics">Statistiques du programme de mise à jour de la galerie</string>
-    <string name="gallery_updater_stats_text">Le programme de mise à jour a exécuté pour la dernière fois %1$s, et a vérifié %2$d parmi les %3$d galeries prêtes à être vérifiées..</string>
+    <string name="gallery_updater_stats_text">Le programme de mise à jour a exécuté pour la dernière fois %1$s, et a vérifié %2$d parmi les %3$d galeries prêtes à être vérifiées.</string>
     <string name="gallery_updater_not_ran_yet">Le programme de mise à jour n\'est pas encore exécuté.</string>
     <string name="gallery_updater_stats_time">\nGaleries vérifiées au cours de la dernière:\n- heure: %1$d\n- 6 heures: %2$d\n- 12 heures: %3$d\n- jour: %4$d\n- 2 jours: %5$d\n- semaine: %6$d\n- mois: %7$d\n- année: %8$d</string>
 
@@ -164,9 +166,8 @@
     <string name="toggle_expand_search_filters">Développez tous les filtres de recherche par défaut</string>
     <string name="auto_solve_captchas">Résoudre automatiquement le captcha</string>
     <string name="auto_solve_captchas_summary">Utilisez le solveur automatique ReCAPTCHA HAUTEMENT EXPÉRIMENTAL. Sera grisé s\'il n\'est pas pris en charge par votre appareil.</string>
-
-<!--    <string name="put_recommends_in_overflow">Recommendations in overflow</string>-->
-<!--    <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the manga page</string>-->
+    <string name="put_recommends_in_overflow">Afficher les Recommandations</string>
+    <string name="put_recommends_in_overflow_summary">Met le bouton de recommandations dans le menu à déroulant de la page du manga</string>
 
     <!-- Library settings -->
     <string name="pref_sorting_settings">Paramètres de tri</string>
@@ -179,6 +180,7 @@
     <string name="library_group_updates_all">Lancer des mises à jour de catégorie tout le temps</string>
 
     <!-- Browse settings -->
+    <string name="pref_latest_tab_language_code">Afficher le code de langue à côté du nom</string>
     <string name="pref_latest_position">Dernière position de l\'onglet</string>
     <string name="pref_latest_position_summery">Voulez-vous que le dernier onglet soit le premier onglet de la navigation? Cela en fera l\'onglet par défaut lors de l\'ouverture de la navigation, non recommandé si vous êtes sur des données ou un réseau mesuré</string>
     <string name="pref_source_navigation">Remplacer le dernier bouton</string>
@@ -189,6 +191,8 @@
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Enregistrer les chapitres sous CBZ</string>
     <string name="save_chapter_as_cbz_level">Niveau de compression CBZ</string>
+    <string name="pref_dont_delete_from_categories">Catégories à exclure de la suppression</string>
+    <string name="pref_dont_delete_from_categories_summary">Si un manga appartient à l\'une de ces catégories, les chapitres ne seront pas supprimés lors du marquage comme lu et lors de la fin d\'un chapitre.\nCatégories:\n%1$s</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Temps de verrouillage biométrique</string>
@@ -205,7 +209,7 @@
     <string name="biometric_lock_invalid_time_selected">Heure sélectionnée invalide</string>
 
     <!-- Reader Settings -->
-        <string name="download_threads">Download threads</string>
+<!--        <string name="download_threads">Download threads</string>-->
     <string name="download_threads_summary">Des valeurs plus élevées peuvent accélérer considérablement le téléchargement des images, mais peuvent également déclencher des Bannissement. La valeur recommandée est 2 ou 3. La valeur actuelle est: %s</string>
     <string name="aggressively_load_pages">Charger les pages de manière agressive</string>
     <string name="aggressively_load_pages_summary">Téléchargez lentement le chapitre entier pendant la lecture au lieu de simplement charger les pages que vous consultez.</string>
@@ -252,7 +256,12 @@
     <!-- Manga Page -->
     <!-- Manga Info -->
     <string name="az_recommends">Voir les recommandations</string>
+    <string name="merge">Fusionner</string>
     <string name="merge_with_another_source">Fusionner avec une autre</string>
+    <string name="cover_saved">Couverture sauvegardée</string>
+    <string name="share_cover">Partage de la couverture</string>
+    <string name="error_saving_cover">Erreurs sauvegarde de la couverture</string>
+    <string name="error_sharing_cover">Erreurs du partage de la couverture</string>
 
     <!-- Manga info fragment -->
     <string name="hiatus">Hiatus</string>
@@ -540,7 +549,7 @@
     <string name="refresh_merge">Actualiser pour obtenir les informations appropriées</string>
 
     <!-- MangaDex -->
-<!--    <string name="md_follows_unfollowed">Unfollowed</string>-->
+    <string name="md_follows_unfollowed">Désabonné</string>
     <string name="mangadex_specific_settings">Paramètres de MangaDex</string>
     <string name="mangadex_sync_follows_to_library">Sync Mangadex manga dans Neko</string>
     <string name="mangadex_sync_follows_to_library_summary">Extrait le manga de lecture/relecture de Mangadex dans votre bibliothèque Neko</string>
@@ -551,11 +560,80 @@
     <string name="mangadex_preffered_source_summary">Définissez votre source mangadex choisie, cela sera utilisé pour les suivis et un tas d\'autres fonctionnalités autour de l\'application</string>
     <string name="two_factor">Code de double identification </string>
     <string name="fields_cannot_be_blank">Les champs ne peut pas être vide</string>
-
-<!--    <string name="mangadex_add_to_follows">Add to MangaDex follows</string>-->
-<!--    <string name="mangadex_follows">MangaDex follows</string>-->
-
+    <string name="mangadex_add_to_follows">Ajouter au suivie MangaDex</string>
+    <string name="mangadex_follows">Suivie MangaDex</string>
     <string name="random">Aléatoire</string>
+    <string name="mangadex_push_favorites_to_mangadex_toast">Poussé %d manga vers MangaDex</string>
+
+
+    <!-- Scanlator filters -->
+<!--    <string name="select_scanlators">Scanlator groups to show</string>-->
+    <string name="metadata_corrupted">Métadonnées corrompues, veuillez rafraîchir le manga</string>
+<!--    <string name="no_scanlators">No scanlators available</string>-->
+
+    <!-- Similar -->
+    <string name="similar">Manga similaire</string>
+    <string name="similar_loading_percent">Mise à jour d\'un manga similaire (%1$d / %2$d mis à jour)</string>
+    <string name="similar_loading_complete">La mise à jour d\'un manga similaire est terminée</string>
+    <string name="similar_loading_complete_error">Erreur en essayant de charger/traiter un manga similaire</string>
+    <string name="similar_loading_progress_start">Téléchargement d\'un fichier de données manga similaire…</string>
+    <string name="similar_ask_to_enable_title">Permettre un manga similaire?</string>
+    <string name="similar_ask_to_enable">
+        Souhaitez-vous permettre des recommandations similaires pour les manga?
+        Si vous l\'activez dès maintenant, vous pourrez télécharger environ 9 Mo de données.
+        Vous pouvez toujours l\'activer dans le menu Paramètres / Mangadex.
+    </string>
+    <string name="similar_ask_to_enable_yes">Activer</string>
+    <string name="similar_ask_to_enable_no">Sauter</string>
+    <string name="similar_settings">Paramètres du manga similaires</string>
+    <string name="similar_screen">Afficher un manga similaire</string>
+    <string name="similar_manually_update">Extraire la dernière base de données</string>
+    <string name="similar_manually_toast">Démarrage de la mise à jour du manuel</string>
+    <string name="similar_manually_update_message">
+        Téléchargez la dernière base de données de manga similaire.
+        Elle fait environ 9MB et est mise à jour quotidiennement.
+    </string>
+    <string name="similar_update_fequency">Fréquence de mise à jour similaire</string>
+    <string name="similar_screen_summary_message">
+        Il s\'agit d\'une fonction où l\'on peut obtenir des recommandations de manga.
+        Il s\'agit d\'un système de recommandation en dehors de MangaDex, qui fonctionne par correspondance entre les genres,
+        la démographie, le type de contenu, les thèmes, puis en utilisant le terme fréquence - fréquence des documents inversés (tf-idf) pour obtenir la
+        similitude des descriptions de deux mangas. Lorsqu\'il est activé, ce fichier sera téléchargé immédiatement ! Le fichier fait environ 9 Mo.
+    </string>
+    <string name="similar_credit_message">
+        Pour plus d\'informations et pour consulter le code source:\n%s
+    </string>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one"> %1$d an auparavant</item>
+        <item quantity="other">%1$d ans auparavant</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d mois auparavant</item>
+        <item quantity="other">%1$d mois auparavant</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d samaine auparavant</item>
+        <item quantity="other">%1$d samaine auparavant</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d jour auparavant</item>
+        <item quantity="other">%1$d jours auparavant</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d heure auparavant</item>
+        <item quantity="other">%1$d heurs auparavant</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d minute auparavant</item>
+        <item quantity="other">%1$d minutes auparavant</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d seconde auparavant</item>
+        <item quantity="other">%1$d seconde auparavant</item>
+    </plurals>
+    <string name="humanize_fallback">un moment auparavant</string>
 
 
 </resources>
