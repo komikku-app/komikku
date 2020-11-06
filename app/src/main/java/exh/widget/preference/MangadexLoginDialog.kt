@@ -7,6 +7,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
+import com.afollestad.materialdialogs.internal.main.DialogLayout
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.PrefSiteLoginTwoFactorAuthBinding
@@ -51,7 +52,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
-        v?.let { binding = PrefSiteLoginTwoFactorAuthBinding.bind(it) }
+        (v as? DialogLayout?)?.contentLayout?.customView?.let { binding = PrefSiteLoginTwoFactorAuthBinding.bind(it) }
         binding?.apply {
             twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
                 twoFactorHolder.isVisible = isChecked
