@@ -345,15 +345,12 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     internal fun restoreCategoriesForManga(manga: Manga, categories: List<Int>, backupCategories: List<BackupCategory>) {
         val dbCategories = databaseHelper.getCategories().executeAsBlocking()
         val mangaCategoriesToUpdate = mutableListOf<MangaCategory>()
-        categories.forEach { backupCategoryOrder ->
-            backupCategories.firstOrNull {
-                it.order == backupCategoryOrder
-            }?.let { backupCategory ->
-                dbCategories.firstOrNull { dbCategory ->
-                    dbCategory.name == backupCategory.name
-                }?.let { dbCategory ->
-                    mangaCategoriesToUpdate.add(MangaCategory.create(manga, dbCategory))
-                }
+        val mappedCategories = categories.mapNotNull { mangaCategory -> backupCategories.firstOrNull { mangaCategory == it.order }?.let { it to mangaCategory } }
+        mappedCategories.forEach { mappedCategory ->
+            dbCategories.firstOrNull { dbCategory ->
+                dbCategory.name == mappedCategory.first.name
+            }?.also { dbCategory ->
+                mangaCategoriesToUpdate += MangaCategory.create(manga, dbCategory)
             }
         }
 
@@ -521,7 +518,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         preferences.eh_savedSearches()
             .set(
                 (
-                    backupSavedSearches.filter { backupSavedSearch -> currentSavedSearches.all { it.name != backupSavedSearch.name || it.source != backupSavedSearch.source } }
+                    backupSavedSearches.filter { backupSavedSearch -> currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source } }
                         .map {
                             "${it.source}:" + Json.encodeToString(
                                 JsonSavedSearch(
