@@ -19,6 +19,7 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.util.floor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
 import okhttp3.CacheControl
 import okhttp3.FormBody
 import okhttp3.Headers
@@ -47,12 +48,11 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     private fun followsParseMangaPage(response: Response, forceHd: Boolean = false): MetadataMangasPage {
         val followsPageResult = try {
             MdUtil.jsonParser.decodeFromString(
-                FollowsPageResult.serializer(),
                 response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
             XLog.e("error parsing follows", e)
-            FollowsPageResult(emptyList())
+            FollowsPageResult()
         }
 
         if (followsPageResult.result.isEmpty()) {
@@ -78,12 +78,11 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     private fun followStatusParse(response: Response): Track {
         val followsPageResult = try {
             MdUtil.jsonParser.decodeFromString(
-                FollowsPageResult.serializer(),
                 response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
             XLog.e("error parsing follows", e)
-            FollowsPageResult(emptyList())
+            FollowsPageResult()
         }
         val track = Track.create(TrackManager.MDLIST)
         if (followsPageResult.result.isEmpty()) {
@@ -173,8 +172,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_rating&id=$mangaID&rating=${track.score.toInt()}",
                     headers
                 )
-            )
-                .await()
+            ).await()
 
             withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
         }

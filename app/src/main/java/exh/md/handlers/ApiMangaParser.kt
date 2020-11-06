@@ -71,7 +71,7 @@ class ApiMangaParser(private val langs: List<String>) {
     fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, forceLatestCover: Boolean) {
         with(metadata) {
             try {
-                val networkApiManga = MdUtil.jsonParser.decodeFromString(ApiMangaSerializer.serializer(), input.body!!.string())
+                val networkApiManga = MdUtil.jsonParser.decodeFromString<ApiMangaSerializer>(input.body!!.string())
                 val networkManga = networkApiManga.manga
                 mdId = MdUtil.getMangaId(input.request.url.toString())
                 mdUrl = input.request.url.toString()
@@ -207,7 +207,7 @@ class ApiMangaParser(private val langs: List<String>) {
 
     fun chapterListParse(jsonData: String): List<SChapter> {
         val now = System.currentTimeMillis()
-        val networkApiManga = MdUtil.jsonParser.decodeFromString(ApiMangaSerializer.serializer(), jsonData)
+        val networkApiManga = MdUtil.jsonParser.decodeFromString<ApiMangaSerializer>(jsonData)
         val networkManga = networkApiManga.manga
         val networkChapters = networkApiManga.chapter
         if (networkChapters.isNullOrEmpty()) {
