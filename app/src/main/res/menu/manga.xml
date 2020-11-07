@@ -59,7 +59,6 @@
 
     <item
         android:id="@+id/action_edit"
-        android:icon="@drawable/ic_edit_24dp"
         android:title="@string/action_edit_info"
         android:visible="false"
         app:showAsAction="never" />
@@ -72,14 +71,12 @@
 
     <item
         android:id="@+id/action_merged"
-        android:icon="@drawable/ic_edit_24dp"
         android:title="@string/merge_settings"
         android:visible="false"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_toggle_dedupe"
-        android:icon="@drawable/ic_edit_24dp"
         android:title="@string/toggle_dedupe"
         android:visible="false"
         app:showAsAction="never" />
@@ -89,6 +86,7 @@
         android:icon="@drawable/ic_save_black_24dp"
         android:title="@string/action_save"
         android:visible="false"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 
     <item
@@ -96,5 +94,6 @@
         android:icon="@drawable/ic_share_24dp"
         android:title="@string/share_cover"
         android:visible="false"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 </menu>
