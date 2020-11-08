@@ -23,6 +23,7 @@ import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
+import exh.util.executeOnIO
 import exh.util.ignore
 import exh.util.trans
 import exh.util.wifiManager
@@ -194,7 +195,7 @@ class FavoritesSyncHelper(val context: Context) {
     }
 
     private suspend fun applyRemoteCategories(categories: List<String>) {
-        val localCategories = db.getCategories().await()
+        val localCategories = db.getCategories().executeOnIO()
 
         val newLocalCategories = localCategories.toMutableList()
 
@@ -232,7 +233,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Only insert categories if changed
         if (changed) {
-            db.insertCategories(newLocalCategories).await()
+            db.insertCategories(newLocalCategories).executeOnIO()
         }
     }
 
@@ -343,12 +344,12 @@ class FavoritesSyncHelper(val context: Context) {
                 db.getManga(url, EXH_SOURCE_ID),
                 db.getManga(url, EH_SOURCE_ID)
             ).forEach {
-                val manga = it.await()
+                val manga = it.executeOnIO()
 
                 if (manga?.favorite == true) {
                     manga.favorite = false
                     manga.date_added = 0
-                    db.updateMangaFavorite(manga).await()
+                    db.updateMangaFavorite(manga).executeOnIO()
                     removedManga += manga
                 }
             }
@@ -356,11 +357,11 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Can't do too many DB OPs in one go
         removedManga.chunked(10).forEach {
-            db.deleteOldMangasCategories(it).await()
+            db.deleteOldMangasCategories(it).executeAsBlocking()
         }
 
         val insertedMangaCategories = mutableListOf<Pair<MangaCategory, Manga>>()
-        val categories = db.getCategories().await()
+        val categories = db.getCategories().executeOnIO()
 
         // Apply additions
         throttleManager.resetThrottle()

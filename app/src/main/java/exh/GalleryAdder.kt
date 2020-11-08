@@ -10,9 +10,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import exh.source.getMainSource
+import exh.util.executeOnIO
 import uy.kohesive.injekt.injectLazy
 
 class GalleryAdder {
@@ -85,7 +85,7 @@ class GalleryAdder {
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
-            val manga = db.getManga(cleanedUrl, source.id).await()
+            val manga = db.getManga(cleanedUrl, source.id).executeOnIO()
                 ?: Manga.create(source.id).apply {
                     this.url = cleanedUrl
                     title = realUrl
@@ -94,7 +94,7 @@ class GalleryAdder {
             // Insert created manga if not in DB before fetching details
             // This allows us to keep the metadata when fetching details
             if (manga.id == null) {
-                db.insertManga(manga).await().insertedId()?.let {
+                db.insertManga(manga).executeOnIO().insertedId()?.let {
                     manga.id = it
                 }
             }
@@ -109,7 +109,7 @@ class GalleryAdder {
                 manga.date_added = System.currentTimeMillis()
             }
 
-            db.insertManga(manga).await()
+            db.insertManga(manga).executeOnIO()
 
             // Fetch and copy chapters
             try {
