@@ -4,53 +4,39 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ApiMangaSerializer(
-    val chapter: Map<String, ChapterSerializer>? = null,
-    val manga: MangaSerializer,
+    val data: DataSerializer,
     val status: String
 )
 
 @Serializable
-data class MangaSerializer(
-    val artist: String,
-    val author: String,
-    val cover_url: String,
-    val description: String,
-    val demographic: String,
-    val genres: List<Int>,
-    val covers: List<String>,
-    val hentai: Int,
-    val lang_flag: String,
-    val lang_name: String,
-    val last_chapter: String? = null,
-    val links: LinksSerializer? = null,
-    val rating: RatingSerializer? = null,
-    val status: Int,
-    val title: String
+data class DataSerializer(
+    val manga: MangaSerializer,
+    val chapters: List<ChapterSerializer>,
+    val groups: Map<Long, String>,
+
 )
 
 @Serializable
-data class MangaSerializerTwo(
+data class MangaSerializer(
     val artist: List<String>,
     val author: List<String>,
     val mainCover: String,
     val description: String,
-    val publication: Publication,
     val tags: List<Int>,
-    // val covers: List<String>,
     val isHentai: Boolean,
-    // val lang_flag: String,
-    // val lang_name: String,
     val lastChapter: String? = null,
+    val publication: PublicationSerializer? = null,
     val links: LinksSerializer? = null,
-    val rating: RatingSerializerTwo? = null,
+    val rating: RatingSerializer? = null,
     val title: String
 )
 
 @Serializable
-data class Publication(
-    val language: String,
+data class PublicationSerializer(
+    val language: String? = null,
     val status: Int,
-    val demographic: Int
+    val demographic: Int?
+
 )
 
 @Serializable
@@ -73,52 +59,12 @@ data class RatingSerializer(
 )
 
 @Serializable
-data class RatingSerializerTwo(
-    val bayesian: Float? = null,
-    val mean: Float? = null,
-    val users: Int? = null
-)
-
-@Serializable
 data class ChapterSerializer(
-    val volume: String? = null,
-    val chapter: String? = null,
-    val title: String? = null,
-    val lang_code: String,
-    val group_id: Int? = null,
-    val group_name: String? = null,
-    val group_id_2: Int? = null,
-    val group_name_2: String? = null,
-    val group_id_3: Int? = null,
-    val group_name_3: String? = null,
-    val timestamp: Long
-)
-
-@Serializable
-data class ChapterSerializerTwo(
+    val id: Long,
     val volume: String? = null,
     val chapter: String? = null,
     val title: String? = null,
     val language: String,
-    val groups: List<GroupSerializer> = emptyList(),
+    val groups: List<Long>,
     val timestamp: Long
-)
-
-@Serializable
-data class GroupSerializer(
-    val id: Int,
-    val name: String? = null
-)
-
-@Serializable
-data class CoversResult(
-    val covers: List<String> = emptyList(),
-    val status: String
-)
-
-@Serializable
-data class ImageReportResult(
-    val url: String,
-    val success: Boolean,
-    val bytes: Int?
 )

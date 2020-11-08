@@ -1,6 +1,5 @@
 package exh.md.handlers
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -17,12 +16,9 @@ import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.nodes.Element
 import rx.Observable
-import uy.kohesive.injekt.injectLazy
 
 // Unused, kept for reference todo
 class SearchHandler(val client: OkHttpClient, private val headers: Headers, val langs: List<String>, private val useLowQualityCovers: Boolean) {
-
-    private val preferences: PreferencesHelper by injectLazy()
 
     fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         return when {
@@ -33,7 +29,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                     .map { response ->
                         val details = SManga.create()
                         details.url = "/manga/$realQuery/"
-                        ApiMangaParser(langs).parseToManga(details, response, preferences.mangaDexForceLatestCovers().get()).await()
+                        ApiMangaParser(langs).parseToManga(details, response, emptyList()).await()
                         MangasPage(listOf(details), false)
                     }
             }

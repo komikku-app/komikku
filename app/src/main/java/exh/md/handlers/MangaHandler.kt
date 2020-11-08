@@ -4,9 +4,13 @@ import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+import exh.md.handlers.serializers.ApiCovers
 import exh.md.utils.MdUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,9 +24,10 @@ import tachiyomi.source.model.MangaInfo
 class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: List<String>, val forceLatestCovers: Boolean = false) {
 
     // TODO make use of this
-    suspend fun fetchMangaAndChapterDetails(manga: SManga): Pair<SManga, List<SChapter>> {
+    suspend fun fetchMangaAndChapterDetails(manga: MangaInfo, sourceId: Long): Pair<MangaInfo, List<SChapter>> {
         return withContext(Dispatchers.IO) {
-            val response = client.newCall(apiRequest(manga)).await()
+            val response = client.newCall(apiRequest(manga.toSManga())).await()
+            val covers = getCovers(manga, forceLatestCovers)
             val parser = ApiMangaParser(langs)
 
             val jsonData = withContext(Dispatchers.IO) { response.body!!.string() }
@@ -31,12 +36,21 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
                 throw Exception("Error from MangaDex Response code ${response.code} ")
             }
 
-            parser.parseToManga(manga, response, forceLatestCovers).await()
+            parser.parseToManga(manga, response, covers, sourceId)
             val chapterList = parser.chapterListParse(jsonData)
             Pair(
                 manga,
                 chapterList
             )
+        }
+    }
+
+    suspend fun getCovers(manga: MangaInfo, forceLatestCovers: Boolean): List<String> {
+        return if (forceLatestCovers) {
+            val covers = client.newCall(coverRequest(manga.toSManga())).await().parseAs<ApiCovers>()
+            covers.data.map { it.url }
+        } else {
+            emptyList()
         }
     }
 
@@ -48,28 +62,26 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
         }
     }
 
-    suspend fun fetchMangaDetails(manga: SManga): SManga {
-        return withContext(Dispatchers.IO) {
-            val response = client.newCall(apiRequest(manga)).await()
-            ApiMangaParser(langs).parseToManga(manga, response, forceLatestCovers).await()
-            manga.apply {
-                initialized = true
-            }
-        }
-    }
-
     suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
         return withContext(Dispatchers.IO) {
             val response = client.newCall(apiRequest(manga.toSManga())).await()
-            ApiMangaParser(langs).parseToManga(manga, response, forceLatestCovers, sourceId)
+            val covers = getCovers(manga, forceLatestCovers)
+            ApiMangaParser(langs).parseToManga(manga, response, covers, sourceId)
         }
     }
 
     fun fetchMangaDetailsObservable(manga: SManga): Observable<SManga> {
         return client.newCall(apiRequest(manga))
             .asObservableSuccess()
+            .flatMap { response ->
+                runAsObservable({
+                    getCovers(manga.toMangaInfo(), forceLatestCovers)
+                }).map {
+                    response to it
+                }
+            }
             .flatMap {
-                ApiMangaParser(langs).parseToManga(manga, it, forceLatestCovers).andThen(
+                ApiMangaParser(langs).parseToManga(manga, it.first, it.second).andThen(
                     Observable.just(
                         manga.apply {
                             initialized = true
@@ -114,6 +126,10 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
     }
 
     private fun apiRequest(manga: SManga): Request {
-        return GET(MdUtil.baseUrl + MdUtil.apiManga + MdUtil.getMangaId(manga.url), headers, CacheControl.FORCE_NETWORK)
+        return GET(MdUtil.baseUrl + MdUtil.apiManga + MdUtil.getMangaId(manga.url) + MdUtil.includeChapters, headers, CacheControl.FORCE_NETWORK)
+    }
+
+    private fun coverRequest(manga: SManga): Request {
+        return GET(MdUtil.baseUrl + MdUtil.apiManga + MdUtil.getMangaId(manga.url) + MdUtil.apiCovers, headers, CacheControl.FORCE_NETWORK)
     }
 }

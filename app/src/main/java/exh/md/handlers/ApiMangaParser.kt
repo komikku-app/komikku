@@ -47,7 +47,7 @@ class ApiMangaParser(private val langs: List<String>) {
      *
      * Will also save the metadata to the DB if possible
      */
-    fun parseToManga(manga: SManga, input: Response, forceLatestCover: Boolean): Completable {
+    fun parseToManga(manga: SManga, input: Response, coverUrls: List<String>): Completable {
         val mangaId = (manga as? Manga)?.id
         val metaObservable = if (mangaId != null) {
             // We have to use fromCallable because StorIO messes up the thread scheduling if we use their rx functions
@@ -61,7 +61,7 @@ class ApiMangaParser(private val langs: List<String>) {
         }
 
         return metaObservable.map {
-            parseIntoMetadata(it, input, forceLatestCover)
+            parseIntoMetadata(it, input, coverUrls)
             it.copyTo(manga)
             it
         }.flatMapCompletable {
@@ -72,14 +72,14 @@ class ApiMangaParser(private val langs: List<String>) {
         }
     }
 
-    suspend fun parseToManga(manga: MangaInfo, input: Response, forceLatestCover: Boolean, sourceId: Long): MangaInfo {
+    suspend fun parseToManga(manga: MangaInfo, input: Response, coverUrls: List<String>, sourceId: Long): MangaInfo {
         val mangaId = db.getManga(manga.key, sourceId).await()?.id
         val metadata = if (mangaId != null) {
             val flatMetadata = db.getFlatMetadataForManga(mangaId).await()
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
-        parseInfoIntoMetadata(metadata, input, forceLatestCover)
+        parseInfoIntoMetadata(metadata, input, coverUrls)
         if (mangaId != null) {
             metadata.mangaId = mangaId
             db.insertFlatMetadata(metadata.flatten()).await()
@@ -88,28 +88,26 @@ class ApiMangaParser(private val langs: List<String>) {
         return metadata.createMangaInfo(manga)
     }
 
-    fun parseInfoIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, forceLatestCover: Boolean) = parseIntoMetadata(metadata, input, forceLatestCover)
+    fun parseInfoIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, coverUrls: List<String>) = parseIntoMetadata(metadata, input, coverUrls)
 
-    fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, forceLatestCover: Boolean) {
+    fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, coverUrls: List<String>) {
         with(metadata) {
             try {
                 val networkApiManga = MdUtil.jsonParser.decodeFromString<ApiMangaSerializer>(input.body!!.string())
-                val networkManga = networkApiManga.manga
+                val networkManga = networkApiManga.data.manga
                 mdId = MdUtil.getMangaId(input.request.url.toString())
                 mdUrl = input.request.url.toString()
                 title = MdUtil.cleanString(networkManga.title)
-                val coverList = networkManga.covers
-                thumbnail_url = MdUtil.cdnUrl +
-                    if (forceLatestCover && coverList.isNotEmpty()) {
-                        coverList.last()
-                    } else {
-                        MdUtil.removeTimeParamUrl(networkManga.cover_url)
-                    }
+                thumbnail_url = if (coverUrls.isNotEmpty()) {
+                    coverUrls.last()
+                } else {
+                    networkManga.mainCover
+                }
                 description = MdUtil.cleanDescription(networkManga.description)
-                author = MdUtil.cleanString(networkManga.author)
-                artist = MdUtil.cleanString(networkManga.artist)
-                lang_flag = networkManga.lang_flag
-                last_chapter_number = networkManga.last_chapter?.toFloatOrNull()?.floor()
+                author = MdUtil.cleanString(networkManga.author.joinToString())
+                artist = MdUtil.cleanString(networkManga.artist.joinToString())
+                lang_flag = networkManga.publication?.language
+                last_chapter_number = networkManga.lastChapter?.toFloatOrNull()?.floor()
 
                 networkManga.rating?.let {
                     rating = it.bayesian ?: it.mean
@@ -124,7 +122,7 @@ class ApiMangaParser(private val langs: List<String>) {
                 }
                 val filteredChapters = filterChapterForChecking(networkApiManga)
 
-                val tempStatus = parseStatus(networkManga.status)
+                val tempStatus = parseStatus(networkManga.publication!!.status)
                 val publishedOrCancelled =
                     tempStatus == SManga.PUBLICATION_COMPLETE || tempStatus == SManga.CANCELLED
                 if (publishedOrCancelled && isMangaCompleted(networkApiManga, filteredChapters)) {
@@ -134,17 +132,19 @@ class ApiMangaParser(private val langs: List<String>) {
                     status = tempStatus
                 }
 
-                val demographic = FilterHandler.demographics().filter { it.id == networkManga.demographic }.firstOrNull()
-
                 val genres =
-                    networkManga.genres.mapNotNull { FilterHandler.allTypes[it.toString()] }
+                    networkManga.tags.mapNotNull { FilterHandler.allTypes[it.toString()] }
                         .toMutableList()
 
-                if (demographic != null) {
-                    genres.add(0, demographic.name)
+                networkManga.publication.demographic?.let { demographicInt ->
+                    val demographic = FilterHandler.demographics().firstOrNull { it.id.toInt() == demographicInt }
+
+                    if (demographic != null) {
+                        genres.add(0, demographic.name)
+                    }
                 }
 
-                if (networkManga.hentai == 1) {
+                if (networkManga.isHentai) {
                     genres.add("Hentai")
                 }
 
@@ -163,41 +163,39 @@ class ApiMangaParser(private val langs: List<String>) {
      */
     private fun isMangaCompleted(
         serializer: ApiMangaSerializer,
-        filteredChapters: List<Map.Entry<String, ChapterSerializer>>
+        filteredChapters: List<ChapterSerializer>
     ): Boolean {
-        if (filteredChapters.isEmpty() || serializer.manga.last_chapter.isNullOrEmpty()) {
+        val finalChapterNumber = serializer.data.manga.lastChapter
+        if (filteredChapters.isEmpty() || finalChapterNumber.isNullOrEmpty()) {
             return false
         }
         // just to fix the stupid lint
-        val lastMangaChapter: String? = serializer.manga.last_chapter
-        val finalChapterNumber = lastMangaChapter!!
         if (MdUtil.validOneShotFinalChapters.contains(finalChapterNumber)) {
             filteredChapters.firstOrNull()?.let {
-                if (isOneShot(it.value, finalChapterNumber)) {
+                if (isOneShot(it, finalChapterNumber)) {
                     return true
                 }
             }
         }
         val removeOneshots = filteredChapters.asSequence()
-            .map { it.value.chapter?.toDoubleOrNull()?.floor()?.nullIfZero() }
+            .map { it.chapter?.toDoubleOrNull()?.floor()?.nullIfZero() }
             .filterNotNull()
             .toList().distinctBy { it }
         return removeOneshots.toList().size == finalChapterNumber.toDouble().floor()
     }
 
-    private fun filterChapterForChecking(serializer: ApiMangaSerializer): List<Map.Entry<String, ChapterSerializer>> {
-        serializer.chapter ?: return emptyList()
-        return serializer.chapter.entries
-            .filter { langs.contains(it.value.lang_code) }
+    private fun filterChapterForChecking(serializer: ApiMangaSerializer): List<ChapterSerializer> {
+        return serializer.data.chapters.asSequence()
+            .filter { langs.contains(it.language) }
             .filter {
-                it.value.chapter?.let { chapterNumber ->
+                it.chapter?.let { chapterNumber ->
                     if (chapterNumber.toDoubleOrNull() == null) {
                         return@filter false
                     }
                     return@filter true
                 }
                 return@filter false
-            }.distinctBy { it.value.chapter }
+            }.toList()
     }
 
     private fun isOneShot(chapter: ChapterSerializer, finalChapterNumber: String): Boolean {
@@ -230,24 +228,20 @@ class ApiMangaParser(private val langs: List<String>) {
     fun chapterListParse(jsonData: String): List<SChapter> {
         val now = System.currentTimeMillis()
         val networkApiManga = MdUtil.jsonParser.decodeFromString<ApiMangaSerializer>(jsonData)
-        val networkManga = networkApiManga.manga
-        val networkChapters = networkApiManga.chapter
-        if (networkChapters.isNullOrEmpty()) {
-            return listOf()
-        }
-        val status = networkManga.status
+        val networkManga = networkApiManga.data.manga
+        val networkChapters = networkApiManga.data.chapters
+        val groups = networkApiManga.data.groups
 
-        val finalChapterNumber = networkManga.last_chapter!!
+        val status = networkManga.publication!!.status
 
-        val chapters = mutableListOf<SChapter>()
+        val finalChapterNumber = networkManga.lastChapter
 
         // Skip chapters that don't match the desired language, or are future releases
 
         val chapLangs = MdLang.values().filter { langs.contains(it.dexLang) }
-        networkChapters.filter { langs.contains(it.value.lang_code) && (it.value.timestamp * 1000) <= now }
-            .mapTo(chapters) { mapChapter(it.key, it.value, finalChapterNumber, status, chapLangs, networkChapters.size) }
-
-        return chapters
+        return networkChapters.asSequence()
+            .filter { langs.contains(it.language) && (it.timestamp * 1000) <= now }
+            .map { mapChapter(it, finalChapterNumber, status, chapLangs, networkChapters.size, groups) }.toList()
     }
 
     fun chapterParseForMangaId(response: Response): Int {
@@ -267,15 +261,15 @@ class ApiMangaParser(private val langs: List<String>) {
     }
 
     private fun mapChapter(
-        chapterId: String,
         networkChapter: ChapterSerializer,
-        finalChapterNumber: String,
+        finalChapterNumber: String?,
         status: Int,
         chapLangs: List<MdLang>,
-        totalChapterCount: Int
+        totalChapterCount: Int,
+        groups: Map<Long, String>
     ): SChapter {
         val chapter = SChapter.create()
-        chapter.url = MdUtil.apiChapter + chapterId
+        chapter.url = MdUtil.apiChapter + networkChapter.id
         val chapterName = mutableListOf<String>()
         // Build chapter name
 
@@ -305,10 +299,12 @@ class ApiMangaParser(private val langs: List<String>) {
             chapterName.add("Oneshot")
         }
         if ((status == 2 || status == 3)) {
-            if ((isOneShot(networkChapter, finalChapterNumber) && totalChapterCount == 1) ||
-                networkChapter.chapter == finalChapterNumber && finalChapterNumber.toIntOrNull() != 0
-            ) {
-                chapterName.add("[END]")
+            if (finalChapterNumber != null) {
+                if ((isOneShot(networkChapter, finalChapterNumber) && totalChapterCount == 1) ||
+                    networkChapter.chapter == finalChapterNumber && finalChapterNumber.toIntOrNull() != 0
+                ) {
+                    chapterName.add("[END]")
+                }
             }
         }
 
@@ -317,21 +313,13 @@ class ApiMangaParser(private val langs: List<String>) {
         chapter.date_upload = networkChapter.timestamp * 1000
         val scanlatorName = mutableSetOf<String>()
 
-        networkChapter.group_name?.let {
-            scanlatorName.add(it)
-        }
-        networkChapter.group_name_2?.let {
-            scanlatorName.add(it)
-        }
-        networkChapter.group_name_3?.let {
-            scanlatorName.add(it)
-        }
+        networkChapter.groups.mapNotNull { groups[it] }.forEach { scanlatorName.add(it) }
 
         chapter.scanlator = MdUtil.cleanString(MdUtil.getScanlatorString(scanlatorName))
 
         // chapter.mangadex_chapter_id = MdUtil.getChapterId(chapter.url)
 
-        // chapter.language = chapLangs.firstOrNull { it.dexLang == networkChapter.lang_code }?.name
+        // chapter.language = chapLangs.firstOrNull { it.dexLang == networkChapter.language }?.name
 
         return chapter
     }

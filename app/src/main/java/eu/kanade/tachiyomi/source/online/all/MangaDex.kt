@@ -165,7 +165,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
-        ApiMangaParser(listOf(mdLang)).parseIntoMetadata(metadata, input, preferences.mangaDexForceLatestCovers().get())
+        ApiMangaParser(listOf(mdLang)).parseIntoMetadata(metadata, input, emptyList())
     }
 
     override suspend fun fetchFollows(): MangasPage {
