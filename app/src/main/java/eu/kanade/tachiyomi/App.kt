@@ -16,7 +16,6 @@ import com.elvishew.xlog.LogLevel
 import com.elvishew.xlog.XLog
 import com.elvishew.xlog.printer.AndroidPrinter
 import com.elvishew.xlog.printer.Printer
-import com.elvishew.xlog.printer.file.FilePrinter
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy
 import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator
@@ -36,6 +35,7 @@ import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
+import exh.log.EnhancedFilePrinter
 import exh.syDebugVersion
 import io.realm.Realm
 import io.realm.RealmConfiguration
@@ -50,6 +50,8 @@ import uy.kohesive.injekt.registry.default.DefaultRegistrar
 import java.io.File
 import java.security.NoSuchAlgorithmException
 import java.security.Security
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.net.ssl.SSLContext
 import kotlin.concurrent.thread
 import kotlin.time.ExperimentalTime
@@ -193,16 +195,24 @@ open class App : Application(), LifecycleObserver {
             "logs"
         )
 
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+
         @OptIn(ExperimentalTime::class)
-        printers += FilePrinter
+        printers += EnhancedFilePrinter
             .Builder(logFolder.absolutePath)
             .fileNameGenerator(
                 object : DateFileNameGenerator() {
                     override fun generateFileName(logLevel: Int, timestamp: Long): String {
-                        return super.generateFileName(logLevel, timestamp) + "-${BuildConfig.BUILD_TYPE}.log"
+                        return super.generateFileName(
+                            logLevel,
+                            timestamp
+                        ) + "-${BuildConfig.BUILD_TYPE}.log"
                     }
                 }
             )
+            .flattener { timeMillis, level, tag, message ->
+                "${dateFormat.format(timeMillis)} ${LogLevel.getShortLevelName(level)}/$tag: $message"
+            }
             .cleanStrategy(FileLastModifiedCleanStrategy(7.days.toLongMilliseconds()))
             .backupStrategy(NeverBackupStrategy())
             .build()
