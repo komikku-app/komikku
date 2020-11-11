@@ -6,13 +6,13 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.await
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import info.debatty.java.stringsimilarity.NormalizedLevenshtein
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
+import java.util.Locale
 
 class SmartSearchEngine(
     private val extraSearchParams: String? = null
@@ -21,7 +21,6 @@ class SmartSearchEngine(
 
     private val normalizedLevenshtein = NormalizedLevenshtein()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun smartSearch(source: CatalogueSource, title: String): SManga? {
         val cleanedTitle = cleanSmartSearchTitle(title)
 
@@ -34,8 +33,7 @@ class SmartSearchEngine(
                         "$query ${extraSearchParams.trim()}"
                     } else query
 
-                    val searchResults = source.fetchSearchManga(1, builtQuery, FilterList())
-                        .toSingle().await(Schedulers.io())
+                    val searchResults = source.fetchSearchManga(1, builtQuery, FilterList()).awaitSingle()
 
                     searchResults.mangas.map {
                         val cleanedMangaTitle = cleanSmartSearchTitle(it.originalTitle)
@@ -51,13 +49,12 @@ class SmartSearchEngine(
         return eligibleManga.maxByOrNull { it.dist }?.manga
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun normalSearch(source: CatalogueSource, title: String): SManga? {
         val eligibleManga = supervisorScope {
             val searchQuery = if (extraSearchParams != null) {
                 "$title ${extraSearchParams.trim()}"
             } else title
-            val searchResults = source.fetchSearchManga(1, searchQuery, FilterList()).toSingle().await(Schedulers.io())
+            val searchResults = source.fetchSearchManga(1, searchQuery, FilterList()).awaitSingle()
 
             if (searchResults.mangas.size == 1) {
                 return@supervisorScope listOf(SearchEntry(searchResults.mangas.first(), 0.0))
@@ -102,7 +99,7 @@ class SmartSearchEngine(
     }
 
     private fun cleanSmartSearchTitle(title: String): String {
-        val preTitle = title.toLowerCase()
+        val preTitle = title.toLowerCase(Locale.getDefault())
 
         // Remove text in brackets
         var cleanedTitle = removeTextInBrackets(preTitle, true)
@@ -152,6 +149,7 @@ class SmartSearchEngine(
                 if (closingBracketDepthIndex != null) {
                     depthPairs[closingBracketDepthIndex]--
                 } else {
+                    @Suppress("ControlFlowWithEmptyBody")
                     if (depthPairs.all { it <= 0 }) {
                         result.append(c)
                     } else {

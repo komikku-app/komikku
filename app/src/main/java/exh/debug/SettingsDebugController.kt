@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.switchPreference
+import java.util.Locale
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredFunctions
 
@@ -30,7 +31,7 @@ class SettingsDebugController : SettingsController() {
                 it.visibility == KVisibility.PUBLIC
             }.forEach {
                 preference {
-                    title = it.name.replace(Regex("(.)(\\p{Upper})"), "$1 $2").toLowerCase().capitalize()
+                    title = it.name.replace(Regex("(.)(\\p{Upper})"), "$1 $2").toLowerCase(Locale.getDefault()).capitalize(Locale.getDefault())
                     isPersistent = false
 
                     onClick {
@@ -61,7 +62,7 @@ class SettingsDebugController : SettingsController() {
 
             DebugToggles.values().forEach {
                 switchPreference {
-                    title = it.name.replace('_', ' ').toLowerCase().capitalize()
+                    title = it.name.replace('_', ' ').toLowerCase(Locale.getDefault()).capitalize(Locale.getDefault())
                     key = it.prefKey
                     defaultValue = it.default
                     summaryOn = if (it.default) "" else MODIFIED_TEXT

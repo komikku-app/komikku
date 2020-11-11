@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.util.system.dpToPx
 import uy.kohesive.injekt.injectLazy
+import java.util.Locale
 
 class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(null, null) {
     private var textView: TextView? = null
@@ -57,7 +58,7 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
         <b>Debug mode:</b> ${BuildConfig.DEBUG.asEnabledString()}<br>
         <b>Version code:</b> ${BuildConfig.VERSION_CODE}<br>
         <b>Commit SHA:</b> ${BuildConfig.COMMIT_SHA}<br>
-        <b>Log level:</b> ${EHLogLevel.currentLogLevel.name.toLowerCase()}<br>
+        <b>Log level:</b> ${EHLogLevel.currentLogLevel.name.toLowerCase(Locale.getDefault())}<br>
         <b>Source blacklist:</b> ${prefs.eh_enableSourceBlacklist().get().asEnabledString()}
         """.trimIndent()
 

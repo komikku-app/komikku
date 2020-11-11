@@ -3,6 +3,7 @@ package exh.uconfig
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import okhttp3.FormBody
 import uy.kohesive.injekt.injectLazy
+import java.util.Locale
 
 class EhUConfigBuilder {
     private val preferences: PreferencesHelper by injectLazy()
@@ -13,7 +14,7 @@ class EhUConfigBuilder {
         configItems += when (
             preferences.imageQuality()
                 .get()
-                .toLowerCase()
+                .toLowerCase(Locale.getDefault())
         ) {
             "ovrs_2400" -> Entry.ImageSize.`2400`
             "ovrs_1600" -> Entry.ImageSize.`1600`

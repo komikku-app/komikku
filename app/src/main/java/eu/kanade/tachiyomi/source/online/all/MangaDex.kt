@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -190,7 +191,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                     headers,
                     formBody.build()
                 )
-            ).execute()
+            ).await()
 
             response.body!!.string().let {
                 if (it.isEmpty()) {

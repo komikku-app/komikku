@@ -6,7 +6,6 @@ import android.webkit.WebView
 import eu.kanade.tachiyomi.util.asJsoup
 import org.jsoup.nodes.DataNode
 import org.jsoup.nodes.Element
-import java.nio.charset.Charset
 
 class AutoSolvingWebViewClient(
     activity: BrowserActionActivity,
@@ -27,7 +26,7 @@ class AutoSolvingWebViewClient(
             return WebResourceResponse(
                 "text/html",
                 "UTF-8",
-                doc.toString().byteInputStream(Charset.forName("UTF-8")).buffered()
+                doc.toString().byteInputStream().buffered()
             )
         }
         return super.shouldInterceptRequest(view, request)

@@ -9,18 +9,10 @@ import com.pushtorefresh.storio.sqlite.operations.put.PutResults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-suspend fun <T> PreparedGetListOfObjects<T>.executeOnIO(): List<T> {
-    return withContext(Dispatchers.IO) { executeAsBlocking() }
-}
+suspend fun <T> PreparedGetListOfObjects<T>.executeOnIO(): List<T> = withContext(Dispatchers.IO) { executeAsBlocking() }
 
-suspend fun <T> PreparedGetObject<T>.executeOnIO(): T? {
-    return withContext(Dispatchers.IO) { executeAsBlocking() }
-}
+suspend fun <T> PreparedGetObject<T>.executeOnIO(): T? = withContext(Dispatchers.IO) { executeAsBlocking() }
 
-suspend fun <T> PreparedPutObject<T>.executeOnIO(): PutResult {
-    return withContext(Dispatchers.IO) { executeAsBlocking() }
-}
+suspend fun <T> PreparedPutObject<T>.executeOnIO(): PutResult = withContext(Dispatchers.IO) { executeAsBlocking() }
 
-suspend fun <T> PreparedPutCollectionOfObjects<T>.executeOnIO(): PutResults<T> {
-    return withContext(Dispatchers.IO) { executeAsBlocking() }
-}
+suspend fun <T> PreparedPutCollectionOfObjects<T>.executeOnIO(): PutResults<T> = withContext(Dispatchers.IO) { executeAsBlocking() }

@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.uconfig.WarnConfigureDialogController
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
+import java.util.Locale
 
 /**
  * LoginController
@@ -147,7 +148,7 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
             var igneous: String? = null
 
             parsed.forEach {
-                when (it.name.toLowerCase()) {
+                when (it.name.toLowerCase(Locale.getDefault())) {
                     MEMBER_ID_COOKIE -> memberId = it.value
                     PASS_HASH_COOKIE -> passHash = it.value
                     IGNEOUS_COOKIE -> igneous = it.value

@@ -3,6 +3,7 @@ package exh.search
 import exh.metadata.sql.tables.SearchMetadataTable
 import exh.metadata.sql.tables.SearchTagTable
 import exh.metadata.sql.tables.SearchTitleTable
+import java.util.Locale
 
 class SearchEngine {
     private val queryCache = mutableMapOf<String, List<QueryComponent>>()
@@ -162,7 +163,7 @@ class SearchEngine {
             }
         }
 
-        query.toLowerCase().forEach { char ->
+        query.toLowerCase(Locale.getDefault()).forEach { char ->
             if (char == '"') {
                 inQuotes = !inQuotes
             } else if (enableWildcard && (char == '?' || char == '_')) {

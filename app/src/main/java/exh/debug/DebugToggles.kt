@@ -3,6 +3,7 @@ package exh.debug
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import uy.kohesive.injekt.injectLazy
+import java.util.Locale
 
 enum class DebugToggles(val default: Boolean) {
     // Redirect to master version of gallery when encountering a gallery that has a parent/child that is already in the library
@@ -16,7 +17,7 @@ enum class DebugToggles(val default: Boolean) {
     // Pretend that all galleries only have a single version
     INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS(false);
 
-    val prefKey = "eh_debug_toggle_${name.toLowerCase()}"
+    val prefKey = "eh_debug_toggle_${name.toLowerCase(Locale.getDefault())}"
 
     @OptIn(ExperimentalCoroutinesApi::class)
     var enabled: Boolean

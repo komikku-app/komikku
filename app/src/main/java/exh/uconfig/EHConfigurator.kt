@@ -15,6 +15,7 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import uy.kohesive.injekt.injectLazy
+import java.util.Locale
 
 class EHConfigurator(val context: Context) {
     private val prefs: PreferencesHelper by injectLazy()
@@ -64,7 +65,7 @@ class EHConfigurator(val context: Context) {
         val hathPerks = EHHathPerksResponse()
 
         perksPage.select(".stuffbox tr").forEach {
-            val name = it.child(0).text().toLowerCase()
+            val name = it.child(0).text().toLowerCase(Locale.getDefault())
             val purchased = it.child(2).getElementsByTag("form").isEmpty()
 
             when (name) {
