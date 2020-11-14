@@ -103,7 +103,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
     }
 
     private fun randomMangaRequest(): Request {
-        return GET(MdUtil.baseUrl + MdUtil.randMangaPage)
+        return GET(MdUtil.baseUrl + MdUtil.randMangaPage, cache = CacheControl.Builder().noCache().build())
     }
 
     private fun apiRequest(manga: SManga): Request {
