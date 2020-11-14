@@ -5,6 +5,7 @@ import android.net.Uri
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
@@ -119,7 +120,9 @@ class GalleryAdder {
                     source.fetchChapterList(manga)
                 }
                 chapterListObs.map {
-                    syncChaptersWithSource(db, it, manga, source)
+                    if (it.isNotEmpty()) {
+                        syncChaptersWithSource(db, it, manga, source)
+                    } else emptyList<Chapter>() to emptyList()
                 }.awaitSingle()
             } catch (e: Exception) {
                 XLog.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
