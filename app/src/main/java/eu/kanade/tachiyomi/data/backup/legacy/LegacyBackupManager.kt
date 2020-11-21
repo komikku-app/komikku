@@ -12,6 +12,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.hippo.unifile.UniFile
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY_MASK
@@ -50,9 +51,7 @@ import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.asObservable
 import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
@@ -71,10 +70,8 @@ import java.lang.RuntimeException
 import kotlin.math.max
 
 class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : AbstractBackupManager(context) {
-    /**
-     * Version of parser
-     */
-    var version: Int = version
+
+    var parserVersion: Int = version
         private set
 
     var parser: Gson = initParser()
@@ -85,11 +82,11 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
      * @param version version of parser
      */
     internal fun setVersion(version: Int) {
-        this.version = version
+        this.parserVersion = version
         parser = initParser()
     }
 
-    private fun initParser(): Gson = when (version) {
+    private fun initParser(): Gson = when (parserVersion) {
         2 ->
             GsonBuilder()
                 .registerTypeAdapter<MangaImpl>(MangaTypeAdapter.build())
@@ -317,31 +314,18 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
      * @param manga manga that needs updating
      * @return [Observable] that contains manga
      */
-    fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
+    override fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
         // SY -->
-        if (source is MergedSource) {
+        return if (source is MergedSource) {
             val syncedChapters = runBlocking { source.fetchChaptersAndSync(manga, false) }
-            return syncedChapters.onEach { pair ->
+            syncedChapters.onEach { pair ->
                 if (pair.first.isNotEmpty()) {
                     chapters.forEach { it.manga_id = manga.id }
                     updateChapters(chapters)
                 }
             }.asObservable()
         } else {
-            return (
-                if (source is EHentai) {
-                    source.fetchChapterList(manga, throttleManager::throttle)
-                } else {
-                    source.fetchChapterList(manga)
-                }
-                ).map { syncChaptersWithSource(databaseHelper, it, manga, source) }
-                // SY <--
-                .doOnNext { pair ->
-                    if (pair.first.isNotEmpty()) {
-                        chapters.forEach { it.manga_id = manga.id }
-                        updateChapters(chapters)
-                    }
-                }
+            super.restoreChapterFetchObservable(source, manga, chapters, throttleManager)
         }
     }
 

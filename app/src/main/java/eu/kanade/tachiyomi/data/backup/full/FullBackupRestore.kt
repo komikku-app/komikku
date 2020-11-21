@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import exh.EXHMigrations
 import exh.MERGED_SOURCE_ID
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -28,8 +27,7 @@ import rx.Observable
 import java.util.Date
 
 @OptIn(ExperimentalSerializationApi::class)
-class FullBackupRestore(context: Context, notifier: BackupNotifier, private val online: Boolean) : AbstractBackupRestore(context, notifier) {
-    private lateinit var fullBackupManager: FullBackupManager
+class FullBackupRestore(context: Context, notifier: BackupNotifier, private val online: Boolean) : AbstractBackupRestore<FullBackupManager>(context, notifier) {
 
     /**
      * Restores data from backup file.
@@ -43,10 +41,10 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         val startTime = System.currentTimeMillis()
 
         // Initialize manager
-        fullBackupManager = FullBackupManager(context)
+        backupManager = FullBackupManager(context)
 
         val backupString = context.contentResolver.openInputStream(uri)!!.source().gzip().buffer().use { it.readByteArray() }
-        val backup = fullBackupManager.parser.decodeFromByteArray(BackupSerializer, backupString)
+        val backup = backupManager.parser.decodeFromByteArray(BackupSerializer, backupString)
 
         restoreAmount = backup.backupManga.size + 1 /* SY --> */ + 1 /* SY <-- */ // +1 for categories, +1 for saved searches
         restoreProgress = 0
@@ -86,7 +84,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
 
     private fun restoreCategories(backupCategories: List<BackupCategory>) {
         db.inTransaction {
-            fullBackupManager.restoreCategories(backupCategories)
+            backupManager.restoreCategories(backupCategories)
         }
 
         restoreProgress += 1
@@ -95,7 +93,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
 
     // SY -->
     private fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
-        fullBackupManager.restoreSavedSearches(backupSavedSearches)
+        backupManager.restoreSavedSearches(backupSavedSearches)
 
         restoreProgress += 1
         showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.saved_searches))
@@ -118,7 +116,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         // SY <--
 
         try {
-            val source = fullBackupManager.sourceManager.get(manga.source)
+            val source = backupManager.sourceManager.get(manga.source)
             if (source != null || !online) {
                 restoreMangaData(manga, source, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
             } else {
@@ -155,7 +153,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
-        val dbManga = fullBackupManager.getMangaFromDatabase(manga)
+        val dbManga = backupManager.getMangaFromDatabase(manga)
 
         db.inTransaction {
             if (dbManga == null) {
@@ -163,7 +161,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
                 restoreMangaFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
             } else { // Manga in database
                 // Copy information from manga already in database
-                fullBackupManager.restoreMangaNoFetch(manga, dbManga)
+                backupManager.restoreMangaNoFetch(manga, dbManga)
                 // Fetch rest of manga information
                 restoreMangaNoFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
             }
@@ -189,7 +187,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
-        fullBackupManager.restoreMangaFetchObservable(source, manga, online)
+        backupManager.restoreMangaFetchObservable(source, manga, online)
             .doOnError {
                 errors.add(Date() to "${manga.title} - ${it.message}")
             }
@@ -206,7 +204,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
                     }
                     // SY <--
                 } else {
-                    fullBackupManager.restoreChaptersForMangaOffline(it, chapters)
+                    backupManager.restoreChaptersForMangaOffline(it, chapters)
                     Observable.just(manga)
                 }
             }
@@ -234,14 +232,14 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         Observable.just(backupManga)
             .flatMap { manga ->
                 if (online && source != null) {
-                    if (/* SY --> */ source !is MergedSource && /* SY <-- */ !fullBackupManager.restoreChaptersForManga(manga, chapters)) {
+                    if (/* SY --> */ source !is MergedSource && /* SY <-- */ !backupManager.restoreChaptersForManga(manga, chapters)) {
                         chapterFetchObservable(source, manga, chapters)
                             .map { manga }
                     } else {
                         Observable.just(manga)
                     }
                 } else {
-                    fullBackupManager.restoreChaptersForMangaOffline(manga, chapters)
+                    backupManager.restoreChaptersForMangaOffline(manga, chapters)
                     Observable.just(manga)
                 }
             }
@@ -256,80 +254,20 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
 
     private fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>, flatMetadata: BackupFlatMetadata?) {
         // Restore categories
-        fullBackupManager.restoreCategoriesForManga(manga, categories, backupCategories)
+        backupManager.restoreCategoriesForManga(manga, categories, backupCategories)
 
         // Restore history
-        fullBackupManager.restoreHistoryForManga(history)
+        backupManager.restoreHistoryForManga(history)
 
         // Restore tracking
-        fullBackupManager.restoreTrackForManga(manga, tracks)
+        backupManager.restoreTrackForManga(manga, tracks)
 
         // SY -->
         // Restore merged manga references if its a merged manga
-        fullBackupManager.restoreMergedMangaReferencesForManga(manga, mergedMangaReferences)
+        backupManager.restoreMergedMangaReferencesForManga(manga, mergedMangaReferences)
 
         // Restore flat metadata for metadata sources
-        flatMetadata?.let { fullBackupManager.restoreFlatMetadata(manga, it) }
+        flatMetadata?.let { backupManager.restoreFlatMetadata(manga, it) }
         // SY <--
-    }
-
-    /**
-     * [Observable] that fetches chapter information
-     *
-     * @param source source of manga
-     * @param manga manga that needs updating
-     * @return [Observable] that contains manga
-     */
-    private fun chapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        return fullBackupManager.restoreChapterFetchObservable(source, manga, chapters /* SY --> */, throttleManager /* SY <-- */)
-            // If there's any error, return empty update and continue.
-            .onErrorReturn {
-                val errorMessage = if (it is NoChaptersException) {
-                    context.getString(R.string.no_chapters_error)
-                } else {
-                    it.message
-                }
-                errors.add(Date() to "${manga.title} - $errorMessage")
-                Pair(emptyList(), emptyList())
-            }
-    }
-
-    /**
-     * [Observable] that refreshes tracking information
-     * @param manga manga that needs updating.
-     * @param tracks list containing tracks from restore file.
-     * @return [Observable] that contains updated track item
-     */
-    private fun trackingFetchObservable(manga: Manga, tracks: List<Track>): Observable<Track> {
-        return Observable.from(tracks)
-            .flatMap { track ->
-                val service = trackManager.getService(track.sync_id)
-                if (service != null && service.isLogged) {
-                    service.refresh(track)
-                        .doOnNext { db.insertTrack(it).executeAsBlocking() }
-                        .onErrorReturn {
-                            errors.add(Date() to "${manga.title} - ${it.message}")
-                            track
-                        }
-                } else {
-                    errors.add(Date() to "${manga.title} - ${context.getString(R.string.tracker_not_logged_in, service?.name)}")
-                    Observable.empty()
-                }
-            }
-    }
-
-    /**
-     * Called to update dialog in [BackupConst]
-     *
-     * @param progress restore progress
-     * @param amount total restoreAmount of manga
-     * @param title title of restored manga
-     */
-    private fun showRestoreProgress(
-        progress: Int,
-        amount: Int,
-        title: String
-    ) {
-        notifier.showRestoreProgress(title, progress, amount)
     }
 }

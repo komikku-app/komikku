@@ -31,11 +31,8 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.MERGED_SOURCE_ID
-import exh.eh.EHentaiThrottleManager
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.savedsearches.JsonSavedSearch
@@ -262,35 +259,6 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                     it
                 }
         }
-    }
-
-    /**
-     * [Observable] that fetches chapter information
-     *
-     * @param source source of manga
-     * @param manga manga that needs updating
-     * @param chapters list of chapters in the backup
-     * @param throttleManager e-hentai throttle so it doesnt get banned
-     * @return [Observable] that contains manga
-     */
-    fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter> /* SY --> */, throttleManager: EHentaiThrottleManager /* SY <-- */): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        // SY -->
-        return (
-            if (source is EHentai) {
-                source.fetchChapterList(manga, throttleManager::throttle)
-            } else {
-                source.fetchChapterList(manga)
-            }
-            ).map {
-            syncChaptersWithSource(databaseHelper, it, manga, source)
-        }
-            // SY <--
-            .doOnNext { pair ->
-                if (pair.first.isNotEmpty()) {
-                    chapters.forEach { it.manga_id = manga.id }
-                    updateChapters(chapters)
-                }
-            }
     }
 
     /**
