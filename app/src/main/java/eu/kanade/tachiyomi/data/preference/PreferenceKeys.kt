@@ -171,6 +171,8 @@ object PreferenceKeys {
 
     const val eh_lock_manually = "eh_lock_manually"
 
+    const val createLegacyBackup = "create_legacy_backup"
+
     const val eh_nh_useHighQualityThumbs = "eh_nh_hq_thumbs"
 
     const val eh_showSyncIntro = "eh_show_sync_intro"

@@ -368,4 +368,17 @@ class PreferencesHelper(val context: Context) {
     fun eh_EnabledCategories() = flowPrefs.getString(Keys.eh_enabled_categories, "false,false,false,false,false,false,false,false,false,false")
 
     fun startReadingButton() = flowPrefs.getBoolean(Keys.startReadingButton, true)
+
+    fun createLegacyBackup() = flowPrefs.getBoolean(Keys.createLegacyBackup, false)
+
+    fun setChapterSettingsDefault(manga: Manga) {
+        prefs.edit {
+            putInt(Keys.defaultChapterFilterByRead, manga.readFilter)
+            putInt(Keys.defaultChapterFilterByDownloaded, manga.downloadedFilter)
+            putInt(Keys.defaultChapterFilterByBookmarked, manga.bookmarkedFilter)
+            putInt(Keys.defaultChapterSortBySourceOrNumber, manga.sorting)
+            putInt(Keys.defaultChapterDisplayByNameOrNumber, manga.displayMode)
+            putInt(Keys.defaultChapterSortByAscendingOrDescending, if (manga.sortDescending()) Manga.SORT_DESC else Manga.SORT_ASC)
+        }
+    }
 }
