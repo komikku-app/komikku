@@ -2,6 +2,7 @@ package exh.metadata.metadata
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.SManga
@@ -148,7 +149,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
             url.let {
                 // Only parse URL if is full URL
                 val pathSegments = if (it.startsWith("http")) {
-                    Uri.parse(it).pathSegments
+                    it.toUri().pathSegments
                 } else {
                     it.split('/')
                 }

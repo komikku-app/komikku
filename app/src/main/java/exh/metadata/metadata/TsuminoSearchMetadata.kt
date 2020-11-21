@@ -2,6 +2,7 @@ package exh.metadata.metadata
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.MetadataUtil
@@ -114,8 +115,7 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
 
         val TSUMINO_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
-        fun tmIdFromUrl(url: String) =
-            Uri.parse(url).lastPathSegment
+        fun tmIdFromUrl(url: String) = url.toUri().lastPathSegment
 
         fun thumbUrlFromId(id: String) = "/thumbs/$id/1"
     }

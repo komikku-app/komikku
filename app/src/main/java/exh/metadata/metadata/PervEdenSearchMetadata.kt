@@ -2,6 +2,7 @@ package exh.metadata.metadata
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -119,7 +120,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
 
         private fun splitGalleryUrl(url: String) =
             url.let {
-                Uri.parse(it).pathSegments.filterNot(String::isNullOrBlank)
+                it.toUri().pathSegments.filterNot(String::isNullOrBlank)
             }
 
         fun pvIdFromUrl(url: String): String = splitGalleryUrl(url).last()

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -58,7 +59,7 @@ class EightMuses(delegate: HttpSource, val context: Context) :
 
     override fun parseIntoMetadata(metadata: EightMusesSearchMetadata, input: Document) {
         with(metadata) {
-            path = Uri.parse(input.location()).pathSegments
+            path = input.location().toUri().pathSegments
 
             val breadcrumbs = input.selectFirst(".top-menu-breadcrumb > ol")
 

@@ -1,5 +1,6 @@
 package exh.md.utils
 
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
@@ -268,8 +269,8 @@ fun SManga.setMDUrlWithoutDomain(url: String) {
  */
 private fun getMDUrlWithoutDomain(orig: String): String {
     return try {
-        val uri = URI(orig)
-        var out = uri.path
+        val uri = orig.toUri()
+        var out = uri.path.orEmpty()
         if (uri.query != null) {
             out += "?" + uri.query
         }

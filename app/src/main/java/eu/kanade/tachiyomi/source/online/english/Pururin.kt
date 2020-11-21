@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -60,7 +61,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
 
     override fun parseIntoMetadata(metadata: PururinSearchMetadata, input: Document) {
         val selfLink = input.select("[itemprop=name]").last().parent()
-        val parsedSelfLink = Uri.parse(selfLink.attr("href")).pathSegments
+        val parsedSelfLink = selfLink.attr("href").toUri().pathSegments
 
         with(metadata) {
             prId = parsedSelfLink[parsedSelfLink.lastIndex - 1].toIntOrNull()
@@ -89,11 +90,11 @@ class Pururin(delegate: HttpSource, val context: Context) :
                     }
                     "uploader" -> {
                         uploaderDisp = value.text()
-                        uploader = Uri.parse(value.child(0).attr("href")).lastPathSegment
+                        uploader = value.child(0).attr("href").toUri().lastPathSegment
                     }
                     else -> {
                         value.select("a").forEach { link ->
-                            val searchUrl = Uri.parse(link.attr("href"))
+                            val searchUrl = link.attr("href").toUri()
                             val namespace = searchUrl.pathSegments[searchUrl.pathSegments.lastIndex - 2]
                             tags += RaisedTag(
                                 namespace,

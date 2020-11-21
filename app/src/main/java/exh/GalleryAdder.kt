@@ -2,6 +2,7 @@ package exh
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -23,7 +24,7 @@ class GalleryAdder {
     private val sourceManager: SourceManager by injectLazy()
 
     fun pickSource(url: String): List<UrlImportableSource> {
-        val uri = Uri.parse(url)
+        val uri = url.toUri()
         return sourceManager.getVisibleCatalogueSources()
             .map { it.getMainSource() }
             .filterIsInstance<UrlImportableSource>()
@@ -45,7 +46,7 @@ class GalleryAdder {
     ): GalleryAddEvent {
         XLog.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
         try {
-            val uri = Uri.parse(url)
+            val uri = url.toUri()
 
             // Find matching source
             val source = if (forceSource != null) {

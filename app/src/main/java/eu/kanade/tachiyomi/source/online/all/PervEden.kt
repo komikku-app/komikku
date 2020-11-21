@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -45,7 +46,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
 
     override fun parseIntoMetadata(metadata: PervEdenSearchMetadata, input: Document) {
         with(metadata) {
-            url = Uri.parse(input.location()).path
+            url = input.location().toUri().path
 
             pvId = PervEdenSearchMetadata.pvIdFromUrl(url!!)
 
@@ -129,7 +130,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
     }
 
     override fun mapUrlToMangaUrl(uri: Uri): String? {
-        val newUri = Uri.parse("http://www.perveden.com/").buildUpon()
+        val newUri = "http://www.perveden.com/".toUri().buildUpon()
         uri.pathSegments.take(3).forEach {
             newUri.appendPath(it)
         }
