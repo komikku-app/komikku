@@ -14,7 +14,6 @@ import kotlinx.serialization.json.Json
 import org.jsoup.parser.Parser
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.net.URI
 import java.net.URISyntaxException
 
 @Suppress("unused")

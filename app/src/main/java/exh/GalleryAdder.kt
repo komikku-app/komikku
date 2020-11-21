@@ -1,7 +1,6 @@
 package exh
 
 import android.content.Context
-import android.net.Uri
 import androidx.core.net.toUri
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R

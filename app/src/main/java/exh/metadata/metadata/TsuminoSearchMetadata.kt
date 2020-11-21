@@ -1,7 +1,6 @@
 package exh.metadata.metadata
 
 import android.content.Context
-import android.net.Uri
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
