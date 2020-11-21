@@ -277,6 +277,8 @@ class PreferencesHelper(val context: Context) {
 
     fun incognitoMode() = flowPrefs.getBoolean(Keys.incognitoMode, false)
 
+    fun createLegacyBackup() = flowPrefs.getBoolean(Keys.createLegacyBackup, true)
+
     fun setChapterSettingsDefault(manga: Manga) {
         prefs.edit {
             putInt(Keys.defaultChapterFilterByRead, manga.readFilter)
@@ -460,8 +462,6 @@ class PreferencesHelper(val context: Context) {
     fun biometricTimeRanges() = flowPrefs.getStringSet(Keys.biometricTimeRanges, mutableSetOf())
 
     fun sortTagsForLibrary() = flowPrefs.getStringSet(Keys.sortTagsForLibrary, mutableSetOf())
-
-    fun createLegacyBackup() = flowPrefs.getBoolean(Keys.createLegacyBackup, false)
 
     fun dontDeleteFromCategories() = flowPrefs.getStringSet(Keys.dontDeleteFromCategories, emptySet())
 }
