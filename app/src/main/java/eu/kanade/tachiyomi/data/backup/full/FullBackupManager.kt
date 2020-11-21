@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.backup.full
 import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
+import eu.kanade.tachiyomi.data.backup.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CHAPTER
@@ -23,7 +24,6 @@ import eu.kanade.tachiyomi.data.backup.full.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSource
 import eu.kanade.tachiyomi.data.backup.full.models.BackupTracking
-import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -68,8 +68,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         var backup: Backup? = null
 
         databaseHelper.inTransaction {
-            // Get manga from database
-            val databaseManga = getDatabaseManga()
+            val databaseManga = getFavoriteManga() /* SY --> */ + getMergedManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY <-- */
 
             backup = Backup(
                 backupManga(databaseManga, flags),
@@ -80,44 +79,37 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         }
 
         try {
-            // When BackupCreatorJob
-            if (isJob) {
-                // Get dir of file and create
-                var dir = UniFile.fromUri(context, uri)
-                dir = dir.createDirectory("automatic")
+            val file: UniFile = (
+                if (isJob) {
+                    // Get dir of file and create
+                    var dir = UniFile.fromUri(context, uri)
+                    dir = dir.createDirectory("automatic")
 
-                // Delete older backups
-                val numberOfBackups = numberOfBackups()
-                val backupRegex = Regex("""tachiyomi_\d+-\d+-\d+_\d+-\d+.proto.gz""")
-                dir.listFiles { _, filename -> backupRegex.matches(filename) }
-                    .orEmpty()
-                    .sortedByDescending { it.name }
-                    .drop(numberOfBackups - 1)
-                    .forEach { it.delete() }
+                    // Delete older backups
+                    val numberOfBackups = numberOfBackups()
+                    val backupRegex = Regex("""tachiyomi_\d+-\d+-\d+_\d+-\d+.proto.gz""")
+                    dir.listFiles { _, filename -> backupRegex.matches(filename) }
+                        .orEmpty()
+                        .sortedByDescending { it.name }
+                        .drop(numberOfBackups - 1)
+                        .forEach { it.delete() }
 
-                // Create new file to place backup
-                val newFile = dir.createFile(BackupFull.getDefaultFilename())
-                    ?: throw Exception("Couldn't create backup file")
+                    // Create new file to place backup
+                    dir.createFile(BackupFull.getDefaultFilename())
+                } else {
+                    UniFile.fromUri(context, uri)
+                }
+                )
+                ?: throw Exception("Couldn't create backup file")
 
-                val byteArray = parser.encodeToByteArray(BackupSerializer, backup!!)
-                newFile.openOutputStream().sink().gzip().buffer().use { it.write(byteArray) }
-
-                return newFile.uri.toString()
-            } else {
-                val file = UniFile.fromUri(context, uri)
-                    ?: throw Exception("Couldn't create backup file")
-                val byteArray = parser.encodeToByteArray(BackupSerializer, backup!!)
-                file.openOutputStream().sink().gzip().buffer().use { it.write(byteArray) }
-
-                return file.uri.toString()
-            }
+            val byteArray = parser.encodeToByteArray(BackupSerializer, backup!!)
+            file.openOutputStream().sink().gzip().buffer().use { it.write(byteArray) }
+            return file.uri.toString()
         } catch (e: Exception) {
             Timber.e(e)
             throw e
         }
     }
-
-    private fun getDatabaseManga() = getFavoriteManga() /* SY --> */ + getMergedManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY <-- */
 
     private fun backupManga(mangas: List<Manga>, flags: Int): List<BackupManga> {
         return mangas.map {
