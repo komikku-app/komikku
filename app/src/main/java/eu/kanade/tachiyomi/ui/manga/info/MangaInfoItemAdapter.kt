@@ -29,7 +29,6 @@ import exh.util.makeSearchChip
 import exh.util.setChipsExtended
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
@@ -112,7 +111,6 @@ class MangaInfoItemAdapter(
          * @param manga manga object containing information about manga.
          * @param source the source of the manga.
          */
-        @ExperimentalCoroutinesApi
         private fun setMangaInfo(manga: Manga, source: Source?) {
             // Manga info section
             val hasInfoContent = !manga.description.isNullOrBlank() || !manga.genre.isNullOrBlank()

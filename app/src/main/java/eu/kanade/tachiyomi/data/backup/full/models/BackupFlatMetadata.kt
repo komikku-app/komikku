@@ -4,11 +4,9 @@ import eu.kanade.tachiyomi.data.backup.full.models.metadata.BackupSearchMetadata
 import eu.kanade.tachiyomi.data.backup.full.models.metadata.BackupSearchTag
 import eu.kanade.tachiyomi.data.backup.full.models.metadata.BackupSearchTitle
 import exh.metadata.metadata.base.FlatMetadata
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
-@ExperimentalSerializationApi
 @Serializable
 data class BackupFlatMetadata(
     @ProtoNumber(1) var searchMetadata: BackupSearchMetadata,

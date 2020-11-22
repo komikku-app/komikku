@@ -2,7 +2,6 @@ package exh.md.similar
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import eu.kanade.tachiyomi.network.NetworkHelper
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody
@@ -28,7 +27,6 @@ interface SimilarHttpService {
                 .build()
         }
 
-        @ExperimentalSerializationApi
         fun create(): SimilarHttpService {
             // actual builder, which will parse the underlying json file
             val adapter = Retrofit.Builder()

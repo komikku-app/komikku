@@ -1,7 +1,6 @@
 package exh.debug
 
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
@@ -19,7 +18,6 @@ enum class DebugToggles(val default: Boolean) {
 
     val prefKey = "eh_debug_toggle_${name.toLowerCase(Locale.getDefault())}"
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     var enabled: Boolean
         get() = prefs.flowPrefs.getBoolean(prefKey, default).get()
         set(value) {

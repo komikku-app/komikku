@@ -3,7 +3,6 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.handlers.serializers.MangaPlusSerializer
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
 import okhttp3.Interceptor
@@ -26,7 +25,6 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         .addInterceptor { imageIntercept(it) }
         .build()
 
-    @ExperimentalSerializationApi
     fun fetchPageList(chapterId: String): List<Page> {
         val response = client.newCall(pageListRequest(chapterId)).execute()
         return pageListParse(response)
@@ -39,7 +37,6 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         )
     }
 
-    @ExperimentalSerializationApi
     private fun pageListParse(response: Response): List<Page> {
         val result = ProtoBuf.decodeFromByteArray(MangaPlusSerializer, response.body!!.bytes())
 

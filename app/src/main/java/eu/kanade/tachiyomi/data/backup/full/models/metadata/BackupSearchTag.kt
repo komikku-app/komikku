@@ -1,11 +1,9 @@
 package eu.kanade.tachiyomi.data.backup.full.models.metadata
 
 import exh.metadata.sql.models.SearchTag
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
-@ExperimentalSerializationApi
 @Serializable
 data class BackupSearchTag(
     @ProtoNumber(1) var namespace: String? = null,

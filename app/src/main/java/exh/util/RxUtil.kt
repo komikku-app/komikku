@@ -6,7 +6,6 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -51,7 +50,6 @@ fun <T> Observable<T>.melt(): Observable<T> {
     return rs
 }
 
-@ExperimentalCoroutinesApi
 suspend fun <T> Single<T>.await(subscribeOn: Scheduler? = null): T {
     return suspendCancellableCoroutine { continuation ->
         val self = if (subscribeOn != null) subscribeOn(subscribeOn) else this
@@ -78,7 +76,6 @@ suspend fun <T> Single<T>.await(subscribeOn: Scheduler? = null): T {
 suspend fun <T> PreparedOperation<T>.await(): T = asRxSingle().await()
 suspend fun <T> PreparedGetObject<T>.await(): T? = asRxSingle().await()
 
-@ExperimentalCoroutinesApi
 suspend fun Completable.awaitSuspending(subscribeOn: Scheduler? = null) {
     return suspendCancellableCoroutine { continuation ->
         val self = if (subscribeOn != null) subscribeOn(subscribeOn) else this
@@ -136,33 +133,33 @@ suspend fun <T> Single<T>.await(): T = suspendCancellableCoroutine { cont ->
     )
 }
 
-@OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 suspend fun <T> Observable<T>.awaitFirst(): T = first().awaitOne()
 
-@OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 suspend fun <T> Observable<T>.awaitFirstOrDefault(default: T): T = firstOrDefault(default).awaitOne()
 
-@OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 suspend fun <T> Observable<T>.awaitFirstOrNull(): T? = firstOrDefault(null).awaitOne()
 
-@OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 suspend fun <T> Observable<T>.awaitFirstOrElse(defaultValue: () -> T): T = switchIfEmpty(
     Observable.fromCallable(
         defaultValue
     )
 ).first().awaitOne()
 
-@OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 suspend fun <T> Observable<T>.awaitLast(): T = last().awaitOne()
 
-@OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 suspend fun <T> Observable<T>.awaitSingle(): T = single().awaitOne()
 
 suspend fun <T> Observable<T>.awaitSingleOrDefault(default: T): T = singleOrDefault(default).awaitOne()
 
 suspend fun <T> Observable<T>.awaitSingleOrNull(): T? = singleOrDefault(null).awaitOne()
 
-@OptIn(InternalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 private suspend fun <T> Observable<T>.awaitOne(): T = suspendCancellableCoroutine { cont ->
     cont.unsubscribeOnCancellation(
         subscribe(
@@ -202,7 +199,6 @@ private suspend fun <T> Observable<T>.awaitOne(): T = suspendCancellableCoroutin
 internal fun <T> CancellableContinuation<T>.unsubscribeOnCancellation(sub: Subscription) =
     invokeOnCancellation { sub.unsubscribe() }
 
-@ExperimentalCoroutinesApi
 fun <T : Any> Observable<T>.asFlow(): Flow<T> = callbackFlow {
     val observer = object : Observer<T> {
         override fun onNext(t: T) {
@@ -221,7 +217,6 @@ fun <T : Any> Observable<T>.asFlow(): Flow<T> = callbackFlow {
     awaitClose { subscription.unsubscribe() }
 }
 
-@ExperimentalCoroutinesApi
 fun <T : Any> Flow<T>.asObservable(backpressureMode: Emitter.BackpressureMode = Emitter.BackpressureMode.NONE): Observable<T> {
     return Observable.create(
         { emitter ->

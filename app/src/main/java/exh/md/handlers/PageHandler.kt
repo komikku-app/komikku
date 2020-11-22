@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import exh.md.utils.MdUtil
-import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.OkHttpClient
@@ -15,7 +14,6 @@ import rx.Observable
 // Unused, kept for reference todo
 class PageHandler(val client: OkHttpClient, val headers: Headers, private val imageServer: String, val dataSaver: String?) {
 
-    @ExperimentalSerializationApi
     fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         if (chapter.scanlator.equals("MangaPlus")) {
             return client.newCall(pageListRequest(chapter))

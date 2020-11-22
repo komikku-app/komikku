@@ -1,22 +1,18 @@
 package exh.md.handlers.serializers
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.protobuf.ProtoNumber
 
-@ExperimentalSerializationApi
 @Serializer(forClass = MangaPlusResponse::class)
 object MangaPlusSerializer
 
-@ExperimentalSerializationApi
 @Serializable
 data class MangaPlusResponse(
     @ProtoNumber(1) val success: SuccessResult? = null,
     @ProtoNumber(2) val error: ErrorResult? = null
 )
 
-@ExperimentalSerializationApi
 @Serializable
 data class ErrorResult(
     @ProtoNumber(1) val action: Action,
@@ -26,14 +22,12 @@ data class ErrorResult(
 
 enum class Action { DEFAULT, UNAUTHORIZED, MAINTAINENCE, GEOIP_BLOCKING }
 
-@ExperimentalSerializationApi
 @Serializable
 data class Popup(
     @ProtoNumber(1) val subject: String,
     @ProtoNumber(2) val body: String
 )
 
-@ExperimentalSerializationApi
 @Serializable
 data class SuccessResult(
     @ProtoNumber(1) val isFeaturedUpdated: Boolean? = false,
@@ -44,19 +38,15 @@ data class SuccessResult(
     @ProtoNumber(11) val webHomeView: WebHomeView? = null
 )
 
-@ExperimentalSerializationApi
 @Serializable
 data class TitleRankingView(@ProtoNumber(1) val titles: List<Title> = emptyList())
 
-@ExperimentalSerializationApi
 @Serializable
 data class AllTitlesView(@ProtoNumber(1) val titles: List<Title> = emptyList())
 
-@ExperimentalSerializationApi
 @Serializable
 data class WebHomeView(@ProtoNumber(2) val groups: List<UpdatedTitleGroup> = emptyList())
 
-@ExperimentalSerializationApi
 @Serializable
 data class TitleDetailView(
     @ProtoNumber(1) val title: Title,
@@ -75,11 +65,9 @@ data class TitleDetailView(
 
 enum class UpdateTiming { NOT_REGULARLY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, DAY }
 
-@ExperimentalSerializationApi
 @Serializable
 data class MangaViewer(@ProtoNumber(1) val pages: List<MangaPlusPage> = emptyList())
 
-@ExperimentalSerializationApi
 @Serializable
 data class Title(
     @ProtoNumber(1) val titleId: Int,
@@ -91,7 +79,6 @@ data class Title(
     @ProtoNumber(7) val language: Language? = Language.ENGLISH
 )
 
-@ExperimentalSerializationApi
 @Serializable
 enum class Language(val id: Int) {
     @ProtoNumber(0)
@@ -101,20 +88,17 @@ enum class Language(val id: Int) {
     SPANISH(1)
 }
 
-@ExperimentalSerializationApi
 @Serializable
 data class UpdatedTitleGroup(
     @ProtoNumber(1) val groupName: String,
     @ProtoNumber(2) val titles: List<UpdatedTitle> = emptyList()
 )
 
-@ExperimentalSerializationApi
 @Serializable
 data class UpdatedTitle(
     @ProtoNumber(1) val title: Title? = null
 )
 
-@ExperimentalSerializationApi
 @Serializable
 data class Chapter(
     @ProtoNumber(1) val titleId: Int,
@@ -125,11 +109,9 @@ data class Chapter(
     @ProtoNumber(7) val endTimeStamp: Int
 )
 
-@ExperimentalSerializationApi
 @Serializable
 data class MangaPlusPage(@ProtoNumber(1) val page: MangaPage? = null)
 
-@ExperimentalSerializationApi
 @Serializable
 data class MangaPage(
     @ProtoNumber(1) val imageUrl: String,

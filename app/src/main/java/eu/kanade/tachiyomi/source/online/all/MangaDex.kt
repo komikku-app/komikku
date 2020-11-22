@@ -51,7 +51,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.CacheControl
 import okhttp3.FormBody
 import okhttp3.Headers
@@ -120,7 +119,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
     }
 
-    @ExperimentalSerializationApi
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return if (chapter.scanlator == "MangaPlus") {
             client.newCall(mangaPlusPageListRequest(chapter))

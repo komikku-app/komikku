@@ -43,7 +43,6 @@ import exh.util.executeOnIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
@@ -122,7 +121,6 @@ class MigrationListController(bundle: Bundle? = null) :
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun runMigrations(mangas: List<MigratingManga>) {
         throttleManager.resetThrottle()
         if (config == null) return
@@ -335,7 +333,6 @@ class MigrationListController(bundle: Bundle? = null) :
         }
     }
 
-    @ExperimentalCoroutinesApi
     fun useMangaForMigration(manga: Manga, source: Source) {
         val firstIndex = selectedPosition ?: return
         val migratingManga = adapter?.getItem(firstIndex) ?: return

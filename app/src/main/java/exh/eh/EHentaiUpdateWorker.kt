@@ -29,7 +29,6 @@ import exh.util.cancellable
 import exh.util.jobScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.asFlow
@@ -130,7 +129,6 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
         return true
     }
 
-    @OptIn(FlowPreview::class)
     private suspend fun startUpdating() {
         logger.d("Update job started!")
         val startTime = System.currentTimeMillis()

@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListCon
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationInterface
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -100,7 +99,6 @@ class SearchController(
         } else router.popController(this)
     }
 
-    @ExperimentalCoroutinesApi
     override fun onMangaClick(manga: Manga) {
         if (targetController is MigrationListController) {
             val migrationListController = targetController as? MigrationListController

@@ -70,7 +70,6 @@ import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
 import exh.util.defaultReaderType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -938,7 +937,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     /**
      * Class that handles the user preferences of the reader.
      */
-    @FlowPreview
     private inner class ReaderConfig {
 
         /**
@@ -1059,7 +1057,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         /**
          * Sets the custom brightness overlay according to [enabled].
          */
-        @FlowPreview
         private fun setCustomBrightness(enabled: Boolean) {
             if (enabled) {
                 preferences.customBrightnessValue().asFlow()
@@ -1074,7 +1071,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         /**
          * Sets the color filter overlay according to [enabled].
          */
-        @FlowPreview
         private fun setColorFilter(enabled: Boolean) {
             if (enabled) {
                 preferences.colorFilterValue().asFlow()

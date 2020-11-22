@@ -1,14 +1,12 @@
 package eu.kanade.tachiyomi.data.backup.full.models
 
 import exh.merged.sql.models.MergedMangaReference
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
 /*
 * SY merged manga backup class
  */
-@ExperimentalSerializationApi
 @Serializable
 data class BackupMergedMangaReference(
     @ProtoNumber(1) var isInfoManga: Boolean,
