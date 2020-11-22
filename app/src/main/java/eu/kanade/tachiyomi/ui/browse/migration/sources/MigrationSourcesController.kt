@@ -1,6 +1,9 @@
 package eu.kanade.tachiyomi.ui.browse.migration.sources
 
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +19,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
 import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.system.openInBrowser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import rx.schedulers.Schedulers
@@ -30,6 +34,10 @@ class MigrationSourcesController :
     // SY <--
 
     private var adapter: SourceAdapter? = null
+
+    init {
+        setHasOptionsMenu(true)
+    }
 
     override fun createPresenter(): MigrationSourcesPresenter {
         return MigrationSourcesPresenter()
@@ -52,6 +60,17 @@ class MigrationSourcesController :
     override fun onDestroyView(view: View) {
         adapter = null
         super.onDestroyView(view)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.source_migration, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_source_migration_help -> activity?.openInBrowser(HELP_URL)
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     fun setSources(sourcesWithManga: List<SourceItem>) {
@@ -95,4 +114,8 @@ class MigrationSourcesController :
         }
     }
     // SY <--
+
+    companion object {
+        const val HELP_URL = "https://tachiyomi.org/help/guides/source-migration/"
+    }
 }
