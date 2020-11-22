@@ -29,26 +29,16 @@ import java.util.Date
 @OptIn(ExperimentalSerializationApi::class)
 class FullBackupRestore(context: Context, notifier: BackupNotifier, private val online: Boolean) : AbstractBackupRestore<FullBackupManager>(context, notifier) {
 
-    /**
-     * Restores data from backup file.
-     *
-     * @param uri backup file to restore
-     */
-    override fun restoreBackup(uri: Uri): Boolean {
+    override fun performRestore(uri: Uri): Boolean {
         // SY -->
         throttleManager.resetThrottle()
         // SY <--
-        val startTime = System.currentTimeMillis()
-
-        // Initialize manager
         backupManager = FullBackupManager(context)
 
         val backupString = context.contentResolver.openInputStream(uri)!!.source().gzip().buffer().use { it.readByteArray() }
         val backup = backupManager.parser.decodeFromByteArray(BackupSerializer, backupString)
 
         restoreAmount = backup.backupManga.size + 1 /* SY --> */ + 1 /* SY <-- */ // +1 for categories, +1 for saved searches
-        restoreProgress = 0
-        errors.clear()
 
         // Restore categories
         if (backup.backupCategories.isNotEmpty()) {
@@ -73,12 +63,6 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
             restoreManga(it, backup.backupCategories, online)
         }
 
-        val endTime = System.currentTimeMillis()
-        val time = endTime - startTime
-
-        val logFile = writeErrorLog()
-
-        notifier.showRestoreComplete(time, errors.size, logFile.parent, logFile.name)
         return true
     }
 
