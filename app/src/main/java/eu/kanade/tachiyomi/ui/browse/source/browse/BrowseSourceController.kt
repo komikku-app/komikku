@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.applyBottomInsetPadding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
@@ -379,12 +380,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
         if (filterSheet != null) {
             // Add bottom padding if filter FAB is visible
-            recycler.setPadding(
-                recycler.paddingLeft,
-                recycler.paddingTop,
-                recycler.paddingRight,
-                view.resources.getDimensionPixelOffset(R.dimen.fab_list_padding)
-            )
+            applyBottomInsetPadding(recycler, view.resources.getDimensionPixelOffset(R.dimen.fab_list_padding))
             recycler.clipToPadding = false
 
             actionFab?.shrinkOnScroll(recycler)

@@ -62,6 +62,7 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.ToolbarLiftOnScrollController
+import eu.kanade.tachiyomi.ui.base.controller.applyBottomInsetPadding
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
@@ -267,6 +268,9 @@ class MangaController :
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = MangaControllerBinding.inflate(inflater)
+
+        applyBottomInsetPadding(binding.recycler)
+
         return binding.root
     }
 
@@ -397,7 +401,11 @@ class MangaController :
 
                     // Get coordinates and start animation
                     actionFab?.getCoordinates()?.let { coordinates ->
-                        if (!binding.revealView.showRevealEffect(coordinates.x, coordinates.y, revealAnimationListener)
+                        if (!binding.revealView.showRevealEffect(
+                                coordinates.x,
+                                coordinates.y,
+                                revealAnimationListener
+                            )
                         ) {
                             openChapter(item.chapter)
                         }
