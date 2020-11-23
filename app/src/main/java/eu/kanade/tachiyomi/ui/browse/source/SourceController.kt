@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.browse.source
 
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Dialog
-import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -13,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
-import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
@@ -31,7 +29,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
-import eu.kanade.tachiyomi.ui.base.controller.insets
+import eu.kanade.tachiyomi.ui.base.controller.applyBottomInsetPadding
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
@@ -106,9 +104,7 @@ class SourceController(bundle: Bundle? = null) :
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = SourceMainControllerBinding.inflate(inflater)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            binding.recycler.updatePadding(bottom = binding.recycler.paddingBottom + insets!!.systemWindowInsetBottom)
-        }
+        applyBottomInsetPadding(binding.recycler)
 
         return binding.root
     }
