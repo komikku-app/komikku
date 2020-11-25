@@ -74,7 +74,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                         3 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
                         else -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                     }
-                    XLog.nst().d(controller.mergeReference?.chapterSortMode)
+                    XLog.d(controller.mergeReference?.chapterSortMode)
                     editMergedMangaItemSortingListener.onSetPrioritySort(canMove())
                 }
 

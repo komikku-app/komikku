@@ -51,7 +51,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
-            XLog.e("error parsing follows", e)
+            XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
             FollowsPageResult()
         }
 
@@ -81,7 +81,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
-            XLog.e("error parsing follows", e)
+            XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
             FollowsPageResult()
         }
         val track = Track.create(TrackManager.MDLIST)
@@ -158,7 +158,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             val mangaID = MdUtil.getMangaId(track.tracking_url)
             val formBody = FormBody.Builder()
                 .add("chapter", track.last_chapter_read.toString())
-            XLog.d("chapter to update %s", track.last_chapter_read.toString())
+            XLog.tag("FollowsHandler").d("chapter to update %s", track.last_chapter_read.toString())
             val response = client.newCall(
                 POST(
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=edit_progress&id=$mangaID",

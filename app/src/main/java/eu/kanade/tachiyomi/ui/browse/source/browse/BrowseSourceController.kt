@@ -538,8 +538,8 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     /* SY --> */ open /* SY <-- */fun onAddPageError(error: Throwable) {
         // SY -->
-        XLog.w("> Failed to load next catalogue page!", error)
-        XLog.w(
+        XLog.tag("BrowseSourceController").enableStackTrace(2).w("> Failed to load next catalogue page!", error)
+        XLog.tag("BrowseSourceController").enableStackTrace(2).w(
             "> (source.id: %s, source.name: %s)",
             presenter.source.id,
             presenter.source.name

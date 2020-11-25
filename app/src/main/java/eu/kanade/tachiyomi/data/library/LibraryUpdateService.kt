@@ -462,7 +462,7 @@ class LibraryUpdateService(
                             db.insertTrack(track).executeAsBlocking()
                         }
                     } catch (e: Exception) {
-                        XLog.e(e)
+                        XLog.tag("LibraryUpdateService").e(e)
                     }
                 }
             }

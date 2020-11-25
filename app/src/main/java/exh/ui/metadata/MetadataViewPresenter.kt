@@ -27,7 +27,7 @@ class MetadataViewPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.nst().d("Invalid metadata") })
+        getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.tag("MetadataViewPresenter").disableStackTrace().d("Invalid metadata") })
 
         getMangaObservable()
             .observeOn(AndroidSchedulers.mainThread())

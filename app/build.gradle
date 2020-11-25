@@ -315,7 +315,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics-ktx:17.3.0'
 
     // Better logging (EH)
-    implementation 'com.elvishew:xlog:1.6.1'
+    implementation 'com.elvishew:xlog:1.7.1'
 
     // Debug utils (EH)
     final def debug_overlay_version = '1.1.3'

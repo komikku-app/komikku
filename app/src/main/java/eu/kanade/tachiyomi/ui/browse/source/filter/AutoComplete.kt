@@ -97,7 +97,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
             addChipToGroup(name, holder)
             filter.state += name
         } else {
-            XLog.d("Invalid tag: $name")
+            XLog.tag("AutoComplete").d("Invalid tag: $name")
         }
     }
 

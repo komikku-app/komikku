@@ -115,15 +115,15 @@ open class App : Application(), LifecycleObserver {
             try {
                 SSLContext.getInstance("TLSv1.2")
             } catch (e: NoSuchAlgorithmException) {
-                XLog.e("Could not install Android 7 broken SSL workaround!", e)
+                XLog.tag("Init").e("Could not install Android 7 broken SSL workaround!", e)
             }
 
             try {
                 ProviderInstaller.installIfNeeded(applicationContext)
             } catch (e: GooglePlayServicesRepairableException) {
-                XLog.e("Could not install Android 7 broken SSL workaround!", e)
+                XLog.tag("Init").e("Could not install Android 7 broken SSL workaround!", e)
             } catch (e: GooglePlayServicesNotAvailableException) {
-                XLog.e("Could not install Android 7 broken SSL workaround!", e)
+                XLog.tag("Init").e("Could not install Android 7 broken SSL workaround!", e)
             }
         }
     }
@@ -183,8 +183,8 @@ open class App : Application(), LifecycleObserver {
 
         val logConfig = LogConfiguration.Builder()
             .logLevel(logLevel)
-            .st(2)
-            .nb()
+            .disableStackTrace()
+            .disableBorder()
             .build()
 
         val printers = mutableListOf<Printer>(AndroidPrinter())
@@ -227,8 +227,8 @@ open class App : Application(), LifecycleObserver {
             *printers.toTypedArray()
         )
 
-        XLog.d("Application booting...")
-        XLog.nst().d(
+        XLog.tag("Init").d("Application booting...")
+        XLog.tag("Init").disableStackTrace().d(
             "App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})\n" +
                 "Preview build: $syDebugVersion\n" +
                 "Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) \n" +
@@ -253,7 +253,7 @@ open class App : Application(), LifecycleObserver {
                 .install()
         } catch (e: IllegalStateException) {
             // Crashes if app is in background
-            XLog.e("Failed to initialize debug overlay, app in background?", e)
+            XLog.tag("Init").e("Failed to initialize debug overlay, app in background?", e)
         }
     }
 }

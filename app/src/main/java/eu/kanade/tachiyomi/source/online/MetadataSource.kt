@@ -5,14 +5,12 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.source.EnhancedHttpSource
 import rx.Completable
 import rx.Single
 import uy.kohesive.injekt.Injekt
@@ -49,7 +47,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      * Will also save the metadata to the DB if possible
      */
     fun parseToManga(manga: SManga, input: I): Completable {
-        val mangaId = (manga as? Manga)?.id
+        val mangaId = manga.id
         val metaObservable = if (mangaId != null) {
             // We have to use fromCallable because StorIO messes up the thread scheduling if we use their rx functions
             Single.fromCallable {
@@ -109,17 +107,4 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
 
     val SManga.id get() = (this as? Manga)?.id
     val SChapter.mangaId get() = (this as? Chapter)?.manga_id
-
-    companion object {
-        fun Source.isMetadataSource() = (this is MetadataSource<*, *> || (this is EnhancedHttpSource && this.enhancedSource is MetadataSource<*, *>))
-
-        fun Source.getMetadataSource(): MetadataSource<*, *>? {
-            return when {
-                !this.isMetadataSource() -> null
-                this is MetadataSource<*, *> -> this
-                this is EnhancedHttpSource && this.enhancedSource is MetadataSource<*, *> -> this.enhancedSource
-                else -> null
-            }
-        }
-    }
 }

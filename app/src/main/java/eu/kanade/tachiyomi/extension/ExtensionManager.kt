@@ -158,7 +158,7 @@ class ExtensionManager(
         val blacklistEnabled = preferences.eh_enableSourceBlacklist().get()
         return filter {
             if (it.isBlacklisted(blacklistEnabled)) {
-                XLog.d("[EXH] Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
+                XLog.tag("ExtensionManager").d("Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
                 false
             } else true
         }
@@ -336,7 +336,7 @@ class ExtensionManager(
     private fun registerNewExtension(extension: Extension.Installed) {
         // SY -->
         if (extension.isBlacklisted()) {
-            XLog.d("[EXH] Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
+            XLog.tag("ExtensionManager").d("Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }
         // SY <--
@@ -354,7 +354,7 @@ class ExtensionManager(
     private fun registerUpdatedExtension(extension: Extension.Installed) {
         // SY -->
         if (extension.isBlacklisted()) {
-            XLog.d("[EXH] Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
+            XLog.tag("ExtensionManager").d("Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }
         // SY <--

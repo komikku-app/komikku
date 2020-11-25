@@ -81,7 +81,7 @@ class EHConfigurator(val context: Context) {
             }
         }
 
-        XLog.nst().d("Hath perks: $hathPerks")
+        XLog.tag("EHConfigurator").d("Hath perks: $hathPerks")
 
         configure(ehSource, hathPerks)
         configure(exhSource, hathPerks)

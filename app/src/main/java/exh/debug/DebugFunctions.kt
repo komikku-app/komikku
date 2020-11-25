@@ -30,6 +30,7 @@ import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.injectLazy
 import java.lang.RuntimeException
 
+@Suppress("unused")
 object DebugFunctions {
     val app: Application by injectLazy()
     val db: DatabaseHelper by injectLazy()
@@ -239,7 +240,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.e("Failed to load saved search!", t)
+                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -251,7 +252,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.e("Failed to load saved search!", t)
+                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -278,7 +279,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.e("Failed to load saved search!", t)
+                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -290,7 +291,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.e("Failed to load saved search!", t)
+                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }

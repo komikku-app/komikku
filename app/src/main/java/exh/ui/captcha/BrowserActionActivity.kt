@@ -187,7 +187,7 @@ class BrowserActionActivity : AppCompatActivity() {
     suspend fun captchaSolveFail() {
         currentLoopId = null
         validateCurrentLoopId = null
-        XLog.e(IllegalStateException("Captcha solve failure!"))
+        XLog.tag("BrowserActionActivity").enableStackTrace(2).e(IllegalStateException("Captcha solve failure!"))
         withContext(Dispatchers.Main) {
             binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             MaterialDialog(this@BrowserActionActivity)
@@ -231,7 +231,7 @@ class BrowserActionActivity : AppCompatActivity() {
                     val ih = splitResult[3]
                     val x = binding.webview.x + origX / iw * binding.webview.width
                     val y = binding.webview.y + origY / ih * binding.webview.height
-                    XLog.nst().d("Found audio button coords: %f %f", x, y)
+                    XLog.tag("BrowserActionActivity").d("Found audio button coords: %f %f", x, y)
                     simulateClick(x + 50, y + 50)
                     binding.webview.post {
                         doStageDownloadAudio(loopId)
@@ -247,12 +247,12 @@ class BrowserActionActivity : AppCompatActivity() {
             }
             STAGE_DOWNLOAD_AUDIO -> {
                 if (result != null) {
-                    XLog.nst().d("Got audio URL: $result")
+                    XLog.tag("BrowserActionActivity").d("Got audio URL: $result")
                     performRecognize(result)
                         .observeOn(Schedulers.io())
                         .subscribe(
                             {
-                                XLog.nst().d("Got audio transcript: $it")
+                                XLog.tag("BrowserActionActivity").d("Got audio transcript: $it")
                                 binding.webview.post {
                                     typeResult(
                                         loopId,
@@ -465,7 +465,7 @@ class BrowserActionActivity : AppCompatActivity() {
         if (loopId != validateCurrentLoopId) return
 
         if (result) {
-            XLog.nst().d("Captcha solved!")
+            XLog.tag("BrowserActionActivity").d("Captcha solved!")
             binding.webview.post {
                 binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             }

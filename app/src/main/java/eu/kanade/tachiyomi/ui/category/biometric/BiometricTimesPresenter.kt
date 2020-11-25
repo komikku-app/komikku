@@ -41,7 +41,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
 
         preferences.biometricTimeRanges().asFlow().onEach { prefTimeRanges ->
             timeRanges = prefTimeRanges.toList()
-                .mapNotNull { TimeRange.fromPreferenceString(it) }.onEach { XLog.nst().d(it) }
+                .mapNotNull { TimeRange.fromPreferenceString(it) }.onEach { XLog.disableStackTrace().d(it) }
 
             Observable.just(timeRanges)
                 .map { it.map(::BiometricTimesItem) }
@@ -62,7 +62,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
             return
         }
 
-        XLog.nst().d(timeRange)
+        XLog.disableStackTrace().d(timeRange)
 
         preferences.biometricTimeRanges() += timeRange.toPreferenceString()
     }

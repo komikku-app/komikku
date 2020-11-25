@@ -129,7 +129,7 @@ class ApiMangaParser(private val langs: List<String>) {
                 if (tags.isNotEmpty()) tags.clear()
                 tags += genres.map { RaisedTag(null, it, MangaDexSearchMetadata.TAG_TYPE_DEFAULT) }
             } catch (e: Exception) {
-                XLog.e(e)
+                XLog.tag("ApiMangaParser").enableStackTrace(2).e(e)
                 throw e
             }
         }
@@ -239,7 +239,7 @@ class ApiMangaParser(private val langs: List<String>) {
             val jsonObject = Json.decodeFromString<JsonObject>(body)
             return jsonObject["manga_id"]?.jsonPrimitive?.intOrNull ?: throw Exception("No manga associated with chapter")
         } catch (e: Exception) {
-            XLog.e(e)
+            XLog.tag("ApiMangaParser").enableStackTrace(2).e(e)
             throw e
         }
     }

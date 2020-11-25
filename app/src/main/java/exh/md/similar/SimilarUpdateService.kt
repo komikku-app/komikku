@@ -118,7 +118,7 @@ class SimilarUpdateService(
         // Unsubscribe from any previous subscription if needed.
         job?.cancel()
         val handler = CoroutineExceptionHandler { _, exception ->
-            XLog.e(exception)
+            XLog.tag("SimilarUpdateService").enableStackTrace(2).e(exception)
             stopSelf(startId)
             showResultNotification(true)
             cancelProgressNotification()

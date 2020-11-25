@@ -48,9 +48,9 @@ class BiometricTimesCreateDialog<T>(bundle: Bundle? = null) : DialogController(b
             .title(if (startTime == null) R.string.biometric_lock_start_time else R.string.biometric_lock_end_time)
             .timePicker(show24HoursView = false) { _, datetime ->
                 val hour = datetime.get(Calendar.HOUR_OF_DAY)
-                XLog.nst().d(hour)
+                XLog.disableStackTrace().d(hour)
                 val minute = datetime.get(Calendar.MINUTE)
-                XLog.nst().d(minute)
+                XLog.disableStackTrace().d(minute)
                 if (hour !in 0..24 || minute !in 0..60) return@timePicker
                 if (startTime != null) {
                     endTime = hour.hours + minute.minutes

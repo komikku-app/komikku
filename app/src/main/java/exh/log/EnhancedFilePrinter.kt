@@ -1,6 +1,5 @@
 package exh.log
 
-import com.elvishew.xlog.flattener.Flattener2
 import com.elvishew.xlog.internal.DefaultsFactory
 import com.elvishew.xlog.printer.Printer
 import com.elvishew.xlog.printer.file.backup.BackupStrategy
@@ -12,6 +11,7 @@ import java.io.FileWriter
 import java.io.IOException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
+import com.elvishew.xlog.flattener.Flattener2 as Flattener
 
 /**
  * Log [Printer] using file system. When print a log, it will print it to the specified file.
@@ -31,7 +31,7 @@ class EnhancedFilePrinter internal constructor(
     private val fileNameGenerator: FileNameGenerator,
     private val backupStrategy: BackupStrategy,
     private val cleanStrategy: CleanStrategy,
-    private val flattener: Flattener2
+    private val flattener: Flattener
 ) : Printer {
     /**
      * Log writer.
@@ -134,7 +134,7 @@ class EnhancedFilePrinter internal constructor(
         /**
          * The flattener when print a log.
          */
-        private var flattener: Flattener2? = null
+        private var flattener: Flattener? = null
 
         /**
          * Set the file name generator for log file.
@@ -174,9 +174,8 @@ class EnhancedFilePrinter internal constructor(
          *
          * @param flattener the flattener when print a log
          * @return the builder
-         * @since 1.6.0
          */
-        fun flattener(flattener: Flattener2): Builder {
+        fun flattener(flattener: Flattener): Builder {
             this.flattener = flattener
             return this
         }
@@ -187,11 +186,13 @@ class EnhancedFilePrinter internal constructor(
          * @return the built configured [EnhancedFilePrinter] object
          */
         fun build(): EnhancedFilePrinter {
-            val fileNameGenerator = fileNameGenerator ?: DefaultsFactory.createFileNameGenerator()
-            val backupStrategy = backupStrategy ?: DefaultsFactory.createBackupStrategy()
-            val cleanStrategy = cleanStrategy ?: DefaultsFactory.createCleanStrategy()
-            val flattener = flattener ?: DefaultsFactory.createFlattener2()
-            return EnhancedFilePrinter(folderPath, fileNameGenerator, backupStrategy, cleanStrategy, flattener)
+            return EnhancedFilePrinter(
+                folderPath,
+                fileNameGenerator ?: DefaultsFactory.createFileNameGenerator(),
+                backupStrategy ?: DefaultsFactory.createBackupStrategy(),
+                cleanStrategy ?: DefaultsFactory.createCleanStrategy(),
+                flattener ?: DefaultsFactory.createFlattener2()
+            )
         }
     }
 
@@ -244,8 +245,8 @@ class EnhancedFilePrinter internal constructor(
         }
 
         override fun run() {
-            var log: LogItem
             try {
+                var log: LogItem
                 while (logs.take().also { log = it } != null) {
                     doPrintln(log.timeMillis, log.level, log.tag, log.msg)
                 }
@@ -341,7 +342,7 @@ class EnhancedFilePrinter internal constructor(
          */
         fun appendLog(flattenedLog: String) {
             val bufferedWriter = bufferedWriter
-            require(bufferedWriter != null)
+            requireNotNull(bufferedWriter)
             try {
                 bufferedWriter.write(flattenedLog)
                 bufferedWriter.newLine()

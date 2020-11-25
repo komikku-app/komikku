@@ -21,7 +21,7 @@ fun Response.interceptAsHtml(block: (Document) -> Unit): Response {
             block(parsed)
         } catch (t: Throwable) {
             // Ignore all errors
-            XLog.w("Interception error!", t)
+            XLog.tag("Response.interceptAsHtml").enableStackTrace(2).w("Interception error!", t)
         } finally {
             close()
         }

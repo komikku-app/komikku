@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.annoations.Nsfw
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -313,7 +314,7 @@ class EHentai(
                             url = EHentaiSearchMetadata.normalizeUrl(parentLink)
                         } else break
                     } else {
-                        XLog.d("Parent cache hit: %s!", gid)
+                        XLog.tag("EHentai").d("Parent cache hit: %s!", gid)
                         url = EHentaiSearchMetadata.idAndTokenToUrl(
                             cachedParent.gId,
                             cachedParent.gToken
@@ -412,7 +413,7 @@ class EHentai(
         }
 
     private fun searchMangaRequestObservable(page: Int, query: String, filters: FilterList): Observable<Request> {
-        val uri = Uri.parse("$baseUrl$QUERY_PREFIX").buildUpon()
+        val uri = "$baseUrl$QUERY_PREFIX".toUri().buildUpon()
 
         uri.appendQueryParameter("f_search", (query + " " + combineQuery(filters)).trim())
         filters.forEach {
@@ -576,7 +577,7 @@ class EHentai(
                     lastUpdateCheck - datePosted!! > EHentaiUpdateWorkerConstants.GALLERY_AGE_TIME
                 ) {
                     aged = true
-                    XLog.d("aged %s - too old", title)
+                    XLog.tag("EHentai").d("aged %s - too old", title)
                 }
 
                 // Parse ratings
@@ -723,7 +724,7 @@ class EHentai(
     // Headers
     override fun headersBuilder() = super.headersBuilder().add("Cookie", cookiesHeader())
 
-    private fun addParam(url: String, param: String, value: String) = Uri.parse(url)
+    private fun addParam(url: String, param: String, value: String) = url.toUri()
         .buildUpon()
         .appendQueryParameter(param, value)
         .toString()
@@ -842,7 +843,7 @@ class EHentai(
             stringBuilder.append(" ")
         }
 
-        XLog.d(stringBuilder.toString())
+        XLog.tag("EHentai").d(stringBuilder.toString())
         return stringBuilder.toString().trim()
     }
 

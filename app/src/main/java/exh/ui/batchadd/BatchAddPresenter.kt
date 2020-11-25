@@ -59,7 +59,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
         currentlyAddingRelay.call(STATE_INPUT_TO_PROGRESS)
 
         val handler = CoroutineExceptionHandler { _, throwable ->
-            XLog.e(throwable)
+            XLog.tag("BatchAddPresenter").enableStackTrace(2).e(throwable)
         }
 
         scope.launch(Dispatchers.IO + handler) {

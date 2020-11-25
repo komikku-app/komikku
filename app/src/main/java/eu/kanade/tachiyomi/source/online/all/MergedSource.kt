@@ -179,7 +179,7 @@ class MergedSource : SuspendHttpSource() {
                 reference.mangaId = manga.id
                 db.insertNewMergedMangaId(reference).await()
             } catch (e: Exception) {
-                XLog.st(e.stackTrace.contentToString(), 5)
+                XLog.tag("MergedSource").enableStackTrace(e.stackTrace.contentToString(), 5)
             }
         }
         return LoadedMangaSource(source, manga, reference)

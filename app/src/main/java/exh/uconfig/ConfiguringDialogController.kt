@@ -37,7 +37,7 @@ class ConfiguringDialogController : DialogController() {
                                 .show()
                         }
                     }
-                    XLog.e("Configuration error!", e)
+                    XLog.tag("ConfiguringDialogController").enableStackTrace(2).e("Configuration error!", e)
                 }
                 launchUI {
                     finish()

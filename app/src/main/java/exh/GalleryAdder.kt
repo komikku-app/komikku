@@ -22,6 +22,8 @@ class GalleryAdder {
 
     private val sourceManager: SourceManager by injectLazy()
 
+    private val logger = XLog.tag("GalleryAdder").enableStackTrace(2).build()
+
     fun pickSource(url: String): List<UrlImportableSource> {
         val uri = url.toUri()
         return sourceManager.getVisibleCatalogueSources()
@@ -43,7 +45,7 @@ class GalleryAdder {
         forceSource: UrlImportableSource? = null,
         throttleFunc: () -> Unit = {}
     ): GalleryAddEvent {
-        XLog.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
+        logger.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
         try {
             val uri = url.toUri()
 
@@ -53,7 +55,7 @@ class GalleryAdder {
                     if (forceSource.matchesUri(uri)) forceSource
                     else return GalleryAddEvent.Fail.UnknownType(url, context)
                 } catch (e: Exception) {
-                    XLog.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
+                    logger.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
                     return GalleryAddEvent.Fail.UnknownType(url, context)
                 }
             } else {
@@ -73,7 +75,7 @@ class GalleryAdder {
             val realUrl = try {
                 source.mapUrlToMangaUrl(uri)
             } catch (e: Exception) {
-                XLog.e(context.getString(R.string.gallery_adder_uri_map_to_manga_error), e)
+                logger.e(context.getString(R.string.gallery_adder_uri_map_to_manga_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
@@ -81,7 +83,7 @@ class GalleryAdder {
             val cleanedUrl = try {
                 source.cleanMangaUrl(realUrl)
             } catch (e: Exception) {
-                XLog.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
+                logger.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
@@ -125,13 +127,13 @@ class GalleryAdder {
                     } else emptyList<Chapter>() to emptyList()
                 }.awaitSingle()
             } catch (e: Exception) {
-                XLog.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
+                logger.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
                 return GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_chapter_fetch_error, url))
             }
 
             return GalleryAddEvent.Success(url, manga, context)
         } catch (e: Exception) {
-            XLog.w(context.getString(R.string.gallery_adder_could_not_add_manga, url), e)
+            logger.w(context.getString(R.string.gallery_adder_could_not_add_manga, url), e)
 
             if (e is EHentai.GalleryNotFoundException) {
                 return GalleryAddEvent.Fail.NotFound(url, context)

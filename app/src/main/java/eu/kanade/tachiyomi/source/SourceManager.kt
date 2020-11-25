@@ -114,7 +114,7 @@ open class SourceManager(private val context: Context) {
             } else DELEGATED_SOURCES[sourceQName]
         } else null
         val newSource = if (source is HttpSource && delegate != null) {
-            XLog.d("[EXH] Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
+            XLog.tag("SourceManager").d("Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
             val enhancedSource = EnhancedHttpSource(
                 source,
                 delegate.newSourceClass.constructors.find { it.parameters.size == 2 }!!.call(source, context)
@@ -125,7 +125,7 @@ open class SourceManager(private val context: Context) {
         } else source
 
         if (source.id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
-            XLog.d("[EXH] Removing blacklisted source: (id: %s, name: %s, lang: %s)!", source.id, source.name, (source as? CatalogueSource)?.lang)
+            XLog.tag("SourceManager").d("Removing blacklisted source: (id: %s, name: %s, lang: %s)!", source.id, source.name, (source as? CatalogueSource)?.lang)
             return
         }
         // EXH <--

@@ -319,7 +319,7 @@ object EXHMigrations {
         try {
             dbLocation.copyTo(backupLocation, overwrite = true)
         } catch (t: Throwable) {
-            XLog.w("Failed to backup database!")
+            logger.enableStackTrace(2).w("Failed to backup database!")
         }
     }
 

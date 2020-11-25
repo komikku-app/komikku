@@ -11,9 +11,9 @@ fun OkHttpClient.Builder.maybeInjectEHLogger(): OkHttpClient.Builder {
         val logger: HttpLoggingInterceptor.Logger = HttpLoggingInterceptor.Logger { message ->
             try {
                 Json.decodeFromString<Any>(message)
-                XLog.tag("||EH-NETWORK-JSON").nst().json(message)
+                XLog.tag("||EH-NETWORK-JSON").json(message)
             } catch (ex: Exception) {
-                XLog.tag("||EH-NETWORK").nb().nst().d(message)
+                XLog.tag("||EH-NETWORK").disableBorder().d(message)
             }
         }
         return addInterceptor(HttpLoggingInterceptor(logger).apply { level = HttpLoggingInterceptor.Level.BODY })

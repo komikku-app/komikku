@@ -91,7 +91,7 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
         binding.webview.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
-                XLog.nst().d(url)
+                XLog.tag("LoginController").d(url)
                 val parsedUrl = Uri.parse(url)
                 if (parsedUrl.host.equals("forums.e-hentai.org", ignoreCase = true)) {
                     // Hide distracting content

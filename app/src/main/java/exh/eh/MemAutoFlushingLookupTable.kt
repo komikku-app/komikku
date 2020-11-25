@@ -93,7 +93,7 @@ class MemAutoFlushingLookupTable<T>(
                     }
                 }
             } catch (e: FileNotFoundException) {
-                XLog.d("Lookup table not found!", e)
+                XLog.tag("MemAutoFlushingLookupTable").enableStackTrace(2).d("Lookup table not found!", e)
                 // Ignored
             }
 
