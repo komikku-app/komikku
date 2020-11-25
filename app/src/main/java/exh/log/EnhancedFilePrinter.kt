@@ -16,36 +16,23 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Log [Printer] using file system. When print a log, it will print it to the specified file.
  *
- *
  * Use the [Builder] to construct a [EnhancedFilePrinter] object.
+ *
+ * @param folderPath The folder path of log file.
+ * @param fileNameGenerator the file name generator for log file.
+ * @param backupStrategy the backup strategy for log file.
+ * @param cleanStrategy The clean strategy for log file.
+ * @param flattener The flattener when print a log.
+ *
  */
 @Suppress("unused")
-class EnhancedFilePrinter internal constructor(builder: Builder) : Printer {
-    /**
-     * The folder path of log file.
-     */
-    private val folderPath: String
-
-    /**
-     * The file name generator for log file.
-     */
-    private val fileNameGenerator: FileNameGenerator
-
-    /**
-     * The backup strategy for log file.
-     */
-    private val backupStrategy: BackupStrategy
-
-    /**
-     * The clean strategy for log file.
-     */
-    private val cleanStrategy: CleanStrategy
-
-    /**
-     * The flattener when print a log.
-     */
+class EnhancedFilePrinter internal constructor(
+    private val folderPath: String,
+    private val fileNameGenerator: FileNameGenerator,
+    private val backupStrategy: BackupStrategy,
+    private val cleanStrategy: CleanStrategy,
     private val flattener: Flattener2
-
+) : Printer {
     /**
      * Log writer.
      */
@@ -126,37 +113,28 @@ class EnhancedFilePrinter internal constructor(builder: Builder) : Printer {
 
     /**
      * Builder for [EnhancedFilePrinter].
-     */
-    class Builder
-    /**
-     * Construct a builder.
-     *
      * @param folderPath the folder path of log file
-     */(
-        /**
-         * The folder path of log file.
-         */
-        val folderPath: String,
-    ) {
+     */
+    class Builder(private val folderPath: String) {
         /**
          * The file name generator for log file.
          */
-        var fileNameGenerator: FileNameGenerator? = null
+        private var fileNameGenerator: FileNameGenerator? = null
 
         /**
          * The backup strategy for log file.
          */
-        var backupStrategy: BackupStrategy? = null
+        private var backupStrategy: BackupStrategy? = null
 
         /**
          * The clean strategy for log file.
          */
-        var cleanStrategy: CleanStrategy? = null
+        private var cleanStrategy: CleanStrategy? = null
 
         /**
          * The flattener when print a log.
          */
-        var flattener: Flattener2? = null
+        private var flattener: Flattener2? = null
 
         /**
          * Set the file name generator for log file.
@@ -209,27 +187,15 @@ class EnhancedFilePrinter internal constructor(builder: Builder) : Printer {
          * @return the built configured [EnhancedFilePrinter] object
          */
         fun build(): EnhancedFilePrinter {
-            fillEmptyFields()
-            return EnhancedFilePrinter(this)
-        }
-
-        private fun fillEmptyFields() {
-            if (fileNameGenerator == null) {
-                fileNameGenerator = DefaultsFactory.createFileNameGenerator()
-            }
-            if (backupStrategy == null) {
-                backupStrategy = DefaultsFactory.createBackupStrategy()
-            }
-            if (cleanStrategy == null) {
-                cleanStrategy = DefaultsFactory.createCleanStrategy()
-            }
-            if (flattener == null) {
-                flattener = DefaultsFactory.createFlattener2()
-            }
+            val fileNameGenerator = fileNameGenerator ?: DefaultsFactory.createFileNameGenerator()
+            val backupStrategy = backupStrategy ?: DefaultsFactory.createBackupStrategy()
+            val cleanStrategy = cleanStrategy ?: DefaultsFactory.createCleanStrategy()
+            val flattener = flattener ?: DefaultsFactory.createFlattener2()
+            return EnhancedFilePrinter(folderPath, fileNameGenerator, backupStrategy, cleanStrategy, flattener)
         }
     }
 
-    private class LogItem(
+    private data class LogItem(
         var timeMillis: Long,
         var level: Int,
         var tag: String,
@@ -392,13 +358,7 @@ class EnhancedFilePrinter internal constructor(builder: Builder) : Printer {
         private const val USE_WORKER = true
     }
 
-    /*package*/
     init {
-        folderPath = builder.folderPath
-        fileNameGenerator = builder.fileNameGenerator!!
-        backupStrategy = builder.backupStrategy!!
-        cleanStrategy = builder.cleanStrategy!!
-        flattener = builder.flattener!!
         writer = Writer()
         if (USE_WORKER) {
             worker = Worker()
