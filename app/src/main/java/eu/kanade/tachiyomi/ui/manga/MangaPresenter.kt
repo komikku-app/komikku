@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import com.jakewharton.rxrelay.BehaviorRelay
+import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -59,6 +59,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
@@ -126,7 +127,7 @@ class MangaPresenter(
 
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
 
-    val redirectUserRelay: BehaviorRelay<EXHRedirect> = BehaviorRelay.create<EXHRedirect>()
+    val redirectFlow: MutableSharedFlow<EXHRedirect> = MutableSharedFlow()
 
     data class EXHRedirect(val manga: Manga, val update: Boolean)
 
@@ -221,10 +222,11 @@ class MangaPresenter(
                                 // Redirect if we are not the accepted root
                                 if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
                                     // Update if any of our chapters are not in accepted manga's chapters
+                                    XLog.disableStackTrace().d("Found accepted manga ${manga.url}")
                                     val ourChapterUrls = chapters.map { it.url }.toSet()
                                     val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
                                     val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
-                                    redirectUserRelay.call(
+                                    redirectFlow.tryEmit(
                                         EXHRedirect(
                                             acceptedChain.manga,
                                             update
@@ -365,8 +367,7 @@ class MangaPresenter(
     }
 
     fun editCoverWithStream(uri: Uri): Boolean {
-        val inputStream =
-            downloadManager.context.contentResolver.openInputStream(uri) ?: return false
+        val inputStream = downloadManager.context.contentResolver.openInputStream(uri) ?: return false
         if (manga.source == LocalSource.ID) {
             LocalSource.updateCover(downloadManager.context, manga, inputStream)
             manga.updateCoverLastModified(db)

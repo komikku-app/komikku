@@ -115,7 +115,6 @@ import kotlinx.coroutines.withContext
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.recyclerview.scrollEvents
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
-import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -344,13 +343,13 @@ class MangaController :
             }
         }
 
-        presenter.redirectUserRelay
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeUntilDestroy { redirect ->
+        presenter.redirectFlow
+            .onEach { redirect ->
                 XLog.d("Redirecting to updated manga (manga.id: %s, manga.title: %s, update: %s)!", redirect.manga.id, redirect.manga.title, redirect.update)
                 // Replace self
                 router?.replaceTopController(MangaController(redirect).withFadeTransaction())
             }
+            .launchIn(scope)
 
         updateFilterIconState()
     }
