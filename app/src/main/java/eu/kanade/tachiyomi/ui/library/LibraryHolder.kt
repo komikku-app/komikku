@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.library
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.viewholders.FlexibleViewHolder
@@ -13,12 +14,14 @@ import eu.davidea.viewholders.FlexibleViewHolder
  * @param listener a listener to react to the single tap and long tap events.
  */
 
-abstract class LibraryHolder(
+abstract class LibraryHolder<VB : ViewBinding>(
     view: View,
     // SY -->
     val adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
     // SY <--
 ) : FlexibleViewHolder(view, adapter) {
+
+    abstract val binding: VB
 
     /**
      * Method called from [LibraryCategoryAdapter.onBindViewHolder]. It updates the data for this

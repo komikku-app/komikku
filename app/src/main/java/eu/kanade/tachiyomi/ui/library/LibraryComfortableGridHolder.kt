@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
@@ -29,11 +30,13 @@ class LibraryComfortableGridHolder(
     // SY -->
     private val hasTitle: Boolean
 // SY <--
-) : LibraryCompactGridHolder(view, adapter) {
+) : LibraryHolder<SourceComfortableGridItemBinding>(view, adapter) {
 
-    private val binding = SourceComfortableGridItemBinding.bind(view)
+    override val binding = SourceComfortableGridItemBinding.bind(view)
 
     // SY -->
+    var manga: Manga? = null
+
     init {
         binding.playLayout.clicks()
             .onEach {
@@ -91,4 +94,10 @@ class LibraryComfortableGridHolder(
             .dontAnimate()
             .into(binding.thumbnail)
     }
+
+    // SY -->
+    private fun playButtonClicked() {
+        manga?.let { (adapter as LibraryCategoryAdapter).controller.startReading(it, (adapter as LibraryCategoryAdapter)) }
+    }
+    // SY <--
 }

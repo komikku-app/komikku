@@ -25,9 +25,9 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
  * @constructor creates a new catalogue holder.
  */
 class SourceListHolder(private val view: View, adapter: FlexibleAdapter<*>) :
-    SourceHolder(view, adapter) {
+    SourceHolder<SourceListItemBinding>(view, adapter) {
 
-    private val binding = SourceListItemBinding.bind(view)
+    override val binding = SourceListItemBinding.bind(view)
 
     private val favoriteColor = view.context.getResourceColor(R.attr.colorOnSurface, 0.38f)
     private val unfavoriteColor = view.context.getResourceColor(R.attr.colorOnSurface)

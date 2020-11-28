@@ -9,7 +9,7 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
-import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
+import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
 import eu.kanade.tachiyomi.util.isLocal
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -24,18 +24,18 @@ import reactivecircus.flowbinding.android.view.clicks
  * @param listener a listener to react to single tap and long tap events.
  * @constructor creates a new library holder.
  */
-open class LibraryCompactGridHolder(
+class LibraryCompactGridHolder(
     private val view: View,
     // SY -->
     adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
     // SY <--
-) : LibraryHolder(view, adapter) {
+) : LibraryHolder<SourceCompactGridItemBinding>(view, adapter) {
 
-    private val binding = SourceComfortableGridItemBinding.bind(view)
-
-    var manga: Manga? = null
+    override val binding = SourceCompactGridItemBinding.bind(view)
 
     // SY -->
+    var manga: Manga? = null
+
     init {
         binding.playLayout.clicks()
             .onEach {
@@ -92,7 +92,7 @@ open class LibraryCompactGridHolder(
     }
 
     // SY -->
-    fun playButtonClicked() {
+    private fun playButtonClicked() {
         manga?.let { (adapter as LibraryCategoryAdapter).controller.startReading(it, (adapter as LibraryCategoryAdapter)) }
     }
     // SY <--

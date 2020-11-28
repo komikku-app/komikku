@@ -28,9 +28,9 @@ import java.util.Date
  * @constructor creates a new catalogue holder.
  */
 class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleAdapter<*>) :
-    SourceHolder(view, adapter) {
+    SourceHolder<SourceEnhancedEhentaiListItemBinding>(view, adapter) {
 
-    private val binding = SourceEnhancedEhentaiListItemBinding.bind(view)
+    override val binding = SourceEnhancedEhentaiListItemBinding.bind(view)
 
     private val favoriteColor = view.context.getResourceColor(R.attr.colorOnSurface, 0.38f)
     private val unfavoriteColor = view.context.getResourceColor(R.attr.colorOnSurface)

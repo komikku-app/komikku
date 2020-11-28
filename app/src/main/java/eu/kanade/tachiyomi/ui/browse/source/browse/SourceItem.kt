@@ -14,17 +14,17 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
+import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import kotlinx.android.synthetic.main.source_compact_grid_item.view.card
-import kotlinx.android.synthetic.main.source_compact_grid_item.view.gradient
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMode> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
-    AbstractFlexibleItem<SourceHolder>() {
+    AbstractFlexibleItem<SourceHolder<*>>() {
     // SY -->
     val preferences: PreferencesHelper by injectLazy()
     // SY <--
@@ -41,19 +41,20 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
     override fun createViewHolder(
         view: View,
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
-    ): SourceHolder {
+    ): SourceHolder<*> {
         return /* SY --> */ if ((manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) && preferences.enhancedEHentaiView().get()) {
             SourceEnhancedEHentaiListHolder(view, adapter)
         } else /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> {
+                val binding = SourceCompactGridItemBinding.bind(view)
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
                 view.apply {
-                    card.layoutParams = FrameLayout.LayoutParams(
+                    binding.card.layoutParams = FrameLayout.LayoutParams(
                         MATCH_PARENT,
                         coverHeight
                     )
-                    gradient.layoutParams = FrameLayout.LayoutParams(
+                    binding.gradient.layoutParams = FrameLayout.LayoutParams(
                         MATCH_PARENT,
                         coverHeight / 2,
                         Gravity.BOTTOM
@@ -62,10 +63,11 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
                 SourceGridHolder(view, adapter)
             }
             DisplayMode.COMFORTABLE_GRID /* SY --> */, DisplayMode.NO_TITLE_GRID /* SY <-- */ -> {
+                val binding = SourceComfortableGridItemBinding.bind(view)
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
                 view.apply {
-                    card.layoutParams = ConstraintLayout.LayoutParams(
+                    binding.card.layoutParams = ConstraintLayout.LayoutParams(
                         MATCH_PARENT,
                         coverHeight
                     )
@@ -80,7 +82,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
 
     override fun bindViewHolder(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-        holder: SourceHolder,
+        holder: SourceHolder<*>,
         position: Int,
         payloads: List<Any?>?
     ) {

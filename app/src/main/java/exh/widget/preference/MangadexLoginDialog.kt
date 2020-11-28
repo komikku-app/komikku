@@ -2,33 +2,41 @@ package exh.widget.preference
 
 import android.app.Dialog
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
-import com.afollestad.materialdialogs.internal.main.DialogLayout
+import com.bluelinelabs.conductor.ControllerChangeHandler
+import com.bluelinelabs.conductor.ControllerChangeType
+import com.dd.processbutton.iml.ActionProcessButton
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.PrefSiteLoginTwoFactorAuthBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.widget.preference.LoginDialogPreference
 import exh.source.getMainSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
-class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle = bundle) {
+class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     val source = Injekt.get<SourceManager>().get(args.getLong("key", 0))?.getMainSource() as? MangaDex
 
     val service = Injekt.get<TrackManager>().mdList
+
+    val preferences: PreferencesHelper by injectLazy()
 
     val scope = CoroutineScope(Job() + Dispatchers.Main)
 
@@ -41,31 +49,32 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
     )
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-        val dialog = MaterialDialog(activity!!).apply {
-            customView(R.layout.pref_site_login_two_factor_auth, scrollable = false)
-        }
+        binding = PrefSiteLoginTwoFactorAuthBinding.inflate(LayoutInflater.from(activity!!))
+        val dialog = MaterialDialog(activity!!)
+            .customView(view = binding!!.root, scrollable = false)
 
         onViewCreated(dialog.view)
 
         return dialog
     }
 
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
-        (v as? DialogLayout?)?.contentLayout?.customView?.let { binding = PrefSiteLoginTwoFactorAuthBinding.bind(it) }
-        binding?.apply {
-            twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
-                twoFactorHolder.isVisible = isChecked
-            }
+    fun onViewCreated(view: View) {
+        binding!!.login.setMode(ActionProcessButton.Mode.ENDLESS)
+        binding!!.login.setOnClickListener { checkLogin() }
+
+        setCredentialsOnView(view)
+
+        binding!!.twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
+            binding!!.twoFactorHolder.isVisible = isChecked
         }
     }
 
-    override fun setCredentialsOnView(view: View) {
+    private fun setCredentialsOnView(view: View) {
         binding?.username?.setText(service.getUsername())
         binding?.password?.setText(service.getPassword())
     }
 
-    override fun checkLogin() {
+    private fun checkLogin() {
         binding?.apply {
             if (username.text.isNullOrBlank() || password.text.isNullOrBlank() || (twoFactorCheck.isChecked && twoFactorEdit.text.isNullOrBlank())) {
                 errorResult()
@@ -109,8 +118,16 @@ class MangadexLoginDialog(bundle: Bundle? = null) : LoginDialogPreference(bundle
         }
     }
 
-    override fun onDialogClosed() {
-        super.onDialogClosed()
+    override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
+        super.onChangeStarted(handler, type)
+        if (!type.isEnter) {
+            onDialogClosed()
+        }
+    }
+
+    private fun onDialogClosed() {
+        scope.cancel()
+        binding = null
         if (activity != null) {
             (activity as? Listener)?.siteLoginDialogClosed(source!!)
         } else {
