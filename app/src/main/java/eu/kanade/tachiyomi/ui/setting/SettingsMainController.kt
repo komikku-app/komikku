@@ -71,12 +71,6 @@ class SettingsMainController : SettingsController() {
             titleRes = R.string.pref_category_security
             onClick { navigateTo(SettingsSecurityController()) }
         }
-        preference {
-            iconRes = R.drawable.ic_outline_people_alt_24dp
-            iconTint = tintColor
-            titleRes = R.string.pref_category_parental_controls
-            onClick { navigateTo(SettingsParentalControlsController()) }
-        }
         // SY -->
         if (preferences.eh_isHentaiEnabled().get()) {
             preference {
