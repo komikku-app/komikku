@@ -65,10 +65,7 @@ class BackupNotifier(private val context: Context) {
 
         with(completeNotificationBuilder) {
             setContentTitle(context.getString(R.string.backup_created))
-
-            if (unifile.filePath != null) {
-                setContentText(unifile.filePath)
-            }
+            setContentText(unifile.filePath ?: unifile.name)
 
             // Clear old actions if they exist
             if (mActions.isNotEmpty()) {

@@ -77,5 +77,26 @@ class SettingsBrowseController : SettingsController() {
                 defaultValue = false
             }
         }
+
+        preferenceCategory {
+            titleRes = R.string.pref_category_nsfw_content
+
+            listPreference {
+                key = Keys.allowNsfwSource
+                titleRes = R.string.pref_allow_nsfw_sources
+                entriesRes = arrayOf(
+                    R.string.pref_allow_nsfw_sources_allowed,
+                    R.string.pref_allow_nsfw_sources_allowed_multisource,
+                    R.string.pref_allow_nsfw_sources_blocked
+                )
+                entryValues = arrayOf(
+                    Values.NsfwAllowance.ALLOWED.name,
+                    Values.NsfwAllowance.PARTIAL.name,
+                    Values.NsfwAllowance.BLOCKED.name
+                )
+                defaultValue = Values.NsfwAllowance.ALLOWED.name
+                summary = "%s"
+            }
+        }
     }
 }
