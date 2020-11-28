@@ -75,7 +75,6 @@ import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCoverDialog
 import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
-import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.chapter.ChaptersAdapter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChaptersSettingsSheet
@@ -336,7 +335,7 @@ class MangaController :
             }
             .launchIn(scope)
 
-        binding.actionToolbar.offsetAppbarHeight(activity!!)
+        (activity!! as MainActivity).fixViewToBottom(binding.actionToolbar)
 
         settingsSheet = ChaptersSettingsSheet(router, presenter) { group ->
             if (group is ChaptersSettingsSheet.Filter.FilterGroup) {

@@ -38,7 +38,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourcesController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.main.MainActivity
-import eu.kanade.tachiyomi.ui.main.offsetAppbarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.getResourceColor
@@ -234,7 +233,7 @@ class LibraryController(
             }
             .launchIn(scope)
 
-        binding.actionToolbar.offsetAppbarHeight(activity!!)
+        (activity!! as MainActivity).fixViewToBottom(binding.actionToolbar)
     }
 
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
