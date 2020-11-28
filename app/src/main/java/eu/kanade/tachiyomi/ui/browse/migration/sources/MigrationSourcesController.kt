@@ -46,9 +46,7 @@ class MigrationSourcesController :
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = MigrationSourcesControllerBinding.inflate(inflater)
-
         applyBottomInsetPadding(binding.recycler)
-
         return binding.root
     }
 

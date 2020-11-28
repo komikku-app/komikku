@@ -268,9 +268,7 @@ class MangaController :
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = MangaControllerBinding.inflate(inflater)
-
         applyBottomInsetPadding(binding.recycler)
-
         return binding.root
     }
 
