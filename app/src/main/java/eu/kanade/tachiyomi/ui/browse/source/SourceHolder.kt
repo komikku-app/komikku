@@ -2,34 +2,32 @@ package eu.kanade.tachiyomi.ui.browse.source
 
 import android.view.View
 import androidx.core.view.isVisible
+import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.databinding.SourceMainControllerCardItemBinding
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.icon
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
-import kotlinx.android.synthetic.main.source_main_controller_card_item.image
-import kotlinx.android.synthetic.main.source_main_controller_card_item.pin
-import kotlinx.android.synthetic.main.source_main_controller_card_item.source_latest
-import kotlinx.android.synthetic.main.source_main_controller_card_item.subtitle
-import kotlinx.android.synthetic.main.source_main_controller_card_item.title
 
 class SourceHolder(private val view: View, val adapter: SourceAdapter /* SY --> */, private val showLatest: Boolean, private val showPins: Boolean /* SY <-- */) :
-    BaseFlexibleViewHolder(view, adapter) {
+    FlexibleViewHolder(view, adapter) {
+
+    private val binding = SourceMainControllerCardItemBinding.bind(view)
 
     init {
-        source_latest.setOnClickListener {
+        binding.sourceLatest.setOnClickListener {
             adapter.clickListener.onLatestClick(bindingAdapterPosition)
         }
 
-        pin.setOnClickListener {
+        binding.pin.setOnClickListener {
             adapter.clickListener.onPinClick(bindingAdapterPosition)
         }
 
         // SY -->
         if (!showLatest) {
-            source_latest.isVisible = false
+            binding.sourceLatest.isVisible = false
         }
         // SY <--
     }
@@ -37,26 +35,26 @@ class SourceHolder(private val view: View, val adapter: SourceAdapter /* SY --> 
     fun bind(item: SourceItem) {
         val source = item.source
 
-        title.text = source.name
-        subtitle.isVisible = source !is LocalSource
-        subtitle.text = LocaleHelper.getDisplayName(source.lang)
+        binding.title.text = source.name
+        binding.subtitle.isVisible = source !is LocalSource
+        binding.subtitle.text = LocaleHelper.getDisplayName(source.lang)
 
         // Set source icon
         itemView.post {
             val icon = source.icon()
             when {
-                icon != null -> image.setImageDrawable(icon)
-                item.source.id == LocalSource.ID -> image.setImageResource(R.mipmap.ic_local_source)
+                icon != null -> binding.image.setImageDrawable(icon)
+                item.source.id == LocalSource.ID -> binding.image.setImageResource(R.mipmap.ic_local_source)
             }
         }
 
-        source_latest.isVisible = source.supportsLatest/* SY --> */ && showLatest /* SY <-- */
+        binding.sourceLatest.isVisible = source.supportsLatest/* SY --> */ && showLatest /* SY <-- */
 
-        pin.isVisible = showPins
+        binding.pin.isVisible = showPins
         if (item.isPinned) {
-            pin.setVectorCompat(R.drawable.ic_push_pin_filled_24dp, view.context.getResourceColor(R.attr.colorAccent))
+            binding.pin.setVectorCompat(R.drawable.ic_push_pin_filled_24dp, view.context.getResourceColor(R.attr.colorAccent))
         } else {
-            pin.setVectorCompat(R.drawable.ic_push_pin_24dp, view.context.getResourceColor(android.R.attr.textColorHint))
+            binding.pin.setVectorCompat(R.drawable.ic_push_pin_24dp, view.context.getResourceColor(android.R.attr.textColorHint))
         }
     }
 }

@@ -8,14 +8,10 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
+import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.widget.StateImageViewTarget
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.card
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.local_text
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.progress
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.thumbnail
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.title
 
 /**
  * Class used to hold the displayed data of a manga in the catalogue, like the cover or the title.
@@ -28,6 +24,8 @@ import kotlinx.android.synthetic.main.source_comfortable_grid_item.title
 class SourceComfortableGridHolder(private val view: View, private val adapter: FlexibleAdapter<*> /* SY --> */, private val hasTitle: Boolean /* SY <-- */) :
     SourceGridHolder(view, adapter) {
 
+    private val binding = SourceComfortableGridItemBinding.bind(view)
+
     /**
      * Method called from [CatalogueAdapter.onBindViewHolder]. It updates the data for this
      * holder with the given manga.
@@ -36,13 +34,13 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
      */
     override fun onSetValues(manga: Manga) {
         // Set manga title
-        title.text = manga.title
+        binding.title.text = manga.title
         // SY -->
-        title.isVisible = hasTitle
+        binding.title.isVisible = hasTitle
         // SY <--
 
         // Set alpha of thumbnail.
-        thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
+        binding.thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
 
         setImage(manga)
     }
@@ -51,8 +49,8 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
     override fun onSetMetadataValues(manga: Manga, metadata: RaisedSearchMetadata) {
         if (metadata is MangaDexSearchMetadata) {
             metadata.follow_status?.let {
-                local_text.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
-                local_text.isVisible = true
+                binding.localText.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
+                binding.localText.isVisible = true
             }
         }
     }
@@ -60,16 +58,16 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
 
     override fun setImage(manga: Manga) {
         // For rounded corners
-        card.clipToOutline = true
+        binding.card.clipToOutline = true
 
-        GlideApp.with(view.context).clear(thumbnail)
+        GlideApp.with(view.context).clear(binding.thumbnail)
         if (!manga.thumbnail_url.isNullOrEmpty()) {
             GlideApp.with(view.context)
                 .load(manga.toMangaThumbnail())
                 .diskCacheStrategy(DiskCacheStrategy.DATA)
                 .centerCrop()
                 .placeholder(android.R.color.transparent)
-                .into(StateImageViewTarget(thumbnail, progress))
+                .into(StateImageViewTarget(binding.thumbnail, binding.progress))
         }
     }
 }

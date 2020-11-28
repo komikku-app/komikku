@@ -2,15 +2,15 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.view.View
+import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationSourceItemBinding
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import uy.kohesive.injekt.injectLazy
 
 class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
-    BaseFlexibleViewHolder(view, adapter) {
+    FlexibleViewHolder(view, adapter) {
     val binding = MigrationSourceItemBinding.bind(view)
     init {
         setDragHandleView(binding.reorder)

@@ -2,8 +2,8 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.view.View
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import exh.metadata.metadata.base.RaisedSearchMetadata
 
 /**
@@ -13,7 +13,7 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
  * @param adapter the adapter handling this holder.
  */
 abstract class SourceHolder(view: View, adapter: FlexibleAdapter<*>) :
-    BaseFlexibleViewHolder(view, adapter) {
+    FlexibleViewHolder(view, adapter) {
 
     /**
      * Method called from [CatalogueAdapter.onBindViewHolder]. It updates the data for this

@@ -5,6 +5,7 @@ import android.widget.PopupMenu
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -15,7 +16,6 @@ import eu.kanade.tachiyomi.databinding.MigrationProcessItemBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -36,7 +36,7 @@ import java.text.DecimalFormat
 class MigrationProcessHolder(
     private val view: View,
     private val adapter: MigrationProcessAdapter
-) : BaseFlexibleViewHolder(view, adapter) {
+) : FlexibleViewHolder(view, adapter) {
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
 

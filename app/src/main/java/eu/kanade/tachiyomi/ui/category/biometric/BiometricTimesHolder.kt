@@ -2,9 +2,8 @@ package eu.kanade.tachiyomi.ui.category.biometric
 
 import android.view.View
 import androidx.core.view.isVisible
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.categories_item.reorder
-import kotlinx.android.synthetic.main.categories_item.title
+import eu.davidea.viewholders.FlexibleViewHolder
+import eu.kanade.tachiyomi.databinding.CategoriesItemBinding
 import kotlin.time.ExperimentalTime
 
 /**
@@ -13,7 +12,10 @@ import kotlin.time.ExperimentalTime
  * @param view The view used by category items.
  * @param adapter The adapter containing this holder.
  */
-class BiometricTimesHolder(view: View, val adapter: BiometricTimesAdapter) : BaseFlexibleViewHolder(view, adapter) {
+class BiometricTimesHolder(view: View, val adapter: BiometricTimesAdapter) : FlexibleViewHolder(view, adapter) {
+
+    private val binding = CategoriesItemBinding.bind(view)
+
     /**
      * Binds this holder with the given category.
      *
@@ -22,7 +24,7 @@ class BiometricTimesHolder(view: View, val adapter: BiometricTimesAdapter) : Bas
     @OptIn(ExperimentalTime::class)
     fun bind(timeRange: TimeRange) {
         // Set capitalized title.
-        title.text = timeRange.getFormattedString(itemView.context)
-        reorder.isVisible = false
+        binding.title.text = timeRange.getFormattedString(itemView.context)
+        binding.reorder.isVisible = false
     }
 }

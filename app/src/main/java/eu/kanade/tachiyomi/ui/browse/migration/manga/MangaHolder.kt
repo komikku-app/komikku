@@ -6,18 +6,18 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.databinding.SourceListItemBinding
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 
 class MangaHolder(
     view: View,
     adapter: FlexibleAdapter<*>
-) : BaseFlexibleViewHolder(view, adapter) {
+) : FlexibleViewHolder(view, adapter) {
 
-    val binding = SourceListItemBinding.bind(view)
+    private val binding = SourceListItemBinding.bind(view)
 
     fun bind(item: MangaItem) {
         // Update the title of the manga.

@@ -4,7 +4,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
+import eu.davidea.viewholders.FlexibleViewHolder
 
 /**
  * Generic class used to hold the displayed data of a manga in the library.
@@ -18,7 +18,7 @@ abstract class LibraryHolder(
     // SY -->
     val adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
     // SY <--
-) : BaseFlexibleViewHolder(view, adapter) {
+) : FlexibleViewHolder(view, adapter) {
 
     /**
      * Method called from [LibraryCategoryAdapter.onBindViewHolder]. It updates the data for this

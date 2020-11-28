@@ -11,18 +11,12 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
+import eu.kanade.tachiyomi.databinding.SourceEnhancedEhentaiListItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.SourceTagsUtil
-import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.date_posted
-import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.genre
-import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.language
-import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.rating_bar
-import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.thumbnail
-import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.title
-import kotlinx.android.synthetic.main.source_enhanced_ehentai_list_item.uploader
 import java.util.Date
 
 /**
@@ -36,6 +30,8 @@ import java.util.Date
 class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleAdapter<*>) :
     SourceHolder(view, adapter) {
 
+    private val binding = SourceEnhancedEhentaiListItemBinding.bind(view)
+
     private val favoriteColor = view.context.getResourceColor(R.attr.colorOnSurface, 0.38f)
     private val unfavoriteColor = view.context.getResourceColor(R.attr.colorOnSurface)
 
@@ -46,11 +42,11 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
      * @param manga the manga to bind.
      */
     override fun onSetValues(manga: Manga) {
-        title.text = manga.title
-        title.setTextColor(if (manga.favorite) favoriteColor else unfavoriteColor)
+        binding.title.text = manga.title
+        binding.title.setTextColor(if (manga.favorite) favoriteColor else unfavoriteColor)
 
         // Set alpha of thumbnail.
-        thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
+        binding.thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
 
         setImage(manga)
     }
@@ -59,7 +55,7 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
         if (metadata !is EHentaiSearchMetadata) return
 
         if (metadata.uploader != null) {
-            uploader.text = metadata.uploader
+            binding.uploader.text = metadata.uploader
         }
 
         val pair = when (metadata.genre) {
@@ -77,18 +73,18 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
         }
 
         if (pair.first.isNotBlank()) {
-            genre.setBackgroundColor(Color.parseColor(pair.first))
-            genre.text = view.context.getString(pair.second)
-        } else genre.text = metadata.genre
+            binding.genre.setBackgroundColor(Color.parseColor(pair.first))
+            binding.genre.text = view.context.getString(pair.second)
+        } else binding.genre.text = metadata.genre
 
-        metadata.datePosted?.let { date_posted.text = MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
+        metadata.datePosted?.let { binding.datePosted.text = MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
 
-        metadata.averageRating?.let { rating_bar.rating = it.toFloat() }
+        metadata.averageRating?.let { binding.ratingBar.rating = it.toFloat() }
 
         val locale = SourceTagsUtil.getLocaleSourceUtil(metadata.tags.firstOrNull { it.namespace == "language" }?.name)
         val pageCount = metadata.length
 
-        language.text = if (locale != null && pageCount != null) {
+        binding.language.text = if (locale != null && pageCount != null) {
             view.resources.getQuantityString(R.plurals.browse_language_and_pages, pageCount, pageCount, locale.toLanguageTag().toUpperCase())
         } else if (pageCount != null) {
             view.resources.getQuantityString(R.plurals.num_pages, pageCount, pageCount)
@@ -96,7 +92,7 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
     }
 
     override fun setImage(manga: Manga) {
-        GlideApp.with(view.context).clear(thumbnail)
+        GlideApp.with(view.context).clear(binding.thumbnail)
 
         if (!manga.thumbnail_url.isNullOrEmpty()) {
             val radius = view.context.resources.getDimensionPixelSize(R.dimen.card_radius)
@@ -107,7 +103,7 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
                 .apply(requestOptions)
                 .dontAnimate()
                 .placeholder(android.R.color.transparent)
-                .into(thumbnail)
+                .into(binding.thumbnail)
         }
     }
 }

@@ -8,15 +8,8 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
+import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.util.isLocal
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.badges
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.card
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.download_text
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.local_text
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.play_layout
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.thumbnail
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.title
-import kotlinx.android.synthetic.main.source_comfortable_grid_item.unread_text
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -38,9 +31,11 @@ class LibraryComfortableGridHolder(
 // SY <--
 ) : LibraryCompactGridHolder(view, adapter) {
 
+    private val binding = SourceComfortableGridItemBinding.bind(view)
+
     // SY -->
     init {
-        play_layout.clicks()
+        binding.playLayout.clicks()
             .onEach {
                 playButtonClicked()
             }
@@ -59,41 +54,41 @@ class LibraryComfortableGridHolder(
         manga = item.manga
         // SY <--
         // Update the title of the manga.
-        title.text = item.manga.title
+        binding.title.text = item.manga.title
         // SY -->
-        title.isVisible = hasTitle
+        binding.title.isVisible = hasTitle
         // SY <--
 
         // For rounded corners
-        badges.clipToOutline = true
+        binding.badges.clipToOutline = true
 
         // Update the unread count and its visibility.
-        with(unread_text) {
+        with(binding.unreadText) {
             isVisible = item.unreadCount > 0
             text = item.unreadCount.toString()
         }
         // Update the download count and its visibility.
-        with(download_text) {
+        with(binding.downloadText) {
             isVisible = item.downloadCount > 0
             text = item.downloadCount.toString()
         }
         // set local visibility if its local manga
-        local_text.isVisible = item.manga.isLocal()
+        binding.localText.isVisible = item.manga.isLocal()
 
         // SY -->
-        play_layout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
+        binding.playLayout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
         // SY <--
 
         // For rounded corners
-        card.clipToOutline = true
+        binding.card.clipToOutline = true
 
         // Update the cover.
-        GlideApp.with(view.context).clear(thumbnail)
+        GlideApp.with(view.context).clear(binding.thumbnail)
         GlideApp.with(view.context)
             .load(item.manga.toMangaThumbnail())
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .centerCrop()
             .dontAnimate()
-            .into(thumbnail)
+            .into(binding.thumbnail)
     }
 }

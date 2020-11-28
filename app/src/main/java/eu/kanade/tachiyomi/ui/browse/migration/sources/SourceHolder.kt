@@ -2,15 +2,15 @@ package eu.kanade.tachiyomi.ui.browse.migration.sources
 
 import android.view.View
 import androidx.core.view.isVisible
+import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.SourceMainControllerCardItemBinding
 import eu.kanade.tachiyomi.source.icon
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
 
 class SourceHolder(view: View, val adapter: SourceAdapter) :
-    BaseFlexibleViewHolder(view, adapter) {
+    FlexibleViewHolder(view, adapter) {
 
-    val binding = SourceMainControllerCardItemBinding.bind(view)
+    private val binding = SourceMainControllerCardItemBinding.bind(view)
 
     // SY -->
     init {

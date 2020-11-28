@@ -2,9 +2,8 @@ package eu.kanade.tachiyomi.ui.category.sources
 
 import android.view.View
 import androidx.core.view.isVisible
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.categories_item.reorder
-import kotlinx.android.synthetic.main.categories_item.title
+import eu.davidea.viewholders.FlexibleViewHolder
+import eu.kanade.tachiyomi.databinding.CategoriesItemBinding
 
 /**
  * Holder used to display category items.
@@ -12,7 +11,10 @@ import kotlinx.android.synthetic.main.categories_item.title
  * @param view The view used by category items.
  * @param adapter The adapter containing this holder.
  */
-class SourceCategoryHolder(view: View, val adapter: SourceCategoryAdapter) : BaseFlexibleViewHolder(view, adapter) {
+class SourceCategoryHolder(view: View, val adapter: SourceCategoryAdapter) : FlexibleViewHolder(view, adapter) {
+
+    private val binding = CategoriesItemBinding.bind(view)
+
     /**
      * Binds this holder with the given category.
      *
@@ -20,7 +22,7 @@ class SourceCategoryHolder(view: View, val adapter: SourceCategoryAdapter) : Bas
      */
     fun bind(category: String) {
         // Set capitalized title.
-        title.text = category
-        reorder.isVisible = false
+        binding.title.text = category
+        binding.reorder.isVisible = false
     }
 }

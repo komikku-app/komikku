@@ -1,9 +1,8 @@
 package eu.kanade.tachiyomi.ui.category.genre
 
 import android.view.View
-import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.categories_item.reorder
-import kotlinx.android.synthetic.main.categories_item.title
+import eu.davidea.viewholders.FlexibleViewHolder
+import eu.kanade.tachiyomi.databinding.CategoriesItemBinding
 
 /**
  * Holder used to display category items.
@@ -11,10 +10,12 @@ import kotlinx.android.synthetic.main.categories_item.title
  * @param view The view used by category items.
  * @param adapter The adapter containing this holder.
  */
-class SortTagHolder(view: View, val adapter: SortTagAdapter) : BaseFlexibleViewHolder(view, adapter) {
+class SortTagHolder(view: View, val adapter: SortTagAdapter) : FlexibleViewHolder(view, adapter) {
+
+    private val binding = CategoriesItemBinding.bind(view)
 
     init {
-        setDragHandleView(reorder)
+        setDragHandleView(binding.reorder)
     }
 
     /**
@@ -23,7 +24,7 @@ class SortTagHolder(view: View, val adapter: SortTagAdapter) : BaseFlexibleViewH
      * @param tag The tag to bind.
      */
     fun bind(tag: String) {
-        title.text = tag
+        binding.title.text = tag
     }
 
     /**
