@@ -23,7 +23,6 @@ object PreferenceValues {
         default,
         blue,
         amoled,
-        gray,
         red,
     }
 
