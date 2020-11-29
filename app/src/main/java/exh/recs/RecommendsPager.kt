@@ -10,12 +10,11 @@ import eu.kanade.tachiyomi.util.lang.asObservable
 import exh.log.maybeInjectEHLogger
 import exh.util.MangaType
 import exh.util.mangaType
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -31,7 +30,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 
 abstract class API(_endpoint: String) {
@@ -39,17 +37,13 @@ abstract class API(_endpoint: String) {
     val client = OkHttpClient.Builder()
         .maybeInjectEHLogger()
         .build()
-    val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     abstract suspend fun getRecsBySearch(search: String): List<SMangaImpl>
 }
 
 class MyAnimeList : API("https://api.jikan.moe/v3/") {
     private suspend fun getRecsById(id: String): List<SMangaImpl> {
-        val httpUrl = endpoint.toHttpUrlOrNull()
-        if (httpUrl == null) {
-            throw Exception("Could not convert endpoint url")
-        }
+        val httpUrl = endpoint.toHttpUrlOrNull() ?: throw Exception("Could not convert endpoint url")
         val urlBuilder = httpUrl.newBuilder()
         urlBuilder.addPathSegment("manga")
         urlBuilder.addPathSegment(id)
@@ -62,32 +56,28 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
             .build()
 
         val response = client.newCall(request).await()
-        val body = response.body?.string().orEmpty()
+        val body = withContext(Dispatchers.IO) { response.body?.string().orEmpty() }
         if (body.isEmpty()) {
             throw Exception("Null Response")
         }
         val data = Json.decodeFromString<JsonObject>(body)
         val recommendations = data["recommendations"] as? JsonArray
             ?: throw Exception("Unexpected response")
-        val recs = recommendations.map { rec ->
+        return recommendations.map { rec ->
             rec as? JsonObject ?: throw Exception("Invalid json")
             Timber.tag("RECOMMENDATIONS").d("MYANIMELIST > RECOMMENDATION: %s", rec["title"]!!.jsonPrimitive.content)
             SMangaImpl().apply {
-                this.title = rec["title"]!!.jsonPrimitive.content
-                this.thumbnail_url = rec["image_url"]!!.jsonPrimitive.content
-                this.initialized = true
+                title = rec["title"]!!.jsonPrimitive.content
+                thumbnail_url = rec["image_url"]!!.jsonPrimitive.content
+                initialized = true
                 this.url = rec["url"]!!.jsonPrimitive.content
             }
         }
-        return recs
     }
 
     override suspend fun getRecsBySearch(search: String): List<SMangaImpl> {
         val httpUrl =
-            endpoint.toHttpUrlOrNull()
-        if (httpUrl == null) {
-            throw Exception("Could not convert endpoint url")
-        }
+            endpoint.toHttpUrlOrNull() ?: throw Exception("Could not convert endpoint url")
         val urlBuilder = httpUrl.newBuilder()
         urlBuilder.addPathSegment("search")
         urlBuilder.addPathSegment("manga")
@@ -100,7 +90,7 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
             .build()
 
         val response = client.newCall(request).await()
-        val body = response.body?.string().orEmpty()
+        val body = withContext(Dispatchers.IO) { response.body?.string().orEmpty() }
         if (body.isEmpty()) {
             throw Exception("Null Response")
         }
@@ -183,7 +173,7 @@ class Anilist : API("https://graphql.anilist.co/") {
             .build()
 
         val response = client.newCall(request).await()
-        val body = response.body?.string().orEmpty()
+        val body = withContext(Dispatchers.IO) { response.body?.string().orEmpty() }
         if (body.isEmpty()) {
             throw Exception("Null Response")
         }
@@ -203,17 +193,16 @@ class Anilist : API("https://graphql.anilist.co/") {
             )
         ).last().jsonObject
         val recommendations = result["recommendations"]!!.jsonObject["edges"]!!.jsonArray
-        val recs = recommendations.map {
+        return recommendations.map {
             val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
             Timber.tag("RECOMMENDATIONS").d("ANILIST > RECOMMENDATION: %s", getTitle(rec))
             SMangaImpl().apply {
-                this.title = getTitle(rec)
-                this.thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content
-                this.initialized = true
-                this.url = rec["siteUrl"]!!.jsonPrimitive.content
+                title = getTitle(rec)
+                thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content
+                initialized = true
+                url = rec["siteUrl"]!!.jsonPrimitive.content
             }
         }
-        return recs
     }
 }
 
@@ -228,37 +217,33 @@ open class RecommendsPager(
 
             val apiList = mapOf(preferredApi to API_MAP[preferredApi]!!) + API_MAP.filter { it.key != preferredApi }.toList()
 
-            val recs = supervisorScope {
-                apiList
-                    .asSequence()
-                    .map { (key, api) ->
-                        async(Dispatchers.Default) {
-                            try {
-                                val recs = api.getRecsBySearch(manga.originalTitle).orEmpty()
-                                Timber.tag("RECOMMENDATIONS").d("%s > Results: %s", key, recs.count())
-                                recs
-                            } catch (e: Exception) {
-                                Timber.tag("RECOMMENDATIONS").e("%s > Error: %s", key, e.message)
-                                listOf()
-                            }
-                        }
+            val recs = apiList
+                .asSequence()
+                .map { (key, api) ->
+                    try {
+                        val recs = runBlocking { api.getRecsBySearch(manga.originalTitle) }
+                        Timber.tag("RECOMMENDATIONS").d("%s > Results: %s", key, recs.count())
+                        recs
+                    } catch (e: Exception) {
+                        Timber.tag("RECOMMENDATIONS").e("%s > Error: %s", key, e.message)
+                        listOf()
                     }
-                    .firstOrNull { it.await().isNotEmpty() }
-                    ?.await().orEmpty()
-            }
+                }
+                .firstOrNull { it.isNotEmpty() }
+                .orEmpty()
 
             val page = MangasPage(recs, false)
             emit(page)
         }
-            .asObservable()
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext {
-                if (it.mangas.isNotEmpty()) {
-                    onPageReceived(it)
-                } else {
-                    throw NoResultsException()
+            .onEach {
+                withContext(Dispatchers.Main) {
+                    if (it.mangas.isNotEmpty()) {
+                        onPageReceived(it)
+                    } else {
+                        throw NoResultsException()
+                    }
                 }
-            }
+            }.asObservable()
     }
 
     companion object {
