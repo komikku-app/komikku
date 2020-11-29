@@ -215,7 +215,7 @@ open class RecommendsPager(
         return flow {
             if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
 
-            val apiList = mapOf(preferredApi to API_MAP[preferredApi]!!) + API_MAP.filter { it.key != preferredApi }.toList()
+            val apiList = API_MAP.toList().sortedByDescending { it.first == preferredApi }
 
             val recs = apiList
                 .asSequence()
