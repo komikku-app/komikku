@@ -167,6 +167,13 @@ class ReaderPresenter(
         }.map(::ReaderChapter)
     }
 
+    private var hasTrackers: Boolean = false
+    private val checkTrackers: (Manga) -> Unit = { manga ->
+        val tracks = db.getTracks(manga).executeAsBlocking()
+
+        hasTrackers = tracks.size > 0
+    }
+
     /**
      * Called when the presenter is created. It retrieves the saved active chapter if the process
      * was restored.
@@ -272,6 +279,8 @@ class ReaderPresenter(
         this.meta = metadata
         // SY <--
         if (chapterId == -1L) chapterId = initialChapterId
+
+        checkTrackers(manga)
 
         val context = Injekt.get<Application>()
         val source = sourceManager.getOrStub(manga.source)
@@ -437,7 +446,8 @@ class ReaderPresenter(
 
         // Save last page read and mark as read if needed
         selectedChapter.chapter.last_page_read = page.index
-        if (selectedChapter.pages?.lastIndex == page.index) {
+        val shouldTrack = !preferences.incognitoMode().get() || hasTrackers
+        if (selectedChapter.pages?.lastIndex == page.index && shouldTrack) {
             selectedChapter.chapter.read = true
             // SY -->
             if (manga?.source == EH_SOURCE_ID || manga?.source == EXH_SOURCE_ID) {
@@ -506,16 +516,19 @@ class ReaderPresenter(
 
     /**
      * Saves this [chapter] progress (last read page and whether it's read).
+     * If incognito mode isn't on or has at least 1 tracker
      */
     private fun saveChapterProgress(chapter: ReaderChapter) {
-        db.updateChapterProgress(chapter.chapter).asRxCompletable()
-            .onErrorComplete()
-            .subscribeOn(Schedulers.io())
-            .subscribe()
+        if (!preferences.incognitoMode().get() || hasTrackers) {
+            db.updateChapterProgress(chapter.chapter).asRxCompletable()
+                .onErrorComplete()
+                .subscribeOn(Schedulers.io())
+                .subscribe()
+        }
     }
 
     /**
-     * Saves this [chapter] last read history.
+     * Saves this [chapter] last read history if incognito mode isn't on.
      */
     private fun saveChapterHistory(chapter: ReaderChapter) {
         if (!preferences.incognitoMode().get()) {

@@ -317,7 +317,9 @@ class SourceController(bundle: Bundle? = null) :
      * Opens a catalogue with the given controller.
      */
     private fun openSource(source: CatalogueSource, controller: BrowseSourceController) {
-        preferences.lastUsedSource().set(source.id)
+        if (!preferences.incognitoMode().get()) {
+            preferences.lastUsedSource().set(source.id)
+        }
         parentController!!.router.pushController(controller.withFadeTransaction())
     }
 
