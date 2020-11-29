@@ -55,14 +55,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
-            android:background="?colorPrimary"
-            android:elevation="4dp">
+            android:background="?attr/colorPrimary"
+            app:elevation="0dp">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary" />
+                android:layout_height="?attr/actionBarSize" />
 
             <LinearLayout
                 android:id="@+id/eh_utils"
