@@ -16,7 +16,6 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.ui.base.controller.applyBottomInsetPadding
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.toast
@@ -109,8 +108,6 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 spanCount = controller.mangaPerRow
             }
         }
-
-        controller.applyBottomInsetPadding(recycler)
 
         adapter = LibraryCategoryAdapter(this, controller)
 
