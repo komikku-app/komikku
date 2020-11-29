@@ -99,8 +99,8 @@ object SettingsSearchHelper {
         pref: Preference,
         breadcrumbs: String = ""
     ) {
-        when (pref) {
-            is PreferenceGroup -> {
+        when {
+            pref is PreferenceGroup -> {
                 val breadcrumbsStr = addLocalizedBreadcrumb(breadcrumbs, "${pref.title}")
 
                 for (x in 0 until pref.preferenceCount) {
@@ -108,7 +108,7 @@ object SettingsSearchHelper {
                     getSettingSearchResult(ctrl, subPref, breadcrumbsStr) // recursion
                 }
             }
-            is PreferenceCategory -> {
+            pref is PreferenceCategory -> {
                 val breadcrumbsStr = addLocalizedBreadcrumb(breadcrumbs, "${pref.title}")
 
                 for (x in 0 until pref.preferenceCount) {
@@ -116,7 +116,7 @@ object SettingsSearchHelper {
                     getSettingSearchResult(ctrl, subPref, breadcrumbsStr) // recursion
                 }
             }
-            else -> {
+            (pref.title != null) -> {
                 // Is an actual preference
                 val title = pref.title.toString()
                 val summary = if (pref.summary != null) pref.summary.toString() else ""
