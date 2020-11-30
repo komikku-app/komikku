@@ -31,6 +31,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import rx.Observable
+import rx.schedulers.Schedulers
 import timber.log.Timber
 
 abstract class API(_endpoint: String) {
@@ -220,6 +221,7 @@ open class RecommendsPager(
                     }
                 }
             }.asObservable()
+            .subscribeOn(Schedulers.io())
     }
 
     companion object {
