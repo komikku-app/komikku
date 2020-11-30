@@ -1,6 +1,8 @@
 package exh.recs
 
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SMangaImpl
@@ -27,7 +29,6 @@ import kotlinx.serialization.json.put
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import rx.Observable
 import timber.log.Timber
@@ -44,59 +45,42 @@ abstract class API(_endpoint: String) {
 class MyAnimeList : API("https://api.jikan.moe/v3/") {
     private suspend fun getRecsById(id: String): List<SMangaImpl> {
         val httpUrl = endpoint.toHttpUrlOrNull() ?: throw Exception("Could not convert endpoint url")
-        val urlBuilder = httpUrl.newBuilder()
-        urlBuilder.addPathSegment("manga")
-        urlBuilder.addPathSegment(id)
-        urlBuilder.addPathSegment("recommendations")
-        val url = urlBuilder.build().toUrl()
-
-        val request = Request.Builder()
-            .url(url)
-            .get()
+        val apiUrl = httpUrl.newBuilder()
+            .addPathSegment("manga")
+            .addPathSegment(id)
+            .addPathSegment("recommendations")
             .build()
+            .toString()
 
-        val response = client.newCall(request).await()
-        val body = withContext(Dispatchers.IO) { response.body?.string().orEmpty() }
-        if (body.isEmpty()) {
-            throw Exception("Null Response")
-        }
+        val response = client.newCall(GET(apiUrl)).await()
+        val body = withContext(Dispatchers.IO) { response.body?.string() } ?: throw Exception("Null Response")
         val data = Json.decodeFromString<JsonObject>(body)
         val recommendations = data["recommendations"] as? JsonArray
-            ?: throw Exception("Unexpected response")
-        return recommendations.map { rec ->
-            rec as? JsonObject ?: throw Exception("Invalid json")
-            Timber.tag("RECOMMENDATIONS").d("MYANIMELIST > RECOMMENDATION: %s", rec["title"]!!.jsonPrimitive.content)
+        return recommendations?.filterIsInstance<JsonObject>()?.map { rec ->
+            Timber.tag("RECOMMENDATIONS").d("MYANIMELIST > RECOMMENDATION: %s", rec["title"]?.jsonPrimitive?.content.orEmpty())
             SMangaImpl().apply {
                 title = rec["title"]!!.jsonPrimitive.content
                 thumbnail_url = rec["image_url"]!!.jsonPrimitive.content
                 initialized = true
-                this.url = rec["url"]!!.jsonPrimitive.content
+                url = rec["url"]!!.jsonPrimitive.content
             }
-        }
+        }.orEmpty()
     }
 
     override suspend fun getRecsBySearch(search: String): List<SMangaImpl> {
-        val httpUrl =
-            endpoint.toHttpUrlOrNull() ?: throw Exception("Could not convert endpoint url")
-        val urlBuilder = httpUrl.newBuilder()
-        urlBuilder.addPathSegment("search")
-        urlBuilder.addPathSegment("manga")
-        urlBuilder.addQueryParameter("q", search)
-        val url = urlBuilder.build().toUrl()
-
-        val request = Request.Builder()
-            .url(url)
-            .get()
+        val httpUrl = endpoint.toHttpUrlOrNull() ?: throw Exception("Could not convert endpoint url")
+        val url = httpUrl.newBuilder()
+            .addPathSegment("search")
+            .addPathSegment("manga")
+            .addQueryParameter("q", search)
             .build()
+            .toString()
 
-        val response = client.newCall(request).await()
-        val body = withContext(Dispatchers.IO) { response.body?.string().orEmpty() }
-        if (body.isEmpty()) {
-            throw Exception("Null Response")
-        }
+        val response = client.newCall(GET(url)).await()
+        val body = withContext(Dispatchers.IO) { response.body?.string() } ?: throw Exception("Null Response")
         val data = Json.decodeFromString<JsonObject>(body)
-        val results = data["results"] as? JsonArray ?: throw Exception("Unexpected response")
-        if (results.size <= 0) {
+        val results = data["results"] as? JsonArray
+        if (results.isNullOrEmpty()) {
             throw Exception("'$search' not found")
         }
         val result = results.first().jsonObject
@@ -165,23 +149,14 @@ class Anilist : API("https://graphql.anilist.co/") {
             put("query", query)
             put("variables", variables)
         }
-        val payloadBody =
-            payload.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-        val request = Request.Builder()
-            .url(endpoint)
-            .post(payloadBody)
-            .build()
+        val payloadBody = payload.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
-        val response = client.newCall(request).await()
-        val body = withContext(Dispatchers.IO) { response.body?.string().orEmpty() }
-        if (body.isEmpty()) {
-            throw Exception("Null Response")
-        }
-        val data = Json.decodeFromString<JsonObject>(body)["data"] as? JsonObject
-            ?: throw Exception("Unexpected response")
-        val page = data["Page"]!!.jsonObject
-        val media = page["media"]!!.jsonArray
-        if (media.size <= 0) {
+        val response = client.newCall(POST(endpoint, body = payloadBody)).await()
+        val body = withContext(Dispatchers.IO) { response.body?.string() } ?: throw Exception("Null Response")
+        val data = Json.decodeFromString<JsonObject>(body)["data"] as? JsonObject ?: throw Exception("Unexpected response")
+
+        val media = data["Page"]?.jsonObject?.get("media")?.jsonArray
+        if (media.isNullOrEmpty()) {
             throw Exception("'$search' not found")
         }
         val result = media.sortedWith(
@@ -192,17 +167,18 @@ class Anilist : API("https://graphql.anilist.co/") {
                 { countOccurrence(it.jsonObject["synonyms"]!!.jsonArray, search) > 0 }
             )
         ).last().jsonObject
-        val recommendations = result["recommendations"]!!.jsonObject["edges"]!!.jsonArray
-        return recommendations.map {
+
+        return result["recommendations"]?.jsonObject?.get("edges")?.jsonArray?.map {
             val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
-            Timber.tag("RECOMMENDATIONS").d("ANILIST > RECOMMENDATION: %s", getTitle(rec))
+            val recTitle = getTitle(rec)
+            Timber.tag("RECOMMENDATIONS").d("ANILIST > RECOMMENDATION: %s", recTitle)
             SMangaImpl().apply {
-                title = getTitle(rec)
+                title = recTitle
                 thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content
                 initialized = true
                 url = rec["siteUrl"]!!.jsonPrimitive.content
             }
-        }
+        }.orEmpty()
     }
 }
 
