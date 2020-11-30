@@ -198,7 +198,7 @@ open class RecommendsPager(
                 .asSequence()
                 .map { (key, api) ->
                     try {
-                        val recs = runBlocking { api.getRecsBySearch(manga.originalTitle) }
+                        val recs = runBlocking(Dispatchers.IO) { api.getRecsBySearch(manga.originalTitle) }
                         Timber.tag("RECOMMENDATIONS").d("%s > Results: %s", key, recs.count())
                         recs
                     } catch (e: Exception) {
