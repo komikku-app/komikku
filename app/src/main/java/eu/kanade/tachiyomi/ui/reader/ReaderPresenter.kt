@@ -500,7 +500,7 @@ class ReaderPresenter(
         // SY -->
         val manga = manga
         // SY <--
-        if (removeAfterReadSlots != -1 && chapterToDelete != null && (manga == null || manga.shouldDeleteChapters(db, preferences)) /* SY <-- */) {
+        if (removeAfterReadSlots != -1 && chapterToDelete != null /* SY --> */ && (manga == null || manga.shouldDeleteChapters(db, preferences)) /* SY <-- */) {
             enqueueDeleteReadChapters(chapterToDelete)
         }
     }
