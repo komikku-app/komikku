@@ -49,7 +49,7 @@ class MangaDexSimilarController(bundle: Bundle) : BrowseSourceController(bundle)
 
     override fun onAddPageError(error: Throwable) {
         super.onAddPageError(error)
-        binding.emptyView.show("No Similar Manga found")
+        binding.emptyView.show(activity!!.getString(R.string.similar_no_results))
     }
 
     companion object {

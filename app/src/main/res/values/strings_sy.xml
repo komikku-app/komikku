@@ -604,6 +604,7 @@
     <string name="similar_credit_message">
         For more information and to view the source code:\n%s
     </string>
+    <string name="similar_no_results">No Similar Manga found</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">
