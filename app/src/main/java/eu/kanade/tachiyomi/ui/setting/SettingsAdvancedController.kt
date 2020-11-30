@@ -263,7 +263,7 @@ class SettingsAdvancedController : SettingsController() {
                 defaultValue = true
 
                 onChange {
-                    if (preferences.eh_isHentaiEnabled().get()) {
+                    if (preferences.isHentaiEnabled().get()) {
                         if (EH_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
                             BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
                         }

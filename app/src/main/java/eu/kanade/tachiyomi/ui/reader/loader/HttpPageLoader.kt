@@ -21,7 +21,6 @@ import rx.subscriptions.CompositeSubscription
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.PriorityBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
@@ -32,11 +31,11 @@ import kotlin.math.min
 class HttpPageLoader(
     private val chapter: ReaderChapter,
     private val source: HttpSource,
-    private val chapterCache: ChapterCache = Injekt.get()
+    private val chapterCache: ChapterCache = Injekt.get(),
+    // SY -->
+    private val preferences: PreferencesHelper = Injekt.get()
+// SY <--
 ) : PageLoader() {
-    // EXH -->
-    private val prefs: PreferencesHelper by injectLazy()
-    // EXH <--
 
     /**
      * A queue used to manage requests one by one while allowing priorities.
@@ -48,11 +47,11 @@ class HttpPageLoader(
      */
     private val subscriptions = CompositeSubscription()
 
-    private val preloadSize = /* SY --> */ prefs.eh_preload_size().get() /* SY <-- */
+    private val preloadSize = /* SY --> */ preferences.preloadSize().get() /* SY <-- */
 
     init {
         // EXH -->
-        repeat(prefs.eh_readerThreads().get()) {
+        repeat(preferences.readerThreads().get()) {
             // EXH <--
             subscriptions += Observable.defer { Observable.just(queue.take().page) }
                 .filter { it.status == Page.QUEUE }
@@ -110,7 +109,7 @@ class HttpPageLoader(
                     // Don't trust sources and use our own indexing
                     ReaderPage(index, page.url, page.imageUrl)
                 }
-                if (prefs.eh_aggressivePageLoading().get()) {
+                if (preferences.aggressivePageLoading().get()) {
                     rp.mapNotNull {
                         if (it.status == Page.QUEUE) {
                             PriorityPage(it, 0)
@@ -193,7 +192,7 @@ class HttpPageLoader(
             page.imageUrl = null
         }
 
-        if (prefs.eh_readerInstantRetry().get()) // EXH <--
+        if (preferences.readerInstantRetry().get()) // EXH <--
             {
                 boostPage(page)
             } else {
@@ -262,16 +261,16 @@ class HttpPageLoader(
             }
             .doOnNext {
                 // SY -->
-                val readerTheme = prefs.readerTheme().get()
+                val readerTheme = preferences.readerTheme().get()
                 if (readerTheme >= 3) {
                     val stream = chapterCache.getImageFile(imageUrl).inputStream()
                     val image = BitmapFactory.decodeStream(stream)
                     page.bg = ImageUtil.autoSetBackground(
                         image,
                         readerTheme == 3,
-                        prefs.context
+                        preferences.context
                     )
-                    page.bgType = PagerPageHolder.getBGType(readerTheme, prefs.context)
+                    page.bgType = PagerPageHolder.getBGType(readerTheme, preferences.context)
                     stream.close()
                 }
                 // SY <--

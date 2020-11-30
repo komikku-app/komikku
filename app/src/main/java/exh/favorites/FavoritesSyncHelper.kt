@@ -138,7 +138,7 @@ class FavoritesSyncHelper(val context: Context) {
                     db.inTransaction {
                         status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context))
                         val remoteChanges = storage.getChangedRemoteEntries(realm, favorites.first)
-                        val localChanges = if (prefs.eh_readOnlySync().get()) {
+                        val localChanges = if (prefs.exhReadOnlySync().get()) {
                             null // Do not build local changes if they are not going to be applied
                         } else {
                             status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context))
@@ -255,7 +255,7 @@ class FavoritesSyncHelper(val context: Context) {
         if (!explicitlyRetryExhRequest(10, request)) {
             val errorString = "Unable to add gallery to remote server: '${gallery.title}' (GID: ${gallery.gid})!"
 
-            if (prefs.eh_lenientSync().get()) {
+            if (prefs.exhLenientSync().get()) {
                 errorList += errorString
             } else {
                 status.onNext(FavoritesSyncStatus.Error(errorString))
@@ -305,7 +305,7 @@ class FavoritesSyncHelper(val context: Context) {
             if (!explicitlyRetryExhRequest(10, request)) {
                 val errorString = context.getString(R.string.favorites_sync_unable_to_delete)
 
-                if (prefs.eh_lenientSync().get()) {
+                if (prefs.exhLenientSync().get()) {
                     errorList += errorString
                 } else {
                     status.onNext(FavoritesSyncStatus.Error(errorString))
@@ -397,7 +397,7 @@ class FavoritesSyncHelper(val context: Context) {
                     is GalleryAddEvent.Fail.UnknownType -> context.getString(R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl)
                 }
 
-                if (prefs.eh_lenientSync().get()) {
+                if (prefs.exhLenientSync().get()) {
                     errorList += errorString
                 } else {
                     status.onNext(FavoritesSyncStatus.Error(errorString))

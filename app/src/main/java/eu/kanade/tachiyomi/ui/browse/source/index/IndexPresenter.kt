@@ -226,7 +226,7 @@ open class IndexPresenter(
     private val filterSerializer = FilterSerializer()
 
     fun loadSearches(): List<EXHSavedSearch> {
-        val loaded = preferences.eh_savedSearches().get()
+        val loaded = preferences.savedSearches().get()
         return loaded.map {
             try {
                 val id = it.substringBefore(':').toLong()

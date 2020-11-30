@@ -201,7 +201,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             initWhenIdle {
                 // Upload settings
                 if (preferences.enableExhentai().get() &&
-                    preferences.eh_showSettingsUploadWarning().get()
+                    preferences.exhShowSettingsUploadWarning().get()
                 ) {
                     WarnConfigureDialogController.uploadSettings(router)
                 }
@@ -212,7 +212,7 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
             // SY <--
         }
         // SY -->
-        if (!preferences.eh_isHentaiEnabled().get()) {
+        if (!preferences.isHentaiEnabled().get()) {
             if (EH_SOURCE_ID !in BlacklistedSources.HIDDEN_SOURCES) {
                 BlacklistedSources.HIDDEN_SOURCES += EH_SOURCE_ID
             }

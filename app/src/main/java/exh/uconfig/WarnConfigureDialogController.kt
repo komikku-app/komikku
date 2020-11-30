@@ -18,7 +18,7 @@ class WarnConfigureDialogController : DialogController() {
             .title(R.string.settings_profile_note)
             .message(R.string.settings_profile_note_message)
             .positiveButton(android.R.string.ok) {
-                prefs.eh_showSettingsUploadWarning().set(false)
+                prefs.exhShowSettingsUploadWarning().set(false)
                 ConfiguringDialogController().showDialog(router)
             }
             .cancelable(false)
@@ -26,7 +26,7 @@ class WarnConfigureDialogController : DialogController() {
 
     companion object {
         fun uploadSettings(router: Router) {
-            if (Injekt.get<PreferencesHelper>().eh_showSettingsUploadWarning().get()) {
+            if (Injekt.get<PreferencesHelper>().exhShowSettingsUploadWarning().get()) {
                 WarnConfigureDialogController().showDialog(router)
             } else {
                 ConfiguringDialogController().showDialog(router)

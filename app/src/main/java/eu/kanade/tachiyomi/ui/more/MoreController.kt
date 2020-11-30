@@ -87,7 +87,7 @@ class MoreController :
                 }
             }
             // SY -->
-            if (preferences.eh_isHentaiEnabled().get()) {
+            if (preferences.isHentaiEnabled().get()) {
                 preference {
                     titleRes = R.string.eh_batch_add
                     iconRes = R.drawable.ic_playlist_add_black_24dp

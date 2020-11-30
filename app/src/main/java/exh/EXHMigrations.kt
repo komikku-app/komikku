@@ -48,7 +48,7 @@ object EXHMigrations {
      */
     fun upgrade(preferences: PreferencesHelper): Boolean {
         val context = preferences.context
-        val oldVersion = preferences.eh_lastVersionCode().get()
+        val oldVersion = preferences.ehLastVersionCode().get()
         try {
             if (oldVersion < BuildConfig.VERSION_CODE) {
                 // Fresh install
@@ -259,7 +259,7 @@ object EXHMigrations {
 
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
 
-                preferences.eh_lastVersionCode().set(BuildConfig.VERSION_CODE)
+                preferences.ehLastVersionCode().set(BuildConfig.VERSION_CODE)
 
                 return true
             }

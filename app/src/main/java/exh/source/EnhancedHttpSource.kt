@@ -229,7 +229,7 @@ class EnhancedHttpSource(
     override fun getFilterList() = source().getFilterList()
 
     fun source(): HttpSource {
-        return if (prefs.eh_delegateSources().get()) {
+        return if (prefs.delegateSources().get()) {
             enhancedSource
         } else {
             originalSource

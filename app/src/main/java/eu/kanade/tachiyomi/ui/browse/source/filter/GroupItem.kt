@@ -20,7 +20,7 @@ class GroupItem(val filter: Filter.Group<*>) : AbstractExpandableHeaderItem<Grou
 
     init {
         // --> EH
-        isExpanded = Injekt.get<PreferencesHelper>().eh_expandFilters().get()
+        isExpanded = Injekt.get<PreferencesHelper>().expandFilters().get()
         // <-- EH
     }
 

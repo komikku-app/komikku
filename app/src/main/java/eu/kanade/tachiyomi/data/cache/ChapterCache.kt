@@ -56,10 +56,10 @@ class ChapterCache(private val context: Context) {
 
     /** Cache class used for cache management.  */
     // --> EH
-    private var diskCache = setupDiskCache(prefs.eh_cacheSize().get().toLong())
+    private var diskCache = setupDiskCache(prefs.cacheSize().get().toLong())
 
     init {
-        prefs.eh_cacheSize().asFlow()
+        prefs.cacheSize().asFlow()
             .onEach {
                 // Save old cache for destruction later
                 val oldCache = diskCache

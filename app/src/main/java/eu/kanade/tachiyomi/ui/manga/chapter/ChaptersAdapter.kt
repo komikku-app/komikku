@@ -35,7 +35,7 @@ class ChaptersAdapter(
     val dateFormat: DateFormat = preferences.dateFormat()
 
     // SY -->
-    val preserveReadingPosition: Boolean = preferences.eh_preserveReadingPosition().get()
+    val preserveReadingPosition: Boolean = preferences.preserveReadingPosition().get()
     // SY <--
 
     override fun updateDataSet(items: List<ChapterItem>?) {

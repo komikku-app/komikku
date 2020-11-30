@@ -155,7 +155,7 @@ class ExtensionManager(
 
     // EXH -->
     fun <T : Extension> Iterable<T>.filterNotBlacklisted(): List<T> {
-        val blacklistEnabled = preferences.eh_enableSourceBlacklist().get()
+        val blacklistEnabled = preferences.enableSourceBlacklist().get()
         return filter {
             if (it.isBlacklisted(blacklistEnabled)) {
                 XLog.tag("ExtensionManager").d("Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
@@ -166,7 +166,7 @@ class ExtensionManager(
 
     fun Extension.isBlacklisted(
         blacklistEnabled: Boolean =
-            preferences.eh_enableSourceBlacklist().get()
+            preferences.enableSourceBlacklist().get()
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }

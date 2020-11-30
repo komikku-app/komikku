@@ -62,14 +62,14 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
         binding!!.login.setMode(ActionProcessButton.Mode.ENDLESS)
         binding!!.login.setOnClickListener { checkLogin() }
 
-        setCredentialsOnView(view)
+        setCredentialsOnView()
 
         binding!!.twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
             binding!!.twoFactorHolder.isVisible = isChecked
         }
     }
 
-    private fun setCredentialsOnView(view: View) {
+    private fun setCredentialsOnView() {
         binding?.username?.setText(service.getUsername())
         binding?.password?.setText(service.getPassword())
     }

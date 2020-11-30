@@ -441,7 +441,7 @@ open class BrowseSourcePresenter(
 
     // EXH -->
     fun saveSearches(searches: List<EXHSavedSearch>) {
-        val otherSerialized = prefs.eh_savedSearches().get().filter {
+        val otherSerialized = prefs.savedSearches().get().filter {
             !it.startsWith("${source.id}:")
         }
         val newSerialized = searches.map {
@@ -451,11 +451,11 @@ open class BrowseSourcePresenter(
                 put("filters", filterSerializer.serialize(it.filterList))
             }.toString()
         }
-        prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
+        prefs.savedSearches().set((otherSerialized + newSerialized).toSet())
     }
 
     fun loadSearches(): List<EXHSavedSearch> {
-        val loaded = prefs.eh_savedSearches().get()
+        val loaded = prefs.savedSearches().get()
         return loaded.map {
             try {
                 val id = it.substringBefore(':').toLong()

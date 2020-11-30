@@ -71,7 +71,6 @@ import exh.util.defaultReaderType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flow
@@ -430,7 +429,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .launchIn(scope)
 
         binding.ehAutoscrollFreq.setText(
-            preferences.eh_utilAutoscrollInterval().get().let {
+            preferences.autoscrollInterval().get().let {
                 if (it == -1f) {
                     ""
                 } else {
@@ -443,7 +442,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .onEach {
                 setupAutoscroll(
                     if (it) {
-                        preferences.eh_utilAutoscrollInterval().get().toDouble()
+                        preferences.autoscrollInterval().get().toDouble()
                     } else {
                         -1.0
                     }
@@ -457,12 +456,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
                 if (parsed == null || parsed <= 0 || parsed > 9999) {
                     binding.ehAutoscrollFreq.error = "Invalid frequency"
-                    preferences.eh_utilAutoscrollInterval().set(-1f)
+                    preferences.autoscrollInterval().set(-1f)
                     binding.ehAutoscroll.isEnabled = false
                     setupAutoscroll(-1.0)
                 } else {
                     binding.ehAutoscrollFreq.error = null
-                    preferences.eh_utilAutoscrollInterval().set(parsed.toFloat())
+                    preferences.autoscrollInterval().set(parsed.toFloat())
                     binding.ehAutoscroll.isEnabled = true
                     setupAutoscroll(if (binding.ehAutoscroll.isChecked) parsed else -1.0)
                 }
@@ -712,7 +711,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         // SY -->
         val defaultReaderType = manga.defaultReaderType()
-        if (preferences.eh_useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == WEBTOON) {
+        if (preferences.useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == WEBTOON) {
             binding.root.snack(resources.getString(R.string.eh_auto_webtoon_snack), Snackbar.LENGTH_LONG)
         } else if (preferences.showReadingMode()) {
             // SY <--

@@ -239,7 +239,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                 updatedThisIteration++
             }
         } finally {
-            prefs.eh_autoUpdateStats().set(
+            prefs.exhAutoUpdateStats().set(
                 Json.encodeToString(
                     EHentaiUpdaterStats(
                         startTime,
@@ -355,9 +355,9 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
             cancelBackground(context)
 
             val preferences = Injekt.get<PreferencesHelper>()
-            val duration = prefInterval ?: preferences.eh_autoUpdateFrequency().get()
+            val duration = prefInterval ?: preferences.exhAutoUpdateFrequency().get()
             if (duration > 0) {
-                val restrictions = preferences.eh_autoUpdateRequirements()!!
+                val restrictions = preferences.exhAutoUpdateRequirements().get()
                 val acRestriction = "ac" in restrictions
                 val wifiRestriction = "wifi" in restrictions
 

@@ -597,7 +597,7 @@ class ReaderPresenter(
     fun getMangaViewer(): Int {
         val manga = manga ?: return preferences.defaultViewer()
         // SY -->
-        return if (manga.viewer == 0 && preferences.eh_useAutoWebtoon().get()) {
+        return if (manga.viewer == 0 && preferences.useAutoWebtoon().get()) {
             manga.defaultReaderType() ?: if (manga.viewer == 0) preferences.defaultViewer() else manga.viewer
         } else if (manga.viewer == 0) {
             preferences.defaultViewer()

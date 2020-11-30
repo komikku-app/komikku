@@ -195,16 +195,6 @@ object PreferenceKeys {
 
     fun trackToken(syncId: Int) = "track_token_$syncId"
 
-    const val eh_lock_hash = "lock_hash"
-
-    const val eh_lock_salt = "lock_salt"
-
-    const val eh_lock_length = "lock_length"
-
-    const val eh_lock_finger = "lock_finger"
-
-    const val eh_lock_manually = "eh_lock_manually"
-
     const val eh_showSyncIntro = "eh_show_sync_intro"
 
     const val eh_readOnlySync = "eh_sync_read_only"
@@ -224,8 +214,6 @@ object PreferenceKeys {
     const val eh_hathPerksCookie = "eh_hathPerksCookie"
 
     const val eh_enableExHentai = "enable_exhentai"
-
-    const val eh_ts_aspNetCookie = "eh_ts_aspNetCookie"
 
     const val eh_showSettingsUploadWarning = "eh_showSettingsUploadWarning2"
 

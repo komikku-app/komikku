@@ -158,7 +158,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
             backupExtensionInfo(extensionEntries, extensions)
             // SY -->
             root[SAVEDSEARCHES] =
-                Injekt.get<PreferencesHelper>().eh_savedSearches().get().joinToString(separator = "***")
+                Injekt.get<PreferencesHelper>().savedSearches().get().joinToString(separator = "***")
 
             backupMergedMangaReferences(mergedMangaReferenceEntries)
             // SY <--
@@ -514,7 +514,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
 
         val currentSources = newSavedSearches.map { it.first }.toSet()
 
-        newSavedSearches += preferences.eh_savedSearches().get().mapNotNull {
+        newSavedSearches += preferences.savedSearches().get().mapNotNull {
             try {
                 val id = it.substringBefore(':').toLong()
                 val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
@@ -527,7 +527,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
             }
         }.toMutableList()
 
-        val otherSerialized = preferences.eh_savedSearches().get().mapNotNull {
+        val otherSerialized = preferences.savedSearches().get().mapNotNull {
             val sourceId = it.split(":")[0].toLongOrNull() ?: return@mapNotNull null
             if (sourceId in currentSources) return@mapNotNull null
             it
@@ -536,7 +536,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
         val newSerialized = newSavedSearches.map {
             "${it.first}:" + Json.encodeToString(it.second)
         }
-        preferences.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
+        preferences.savedSearches().set((otherSerialized + newSerialized).toSet())
     }
 
     /**

@@ -51,7 +51,7 @@ object SettingsSearchHelper {
         if (MdUtil.getEnabledMangaDexs(preferences).isNotEmpty()) {
             controllers += SettingsMangaDexController::class
         }
-        if (preferences.eh_isHentaiEnabled().get()) {
+        if (preferences.isHentaiEnabled().get()) {
             controllers += SettingsEhController::class
         }
         controllers

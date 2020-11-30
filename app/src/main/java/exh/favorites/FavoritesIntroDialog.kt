@@ -14,7 +14,7 @@ class FavoritesIntroDialog {
         .title(R.string.favorites_sync_notes)
         .message(text = HtmlCompat.fromHtml(context.getString(R.string.favorites_sync_notes_message), HtmlCompat.FROM_HTML_MODE_LEGACY))
         .positiveButton(android.R.string.ok) {
-            prefs.eh_showSyncIntro().set(false)
+            prefs.exhShowSyncIntro().set(false)
         }
         .cancelable(false)
         .show()

@@ -131,7 +131,7 @@ class BrowserActionActivity : AppCompatActivity() {
                     // Wait for both inner scripts to be loaded
                     if (loadedInners >= 2) {
                         // Attempt to autosolve captcha
-                        if (preferencesHelper.eh_autoSolveCaptchas().get()) {
+                        if (preferencesHelper.autoSolveCaptcha().get()) {
                             binding.webview.post {
                                 // 10 seconds to auto-solve captcha
                                 strictValidationStartTime = System.currentTimeMillis() + 1000 * 10
@@ -150,7 +150,7 @@ class BrowserActionActivity : AppCompatActivity() {
             }
         }
 
-        binding.webview.webViewClient = if (actionName == null && preferencesHelper.eh_autoSolveCaptchas().get()) {
+        binding.webview.webViewClient = if (actionName == null && preferencesHelper.autoSolveCaptcha().get()) {
             // Fetch auto-solve credentials early for speed
             credentialsObservable = httpClient.newCall(
                 Request.Builder()

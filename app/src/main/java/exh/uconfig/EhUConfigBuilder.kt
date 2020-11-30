@@ -37,7 +37,7 @@ class EhUConfigBuilder {
             Entry.TitleDisplayLanguage.DEFAULT
         }
 
-        configItems += if (preferences.eh_useOriginalImages().get()) {
+        configItems += if (preferences.exhUseOriginalImages().get()) {
             Entry.UseOriginalImages.YES
         } else {
             Entry.UseOriginalImages.NO
@@ -64,9 +64,9 @@ class EhUConfigBuilder {
         configItems += Entry.TagFilteringThreshold(preferences.ehTagFilterValue().get())
         configItems += Entry.TagWatchingThreshold(preferences.ehTagWatchingValue().get())
 
-        configItems += Entry.LanguageSystem().getLanguages(preferences.eh_settingsLanguages().get().split("\n"))
+        configItems += Entry.LanguageSystem().getLanguages(preferences.exhSettingsLanguages().get().split("\n"))
 
-        configItems += Entry.Categories().categoryConfigs(preferences.eh_EnabledCategories().get().split(",").map { it.toBoolean() })
+        configItems += Entry.Categories().categoryConfigs(preferences.exhEnabledCategories().get().split(",").map { it.toBoolean() })
 
         // Actually build form body
         val formBody = FormBody.Builder()

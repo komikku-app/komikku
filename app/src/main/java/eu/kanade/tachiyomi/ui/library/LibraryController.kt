@@ -425,7 +425,7 @@ class LibraryController(
         menu.findItem(R.id.action_filter).icon.mutate()
 
         // SY -->
-        menu.findItem(R.id.action_sync_favorites).isVisible = preferences.eh_isHentaiEnabled().get()
+        menu.findItem(R.id.action_sync_favorites).isVisible = preferences.isHentaiEnabled().get()
         // SY <--
     }
 
@@ -483,7 +483,7 @@ class LibraryController(
                 router.pushController(MigrationSourcesController().withFadeTransaction())
             }
             R.id.action_sync_favorites -> {
-                if (preferences.eh_showSyncIntro().get()) {
+                if (preferences.exhShowSyncIntro().get()) {
                     activity?.let { FavoritesIntroDialog().show(it) }
                 } else {
                     presenter.favoritesSync.runSync()

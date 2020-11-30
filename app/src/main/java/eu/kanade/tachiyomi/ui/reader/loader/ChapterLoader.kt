@@ -66,7 +66,7 @@ class ChapterLoader(
                 // If the chapter is partially read, set the starting page to the last the user read
                 // otherwise use the requested page.
                 if (!chapter.chapter.read /* --> EH */ || prefs
-                    .eh_preserveReadingPosition()
+                    .preserveReadingPosition()
                     .get() /* <-- EH */
                 ) {
                     chapter.requestedPage = chapter.chapter.last_page_read

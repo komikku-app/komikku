@@ -38,12 +38,12 @@ object DebugFunctions {
     val sourceManager: SourceManager by injectLazy()
 
     fun forceUpgradeMigration() {
-        prefs.eh_lastVersionCode().set(1)
+        prefs.ehLastVersionCode().set(1)
         EXHMigrations.upgrade(prefs)
     }
 
     fun forceSetupJobs() {
-        prefs.eh_lastVersionCode().set(0)
+        prefs.ehLastVersionCode().set(0)
         EXHMigrations.upgrade(prefs)
     }
 
@@ -168,7 +168,7 @@ object DebugFunctions {
         it.favorite && db.getSearchMetadataForManga(it.id!!).executeAsBlocking() == null
     }
 
-    fun clearSavedSearches() = prefs.eh_savedSearches().set(emptySet())
+    fun clearSavedSearches() = prefs.savedSearches().set(emptySet())
 
     fun listAllSources() = sourceManager.getCatalogueSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
@@ -233,7 +233,7 @@ object DebugFunctions {
         runBlocking {
             val source = sourceManager.get(EH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val newSource = sourceManager.get(EXH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
-            val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
+            val savedSearches = prefs.savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != source.id) return@mapNotNull null
@@ -245,7 +245,7 @@ object DebugFunctions {
                     null
                 }
             }.toMutableList()
-            savedSearches += prefs.eh_savedSearches().get().mapNotNull {
+            savedSearches += prefs.savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != newSource.id) return@mapNotNull null
@@ -258,13 +258,13 @@ object DebugFunctions {
                 }
             }.filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
 
-            val otherSerialized = prefs.eh_savedSearches().get().filter {
+            val otherSerialized = prefs.savedSearches().get().filter {
                 !it.startsWith("${newSource.id}:")
             }
             val newSerialized = savedSearches.map {
                 "${newSource.id}:" + Json.encodeToString(it)
             }
-            prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
+            prefs.savedSearches().set((otherSerialized + newSerialized).toSet())
         }
     }
 
@@ -272,7 +272,7 @@ object DebugFunctions {
         runBlocking {
             val source = sourceManager.get(EXH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val newSource = sourceManager.get(EH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
-            val savedSearches = prefs.eh_savedSearches().get().mapNotNull {
+            val savedSearches = prefs.savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != source.id) return@mapNotNull null
@@ -284,7 +284,7 @@ object DebugFunctions {
                     null
                 }
             }.toMutableList()
-            savedSearches += prefs.eh_savedSearches().get().mapNotNull {
+            savedSearches += prefs.savedSearches().get().mapNotNull {
                 try {
                     val id = it.substringBefore(':').toLong()
                     if (id != newSource.id) return@mapNotNull null
@@ -297,13 +297,13 @@ object DebugFunctions {
                 }
             }.filterNot { newSavedSearch -> savedSearches.any { it.name == newSavedSearch.name } }
 
-            val otherSerialized = prefs.eh_savedSearches().get().filter {
+            val otherSerialized = prefs.savedSearches().get().filter {
                 !it.startsWith("${newSource.id}:")
             }
             val newSerialized = savedSearches.map {
                 "${newSource.id}:" + Json.encodeToString(it)
             }
-            prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
+            prefs.savedSearches().set((otherSerialized + newSerialized).toSet())
         }
     }
 }

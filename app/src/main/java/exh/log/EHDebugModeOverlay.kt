@@ -59,7 +59,7 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
         <b>Version code:</b> ${BuildConfig.VERSION_CODE}<br>
         <b>Commit SHA:</b> ${BuildConfig.COMMIT_SHA}<br>
         <b>Log level:</b> ${EHLogLevel.currentLogLevel.name.toLowerCase(Locale.getDefault())}<br>
-        <b>Source blacklist:</b> ${prefs.eh_enableSourceBlacklist().get().asEnabledString()}
+        <b>Source blacklist:</b> ${prefs.enableSourceBlacklist().get().asEnabledString()}
         """.trimIndent()
 
     private fun Boolean.asEnabledString() = if (this) "enabled" else "disabled"

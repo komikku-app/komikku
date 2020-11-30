@@ -159,7 +159,7 @@ class SettingsEhController : SettingsController() {
                 key = PreferenceKeys.eh_useOrigImages
                 defaultValue = false
 
-                onChange { preferences.eh_useOriginalImages().reconfigure() }
+                onChange { preferences.exhUseOriginalImages().reconfigure() }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
                     .launchIn(scope)
@@ -297,14 +297,14 @@ class SettingsEhController : SettingsController() {
                                 ).joinToString("\n")
                             }
 
-                            preferences.eh_settingsLanguages().set(languages)
+                            preferences.exhSettingsLanguages().set(languages)
 
-                            preferences.eh_settingsLanguages().reconfigure()
+                            preferences.exhSettingsLanguages().reconfigure()
                         }
                         .show {
                             val customView = this.view.contentLayout.customView!!
                             val binding = EhDialogLanguagesBinding.bind(customView)
-                            val settingsLanguages = preferences.eh_settingsLanguages().get().split("\n")
+                            val settingsLanguages = preferences.exhSettingsLanguages().get().split("\n")
 
                             val japanese = settingsLanguages[0].split("*").map { it.toBoolean() }
                             val english = settingsLanguages[1].split("*").map { it.toBoolean() }
@@ -420,7 +420,7 @@ class SettingsEhController : SettingsController() {
                             val binding = EhDialogCategoriesBinding.bind(customView)
 
                             with(binding) {
-                                preferences.eh_EnabledCategories().set(
+                                preferences.exhEnabledCategories().set(
                                     listOf(
                                         (!doujinshiCheckbox.isChecked),
                                         (!mangaCheckbox.isChecked),
@@ -436,14 +436,14 @@ class SettingsEhController : SettingsController() {
                                 )
                             }
 
-                            preferences.eh_EnabledCategories().reconfigure()
+                            preferences.exhEnabledCategories().reconfigure()
                         }
                         .show {
                             val customView = this.view.contentLayout.customView!!
                             val binding = EhDialogCategoriesBinding.bind(customView)
 
                             with(binding) {
-                                val list = preferences.eh_EnabledCategories().get().split(",").map { !it.toBoolean() }
+                                val list = preferences.exhEnabledCategories().get().split(",").map { !it.toBoolean() }
                                 doujinshiCheckbox.isChecked = list[0]
                                 mangaCheckbox.isChecked = list[1]
                                 artistCgCheckbox.isChecked = list[2]
@@ -584,7 +584,7 @@ class SettingsEhController : SettingsController() {
                 entryValues = arrayOf("0", "1", "2", "3", "6", "12", "24", "48")
                 defaultValue = "0"
 
-                preferences.eh_autoUpdateFrequency().asFlow()
+                preferences.exhAutoUpdateFrequency().asFlow()
                     .onEach { newVal ->
                         summary = if (newVal == 0) {
                             context.getString(R.string.time_between_batches_summary_1, context.getString(R.string.app_name))
@@ -608,7 +608,7 @@ class SettingsEhController : SettingsController() {
                 entryValues = arrayOf("wifi", "ac")
                 summaryRes = R.string.pref_library_update_restriction_summary
 
-                preferences.eh_autoUpdateFrequency().asFlow()
+                preferences.exhAutoUpdateFrequency().asFlow()
                     .onEach { isVisible = it > 0 }
                     .launchIn(scope)
 
@@ -633,7 +633,7 @@ class SettingsEhController : SettingsController() {
                     scope.launch(Dispatchers.IO) {
                         val updateInfo = try {
                             val stats =
-                                preferences.eh_autoUpdateStats().get().nullIfBlank()?.let {
+                                preferences.exhAutoUpdateStats().get().nullIfBlank()?.let {
                                     Json.decodeFromString<EHentaiUpdaterStats>(it)
                                 }
 

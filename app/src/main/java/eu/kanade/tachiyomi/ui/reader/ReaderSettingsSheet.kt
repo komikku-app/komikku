@@ -6,7 +6,6 @@ import android.widget.Spinner
 import androidx.annotation.ArrayRes
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import androidx.core.view.plusAssign
 import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.tfcporciuncula.flow.Preference
@@ -73,7 +72,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         binding.alwaysShowChapterTransition.bindToPreference(preferences.alwaysShowChapterTransition())
         binding.pageTransitions.bindToPreference(preferences.pageTransitions())
         // SY -->
-        binding.autoWebtoonMode.bindToPreference(preferences.eh_useAutoWebtoon())
+        binding.autoWebtoonMode.bindToPreference(preferences.useAutoWebtoon())
         // SY <--
 
         // If the preference is explicitly disabled, that means the setting was configured since there is a cutout

@@ -681,9 +681,9 @@ class EHentai(
     }
 
     fun spPref() = if (exh) {
-        preferences.eh_exhSettingsProfile()
+        preferences.exhSettingsProfile()
     } else {
-        preferences.eh_ehSettingsProfile()
+        preferences.ehSettingsProfile()
     }
 
     private fun rawCookies(sp: Int): Map<String, String> {
@@ -694,17 +694,17 @@ class EHentai(
             cookies[LoginController.IGNEOUS_COOKIE] = preferences.igneousVal().get()
             cookies["sp"] = sp.toString()
 
-            val sessionKey = preferences.eh_settingsKey().get()
+            val sessionKey = preferences.exhSettingsKey().get()
             if (sessionKey.isNotBlank()) {
                 cookies["sk"] = sessionKey
             }
 
-            val sessionCookie = preferences.eh_sessionCookie().get()
+            val sessionCookie = preferences.exhSessionCookie().get()
             if (sessionCookie.isNotBlank()) {
                 cookies["s"] = sessionCookie
             }
 
-            val hathPerksCookie = preferences.eh_hathPerksCookies().get()
+            val hathPerksCookie = preferences.exhHathPerksCookies().get()
             if (hathPerksCookie.isNotBlank()) {
                 cookies["hath_perks"] = hathPerksCookie
             }
@@ -752,7 +752,7 @@ class EHentai(
                 EHTags.getNameSpaces().map { "$it:" },
                 excludePrefix
             ),
-            if (preferences.eh_watchedListDefaultState().get()) {
+            if (preferences.exhWatchedListDefaultState().get()) {
                 Watched(isEnabled = true)
             } else {
                 Watched(isEnabled = false)

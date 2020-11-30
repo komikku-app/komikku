@@ -72,7 +72,7 @@ class SettingsMainController : SettingsController() {
             onClick { navigateTo(SettingsSecurityController()) }
         }
         // SY -->
-        if (preferences.eh_isHentaiEnabled().get()) {
+        if (preferences.isHentaiEnabled().get()) {
             preference {
                 iconRes = R.drawable.eh_ic_ehlogo_red_24dp
                 iconTint = tintColor

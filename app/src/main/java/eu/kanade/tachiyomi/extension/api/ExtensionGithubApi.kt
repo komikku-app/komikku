@@ -34,7 +34,7 @@ internal class ExtensionGithubApi {
         preferences.lastExtCheck().set(Date().time)
 
         // SY -->
-        val blacklistEnabled = preferences.eh_enableSourceBlacklist().get()
+        val blacklistEnabled = preferences.enableSourceBlacklist().get()
         // SY <--
 
         val installedExtensions = ExtensionLoader.loadExtensions(context)
@@ -86,7 +86,7 @@ internal class ExtensionGithubApi {
     // SY -->
     fun Extension.isBlacklisted(
         blacklistEnabled: Boolean =
-            preferences.eh_enableSourceBlacklist().get()
+            preferences.enableSourceBlacklist().get()
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
