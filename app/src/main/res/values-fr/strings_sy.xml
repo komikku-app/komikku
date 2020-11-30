@@ -572,7 +572,7 @@
 <!--    <string name="no_scanlators">No scanlators available</string>-->
 
     <!-- Similar -->
-    <string name="similar">Manga similaire</string>
+    <string name="similar">Manga similaire %1$s</string>
     <string name="similar_loading_percent">Mise à jour d\'un manga similaire (%1$d / %2$d mis à jour)</string>
     <string name="similar_loading_complete">La mise à jour d\'un manga similaire est terminée</string>
     <string name="similar_loading_complete_error">Erreur en essayant de charger/traiter un manga similaire</string>

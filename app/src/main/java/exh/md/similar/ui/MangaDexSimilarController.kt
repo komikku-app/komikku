@@ -17,12 +17,15 @@ class MangaDexSimilarController(bundle: Bundle) : BrowseSourceController(bundle)
     constructor(manga: Manga, source: CatalogueSource) : this(
         bundleOf(
             MANGA_ID to manga.id!!,
+            MANGA_TITLE to manga.title,
             SOURCE_ID_KEY to source.id
         )
     )
 
+    private val mangaTitle = args.getString(MANGA_TITLE)
+
     override fun getTitle(): String? {
-        return view?.context?.getString(R.string.similar)
+        return view?.context?.getString(R.string.similar, mangaTitle)
     }
 
     override fun createPresenter(): BrowseSourcePresenter {
@@ -51,5 +54,6 @@ class MangaDexSimilarController(bundle: Bundle) : BrowseSourceController(bundle)
 
     companion object {
         const val MANGA_ID = "manga_id"
+        const val MANGA_TITLE = "manga_title"
     }
 }
