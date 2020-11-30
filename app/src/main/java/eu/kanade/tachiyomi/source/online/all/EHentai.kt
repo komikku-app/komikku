@@ -359,7 +359,7 @@ class EHentai(
         it.mapIndexed { i, s ->
             Page(i, s)
         }
-    }!!
+    }!!.doOnNext { pages -> if (pages.any { it.url == "https://$domain/img/509.gif" }) throw Exception("Hit page limit") }
 
     private fun fetchChapterPage(
         chapter: SChapter,
