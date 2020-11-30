@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import com.elvishew.xlog.XLog
-import eu.kanade.tachiyomi.annoations.Nsfw
+import eu.kanade.tachiyomi.annotations.Nsfw
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET

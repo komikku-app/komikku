@@ -212,7 +212,7 @@ class MdUtil {
                     allChapters.remove(it.chapter_number.floor())
                 }
 
-                if (allChapters.size <= 0) return null
+                if (allChapters.isEmpty()) return null
                 return allChapters.size.toString()
             }
             return null
