@@ -16,5 +16,9 @@ fun Manga.shouldDeleteChapters(db: DatabaseHelper, prefs: PreferencesHelper): Bo
             .mapNotNull { it.id }
             .takeUnless { it.isEmpty() } ?: listOf(0)
 
-    return categoriesForManga.intersect(categoriesToNotDeleteFrom).isNotEmpty()
+    // We want to return false if there is intersects
+    // so we use isEmpty to return true if its empty
+    // and false if its not
+    // this hurt my brain
+    return categoriesForManga.intersect(categoriesToNotDeleteFrom).isEmpty()
 }
