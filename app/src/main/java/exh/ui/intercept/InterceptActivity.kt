@@ -17,13 +17,14 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.subjects.BehaviorSubject
 
 class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
-    private var statusSubscription: Subscription? = null
+    private var statusJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,10 +57,9 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
 
     override fun onStart() {
         super.onStart()
-        statusSubscription?.unsubscribe()
-        statusSubscription = status
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
+        statusJob?.cancel()
+        statusJob = status
+            .onEach {
                 when (it) {
                     is InterceptResult.Success -> {
                         binding.interceptProgress.isVisible = false
@@ -87,22 +87,23 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
                     }
                 }
             }
+            .launchIn(scope)
     }
 
     override fun onStop() {
         super.onStop()
-        statusSubscription?.unsubscribe()
+        statusJob?.cancel()
     }
 
     private val galleryAdder = GalleryAdder()
 
-    val status: BehaviorSubject<InterceptResult> = BehaviorSubject.create(InterceptResult.Idle)
+    val status: MutableStateFlow<InterceptResult> = MutableStateFlow(InterceptResult.Idle)
 
     @Synchronized
     fun loadGallery(gallery: String) {
         // Do not load gallery if already loading
         if (status.value is InterceptResult.Idle) {
-            status.onNext(InterceptResult.Loading)
+            status.value = InterceptResult.Loading
             val sources = galleryAdder.pickSource(gallery)
             if (sources.size > 1) {
                 MaterialDialog(this)
@@ -123,14 +124,12 @@ class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
         scope.launch(Dispatchers.IO) {
             val result = galleryAdder.addGallery(this@InterceptActivity, gallery, forceSource = source)
 
-            status.onNext(
-                when (result) {
-                    is GalleryAddEvent.Success -> result.manga.id?.let {
-                        InterceptResult.Success(it)
-                    } ?: InterceptResult.Failure(this@InterceptActivity.getString(R.string.manga_id_is_null))
-                    is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
-                }
-            )
+            status.value = when (result) {
+                is GalleryAddEvent.Success -> result.manga.id?.let {
+                    InterceptResult.Success(it)
+                } ?: InterceptResult.Failure(this@InterceptActivity.getString(R.string.manga_id_is_null))
+                is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
+            }
         }
     }
 }
