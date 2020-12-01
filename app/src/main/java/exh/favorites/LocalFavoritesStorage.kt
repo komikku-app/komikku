@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.util.executeOnIO
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import uy.kohesive.injekt.injectLazy
@@ -20,13 +21,13 @@ class LocalFavoritesStorage {
 
     fun getRealm(): Realm = Realm.getInstance(realmConfig)
 
-    fun getChangedDbEntries(realm: Realm) =
+    suspend fun getChangedDbEntries(realm: Realm) =
         getChangedEntries(
             realm,
             parseToFavoriteEntries(
                 loadDbCategories(
                     db.getFavoriteMangas()
-                        .executeAsBlocking()
+                        .executeOnIO()
                         .asSequence()
                 )
             )
@@ -37,22 +38,19 @@ class LocalFavoritesStorage {
             realm,
             parseToFavoriteEntries(
                 entries.asSequence().map {
-                    Pair(
-                        it.fav,
-                        it.manga.apply {
-                            favorite = true
-                            date_added = System.currentTimeMillis()
-                        }
-                    )
+                    it.fav to it.manga.apply {
+                        favorite = true
+                        date_added = System.currentTimeMillis()
+                    }
                 }
             )
         )
 
-    fun snapshotEntries(realm: Realm) {
+    suspend fun snapshotEntries(realm: Realm) {
         val dbMangas = parseToFavoriteEntries(
             loadDbCategories(
                 db.getFavoriteMangas()
-                    .executeAsBlocking()
+                    .executeOnIO()
                     .asSequence()
             )
         )
@@ -100,19 +98,16 @@ class LocalFavoritesStorage {
                 it.category == entry.category
         }
 
-    private fun loadDbCategories(manga: Sequence<Manga>): Sequence<Pair<Int, Manga>> {
-        val dbCategories = db.getCategories().executeAsBlocking()
+    private suspend fun loadDbCategories(manga: Sequence<Manga>): Sequence<Pair<Int, Manga>> {
+        val dbCategories = db.getCategories().executeOnIO()
 
         return manga.filter(this::validateDbManga).mapNotNull {
             val category = db.getCategoriesForManga(it).executeAsBlocking()
 
-            Pair(
-                dbCategories.indexOf(
-                    category.firstOrNull()
-                        ?: return@mapNotNull null
-                ),
-                it
-            )
+            dbCategories.indexOf(
+                category.firstOrNull()
+                    ?: return@mapNotNull null
+            ) to it
         }
     }
 

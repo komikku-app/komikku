@@ -51,18 +51,20 @@ import exh.favorites.FavoritesSyncStatus
 import exh.mangaDexSourceIds
 import exh.nHentaiSourceIds
 import exh.ui.LoaderManager
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.sample
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.appcompat.queryTextChanges
 import reactivecircus.flowbinding.viewpager.pageSelections
 import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.concurrent.TimeUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.milliseconds
 
 class LibraryController(
     bundle: Bundle? = null,
@@ -145,7 +147,7 @@ class LibraryController(
     // Old sync status
     private var oldSyncStatus: FavoritesSyncStatus? = null
     // Favorites
-    private var favoritesSyncSubscription: Subscription? = null
+    private var favoritesSyncJob: Job? = null
     val loaderManager = LoaderManager()
     // <-- EH
 
@@ -677,18 +679,19 @@ class LibraryController(
     }
 
     // SY -->
+    @OptIn(ExperimentalTime::class)
     override fun onAttach(view: View) {
         super.onAttach(view)
 
         // --> EXH
         cleanupSyncState()
-        favoritesSyncSubscription =
+        favoritesSyncJob =
             presenter.favoritesSync.status
-                .sample(100, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
+                .sample(100.milliseconds)
+                .onEach {
                     updateSyncStatus(it)
                 }
+                .launchIn(scope)
         // <-- EXH
     }
 
@@ -714,8 +717,8 @@ class LibraryController(
 
     // --> EXH
     private fun cleanupSyncState() {
-        favoritesSyncSubscription?.unsubscribe()
-        favoritesSyncSubscription = null
+        favoritesSyncJob?.cancel()
+        favoritesSyncJob = null
         // Close sync status
         favSyncDialog?.dismiss()
         favSyncDialog = null
@@ -733,7 +736,6 @@ class LibraryController(
         favSyncDialog = buildDialog()
             ?.title(R.string.favorites_syncing)
             ?.cancelable(false)
-        // ?.progress(true, 0)
         favSyncDialog?.show()
     }
 
@@ -763,10 +765,10 @@ class LibraryController(
                     ?.cancelable(false)
                     ?.positiveButton(R.string.show_gallery) {
                         openManga(status.manga)
-                        presenter.favoritesSync.status.onNext(FavoritesSyncStatus.Idle(activity!!))
+                        presenter.favoritesSync.status.value = FavoritesSyncStatus.Idle(activity!!)
                     }
                     ?.negativeButton(android.R.string.ok) {
-                        presenter.favoritesSync.status.onNext(FavoritesSyncStatus.Idle(activity!!))
+                        presenter.favoritesSync.status.value = FavoritesSyncStatus.Idle(activity!!)
                     }
                 favSyncDialog?.show()
             }
@@ -779,7 +781,7 @@ class LibraryController(
                     ?.message(text = activity!!.getString(R.string.favorites_sync_error_string, status.message))
                     ?.cancelable(false)
                     ?.positiveButton(android.R.string.ok) {
-                        presenter.favoritesSync.status.onNext(FavoritesSyncStatus.Idle(activity!!))
+                        presenter.favoritesSync.status.value = FavoritesSyncStatus.Idle(activity!!)
                     }
                 favSyncDialog?.show()
             }
@@ -792,7 +794,7 @@ class LibraryController(
                     ?.message(text = activity!!.getString(R.string.favorites_sync_done_errors_message, status.message))
                     ?.cancelable(false)
                     ?.positiveButton(android.R.string.ok) {
-                        presenter.favoritesSync.status.onNext(FavoritesSyncStatus.Idle(activity!!))
+                        presenter.favoritesSync.status.value = FavoritesSyncStatus.Idle(activity!!)
                     }
                 favSyncDialog?.show()
             }

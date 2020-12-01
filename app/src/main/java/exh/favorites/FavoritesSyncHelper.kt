@@ -30,10 +30,10 @@ import exh.util.wifiManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.Request
-import rx.subjects.BehaviorSubject
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -61,7 +61,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private val logger = XLog.tag("EHFavSync").build()
 
-    val status: BehaviorSubject<FavoritesSyncStatus> = BehaviorSubject.create(FavoritesSyncStatus.Idle(context))
+    val status: MutableStateFlow<FavoritesSyncStatus> = MutableStateFlow(FavoritesSyncStatus.Idle(context))
 
     @Synchronized
     fun runSync() {
@@ -69,7 +69,7 @@ class FavoritesSyncHelper(val context: Context) {
             return
         }
 
-        status.onNext(FavoritesSyncStatus.Initializing(context))
+        status.value = FavoritesSyncStatus.Initializing(context)
 
         scope.launch(Dispatchers.IO) { beginSync() }
     }
@@ -77,12 +77,12 @@ class FavoritesSyncHelper(val context: Context) {
     private suspend fun beginSync() {
         // Check if logged in
         if (!prefs.enableExhentai().get()) {
-            status.onNext(FavoritesSyncStatus.Error(context.getString(R.string.please_login)))
+            status.value = FavoritesSyncStatus.Error(context.getString(R.string.please_login))
             return
         }
 
         // Validate library state
-        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context))
+        status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context)
         val libraryManga = db.getLibraryMangas().await()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
@@ -90,10 +90,8 @@ class FavoritesSyncHelper(val context: Context) {
 
             if (it.id in seenManga) {
                 val inCategories = db.getCategoriesForManga(it).await()
-                status.onNext(
-                    FavoritesSyncStatus.BadLibraryState
-                        .MangaInMultipleCategories(it, inCategories, context)
-                )
+                status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(it, inCategories, context)
+
                 logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, it.id))
                 return
             } else {
@@ -103,10 +101,10 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Download remote favorites
         val favorites = try {
-            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_downloading), context = context))
+            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_downloading), context = context)
             exh.fetchFavorites()
         } catch (e: Exception) {
-            status.onNext(FavoritesSyncStatus.Error(context.getString(R.string.favorites_sync_failed_to_featch)))
+            status.value = FavoritesSyncStatus.Error(context.getString(R.string.favorites_sync_failed_to_featch))
             logger.e(context.getString(R.string.favorites_sync_could_not_fetch), e)
             return
         }
@@ -136,17 +134,17 @@ class FavoritesSyncHelper(val context: Context) {
             storage.getRealm().use { realm ->
                 realm.trans {
                     db.inTransaction {
-                        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context))
+                        status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context)
                         val remoteChanges = storage.getChangedRemoteEntries(realm, favorites.first)
                         val localChanges = if (prefs.exhReadOnlySync().get()) {
                             null // Do not build local changes if they are not going to be applied
                         } else {
-                            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context))
+                            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context)
                             storage.getChangedDbEntries(realm)
                         }
 
                         // Apply remote categories
-                        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names), context = context))
+                        status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names), context = context)
                         applyRemoteCategories(favorites.second)
 
                         // Apply change sets
@@ -155,7 +153,7 @@ class FavoritesSyncHelper(val context: Context) {
                             applyChangeSetToRemote(errorList, localChanges)
                         }
 
-                        status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_cleaning_up), context = context))
+                        status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_cleaning_up), context = context)
                         storage.snapshotEntries(realm)
                     }
                 }
@@ -169,7 +167,7 @@ class FavoritesSyncHelper(val context: Context) {
             logger.w(context.getString(R.string.favorites_sync_ignoring_exception), e)
             return
         } catch (e: Exception) {
-            status.onNext(FavoritesSyncStatus.Error(context.getString(R.string.favorites_sync_unknown_error, e.message)))
+            status.value = FavoritesSyncStatus.Error(context.getString(R.string.favorites_sync_unknown_error, e.message))
             logger.e(context.getString(R.string.favorites_sync_sync_error), e)
             return
         } finally {
@@ -188,9 +186,9 @@ class FavoritesSyncHelper(val context: Context) {
         }
 
         if (errorList.isEmpty()) {
-            status.onNext(FavoritesSyncStatus.Idle(context))
+            status.value = FavoritesSyncStatus.Idle(context)
         } else {
-            status.onNext(FavoritesSyncStatus.CompleteWithErrors(errorList))
+            status.value = FavoritesSyncStatus.CompleteWithErrors(errorList)
         }
     }
 
@@ -258,7 +256,7 @@ class FavoritesSyncHelper(val context: Context) {
             if (prefs.exhLenientSync().get()) {
                 errorList += errorString
             } else {
-                status.onNext(FavoritesSyncStatus.Error(errorString))
+                status.value = FavoritesSyncStatus.Error(errorString)
                 throw IgnoredException()
             }
         }
@@ -286,7 +284,7 @@ class FavoritesSyncHelper(val context: Context) {
     private suspend fun applyChangeSetToRemote(errorList: MutableList<String>, changeSet: ChangeSet) {
         // Apply removals
         if (changeSet.removed.isNotEmpty()) {
-            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_removing_galleries, changeSet.removed.size), context = context))
+            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_removing_galleries, changeSet.removed.size), context = context)
 
             val formBody = FormBody.Builder()
                 .add("ddact", "delete")
@@ -308,7 +306,7 @@ class FavoritesSyncHelper(val context: Context) {
                 if (prefs.exhLenientSync().get()) {
                     errorList += errorString
                 } else {
-                    status.onNext(FavoritesSyncStatus.Error(errorString))
+                    status.value = FavoritesSyncStatus.Error(errorString)
                     throw IgnoredException()
                 }
             }
@@ -317,12 +315,10 @@ class FavoritesSyncHelper(val context: Context) {
         // Apply additions
         throttleManager.resetThrottle()
         changeSet.added.forEachIndexed { index, it ->
-            status.onNext(
-                FavoritesSyncStatus.Processing(
-                    context.getString(R.string.favorites_sync_adding_to_remote, index + 1, changeSet.added.size),
-                    needWarnThrottle(),
-                    context
-                )
+            status.value = FavoritesSyncStatus.Processing(
+                context.getString(R.string.favorites_sync_adding_to_remote, index + 1, changeSet.added.size),
+                needWarnThrottle(),
+                context
             )
 
             throttleManager.throttle()
@@ -336,7 +332,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Apply removals
         changeSet.removed.forEachIndexed { index, it ->
-            status.onNext(FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_remove_from_local, index + 1, changeSet.removed.size), context = context))
+            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_remove_from_local, index + 1, changeSet.removed.size), context = context)
             val url = it.getUrl()
 
             // Consider both EX and EH sources
@@ -366,12 +362,10 @@ class FavoritesSyncHelper(val context: Context) {
         // Apply additions
         throttleManager.resetThrottle()
         changeSet.added.forEachIndexed { index, it ->
-            status.onNext(
-                FavoritesSyncStatus.Processing(
-                    context.getString(R.string.favorites_sync_add_to_local, index + 1, changeSet.added.size),
-                    needWarnThrottle(),
-                    context
-                )
+            status.value = FavoritesSyncStatus.Processing(
+                context.getString(R.string.favorites_sync_add_to_local, index + 1, changeSet.added.size),
+                needWarnThrottle(),
+                context
             )
 
             throttleManager.throttle()
@@ -387,7 +381,7 @@ class FavoritesSyncHelper(val context: Context) {
 
             if (result is GalleryAddEvent.Fail) {
                 if (result is GalleryAddEvent.Fail.NotFound) {
-                    XLog.e(context.getString(R.string.favorites_sync_remote_not_exist, it.getUrl()))
+                    XLog.tag("EHFavSync").enableStackTrace(2).e(context.getString(R.string.favorites_sync_remote_not_exist, it.getUrl()))
                     // Skip this gallery, it no longer exists
                     return@forEachIndexed
                 }
@@ -400,7 +394,7 @@ class FavoritesSyncHelper(val context: Context) {
                 if (prefs.exhLenientSync().get()) {
                     errorList += errorString
                 } else {
-                    status.onNext(FavoritesSyncStatus.Error(errorString))
+                    status.value = FavoritesSyncStatus.Error(errorString)
                     throw IgnoredException()
                 }
             } else if (result is GalleryAddEvent.Success) {
