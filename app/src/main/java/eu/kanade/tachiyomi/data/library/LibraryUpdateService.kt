@@ -89,10 +89,14 @@ class LibraryUpdateService(
      */
     enum class Target {
         CHAPTERS, // Manga chapters
+
         COVERS, // Manga covers
+        
         TRACKING, // Tracking metadata
+        
         // SY -->
         SYNC_FOLLOWS, // MangaDex specific, pull mangadex manga in reading, rereading
+        
         PUSH_FAVORITES // MangaDex specific, push mangadex manga to mangadex
         // SY <--
     }
