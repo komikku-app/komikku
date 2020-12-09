@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.track.myanimelist
 
 import android.net.Uri
+import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
@@ -133,30 +134,6 @@ class MyAnimeListApi(private val client: OkHttpClient, interceptor: MyAnimeListI
             .map { it ?: throw Exception("Could not find manga") }
     }
 
-    fun login(username: String, password: String): String {
-        val csrf = getSessionInfo()
-
-        login(username, password, csrf)
-
-        return csrf
-    }
-
-    private fun getSessionInfo(): String {
-        val response = client.newCall(GET(loginUrl())).execute()
-
-        return Jsoup.parse(response.consumeBody())
-            .select("meta[name=csrf_token]")
-            .attr("content")
-    }
-
-    private fun login(username: String, password: String, csrf: String) {
-        val response = client.newCall(POST(url = loginUrl(), body = loginPostBody(username, password, csrf))).execute()
-
-        response.use {
-            if (response.priorResponse?.code != 302) throw Exception("Authentication error")
-        }
-    }
-
     private fun getList(): Observable<List<TrackSearch>> {
         return getListUrl()
             .flatMap { url ->
@@ -258,11 +235,11 @@ class MyAnimeListApi(private val client: OkHttpClient, interceptor: MyAnimeListI
         private const val PREFIX_MY = "my:"
         private const val TD = "td"
 
-        private fun mangaUrl(remoteId: Int) = baseMangaUrl + remoteId
-
-        private fun loginUrl() = Uri.parse(baseUrl).buildUpon()
+        fun loginUrl() = baseUrl.toUri().buildUpon()
             .appendPath("login.php")
             .toString()
+
+        private fun mangaUrl(remoteId: Int) = baseMangaUrl + remoteId
 
         private fun searchUrl(query: String): String {
             val col = "c[]"
@@ -291,17 +268,6 @@ class MyAnimeListApi(private val client: OkHttpClient, interceptor: MyAnimeListI
         private fun addUrl() = Uri.parse(baseModifyListUrl).buildUpon()
             .appendPath("add.json")
             .toString()
-
-        private fun loginPostBody(username: String, password: String, csrf: String): RequestBody {
-            return FormBody.Builder()
-                .add("user_name", username)
-                .add("password", password)
-                .add("cookie", "1")
-                .add("sublogin", "Login")
-                .add("submit", "1")
-                .add(CSRF, csrf)
-                .build()
-        }
 
         private fun exportPostBody(): RequestBody {
             return FormBody.Builder()
