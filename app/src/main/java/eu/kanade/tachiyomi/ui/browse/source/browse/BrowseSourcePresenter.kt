@@ -64,7 +64,7 @@ import java.util.Date
  */
 open class BrowseSourcePresenter(
     private val sourceId: Long,
-    private val searchQuery: String? = null,
+    searchQuery: String? = null,
     // SY -->
     private val filters: String? = null,
     // SY <--

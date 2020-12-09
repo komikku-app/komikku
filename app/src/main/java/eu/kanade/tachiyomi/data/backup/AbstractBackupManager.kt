@@ -50,8 +50,8 @@ abstract class AbstractBackupManager(protected val context: Context) {
             ).map {
             syncChaptersWithSource(databaseHelper, it, manga, source)
         }
-            .doOnNext { pair ->
-                if (pair.first.isNotEmpty()) {
+            .doOnNext { (first) ->
+                if (first.isNotEmpty()) {
                     chapters.forEach { it.manga_id = manga.id }
                     updateChapters(chapters)
                 }

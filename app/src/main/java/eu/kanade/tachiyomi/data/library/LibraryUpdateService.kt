@@ -360,7 +360,7 @@ class LibraryUpdateService(
                             Pair(emptyList(), emptyList())
                         }
                         // Filter out mangas without new chapters (or failed).
-                        .filter { pair -> pair.first.isNotEmpty() }
+                        .filter { (first) -> first.isNotEmpty() }
                         .doOnNext {
                             if (manga.shouldDownloadNewChapters(db, preferences)) {
                                 downloadChapters(manga, it.first)
@@ -403,7 +403,7 @@ class LibraryUpdateService(
                     )
                 }
             }
-            .map { manga -> manga.first }
+            .map { (first) -> first }
     }
 
     private fun downloadChapters(manga: Manga, chapters: List<Chapter>) {
