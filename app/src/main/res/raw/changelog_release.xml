@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.4.0" changeDate="Dec 12,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.6(from 0.10.5)[/b] </changelogtext>
+        <changelogtext>[b]New[/b] NEW ICON! Thanks to Aytox who made it!</changelogtext>
+        <changelogtext>[b]New[/b] Add french translation, thanks to Adam-sama</changelogtext>
+        <changelogtext>[b]New[/b] Double clicking the updates bottom bar button will open downloads</changelogtext>
+        <changelogtext>[b]New[/b] Add a way to exclude manga in certain categories from auto delete</changelogtext>
+        <changelogtext>[b]New[/b] Add Sort by Tags library sorting method, adds a customizable list of tags that manga will by sorted by the position of the tag in the list</changelogtext>
+        <changelogtext>Update Lewd manga filter to include new sources and tags</changelogtext>
+        <changelogtext>Enhance More Info menu</changelogtext>
+        <changelogtext>Cleanup the looks of manga extra info</changelogtext>
+        <changelogtext>Fix Smart background so it works properly(it half worked before)</changelogtext>
+        <changelogtext>Community recommendations enhancements, errors now properly show</changelogtext>
+        <changelogtext>Add ability to use Neko similar manga for Mangadex manga</changelogtext>
+        <changelogtext>Support the short title NHentai source setting</changelogtext>
+        <changelogtext>Switch to the Mangadex extension for the low quality cover setting</changelogtext>
+        <changelogtext>[b]New[/b] Add push to Mangadex in Mangadex settings</changelogtext>
+        <changelogtext>Fix Mangadex settings inconsistencies</changelogtext>
+        <changelogtext>[b]New[/b] If the E-Hentai download limit exceeded image is sent, stop downloading</changelogtext>
+        <changelogtext>EHentai options will be hidden instead of greyed out when not logged in</changelogtext>
+        <changelogtext>Fix MDList tracking stalling when it thinks its logged in but its not</changelogtext>
+        <changelogtext>Fix MDList tracking getting set to complete when its not</changelogtext>
+        <changelogtext>E-Hentai migrations will be throttled so that you dont get banned</changelogtext>
+        <changelogtext>Migrating will migrate viewer, chapter sort, and other stuff</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.3.1" changeDate="Sept 14,2020">
         <changelogtext>[b]New[/b] Share manga info when you share a page</changelogtext>
         <changelogtext>Tweak preload settings, make the max 20, defaults to 10</changelogtext>

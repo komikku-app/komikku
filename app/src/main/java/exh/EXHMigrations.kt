@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.source.Source
@@ -29,6 +30,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
@@ -252,6 +255,11 @@ object EXHMigrations {
                             }
                         }
                     }
+                }
+                if (oldVersion < 10) {
+                    // Force MAL log out due to login flow change
+                    val trackManager = Injekt.get<TrackManager>()
+                    trackManager.myAnimeList.logout()
                 }
 
                 // if (oldVersion < 1) { } (1 is current release version)
