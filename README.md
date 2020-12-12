@@ -52,18 +52,18 @@ Features of TachiyomiSY include:
 * Enhanced views for internal and integrated sources
 * Enhanced usability for internal and delegated sources
 
-* Custom sources:
-* * E-Hentai/ExHentai
-* Additional features for some extensions, features include custom description, opening in app, batch add to library, and a bunch of other things based on the source:
-* * 8Muses (EroMuse)
-* * HBrowse
-* * HentaiCafe (inside Foolside)
-* * Hitomi.la
-* * Mangadex
-* * NHentai
-* * PervEden (EN and IT)
-* * Puruin
-* * Tsumino
+Custom sources:
+* E-Hentai/ExHentai
+Additional features for some extensions, features include custom description, opening in app, batch add to library, and a bunch of other things based on the source:
+* 8Muses (EroMuse)
+* HBrowse
+* HentaiCafe (inside Foolside)
+* Hitomi.la
+* Mangadex
+* NHentai
+* PervEden (EN and IT)
+* Puruin
+* Tsumino
 
 ## Download
 Get the app from our [releases page](https://github.com/jobobby04/tachiyomisy/releases/latest).
