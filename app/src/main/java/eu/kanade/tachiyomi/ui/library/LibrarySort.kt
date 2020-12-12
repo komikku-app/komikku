@@ -9,6 +9,7 @@ object LibrarySort {
     const val TOTAL = 4
     const val LATEST_CHAPTER = 6
     const val DATE_ADDED = 8
+
     // SY -->
     const val DRAG_AND_DROP = 7
     const val TAG_LIST = 9

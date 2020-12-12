@@ -144,8 +144,10 @@ class LibraryController(
     // --> EH
     // Sync dialog
     private var favSyncDialog: MaterialDialog? = null
+
     // Old sync status
     private var oldSyncStatus: FavoritesSyncStatus? = null
+
     // Favorites
     private var favoritesSyncJob: Job? = null
     val loaderManager = LoaderManager()

@@ -20,6 +20,7 @@ class WebtoonConfig(preferences: PreferencesHelper = Injekt.get()) : ViewerConfi
     var enableZoomOut = false
         private set
     var zoomPropertyChangedListener: ((Boolean) -> Unit)? = null
+
     // SY <--
     init {
         preferences.cropBordersWebtoon()

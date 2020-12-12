@@ -266,6 +266,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
             db.insertManga(manga).await()
 
             val newChapters = source.fetchChapterList(manga).awaitSingle()
+
             val (new, _) = syncChaptersWithSource(db, newChapters, manga, source) // Not suspending, but does block, maybe fix this?
             return new to db.getChapters(manga).await()
         } catch (t: Throwable) {
@@ -386,6 +387,7 @@ data class UpdateEntry(val manga: Manga, val meta: EHentaiSearchMetadata, val ro
 
 object EHentaiUpdateWorkerConstants {
     const val UPDATES_PER_ITERATION = 50
+
     @OptIn(ExperimentalTime::class)
     val GALLERY_AGE_TIME = 365.days.toLongMilliseconds()
 }

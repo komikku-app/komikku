@@ -29,8 +29,10 @@ object PreferenceValues {
     enum class DisplayMode {
         COMPACT_GRID,
         COMFORTABLE_GRID,
+
         // SY -->
         NO_TITLE_GRID,
+
         // SY <--
         LIST,
     }

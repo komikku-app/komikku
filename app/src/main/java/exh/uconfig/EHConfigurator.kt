@@ -158,6 +158,7 @@ class EHConfigurator(val context: Context) {
     companion object {
         private const val PROFILE_NAME = "TachiyomiEH App"
         private const val UCONFIG_URL = "/uconfig.php"
+
         // Always use E-H here as EXH does not have a perks page
         private const val HATH_PERKS_URL = "https://e-hentai.org/hathperks.php"
         private const val PROFILE_SELECTOR = "[name=profile_set] > option"

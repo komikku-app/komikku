@@ -31,6 +31,7 @@ class ApiMangaParser(private val langs: List<String>) {
     val db: DatabaseHelper get() = Injekt.get()
 
     val metaClass = MangaDexSearchMetadata::class
+
     /**
      * Use reflection to create a new instance of metadata
      */
@@ -38,6 +39,7 @@ class ApiMangaParser(private val langs: List<String>) {
         it.parameters.isEmpty()
     }?.call()
         ?: error("Could not find no-args constructor for meta class: ${metaClass.qualifiedName}!")
+
     /**
      * Parses metadata from the input and then copies it into the manga
      *

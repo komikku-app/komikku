@@ -71,8 +71,8 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         return MetadataMangasPage(result.map { it.first }, false, result.map { it.second })
     }
 
-    /**fetch follow status used when fetching status for 1 manga
-     *
+    /**
+     * fetch follow status used when fetching status for 1 manga
      */
 
     private fun followStatusParse(response: Response): Track {
@@ -99,8 +99,8 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         return track
     }
 
-    /**build Request for follows page
-     *
+    /**
+     * build Request for follows page
      */
     private fun followsListRequest(): Request {
         return GET("${MdUtil.baseUrl}${MdUtil.followsAllApi}", headers, CacheControl.FORCE_NETWORK)

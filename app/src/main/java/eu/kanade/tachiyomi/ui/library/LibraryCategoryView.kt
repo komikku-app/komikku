@@ -373,6 +373,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         }
         lastClickPosition = position
     }
+
     // SY -->
     private fun getGroupExtra() = when (controller.presenter.groupType) {
         LibraryGroup.BY_DEFAULT -> null

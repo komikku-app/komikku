@@ -17,6 +17,7 @@ object Backup {
     const val EXTENSIONS = "extensions"
     const val HISTORY = "history"
     const val VERSION = "version"
+
     // SY -->
     const val SAVEDSEARCHES = "savedsearches"
     const val MERGEDMANGAREFERENCES = "mergedmangareferences"

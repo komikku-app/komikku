@@ -41,6 +41,7 @@ class MangaInfoHeaderAdapter(
     RecyclerView.Adapter<MangaInfoHeaderAdapter.HeaderViewHolder>() {
 
     private val trackManager: TrackManager by injectLazy()
+
     // SY -->
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()

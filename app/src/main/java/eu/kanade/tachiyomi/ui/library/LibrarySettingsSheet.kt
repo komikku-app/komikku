@@ -87,6 +87,7 @@ class LibrarySettingsSheet(
             private val lewd = Item.TriStateGroup(R.string.lewd, this)
 
             override val header = null
+
             // SY -->
             override val items = (
                 if (Injekt.get<TrackManager>().hasLoggedServices()) {
@@ -95,6 +96,7 @@ class LibrarySettingsSheet(
                     listOf(downloaded, unread, completed, started, lewd)
                 }
                 )
+
             // SY <--
             override val footer = null
 
@@ -166,12 +168,14 @@ class LibrarySettingsSheet(
             private val unread = Item.MultiSort(R.string.action_filter_unread, this)
             private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
             private val dateAdded = Item.MultiSort(R.string.action_sort_date_added, this)
+
             // SY -->
             private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
             private val tagList = Item.MultiSort(R.string.tag_sorting, this)
             // SY <--
 
             override val header = null
+
             override val items =
                 listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, dateAdded /* SY --> */, dragAndDrop) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() /* SY <-- */
             override val footer = null
@@ -266,8 +270,10 @@ class LibrarySettingsSheet(
 
             private val compactGrid = Item.Radio(R.string.action_display_grid, this)
             private val comfortableGrid = Item.Radio(R.string.action_display_comfortable_grid, this)
+
             // SY -->
             private val noTitleGrid = Item.Radio(R.string.action_display_no_title_grid, this)
+
             // SY <--
             private val list = Item.Radio(R.string.action_display_list, this)
 

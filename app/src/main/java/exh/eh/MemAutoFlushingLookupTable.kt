@@ -52,6 +52,7 @@ class MemAutoFlushingLookupTable<T>(
     // Used to debounce
     @Volatile
     private var writeCounter = Long.MIN_VALUE
+
     @Volatile
     private var flushed = true
 

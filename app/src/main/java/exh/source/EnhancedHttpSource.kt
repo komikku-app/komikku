@@ -113,6 +113,7 @@ class EnhancedHttpSource(
      * Whether the source has support for latest updates.
      */
     override val supportsLatest get() = source().supportsLatest
+
     /**
      * Name of the source.
      */
@@ -131,6 +132,7 @@ class EnhancedHttpSource(
      * Note the generated id sets the sign bit to 0.
      */
     override val id get() = source().id
+
     /**
      * Default network client for doing requests.
      */

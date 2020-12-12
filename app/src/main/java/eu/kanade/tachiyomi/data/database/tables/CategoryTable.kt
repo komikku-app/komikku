@@ -25,6 +25,7 @@ object CategoryTable {
             $COL_FLAGS INTEGER NOT NULL,
             $COL_MANGA_ORDER TEXT NOT NULL
             )"""
+
     // SY -->
     val addMangaOrder: String
         get() = "ALTER TABLE $TABLE ADD COLUMN $COL_MANGA_ORDER TEXT"

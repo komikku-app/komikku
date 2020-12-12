@@ -33,6 +33,7 @@ open class WebtoonRecyclerView @JvmOverloads constructor(
     private var firstVisibleItemPosition = 0
     private var lastVisibleItemPosition = 0
     private var currentScale = DEFAULT_RATE
+
     // SY -->
     var canZoomOut = false
         set(value) {

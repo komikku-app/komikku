@@ -182,10 +182,12 @@ class MangaController :
     private val toolbarTextColor by lazy { view!!.context.getResourceColor(R.attr.colorOnPrimary) }
 
     private var mangaInfoAdapter: MangaInfoHeaderAdapter? = null
+
     // SY >--
     private var mangaInfoItemAdapter: MangaInfoItemAdapter? = null
     private var mangaInfoButtonsAdapter: MangaInfoButtonsAdapter? = null
     private var mangaMetaInfoAdapter: RecyclerView.Adapter<*>? = null
+
     // SY <--
     private var chaptersHeaderAdapter: MangaChaptersHeaderAdapter? = null
     private var chaptersAdapter: ChaptersAdapter? = null

@@ -29,6 +29,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var datePosted: Long? = null
     var parent: String? = null
+
     var visible: String? = null // Not a boolean
     var language: String? = null
     var translated: Boolean? = null

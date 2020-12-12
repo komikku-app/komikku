@@ -108,6 +108,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      * Whether the source has support for latest updates.
      */
     override val supportsLatest get() = delegate.supportsLatest
+
     /**
      * Name of the source.
      */
@@ -121,6 +122,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      * Note the generated id sets the sign bit to 0.
      */
     override val id get() = delegate.id
+
     /**
      * Default network client for doing requests.
      */

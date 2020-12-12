@@ -33,6 +33,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
     AbstractFlexibleItem<LibraryHolder<*>>(), IFilterable<Pair<String, Boolean>> {
 
     private val sourceManager: SourceManager = Injekt.get()
+
     // SY -->
     private val trackManager: TrackManager = Injekt.get()
     private val db: DatabaseHelper = Injekt.get()
