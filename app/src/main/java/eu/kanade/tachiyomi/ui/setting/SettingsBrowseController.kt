@@ -102,6 +102,7 @@ class SettingsBrowseController : SettingsController() {
             switchPreference {
                 key = Keys.showNsfwSource
                 titleRes = R.string.pref_show_nsfw_source
+                summaryRes = R.string.requires_app_restart
                 defaultValue = true
             }
             switchPreference {
