@@ -5,17 +5,23 @@ import android.view.View
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.glide.GlideApp
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.ExtensionCardItemBinding
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     FlexibleViewHolder(view, adapter) {
 
     private val binding = ExtensionCardItemBinding.bind(view)
+
+    private val shouldLabelNsfw by lazy {
+        Injekt.get<PreferencesHelper>().labelNsfwExtension()
+    }
 
     init {
         binding.extButton.setOnClickListener {
@@ -36,7 +42,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             // SY -->
             extension is Extension.Installed && extension.isRedundant -> itemView.context.getString(R.string.ext_redundant)
             // SY <--
-            extension.isNsfw -> itemView.context.getString(R.string.ext_nsfw_short)
+            extension.isNsfw && shouldLabelNsfw -> itemView.context.getString(R.string.ext_nsfw_short)
             else -> ""
         }.toUpperCase()
 

@@ -44,12 +44,6 @@ object PreferenceValues {
         BOTH
     }
 
-    enum class NsfwAllowance {
-        ALLOWED,
-        PARTIAL,
-        BLOCKED
-    }
-
     // SY -->
     enum class GroupLibraryMode {
         GLOBAL,
