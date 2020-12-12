@@ -103,7 +103,7 @@ open class SourceManager(private val context: Context) {
     }
     // SY <--
 
-    internal fun registerSource(source: Source, overwrite: Boolean = false) {
+    internal fun registerSource(source: Source) {
         // EXH -->
         val sourceQName = source::class.qualifiedName
         val factories = DELEGATED_SOURCES.entries.filter { it.value.factory }.map { it.value.originalSourceQualifiedClassName }
@@ -130,7 +130,7 @@ open class SourceManager(private val context: Context) {
         }
         // EXH <--
 
-        if (overwrite || !sourcesMap.containsKey(source.id)) {
+        if (!sourcesMap.containsKey(source.id)) {
             sourcesMap[source.id] = newSource
         }
     }
