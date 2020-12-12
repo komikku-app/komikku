@@ -4,7 +4,7 @@
 
 
 # ![app icon](./.github/readme-images/app-icon.png)TachiyomiSY
-Tachiyomi is a free and open source manga reader for Android 5.0 and above. This version of Tachiyomi, TachiyomiSY was based off TachiyomiAZ. TachiyomiAZ has decided to keep the old UI of the app, this version is meant to push forward in the ways of UI and usability, doing that it takes the new Tachiyomi(original) UI. TachiyomiSY also includes a lot of the up in coming features of the Tachiyomi Preview, as well as features from other forks like J2K, it has quite a few custom features from myself and contributors as well.
+Tachiyomi is a free and open source manga reader for Android 5.0 and above. This version of Tachiyomi, TachiyomiSY was based off TachiyomiAZ. This version is meant to push forward in the ways of usability and features. TachiyomiSY tries to push forward where it can, but staying in a place where it can easily grab updates and features from the main app, it tries to make new features, or take features from other forks like J2K and Neko.
 
 ![screenshots of app](./.github/readme-images/screens.png)
 
@@ -21,55 +21,49 @@ Features of Tachiyomi(original) include:
 * Create backups locally to read offline or to your desired cloud service
 
 Features of TachiyomiSY include:
-* Uses the new Tachiyomi Stable UI
 * Latest tab, store up to 5 sources where you can easily view the latest manga by viewing the tab
-* Hentai features enable/disable, in advanced settings
 * Automatic webtoon detection, allowing the reader to switch to webtoon mode automatically when viewing one
-* Recommendations, from AZ but heavily modified by She11Shocked to use both MAL and Anilist interchangeably 
+* Manga recommendations, uses MAL and Anilist, as well as Neko Similar Manga for Mangadex manga(Thanks to Az, She11Shocked, Carlos, and Goldbattle)
 * Lewd filter, hide the lewd manga in your library when you want to
 * Tracking filter, filter your tracked manga so you can see them or see non-tracked manga, made by She11Shocked
 * Search tracking status in library, made by She11Shocked
-* Backup saved searches
-* New E-Hentai/ExHentai features, such as language settings and watched list settings
-* Comfortable grid view
 * Custom categories for sources, liked the pinned sources, but you can make your own versions and put any sources in them
 * Manga info edit
-* Enhanced views for internal and integrated sources
-* Enhanced usability for internal and delegated sources
+* Manga Cover view + share and save
 * Dynamic Categories, view the library in multiple ways
-* Smart background for reading modes like LTR or Vertical, changes the backgorund based on the page color
+* Smart background for reading modes like LTR or Vertical, changes the background based on the page color
 * Force disable webtoon zoom
 * Continue reading button in library
+* Hentai features enable/disable, in advanced settings
 * Quick clean titles
-
-Inherited from TachiyomiAZ or TachiyomiEH and are included and possibly modified in TachiyomiSY
 * Source migration, migrate all your manga from one source to another
-* Custom hentai sources:
-* * E-Hentai/ExHentai
-* Additional features for some extensions, features include custom description, opening in app, batch add to library:
-* * 8Muses (EroMuse)
-* * HBrowse
-* * HentaiCafe (Foolside)
-* * Hitomi.la
-* * NHentai
-* * PervEden (EN and IT)
-* * Puruin
-* * Tsumino
 * Saving searches
 * Autoscroll
 * Page preload customization
 * Customize image cache size
 * Batch import of custom sources and featured extensions
 * Automatic CAPTCHA solving
-* TriState Filters
-* Infinite history page
-* Search your history page
 * Advanced source settings page, searching, enable/disable all
 * Click tag for local search, long click tag for global search
 * Merge multiple of the same manga from different sources
 * Drag and drop library sorting
 * Library search engine, includes exclude, quotes as absolute, and a bunch of other ways to search
+* New E-Hentai/ExHentai features, such as language settings and watched list settings
+* Enhanced views for internal and integrated sources
+* Enhanced usability for internal and delegated sources
 
+* Custom sources:
+* * E-Hentai/ExHentai
+* Additional features for some extensions, features include custom description, opening in app, batch add to library, and a bunch of other things based on the source:
+* * 8Muses (EroMuse)
+* * HBrowse
+* * HentaiCafe (inside Foolside)
+* * Hitomi.la
+* * Mangadex
+* * NHentai
+* * PervEden (EN and IT)
+* * Puruin
+* * Tsumino
 
 ## Download
 Get the app from our [releases page](https://github.com/jobobby04/tachiyomisy/releases/latest).
@@ -109,7 +103,7 @@ DON'T: https://github.com/inorichi/tachiyomi/issues/75
 * Write a detailed issue, explaining what it should do or how. Avoid writing just "like X app does"
 * Include screenshot (if needed)
 
-Catalogue requests should be created at https://github.com/inorichi/tachiyomi-extensions, they do not belong in this repository.
+Source requests should be created at https://github.com/inorichi/tachiyomi-extensions, they do not belong in this repository.
 </details>
 
 ## FAQ
