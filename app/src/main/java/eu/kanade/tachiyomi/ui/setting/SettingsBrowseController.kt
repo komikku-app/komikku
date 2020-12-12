@@ -2,14 +2,10 @@ package eu.kanade.tachiyomi.ui.setting
 
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
 import eu.kanade.tachiyomi.util.preference.defaultValue
-import eu.kanade.tachiyomi.util.preference.entriesRes
-import eu.kanade.tachiyomi.util.preference.infoPreference
-import eu.kanade.tachiyomi.util.preference.listPreference
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
@@ -97,27 +93,27 @@ class SettingsBrowseController : SettingsController() {
             }
         }
 
-        preferenceCategory {
-            titleRes = R.string.pref_category_nsfw_content
-
-            listPreference {
-                key = Keys.allowNsfwSource
-                titleRes = R.string.pref_allow_nsfw_sources
-                entriesRes = arrayOf(
-                    R.string.pref_allow_nsfw_sources_allowed,
-                    R.string.pref_allow_nsfw_sources_allowed_multisource,
-                    R.string.pref_allow_nsfw_sources_blocked
-                )
-                entryValues = arrayOf(
-                    PreferenceValues.NsfwAllowance.ALLOWED.name,
-                    PreferenceValues.NsfwAllowance.PARTIAL.name,
-                    PreferenceValues.NsfwAllowance.BLOCKED.name
-                )
-                defaultValue = PreferenceValues.NsfwAllowance.ALLOWED.name
-                summary = "%s"
-            }
-
-            infoPreference(R.string.parental_controls_info)
-        }
+        // preferenceCategory {
+        //     titleRes = R.string.pref_category_nsfw_content
+        //
+        //     listPreference {
+        //         key = Keys.allowNsfwSource
+        //         titleRes = R.string.pref_allow_nsfw_sources
+        //         entriesRes = arrayOf(
+        //             R.string.pref_allow_nsfw_sources_allowed,
+        //             R.string.pref_allow_nsfw_sources_allowed_multisource,
+        //             R.string.pref_allow_nsfw_sources_blocked
+        //         )
+        //         entryValues = arrayOf(
+        //             PreferenceValues.NsfwAllowance.ALLOWED.name,
+        //             PreferenceValues.NsfwAllowance.PARTIAL.name,
+        //             PreferenceValues.NsfwAllowance.BLOCKED.name
+        //         )
+        //         defaultValue = PreferenceValues.NsfwAllowance.ALLOWED.name
+        //         summary = "%s"
+        //     }
+        //
+        //     infoPreference(R.string.parental_controls_info)
+        // }
     }
 }
