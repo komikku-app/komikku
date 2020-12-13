@@ -29,6 +29,7 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
         if (!WebViewUtil.supportsWebView(this)) {
             toast(R.string.information_webview_required, Toast.LENGTH_LONG)
             finish()
+            return
         }
 
         try {
@@ -38,6 +39,7 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
             // Potentially throws errors like "Error inflating class android.webkit.WebView"
             toast(R.string.information_webview_required, Toast.LENGTH_LONG)
             finish()
+            return
         }
 
         setSupportActionBar(binding.toolbar)
