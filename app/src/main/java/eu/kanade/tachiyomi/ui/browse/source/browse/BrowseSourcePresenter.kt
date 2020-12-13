@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.os.Bundle
 import eu.davidea.flexibleadapter.items.IFlexible
-import eu.davidea.flexibleadapter.items.ISectionable
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -363,7 +362,7 @@ open class BrowseSourcePresenter(
                                 is Filter.AutoComplete -> AutoCompleteSectionItem(it)
                                 // SY <--
                                 else -> null
-                            } as? ISectionable<*, *>
+                            }
                         }
                         subItems.forEach { it.header = group }
                         group.subItems = subItems

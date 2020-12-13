@@ -174,7 +174,7 @@ class LibraryController(
         if (preferences.categoryTabs().get()) {
             currentTitle = resources?.getString(R.string.label_library)
         } else {
-            adapter?.categories?.get(binding.libraryPager.currentItem)?.let {
+            adapter?.categories?.getOrNull(binding.libraryPager.currentItem)?.let {
                 currentTitle = it.name
             }
         }
