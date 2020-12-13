@@ -12,7 +12,7 @@ data class ApiMangaSerializer(
 data class DataSerializer(
     val manga: MangaSerializer,
     val chapters: List<ChapterSerializer>,
-    val groups: Map<Long, String>,
+    val groups: List<GroupSerializer>,
 
 )
 
@@ -67,4 +67,10 @@ data class ChapterSerializer(
     val language: String,
     val groups: List<Long>,
     val timestamp: Long
+)
+
+@Serializable
+data class GroupSerializer(
+    val id: Long,
+    val name: String
 )
