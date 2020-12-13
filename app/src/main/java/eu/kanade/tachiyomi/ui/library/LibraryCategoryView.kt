@@ -16,14 +16,13 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.databinding.LibraryCategoryBinding
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.ui.LoadingHandle
-import kotlinx.android.synthetic.main.library_category.view.fast_scroller
-import kotlinx.android.synthetic.main.library_category.view.swipe_refresh
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -96,15 +95,15 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     }
     // EXH <--
 
-    fun onCreate(controller: LibraryController) {
+    fun onCreate(controller: LibraryController, binding: LibraryCategoryBinding) {
         this.controller = controller
 
         recycler = if (preferences.libraryDisplayMode().get() == DisplayMode.LIST) {
-            (swipe_refresh.inflate(R.layout.library_list_recycler) as RecyclerView).apply {
+            (binding.swipeRefresh.inflate(R.layout.library_list_recycler) as RecyclerView).apply {
                 layoutManager = LinearLayoutManager(context)
             }
         } else {
-            (swipe_refresh.inflate(R.layout.library_grid_recycler) as AutofitRecyclerView).apply {
+            (binding.swipeRefresh.inflate(R.layout.library_grid_recycler) as AutofitRecyclerView).apply {
                 spanCount = controller.mangaPerRow
             }
         }
@@ -113,21 +112,21 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
 
         recycler.setHasFixedSize(true)
         recycler.adapter = adapter
-        swipe_refresh.addView(recycler)
-        adapter.fastScroller = fast_scroller
+        binding.swipeRefresh.addView(recycler)
+        adapter.fastScroller = binding.fastScroller
 
         recycler.scrollStateChanges()
             .onEach {
                 // Disable swipe refresh when view is not at the top
                 val firstPos = (recycler.layoutManager as LinearLayoutManager)
                     .findFirstCompletelyVisibleItemPosition()
-                swipe_refresh.isEnabled = firstPos <= 0
+                binding.swipeRefresh.isEnabled = firstPos <= 0
             }
             .launchIn(scope)
 
         // Double the distance required to trigger sync
-        swipe_refresh.setDistanceToTriggerSync((2 * 64 * resources.displayMetrics.density).toInt())
-        swipe_refresh.refreshes()
+        binding.swipeRefresh.setDistanceToTriggerSync((2 * 64 * resources.displayMetrics.density).toInt())
+        binding.swipeRefresh.refreshes()
             .onEach {
                 // SY -->
                 if (LibraryUpdateService.start(context, if (controller.presenter.groupType == LibraryGroup.BY_DEFAULT) category else null, group = controller.presenter.groupType, groupExtra = getGroupExtra())) {
@@ -147,7 +146,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 // SY <--
 
                 // It can be a very long operation, so we disable swipe refresh and show a toast.
-                swipe_refresh.isRefreshing = false
+                binding.swipeRefresh.isRefreshing = false
             }
             .launchIn(scope)
     }
