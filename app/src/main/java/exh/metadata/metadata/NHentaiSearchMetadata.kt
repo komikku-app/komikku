@@ -8,9 +8,11 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.nullIfBlank
 import exh.plusAssign
 import java.util.Date
+import kotlinx.serialization.Serializable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
+@Serializable
 class NHentaiSearchMetadata : RaisedSearchMetadata() {
     var url get() = nhId?.let { BASE_URL + nhIdToPath(it) }
         set(a) {

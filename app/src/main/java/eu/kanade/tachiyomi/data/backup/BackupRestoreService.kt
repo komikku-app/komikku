@@ -1,34 +1,25 @@
 package eu.kanade.tachiyomi.data.backup
 
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.full.FullBackupRestore
 import eu.kanade.tachiyomi.data.backup.legacy.LegacyBackupRestore
-import eu.kanade.tachiyomi.data.backup.models.AbstractBackupRestore
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
-import eu.kanade.tachiyomi.util.system.notificationManager
-import exh.BackupEntry
-import exh.EXHMigrations
-import exh.eh.EHentaiThrottleManager
-import java.io.File
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
- * Restores backup from json file
+ * Restores backup.
  */
 class BackupRestoreService : Service() {
 
@@ -77,21 +68,23 @@ class BackupRestoreService : Service() {
      */
     private lateinit var wakeLock: PowerManager.WakeLock
 
-    private var backupRestore: AbstractBackupRestore? = null
+    private var backupRestore: AbstractBackupRestore<*>? = null
     private lateinit var notifier: BackupNotifier
 
     override fun onCreate() {
         super.onCreate()
 
-        startForeground(Notifications.ID_RESTORE_PROGRESS, progressNotification.build())
-
+        notifier = BackupNotifier(this)
         wakeLock = acquireWakeLock(javaClass.name)
+
+        startForeground(Notifications.ID_RESTORE_PROGRESS, notifier.showRestoreProgress().build())
     }
 
-    /**
-     * Method called when the service is destroyed. It destroys the running subscription and
-     * releases the wake lock.
-     */
+    override fun stopService(name: Intent?): Boolean {
+        destroyJob()
+        return super.stopService(name)
+    }
+
     override fun onDestroy() {
         destroyJob()
         super.onDestroy()
@@ -102,7 +95,6 @@ class BackupRestoreService : Service() {
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
-        super.onDestroy()
     }
 
     /**
@@ -126,13 +118,15 @@ class BackupRestoreService : Service() {
         // Cancel any previous job if needed.
         backupRestore?.job?.cancel()
 
-        backupRestore = if (mode == BackupConst.BACKUP_TYPE_FULL) FullBackupRestore(this, notifier, online) else LegacyBackupRestore(this, notifier)
+        backupRestore = when (mode) {
+            BackupConst.BACKUP_TYPE_FULL -> FullBackupRestore(this, notifier, online)
+            else -> LegacyBackupRestore(this, notifier)
+        }
         val handler = CoroutineExceptionHandler { _, exception ->
             Timber.e(exception)
             backupRestore?.writeErrorLog()
 
             notifier.showRestoreError(exception.message)
-
             stopSelf(startId)
         }
         backupRestore?.job = GlobalScope.launch(handler) {
@@ -143,7 +137,6 @@ class BackupRestoreService : Service() {
         backupRestore?.job?.invokeOnCompletion {
             stopSelf(startId)
         }
-        job?.invokeOnCompletion { stopSelf(startId) }
 
         return START_NOT_STICKY
     }

@@ -5,7 +5,9 @@ import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.plusAssign
 import java.util.Date
+import kotlinx.serialization.Serializable
 
+@Serializable
 class HitomiSearchMetadata : RaisedSearchMetadata() {
     var url get() = hlId?.let { urlFromHlId(it) }
         set(a) {

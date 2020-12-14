@@ -1,11 +1,7 @@
 package eu.kanade.tachiyomi.ui.source.browse
 
 import android.os.Bundle
-import com.github.salomonbrys.kotson.array
 import com.github.salomonbrys.kotson.jsonObject
-import com.github.salomonbrys.kotson.obj
-import com.github.salomonbrys.kotson.string
-import com.google.gson.JsonParser
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.flexibleadapter.items.ISectionable
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -35,10 +31,12 @@ import eu.kanade.tachiyomi.ui.source.filter.TextSectionItem
 import eu.kanade.tachiyomi.ui.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.removeCovers
-import exh.EXHSavedSearch
+import exh.savedsearches.EXHSavedSearch
+import exh.savedsearches.JsonSavedSearch
 import java.lang.RuntimeException
 import java.util.Date
-import kotlinx.coroutines.flow.subscribe
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -422,12 +420,12 @@ open class BrowseSourcePresenter(
             try {
                 val id = it.substringBefore(':').toLong()
                 if (id != source.id) return@map null
-                val content = JsonParser.parseString(it.substringAfter(':')).obj
+                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content["filters"].array)
+                filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
-                    content["name"].string,
-                    content["query"].string,
+                    content.name,
+                    content.query,
                     originalFilters
                 )
             } catch (t: RuntimeException) {

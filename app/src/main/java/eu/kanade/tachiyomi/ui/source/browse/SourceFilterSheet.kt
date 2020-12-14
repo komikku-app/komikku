@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
-import exh.EXHSavedSearch
+import exh.savedsearches.EXHSavedSearch
 import kotlinx.android.synthetic.main.source_filter_sheet.view.reset_btn
 import kotlinx.android.synthetic.main.source_filter_sheet.view.save_search_btn
 import kotlinx.android.synthetic.main.source_filter_sheet.view.saved_searches

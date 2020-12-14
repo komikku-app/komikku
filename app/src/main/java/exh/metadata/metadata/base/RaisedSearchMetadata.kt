@@ -1,15 +1,33 @@
 package exh.metadata.metadata.base
 
-import com.google.gson.GsonBuilder
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.forEach
+import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.metadata.metadata.EightMusesSearchMetadata
+import exh.metadata.metadata.HBrowseSearchMetadata
+import exh.metadata.metadata.HentaiCafeSearchMetadata
+import exh.metadata.metadata.HitomiSearchMetadata
+import exh.metadata.metadata.NHentaiSearchMetadata
+import exh.metadata.metadata.PervEdenSearchMetadata
+import exh.metadata.metadata.PururinSearchMetadata
+import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
 import exh.plusAssign
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
+@Polymorphic
+@Serializable
 abstract class RaisedSearchMetadata {
     @Transient
     var mangaId: Long = -1
@@ -67,7 +85,7 @@ abstract class RaisedSearchMetadata {
     fun flatten(): FlatMetadata {
         require(mangaId != -1L)
 
-        val extra = raiseFlattenGson.toJson(this)
+        val extra = raiseFlattenJson.encodeToString(this)
         return FlatMetadata(
             SearchMetadata(
                 mangaId,
@@ -116,7 +134,24 @@ abstract class RaisedSearchMetadata {
         // Virtual tags allow searching of otherwise unindexed fields
         const val TAG_TYPE_VIRTUAL = -2
 
-        val raiseFlattenGson = GsonBuilder().create()
+        private val module = SerializersModule {
+            polymorphic(RaisedSearchMetadata::class) {
+                subclass(EHentaiSearchMetadata::class)
+                subclass(EightMusesSearchMetadata::class)
+                subclass(HBrowseSearchMetadata::class)
+                subclass(HentaiCafeSearchMetadata::class)
+                subclass(HitomiSearchMetadata::class)
+                subclass(NHentaiSearchMetadata::class)
+                subclass(PervEdenSearchMetadata::class)
+                subclass(PururinSearchMetadata::class)
+                subclass(TsuminoSearchMetadata::class)
+            }
+        }
+
+        val raiseFlattenJson = Json {
+            ignoreUnknownKeys = true
+            serializersModule = module
+        }
 
         fun titleDelegate(type: Int) = object : ReadWriteProperty<RaisedSearchMetadata, String?> {
             /**

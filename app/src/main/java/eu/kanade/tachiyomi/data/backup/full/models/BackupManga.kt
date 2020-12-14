@@ -36,6 +36,8 @@ data class BackupManga(
     @ProtoNumber(100) var favorite: Boolean = true,
     @ProtoNumber(101) var chapterFlags: Int = 0,
     @ProtoNumber(102) var history: List<BackupHistory> = emptyList(),
+    // SY specific values
+    @ProtoNumber(601) var flatMetadata: BackupFlatMetadata? = null
 ) {
     fun getMangaImpl(): MangaImpl {
         return MangaImpl().apply {

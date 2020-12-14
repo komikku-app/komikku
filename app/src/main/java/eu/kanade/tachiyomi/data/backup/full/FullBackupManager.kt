@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.data.backup.full
 import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
+import eu.kanade.tachiyomi.data.backup.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CHAPTER
@@ -14,34 +15,40 @@ import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_TRAC
 import eu.kanade.tachiyomi.data.backup.full.models.Backup
 import eu.kanade.tachiyomi.data.backup.full.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.full.models.BackupChapter
+import eu.kanade.tachiyomi.data.backup.full.models.BackupFlatMetadata
 import eu.kanade.tachiyomi.data.backup.full.models.BackupFull
 import eu.kanade.tachiyomi.data.backup.full.models.BackupHistory
 import eu.kanade.tachiyomi.data.backup.full.models.BackupManga
+import eu.kanade.tachiyomi.data.backup.full.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSource
 import eu.kanade.tachiyomi.data.backup.full.models.BackupTracking
-import eu.kanade.tachiyomi.data.backup.models.AbstractBackupManager
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import eu.kanade.tachiyomi.source.online.LewdSource
+import exh.metadata.metadata.base.getFlatMetadataForManga
+import exh.metadata.metadata.base.insertFlatMetadata
+import exh.savedsearches.JsonSavedSearch
+import exh.source.getMainSource
+import kotlin.math.max
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import okio.buffer
 import okio.gzip
 import okio.sink
 import rx.Observable
 import timber.log.Timber
-import kotlin.math.max
 
 @OptIn(ExperimentalSerializationApi::class)
 class FullBackupManager(context: Context) : AbstractBackupManager(context) {
-    /**
-     * Parser
-     */
+
     val parser = ProtoBuf
 
     /**
@@ -55,55 +62,48 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         var backup: Backup? = null
 
         databaseHelper.inTransaction {
-            // Get manga from database
-            val databaseManga = getDatabaseManga()
+            val databaseManga = getFavoriteManga()
 
             backup = Backup(
                 backupManga(databaseManga, flags),
                 backupCategories(),
-                backupExtensionInfo(databaseManga)
+                backupExtensionInfo(databaseManga),
+                backupSavedSearches()
             )
         }
 
         try {
-            // When BackupCreatorJob
-            if (isJob) {
-                // Get dir of file and create
-                var dir = UniFile.fromUri(context, uri)
-                dir = dir.createDirectory("automatic")
+            val file: UniFile = (
+                if (isJob) {
+                    // Get dir of file and create
+                    var dir = UniFile.fromUri(context, uri)
+                    dir = dir.createDirectory("automatic")
 
-                // Delete older backups
-                val numberOfBackups = numberOfBackups()
-                val backupRegex = Regex("""tachiyomi_full_\d+-\d+-\d+_\d+-\d+.proto.gz""")
-                dir.listFiles { _, filename -> backupRegex.matches(filename) }
-                    .orEmpty()
-                    .sortedByDescending { it.name }
-                    .drop(numberOfBackups - 1)
-                    .forEach { it.delete() }
+                    // Delete older backups
+                    val numberOfBackups = numberOfBackups()
+                    val backupRegex = Regex("""tachiyomi_\d+-\d+-\d+_\d+-\d+.proto.gz""")
+                    dir.listFiles { _, filename -> backupRegex.matches(filename) }
+                        .orEmpty()
+                        .sortedByDescending { it.name }
+                        .drop(numberOfBackups - 1)
+                        .forEach { it.delete() }
 
-                // Create new file to place backup
-                val newFile = dir.createFile(BackupFull.getDefaultFilename())
-                    ?: throw Exception("Couldn't create backup file")
+                    // Create new file to place backup
+                    dir.createFile(BackupFull.getDefaultFilename())
+                } else {
+                    UniFile.fromUri(context, uri)
+                }
+                )
+                ?: throw Exception("Couldn't create backup file")
 
-                val byteArray = parser.encodeToByteArray(BackupSerializer, backup!!)
-                newFile.openOutputStream().sink().gzip().buffer().use { it.write(byteArray) }
-
-                return newFile.uri.toString()
-            } else {
-                val file = UniFile.fromUri(context, uri)
-                    ?: throw Exception("Couldn't create backup file")
-                val byteArray = parser.encodeToByteArray(BackupSerializer, backup!!)
-                file.openOutputStream().sink().gzip().buffer().use { it.write(byteArray) }
-
-                return file.uri.toString()
-            }
+            val byteArray = parser.encodeToByteArray(BackupSerializer, backup!!)
+            file.openOutputStream().sink().gzip().buffer().use { it.write(byteArray) }
+            return file.uri.toString()
         } catch (e: Exception) {
             Timber.e(e)
             throw e
         }
     }
-
-    private fun getDatabaseManga() = getFavoriteManga()
 
     private fun backupManga(mangas: List<Manga>, flags: Int): List<BackupManga> {
         return mangas.map {
@@ -132,6 +132,26 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             .map { BackupCategory.copyFrom(it) }
     }
 
+    // SY -->
+    /**
+     * Backup the saved searches from sources
+     *
+     * @return list of [BackupSavedSearch] to be backed up
+     */
+    private fun backupSavedSearches(): List<BackupSavedSearch> {
+        return preferences.eh_savedSearches().get().map {
+            val sourceId = it.substringBefore(':').toLong()
+            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+            BackupSavedSearch(
+                content.name,
+                content.query,
+                content.filters.toString(),
+                sourceId
+            )
+        }
+    }
+    // SY <--
+
     /**
      * Convert a manga to Json
      *
@@ -142,6 +162,17 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     private fun backupMangaObject(manga: Manga, options: Int): BackupManga {
         // Entry for this manga
         val mangaObject = BackupManga.copyFrom(manga)
+
+        // SY -->
+        val source = sourceManager.get(manga.source)?.getMainSource()
+        if (source is LewdSource<*, *>) {
+            manga.id?.let { mangaId ->
+                databaseHelper.getFlatMetadataForManga(mangaId).executeAsBlocking()?.let { flatMetadata ->
+                    mangaObject.flatMetadata = BackupFlatMetadata.copyFrom(flatMetadata)
+                }
+            }
+        }
+        // SY <--
 
         // Check if user wants chapter information in backup
         if (options and BACKUP_CHAPTER_MASK == BACKUP_CHAPTER) {
@@ -217,25 +248,6 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                     it
                 }
         }
-    }
-
-    /**
-     * [Observable] that fetches chapter information
-     *
-     * @param source source of manga
-     * @param manga manga that needs updating
-     * @param chapters list of chapters in the backup
-     * @return [Observable] that contains manga
-     */
-    fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        return source.fetchChapterList(manga)
-            .map { syncChaptersWithSource(databaseHelper, it, manga, source) }
-            .doOnNext { pair ->
-                if (pair.first.isNotEmpty()) {
-                    chapters.forEach { it.manga_id = manga.id }
-                    updateChapters(chapters)
-                }
-            }
     }
 
     /**
@@ -439,4 +451,47 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         updateChapters(chapters.filter { it.id != null })
         insertChapters(chapters.filter { it.id == null })
     }
+
+    // SY -->
+    internal fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
+        val currentSavedSearches = preferences.eh_savedSearches().get().map {
+            val sourceId = it.substringBefore(':').toLong()
+            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+            BackupSavedSearch(
+                content.name,
+                content.query,
+                content.filters.toString(),
+                sourceId
+            )
+        }
+
+        preferences.eh_savedSearches()
+            .set(
+                (
+                    backupSavedSearches.filter { backupSavedSearch -> currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source } }
+                        .map {
+                            "${it.source}:" + Json.encodeToString(
+                                JsonSavedSearch(
+                                    it.name,
+                                    it.query,
+                                    Json.decodeFromString(it.filterList)
+                                )
+                            )
+                        } + preferences.eh_savedSearches().get()
+                    )
+                    .toSet()
+            )
+    }
+
+    internal fun restoreFlatMetadata(manga: Manga, backupFlatMetadata: BackupFlatMetadata) {
+        manga.id?.let { mangaId ->
+            databaseHelper.getFlatMetadataForManga(mangaId).executeAsBlocking().let {
+                if (it == null) {
+                    val flatMetadata = backupFlatMetadata.getFlatMetadata(mangaId)
+                    databaseHelper.insertFlatMetadata(flatMetadata).await()
+                }
+            }
+        }
+    }
+    // SY <--
 }

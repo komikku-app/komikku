@@ -9,9 +9,11 @@ import exh.metadata.humanReadableByteCount
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.plusAssign
 import java.util.Date
+import kotlinx.serialization.Serializable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
+@Serializable
 class EHentaiSearchMetadata : RaisedSearchMetadata() {
     var gId: String?
         get() = indexedExtra

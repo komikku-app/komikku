@@ -6,10 +6,11 @@ import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
-import eu.kanade.tachiyomi.data.backup.models.DHistory
+import eu.kanade.tachiyomi.data.backup.legacy.models.DHistory
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.resolvers.MangaUrlPutResolver
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
@@ -168,9 +169,7 @@ object EXHMigrations {
         return false
     }
 
-    fun migrateBackupEntry(backupEntry: BackupEntry): BackupEntry {
-        val (manga, chapters, categories, history, tracks) = backupEntry
-
+    fun migrateBackupEntry(manga: MangaImpl): MangaImpl {
         // Migrate HentaiCafe source IDs
         if (manga.source == 6908L) {
             manga.source = HENTAI_CAFE_SOURCE_ID
@@ -206,7 +205,7 @@ object EXHMigrations {
             manga.source = EH_SOURCE_ID
         }
 
-        return backupEntry
+        return manga
     }
 
     private fun backupDatabase(context: Context, oldMigrationVersion: Int) {

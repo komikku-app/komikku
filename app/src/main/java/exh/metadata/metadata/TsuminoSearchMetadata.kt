@@ -6,7 +6,9 @@ import exh.metadata.EX_DATE_FORMAT
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.plusAssign
 import java.util.Date
+import kotlinx.serialization.Serializable
 
+@Serializable
 class TsuminoSearchMetadata : RaisedSearchMetadata() {
     var tmId: Int? = null
 

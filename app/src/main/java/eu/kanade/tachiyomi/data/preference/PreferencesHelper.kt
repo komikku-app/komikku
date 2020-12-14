@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.data.preference
 
 import android.content.Context
-import android.net.Uri
 import android.os.Environment
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.f2prateek.rx.preferences.Preference as RxPreference
 import com.f2prateek.rx.preferences.RxSharedPreferences
@@ -38,21 +38,17 @@ class PreferencesHelper(val context: Context) {
     private val rxPrefs = RxSharedPreferences.create(prefs)
     val flowPrefs = FlowSharedPreferences(prefs)
 
-    private val defaultDownloadsDir = Uri.fromFile(
-        File(
-            Environment.getExternalStorageDirectory().absolutePath + File.separator +
-                context.getString(R.string.app_name),
-            "downloads"
-        )
-    )
+    private val defaultDownloadsDir = File(
+        Environment.getExternalStorageDirectory().absolutePath + File.separator +
+            context.getString(R.string.app_name),
+        "downloads"
+    ).toURI()
 
-    private val defaultBackupDir = Uri.fromFile(
-        File(
-            Environment.getExternalStorageDirectory().absolutePath + File.separator +
-                context.getString(R.string.app_name),
-            "backup"
-        )
-    )
+    private val defaultBackupDir = File(
+        Environment.getExternalStorageDirectory().absolutePath + File.separator +
+            context.getString(R.string.app_name),
+        "backup"
+    ).toURI()
 
     fun startScreen() = prefs.getInt(Keys.startScreen, 1)
 
@@ -370,15 +366,4 @@ class PreferencesHelper(val context: Context) {
     fun startReadingButton() = flowPrefs.getBoolean(Keys.startReadingButton, true)
 
     fun createLegacyBackup() = flowPrefs.getBoolean(Keys.createLegacyBackup, false)
-
-    fun setChapterSettingsDefault(manga: Manga) {
-        prefs.edit {
-            putInt(Keys.defaultChapterFilterByRead, manga.readFilter)
-            putInt(Keys.defaultChapterFilterByDownloaded, manga.downloadedFilter)
-            putInt(Keys.defaultChapterFilterByBookmarked, manga.bookmarkedFilter)
-            putInt(Keys.defaultChapterSortBySourceOrNumber, manga.sorting)
-            putInt(Keys.defaultChapterDisplayByNameOrNumber, manga.displayMode)
-            putInt(Keys.defaultChapterSortByAscendingOrDescending, if (manga.sortDescending()) Manga.SORT_DESC else Manga.SORT_ASC)
-        }
-    }
 }

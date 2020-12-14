@@ -6,9 +6,14 @@ import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
 import kotlin.reflect.KClass
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.serializer
 import rx.Completable
 import rx.Single
 
+@Serializable
 data class FlatMetadata(
     val metadata: SearchMetadata,
     val tags: List<SearchTag>,
@@ -16,9 +21,10 @@ data class FlatMetadata(
 ) {
     inline fun <reified T : RaisedSearchMetadata> raise(): T = raise(T::class)
 
-    fun <T : RaisedSearchMetadata> raise(clazz: KClass<T>) =
-        RaisedSearchMetadata.raiseFlattenGson
-            .fromJson(metadata.extra, clazz.java).apply {
+    @OptIn(InternalSerializationApi::class)
+    fun <T : RaisedSearchMetadata> raise(clazz: KClass<T>): T =
+        RaisedSearchMetadata.raiseFlattenJson
+            .decodeFromString(clazz.serializer(), metadata.extra).apply {
                 fillBaseFields(this@FlatMetadata)
             }
 }
@@ -84,7 +90,7 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
     }
 }
 
-fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata) = Completable.fromCallable {
+fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata): Completable = Completable.fromCallable {
     require(flatMetadata.metadata.mangaId != -1L)
 
     inTransaction {

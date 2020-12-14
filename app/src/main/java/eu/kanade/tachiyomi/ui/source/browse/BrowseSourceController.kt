@@ -52,7 +52,7 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.util.view.visible
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
-import exh.EXHSavedSearch
+import exh.savedsearches.EXHSavedSearch
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.main_activity.drawer
 import kotlinx.coroutines.Job

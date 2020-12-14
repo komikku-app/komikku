@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.data.backup.models
+package eu.kanade.tachiyomi.data.backup
 
 import android.content.Context
 import android.net.Uri
@@ -7,10 +7,16 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import exh.eh.EHentaiThrottleManager
+import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 abstract class AbstractBackupManager(protected val context: Context) {
+
     internal val databaseHelper: DatabaseHelper by injectLazy()
     internal val sourceManager: SourceManager by injectLazy()
     internal val trackManager: TrackManager by injectLazy()
@@ -25,6 +31,32 @@ abstract class AbstractBackupManager(protected val context: Context) {
      */
     internal fun getMangaFromDatabase(manga: Manga): Manga? =
         databaseHelper.getManga(manga.url, manga.source).executeAsBlocking()
+
+    /**
+     * [Observable] that fetches chapter information
+     *
+     * @param source source of manga
+     * @param manga manga that needs updating
+     * @param chapters list of chapters in the backup
+     * @return [Observable] that contains manga
+     */
+    internal open fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
+        return (
+            if (source is EHentai) {
+                source.fetchChapterList(manga, throttleManager::throttle)
+            } else {
+                source.fetchChapterList(manga)
+            }
+            ).map {
+            syncChaptersWithSource(databaseHelper, it, manga, source)
+        }
+            .doOnNext { (first) ->
+                if (first.isNotEmpty()) {
+                    chapters.forEach { it.manga_id = manga.id }
+                    updateChapters(chapters)
+                }
+            }
+    }
 
     /**
      * Returns list containing manga from library

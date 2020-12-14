@@ -12,7 +12,6 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.hippo.unifile.UniFile
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY_MASK
@@ -49,11 +48,9 @@ import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.util.lang.asObservable
-import exh.eh.EHentaiThrottleManager
 import exh.savedsearches.JsonSavedSearch
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
+import java.lang.RuntimeException
+import kotlin.math.max
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -61,8 +58,6 @@ import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.lang.RuntimeException
-import kotlin.math.max
 
 class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : AbstractBackupManager(context) {
 
@@ -189,7 +184,6 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
         }
     }
 
-
     /**
      * Backup the categories of library
      *
@@ -284,17 +278,6 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
                 manga.id = insertManga(manga)
                 manga
             }
-    }
-
-    /**
-     * [Observable] that fetches chapter information
-     *
-     * @param source source of manga
-     * @param manga manga that needs updating
-     * @return [Observable] that contains manga
-     */
-    override fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        return super.restoreChapterFetchObservable(source, manga, chapters, throttleManager)
     }
 
     /**
@@ -463,6 +446,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
         return true
     }
 
+    // SY -->
     internal fun restoreSavedSearches(jsonSavedSearches: JsonElement) {
         val backupSavedSearches = jsonSavedSearches.asString.split("***").toSet()
 

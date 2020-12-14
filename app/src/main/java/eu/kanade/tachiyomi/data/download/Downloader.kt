@@ -2,15 +2,16 @@ package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
 import android.webkit.MimeTypeMap
-import com.elvishew.xlog.XLog
 import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.download.model.DownloadQueue
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -22,6 +23,7 @@ import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import exh.isEhBasedSource
 import java.io.File
 import kotlinx.coroutines.async
 import okhttp3.Response
@@ -30,6 +32,7 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
 import timber.log.Timber
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -52,6 +55,8 @@ class Downloader(
     private val cache: DownloadCache,
     private val sourceManager: SourceManager
 ) {
+
+    private val preferences: PreferencesHelper by injectLazy()
 
     private val chapterCache: ChapterCache by injectLazy()
 
@@ -109,13 +114,15 @@ class Downloader(
         if (isRunning || queue.isEmpty()) {
             return false
         }
-        notifier.paused = false
+
         if (!subscriptions.hasSubscriptions()) {
             initializeSubscriptions()
         }
 
         val pending = queue.filter { it.status != Download.DOWNLOADED }
         pending.forEach { if (it.status != Download.QUEUE) it.status = Download.QUEUE }
+
+        notifier.paused = false
 
         downloadsRelay.call(pending)
         return pending.isNotEmpty()
@@ -135,9 +142,10 @@ class Downloader(
         } else {
             if (notifier.paused) {
                 notifier.paused = false
-                notifier.onDownloadPaused()
+                notifier.onPaused()
             } else {
-                notifier.dismiss()
+                notifier.dismissProgress()
+                notifier.onComplete()
             }
         }
     }
@@ -168,7 +176,7 @@ class Downloader(
                 .forEach { it.status = Download.NOT_DOWNLOADED }
         }
         queue.clear()
-        notifier.dismiss()
+        notifier.dismissProgress()
     }
 
     /**
@@ -226,11 +234,9 @@ class Downloader(
      */
     fun queueChapters(manga: Manga, chapters: List<Chapter>, autoStart: Boolean) = launchUI {
         val source = sourceManager.get(manga.source) as? HttpSource ?: return@launchUI
-
+        val wasEmpty = queue.isEmpty()
         // Called in background thread, the operation can be slow with SAF.
         val chaptersWithoutDir = async {
-            val mangaDir = provider.findMangaDir(manga, source)
-
             chapters
                 // Filter out those already downloaded.
                 .filter { provider.findChapterDir(it, manga, source) == null }
@@ -254,7 +260,7 @@ class Downloader(
             }
 
             // Start downloader if needed
-            if (autoStart) {
+            if (autoStart && wasEmpty) {
                 DownloadService.start(this@Downloader.context)
             }
         }
@@ -266,8 +272,16 @@ class Downloader(
      * @param download the chapter to be downloaded.
      */
     private fun downloadChapter(download: Download): Observable<Download> = Observable.defer {
-        val chapterDirname = provider.getChapterDirName(download.chapter)
         val mangaDir = provider.getMangaDir(download.manga, download.source)
+
+        val availSpace = DiskUtil.getAvailableStorageSpace(mangaDir)
+        if (availSpace != -1L && availSpace < MIN_DISK_SPACE) {
+            download.status = Download.ERROR
+            notifier.onError(context.getString(R.string.download_insufficient_space), download.chapter.name)
+            return@defer Observable.just(download)
+        }
+
+        val chapterDirname = provider.getChapterDirName(download.chapter)
         val tmpDir = mangaDir.createDirectory(chapterDirname + TMP_DIR_SUFFIX)
 
         val pageListObservable = if (download.pages == null) {
@@ -275,7 +289,7 @@ class Downloader(
             download.source.fetchPageList(download.chapter)
                 .doOnNext { pages ->
                     if (pages.isEmpty()) {
-                        throw Exception("Page list is empty")
+                        throw Exception(context.getString(R.string.page_list_empty_error))
                     }
                     download.pages = pages
                 }
@@ -308,18 +322,6 @@ class Downloader(
             .doOnNext { ensureSuccessfulDownload(download, mangaDir, tmpDir, chapterDirname) }
             // If the page list threw, it will resume here
             .onErrorReturn { error ->
-                // [EXH]
-                XLog.w("> Download error!", error)
-                XLog.w(
-                    "> (source.id: %s, source.name: %s, manga.id: %s, manga.url: %s, chapter.id: %s, chapter.url: %s)",
-                    download.source.id,
-                    download.source.name,
-                    download.manga.id,
-                    download.manga.url,
-                    download.chapter.id,
-                    download.chapter.url
-                )
-
                 download.status = Download.ERROR
                 notifier.onError(error.message, download.chapter.name)
                 download
@@ -384,7 +386,19 @@ class Downloader(
     private fun downloadImage(page: Page, source: HttpSource, tmpDir: UniFile, filename: String): Observable<UniFile> {
         page.status = Page.DOWNLOAD_IMAGE
         page.progress = 0
-        return source.fetchImage(page)
+        return /* SY --> If the source is E-Hentai request a new page if null */ Observable.just(Unit)
+            .flatMap {
+                if (page.imageUrl == null && source.isEhBasedSource()) {
+                    source.fetchImageUrl(page)
+                } else Observable.just(null)
+            }
+            .doOnNext { imageUrl ->
+                if (imageUrl != null) page.imageUrl = imageUrl
+            }
+            .flatMap {
+                source.fetchImage(page)
+            }
+            // SY <--
             .map { response ->
                 val file = tmpDir.createFile("$filename.tmp")
                 try {
@@ -392,19 +406,11 @@ class Downloader(
                     val extension = getImageExtension(response, file)
                     file.renameTo("$filename.$extension")
                 } catch (e: Exception) {
-                    // [EXH]
-                    XLog.w("> Failed to fetch image!", e)
-                    XLog.w(
-                        "> (source.id: %s, source.name: %s, page.index: %s, page.url: %s, page.imageUrl: %s)",
-                        source.id,
-                        source.name,
-                        page.index,
-                        page.url,
-                        page.imageUrl
-                    )
-
                     response.close()
                     file.delete()
+                    // SY --> E-Hentai sometimes has dead pages, so we request a new one if it fails
+                    if (source.isEhBasedSource()) page.imageUrl = null
+                    // SY <--
                     throw e
                 }
                 file
@@ -508,5 +514,8 @@ class Downloader(
 
     companion object {
         const val TMP_DIR_SUFFIX = "_tmp"
+
+        // Arbitrary minimum required space to start a download: 50 MB
+        const val MIN_DISK_SPACE = 50 * 1024 * 1024
     }
 }

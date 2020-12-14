@@ -43,6 +43,7 @@ buildscript {
         classpath("com.github.zellius:android-shortcut-gradle-plugin:0.1.2")
         classpath("com.google.gms:google-services:4.3.3")
         classpath("com.google.android.gms:oss-licenses-plugin:0.10.2")
+        classpath(kotlin("serialization", version = "1.4.21"))
         // Realm (EH)
         classpath("io.realm:realm-gradle-plugin:7.0.1")
 

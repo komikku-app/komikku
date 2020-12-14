@@ -3,7 +3,9 @@ package exh.metadata.metadata
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.plusAssign
+import kotlinx.serialization.Serializable
 
+@Serializable
 class PururinSearchMetadata : RaisedSearchMetadata() {
     var prId: Int? = null
 

@@ -7,7 +7,9 @@ import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTitle
 import exh.plusAssign
+import kotlinx.serialization.Serializable
 
+@Serializable
 class PervEdenSearchMetadata : RaisedSearchMetadata() {
     var pvId: String? = null
 
