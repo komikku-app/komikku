@@ -35,7 +35,7 @@ object SettingsSearchHelper {
      * All subclasses of `SettingsController` should be listed here, in order to have their preferences searchable.
      */
     // SY -->
-    private val settingControllersList: List<KClass<out SettingsController>> = {
+    private val settingControllersList: List<KClass<out SettingsController>> = run {
         val controllers = mutableListOf(
             SettingsAdvancedController::class,
             SettingsBackupController::class,
@@ -55,7 +55,7 @@ object SettingsSearchHelper {
             controllers += SettingsEhController::class
         }
         controllers
-    }()
+    }
     // SY <--
 
     /**

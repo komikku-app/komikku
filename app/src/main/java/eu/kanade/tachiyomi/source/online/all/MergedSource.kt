@@ -69,10 +69,10 @@ class MergedSource : SuspendHttpSource() {
             val mergedManga = db.getManga(manga.url, id).await() ?: throw Exception("merged manga not in db")
             val mangaReferences = mergedManga.id?.let { withContext(Dispatchers.IO) { db.getMergedMangaReferences(it).await() } } ?: throw Exception("merged manga id is null")
             if (mangaReferences.isEmpty()) throw IllegalArgumentException("Manga references are empty, info unavailable, merge is likely corrupted")
-            if (mangaReferences.size == 1 || {
+            if (mangaReferences.size == 1 || run {
                 val mangaReference = mangaReferences.firstOrNull()
                 mangaReference == null || (mangaReference.mangaSourceId == MERGED_SOURCE_ID)
-            }()
+            }
             ) throw IllegalArgumentException("Manga references contain only the merged reference, merge is likely corrupted")
 
             emit(

@@ -684,7 +684,7 @@ class LibraryPresenter(
         libraryManga.forEach { libraryItem ->
             when (groupType) {
                 LibraryGroup.BY_TRACK_STATUS -> {
-                    val status: String = {
+                    val status: String = run {
                         val tracks = db.getTracks(libraryItem.manga).executeAsBlocking()
                         val track = tracks.find { track ->
                             loggedServices.any { it.id == track?.sync_id }
@@ -695,7 +695,7 @@ class LibraryPresenter(
                         } else {
                             "not tracked"
                         }
-                    }()
+                    }
                     val group = grouping.find { it.first == trackManager.mapTrackingOrder(status, context).toString() }
                     if (group != null) {
                         map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))

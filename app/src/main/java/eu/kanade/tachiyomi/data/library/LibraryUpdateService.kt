@@ -284,7 +284,7 @@ class LibraryUpdateService(
                     val trackingExtra = intent.getStringExtra(KEY_GROUP_EXTRA)?.toIntOrNull() ?: -1
                     libraryManga.filter {
                         val loggedServices = trackManager.services.filter { it.isLogged }
-                        val status: String = {
+                        val status: String = run {
                             val tracks = db.getTracks(it).executeAsBlocking()
                             val track = tracks.find { track ->
                                 loggedServices.any { it.id == track?.sync_id }
@@ -295,7 +295,7 @@ class LibraryUpdateService(
                             } else {
                                 "not tracked"
                             }
-                        }()
+                        }
                         trackManager.mapTrackingOrder(status, applicationContext) == trackingExtra
                     }
                 }
