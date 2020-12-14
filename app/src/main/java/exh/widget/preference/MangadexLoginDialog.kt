@@ -3,7 +3,6 @@ package exh.widget.preference
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
@@ -40,7 +39,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     val scope = CoroutineScope(Job() + Dispatchers.Main)
 
-    var binding: PrefSiteLoginTwoFactorAuthBinding? = null
+    lateinit var binding: PrefSiteLoginTwoFactorAuthBinding
 
     constructor(source: MangaDex) : this(
         bundleOf(
@@ -51,31 +50,31 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         binding = PrefSiteLoginTwoFactorAuthBinding.inflate(LayoutInflater.from(activity!!))
         val dialog = MaterialDialog(activity!!)
-            .customView(view = binding!!.root, scrollable = false)
+            .customView(view = binding.root, scrollable = false)
 
-        onViewCreated(dialog.view)
+        onViewCreated()
 
         return dialog
     }
 
-    fun onViewCreated(view: View) {
-        binding!!.login.setMode(ActionProcessButton.Mode.ENDLESS)
-        binding!!.login.setOnClickListener { checkLogin() }
+    fun onViewCreated() {
+        binding.login.setMode(ActionProcessButton.Mode.ENDLESS)
+        binding.login.setOnClickListener { checkLogin() }
 
         setCredentialsOnView()
 
-        binding!!.twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
-            binding!!.twoFactorHolder.isVisible = isChecked
+        binding.twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
+            binding.twoFactorHolder.isVisible = isChecked
         }
     }
 
     private fun setCredentialsOnView() {
-        binding?.username?.setText(service.getUsername())
-        binding?.password?.setText(service.getPassword())
+        binding.username.setText(service.getUsername())
+        binding.password.setText(service.getPassword())
     }
 
     private fun checkLogin() {
-        binding?.apply {
+        with(binding) {
             if (username.text.isNullOrBlank() || password.text.isNullOrBlank() || (twoFactorCheck.isChecked && twoFactorEdit.text.isNullOrBlank())) {
                 errorResult()
                 root.context.toast(R.string.fields_cannot_be_blank)
@@ -110,7 +109,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
     }
 
     private fun errorResult() {
-        binding?.apply {
+        with(binding) {
             dialog?.setCancelable(true)
             dialog?.setCanceledOnTouchOutside(true)
             login.progress = -1
@@ -127,7 +126,6 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     private fun onDialogClosed() {
         scope.cancel()
-        binding = null
         if (activity != null) {
             (activity as? Listener)?.siteLoginDialogClosed(source!!)
         } else {
