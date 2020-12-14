@@ -62,17 +62,13 @@ class EditMangaDialog : DialogController {
     }
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+        binding = EditMangaDialogBinding.inflate(activity!!.layoutInflater)
         val dialog = MaterialDialog(activity!!).apply {
-            customView(viewRes = R.layout.edit_manga_dialog, scrollable = true)
+            customView(view = binding.root, scrollable = true)
             negativeButton(android.R.string.cancel)
             positiveButton(R.string.action_save) { onPositiveButtonClick() }
         }
-        binding = EditMangaDialogBinding.bind(dialog.view.contentLayout.customView!!)
         onViewCreated()
-        dialog.setOnShowListener {
-            val dView = (it as? MaterialDialog)?.view
-            dView?.contentLayout?.scrollView?.scrollTo(0, 0)
-        }
         return dialog
     }
 

@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.manga.merged
 
 import android.app.Dialog
 import android.os.Bundle
-import android.view.View
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
@@ -19,9 +18,6 @@ import exh.merged.sql.models.MergedMangaReference
 import uy.kohesive.injekt.injectLazy
 
 class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMergedMangaItemListener {
-
-    private var dialogView: View? = null
-
     private val manga: Manga
 
     val mergedMangas: MutableList<Pair<Manga?, MergedMangaReference>> = mutableListOf()
@@ -55,22 +51,17 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     private var mergedMangaAdapter: EditMergedMangaAdapter? = null
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-        val dialog = MaterialDialog(activity!!).apply {
-            customView(viewRes = R.layout.edit_merged_settings_dialog, scrollable = true)
-            negativeButton(android.R.string.cancel)
-            positiveButton(R.string.action_save) { onPositiveButtonClick() }
-        }
-        dialogView = dialog.view
-        onViewCreated(dialog.view)
-        dialog.setOnShowListener {
-            val dView = (it as? MaterialDialog)?.view
-            dView?.contentLayout?.scrollView?.scrollTo(0, 0)
-        }
+        binding = EditMergedSettingsDialogBinding.inflate(activity!!.layoutInflater)
+        val dialog = MaterialDialog(activity!!)
+            .customView(view = binding.root, scrollable = true)
+            .negativeButton(android.R.string.cancel)
+            .positiveButton(R.string.action_save) { onPositiveButtonClick() }
+
+        onViewCreated()
         return dialog
     }
 
-    fun onViewCreated(view: View) {
-        binding = EditMergedSettingsDialogBinding.bind(view)
+    fun onViewCreated() {
         val mergedManga = db.getMergedMangas(manga.id!!).executeAsBlocking()
         val mergedReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
         if (mergedReferences.isEmpty() || mergedReferences.size == 1) {
@@ -86,16 +77,11 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
         mergedHeaderAdapter = EditMergedSettingsHeaderAdapter(this, mergedMangaAdapter!!)
 
         binding.recycler.adapter = ConcatAdapter(mergedHeaderAdapter, mergedMangaAdapter)
-        binding.recycler.layoutManager = LinearLayoutManager(view.context)
+        binding.recycler.layoutManager = LinearLayoutManager(activity!!)
 
         mergedMangaAdapter?.isHandleDragEnabled = isPriorityOrder
 
         mergedMangaAdapter?.updateDataSet(mergedMangas.map { it.toModel() })
-    }
-
-    override fun onDestroyView(view: View) {
-        super.onDestroyView(view)
-        dialogView = null
     }
 
     private fun onPositiveButtonClick() {
@@ -115,7 +101,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
         val mergedMangaAdapter = mergedMangaAdapter ?: return
         val mergeMangaReference = mergedMangaAdapter.currentItems.getOrNull(position)?.mergedMangaReference ?: return
 
-        MaterialDialog(dialogView!!.context)
+        MaterialDialog(activity!!)
             .title(R.string.delete_merged_manga)
             .message(R.string.delete_merged_manga_desc)
             .positiveButton(android.R.string.ok) {
@@ -128,7 +114,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     }
 
     override fun onToggleChapterUpdatesClicked(position: Int) {
-        MaterialDialog(dialogView!!.context)
+        MaterialDialog(activity!!)
             .title(R.string.chapter_updates_merged_manga)
             .message(R.string.chapter_updates_merged_manga_desc)
             .positiveButton(android.R.string.ok) {
@@ -152,7 +138,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     }
 
     override fun onToggleChapterDownloadsClicked(position: Int) {
-        MaterialDialog(dialogView!!.context)
+        MaterialDialog(activity!!)
             .title(R.string.download_merged_manga)
             .message(R.string.download_merged_manga_desc)
             .positiveButton(android.R.string.ok) {
