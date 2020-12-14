@@ -39,6 +39,7 @@ import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.MERGED_SOURCE_ID
+import exh.mangaDexSourceIds
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.insertFlatMetadata
@@ -537,7 +538,9 @@ class LibraryUpdateService(
     }
 
     // SY -->
-    // filter all follows from Mangadex and only add reading or rereading manga to library
+    /**
+     * filter all follows from Mangadex and only add reading or rereading manga to library
+     */
     private fun syncFollows(): Observable<LibraryManga> {
         val count = AtomicInteger(0)
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager) ?: return Observable.empty()
@@ -582,7 +585,7 @@ class LibraryUpdateService(
      */
     private fun pushFavorites(): Observable<LibraryManga> {
         val count = AtomicInteger(0)
-        val listManga = db.getLibraryMangas().executeAsBlocking()
+        val listManga = db.getFavoriteMangas().executeAsBlocking().filter { it.source in mangaDexSourceIds }
 
         // filter all follows from Mangadex and only add reading or rereading manga to library
         return Observable.from(if (trackManager.mdList.isLogged) listManga else emptyList())
