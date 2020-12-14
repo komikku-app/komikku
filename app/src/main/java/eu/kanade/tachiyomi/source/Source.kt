@@ -63,8 +63,10 @@ interface Source : tachiyomi.source.Source {
      * [1.x API] Get the updated details for a manga.
      */
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        return fetchMangaDetails(manga.toSManga()).awaitSingle()
-            .toMangaInfo()
+        val sManga = manga.toSManga()
+        val networkManga = fetchMangaDetails(sManga).awaitSingle()
+        sManga.copyFrom(networkManga)
+        return sManga.toMangaInfo()
     }
 
     /**

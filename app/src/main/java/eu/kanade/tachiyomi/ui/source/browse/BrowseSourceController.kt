@@ -573,7 +573,6 @@ open class BrowseSourceController(bundle: Bundle) :
         val adapter = adapter ?: return
 
         preferences.catalogueDisplayMode().set(mode)
-        presenter.refreshDisplayMode()
         activity?.invalidateOptionsMenu()
         setupRecycler(view)
 

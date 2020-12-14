@@ -43,8 +43,12 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.isActive
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -115,11 +119,6 @@ open class BrowseSourcePresenter(
      */
     private var pageSubscription: Subscription? = null
 
-    /**
-     * Job to initialize manga details.
-     */
-    private var initializerJob: Job? = null
-
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
@@ -148,8 +147,6 @@ open class BrowseSourcePresenter(
     fun restartPager(query: String = this.query, filters: FilterList = this.appliedFilters) {
         this.query = query
         this.appliedFilters = filters
-
-        initializeManga()
 
         // Create a new pager.
         pager = if (recommends && searchManga != null) RecommendsPager(
@@ -205,27 +202,6 @@ open class BrowseSourcePresenter(
     }
 
     /**
-     * Subscribes to the initializer of manga details and updates the view if needed.
-     */
-    private fun initializeManga() {
-        initializerJob?.cancel()
-        initializerJob = launchIO {
-            mangaDetailsFlow
-                .onEach { mangas ->
-                    if (!isActive) return@onEach
-
-                    try {
-                        mangas.filter { it.thumbnail_url == null && !it.initialized }
-                            .map { getMangaDetails(it) }
-                            .forEach { launchUI { view?.onMangaInitialized(it) } }
-                    } catch (error: Exception) {
-                        launchUI { Timber.e(error) }
-                    }
-                }
-        }
-    }
-
-    /**
      * Returns a manga from the database for the given manga from network. It creates a new entry
      * if the manga is not yet in the database.
      *
@@ -250,7 +226,19 @@ open class BrowseSourcePresenter(
      * @param mangas the list of manga to initialize.
      */
     fun initializeMangas(mangas: List<Manga>) {
-        launchIO { mangaDetailsFlow.emit(mangas) }
+        launchIO {
+            mangas.asFlow()
+                .filter { it.thumbnail_url == null && !it.initialized }
+                .map { getMangaDetails(it) }
+                .onEach {
+                    launchUI {
+                        @Suppress("DEPRECATION")
+                        view?.onMangaInitialized(it)
+                    }
+                }
+                .catch { e -> Timber.e(e) }
+                .collect()
+        }
     }
 
     /**
@@ -260,17 +248,15 @@ open class BrowseSourcePresenter(
      * @return the initialized manga
      */
     private suspend fun getMangaDetails(manga: Manga): Manga {
-        return try {
-            source.getMangaDetails(manga.toMangaInfo())
-                .let { networkManga ->
-                    manga.copyFrom(networkManga.toSManga())
-                    manga.initialized = true
-                    db.insertManga(manga).executeAsBlocking()
-                    manga
-                }
+        try {
+            val networkManga = source.getMangaDetails(manga.toMangaInfo())
+            manga.copyFrom(networkManga.toSManga())
+            manga.initialized = true
+            db.insertManga(manga).executeAsBlocking()
         } catch (e: Exception) {
-            manga
+            Timber.e(e)
         }
+        return manga
     }
 
     /**
@@ -290,13 +276,6 @@ open class BrowseSourcePresenter(
         }
 
         db.insertManga(manga).executeAsBlocking()
-    }
-
-    /**
-     * Refreshes the active display mode.
-     */
-    fun refreshDisplayMode() {
-        initializeManga()
     }
 
     /**
