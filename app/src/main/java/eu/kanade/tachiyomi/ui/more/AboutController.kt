@@ -116,7 +116,7 @@ class AboutController : SettingsController() {
             preference {
                 key = "pref_about_label_original_tachiyomi_github"
                 title = "Original Tachiyomi GitHub "
-                val url = "https://github.com/inorichi/tachiyomi"
+                val url = "https://github.com/tachiyomiorg/tachiyomi"
                 summary = url
                 onClick {
                     val intent = Intent(Intent.ACTION_VIEW, url.toUri())

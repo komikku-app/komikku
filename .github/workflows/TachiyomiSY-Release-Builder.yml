@@ -18,7 +18,7 @@ jobs:
         uses: gradle/wrapper-validation-action@v1
 
   build:
-    name: Build app release
+    name: Build app
     needs: check_wrapper
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]')"
     runs-on: ubuntu-latest
@@ -60,21 +60,16 @@ jobs:
           dependencies-cache-enabled: true
           configuration-cache-enabled: true
 
-      - name: Sign Android Release
+      - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         with:
-          # The directory to find your release to sign
           releaseDirectory: app/build/outputs/apk/standard/release
-          # The key used to sign your release in base64 encoded format
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          # The key alias
           alias: ${{ secrets.ALIAS }}
-          # The password to the keystore
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          # The password for the key
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Create Release
+      - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -85,7 +80,7 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Upload Release APK
+      - name: Upload APK to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

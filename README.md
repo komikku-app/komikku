@@ -93,9 +93,9 @@ Please make sure to read the full guidelines. Your issue may be closed without w
 * For large logs use http://pastebin.com/ (or similar)
 * Don't group unrelated requests into one issue
 
-DO: https://github.com/inorichi/tachiyomi/issues/24 https://github.com/inorichi/tachiyomi/issues/71
+DO: https://github.com/tachiyomiorg/tachiyomi/issues/24 https://github.com/tachiyomiorg/tachiyomi/issues/71
 
-DON'T: https://github.com/inorichi/tachiyomi/issues/75
+DON'T: https://github.com/tachiyomiorg/tachiyomi/issues/75
 
 </details>
 

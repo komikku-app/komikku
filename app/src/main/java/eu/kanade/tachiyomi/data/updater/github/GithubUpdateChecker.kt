@@ -37,11 +37,11 @@ class GithubUpdateChecker {
         val newVersion = versionTag.replace("[^\\d.]".toRegex(), "")
 
         return if (BuildConfig.DEBUG) {
-            // Preview builds: based on releases in "tachiyomiorg/android-app-preview" repo
+            // Preview builds: based on releases in "tachiyomiorg/tachiyomi-preview" repo
             // tagged as something like "r1234"
             newVersion.toInt() > BuildConfig.COMMIT_COUNT.toInt()
         } else {
-            // Release builds: based on releases in "inorichi/tachiyomi" repo
+            // Release builds: based on releases in "tachiyomiorg/tachiyomi" repo
             // tagged as something like "v0.1.2"
             newVersion != BuildConfig.VERSION_NAME
         }
