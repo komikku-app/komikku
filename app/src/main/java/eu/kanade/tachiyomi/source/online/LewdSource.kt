@@ -45,14 +45,13 @@ interface LewdSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      * Will also save the metadata to the DB if possible
      */
     fun parseToManga(manga: SManga, input: I): Completable {
-        val mangaId = (manga as? Manga)?.id
+        val mangaId = manga.id
         val metaObservable = if (mangaId != null) {
             // We have to use fromCallable because StorIO messes up the thread scheduling if we use their rx functions
             Single.fromCallable {
                 db.getFlatMetadataForManga(mangaId).executeAsBlocking()
             }.map {
-                if (it != null) it.raise(metaClass)
-                else newMetaInstance()
+                it?.raise(metaClass) ?: newMetaInstance()
             }
         } else {
             Single.just(newMetaInstance())

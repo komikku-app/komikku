@@ -26,7 +26,7 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
 
     var group: String? = null
 
-    var type: String? = null
+    var genre: String? = null
 
     var language: String? = null
 
@@ -56,7 +56,7 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
             detailsDesc += "Group: $it\n"
         }
 
-        type?.let {
+        genre?.let {
             detailsDesc += "Type: ${it.capitalize()}\n"
         }
 

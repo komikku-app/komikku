@@ -193,7 +193,7 @@ class PervEden(override val id: Long, val pvLang: PervEdenLang) :
                             if (it is TextNode) {
                                 val text = it.text().trim()
                                 if (!text.isBlank()) {
-                                    type = text
+                                    genre = text
                                 }
                             }
                         }

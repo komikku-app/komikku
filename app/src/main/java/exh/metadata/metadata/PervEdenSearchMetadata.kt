@@ -26,7 +26,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
 
     var artist: String? = null
 
-    var type: String? = null
+    var genre: String? = null
 
     var rating: Float? = null
 
@@ -56,7 +56,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
             detailsDesc += "Artist: $it\n"
         }
 
-        type?.let {
+        genre?.let {
             detailsDesc += "Type: $it\n"
         }
 

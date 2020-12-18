@@ -17,6 +17,7 @@ test.sh
 */build
 /build
 *.apk
+*.idsig
 app/**/output.json
 
 
