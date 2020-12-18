@@ -157,6 +157,12 @@ object EXHMigrations {
                     ExtensionUpdateJob.setupTask(context)
                 }
 
+                if (oldVersion < 8620) {
+                    // Force MAL log out due to login flow change
+                    val trackManager = Injekt.get<TrackManager>()
+                    trackManager.myAnimeList.logout()
+                }
+
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
 
                 preferences.eh_lastVersionCode().set(BuildConfig.VERSION_CODE)
