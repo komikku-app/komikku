@@ -698,27 +698,27 @@ class LibraryPresenter(
                     }
                     val group = grouping.find { it.first == trackManager.mapTrackingOrder(status, context).toString() }
                     if (group != null) {
-                        map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
+                        map.getOrPut(group.second) { mutableListOf() } += libraryItem
                     } else {
-                        map[7]?.plusAssign(libraryItem) ?: map.put(7, mutableListOf(libraryItem))
+                        map.getOrPut(7) { mutableListOf() } += libraryItem
                     }
                 }
                 LibraryGroup.BY_SOURCE -> {
                     val group = grouping.find { it.first.toLongOrNull() == libraryItem.manga.source }
                     if (group != null) {
-                        map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
+                        map.getOrPut(group.second) { mutableListOf() } += libraryItem
                     } else {
                         if (grouping.all { it.second != Int.MAX_VALUE }) grouping += Triple(Int.MAX_VALUE.toString(), Int.MAX_VALUE, context.getString(R.string.unknown))
-                        map[Int.MAX_VALUE]?.plusAssign(libraryItem) ?: map.put(Int.MAX_VALUE, mutableListOf(libraryItem))
+                        map.getOrPut(Int.MAX_VALUE) { mutableListOf() } += libraryItem
                     }
                 }
                 else -> {
                     val group = grouping.find { it.second == libraryItem.manga.status }
                     if (group != null) {
-                        map[group.second]?.plusAssign(libraryItem) ?: map.put(group.second, mutableListOf(libraryItem))
+                        map.getOrPut(group.second) { mutableListOf() } += libraryItem
                     } else {
                         if (grouping.all { it.second != Int.MAX_VALUE }) grouping += Triple(Int.MAX_VALUE.toString(), Int.MAX_VALUE, context.getString(R.string.unknown))
-                        map[Int.MAX_VALUE]?.plusAssign(libraryItem) ?: map.put(Int.MAX_VALUE, mutableListOf(libraryItem))
+                        map.getOrPut(Int.MAX_VALUE) { mutableListOf() } += libraryItem
                     }
                 }
             }
@@ -730,11 +730,12 @@ class LibraryPresenter(
                 LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.filter { it.second in map.keys }
                 else -> grouping
             }
-            ).map {
-            val category = Category.create(it.third)
-            category.id = it.second
-            category
-        }
+            )
+            .map {
+                val category = Category.create(it.third)
+                category.id = it.second
+                category
+            }
 
         return map to categories
     }

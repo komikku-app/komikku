@@ -11,7 +11,7 @@ import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
+import eu.kanade.tachiyomi.ui.base.activity.BaseViewBindingActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.GalleryAddEvent
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class InterceptActivity : BaseActivity<EhActivityInterceptBinding>() {
+class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() {
     private var statusJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
