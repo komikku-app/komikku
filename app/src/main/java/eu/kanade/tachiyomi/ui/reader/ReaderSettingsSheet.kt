@@ -75,7 +75,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
             activity.presenter.setMangaViewer(position)
 
             val mangaViewer = activity.presenter.getMangaViewer()
-            if (mangaViewer == ReaderActivity.WEBTOON || mangaViewer == ReaderActivity.VERTICAL_PLUS) {
+            if (mangaViewer == ReaderActivity.WEBTOON || mangaViewer == ReaderActivity.VERTICAL_PLUS || mangaViewer == ReaderActivity.WEBTOON_HORIZ) {
                 initWebtoonPreferences()
             } else {
                 initPagerPreferences()

@@ -22,7 +22,7 @@ import timber.log.Timber
 /**
  * Implementation of a [BaseViewer] to display pages with a [RecyclerView].
  */
-class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = true) : BaseViewer {
+class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = true, val isHorizontal: Boolean = false, val isReversed: Boolean = false) : BaseViewer {
 
     /**
      * Recycler view used by this viewer.
@@ -37,7 +37,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     /**
      * Layout manager of the recycler view.
      */
-    private val layoutManager = WebtoonLayoutManager(activity)
+    private val layoutManager = WebtoonLayoutManager(activity, if (isHorizontal) RecyclerView.HORIZONTAL else RecyclerView.VERTICAL, isReversed)
 
     /**
      * Adapter of the recycler view.

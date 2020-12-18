@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
  * This layout manager uses the same package name as the support library in order to use a package
  * protected method.
  */
-class WebtoonLayoutManager(activity: ReaderActivity) : LinearLayoutManager(activity) {
+class WebtoonLayoutManager(activity: ReaderActivity, orientation: Int = RecyclerView.VERTICAL, reverse: Boolean = false) : LinearLayoutManager(activity, orientation, reverse) {
 
     /**
      * Extra layout space is set to half the screen height.

@@ -137,6 +137,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         const val VERTICAL = 3
         const val WEBTOON = 4
         const val VERTICAL_PLUS = 5
+        const val WEBTOON_HORIZ = 6
 
         fun newIntent(context: Context, manga: Manga, chapter: Chapter): Intent {
             return Intent(context, ReaderActivity::class.java).apply {
@@ -635,6 +636,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             VERTICAL -> VerticalPagerViewer(this)
             WEBTOON -> WebtoonViewer(this)
             VERTICAL_PLUS -> WebtoonViewer(this, isContinuous = false)
+            WEBTOON_HORIZ -> WebtoonViewer(this, isContinuous = true, isHorizontal = true)
             else -> L2RPagerViewer(this)
         }
 
