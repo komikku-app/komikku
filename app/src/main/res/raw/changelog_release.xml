@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.6.2-AZ" changeDate="">
+        <changelogtext>MyAnimeList's login system has changed, please re-login.</changelogtext>
+        <changelogtext>This update is just bugfixes and minor features</changelogtext>
+        <changelogtext>added DNS over HTTPS option</changelogtext>
+        <changelogtext>added new, faster, offline backup system</changelogtext>
+        <changelogtext>added ability to download all unread directly from catalogue</changelogtext>
+        <changelogtext>added Red and Black theme</changelogtext>
+        <changelogtext>added continue reading button. Setting available in filter settings</changelogtext>
+        <changelogtext>added J2K auto background colour</changelogtext>
+        <changelogtext>re-added metadata only refresh</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.6.1-AZ" changeDate="">
         <changelogtext>This entire update is just minor bugfixes</changelogtext>
         <changelogtext>Fixed migration icon colours</changelogtext>
