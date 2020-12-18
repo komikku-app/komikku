@@ -21,7 +21,8 @@
         <item>@string/vertical_viewer</item>
         <item>@string/webtoon_viewer</item>
         <item>@string/vertical_plus_viewer</item>
-        <item>@string/webtoon_horiz_viewer</item>
+        <item>@string/webtoon_horiz_viewer_ltr</item>
+        <item>@string/webtoon_horiz_viewer_rtl</item>
     </string-array>
 
     <string-array name="reader_themes">
