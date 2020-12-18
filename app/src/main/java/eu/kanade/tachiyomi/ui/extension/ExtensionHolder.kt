@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.extension
 import android.view.View
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.glide.GlideApp
+import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
@@ -100,7 +101,7 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
                     setText(R.string.ext_redundant)
                 }
                 else -> {
-                    setText(R.string.ext_details)
+                    setText("".plusRepo(extension))
                 }
             }
         } else if (extension is Extension.Untrusted) {
@@ -109,4 +110,21 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
             setText(R.string.ext_install)
         }
     }
+
+    // SY -->
+    private fun String.plusRepo(extension: Extension): String {
+        return if (extension is Extension.Available) {
+            when (extension.repoUrl) {
+                ExtensionGithubApi.REPO_URL_PREFIX -> this
+                else -> {
+                    this + if (this.isEmpty()) {
+                        ""
+                    } else {
+                        " • "
+                    } + itemView.context.getString(R.string.repo_source)
+                }
+            }
+        } else this
+    }
+    // SY <--
 }

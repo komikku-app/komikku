@@ -254,4 +254,6 @@ object PreferenceKeys {
     const val eh_enable_hah = "eh_enable_hah"
 
     const val startReadingButton = "start_reading_button"
+
+    const val extensionRepos = "extension_repos"
 }

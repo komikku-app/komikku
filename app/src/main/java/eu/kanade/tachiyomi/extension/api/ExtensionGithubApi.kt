@@ -1,45 +1,36 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
-import com.github.salomonbrys.kotson.fromJson
-import com.github.salomonbrys.kotson.get
-import com.github.salomonbrys.kotson.int
-import com.github.salomonbrys.kotson.string
-import com.google.gson.Gson
-import com.google.gson.JsonArray
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.NetworkHelper
-import eu.kanade.tachiyomi.network.await
 import exh.source.BlacklistedSources
 import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.Response
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import uy.kohesive.injekt.injectLazy
 
 internal class ExtensionGithubApi {
 
-    private val network: NetworkHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
 
-    private val gson: Gson by injectLazy()
-
     suspend fun findExtensions(): List<Extension.Available> {
-        val call = GET(EXT_URL)
+        val service: ExtensionGithubService = ExtensionGithubService.create()
 
         return withContext(Dispatchers.IO) {
-            val response = network.client.newCall(call).await()
-            if (response.isSuccessful) {
-                parseResponse(response)
-            } else {
-                response.close()
-                throw Exception("Failed to get extensions")
-            }
+            val response = service.getRepo()
+            parseResponse(response)
+        } /* SY --> */ + preferences.extensionRepos().get().flatMap {
+            val url = "$BASE_URL$it/repo/"
+            val response = service.getRepo("${url}index.min.json")
+            parseResponse(response, url)
         }
+        // SY <--
     }
 
     suspend fun checkForUpdates(context: Context): List<Extension.Installed> {
@@ -47,12 +38,16 @@ internal class ExtensionGithubApi {
 
         preferences.lastExtCheck().set(Date().time)
 
+        // SY -->
         val blacklistEnabled = preferences.eh_enableSourceBlacklist().get()
+        // SY <--
 
         val installedExtensions = ExtensionLoader.loadExtensions(context)
             .filterIsInstance<LoadResult.Success>()
             .map { it.extension }
+            // SY -->
             .filterNot { it.isBlacklisted(blacklistEnabled) }
+        // SY <--
 
         val extensionsWithUpdate = mutableListOf<Extension.Installed>()
         for (installedExt in installedExtensions) {
@@ -68,43 +63,42 @@ internal class ExtensionGithubApi {
         return extensionsWithUpdate
     }
 
-    private fun parseResponse(response: Response): List<Extension.Available> {
-        val text = response.body?.use { it.string() } ?: return emptyList()
-
-        val json = gson.fromJson<JsonArray>(text)
-
+    private fun parseResponse(json: JsonArray /* SY --> */, repoUrl: String = REPO_URL_PREFIX /* SY <-- */): List<Extension.Available> {
         return json
             .filter { element ->
-                val versionName = element["version"].string
+                val versionName = element.jsonObject["version"]!!.jsonPrimitive.content
                 val libVersion = versionName.substringBeforeLast('.').toDouble()
                 libVersion >= ExtensionLoader.LIB_VERSION_MIN && libVersion <= ExtensionLoader.LIB_VERSION_MAX
             }
             .map { element ->
-                val name = element["name"].string.substringAfter("Tachiyomi: ")
-                val pkgName = element["pkg"].string
-                val apkName = element["apk"].string
-                val versionName = element["version"].string
-                val versionCode = element["code"].int
-                val lang = element["lang"].string
-                val icon = "$REPO_URL/icon/${apkName.replace(".apk", ".png")}"
+                val name = element.jsonObject["name"]!!.jsonPrimitive.content.substringAfter("Tachiyomi: ")
+                val pkgName = element.jsonObject["pkg"]!!.jsonPrimitive.content
+                val apkName = element.jsonObject["apk"]!!.jsonPrimitive.content
+                val versionName = element.jsonObject["version"]!!.jsonPrimitive.content
+                val versionCode = element.jsonObject["code"]!!.jsonPrimitive.int
+                val lang = element.jsonObject["lang"]!!.jsonPrimitive.content
+                // SY -->
+                val icon = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"
+                // SY <--
 
-                Extension.Available(name, pkgName, versionName, versionCode, lang, apkName, icon)
+                Extension.Available(name, pkgName, versionName, versionCode, lang, apkName, icon /* SY --> */, repoUrl /* SY <-- */)
             }
     }
 
     fun getApkUrl(extension: Extension.Available): String {
-        return "$REPO_URL/apk/${extension.apkName}"
+        return /* SY --> */ "${extension.repoUrl}/apk/${extension.apkName}" /* SY <-- */
     }
 
-    fun Extension.isBlacklisted(
-        blacklistEnabled: Boolean =
-            preferences.eh_enableSourceBlacklist().get()
+    // SY -->
+    private fun Extension.isBlacklisted(
+        blacklistEnabled: Boolean = preferences.eh_enableSourceBlacklist().get()
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
+    // SY <--
 
     companion object {
-        private const val REPO_URL = "https://raw.githubusercontent.com/inorichi/tachiyomi-extensions/repo"
-        private const val EXT_URL = "$REPO_URL/index.json"
+        const val BASE_URL = "https://raw.githubusercontent.com/"
+        const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
     }
 }

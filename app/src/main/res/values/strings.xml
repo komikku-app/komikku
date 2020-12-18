@@ -786,6 +786,20 @@ z
     <string name="start_reading">Start reading</string>
     <string name="saved_searches">Saved Searches</string>
 
+    <string name="information_empty_repos">You have no additional repos. Tap the plus button to create one for adding external extensions.</string>
+    <string name="action_add_repo">Add repo</string>
+    <string name="action_add_repo_message">Add additional repos to Tachiyomi, the format of a repo is \'username/repo\' , with username being the repo owner, and repo being the repo name</string>
+    <string name="action_edit_repos">Edit repos</string>
+    <plurals name="num_repos">
+        <item quantity="one">%d additional repo</item>
+        <item quantity="other">%d additional repos</item>
+    </plurals>
+    <string name="error_repo_exists">This repo already exists!</string>
+    <string name="snack_repo_deleted">Repo deleted</string>
+    <string name="invalid_repo_name">Invalid category name</string>
+    <string name="repo_source">Repo source</string>
+
+
     <!-- Library fragment -->
     <string name="buttons_header">Buttons</string>
 
