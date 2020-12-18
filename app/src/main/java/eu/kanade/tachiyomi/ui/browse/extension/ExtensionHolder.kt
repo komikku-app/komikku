@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.ExtensionCardItemBinding
+import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -41,9 +42,9 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             extension is Extension.Installed && extension.isUnofficial -> itemView.context.getString(R.string.ext_unofficial)
             // SY -->
             extension is Extension.Installed && extension.isRedundant -> itemView.context.getString(R.string.ext_redundant)
+            extension.isNsfw && shouldLabelNsfw -> itemView.context.getString(R.string.ext_nsfw_short).plusRepo(extension)
+            else -> "".plusRepo(extension)
             // SY <--
-            extension.isNsfw && shouldLabelNsfw -> itemView.context.getString(R.string.ext_nsfw_short)
-            else -> ""
         }.toUpperCase()
 
         GlideApp.with(itemView.context).clear(binding.image)
@@ -56,6 +57,23 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
         }
         bindButton(item)
     }
+
+    // SY -->
+    private fun String.plusRepo(extension: Extension): String {
+        return if (extension is Extension.Available) {
+            when (extension.repoUrl) {
+                ExtensionGithubApi.REPO_URL_PREFIX -> this
+                else -> {
+                    this + if (this.isEmpty()) {
+                        ""
+                    } else {
+                        " • "
+                    } + itemView.context.getString(R.string.repo_source)
+                }
+            }
+        } else this
+    }
+    // SY <--
 
     @Suppress("ResourceType")
     fun bindButton(item: ExtensionItem) = with(binding.extButton) {

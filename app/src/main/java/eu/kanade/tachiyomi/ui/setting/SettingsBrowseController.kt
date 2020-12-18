@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.category.repos.RepoController
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.infoPreference
@@ -84,6 +85,19 @@ class SettingsBrowseController : SettingsController() {
                     true
                 }
             }
+            // SY -->
+            preference {
+                key = "pref_edit_extension_repos"
+                titleRes = R.string.action_edit_repos
+
+                val catCount = preferences.extensionRepos().get().count()
+                summary = context.resources.getQuantityString(R.plurals.num_repos, catCount, catCount)
+
+                onClick {
+                    router.pushController(RepoController().withFadeTransaction())
+                }
+            }
+            // SY <--
         }
 
         preferenceCategory {

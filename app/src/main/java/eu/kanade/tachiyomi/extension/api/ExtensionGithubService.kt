@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonArray
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 import retrofit2.http.GET
+import retrofit2.http.Url
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -27,6 +28,8 @@ interface ExtensionGithubService {
         }
     }
 
-    @GET("${ExtensionGithubApi.REPO_URL_PREFIX}index.min.json")
-    suspend fun getRepo(): JsonArray
+    // SY -->
+    @GET
+    suspend fun getRepo(@Url url: String = "${ExtensionGithubApi.REPO_URL_PREFIX}index.min.json"): JsonArray
+    // SY <--
 }

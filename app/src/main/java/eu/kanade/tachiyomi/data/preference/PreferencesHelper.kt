@@ -445,4 +445,6 @@ class PreferencesHelper(val context: Context) {
     fun sortTagsForLibrary() = flowPrefs.getStringSet(Keys.sortTagsForLibrary, mutableSetOf())
 
     fun dontDeleteFromCategories() = flowPrefs.getStringSet(Keys.dontDeleteFromCategories, emptySet())
+
+    fun extensionRepos() = flowPrefs.getStringSet(Keys.dontDeleteFromCategories, emptySet())
 }
