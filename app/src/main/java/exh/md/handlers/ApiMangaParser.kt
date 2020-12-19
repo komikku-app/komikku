@@ -230,7 +230,13 @@ class ApiMangaParser(private val langs: List<String>) {
         val networkApiManga = MdUtil.jsonParser.decodeFromString<ApiMangaSerializer>(jsonData)
         val networkManga = networkApiManga.data.manga
         val networkChapters = networkApiManga.data.chapters
-        val groups = networkApiManga.data.groups.map { it.id to it.name }.toMap()
+        val groups = networkApiManga.data.groups.mapNotNull {
+            if (it.name == null) {
+                null
+            } else {
+                it.id to it.name
+            }
+        }.toMap()
 
         val status = networkManga.publication!!.status
 

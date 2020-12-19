@@ -72,5 +72,5 @@ data class ChapterSerializer(
 @Serializable
 data class GroupSerializer(
     val id: Long,
-    val name: String
+    val name: String? = null
 )
