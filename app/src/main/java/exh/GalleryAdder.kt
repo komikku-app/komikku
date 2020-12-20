@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -14,6 +15,8 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import exh.source.getMainSource
 import exh.util.executeOnIO
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class GalleryAdder {
@@ -21,6 +24,11 @@ class GalleryAdder {
     private val db: DatabaseHelper by injectLazy()
 
     private val sourceManager: SourceManager by injectLazy()
+
+    private val filters: Pair<Set<String>, Set<Long>> = run {
+        val preferences = Injekt.get<PreferencesHelper>()
+        preferences.enabledLanguages().get() to preferences.disabledSources().get().map { it.toLong() }.toSet()
+    }
 
     private val logger = XLog.tag("GalleryAdder").enableStackTrace(2).build()
 
@@ -30,7 +38,7 @@ class GalleryAdder {
             .map { it.getMainSource() }
             .filterIsInstance<UrlImportableSource>()
             .filter {
-                try {
+                it.lang in filters.first && it.id !in filters.second && try {
                     it.matchesUri(uri)
                 } catch (e: Exception) {
                     false
@@ -63,7 +71,7 @@ class GalleryAdder {
                     .map { it.getMainSource() }
                     .filterIsInstance<UrlImportableSource>()
                     .find {
-                        try {
+                        it.lang in filters.first && it.id !in filters.second && try {
                             it.matchesUri(uri)
                         } catch (e: Exception) {
                             false
