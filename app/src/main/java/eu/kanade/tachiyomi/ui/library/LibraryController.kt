@@ -252,6 +252,7 @@ class LibraryController(
                 is LibraryNavigationView.SortGroup -> onSortChanged()
                 is LibraryNavigationView.DisplayGroup -> reattachAdapter()
                 is LibraryNavigationView.BadgeGroup -> onBadgeChanged()
+                is LibraryNavigationView.ButtonsGroup -> onBadgeChanged()
             }
         }
 
