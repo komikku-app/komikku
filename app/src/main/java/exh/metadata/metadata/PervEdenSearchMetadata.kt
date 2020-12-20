@@ -56,41 +56,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
         // Copy tags -> genres
         manga.genre = tagsToGenreString()
 
-        /*val titleDesc = StringBuilder()
-
-        title?.let {
-            titleDesc += "Title: $it\n"
-        }
-        if (altTitles.isNotEmpty()) {
-            titleDesc += "Alternate Titles: \n" + altTitles
-                .joinToString(separator = "\n", postfix = "\n") {
-                    "▪ $it"
-                }
-        }
-
-        val detailsDesc = StringBuilder()
-        artist?.let {
-            detailsDesc += "Artist: $it\n"
-        }
-
-        type?.let {
-            detailsDesc += "Type: $it\n"
-        }
-
-        status?.let {
-            detailsDesc += "Status: $it\n"
-        }
-
-        rating?.let {
-            detailsDesc += "Rating: %.2\n".format(it)
-        }
-
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

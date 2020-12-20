@@ -59,8 +59,8 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
         titleObj?.let { manga.title = it }
 
         // Set artist (if we can find one)
-        tags.filter { it.namespace == EH_ARTIST_NAMESPACE }.let {
-            if (it.isNotEmpty()) manga.artist = it.joinToString(transform = { it.name })
+        tags.filter { it.namespace == EH_ARTIST_NAMESPACE }.let { tags ->
+            if (tags.isNotEmpty()) manga.artist = tags.joinToString(transform = { it.name })
         }
 
         // Copy tags -> genres
@@ -77,35 +77,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
             }
         }
 
-        // Build a nice looking description out of what we know
-        /* val titleDesc = StringBuilder()
-        title?.let { titleDesc += "Title: $it\n" }
-        altTitle?.let { titleDesc += "Alternate Title: $it\n" }
-
-        val detailsDesc = StringBuilder()
-        genre?.let { detailsDesc += "Genre: $it\n" }
-        uploader?.let { detailsDesc += "Uploader: $it\n" }
-        datePosted?.let { detailsDesc += "Posted: ${EX_DATE_FORMAT.format(Date(it))}\n" }
-        visible?.let { detailsDesc += "Visible: $it\n" }
-        language?.let {
-            detailsDesc += "Language: $it"
-            if (translated == true) detailsDesc += " TR"
-            detailsDesc += "\n"
-        }
-        size?.let { detailsDesc += "File size: ${humanReadableByteCount(it, true)}\n" }
-        length?.let { detailsDesc += "Length: $it pages\n" }
-        favorites?.let { detailsDesc += "Favorited: $it times\n" }
-        averageRating?.let {
-            detailsDesc += "Rating: $it"
-            ratingCount?.let { detailsDesc += " ($it)" }
-            detailsDesc += "\n"
-        }
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

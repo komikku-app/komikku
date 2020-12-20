@@ -36,14 +36,7 @@ class HentaiCafeSearchMetadata : RaisedSearchMetadata() {
 
         manga.genre = tagsToGenreString()
 
-        /* val detailsDesc = "Title: $title\n" +
-            "Artist: $artist\n"
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(detailsDesc, tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

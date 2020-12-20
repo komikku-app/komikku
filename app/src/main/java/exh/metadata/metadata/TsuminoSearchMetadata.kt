@@ -52,32 +52,7 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
         // Copy tags -> genres
         manga.genre = tagsToGenreString()
 
-        /*val titleDesc = "Title: $title\n"
-
-        val detailsDesc = StringBuilder()
-        uploader?.let { detailsDesc += "Uploader: $it\n" }
-        uploadDate?.let { detailsDesc += "Uploaded: ${EX_DATE_FORMAT.format(Date(it))}\n" }
-        length?.let { detailsDesc += "Length: $it pages\n" }
-        ratingString?.let { detailsDesc += "Rating: $it\n" }
-        category?.let {
-            detailsDesc += "Category: $it\n"
-        }
-        collection?.let { detailsDesc += "Collection: $it\n" }
-        group?.let { detailsDesc += "Group: $it\n" }
-        val parodiesString = parody.joinToString()
-        if (parodiesString.isNotEmpty()) {
-            detailsDesc += "Parody: $parodiesString\n"
-        }
-        val charactersString = character.joinToString()
-        if (charactersString.isNotEmpty()) {
-            detailsDesc += "Character: $charactersString\n"
-        }
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(titleDesc, detailsDesc.toString(), tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

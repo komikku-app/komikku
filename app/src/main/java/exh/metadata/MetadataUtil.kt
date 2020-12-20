@@ -35,18 +35,17 @@ object MetadataUtil {
     private const val GB_FACTOR = 1000 * MB_FACTOR
     private const val GIB_FACTOR = 1024 * MIB_FACTOR
 
-    fun parseHumanReadableByteCount(arg0: String): Double? {
-        val spaceNdx = arg0.indexOf(" ")
-        val ret = java.lang.Double.parseDouble(arg0.substring(0, spaceNdx))
-        when (arg0.substring(spaceNdx + 1)) {
-            "GB" -> return ret * GB_FACTOR
-            "GiB" -> return ret * GIB_FACTOR
-            "MB" -> return ret * MB_FACTOR
-            "MiB" -> return ret * MIB_FACTOR
-            "KB" -> return ret * KB_FACTOR
-            "KiB" -> return ret * KIB_FACTOR
+    fun parseHumanReadableByteCount(bytes: String): Double? {
+        val ret = bytes.substringBefore(' ').toDouble()
+        return when (bytes.substringAfter(' ')) {
+            "GB" -> ret * GB_FACTOR
+            "GiB" -> ret * GIB_FACTOR
+            "MB" -> ret * MB_FACTOR
+            "MiB" -> ret * MIB_FACTOR
+            "KB" -> ret * KB_FACTOR
+            "KiB" -> ret * KIB_FACTOR
+            else -> null
         }
-        return null
     }
 
     val ONGOING_SUFFIX = arrayOf(

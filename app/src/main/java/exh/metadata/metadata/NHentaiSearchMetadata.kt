@@ -53,8 +53,8 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         }
 
         // Set artist (if we can find one)
-        tags.filter { it.namespace == NHENTAI_ARTIST_NAMESPACE }.let {
-            if (it.isNotEmpty()) manga.artist = it.joinToString(transform = { it.name })
+        tags.filter { it.namespace == NHENTAI_ARTIST_NAMESPACE }.let { tags ->
+            if (tags.isNotEmpty()) manga.artist = tags.joinToString(transform = { it.name })
         }
 
         // Copy tags -> genres

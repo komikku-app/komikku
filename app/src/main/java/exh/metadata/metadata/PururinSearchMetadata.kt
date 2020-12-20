@@ -45,21 +45,7 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
 
         manga.genre = tagsToGenreString()
 
-        /*val titleDesc = StringBuilder()
-        title?.let { titleDesc += "English Title: $it\n" }
-        altTitle?.let { titleDesc += "Japanese Title: $it\n" }
-
-        val detailsDesc = StringBuilder()
-        (uploaderDisp ?: uploader)?.let { detailsDesc += "Uploader: $it\n" }
-        pages?.let { detailsDesc += "Length: $it pages\n" }
-        fileSize?.let { detailsDesc += "Size: $it\n" }
-        ratingCount?.let { detailsDesc += "Rating: $averageRating ($ratingCount)\n" }
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

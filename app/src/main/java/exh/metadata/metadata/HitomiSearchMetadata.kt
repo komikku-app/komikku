@@ -51,45 +51,7 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
 
         manga.status = SManga.UNKNOWN
 
-        /*val titleDesc = StringBuilder()
-
-        title?.let {
-            titleDesc += "Title: $it\n"
-        }
-
-        val detailsDesc = StringBuilder()
-
-        detailsDesc += "Artist(s): ${manga.artist}\n"
-
-        group?.let {
-            detailsDesc += "Group: $it\n"
-        }
-
-        type?.let {
-            detailsDesc += "Type: ${it.capitalize()}\n"
-        }
-
-        (language ?: "unknown").let {
-            detailsDesc += "Language: ${it.capitalize()}\n"
-        }
-
-        if (series.isNotEmpty()) {
-            detailsDesc += "Series: ${series.joinToString()}\n"
-        }
-
-        if (characters.isNotEmpty()) {
-            detailsDesc += "Characters: ${characters.joinToString()}\n"
-        }
-
-        uploadDate?.let {
-            detailsDesc += "Upload date: ${EX_DATE_FORMAT.format(Date(it))}\n"
-        }
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(titleDesc.toString(), detailsDesc.toString(), tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

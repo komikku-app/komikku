@@ -29,14 +29,7 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
 
         manga.genre = tagsToGenreString()
 
-        /*val titleDesc = StringBuilder()
-        title?.let { titleDesc += "Title: $it\n" }
-
-        val tagsDesc = tagsToDescription()*/
-
-        manga.description = "meta" /*listOf(titleDesc.toString(), tagsDesc.toString())
-            .filter(String::isNotBlank)
-            .joinToString(separator = "\n")*/
+        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
