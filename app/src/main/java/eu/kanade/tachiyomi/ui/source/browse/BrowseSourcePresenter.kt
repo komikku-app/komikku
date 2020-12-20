@@ -37,6 +37,10 @@ import java.lang.RuntimeException
 import java.util.Date
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.put
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -405,11 +409,11 @@ open class BrowseSourcePresenter(
             !it.startsWith("${source.id}:")
         }
         val newSerialized = searches.map {
-            "${source.id}:" + jsonObject(
-                "name" to it.name,
-                "query" to it.query,
-                "filters" to filterSerializer.serialize(it.filterList)
-            ).toString()
+            "${source.id}:" + buildJsonObject {
+                put("name", it.name)
+                put("query", it.query)
+                put("filters", filterSerializer.serialize(it.filterList))
+            }.toString()
         }
         prefs.eh_savedSearches().set((otherSerialized + newSerialized).toSet())
     }
@@ -424,9 +428,9 @@ open class BrowseSourcePresenter(
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
-                    content.name,
-                    content.query,
-                    originalFilters
+                        content.name,
+                        content.query,
+                        originalFilters
                 )
             } catch (t: RuntimeException) {
                 // Load failed
