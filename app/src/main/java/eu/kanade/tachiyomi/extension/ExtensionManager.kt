@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.extension
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import androidx.core.content.ContextCompat
 import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.R
@@ -76,9 +77,9 @@ class ExtensionManager(
 
         // SY -->
         return when (source.id) {
-            EH_SOURCE_ID -> context.getDrawable(R.mipmap.ic_ehentai_source)
-            EXH_SOURCE_ID -> context.getDrawable(R.mipmap.ic_ehentai_source)
-            MERGED_SOURCE_ID -> context.getDrawable(R.mipmap.ic_merged_source)
+            EH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
+            EXH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
+            MERGED_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_merged_source)
             else -> null
         }
         // SY <--
