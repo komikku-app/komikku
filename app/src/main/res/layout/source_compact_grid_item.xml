@@ -137,7 +137,7 @@
             android:shadowDx="0"
             android:shadowDy="0"
             android:shadowRadius="4"
-            android:textColor="?md_color_title"
+            android:textColor="#FFFFFF"
             tools:text="Sample name" />
 
         <ProgressBar
