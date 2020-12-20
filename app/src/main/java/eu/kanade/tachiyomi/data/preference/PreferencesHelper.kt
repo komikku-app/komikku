@@ -447,4 +447,6 @@ class PreferencesHelper(val context: Context) {
     fun dontDeleteFromCategories() = flowPrefs.getStringSet(Keys.dontDeleteFromCategories, emptySet())
 
     fun extensionRepos() = flowPrefs.getStringSet(Keys.extensionRepos, emptySet())
+
+    fun cropBordersContinuesVertical() = flowPrefs.getBoolean(Keys.cropBordersContinuesVertical, false)
 }

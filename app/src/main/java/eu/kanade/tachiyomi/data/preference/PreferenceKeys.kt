@@ -334,4 +334,6 @@ object PreferenceKeys {
     const val dontDeleteFromCategories = "dont_delete_from_categories"
 
     const val extensionRepos = "extension_repos"
+
+    const val cropBordersContinuesVertical = "crop_borders_continues_vertical"
 }

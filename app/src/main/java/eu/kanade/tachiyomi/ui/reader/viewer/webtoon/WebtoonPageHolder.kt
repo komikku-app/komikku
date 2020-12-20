@@ -361,7 +361,7 @@ class WebtoonPageHolder(
             setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH)
             setMinimumDpi(90)
             setMinimumTileDpi(180)
-            setCropBorders(config.imageCropBorders)
+            setCropBorders(/* SY --> */ if (viewer.isContinuous) config.continuesCropBorders else /* SY <-- */ config.imageCropBorders)
             setOnImageEventListener(
                 object : SubsamplingScaleImageView.DefaultOnImageEventListener() {
                     override fun onReady() {

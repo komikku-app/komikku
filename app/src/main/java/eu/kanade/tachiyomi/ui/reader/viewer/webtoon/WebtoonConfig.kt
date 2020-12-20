@@ -19,6 +19,10 @@ class WebtoonConfig(preferences: PreferencesHelper = Injekt.get()) : ViewerConfi
     // SY -->
     var enableZoomOut = false
         private set
+
+    var continuesCropBorders = false
+        private set
+
     var zoomPropertyChangedListener: ((Boolean) -> Unit)? = null
 
     // SY <--
@@ -32,6 +36,9 @@ class WebtoonConfig(preferences: PreferencesHelper = Injekt.get()) : ViewerConfi
         // SY -->
         preferences.webtoonEnableZoomOut()
             .register({ enableZoomOut = it }, { zoomPropertyChangedListener?.invoke(it) })
+
+        preferences.cropBordersContinuesVertical()
+            .register({ continuesCropBorders = it }, { imagePropertyChangedListener?.invoke() })
         // SY <--
     }
 }

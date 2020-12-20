@@ -317,6 +317,11 @@ class SettingsReaderController : SettingsController() {
                 summaryRes = R.string.tap_scroll_page_summary
                 defaultValue = false
             }
+            switchPreference {
+                key = Keys.cropBordersContinuesVertical
+                titleRes = R.string.pref_crop_borders
+                defaultValue = false
+            }
         }
         // SY <--
 
