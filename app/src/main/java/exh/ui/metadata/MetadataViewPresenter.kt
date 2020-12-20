@@ -1,17 +1,23 @@
 package exh.ui.metadata
 
 import android.os.Bundle
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.util.lang.asFlow
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
+import exh.source.getMainSource
+import exh.ui.base.CoroutinePresenter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.plus
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -20,29 +26,31 @@ class MetadataViewPresenter(
     val source: Source,
     val preferences: PreferencesHelper = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get()
-) : BasePresenter<MetadataViewController>() {
+) : CoroutinePresenter<MetadataViewController>() {
 
-    var meta: RaisedSearchMetadata? = null
+    val meta = MutableStateFlow<RaisedSearchMetadata?>(null)
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        getMangaMetaObservable().subscribeLatestCache({ view, flatMetadata -> if (flatMetadata != null) view.onNextMetaInfo(flatMetadata) else XLog.tag("MetadataViewPresenter").disableStackTrace().d("Invalid metadata") })
+        getMangaMetaObservable()
+            .onEach {
+                if (it == null) return@onEach
+                val mainSource = source.getMainSource()
+                if (mainSource is MetadataSource<*, *>) {
+                    meta.value = it.raise(mainSource.metaClass)
+                }
+            }
+            .launchIn(scope + Dispatchers.IO)
 
-        getMangaObservable()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeLatestCache({ view, _ -> view.onNextMangaInfo(meta) })
+        meta
+            .onEachView { view, metadata ->
+                view.onNextMangaInfo(metadata)
+            }
+            .launchIn(scope)
     }
 
-    private fun getMangaObservable(): Observable<Manga> {
-        return db.getManga(manga.url, manga.source).asRxObservable()
-    }
-
-    private fun getMangaMetaObservable(): Observable<FlatMetadata?> {
-        val mangaId = manga.id
-        return if (mangaId != null) {
-            db.getFlatMetadataForManga(mangaId).asRxObservable()
-                .observeOn(AndroidSchedulers.mainThread())
-        } else Observable.just(null)
+    private fun getMangaMetaObservable(): Flow<FlatMetadata?> {
+        return db.getFlatMetadataForManga(manga.id!!).asRxObservable().asFlow()
     }
 }

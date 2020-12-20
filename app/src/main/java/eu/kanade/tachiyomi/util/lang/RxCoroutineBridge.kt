@@ -181,7 +181,7 @@ private suspend fun <T> Observable<T>.awaitOne(): T = suspendCancellableCoroutin
 internal fun <T> CancellableContinuation<T>.unsubscribeOnCancellation(sub: Subscription) =
     invokeOnCancellation { sub.unsubscribe() }
 
-fun <T : Any> Observable<T>.asFlow(): Flow<T> = callbackFlow {
+fun <T : Any?> Observable<T>.asFlow(): Flow<T> = callbackFlow {
     val observer = object : Observer<T> {
         override fun onNext(t: T) {
             offer(t)
@@ -199,7 +199,7 @@ fun <T : Any> Observable<T>.asFlow(): Flow<T> = callbackFlow {
     awaitClose { subscription.unsubscribe() }
 }
 
-fun <T : Any> Flow<T>.asObservable(backpressureMode: Emitter.BackpressureMode = Emitter.BackpressureMode.NONE): Observable<T> {
+fun <T : Any?> Flow<T>.asObservable(backpressureMode: Emitter.BackpressureMode = Emitter.BackpressureMode.NONE): Observable<T> {
     return Observable.create(
         { emitter ->
             /*

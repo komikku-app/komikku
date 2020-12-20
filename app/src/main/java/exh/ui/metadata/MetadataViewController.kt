@@ -11,12 +11,9 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MetadataViewControllerBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.source.getMainSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -72,13 +69,6 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
         adapter = MetadataViewAdapter(data)
         binding.recycler.adapter = adapter
         binding.recycler.setHasFixedSize(true)
-    }
-
-    fun onNextMetaInfo(flatMetadata: FlatMetadata) {
-        val mainSource = presenter.source.getMainSource()
-        if (mainSource is MetadataSource<*, *>) {
-            presenter.meta = flatMetadata.raise(mainSource.metaClass)
-        }
     }
 
     fun onNextMangaInfo(meta: RaisedSearchMetadata?) {
