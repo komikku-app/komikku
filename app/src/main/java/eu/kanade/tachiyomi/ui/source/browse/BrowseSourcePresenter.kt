@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.source.browse
 
 import android.os.Bundle
-import com.github.salomonbrys.kotson.jsonObject
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.flexibleadapter.items.ISectionable
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -37,9 +36,7 @@ import java.lang.RuntimeException
 import java.util.Date
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.put
 import rx.Observable
 import rx.Subscription
@@ -428,9 +425,9 @@ open class BrowseSourcePresenter(
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
-                        content.name,
-                        content.query,
-                        originalFilters
+                    content.name,
+                    content.query,
+                    originalFilters
                 )
             } catch (t: RuntimeException) {
                 // Load failed

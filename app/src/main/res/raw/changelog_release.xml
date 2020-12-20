@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.6.3-AZ" changeDate="">
+        <changelogtext>Whoops, this is a hotfix patch</changelogtext>
+        <changelogtext>Fixed crash when creating saved searches</changelogtext>
+        <changelogtext>Made continue reading button visibility setting take effect immediately</changelogtext>
+        <changelogtext>Made compact grid manga titles white on light theme</changelogtext>
+        <changelogtext>Some new reader modes were added, pl0x dont use them theyre not done and suck rn</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.6.2-AZ" changeDate="">
         <changelogtext>MyAnimeList's login system has changed, please re-login.</changelogtext>
         <changelogtext>This update is just bugfixes and minor features</changelogtext>
