@@ -42,7 +42,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                 android.R.layout.simple_spinner_item,
                 listOf(
                     "No dedupe",
-                    /*"Dedupe by priority",*/
+                    "Dedupe by priority",
                     "Show source with most chapters",
                     "Show source with highest chapter number"
                 )
@@ -54,8 +54,8 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                     when (it.chapterSortMode) {
                         MergedMangaReference.CHAPTER_SORT_NO_DEDUPE -> 0
                         MergedMangaReference.CHAPTER_SORT_PRIORITY -> 1
-                        MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> 1
-                        MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER -> 2
+                        MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> 2
+                        MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER -> 3
                         else -> 0
                     }
                 )
@@ -69,9 +69,9 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                 ) {
                     controller.mergeReference?.chapterSortMode = when (position) {
                         0 -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
-                        99 -> MergedMangaReference.CHAPTER_SORT_PRIORITY
-                        1 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
-                        2 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
+                        1 -> MergedMangaReference.CHAPTER_SORT_PRIORITY
+                        2 -> MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS
+                        3 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
                         else -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                     }
                     XLog.d(controller.mergeReference?.chapterSortMode)
