@@ -105,6 +105,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BottomSheetDia
         binding.webtoonSidePadding.bindToIntPreference(preferences.webtoonSidePadding(), R.array.webtoon_side_padding_values)
         // SY -->
         binding.zoomOutWebtoon.bindToPreference(preferences.webtoonEnableZoomOut())
+        binding.cropBordersContinuesVertical.bindToPreference(preferences.cropBordersContinuesVertical())
         // SY <--
     }
 

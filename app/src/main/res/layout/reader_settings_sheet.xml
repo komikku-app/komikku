@@ -351,6 +351,35 @@
         android:textColor="?android:attr/textColorSecondary"
         app:layout_constraintTop_toBottomOf="@id/crop_borders_webtoon" />
 
+    <!-- Continues Vertical preferences -->
+
+    <android.widget.Space
+        android:id="@+id/end_webtoon_preferences"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/zoom_out_webtoon"
+        tools:layout_editor_absoluteX="24dp" />
+
+    <TextView
+        android:id="@+id/continues_vertical_prefs"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/vertical_plus_viewer"
+        android:textColor="?attr/colorAccent"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/end_webtoon_preferences" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/crop_borders_continues_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/pref_crop_borders"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/continues_vertical_prefs" />
+
     <!-- Groups of preferences -->
 
     <androidx.constraintlayout.widget.Group
@@ -366,7 +395,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="webtoon_prefs,crop_borders_webtoon,webtoon_side_padding_text,webtoon_side_padding,zoom_out_webtoon" />
+        app:constraint_referenced_ids="webtoon_prefs,crop_borders_webtoon,webtoon_side_padding_text,webtoon_side_padding,zoom_out_webtoon,continues_vertical_prefs,crop_borders_continues_vertical" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/verticalcenter"
