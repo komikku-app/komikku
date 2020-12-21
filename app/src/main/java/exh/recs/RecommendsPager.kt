@@ -22,6 +22,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -103,10 +104,21 @@ class Anilist : API("https://graphql.anilist.co/") {
     }
 
     private fun getTitle(obj: JsonObject): String {
-        return obj["title"]!!.jsonObject.let {
-            it["romaji"]?.jsonPrimitive?.content
-                ?: it["english"]?.jsonPrimitive?.content
-                ?: it["native"]!!.jsonPrimitive.content
+        val titleObj = obj["title"]!!.jsonObject
+
+        val english = titleObj["english"]?.jsonPrimitive?.contentOrNull
+        val romaji = titleObj["romaji"]?.jsonPrimitive?.contentOrNull
+        val native = titleObj["native"]?.jsonPrimitive?.contentOrNull
+        val synonym = obj["synonyms"]!!.jsonArray.getOrNull(0)?.jsonPrimitive?.contentOrNull
+
+        val isJP = obj["countryOfOrigin"]!!.jsonPrimitive.content == "JP"
+
+        return when {
+            !english.isNullOrBlank() -> english
+            isJP && !romaji.isNullOrBlank() -> romaji
+            !synonym.isNullOrBlank() -> synonym
+            !isJP && !romaji.isNullOrBlank() -> romaji
+            else -> native ?: "NO NAME FOUND"
         }
     }
 
@@ -126,12 +138,14 @@ class Anilist : API("https://graphql.anilist.co/") {
                             |edges {
                                 |node {
                                     |mediaRecommendation {
+                                        |countryOfOrigin
                                         |siteUrl
                                         |title {
                                             |romaji
                                             |english
                                             |native
                                         |}
+                                        |synonyms
                                         |coverImage {
                                             |large
                                         |}
@@ -203,7 +217,7 @@ open class RecommendsPager(
                         recs
                     } catch (e: Exception) {
                         Timber.tag("RECOMMENDATIONS").e("%s > Error: %s", key, e.message)
-                        listOf()
+                        listOf<SMangaImpl>()
                     }
                 }
                 .firstOrNull { it.isNotEmpty() }
