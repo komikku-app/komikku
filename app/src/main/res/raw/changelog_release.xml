@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.4.1" changeDate="Dec 14,2020">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.7(from 0.10.6)[/b] </changelogtext>
+        <changelogtext>[b]New[/b] Add separate crop borders setting for Continues Vertical</changelogtext>
+        <changelogtext>[b]New[/b] Add simple external repo support</changelogtext>
+        <changelogtext>Fix crashes with Merge Settings</changelogtext>
+        <changelogtext>Maybe fix push to Mangadex</changelogtext>
+        <changelogtext>Improve Anilist rec names(thanks She11sh0cked)</changelogtext>
+        <changelogtext>Deeplink and Batch add will now only search enabled sources</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.4.0" changeDate="Dec 12,2020">
         <changelogtext>[b]Based on Tachiyomi stable 0.10.6(from 0.10.5)[/b] </changelogtext>
         <changelogtext>[b]New[/b] NEW ICON! Thanks to Aytox who made it!</changelogtext>
