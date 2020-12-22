@@ -463,7 +463,7 @@ class MangaController :
         menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite
 
         // SY -->
-        menu.findItem(R.id.action_edit).isVisible = presenter.manga.favorite
+        menu.findItem(R.id.action_edit).isVisible = presenter.manga.favorite || isLocalSource
         menu.findItem(R.id.action_recommend).isVisible = preferences.recommendsInOverflow().get()
         menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
         menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
