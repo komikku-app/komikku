@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.util.isLocal
+import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -44,6 +45,8 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.getMainSource
 import exh.util.defaultReaderType
 import exh.util.shouldDeleteChapters
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -775,29 +778,25 @@ class ReaderPresenter(
 
         val trackManager = Injekt.get<TrackManager>()
 
-        db.getTracks(manga).asRxSingle()
-            .flatMapCompletable { trackList ->
-                Completable.concat(
-                    trackList.map { track ->
-                        val service = trackManager.getService(track.sync_id)
-                        if (service != null && service.isLogged && chapterRead > track.last_chapter_read /* SY --> */ && ((service.id == TrackManager.MDLIST && track.status != FollowStatus.UNFOLLOWED.int) || service.id != TrackManager.MDLIST)/* SY <-- */) {
-                            track.last_chapter_read = chapterRead
+        launchIO {
+            db.getTracks(manga).await()
+                .mapNotNull { track ->
+                    val service = trackManager.getService(track.sync_id)
+                    if (service != null && service.isLogged && chapterRead > track.last_chapter_read /* SY --> */ && ((service.id == TrackManager.MDLIST && track.status != FollowStatus.UNFOLLOWED.int) || service.id != TrackManager.MDLIST)/* SY <-- */) {
+                        track.last_chapter_read = chapterRead
 
-                            // We wan't these to execute even if the presenter is destroyed and leaks
-                            // for a while. The view can still be garbage collected.
-                            Observable.defer { service.update(track) }
-                                .map { db.insertTrack(track).executeAsBlocking() }
-                                .toCompletable()
-                                .onErrorComplete()
-                        } else {
-                            Completable.complete()
+                        // We want these to execute even if the presenter is destroyed and leaks
+                        // for a while. The view can still be garbage collected.
+                        async {
+                            service.update(track)
+                            db.insertTrack(track).await()
                         }
+                    } else {
+                        null
                     }
-                )
-            }
-            .onErrorComplete()
-            .subscribeOn(Schedulers.io())
-            .subscribe()
+                }
+                .awaitAll()
+        }
     }
 
     /**
