@@ -3,56 +3,43 @@ package exh.ui.smartsearch
 import android.os.Bundle
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import exh.smartsearch.SmartSearchEngine
+import exh.ui.base.CoroutinePresenter
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
-class SmartSearchPresenter(private val source: CatalogueSource?, private val config: SourceController.SmartSearchConfig?) :
-    BasePresenter<SmartSearchController>() {
+class SmartSearchPresenter(private val source: CatalogueSource, private val config: SourceController.SmartSearchConfig) :
+    CoroutinePresenter<SmartSearchController>() {
 
-    val scope = CoroutineScope(Job() + Dispatchers.Default)
-
-    val smartSearchChannel = Channel<SearchResults>()
+    val smartSearchFlow = MutableSharedFlow<SearchResults>()
 
     private val smartSearchEngine = SmartSearchEngine()
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        if (source != null && config != null) {
-            scope.launch {
-                val result = try {
-                    val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
-                    if (resultManga != null) {
-                        val localManga = smartSearchEngine.networkToLocalManga(resultManga, source.id)
-                        SearchResults.Found(localManga)
-                    } else {
-                        SearchResults.NotFound
-                    }
-                } catch (e: Exception) {
-                    if (e is CancellationException) {
-                        throw e
-                    } else {
-                        SearchResults.Error
-                    }
+        scope.launch(Dispatchers.IO) {
+            val result = try {
+                val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
+                if (resultManga != null) {
+                    val localManga = smartSearchEngine.networkToLocalManga(resultManga, source.id)
+                    SearchResults.Found(localManga)
+                } else {
+                    SearchResults.NotFound
                 }
-
-                smartSearchChannel.send(result)
+            } catch (e: Exception) {
+                if (e is CancellationException) {
+                    throw e
+                } else {
+                    SearchResults.Error
+                }
             }
+
+            smartSearchFlow.emit(result)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        scope.cancel()
     }
 
     sealed class SearchResults {

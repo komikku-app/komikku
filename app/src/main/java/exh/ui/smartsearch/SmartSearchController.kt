@@ -14,8 +14,9 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.injectLazy
 
@@ -34,7 +35,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
 
     override fun getTitle() = source?.name.orEmpty()
 
-    override fun createPresenter() = SmartSearchPresenter(source, smartSearchConfig)
+    override fun createPresenter() = SmartSearchPresenter(source!!, smartSearchConfig!!)
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
@@ -47,18 +48,15 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
             return
         }
 
-        // Init presenter now to resolve threading issues
-        presenter
-
-        scope.launch(Dispatchers.Default) {
-            for (event in presenter.smartSearchChannel) {
-                if (event is SmartSearchPresenter.SearchResults.Found) {
-                    val transaction = MangaController(event.manga, true, smartSearchConfig).withFadeTransaction()
+        presenter.smartSearchFlow
+            .onEach { results ->
+                if (results is SmartSearchPresenter.SearchResults.Found) {
+                    val transaction = MangaController(results.manga, true, smartSearchConfig).withFadeTransaction()
                     withContext(Dispatchers.Main) {
                         router.replaceTopController(transaction)
                     }
                 } else {
-                    if (event is SmartSearchPresenter.SearchResults.NotFound) {
+                    if (results is SmartSearchPresenter.SearchResults.NotFound) {
                         applicationContext?.toast("Couldn't find the manga in the source!")
                     } else {
                         applicationContext?.toast("Error performing automatic search!")
@@ -70,13 +68,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
                     }
                 }
             }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        scope.cancel()
+            .launchIn(scope + Dispatchers.IO)
     }
 
     companion object {
