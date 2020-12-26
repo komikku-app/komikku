@@ -299,36 +299,36 @@
                 <data
                     android:scheme="https"
                     android:host="www.mangadex.org"
-                    android:pathPattern="/manga/..*" />
+                    android:pathPrefix="/manga/" />
                 <data
                     android:scheme="https"
                     android:host="mangadex.org"
-                    android:pathPattern="/manga/..*" />
+                    android:pathPrefix="/manga/" />
                 <data
                     android:scheme="https"
                     android:host="www.mangadex.cc"
-                    android:pathPattern="/manga/..*" />
+                    android:pathPrefix="/manga/" />
                 <data
                     android:scheme="https"
                     android:host="www.mangadex.cc"
-                    android:pathPattern="/manga/..*" />
+                    android:pathPrefix="/manga/" />
 
                 <data
                     android:scheme="https"
                     android:host="www.mangadex.org"
-                    android:pathPattern="/title/..*" />
+                    android:pathPrefix="/title/" />
                 <data
                     android:scheme="https"
                     android:host="mangadex.org"
-                    android:pathPattern="/title/..*" />
+                    android:pathPrefix="/title/" />
                 <data
                     android:scheme="https"
                     android:host="www.mangadex.cc"
-                    android:pathPattern="/title/..*" />
+                    android:pathPrefix="/title/" />
                 <data
                     android:scheme="https"
                     android:host="www.mangadex.cc"
-                    android:pathPattern="/title/..*" />
+                    android:pathPrefix="/title/" />
             </intent-filter>
         </activity>
         <activity
