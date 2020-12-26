@@ -12,10 +12,30 @@ interface UrlImportableSource : Source {
         return uri.host.orEmpty().toLowerCase() in matchingHosts
     }
 
+    fun mapUrlToChapterUrl(uri: Uri): String? = null
+
+    suspend fun mapChapterUrlToMangaUrl(uri: Uri): String? = null
+
     // This method is allowed to block for IO if necessary
     suspend fun mapUrlToMangaUrl(uri: Uri): String?
 
     fun cleanMangaUrl(url: String): String {
+        return try {
+            val uri = URI(url)
+            var out = uri.path
+            if (uri.query != null) {
+                out += "?" + uri.query
+            }
+            if (uri.fragment != null) {
+                out += "#" + uri.fragment
+            }
+            out
+        } catch (e: URISyntaxException) {
+            url
+        }
+    }
+
+    fun cleanChapterUrl(url: String): String {
         return try {
             val uri = URI(url)
             var out = uri.path

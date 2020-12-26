@@ -9,11 +9,14 @@ import com.afollestad.materialdialogs.callbacks.onCancel
 import com.afollestad.materialdialogs.callbacks.onDismiss
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.database.models.Chapter
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseViewBindingActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import kotlinx.coroutines.Dispatchers
@@ -66,10 +69,14 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
                         binding.interceptStatus.setText(R.string.launching_app)
                         onBackPressed()
                         startActivity(
-                            Intent(this, MainActivity::class.java)
-                                .setAction(MainActivity.SHORTCUT_MANGA)
-                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                .putExtra(MangaController.MANGA_EXTRA, it.mangaId)
+                            if (it.chapter != null) {
+                                ReaderActivity.newIntent(this, it.manga, it.chapter)
+                            } else {
+                                Intent(this, MainActivity::class.java)
+                                    .setAction(MainActivity.SHORTCUT_MANGA)
+                                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                    .putExtra(MangaController.MANGA_EXTRA, it.mangaId)
+                            }
                         )
                     }
                     is InterceptResult.Failure -> {
@@ -126,7 +133,7 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
 
             status.value = when (result) {
                 is GalleryAddEvent.Success -> result.manga.id?.let {
-                    InterceptResult.Success(it)
+                    InterceptResult.Success(it, result.manga, result.chapter)
                 } ?: InterceptResult.Failure(this@InterceptActivity.getString(R.string.manga_id_is_null))
                 is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
             }
@@ -137,6 +144,6 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
 sealed class InterceptResult {
     object Idle : InterceptResult()
     object Loading : InterceptResult()
-    data class Success(val mangaId: Long) : InterceptResult()
+    data class Success(val mangaId: Long, val manga: Manga, val chapter: Chapter? = null) : InterceptResult()
     data class Failure(val reason: String) : InterceptResult()
 }

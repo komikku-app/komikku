@@ -437,9 +437,11 @@
     <string name="gallery_adder_importing_manga">Importing manga (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Source URI match check error!</string>
     <string name="gallery_adder_uri_map_to_manga_error">Source URI map-to-manga error!</string>
+    <string name="gallery_adder_uri_map_to_chapter_error">Source URI map-to-chapter error!</string>
     <string name="gallery_adder_uri_clean_error">Source URI clean error!</string>
     <string name="gallery_adder_chapter_fetch_error">Failed to update chapters for manga: %1$s!</string>
     <string name="gallery_adder_could_not_add_manga">Could not add manga (url: %1$s)!</string>
+    <string name="gallery_adder_could_not_identify_chapter">Could not identify chapter (url: %1$s)!</string>
 
     <!-- Intercept Activity -->
     <string name="launching_app">Launching app…</string>

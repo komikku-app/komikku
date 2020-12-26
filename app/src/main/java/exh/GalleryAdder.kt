@@ -79,9 +79,29 @@ class GalleryAdder {
                     } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
             }
 
+            val realChapterUrl = try {
+                source.mapUrlToChapterUrl(uri)
+            } catch (e: Exception) {
+                logger.e(context.getString(R.string.gallery_adder_uri_map_to_chapter_error), e)
+                null
+            }
+
+            val cleanedChapterUrl = if (realChapterUrl != null) {
+                try {
+                    source.cleanChapterUrl(realChapterUrl)
+                } catch (e: Exception) {
+                    logger.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
+                    null
+                }
+            } else null
+
+            val chapterMangaUrl = if (realChapterUrl != null) {
+                source.mapChapterUrlToMangaUrl(realChapterUrl.toUri())
+            } else null
+
             // Map URL to manga URL
             val realMangaUrl = try {
-                source.mapUrlToMangaUrl(uri)
+                chapterMangaUrl ?: source.mapUrlToMangaUrl(uri)
             } catch (e: Exception) {
                 logger.e(context.getString(R.string.gallery_adder_uri_map_to_manga_error), e)
                 null
@@ -139,7 +159,16 @@ class GalleryAdder {
                 return GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_chapter_fetch_error, url))
             }
 
-            return GalleryAddEvent.Success(url, manga, context)
+            return if (cleanedChapterUrl != null) {
+                val chapter = db.getChapter(cleanedChapterUrl, manga.id!!).executeOnIO()
+                if (chapter != null) {
+                    GalleryAddEvent.Success(url, manga, context, chapter)
+                } else {
+                    GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_could_not_identify_chapter, url))
+                }
+            } else {
+                GalleryAddEvent.Success(url, manga, context)
+            }
         } catch (e: Exception) {
             logger.w(context.getString(R.string.gallery_adder_could_not_add_manga, url), e)
 
