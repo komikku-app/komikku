@@ -41,6 +41,8 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
+import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.AddToLibraryFirst
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Error
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Success
@@ -573,7 +575,21 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.chaptersButton.clicks()
             .onEach {
                 chapterBottomSheet.show()
-            }.launchIn(scope)
+            }
+            .launchIn(scope)
+
+        binding.toolbar.clicks()
+            .onEach {
+                presenter.manga?.id?.let { id ->
+                    startActivity(
+                        Intent(this, MainActivity::class.java)
+                            .setAction(MainActivity.SHORTCUT_MANGA)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            .putExtra(MangaController.MANGA_EXTRA, id)
+                    )
+                }
+            }
+            .launchIn(scope)
         // <-- EH
 
         // Set initial visibility
