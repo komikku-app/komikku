@@ -189,7 +189,9 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava:$retrofit_version"
 
     // JSON
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1"
+    final serialization_version = '1.0.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serialization_version"
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
@@ -295,9 +297,6 @@ dependencies {
 
     // For detecting memory leaks; see https://square.github.io/leakcanary/
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.4'
-
-    // SY for mangadex utils
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.0.1"
 
     // Text distance (EH)
     implementation 'info.debatty:java-string-similarity:2.0.0'
