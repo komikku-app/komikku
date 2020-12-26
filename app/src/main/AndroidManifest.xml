@@ -234,11 +234,11 @@
                 <!-- Hentai Cafe -->
                 <data
                     android:host="hentai.cafe"
-                    android:pathPattern="/.*/.*"
+                    android:pathPrefix="/hc.fyi/"
                     android:scheme="http" />
                 <data
                     android:host="hentai.cafe"
-                    android:pathPattern="/.*/.*"
+                    android:pathPrefix="/hc.fyi/"
                     android:scheme="https" />
 
                 <!-- Tsumino -->

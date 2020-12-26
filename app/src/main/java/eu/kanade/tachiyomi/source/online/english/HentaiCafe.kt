@@ -94,7 +94,7 @@ class HentaiCafe(delegate: HttpSource, val context: Context) :
     }.map {
         listOf(
             SChapter.create().apply {
-                setUrlWithoutDomain("/manga/read/${it.readerId}/en/0/1/")
+                url = "/manga/read/${it.readerId}/en/0/1/"
                 name = "Chapter"
                 chapter_number = 0.0f
             }
@@ -106,13 +106,11 @@ class HentaiCafe(delegate: HttpSource, val context: Context) :
     )
 
     override fun mapUrlToMangaUrl(uri: Uri): String? {
-        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
+        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.takeUnless { it.equals("manga", true) } ?: return null
 
-        return if (lcFirstPathSegment == "manga") {
-            "https://hentai.cafe/${uri.pathSegments[2]}"
-        } else {
-            "https://hentai.cafe/$lcFirstPathSegment"
-        }
+        return if (lcFirstPathSegment.equals("hc.fyi", true)) {
+            "/$lcFirstPathSegment/${uri.pathSegments[1]}"
+        } else null
     }
 
     override fun getDescriptionAdapter(controller: MangaController): HentaiCafeDescriptionAdapter {
