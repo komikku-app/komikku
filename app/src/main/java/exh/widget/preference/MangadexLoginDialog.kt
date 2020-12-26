@@ -74,36 +74,37 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
     }
 
     private fun checkLogin() {
-        with(binding) {
-            if (username.text.isNullOrBlank() || password.text.isNullOrBlank() || (twoFactorCheck.isChecked && twoFactorEdit.text.isNullOrBlank())) {
-                errorResult()
-                root.context.toast(R.string.fields_cannot_be_blank)
-                return
-            }
+        val username = binding.username.text?.toString()
+        val password = binding.password.text?.toString()
+        val twoFactor = binding.twoFactorEdit.text?.toString()
+        if (username.isNullOrBlank() || password.isNullOrBlank() || (binding.twoFactorCheck.isChecked && twoFactor.isNullOrBlank())) {
+            errorResult()
+            binding.root.context.toast(R.string.fields_cannot_be_blank)
+            return
+        }
 
-            login.progress = 1
+        binding.login.progress = 1
 
-            dialog?.setCancelable(false)
-            dialog?.setCanceledOnTouchOutside(false)
+        dialog?.setCancelable(false)
+        dialog?.setCanceledOnTouchOutside(false)
 
-            scope.launch {
-                try {
-                    val result = source?.login(
-                        username.text.toString(),
-                        password.text.toString(),
-                        twoFactorEdit.text.toString()
-                    ) ?: false
-                    if (result) {
-                        dialog?.dismiss()
-                        preferences.setTrackCredentials(Injekt.get<TrackManager>().mdList, username.toString(), password.toString())
-                        root.context.toast(R.string.login_success)
-                    } else {
-                        errorResult()
-                    }
-                } catch (error: Exception) {
+        scope.launch {
+            try {
+                val result = source?.login(
+                    username,
+                    password,
+                    twoFactor.toString()
+                ) ?: false
+                if (result) {
+                    dialog?.dismiss()
+                    preferences.setTrackCredentials(service, username, password)
+                    binding.root.context.toast(R.string.login_success)
+                } else {
                     errorResult()
-                    error.message?.let { root.context.toast(it) }
                 }
+            } catch (error: Exception) {
+                errorResult()
+                error.message?.let { binding.root.context.toast(it) }
             }
         }
     }
