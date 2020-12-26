@@ -38,15 +38,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Searching source..."
+                android:text="@string/searching_source"
                 android:textAppearance="@style/TextAppearance.Medium.Title" />
 
-            <ProgressBar
+            <com.google.android.material.progressindicator.CircularProgressIndicator
                 android:id="@+id/intercept_progress"
-                style="?android:attr/progressBarStyleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center" />
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                app:indicatorSize="56dp" />
         </LinearLayout>
     </LinearLayout>
 

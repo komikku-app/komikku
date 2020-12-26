@@ -34,11 +34,13 @@
             android:layout_gravity="bottom"
             android:background="@drawable/gradient_shape" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/loading_group"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_gravity="center" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            app:indicatorSize="56dp"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -81,13 +83,14 @@
             android:shadowRadius="4"
             tools:text="Sample name" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progress"
-            style="?android:attr/progressBarStyleSmall"
+            style="@style/Theme.Widget.CircularProgressIndicator.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:indeterminate="true" />
 
     </FrameLayout>
 

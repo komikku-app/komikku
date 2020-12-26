@@ -273,6 +273,9 @@
     <string name="cover_reset_toast">The cover will be updated when you exit manga info edit</string>
 
     <!-- Browse -->
+    <!-- Smart Search -->
+    <string name="searching_source">Searching source…</string>
+
     <!-- Saved Searches -->
     <string name="saved_searches">Saved Searches</string>
     <string name="save_search">Save current search query?</string>
