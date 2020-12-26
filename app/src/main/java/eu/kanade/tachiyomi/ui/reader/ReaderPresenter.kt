@@ -45,12 +45,11 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.getMainSource
 import exh.util.defaultReaderType
 import exh.util.shouldDeleteChapters
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import rx.Completable
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers

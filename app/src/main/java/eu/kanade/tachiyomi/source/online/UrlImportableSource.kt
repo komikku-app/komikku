@@ -13,7 +13,7 @@ interface UrlImportableSource : Source {
     }
 
     // This method is allowed to block for IO if necessary
-    fun mapUrlToMangaUrl(uri: Uri): String?
+    suspend fun mapUrlToMangaUrl(uri: Uri): String?
 
     fun cleanMangaUrl(url: String): String {
         return try {

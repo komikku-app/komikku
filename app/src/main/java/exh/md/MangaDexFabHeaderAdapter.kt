@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.singleOrNull
 import reactivecircus.flowbinding.android.view.clicks
 
 class MangaDexFabHeaderAdapter(val controller: Controller, val source: CatalogueSource) :
@@ -46,7 +45,7 @@ class MangaDexFabHeaderAdapter(val controller: Controller, val source: Catalogue
                 .launchIn(scope)
             binding.mangadexRandom.clicks()
                 .onEach {
-                    (source as? RandomMangaSource)?.fetchRandomMangaUrl()?.singleOrNull()?.let { randomMangaId ->
+                    (source as? RandomMangaSource)?.fetchRandomMangaUrl()?.let { randomMangaId ->
                         controller.router.replaceTopController(BrowseSourceController(source, randomMangaId).withFadeTransaction())
                     }
                 }

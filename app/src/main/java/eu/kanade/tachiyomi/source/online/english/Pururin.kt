@@ -114,7 +114,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
         "www.pururin.io"
     )
 
-    override fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         return "${PururinSearchMetadata.BASE_URL}/gallery/${uri.pathSegments[1]}/${uri.lastPathSegment}"
     }
 

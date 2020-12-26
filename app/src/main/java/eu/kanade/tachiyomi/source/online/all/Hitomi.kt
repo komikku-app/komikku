@@ -128,7 +128,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
         "hitomi.la"
     )
 
-    override fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
 
         if (lcFirstPathSegment != "manga" && lcFirstPathSegment != "reader") {

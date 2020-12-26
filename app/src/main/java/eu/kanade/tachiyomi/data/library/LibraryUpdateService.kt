@@ -30,8 +30,8 @@ import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.asObservable
 import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.storage.getUriCompat
@@ -452,7 +452,7 @@ class LibraryUpdateService(
         }
 
         return (
-            /* SY --> */ if (source is MergedSource) runBlocking { source.fetchChaptersAndSync(manga, false).asObservable() }
+            /* SY --> */ if (source is MergedSource) runAsObservable({ source.fetchChaptersAndSync(manga, false) })
             else /* SY <-- */ source.fetchChapterList(manga)
                 .map { syncChaptersWithSource(db, it, manga, source) }
             // SY -->
@@ -544,8 +544,7 @@ class LibraryUpdateService(
     private fun syncFollows(): Observable<LibraryManga> {
         val count = AtomicInteger(0)
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager) ?: return Observable.empty()
-        return mangaDex.fetchAllFollows(true)
-            .asObservable()
+        return runAsObservable({ mangaDex.fetchAllFollows(true) })
             .map { listManga ->
                 listManga.filter { (_, metadata) ->
                     metadata.follow_status == FollowStatus.RE_READING.int || metadata.follow_status == FollowStatus.READING.int
@@ -600,7 +599,7 @@ class LibraryUpdateService(
 
                 if (tracker.track?.status == FollowStatus.UNFOLLOWED.int) {
                     tracker.track.status = FollowStatus.READING.int
-                    tracker.service.update(tracker.track)
+                    runAsObservable({ tracker.service.update(tracker.track) })
                 } else Observable.just(null)
             }
             .doOnNext { returnedTracker ->

@@ -10,16 +10,15 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.lang.asObservable
+import eu.kanade.tachiyomi.util.lang.await
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.floor
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
-import rx.Completable
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
@@ -49,52 +48,48 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun displayScore(track: Track) = track.score.toInt().toString()
 
-    override fun add(track: Track): Observable<Track> {
+    override suspend fun add(track: Track): Track {
         return update(track)
     }
 
-    override fun update(track: Track): Observable<Track> {
+    override suspend fun update(track: Track): Track {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        return Observable.defer {
-            db.getManga(track.tracking_url.substringAfter(".org"), mdex.id)
-                .asRxObservable()
-                .map { manga ->
-                    val mangaMetadata = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise(MangaDexSearchMetadata::class) ?: throw Exception("Invalid manga metadata")
-                    val followStatus = FollowStatus.fromInt(track.status)!!
+        val manga = db.getManga(track.tracking_url.substringAfter(".org"), mdex.id).await() ?: throw Exception("Manga doesnt exist")
 
-                    // allow follow status to update
-                    if (mangaMetadata.follow_status != followStatus.int) {
-                        runBlocking { mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus).collect() }
-                        mangaMetadata.follow_status = followStatus.int
-                        db.insertFlatMetadata(mangaMetadata.flatten()).await()
-                    }
+        val mangaMetadata = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise(MangaDexSearchMetadata::class) ?: throw Exception("Invalid manga metadata")
+        val followStatus = FollowStatus.fromInt(track.status)!!
 
-                    if (track.score.toInt() > 0) {
-                        runBlocking { mdex.updateRating(track).collect() }
-                    }
-
-                    // mangadex wont update chapters if manga is not follows this prevents unneeded network call
-
-                    if (followStatus != FollowStatus.UNFOLLOWED) {
-                        if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
-                            track.status = FollowStatus.COMPLETED.int
-                        }
-
-                        runBlocking { mdex.updateReadingProgress(track).collect() }
-                    } else if (track.last_chapter_read != 0) {
-                        // When followStatus has been changed to unfollowed 0 out read chapters since dex does
-                        track.last_chapter_read = 0
-                    }
-                    track
-                }
+        // allow follow status to update
+        if (mangaMetadata.follow_status != followStatus.int) {
+            mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)
+            mangaMetadata.follow_status = followStatus.int
+            db.insertFlatMetadata(mangaMetadata.flatten()).await()
         }
+
+        if (track.score.toInt() > 0) {
+            mdex.updateRating(track)
+        }
+
+        // mangadex wont update chapters if manga is not follows this prevents unneeded network call
+
+        if (followStatus != FollowStatus.UNFOLLOWED) {
+            if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
+                track.status = FollowStatus.COMPLETED.int
+            }
+
+            mdex.updateReadingProgress(track)
+        } else if (track.last_chapter_read != 0) {
+            // When followStatus has been changed to unfollowed 0 out read chapters since dex does
+            track.last_chapter_read = 0
+        }
+        return track
     }
 
     override fun getCompletionStatus(): Int = FollowStatus.COMPLETED.int
 
     override fun bind(track: Track): Observable<Track> {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        return mdex.fetchTrackingInfo(track.tracking_url).asObservable()
+        return runAsObservable({ mdex.fetchTrackingInfo(track.tracking_url) })
             .doOnNext { remoteTrack ->
                 track.copyPersonalFrom(remoteTrack)
                 val manga = db.getManga(track.manga_id).executeAsBlocking()
@@ -103,13 +98,13 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
                 } else {
                     remoteTrack.total_chapters
                 }
-                update(track)
+                runBlocking { update(track) }
             }
     }
 
     override fun refresh(track: Track): Observable<Track> {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        return mdex.fetchTrackingInfo(track.tracking_url).asObservable()
+        return runAsObservable({ mdex.fetchTrackingInfo(track.tracking_url) })
             .map { remoteTrack ->
                 track.copyPersonalFrom(remoteTrack)
                 val manga = db.getManga(track.manga_id).executeAsBlocking()
@@ -133,5 +128,5 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun search(query: String): Observable<List<TrackSearch>> = throw Exception("not used")
 
-    override fun login(username: String, password: String): Completable = throw Exception("not used")
+    override suspend fun login(username: String, password: String): Unit = throw Exception("not used")
 }

@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.asObservable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
@@ -26,17 +25,16 @@ import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import rx.Observable
 
 class FollowsHandler(val client: OkHttpClient, val headers: Headers, val preferences: PreferencesHelper, private val useLowQualityCovers: Boolean) {
 
     /**
      * fetch follows by page
      */
-    fun fetchFollows(): Observable<MangasPage> {
+    suspend fun fetchFollows(): MangasPage {
         return client.newCall(followsListRequest())
-            .asObservable()
-            .map { response ->
+            .await()
+            .let { response ->
                 followsParseMangaPage(response)
             }
     }

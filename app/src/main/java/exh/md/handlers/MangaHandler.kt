@@ -8,8 +8,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.utils.MdUtil
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.CacheControl
 import okhttp3.Headers
@@ -95,10 +93,10 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
             }
     }
 
-    fun fetchRandomMangaId(): Flow<String> {
-        return flow {
+    suspend fun fetchRandomMangaId(): String {
+        return withContext(Dispatchers.IO) {
             val response = client.newCall(randomMangaRequest()).await()
-            emit(ApiMangaParser(langs).randomMangaIdParse(response))
+            ApiMangaParser(langs).randomMangaIdParse(response)
         }
     }
 

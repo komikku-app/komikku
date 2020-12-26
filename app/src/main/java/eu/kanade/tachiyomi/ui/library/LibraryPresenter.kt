@@ -34,7 +34,6 @@ import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.util.isLewd
 import exh.util.nullIfBlank
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
@@ -543,7 +542,7 @@ class LibraryPresenter(
         launchIO {
             MdUtil.getEnabledMangaDex(preferences, sourceManager)?.let { mdex ->
                 mangaList.forEach {
-                    mdex.updateFollowStatus(MdUtil.getMangaId(it.url), FollowStatus.READING).collect()
+                    mdex.updateFollowStatus(MdUtil.getMangaId(it.url), FollowStatus.READING)
                 }
             }
         }

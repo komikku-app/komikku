@@ -29,10 +29,10 @@ import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.isLocal
-import eu.kanade.tachiyomi.util.lang.asObservable
 import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -766,7 +766,7 @@ class MangaPresenter(
                 )
             // SY -->
         } else {
-            Observable.defer { source.fetchChaptersForMergedManga(manga, manualFetch, true, dedupe).asObservable() }
+            Observable.defer { runAsObservable({ source.fetchChaptersForMergedManga(manga, manualFetch, true, dedupe) }) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext {

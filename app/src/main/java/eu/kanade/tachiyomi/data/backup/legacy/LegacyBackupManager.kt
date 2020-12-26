@@ -52,13 +52,12 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.lang.asObservable
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -317,13 +316,14 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
     override fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
         // SY -->
         return if (source is MergedSource) {
-            val syncedChapters = runBlocking { source.fetchChaptersAndSync(manga, false) }
-            syncedChapters.onEach { pair ->
-                if (pair.first.isNotEmpty()) {
-                    chapters.forEach { it.manga_id = manga.id }
-                    updateChapters(chapters)
+            runAsObservable({
+                val syncedChapters = source.fetchChaptersAndSync(manga, false)
+                syncedChapters.first.onEach {
+                    it.manga_id = manga.id
                 }
-            }.asObservable()
+                updateChapters(syncedChapters.first)
+                syncedChapters
+            })
         } else {
             super.restoreChapterFetchObservable(source, manga, chapters, throttleManager)
         }

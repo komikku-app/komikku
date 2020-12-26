@@ -48,7 +48,6 @@ import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import exh.widget.preference.MangadexLoginDialog
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.CacheControl
@@ -101,7 +100,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             }
         }
 
-    override fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
 
         return if (lcFirstPathSegment == "title" || lcFirstPathSegment == "manga") {
@@ -152,7 +151,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         ApiMangaParser(listOf(mdLang)).parseIntoMetadata(metadata, input, preferences.mangaDexForceLatestCovers().get())
     }
 
-    override fun fetchFollows(): Observable<MangasPage> {
+    override suspend fun fetchFollows(): MangasPage {
         return FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchFollows()
     }
 
@@ -226,36 +225,36 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         }
     }
 
-    override fun fetchAllFollows(forceHd: Boolean): Flow<List<Pair<SManga, MangaDexSearchMetadata>>> {
-        return flow { emit(FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchAllFollows(forceHd)) }
+    override suspend fun fetchAllFollows(forceHd: Boolean): List<Pair<SManga, MangaDexSearchMetadata>> {
+        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchAllFollows(forceHd) }
     }
 
-    fun updateReadingProgress(track: Track): Flow<Boolean> {
-        return flow { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateReadingProgress(track) }
+    suspend fun updateReadingProgress(track: Track): Boolean {
+        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateReadingProgress(track) }
     }
 
-    fun updateRating(track: Track): Flow<Boolean> {
-        return flow { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateRating(track) }
+    suspend fun updateRating(track: Track): Boolean {
+        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateRating(track) }
     }
 
-    override fun fetchTrackingInfo(url: String): Flow<Track> {
-        return flow {
+    override suspend fun fetchTrackingInfo(url: String): Track {
+        return withContext(Dispatchers.IO) {
             if (!isLogged()) {
                 throw Exception("Not Logged in")
             }
-            emit(FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchTrackingInfo(url))
+            FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchTrackingInfo(url)
         }
     }
 
-    override fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Flow<Boolean> {
-        return flow { emit(FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateFollowStatus(mangaID, followStatus)) }
+    override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
+        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateFollowStatus(mangaID, followStatus) }
     }
 
     override fun getFilterHeader(controller: Controller): MangaDexFabHeaderAdapter {
         return MangaDexFabHeaderAdapter(controller, this)
     }
 
-    override fun fetchRandomMangaUrl(): Flow<String> {
+    override suspend fun fetchRandomMangaUrl(): String {
         return MangaHandler(client, headers, listOf(mdLang)).fetchRandomMangaId()
     }
 

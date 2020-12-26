@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.source.online
 
-import kotlinx.coroutines.flow.Flow
+import tachiyomi.source.Source
 
-interface RandomMangaSource {
-    fun fetchRandomMangaUrl(): Flow<String>
+interface RandomMangaSource : Source {
+    suspend fun fetchRandomMangaUrl(): String
 }

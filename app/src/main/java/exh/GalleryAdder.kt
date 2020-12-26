@@ -80,7 +80,7 @@ class GalleryAdder {
             }
 
             // Map URL to manga URL
-            val realUrl = try {
+            val realMangaUrl = try {
                 source.mapUrlToMangaUrl(uri)
             } catch (e: Exception) {
                 logger.e(context.getString(R.string.gallery_adder_uri_map_to_manga_error), e)
@@ -88,18 +88,18 @@ class GalleryAdder {
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Clean URL
-            val cleanedUrl = try {
-                source.cleanMangaUrl(realUrl)
+            val cleanedMangaUrl = try {
+                source.cleanMangaUrl(realMangaUrl)
             } catch (e: Exception) {
                 logger.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
                 null
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
-            val manga = db.getManga(cleanedUrl, source.id).executeOnIO()
+            val manga = db.getManga(cleanedMangaUrl, source.id).executeOnIO()
                 ?: Manga.create(source.id).apply {
-                    this.url = cleanedUrl
-                    title = realUrl
+                    this.url = cleanedMangaUrl
+                    title = realMangaUrl
                 }
 
             // Insert created manga if not in DB before fetching details
@@ -163,7 +163,8 @@ sealed class GalleryAddEvent {
     class Success(
         override val galleryUrl: String,
         val manga: Manga,
-        val context: Context
+        val context: Context,
+        val chapter: Chapter? = null
     ) : GalleryAddEvent() {
         override val galleryTitle = manga.title
         override val logMessage = context.getString(R.string.batch_add_success_log_message, galleryTitle)

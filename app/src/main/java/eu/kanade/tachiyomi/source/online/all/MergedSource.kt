@@ -14,7 +14,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.SuspendHttpSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.asFlow
 import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
@@ -22,13 +21,6 @@ import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.MERGED_SOURCE_ID
 import exh.merged.sql.models.MergedMangaReference
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
@@ -57,15 +49,15 @@ class MergedSource : SuspendHttpSource() {
     override suspend fun chapterListParseSuspended(response: Response) = throw UnsupportedOperationException()
     override suspend fun pageListParseSuspended(response: Response) = throw UnsupportedOperationException()
     override suspend fun imageUrlParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override fun fetchChapterListFlow(manga: SManga) = throw UnsupportedOperationException()
-    override fun fetchImageFlow(page: Page) = throw UnsupportedOperationException()
-    override fun fetchImageUrlFlow(page: Page) = throw UnsupportedOperationException()
-    override fun fetchPageListFlow(chapter: SChapter) = throw UnsupportedOperationException()
-    override fun fetchLatestUpdatesFlow(page: Int) = throw UnsupportedOperationException()
-    override fun fetchPopularMangaFlow(page: Int) = throw UnsupportedOperationException()
+    override suspend fun fetchChapterListSuspended(manga: SManga) = throw UnsupportedOperationException()
+    override suspend fun fetchImageSuspended(page: Page) = throw UnsupportedOperationException()
+    override suspend fun fetchImageUrlSuspended(page: Page) = throw UnsupportedOperationException()
+    override suspend fun fetchPageListSuspended(chapter: SChapter) = throw UnsupportedOperationException()
+    override suspend fun fetchLatestUpdatesSuspended(page: Int) = throw UnsupportedOperationException()
+    override suspend fun fetchPopularMangaSuspended(page: Int) = throw UnsupportedOperationException()
 
-    override fun fetchMangaDetailsFlow(manga: SManga): Flow<SManga> {
-        return flow {
+    override suspend fun fetchMangaDetailsSuspended(manga: SManga): SManga {
+        return withContext(Dispatchers.IO) {
             val mergedManga = db.getManga(manga.url, id).await() ?: throw Exception("merged manga not in db")
             val mangaReferences = mergedManga.id?.let { withContext(Dispatchers.IO) { db.getMergedMangaReferences(it).await() } } ?: throw Exception("merged manga id is null")
             if (mangaReferences.isEmpty()) throw IllegalArgumentException("Manga references are empty, info unavailable, merge is likely corrupted")
@@ -75,14 +67,12 @@ class MergedSource : SuspendHttpSource() {
             }
             ) throw IllegalArgumentException("Manga references contain only the merged reference, merge is likely corrupted")
 
-            emit(
-                SManga.create().apply {
-                    val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga } ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
-                    val dbManga = mangaInfoReference?.let { withContext(Dispatchers.IO) { db.getManga(it.mangaUrl, it.mangaSourceId).await() } }
-                    this.copyFrom(dbManga ?: mergedManga)
-                    url = manga.url
-                }
-            )
+            SManga.create().apply {
+                val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga } ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
+                val dbManga = mangaInfoReference?.let { withContext(Dispatchers.IO) { db.getManga(it.mangaUrl, it.mangaSourceId).await() } }
+                this.copyFrom(dbManga ?: mergedManga)
+                url = manga.url
+            }
         }
     }
 
@@ -131,39 +121,45 @@ class MergedSource : SuspendHttpSource() {
         return chapterList.maxByOrNull { it.chapter_number }?.manga_id
     }
 
-    fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): Flow<List<Chapter>> {
-        return flow {
-            withContext(Dispatchers.IO) {
-                fetchChaptersAndSync(manga, downloadChapters).collect()
-            }
-            emit(
-                getChaptersFromDB(manga, editScanlators, dedupe).awaitSingleOrNull() ?: emptyList<Chapter>()
-            )
+    suspend fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
+        return withContext(Dispatchers.IO) {
+            fetchChaptersAndSync(manga, downloadChapters)
+            getChaptersFromDB(manga, editScanlators, dedupe).awaitSingleOrNull() ?: emptyList()
         }
     }
 
-    suspend fun fetchChaptersAndSync(manga: Manga, downloadChapters: Boolean = true): Flow<Pair<List<Chapter>, List<Chapter>>> {
+    suspend fun fetchChaptersAndSync(manga: Manga, downloadChapters: Boolean = true): Pair<List<Chapter>, List<Chapter>> {
         val mangaReferences = db.getMergedMangaReferences(manga.id!!).await()
         if (mangaReferences.isEmpty()) throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
 
         val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(db, preferences)
-        return mangaReferences.filter { it.mangaSourceId != MERGED_SOURCE_ID }.asFlow().map {
+        return mangaReferences.filter { it.mangaSourceId != MERGED_SOURCE_ID }.map {
             load(db, sourceManager, it)
-        }.buffer().flatMapMerge { loadedManga ->
+        }.mapNotNull { loadedManga ->
             withContext(Dispatchers.IO) {
                 if (loadedManga.manga != null && loadedManga.reference.getChapterUpdates) {
-                    loadedManga.source.fetchChapterList(loadedManga.manga).asFlow()
-                        .map { syncChaptersWithSource(db, it, loadedManga.manga, loadedManga.source) }
-                        .onEach {
+                    loadedManga.source.fetchChapterList(loadedManga.manga).awaitSingle()
+                        .let { syncChaptersWithSource(db, it, loadedManga.manga, loadedManga.source) }
+                        .also {
                             if (ifDownloadNewChapters && loadedManga.reference.downloadChapters) {
                                 downloadManager.downloadChapters(loadedManga.manga, it.first)
                             }
                         }
                 } else {
-                    emptyFlow()
+                    null
                 }
             }
-        }.buffer()
+        }.let { pairs ->
+            val firsts = mutableListOf<Chapter>()
+            val seconds = mutableListOf<Chapter>()
+
+            pairs.forEach {
+                firsts.addAll(it.first)
+                seconds.addAll(it.second)
+            }
+
+            firsts to seconds
+        }
     }
 
     suspend fun load(db: DatabaseHelper, sourceManager: SourceManager, reference: MergedMangaReference): LoadedMangaSource {

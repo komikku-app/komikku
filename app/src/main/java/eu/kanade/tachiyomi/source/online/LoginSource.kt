@@ -4,7 +4,7 @@ import android.app.Activity
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 
-interface LoginSource {
+interface LoginSource : Source {
     val needsLogin: Boolean
 
     fun isLogged(): Boolean

@@ -910,7 +910,7 @@ class EHentai(
         "e-hentai.org"
     )
 
-    override fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         return when (uri.pathSegments.firstOrNull()) {
             "g" -> {
                 // Is already gallery page, do nothing

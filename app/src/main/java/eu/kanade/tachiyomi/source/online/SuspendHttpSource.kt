@@ -8,10 +8,10 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.lang.asObservable
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
@@ -29,15 +29,13 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param page the page number to retrieve.
      */
     final override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        return fetchPopularMangaFlow(page).asObservable()
+        return runAsObservable({ fetchPopularMangaSuspended(page) })
     }
 
-    open fun fetchPopularMangaFlow(page: Int): Flow<MangasPage> {
-        return flow {
+    open suspend fun fetchPopularMangaSuspended(page: Int): MangasPage {
+        return withContext(Dispatchers.IO) {
             val response = client.newCall(popularMangaRequestSuspended(page)).await()
-            emit(
-                popularMangaParseSuspended(response)
-            )
+            popularMangaParseSuspended(response)
         }
     }
 
@@ -72,15 +70,13 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param filters the list of filters to apply.
      */
     final override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return fetchSearchMangaSuspended(page, query, filters).asObservable()
+        return runAsObservable({ fetchSearchMangaSuspended(page, query, filters) })
     }
 
-    open fun fetchSearchMangaSuspended(page: Int, query: String, filters: FilterList): Flow<MangasPage> {
-        return flow {
+    open suspend fun fetchSearchMangaSuspended(page: Int, query: String, filters: FilterList): MangasPage {
+        return withContext(Dispatchers.IO) {
             val response = client.newCall(searchMangaRequestSuspended(page, query, filters)).await()
-            emit(
-                searchMangaParseSuspended(response)
-            )
+            searchMangaParseSuspended(response)
         }
     }
 
@@ -114,15 +110,13 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param page the page number to retrieve.
      */
     final override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
-        return fetchLatestUpdatesFlow(page).asObservable()
+        return runAsObservable({ fetchLatestUpdatesSuspended(page) })
     }
 
-    open fun fetchLatestUpdatesFlow(page: Int): Flow<MangasPage> {
-        return flow {
+    open suspend fun fetchLatestUpdatesSuspended(page: Int): MangasPage {
+        return withContext(Dispatchers.IO) {
             val response = client.newCall(latestUpdatesRequestSuspended(page)).await()
-            emit(
-                latestUpdatesParseSuspended(response)
-            )
+            latestUpdatesParseSuspended(response)
         }
     }
 
@@ -155,15 +149,13 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param manga the manga to be updated.
      */
     final override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return fetchMangaDetailsFlow(manga).asObservable()
+        return runAsObservable({ fetchMangaDetailsSuspended(manga) })
     }
 
-    open fun fetchMangaDetailsFlow(manga: SManga): Flow<SManga> {
-        return flow {
+    open suspend fun fetchMangaDetailsSuspended(manga: SManga): SManga {
+        return withContext(Dispatchers.IO) {
             val response = client.newCall(mangaDetailsRequestSuspended(manga)).await()
-            emit(
-                mangaDetailsParseSuspended(response).apply { initialized = true }
-            )
+            mangaDetailsParseSuspended(response).apply { initialized = true }
         }
     }
 
@@ -200,20 +192,18 @@ abstract class SuspendHttpSource : HttpSource() {
      */
     final override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return try {
-            fetchChapterListFlow(manga).asObservable()
+            runAsObservable({ fetchChapterListSuspended(manga) })
         } catch (e: LicencedException) {
             Observable.error(Exception("Licensed - No chapters to show"))
         }
     }
 
     @Throws(LicencedException::class)
-    open fun fetchChapterListFlow(manga: SManga): Flow<List<SChapter>> {
-        return flow {
+    open suspend fun fetchChapterListSuspended(manga: SManga): List<SChapter> {
+        return withContext(Dispatchers.IO) {
             if (manga.status != SManga.LICENSED) {
                 val response = client.newCall(chapterListRequestSuspended(manga)).await()
-                emit(
-                    chapterListParseSuspended(response)
-                )
+                chapterListParseSuspended(response)
             } else {
                 throw LicencedException("Licensed - No chapters to show")
             }
@@ -251,15 +241,13 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param chapter the chapter whose page list has to be fetched.
      */
     final override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return fetchPageListFlow(chapter).asObservable()
+        return runAsObservable({ fetchPageListSuspended(chapter) })
     }
 
-    open fun fetchPageListFlow(chapter: SChapter): Flow<List<Page>> {
-        return flow {
+    open suspend fun fetchPageListSuspended(chapter: SChapter): List<Page> {
+        return withContext(Dispatchers.IO) {
             val response = client.newCall(pageListRequestSuspended(chapter)).await()
-            emit(
-                pageListParseSuspended(response)
-            )
+            pageListParseSuspended(response)
         }
     }
 
@@ -295,15 +283,13 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param page the page whose source image has to be fetched.
      */
     final override fun fetchImageUrl(page: Page): Observable<String> {
-        return fetchImageUrlFlow(page).asObservable()
+        return runAsObservable({ fetchImageUrlSuspended(page) })
     }
 
-    open fun fetchImageUrlFlow(page: Page): Flow<String> {
-        return flow {
+    open suspend fun fetchImageUrlSuspended(page: Page): String {
+        return withContext(Dispatchers.IO) {
             val response = client.newCall(imageUrlRequestSuspended(page)).await()
-            emit(
-                imageUrlParseSuspended(response)
-            )
+            imageUrlParseSuspended(response)
         }
     }
 
@@ -338,14 +324,12 @@ abstract class SuspendHttpSource : HttpSource() {
      * @param page the page whose source image has to be downloaded.
      */
     final override fun fetchImage(page: Page): Observable<Response> {
-        return fetchImageFlow(page).asObservable()
+        return runAsObservable({ fetchImageSuspended(page) })
     }
 
-    open fun fetchImageFlow(page: Page): Flow<Response> {
-        return flow {
-            emit(
-                client.newCallWithProgress(imageRequestSuspended(page), page).await()
-            )
+    open suspend fun fetchImageSuspended(page: Page): Response {
+        return withContext(Dispatchers.IO) {
+            client.newCallWithProgress(imageRequestSuspended(page), page).await()
         }
     }
 

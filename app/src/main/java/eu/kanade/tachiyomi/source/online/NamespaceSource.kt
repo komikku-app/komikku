@@ -1,3 +1,5 @@
 package eu.kanade.tachiyomi.source.online
 
-interface NamespaceSource
+import eu.kanade.tachiyomi.source.Source
+
+interface NamespaceSource : Source

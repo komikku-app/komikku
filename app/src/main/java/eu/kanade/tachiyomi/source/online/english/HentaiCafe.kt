@@ -105,7 +105,7 @@ class HentaiCafe(delegate: HttpSource, val context: Context) :
         "hentai.cafe"
     )
 
-    override fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.takeUnless { it.equals("manga", true) } ?: return null
 
         return if (lcFirstPathSegment.equals("hc.fyi", true)) {

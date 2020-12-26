@@ -165,7 +165,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
         "nhentai.net"
     )
 
-    override fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         if (uri.pathSegments.firstOrNull()?.toLowerCase() != "g") {
             return null
         }
