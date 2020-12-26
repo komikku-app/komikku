@@ -256,7 +256,7 @@ object EXHMigrations {
                         }
                     }
                 }
-                if (oldVersion < 10) {
+                if (oldVersion < 12) {
                     // Force MAL log out due to login flow change
                     val trackManager = Injekt.get<TrackManager>()
                     trackManager.myAnimeList.logout()
