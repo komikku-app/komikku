@@ -5,6 +5,10 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
+import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.withResponse
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,18 +21,25 @@ import java.util.Date
 
 internal class ExtensionGithubApi {
 
+    private val networkService: NetworkHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
 
     suspend fun findExtensions(): List<Extension.Available> {
-        val service: ExtensionGithubService = ExtensionGithubService.create()
-
         return withContext(Dispatchers.IO) {
-            val response = service.getRepo()
-            parseResponse(response)
-        } /* SY --> */ + preferences.extensionRepos().get().flatMap {
-            val url = "$BASE_URL$it/repo/"
-            val response = service.getRepo("${url}index.min.json")
-            parseResponse(response, url)
+            networkService.client
+                .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
+                .await()
+                .withResponse<JsonArray, List<Extension.Available>> {
+                    parseResponse(it)
+                }
+        } /* SY --> */ + preferences.extensionRepos().get().flatMap { repoPath ->
+            val url = "$BASE_URL$repoPath/repo/"
+        	networkService.client
+                .newCall(GET("${url}index.min.json"))
+                .await()
+                .withResponse<JsonArray, List<Extension.Available>> {
+                    parseResponse(it, url)
+                }
         }
         // SY <--
     }
