@@ -1367,11 +1367,11 @@ class MangaController :
     // OVERFLOW MENU DIALOGS
 
     private fun getUnreadChaptersSorted() = /* SY --> */ if (presenter.source.isEhBasedSource()) presenter.chapters
-        .filter { !it.read && it.status == Download.NOT_DOWNLOADED }
+        .filter { !it.read && it.status == Download.State.NOT_DOWNLOADED }
         .distinctBy { it.name }
         .sortedBy { it.source_order }
     else /* SY <-- */ presenter.chapters
-        .filter { !it.read && it.status == Download.NOT_DOWNLOADED }
+        .filter { !it.read && it.status == Download.State.NOT_DOWNLOADED }
         .distinctBy { it.name }
         .sortedByDescending { it.source_order }
 

@@ -123,8 +123,8 @@ class Downloader(
             initializeSubscriptions()
         }
 
-        val pending = queue.filter { it.status != Download.DOWNLOADED }
-        pending.forEach { if (it.status != Download.QUEUE) it.status = Download.QUEUE }
+        val pending = queue.filter { it.status != Download.State.DOWNLOADED }
+        pending.forEach { if (it.status != Download.State.QUEUE) it.status = Download.State.QUEUE }
 
         notifier.paused = false
 
@@ -138,8 +138,8 @@ class Downloader(
     fun stop(reason: String? = null) {
         destroySubscriptions()
         queue
-            .filter { it.status == Download.DOWNLOADING }
-            .forEach { it.status = Download.ERROR }
+            .filter { it.status == Download.State.DOWNLOADING }
+            .forEach { it.status = Download.State.ERROR }
 
         if (reason != null) {
             notifier.onWarning(reason)
@@ -160,8 +160,8 @@ class Downloader(
     fun pause() {
         destroySubscriptions()
         queue
-            .filter { it.status == Download.DOWNLOADING }
-            .forEach { it.status = Download.QUEUE }
+            .filter { it.status == Download.State.DOWNLOADING }
+            .forEach { it.status = Download.State.QUEUE }
         notifier.paused = true
     }
 
@@ -176,8 +176,8 @@ class Downloader(
         // Needed to update the chapter view
         if (isNotification) {
             queue
-                .filter { it.status == Download.QUEUE }
-                .forEach { it.status = Download.NOT_DOWNLOADED }
+                .filter { it.status == Download.State.QUEUE }
+                .forEach { it.status = Download.State.NOT_DOWNLOADED }
         }
         queue.clear()
         notifier.dismissProgress()
@@ -280,7 +280,7 @@ class Downloader(
 
         val availSpace = DiskUtil.getAvailableStorageSpace(mangaDir)
         if (availSpace != -1L && availSpace < MIN_DISK_SPACE) {
-            download.status = Download.ERROR
+            download.status = Download.State.ERROR
             notifier.onError(context.getString(R.string.download_insufficient_space), download.chapter.name)
             return@defer Observable.just(download)
         }
@@ -310,7 +310,7 @@ class Downloader(
                     ?.forEach { it.delete() }
 
                 download.downloadedImages = 0
-                download.status = Download.DOWNLOADING
+                download.status = Download.State.DOWNLOADING
             }
             // Get all the URLs to the source images, fetch pages if necessary
             .flatMap { download.source.fetchAllImageUrlsFromPageList(it) }
@@ -326,7 +326,7 @@ class Downloader(
             .doOnNext { ensureSuccessfulDownload(download, mangaDir, tmpDir, chapterDirname) }
             // If the page list threw, it will resume here
             .onErrorReturn { error ->
-                download.status = Download.ERROR
+                download.status = Download.State.ERROR
                 notifier.onError(error.message, download.chapter.name)
                 download
             }
@@ -481,13 +481,13 @@ class Downloader(
         val downloadedImages = tmpDir.listFiles().orEmpty().filterNot { it.name!!.endsWith(".tmp") }
 
         download.status = if (downloadedImages.size == download.pages!!.size) {
-            Download.DOWNLOADED
+            Download.State.DOWNLOADED
         } else {
-            Download.ERROR
+            Download.State.ERROR
         }
 
         // Only rename the directory if it's downloaded.
-        if (download.status == Download.DOWNLOADED) {
+        if (download.status == Download.State.DOWNLOADED) {
             if (preferences.saveChaptersAsCBZ().get()) {
                 val zip = mangaDir.createFile("$dirname.cbz.tmp")
                 val zipOut = ZipOutputStream(BufferedOutputStream(zip.openOutputStream()))
@@ -532,7 +532,7 @@ class Downloader(
      */
     private fun completeDownload(download: Download) {
         // Delete successful downloads from queue
-        if (download.status == Download.DOWNLOADED) {
+        if (download.status == Download.State.DOWNLOADED) {
             // remove downloaded chapter from queue
             queue.remove(download)
         }
@@ -545,7 +545,7 @@ class Downloader(
      * Returns true if all the queued downloads are in DOWNLOADED or ERROR state.
      */
     private fun areAllDownloadsFinished(): Boolean {
-        return queue.none { it.status <= Download.DOWNLOADING }
+        return queue.none { it.status.value <= Download.State.DOWNLOADING.value }
     }
 
     companion object {
