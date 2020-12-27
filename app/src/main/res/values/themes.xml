@@ -90,6 +90,7 @@
     <style name="Theme.Tachiyomi.Light" parent="Theme.Base">
         <item name="android:statusBarColor">@color/md_black_1000_54</item>
         <item name="android:navigationBarColor">@color/md_black_1000_54</item>
+        <item name="background">@color/dialogLight</item>
 
         <item name="colorFilterActive">@color/filterColorLight</item>
     </style>
@@ -99,6 +100,7 @@
         <item name="colorOnPrimary">@color/textColorPrimaryDark</item>
         <item name="colorAccentOnPrimary">@color/textColorPrimaryDark</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="background">@color/colorPrimary</item>
 
         <item name="actionBarTheme">@style/Theme.Toolbar.Light</item>
     </style>
@@ -122,6 +124,7 @@
         <item name="colorOnSurface">@color/textColorPrimaryDark</item>
         <item name="colorOnBackground">@color/textColorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccentDark</item>
+        <item name="background">@color/colorDarkPrimaryDark</item>
 
         <!-- Handles RTL text -->
         <item name="android:textAlignment">gravity</item>
@@ -189,12 +192,14 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorAccentOnPrimary">@color/textColorPrimaryDark</item>
         <item name="colorPrimaryVariant">@color/colorPrimary</item>
+        <item name="background">@color/colorPrimary</item>
     </style>
 
     <style name="Theme.Tachiyomi.Amoled" parent="Theme.Base.Dark">
         <item name="colorPrimary">@color/colorAmoledPrimary</item>
         <item name="colorPrimaryVariant">@color/colorAmoledPrimary</item>
         <item name="colorSurface">@color/colorAmoledPrimary</item>
+        <item name="background">@color/colorAmoledPrimary</item>
 
         <item name="android:colorBackground">@color/colorAmoledPrimary</item>
 

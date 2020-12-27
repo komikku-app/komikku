@@ -24,6 +24,7 @@ object PreferenceValues {
         blue,
         amoled,
         red,
+        midnightdusk,
     }
 
     enum class DisplayMode {

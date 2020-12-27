@@ -49,6 +49,7 @@ abstract class BaseThemedActivity : AppCompatActivity() {
             Values.DarkThemeVariant.blue -> R.style.Theme_Tachiyomi_DarkBlue
             Values.DarkThemeVariant.amoled -> R.style.Theme_Tachiyomi_Amoled
             Values.DarkThemeVariant.red -> R.style.Theme_Tachiyomi_Red
+            Values.DarkThemeVariant.midnightdusk -> R.style.Theme_Tachiyomi_MidnightDusk
             else -> R.style.Theme_Tachiyomi_Dark
         }
     }
