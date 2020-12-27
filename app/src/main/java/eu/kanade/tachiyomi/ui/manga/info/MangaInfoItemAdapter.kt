@@ -185,6 +185,7 @@ class MangaInfoItemAdapter(
 
             // backgroundTint attribute doesn't work properly on Android 5
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+                @Suppress("DEPRECATION")
                 binding.mangaInfoToggleMoreScrim.background.setColorFilter(
                     view.context.getResourceColor(android.R.attr.colorBackground),
                     PorterDuff.Mode.SRC_ATOP
