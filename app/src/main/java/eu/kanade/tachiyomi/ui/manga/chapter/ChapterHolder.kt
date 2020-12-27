@@ -75,6 +75,6 @@ class ChapterHolder(
         }
 
         binding.download.isVisible = item.manga.source != LocalSource.ID
-        binding.download.setState(item.status)
+        binding.download.setState(item.status, item.progress)
     }
 }

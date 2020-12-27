@@ -120,7 +120,8 @@ class MangaPresenter(
     /**
      * Subscription to observe download status changes.
      */
-    private var observeDownloadsSubscription: Subscription? = null
+    private var observeDownloadsStatusSubscription: Subscription? = null
+    private var observeDownloadsPageSubscription: Subscription? = null
 
     // EXH -->
     private val customMangaManager: CustomMangaManager by injectLazy()
@@ -699,12 +700,20 @@ class MangaPresenter(
         val isMergedSource = source is MergedSource
         val mergedIds = if (isMergedSource) mergedManga.mapNotNull { it.id } else emptyList()
         // SY <--
-        observeDownloadsSubscription?.let { remove(it) }
-        observeDownloadsSubscription = downloadManager.queue.getStatusObservable()
+        observeDownloadsStatusSubscription?.let { remove(it) }
+        observeDownloadsStatusSubscription = downloadManager.queue.getStatusObservable()
             .observeOn(AndroidSchedulers.mainThread())
             .filter { download -> /* SY --> */ if (isMergedSource) download.manga.id in mergedIds else /* SY <-- */ download.manga.id == manga.id }
             .doOnNext { onDownloadStatusChange(it) }
-            .subscribeLatestCache(MangaController::onChapterStatusChange) { _, error ->
+            .subscribeLatestCache(MangaController::onChapterDownloadUpdate) { _, error ->
+                Timber.e(error)
+            }
+
+        observeDownloadsPageSubscription?.let { remove(it) }
+        observeDownloadsPageSubscription = downloadManager.queue.getProgressObservable()
+            .observeOn(AndroidSchedulers.mainThread())
+            .filter { download -> /* SY --> */ if (isMergedSource) download.manga.id in mergedIds else /* SY <-- */ download.manga.id == manga.id }
+            .subscribeLatestCache(MangaController::onChapterDownloadUpdate) { _, error ->
                 Timber.e(error)
             }
     }
