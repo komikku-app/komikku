@@ -8,7 +8,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.network.withResponse
+import eu.kanade.tachiyomi.network.parseAs
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,15 +29,15 @@ internal class ExtensionGithubApi {
             networkService.client
                 .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
                 .await()
-                .withResponse<JsonArray, List<Extension.Available>> {
-                    parseResponse(it)
-                }
+                .parseAs<JsonArray>()
+                .let { parseResponse(it) }
         } /* SY --> */ + preferences.extensionRepos().get().flatMap { repoPath ->
             val url = "$BASE_URL$repoPath/repo/"
         	networkService.client
                 .newCall(GET("${url}index.min.json"))
                 .await()
-                .withResponse<JsonArray, List<Extension.Available>> {
+                .parseAs<JsonArray>()
+                .let {
                     parseResponse(it, url)
                 }
         }

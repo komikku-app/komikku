@@ -5,7 +5,7 @@ import eu.kanade.tachiyomi.data.updater.UpdateResult
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.network.withResponse
+import eu.kanade.tachiyomi.network.parseAs
 import exh.syDebugVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -30,7 +30,8 @@ class GithubUpdateChecker {
             networkService.client
                 .newCall(GET("https://api.github.com/repos/$repo/releases/latest"))
                 .await()
-                .withResponse<GithubRelease, UpdateResult> {
+                .parseAs<GithubRelease>()
+                .let {
                     // Check if latest version is different from current version
                     // SY -->
                     val newVersion = it.version
