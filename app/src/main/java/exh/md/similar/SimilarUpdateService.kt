@@ -15,6 +15,9 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import eu.kanade.tachiyomi.util.system.notificationManager
 import exh.md.similar.sql.models.MangaSimilarImpl
@@ -29,7 +32,6 @@ import kotlinx.coroutines.withContext
 import okio.buffer
 import okio.sink
 import okio.source
-import retrofit2.awaitResponse
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
@@ -38,6 +40,19 @@ import java.util.concurrent.TimeUnit
 class SimilarUpdateService(
     val db: DatabaseHelper = Injekt.get()
 ) : Service() {
+
+    private val client by lazy {
+        Injekt.get<NetworkHelper>().client.newBuilder()
+            // unzip interceptor which will add the correct headers
+            .addNetworkInterceptor { chain ->
+                val originalResponse = chain.proceed(chain.request())
+                originalResponse.newBuilder()
+                    .header("Content-Encoding", "gzip")
+                    .header("Content-Type", "application/json")
+                    .build()
+            }
+            .build()
+    }
 
     /**
      * Wake lock that will be held until the service is destroyed.
@@ -135,7 +150,9 @@ class SimilarUpdateService(
      * Method that updates the similar database for manga
      */
     private suspend fun updateSimilar() = withContext(Dispatchers.IO) {
-        val response = SimilarHttpService.create().getSimilarResults().awaitResponse()
+        val response = client
+            .newCall(GET(similarUrl))
+            .await()
         if (!response.isSuccessful) {
             throw Exception("Error trying to download similar file")
         }
@@ -143,7 +160,7 @@ class SimilarUpdateService(
         val buffer = withContext(Dispatchers.IO) { destinationFile.sink().buffer() }
 
         // write json to file
-        response.body()?.byteStream()?.source()?.use { input ->
+        response.body?.byteStream()?.source()?.use { input ->
             buffer.use { output ->
                 output.writeAll(input)
             }
@@ -288,6 +305,7 @@ class SimilarUpdateService(
     }
 
     companion object {
+        private const val similarUrl = "https://raw.githubusercontent.com/goldbattle/MangadexRecomendations/master/output/mangas_compressed.json.gz"
 
         /**
          * Returns the status of the service.
