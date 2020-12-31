@@ -32,7 +32,6 @@ import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
@@ -956,9 +955,7 @@ class MangaPresenter(
                     refreshChapters()
                 }
 
-                launchUI {
-                    view?.onChaptersDeleted(chapters)
-                }
+                view?.onChaptersDeleted(chapters)
             } catch (e: Throwable) {
                 view?.onChaptersDeletedError(e)
             }
