@@ -33,10 +33,7 @@ class GithubUpdateChecker {
                 .parseAs<GithubRelease>()
                 .let {
                     // Check if latest version is different from current version
-                    // SY -->
-                    val newVersion = it.version
-        			if ((newVersion != BuildConfig.VERSION_NAME && (syDebugVersion == "0")) || ((syDebugVersion != "0") && newVersion != syDebugVersion)) {
-            			// SY <--
+        			if (/* SY --> */ isNewVersionSY(it.version) /* SY <-- */) {
 						GithubUpdateResult.NewUpdate(it)
                     } else {
                         GithubUpdateResult.NoNewUpdate()
@@ -44,6 +41,10 @@ class GithubUpdateChecker {
                 }
         }
     }
+
+    // SY -->
+    private fun isNewVersionSY(versionTag: String) = (versionTag != BuildConfig.VERSION_NAME && (syDebugVersion == "0")) || ((syDebugVersion != "0") && versionTag != syDebugVersion)
+    // SY <--
 
     private fun isNewVersion(versionTag: String): Boolean {
         // Removes prefixes like "r" or "v"
