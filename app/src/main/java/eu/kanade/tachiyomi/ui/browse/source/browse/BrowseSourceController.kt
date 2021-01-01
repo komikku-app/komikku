@@ -43,6 +43,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet.FilterNavigationView.Companion.MAX_SAVED_SEARCHES
+import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
@@ -421,7 +422,12 @@ open class BrowseSourceController(bundle: Bundle) :
         searchItem.fixExpand(
             onExpand = { invalidateMenuOnExpand() },
             onCollapse = {
-                searchWithQuery("")
+                if (router.backstackSize >= 2 && router.backstack[router.backstackSize - 2].controller() is GlobalSearchController) {
+                    router.popController(this)
+                } else {
+                    searchWithQuery("")
+                }
+
                 true
             }
         )
