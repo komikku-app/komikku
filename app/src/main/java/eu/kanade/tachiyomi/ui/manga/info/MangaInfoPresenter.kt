@@ -84,14 +84,15 @@ class MangaInfoPresenter(
      */
     fun fetchMangaFromSource(manualFetch: Boolean = false) {
         if (!fetchMangaSubscription.isNullOrUnsubscribed()) return
-        fetchMangaSubscription = Observable.defer { source.fetchMangaDetails(manga) }
-            .map { networkManga ->
-                manga.prepUpdateCover(coverCache, networkManga, manualFetch)
-                manga.copyFrom(networkManga)
-                manga.initialized = true
-                db.insertManga(manga).executeAsBlocking()
-                manga
-            }
+        fetchMangaSubscription = runAsObservable({
+            val networkManga = source.getMangaDetails(manga.toMangaInfo())
+            val sManga = networkManga.toSManga()
+            manga.prepUpdateCover(coverCache, sManga, manualFetch)
+            manga.copyFrom(sManga)
+            manga.initialized = true
+            db.insertManga(manga).executeAsBlocking()
+            manga
+        })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
