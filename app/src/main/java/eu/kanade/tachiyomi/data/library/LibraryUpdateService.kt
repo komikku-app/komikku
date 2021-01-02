@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -456,7 +457,10 @@ class LibraryUpdateService(
 
         return (
             /* SY --> */ if (source is MergedSource) runAsObservable({ source.fetchChaptersAndSync(manga, false) })
-            else /* SY <-- */ source.fetchChapterList(manga)
+            else /* SY <-- */ runAsObservable({
+                source.getChapterList(manga.toMangaInfo())
+                    .map { it.toSChapter() }
+            })
                 .map { syncChaptersWithSource(db, it, manga, source) }
             // SY -->
             )

@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -286,15 +287,17 @@ class MangaPresenter(
      */
     fun fetchMangaFromSource(manualFetch: Boolean = false) {
         if (!fetchMangaSubscription.isNullOrUnsubscribed()) return
-        fetchMangaSubscription = runAsObservable({
-            val networkManga = source.getMangaDetails(manga.toMangaInfo())
-            val sManga = networkManga.toSManga()
-            manga.prepUpdateCover(coverCache, sManga, manualFetch)
-            manga.copyFrom(sManga)
-            manga.initialized = true
-            db.insertManga(manga).executeAsBlocking()
-            manga
-        })
+        fetchMangaSubscription = Observable.defer {
+            runAsObservable({
+                val networkManga = source.getMangaDetails(manga.toMangaInfo())
+                val sManga = networkManga.toSManga()
+                manga.prepUpdateCover(coverCache, sManga, manualFetch)
+                manga.copyFrom(sManga)
+                manga.initialized = true
+                db.insertManga(manga).executeAsBlocking()
+                manga
+            })
+        }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
@@ -761,7 +764,12 @@ class MangaPresenter(
         if (!fetchChaptersSubscription.isNullOrUnsubscribed()) return
         fetchChaptersSubscription = /* SY --> */ if (source !is MergedSource) {
             // SY <--
-            Observable.defer { source.fetchChapterList(manga) }
+            Observable.defer {
+                runAsObservable({
+                    source.getChapterList(manga.toMangaInfo())
+                        .map { it.toSChapter() }
+                })
+            }
                 .subscribeOn(Schedulers.io())
                 .map { syncChaptersWithSource(db, it, manga, source) }
                 .doOnNext {

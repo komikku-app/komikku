@@ -246,6 +246,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      */
     fun restoreMangaFetchObservable(source: Source?, manga: Manga, online: Boolean): Observable<Manga> {
         return if (online && source != null /* SY --> */ && source !is MergedSource /* SY <-- */) {
+            runAsObservable({
                 val networkManga = source.getMangaDetails(manga.toMangaInfo())
                 manga.copyFrom(networkManga.toSManga())
                 manga.favorite = manga.favorite
