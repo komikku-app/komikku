@@ -9,12 +9,15 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.source.SourceController
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import exh.MERGED_SOURCE_ID
@@ -84,7 +87,7 @@ class MangaInfoPresenter(
      */
     fun fetchMangaFromSource(manualFetch: Boolean = false) {
         if (!fetchMangaSubscription.isNullOrUnsubscribed()) return
-        fetchMangaSubscription = runAsObservable({
+        fetchMangaSubscription = Observable.defer {runAsObservable({
             val networkManga = source.getMangaDetails(manga.toMangaInfo())
             val sManga = networkManga.toSManga()
             manga.prepUpdateCover(coverCache, sManga, manualFetch)
@@ -92,7 +95,7 @@ class MangaInfoPresenter(
             manga.initialized = true
             db.insertManga(manga).executeAsBlocking()
             manga
-        })
+        })}
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(

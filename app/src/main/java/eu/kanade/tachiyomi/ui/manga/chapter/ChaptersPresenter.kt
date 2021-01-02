@@ -6,16 +6,19 @@ import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
@@ -197,7 +200,12 @@ class ChaptersPresenter(
         hasRequested = true
 
         if (!fetchChaptersSubscription.isNullOrUnsubscribed()) return
-        fetchChaptersSubscription = Observable.defer { source.fetchChapterList(manga) }
+            fetchChaptersSubscription = Observable.defer {
+                runAsObservable({
+                    source.getChapterList(manga.toMangaInfo())
+                        .map { it.toSChapter() }
+                })
+            }
             .subscribeOn(Schedulers.io())
             .map { syncChaptersWithSource(db, it, manga, source) }
             .doOnNext {
