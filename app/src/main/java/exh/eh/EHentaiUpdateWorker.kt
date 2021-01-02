@@ -11,13 +11,15 @@ import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.await
-import eu.kanade.tachiyomi.util.lang.awaitSingle
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.debug.DebugToggles
@@ -261,11 +263,12 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
             ?: throw GalleryNotUpdatedException(false, IllegalStateException("Missing EH-based source (${manga.source})!"))
 
         try {
-            val updatedManga = source.fetchMangaDetails(manga).awaitSingle()
-            manga.copyFrom(updatedManga)
+            val updatedManga = source.getMangaDetails(manga.toMangaInfo())
+            manga.copyFrom(updatedManga.toSManga())
             db.insertManga(manga).await()
 
-            val newChapters = source.fetchChapterList(manga).awaitSingle()
+            val newChapters = source.getChapterList(manga.toMangaInfo())
+                .map { it.toSChapter() }
 
             val (new, _) = syncChaptersWithSource(db, newChapters, manga, source) // Not suspending, but does block, maybe fix this?
             return new to db.getChapters(manga).await()

@@ -4,6 +4,7 @@ import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
@@ -12,10 +13,11 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.SuspendHttpSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.await
-import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.MERGED_SOURCE_ID
@@ -138,7 +140,8 @@ class MergedSource : SuspendHttpSource() {
         }.mapNotNull { loadedManga ->
             withContext(Dispatchers.IO) {
                 if (loadedManga.manga != null && loadedManga.reference.getChapterUpdates) {
-                    loadedManga.source.fetchChapterList(loadedManga.manga).awaitSingle()
+                    loadedManga.source.getChapterList(loadedManga.manga.toMangaInfo())
+                        .map { it.toSChapter() }
                         .let { syncChaptersWithSource(db, it, loadedManga.manga, loadedManga.source) }
                         .also {
                             if (ifDownloadNewChapters && loadedManga.reference.downloadChapters) {
@@ -169,7 +172,7 @@ class MergedSource : SuspendHttpSource() {
             manga = Manga.create(reference.mangaSourceId).apply {
                 url = reference.mangaUrl
             }
-            manga.copyFrom(source.fetchMangaDetails(manga).awaitSingle())
+            manga.copyFrom(source.getMangaDetails(manga.toMangaInfo()).toSManga())
             try {
                 manga.id = db.insertManga(manga).await().insertedId()
                 reference.mangaId = manga.id

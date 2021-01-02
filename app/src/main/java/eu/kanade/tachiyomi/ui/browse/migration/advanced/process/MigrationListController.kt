@@ -19,11 +19,14 @@ import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationListControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -33,7 +36,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.search.SearchController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.await
-import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
@@ -176,9 +178,9 @@ class MigrationListController(bundle: Bundle? = null) :
                                                         searchResult,
                                                         source.id
                                                     )
-                                                val chapters = (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).awaitSingle()
+                                                val chapters = (if (source is EHentai) source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle) else source.getChapterList(localManga.toMangaInfo()))
                                                 try {
-                                                    syncChaptersWithSource(db, chapters, localManga, source)
+                                                    syncChaptersWithSource(db, chapters.map { it.toSChapter() }, localManga, source)
                                                 } catch (e: Exception) {
                                                     return@async2 null
                                                 }
@@ -208,7 +210,11 @@ class MigrationListController(bundle: Bundle? = null) :
                                     if (searchResult != null) {
                                         val localManga = smartSearchEngine.networkToLocalManga(searchResult, source.id)
                                         val chapters = try {
-                                            (if (source is EHentai) source.fetchChapterList(localManga, throttleManager::throttle) else source.fetchChapterList(localManga)).awaitSingle()
+                                            if (source is EHentai) {
+                                                source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle)
+                                            } else {
+                                                source.getChapterList(localManga.toMangaInfo())
+                                            }.map { it.toSChapter() }
                                         } catch (e: java.lang.Exception) {
                                             Timber.e(e)
                                             emptyList()
@@ -238,8 +244,8 @@ class MigrationListController(bundle: Bundle? = null) :
 
                 if (result != null && result.thumbnail_url == null) {
                     try {
-                        val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).awaitSingle()
-                        result.copyFrom(newManga)
+                        val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo())
+                        result.copyFrom(newManga.toSManga())
 
                         db.insertManga(result).await()
                     } catch (e: CancellationException) {
@@ -342,7 +348,8 @@ class MigrationListController(bundle: Bundle? = null) :
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
                 val localManga = smartSearchEngine.networkToLocalManga(manga, source.id)
                 try {
-                    val chapters = source.fetchChapterList(localManga).awaitSingle()
+                    val chapters = source.getChapterList(localManga.toMangaInfo())
+                        .map { it.toSChapter() }
                     syncChaptersWithSource(db, chapters, localManga, source)
                 } catch (e: Exception) {
                     return@async null
@@ -352,8 +359,8 @@ class MigrationListController(bundle: Bundle? = null) :
 
             if (result != null) {
                 try {
-                    val newManga = sourceManager.getOrStub(result.source).fetchMangaDetails(result).awaitSingle()
-                    result.copyFrom(newManga)
+                    val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo())
+                    result.copyFrom(newManga.toSManga())
 
                     db.insertManga(result).await()
                 } catch (e: CancellationException) {

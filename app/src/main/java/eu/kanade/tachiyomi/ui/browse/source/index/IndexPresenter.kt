@@ -4,14 +4,17 @@ import android.os.Bundle
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
 import eu.kanade.tachiyomi.util.lang.asFlow
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.CoroutineScope
@@ -194,13 +197,13 @@ open class IndexPresenter(
      * @return an observable of the manga to initialize
      */
     private fun getMangaDetailsObservable(manga: Manga, source: Source, isLatest: Boolean): Observable<Pair<Manga, Boolean>> {
-        return source.fetchMangaDetails(manga)
-            .flatMap { networkManga ->
-                manga.copyFrom(networkManga)
-                manga.initialized = true
-                db.insertManga(manga).executeAsBlocking()
-                Observable.just(manga to isLatest)
-            }
+        return runAsObservable({
+            val networkManga = source.getMangaDetails(manga.toMangaInfo())
+            manga.copyFrom(networkManga.toSManga())
+            manga.initialized = true
+            db.insertManga(manga).executeAsBlocking()
+            manga to isLatest
+        })
             .onErrorResumeNext { Observable.just(manga to isLatest) }
     }
 

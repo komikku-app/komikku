@@ -7,12 +7,14 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.awaitSingle
 import exh.source.getMainSource
 import exh.util.executeOnIO
 import uy.kohesive.injekt.Injekt
@@ -131,8 +133,8 @@ class GalleryAdder {
             }
 
             // Fetch and copy details
-            val newManga = source.fetchMangaDetails(manga).awaitSingle()
-            manga.copyFrom(newManga)
+            val newManga = source.getMangaDetails(manga.toMangaInfo())
+            manga.copyFrom(newManga.toSManga())
             manga.initialized = true
 
             if (fav) {
@@ -144,16 +146,15 @@ class GalleryAdder {
 
             // Fetch and copy chapters
             try {
-                val chapterListObs = if (source is EHentai) {
-                    source.fetchChapterList(manga, throttleFunc)
+                val chapterList = if (source is EHentai) {
+                    source.getChapterList(manga.toMangaInfo(), throttleFunc)
                 } else {
-                    source.fetchChapterList(manga)
+                    source.getChapterList(manga.toMangaInfo())
+                }.map { it.toSChapter() }
+
+                if (chapterList.isNotEmpty()) {
+                    syncChaptersWithSource(db, chapterList, manga, source)
                 }
-                chapterListObs.map {
-                    if (it.isNotEmpty()) {
-                        syncChaptersWithSource(db, it, manga, source)
-                    } else emptyList<Chapter>() to emptyList()
-                }.awaitSingle()
             } catch (e: Exception) {
                 logger.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
                 return GalleryAddEvent.Fail.Error(url, context.getString(R.string.gallery_adder_chapter_fetch_error, url))

@@ -4,10 +4,12 @@ import android.app.Application
 import com.elvishew.xlog.XLog
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.await
 import exh.EH_SOURCE_ID
 import exh.EXHMigrations
@@ -90,8 +92,8 @@ object DebugFunctions {
                         EXH_SOURCE_ID -> ex
                         else -> return@forEach
                     }
-                    )?.fetchMangaDetails(manga)?.map { networkManga ->
-                    manga.copyFrom(networkManga)
+                    )?.getMangaDetails(manga.toMangaInfo())?.let { networkManga ->
+                    manga.copyFrom(networkManga.toSManga())
                     manga.initialized = true
                     db.insertManga(manga).executeAsBlocking()
                 }

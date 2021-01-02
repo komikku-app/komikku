@@ -4,12 +4,15 @@ import android.os.Bundle
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.debug.DebugFunctions.sourceManager
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
@@ -42,7 +45,7 @@ class MigrationMangaPresenter(
     fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean) {
         val source = sourceManager.get(manga.source) ?: return
 
-        Observable.defer { source.fetchChapterList(manga) }.onErrorReturn { emptyList() }
+        Observable.defer { runAsObservable({ source.getChapterList(manga.toMangaInfo()).map { it.toSChapter() } }) }.onErrorReturn { emptyList() }
             .doOnNext { migrateMangaInternal(source, it, prevManga, manga, replace) }
             .onErrorReturn { emptyList() }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
