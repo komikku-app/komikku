@@ -3,14 +3,17 @@ package eu.kanade.tachiyomi.source.online.english
 import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.metadata.metadata.HentaiCafeSearchMetadata
 import exh.metadata.metadata.HentaiCafeSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
@@ -21,6 +24,8 @@ import exh.util.urlImportFetchSearchManga
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.jsoup.nodes.Document
 import rx.Observable
+import tachiyomi.source.model.ChapterInfo
+import tachiyomi.source.model.MangaInfo
 
 class HentaiCafe(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -56,6 +61,11 @@ class HentaiCafe(delegate: HttpSource, val context: Context) :
             }
     }
 
+    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+        return parseToManga(manga, response.asJsoup())
+    }
+
     /**
      * Parse the supplied input into the supplied metadata object
      */
@@ -86,12 +96,12 @@ class HentaiCafe(delegate: HttpSource, val context: Context) :
         }
     }
 
-    override fun fetchChapterList(manga: SManga) = getOrLoadMetadata(manga.id) {
-        client.newCall(mangaDetailsRequest(manga))
-            .asObservableSuccess()
-            .map { it.asJsoup() }
-            .toSingle()
-    }.map {
+    override fun fetchChapterList(manga: SManga) = runAsObservable({
+        fetchOrLoadMetadata(manga.id) {
+            val response = client.newCall(mangaDetailsRequest(manga)).await()
+            response.asJsoup()
+        }
+    }).map {
         listOf(
             SChapter.create().apply {
                 url = "/manga/read/${it.readerId}/en/0/1/"
@@ -99,7 +109,21 @@ class HentaiCafe(delegate: HttpSource, val context: Context) :
                 chapter_number = 0.0f
             }
         )
-    }.toObservable()
+    }
+
+    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
+        val metadata = fetchOrLoadMetadata(manga.id()) {
+            val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+            response.asJsoup()
+        }
+        return listOf(
+            ChapterInfo(
+                key = "/manga/read/${metadata.readerId}/en/0/1/",
+                name = "Chapter",
+                number = 0F
+            )
+        )
+    }
 
     override val matchingHosts = listOf(
         "hentai.cafe"

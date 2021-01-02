@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSManga
 import exh.md.utils.MdUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,6 +15,7 @@ import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import rx.Observable
+import tachiyomi.source.model.MangaInfo
 
 class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: List<String>, val forceLatestCovers: Boolean = false) {
 
@@ -53,6 +55,13 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
             manga.apply {
                 initialized = true
             }
+        }
+    }
+
+    suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
+        return withContext(Dispatchers.IO) {
+            val response = client.newCall(apiRequest(manga.toSManga())).await()
+            ApiMangaParser(langs).parseToManga(manga, response, forceLatestCovers, sourceId)
         }
     }
 

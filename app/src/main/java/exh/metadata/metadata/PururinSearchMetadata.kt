@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class PururinSearchMetadata : RaisedSearchMetadata() {
@@ -25,6 +26,33 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
 
     var ratingCount: Int? = null
     var averageRating: Double? = null
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val key = prId?.let { prId ->
+            prShortLink?.let { prShortLink ->
+                "/gallery/$prId/$prShortLink"
+            }
+        }
+
+        val title = title ?: altTitle
+
+        val cover = thumbnailUrl
+
+        val artist = tags.ofNamespace(TAG_NAMESPACE_ARTIST).joinToString { it.name }
+
+        val genres = tagsToGenreList()
+
+        val description = "meta"
+
+        return manga.copy(
+            key = key ?: manga.key,
+            title = title ?: manga.title,
+            cover = cover ?: manga.cover,
+            artist = artist,
+            genres = genres,
+            description = description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         prId?.let { prId ->

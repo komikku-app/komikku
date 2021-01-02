@@ -3,9 +3,11 @@ package eu.kanade.tachiyomi.source.online.english
 import android.content.Context
 import android.net.Uri
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -23,6 +25,7 @@ import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import rx.Observable
+import tachiyomi.source.model.MangaInfo
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -54,6 +57,11 @@ class Tsumino(delegate: HttpSource, val context: Context) :
             .flatMap {
                 parseToManga(manga, it.asJsoup()).andThen(Observable.just(manga))
             }
+    }
+
+    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+        return parseToManga(manga, response.asJsoup())
     }
 
     override fun parseIntoMetadata(metadata: TsuminoSearchMetadata, input: Document) {

@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class HBrowseSearchMetadata : RaisedSearchMetadata() {
@@ -18,6 +19,32 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
 
     // Length in pages
     var length: Int? = null
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val key = hbUrl
+
+        val title = title
+
+        // Guess thumbnail URL if manga does not have thumbnail URL
+        val cover = if (manga.cover.isBlank()) {
+            guessThumbnailUrl(hbId.toString())
+        } else null
+
+        val artist = tags.ofNamespace(ARTIST_NAMESPACE).joinToString { it.name }
+
+        val genres = tagsToGenreList()
+
+        val description = "meta"
+
+        return manga.copy(
+            key = key ?: manga.key,
+            title = title ?: manga.title,
+            cover = cover ?: manga.cover,
+            artist = artist,
+            genres = genres,
+            description = description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         hbUrl?.let {

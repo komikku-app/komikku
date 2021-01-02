@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTitle
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class PervEdenSearchMetadata : RaisedSearchMetadata() {
@@ -32,6 +33,36 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
     var status: String? = null
 
     var lang: String? = null
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val key = url
+        val cover = thumbnailUrl
+
+        val title = title
+
+        val artist = artist
+
+        val status = when (status) {
+            "Ongoing" -> MangaInfo.ONGOING
+            "Completed", "Suspended" -> MangaInfo.COMPLETED
+            else -> MangaInfo.UNKNOWN
+        }
+
+        // Copy tags -> genres
+        val genres = tagsToGenreList()
+
+        val description = "meta"
+
+        return manga.copy(
+            key = key ?: manga.key,
+            cover = cover ?: manga.cover,
+            title = title ?: manga.title,
+            artist = artist ?: manga.artist,
+            status = status,
+            genres = genres,
+            description = description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         url?.let { manga.url = it }

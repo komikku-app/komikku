@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class EightMusesSearchMetadata : RaisedSearchMetadata() {
@@ -13,6 +14,29 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
     var title by titleDelegate(TITLE_TYPE_MAIN)
 
     var thumbnailUrl: String? = null
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val key = path.joinToString("/", prefix = "/")
+
+        val title = title
+
+        val cover = thumbnailUrl
+
+        val artist = tags.ofNamespace(ARTIST_NAMESPACE).joinToString { it.name }
+
+        val genres = tagsToGenreList()
+
+        val description = "meta"
+
+        return manga.copy(
+            key = key,
+            title = title ?: manga.title,
+            cover = cover ?: manga.cover,
+            artist = artist,
+            genres = genres,
+            description = description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         manga.url = path.joinToString("/", prefix = "/")

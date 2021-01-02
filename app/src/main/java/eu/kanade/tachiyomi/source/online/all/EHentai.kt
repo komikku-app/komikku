@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -16,6 +17,8 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toChapterInfo
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -41,6 +44,7 @@ import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
+import exh.util.awaitSingle
 import exh.util.dropBlank
 import exh.util.ignore
 import exh.util.nullIfBlank
@@ -72,6 +76,8 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import rx.Observable
 import rx.Single
+import tachiyomi.source.model.ChapterInfo
+import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import java.net.URLEncoder
 import java.util.ArrayList
@@ -276,8 +282,13 @@ class EHentai(
         MetadataMangasPage(mangaFromSource.first.map { it.manga }, mangaFromSource.second, mangaFromSource.first.map { it.metadata })
     }
 
+    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> = getChapterList(manga) {}
+
+    suspend fun getChapterList(manga: MangaInfo, throttleFunc: () -> Unit) = fetchChapterList(manga.toSManga(), throttleFunc).awaitSingle().map { it.toChapterInfo() }
+
     override fun fetchChapterList(manga: SManga) = fetchChapterList(manga) {}
 
+    @Deprecated("Use getChapterList instead")
     fun fetchChapterList(manga: SManga, throttleFunc: () -> Unit): Observable<List<SChapter>> {
         return Single.fromCallable {
             // Pull all the way to the root gallery
@@ -514,6 +525,31 @@ class EHentai(
                     }
                 }
             }
+    }
+
+    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+        val exception = Exception("Async stacktrace")
+        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+        if (response.isSuccessful) {
+            // Pull to most recent
+            val doc = response.asJsoup()
+            val newerGallery = doc.select("#gnd a").lastOrNull()
+            val pre = if (newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled) {
+                val sManga = manga.toSManga().apply {
+                    url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href"))
+                }
+                client.newCall(mangaDetailsRequest(sManga)).await().asJsoup()
+            } else doc
+            return parseToManga(manga, pre)
+        } else {
+            response.close()
+
+            if (response.code == 404) {
+                throw GalleryNotFoundException(exception)
+            } else {
+                throw Exception("HTTP error ${response.code}", exception)
+            }
+        }
     }
 
     /**

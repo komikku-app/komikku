@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -40,6 +41,29 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
     var parody: List<String> = emptyList()
 
     var character: List<String> = emptyList()
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val title = title
+        val cover = tmId?.let { BASE_URL.replace("www", "content") + thumbUrlFromId(it.toString()) }
+
+        val artist = artist
+
+        val status = SManga.UNKNOWN
+
+        // Copy tags -> genres
+        val genres = tagsToGenreList()
+
+        val description = "meta"
+
+        return manga.copy(
+            title = title ?: manga.title,
+            cover = cover ?: manga.cover,
+            artist = artist ?: manga.artist,
+            status = status,
+            genres = genres,
+            description = description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         title?.let { manga.title = it }

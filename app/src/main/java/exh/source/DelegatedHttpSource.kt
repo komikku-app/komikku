@@ -10,6 +10,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.source.model.ChapterInfo
+import tachiyomi.source.model.MangaInfo
 
 abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     /**
@@ -186,6 +188,14 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     }
 
     /**
+     * [1.x API] Get the updated details for a manga.
+     */
+    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+        ensureDelegateCompatible()
+        return delegate.getMangaDetails(manga)
+    }
+
+    /**
      * Returns the request for the details of a manga. Override only if it's needed to change the
      * url, send different headers or request method like POST.
      *
@@ -208,6 +218,14 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     }
 
     /**
+     * [1.x API] Get all the available chapters for a manga.
+     */
+    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
+        ensureDelegateCompatible()
+        return delegate.getChapterList(manga)
+    }
+
+    /**
      * Returns an observable with the page list for a chapter.
      *
      * @param chapter the chapter whose page list has to be fetched.
@@ -215,6 +233,14 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         ensureDelegateCompatible()
         return delegate.fetchPageList(chapter)
+    }
+
+    /**
+     * [1.x API] Get the list of pages a chapter has.
+     */
+    override suspend fun getPageList(chapter: ChapterInfo): List<tachiyomi.source.model.Page> {
+        ensureDelegateCompatible()
+        return delegate.getPageList(chapter)
     }
 
     /**

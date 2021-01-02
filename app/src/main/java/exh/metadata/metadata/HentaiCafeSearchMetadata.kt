@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class HentaiCafeSearchMetadata : RaisedSearchMetadata() {
@@ -23,6 +24,31 @@ class HentaiCafeSearchMetadata : RaisedSearchMetadata() {
     var title by titleDelegate(TITLE_TYPE_MAIN)
 
     var artist: String? = null
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val cover = thumbnailUrl
+
+        val title = title
+        val artist = artist
+        val author = artist
+
+        // Not available
+        val status = MangaInfo.UNKNOWN
+
+        val genres = tagsToGenreList()
+
+        val description = "meta"
+
+        return manga.copy(
+            cover = cover ?: manga.cover,
+            title = title ?: manga.title,
+            artist = artist ?: manga.artist,
+            author = author ?: manga.author,
+            status = status,
+            genres = genres,
+            description = description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         thumbnailUrl?.let { manga.thumbnail_url = it }

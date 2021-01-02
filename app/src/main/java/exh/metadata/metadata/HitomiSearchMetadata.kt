@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 import java.util.Date
 
 @Serializable
@@ -36,6 +37,30 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
     var characters: List<String> = emptyList()
 
     var uploadDate: Long? = null
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val cover = thumbnailUrl
+
+        val title = title
+
+        // Copy tags -> genres
+        val genres = tagsToGenreList()
+
+        val artist = artists.joinToString()
+
+        val status = MangaInfo.UNKNOWN
+
+        val description = "meta"
+
+        return manga.copy(
+            cover = cover ?: manga.cover,
+            title = title ?: manga.title,
+            genres = genres,
+            artist = artist,
+            status = status,
+            description = description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         thumbnailUrl?.let { manga.thumbnail_url = it }

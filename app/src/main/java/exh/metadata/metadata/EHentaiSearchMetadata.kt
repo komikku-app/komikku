@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Date
@@ -41,6 +42,53 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var aged: Boolean = false
     var lastUpdateCheck: Long = 0
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val key = gId?.let { gId ->
+            gToken?.let { gToken ->
+                idAndTokenToUrl(gId, gToken)
+            }
+        }
+        val cover = thumbnailUrl
+
+        // No title bug?
+        val title = if (Injekt.get<PreferencesHelper>().useJapaneseTitle().get()) {
+            altTitle ?: title
+        } else {
+            title
+        }
+
+        // Set artist (if we can find one)
+        val artist = tags.filter { it.namespace == EH_ARTIST_NAMESPACE }.let { tags ->
+            if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
+        }
+
+        // Copy tags -> genres
+        val genres = tagsToGenreList()
+
+        // Try to automatically identify if it is ongoing, we try not to be too lenient here to avoid making mistakes
+        // We default to completed
+        var status = MangaInfo.COMPLETED
+        title?.let { t ->
+            MetadataUtil.ONGOING_SUFFIX.find {
+                t.endsWith(it, ignoreCase = true)
+            }?.let {
+                status = MangaInfo.ONGOING
+            }
+        }
+
+        val description = "meta"
+
+        return manga.copy(
+            key = key ?: manga.key,
+            title = title ?: manga.title,
+            artist = artist ?: manga.artist,
+            description = description,
+            genres = genres,
+            status = status,
+            cover = cover ?: manga.cover
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         gId?.let { gId ->

@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -24,6 +26,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.source.model.MangaInfo
 
 class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -61,6 +64,11 @@ class NHentai(delegate: HttpSource, val context: Context) :
                     )
                 )
             }
+    }
+
+    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+        return parseToManga(manga, response)
     }
 
     override fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {

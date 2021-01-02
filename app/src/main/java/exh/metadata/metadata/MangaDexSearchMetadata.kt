@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
+import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class MangaDexSearchMetadata : RaisedSearchMetadata() {
@@ -39,6 +40,43 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
     var missing_chapters: String? = null
 
     var follow_status: Int? = null
+
+    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+        val key = mdUrl?.let {
+            try {
+                val uri = it.toUri()
+                val out = uri.path!!.removePrefix("/api")
+                out + if (out.endsWith("/")) "" else "/"
+            } catch (e: Exception) {
+                it
+            }
+        }
+
+        val title = title
+
+        val cover = thumbnail_url
+
+        val author = author
+
+        val artist = artist
+
+        val status = status
+
+        val genres = tagsToGenreList()
+
+        val description = description
+
+        return manga.copy(
+            key = key ?: manga.key,
+            title = title ?: manga.title,
+            cover = cover ?: manga.cover,
+            author = author ?: manga.author,
+            artist = artist ?: manga.artist,
+            status = status ?: manga.status,
+            genres = genres,
+            description = description ?: manga.description
+        )
+    }
 
     override fun copyTo(manga: SManga) {
         mdUrl?.let {

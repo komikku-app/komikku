@@ -25,6 +25,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import tachiyomi.source.model.MangaInfo
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -57,7 +58,11 @@ abstract class RaisedSearchMetadata {
 
     abstract fun copyTo(manga: SManga)
 
+    abstract fun createMangaInfo(manga: MangaInfo): MangaInfo
+
     fun tagsToGenreString() = tags.toGenreString()
+
+    fun tagsToGenreList() = tags.toGenreList()
 
     fun tagsToDescription() =
         StringBuilder("Tags:\n").apply {
@@ -141,6 +146,10 @@ abstract class RaisedSearchMetadata {
         fun MutableList<RaisedTag>.toGenreString() =
             (this).filter { it.type != TAG_TYPE_VIRTUAL }
                 .joinToString { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
+
+        fun MutableList<RaisedTag>.toGenreList() =
+            (this).filter { it.type != TAG_TYPE_VIRTUAL }
+                .map { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
 
         private val module = SerializersModule {
             polymorphic(RaisedSearchMetadata::class) {

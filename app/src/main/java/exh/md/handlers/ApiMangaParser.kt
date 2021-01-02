@@ -14,6 +14,7 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.util.await
 import exh.util.floor
 import exh.util.nullIfZero
 import kotlinx.serialization.decodeFromString
@@ -24,6 +25,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 import rx.Completable
 import rx.Single
+import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -69,6 +71,24 @@ class ApiMangaParser(private val langs: List<String>) {
             } else Completable.complete()
         }
     }
+
+    suspend fun parseToManga(manga: MangaInfo, input: Response, forceLatestCover: Boolean, sourceId: Long): MangaInfo {
+        val mangaId = db.getManga(manga.key, sourceId).await()?.id
+        val metadata = if (mangaId != null) {
+            val flatMetadata = db.getFlatMetadataForManga(mangaId).await()
+            flatMetadata?.raise(metaClass) ?: newMetaInstance()
+        } else newMetaInstance()
+
+        parseInfoIntoMetadata(metadata, input, forceLatestCover)
+        if (mangaId != null) {
+            metadata.mangaId = mangaId
+            db.insertFlatMetadata(metadata.flatten()).await()
+        }
+
+        return metadata.createMangaInfo(manga)
+    }
+
+    fun parseInfoIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, forceLatestCover: Boolean) = parseIntoMetadata(metadata, input, forceLatestCover)
 
     fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, forceLatestCover: Boolean) {
         with(metadata) {

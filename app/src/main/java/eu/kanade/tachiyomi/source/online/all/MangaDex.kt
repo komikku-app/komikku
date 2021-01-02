@@ -57,6 +57,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -124,6 +125,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).fetchMangaDetailsObservable(manga)
+    }
+
+    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+        return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).getMangaDetails(manga, id)
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
