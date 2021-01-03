@@ -5,10 +5,9 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import rx.Observable
 import okhttp3.Request
 import okhttp3.Response
-
+import rx.Observable
 
 /**
  * A source that will return anime instead of manga.
@@ -17,7 +16,7 @@ import okhttp3.Response
  */
 abstract class AnimeHttpSource : HttpSource() {
 
-    abstract fun fetchPopularAnime(page:Int): Observable<MangasPage>
+    abstract fun fetchPopularAnime(page: Int): Observable<MangasPage>
 
     abstract fun fetchLatestAnime(page: Int): Observable<MangasPage>
 
@@ -29,8 +28,8 @@ abstract class AnimeHttpSource : HttpSource() {
 
     abstract fun fetchSearchAnime(page: Int, query: String, filters: FilterList): Observable<MangasPage>
 
-    //renames
-    override fun fetchPopularManga(page:Int): Observable<MangasPage> = fetchPopularAnime(page)
+    // renames
+    override fun fetchPopularManga(page: Int): Observable<MangasPage> = fetchPopularAnime(page)
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> = fetchAnimeDetails(manga)
 
@@ -42,7 +41,7 @@ abstract class AnimeHttpSource : HttpSource() {
 
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> = fetchLatestAnime(page)
 
-    //unused
+    // unused
     override fun imageUrlParse(response: Response) = throw Exception("Not used")
 
     override fun popularMangaRequest(page: Int): Request = throw Exception("Not used")
@@ -62,5 +61,4 @@ abstract class AnimeHttpSource : HttpSource() {
     override fun latestUpdatesRequest(page: Int): Request = throw Exception("Not used")
 
     override fun latestUpdatesParse(response: Response): MangasPage = throw Exception("Not used")
-
 }

@@ -101,7 +101,7 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
                     setText(R.string.ext_redundant)
                 }
                 else -> {
-                    setText("".plusRepo(extension))
+                    setText(context.getString(R.string.ext_details).plusRepo(extension))
                 }
             }
         } else if (extension is Extension.Untrusted) {
