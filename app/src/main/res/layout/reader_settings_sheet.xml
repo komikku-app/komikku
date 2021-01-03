@@ -21,7 +21,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorOnBackground" />
+        app:tint="?attr/colorOnBackground"
+        tools:ignore="ContentDescription" />
 
     <android.widget.Space
         android:id="@+id/spinner_end"
@@ -222,8 +223,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/auto_webtoon_mode" />
-
-    <!-- Groups of preferences -->
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/verticalcenter"
