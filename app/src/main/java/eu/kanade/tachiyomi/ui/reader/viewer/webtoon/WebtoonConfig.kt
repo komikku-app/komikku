@@ -40,6 +40,9 @@ class WebtoonConfig(preferences: PreferencesHelper = Injekt.get()) : ViewerConfi
         preferences.navigationModeWebtoon()
             .register({ navigationMode = it }, { updateNavigation(it) })
 
+        preferences.webtoonNavInverted()
+            .register({ tappingInverted = it }, { navigator.invertMode = it })
+
         // SY -->
         preferences.webtoonEnableZoomOut()
             .register({ enableZoomOut = it }, { zoomPropertyChangedListener?.invoke(it) })
