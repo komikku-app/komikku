@@ -74,7 +74,7 @@ android {
             //isMinifyEnabled = true
             //isShrinkResources = true
             isZipAlignEnabled = true
-            setProguardFiles(listOf("proguard-rules.pro"))
+            setProguardFiles(listOf(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"))
         }
         named("release") {
             isMinifyEnabled = true
