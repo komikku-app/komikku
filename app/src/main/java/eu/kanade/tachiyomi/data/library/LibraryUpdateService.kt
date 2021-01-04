@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -33,7 +32,7 @@ import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -48,7 +47,6 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.source.getMainSource
 import exh.util.nullIfBlank
-import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
 import rx.schedulers.Schedulers
@@ -455,29 +453,33 @@ class LibraryUpdateService(
                 .subscribe()
         }
 
-        return (
-            /* SY --> */ if (source is MergedSource) runAsObservable({ source.fetchChaptersAndSync(manga, false) })
-            else /* SY <-- */ runAsObservable({
-                source.getChapterList(manga.toMangaInfo())
-                    .map { it.toSChapter() }
-            })
-                .map { syncChaptersWithSource(db, it, manga, source) }
-            // SY -->
-            )
-            .doOnNext {
-                if (source is MangaDex && trackManager.mdList.isLogged) {
-                    try {
-                        val tracks = db.getTracks(manga).executeAsBlocking()
-                        if (tracks.isEmpty() || tracks.all { it.sync_id != TrackManager.MDLIST }) {
-                            var track = trackManager.mdList.createInitialTracker(manga)
-                            track = runBlocking { trackManager.mdList.refresh(track).awaitSingle() }
-                            db.insertTrack(track).executeAsBlocking()
-                        }
-                    } catch (e: Exception) {
-                        XLog.tag("LibraryUpdateService").e(e)
-                    }
+        // SY -->
+        if (source is MangaDex && trackManager.mdList.isLogged) {
+            runAsObservable({
+                val tracks = db.getTracks(manga).await()
+                if (tracks.isEmpty() || tracks.none { it.sync_id == TrackManager.MDLIST }) {
+                    var track = trackManager.mdList.createInitialTracker(manga)
+                    track = trackManager.mdList.refresh(track)
+                    db.insertTrack(track).await()
                 }
+            })
+                .onErrorResumeNext { Observable.just(Unit) }
+                .subscribeOn(Schedulers.io())
+                .subscribe()
+        }
+        // SY <--
+
+
+        return runAsObservable({
+            // SY -->
+            if (source is MergedSource) {
+                source.fetchChaptersAndSync(manga, false)
+            } else {
+                val sourceChapters = source.getChapterList(manga.toMangaInfo())
+                    .map { it.toSChapter() }
+                syncChaptersWithSource(db, sourceChapters, manga, source)
             }
+        })
         // SY <--
     }
 

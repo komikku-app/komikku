@@ -11,15 +11,12 @@ import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.await
-import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.floor
-import kotlinx.coroutines.runBlocking
-import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class MdList(private val context: Context, id: Int) : TrackService(id) {
@@ -48,16 +45,14 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun displayScore(track: Track) = track.score.toInt().toString()
 
-    override suspend fun add(track: Track): Track {
-        return update(track)
-    }
+    override suspend fun add(track: Track): Track = update(track)
 
     override suspend fun update(track: Track): Track {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        val manga = db.getManga(track.tracking_url.substringAfter(".org"), mdex.id).await() ?: throw Exception("Manga doesnt exist")
-
-        val mangaMetadata = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise(MangaDexSearchMetadata::class) ?: throw Exception("Invalid manga metadata")
-        val followStatus = FollowStatus.fromInt(track.status)!!
+        val mangaMetadata = db.getFlatMetadataForManga(track.manga_id).await()
+            ?.raise<MangaDexSearchMetadata>()
+            ?: throw Exception("Invalid manga metadata")
+        val followStatus = FollowStatus.fromInt(track.status) ?: throw Exception("Follow status was not a valid value")
 
         // allow follow status to update
         if (mangaMetadata.follow_status != followStatus.int) {
@@ -87,34 +82,16 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun getCompletionStatus(): Int = FollowStatus.COMPLETED.int
 
-    override fun bind(track: Track): Observable<Track> {
-        val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        return runAsObservable({ mdex.fetchTrackingInfo(track.tracking_url) })
-            .doOnNext { remoteTrack ->
-                track.copyPersonalFrom(remoteTrack)
-                val manga = db.getManga(track.manga_id).executeAsBlocking()
-                track.total_chapters = if (manga != null && manga.status == SManga.COMPLETED && remoteTrack.total_chapters == 0) {
-                    db.getChapters(track.manga_id).executeAsBlocking().maxOfOrNull { it.chapter_number }?.floor() ?: remoteTrack.total_chapters
-                } else {
-                    remoteTrack.total_chapters
-                }
-                runBlocking { update(track) }
-            }
-    }
+    override suspend fun bind(track: Track): Track = update(refresh(track))
 
-    override fun refresh(track: Track): Observable<Track> {
+    override suspend fun refresh(track: Track): Track {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        return runAsObservable({ mdex.fetchTrackingInfo(track.tracking_url) })
-            .map { remoteTrack ->
-                track.copyPersonalFrom(remoteTrack)
-                val manga = db.getManga(track.manga_id).executeAsBlocking()
-                track.total_chapters = if (manga != null && manga.status == SManga.COMPLETED && remoteTrack.total_chapters == 0) {
-                    db.getChapters(track.manga_id).executeAsBlocking().maxOfOrNull { it.chapter_number }?.floor() ?: remoteTrack.total_chapters
-                } else {
-                    remoteTrack.total_chapters
-                }
-                track
-            }
+        val remoteTrack = mdex.fetchTrackingInfo(track.tracking_url)
+        track.copyPersonalFrom(remoteTrack)
+        if (track.total_chapters == 0 && db.getManga(track.manga_id).await()?.status == SManga.COMPLETED) {
+            track.total_chapters = db.getChapters(track.manga_id).await().maxOfOrNull { it.chapter_number }?.floor() ?: 0
+        }
+        return track
     }
 
     fun createInitialTracker(manga: Manga): Track {
@@ -126,7 +103,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         return track
     }
 
-    override fun search(query: String): Observable<List<TrackSearch>> = throw Exception("not used")
+    override suspend fun search(query: String): List<TrackSearch> = throw Exception("not used")
 
     override suspend fun login(username: String, password: String): Unit = throw Exception("not used")
 }
