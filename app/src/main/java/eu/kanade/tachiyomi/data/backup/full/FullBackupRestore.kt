@@ -17,13 +17,13 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
+import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.EXHMigrations
 import exh.MERGED_SOURCE_ID
 import kotlinx.serialization.ExperimentalSerializationApi
 import okio.buffer
 import okio.gzip
 import okio.source
-import rx.Observable
 import java.util.Date
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -154,7 +154,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
     }
 
     /**
-     * [Observable] that fetches manga information
+     * Fetches manga information
      *
      * @param manga manga that needs updating
      * @param chapters chapters of manga that needs updating
@@ -172,34 +172,28 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
-        backupManager.restoreMangaFetchObservable(source, manga, online)
-            .doOnError {
-                errors.add(Date() to "${manga.title} - ${it.message}")
-            }
-            .filter { it.id != null }
-            .flatMap {
+        launchIO {
+            try {
+                val fetchedManga = backupManager.restoreMangaFetch(source, manga, online)
+                fetchedManga.id ?: (return@launchIO)
+
                 if (online && source != null) {
                     // SY -->
                     if (source !is MergedSource) {
-                        chapterFetchObservable(source, it, chapters)
-                            // Convert to the manga that contains new chapters.
-                            .map { manga }
-                    } else {
-                        Observable.just(manga)
+                        updateChapters(source, fetchedManga, chapters)
                     }
                     // SY <--
                 } else {
-                    backupManager.restoreChaptersForMangaOffline(it, chapters)
-                    Observable.just(manga)
+                    backupManager.restoreChaptersForMangaOffline(fetchedManga, chapters)
                 }
+
+                restoreExtraForManga(fetchedManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+
+                updateTracking(fetchedManga, tracks)
+            } catch (e: Exception) {
+                errors.add(Date() to "${manga.title} - ${e.message}")
             }
-            .doOnNext {
-                restoreExtraForManga(it, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
-            }
-            .flatMap {
-                trackingFetchObservable(it, tracks)
-            }
-            .subscribe()
+        }
     }
 
     private fun restoreMangaNoFetch(
@@ -214,27 +208,19 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
-        Observable.just(backupManga)
-            .flatMap { manga ->
-                if (online && source != null) {
-                    if (/* SY --> */ source !is MergedSource && /* SY <-- */ !backupManager.restoreChaptersForManga(manga, chapters)) {
-                        chapterFetchObservable(source, manga, chapters)
-                            .map { manga }
-                    } else {
-                        Observable.just(manga)
-                    }
-                } else {
-                    backupManager.restoreChaptersForMangaOffline(manga, chapters)
-                    Observable.just(manga)
+        launchIO {
+            if (online && source != null) {
+                if (/* SY --> */ source !is MergedSource && /* SY <-- */ !backupManager.restoreChaptersForManga(backupManga, chapters)) {
+                    updateChapters(source, backupManga, chapters)
                 }
+            } else {
+                backupManager.restoreChaptersForMangaOffline(backupManga, chapters)
             }
-            .doOnNext {
-                restoreExtraForManga(it, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
-            }
-            .flatMap { manga ->
-                trackingFetchObservable(manga, tracks)
-            }
-            .subscribe()
+
+            restoreExtraForManga(backupManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+
+            updateTracking(backupManga, tracks)
+        }
     }
 
     private fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>, flatMetadata: BackupFlatMetadata?) {

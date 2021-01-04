@@ -13,9 +13,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.eh.EHentaiThrottleManager
-import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 abstract class AbstractBackupManager(protected val context: Context) {
@@ -36,31 +34,29 @@ abstract class AbstractBackupManager(protected val context: Context) {
         databaseHelper.getManga(manga.url, manga.source).executeAsBlocking()
 
     /**
-     * [Observable] that fetches chapter information
+     * Fetches chapter information.
      *
      * @param source source of manga
      * @param manga manga that needs updating
      * @param chapters list of chapters in the backup
-     * @return [Observable] that contains manga
+     * @return Updated manga chapters.
      */
-    internal open fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
-        return runAsObservable({
-            if (source is EHentai) {
-                source.getChapterList(manga.toMangaInfo(), throttleManager::throttle)
-                    .map { it.toSChapter() }
-            } else {
-                source.getChapterList(manga.toMangaInfo())
-                    .map { it.toSChapter() }
-            }
-        }).map {
-            syncChaptersWithSource(databaseHelper, it, manga, source)
+    internal open suspend fun restoreChapters(source: Source, manga: Manga, chapters: List<Chapter> /* SY --> */, throttleManager: EHentaiThrottleManager /* SY <-- */): Pair<List<Chapter>, List<Chapter>> {
+        // SY -->
+        val fetchedChapters = if (source is EHentai) {
+            source.getChapterList(manga.toMangaInfo(), throttleManager::throttle)
+                .map { it.toSChapter() }
+        } else {
+            source.getChapterList(manga.toMangaInfo())
+                .map { it.toSChapter() }
         }
-            .doOnNext { (first) ->
-                if (first.isNotEmpty()) {
-                    chapters.forEach { it.manga_id = manga.id }
-                    updateChapters(chapters)
-                }
-            }
+        // SY <--
+        val syncedChapters = syncChaptersWithSource(databaseHelper, fetchedChapters, manga, source)
+        if (syncedChapters.first.isNotEmpty()) {
+            chapters.forEach { it.manga_id = manga.id }
+            updateChapters(chapters)
+        }
+        return syncedChapters
     }
 
     /**

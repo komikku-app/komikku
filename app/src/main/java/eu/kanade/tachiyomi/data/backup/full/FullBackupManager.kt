@@ -34,7 +34,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.MERGED_SOURCE_ID
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
@@ -48,7 +47,6 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import okio.buffer
 import okio.gzip
 import okio.sink
-import rx.Observable
 import timber.log.Timber
 import kotlin.math.max
 
@@ -238,29 +236,26 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     }
 
     /**
-     * [Observable] that fetches manga information
+     * Fetches manga information
      *
      * @param source source of manga
      * @param manga manga that needs updating
-     * @return [Observable] that contains manga
+     * @return Updated manga info.
      */
-    fun restoreMangaFetchObservable(source: Source?, manga: Manga, online: Boolean): Observable<Manga> {
+    suspend fun restoreMangaFetch(source: Source?, manga: Manga, online: Boolean): Manga {
         return if (online && source != null /* SY --> */ && source !is MergedSource /* SY <-- */) {
-            runAsObservable({
-                val networkManga = source.getMangaDetails(manga.toMangaInfo())
-                manga.copyFrom(networkManga.toSManga())
-                manga.favorite = manga.favorite
-                manga.initialized = true
-                manga.id = insertManga(manga)
-                manga
-            })
+            val networkManga = source.getMangaDetails(manga.toMangaInfo())
+            manga.also {
+                it.copyFrom(networkManga.toSManga())
+                it.favorite = manga.favorite
+                it.initialized = true
+                it.id = insertManga(manga)
+            }
         } else {
-            Observable.just(manga)
-                .map {
-                    it.initialized = it.description != null
-                    it.id = insertManga(it)
-                    it
-                }
+            manga.also {
+                it.initialized = it.description != null
+                it.id = insertManga(it)
+            }
         }
     }
 

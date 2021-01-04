@@ -54,16 +54,13 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
 import exh.savedsearches.JsonSavedSearch
-import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -291,21 +288,20 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
     }
 
     /**
-     * [Observable] that fetches manga information
+     * Fetches manga information
      *
      * @param source source of manga
      * @param manga manga that needs updating
-     * @return [Observable] that contains manga
+     * @return Updated manga.
      */
-    fun restoreMangaFetchObservable(source: Source, manga: Manga): Observable<Manga> {
-        return runAsObservable({
-            val networkManga = source.getMangaDetails(manga.toMangaInfo())
-            manga.copyFrom(networkManga.toSManga())
-            manga.favorite = true
-            manga.initialized = true
-            manga.id = insertManga(manga)
-            manga
-        })
+    suspend fun fetchManga(source: Source, manga: Manga): Manga {
+        val networkManga = source.getMangaDetails(manga.toMangaInfo())
+        return manga.also {
+            it.copyFrom(networkManga.toSManga())
+            it.favorite = true
+            it.initialized = true
+            it.id = insertManga(manga)
+        }
     }
 
     /**
@@ -315,19 +311,17 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
      * @param manga manga that needs updating
      * @return [Observable] that contains manga
      */
-    override fun restoreChapterFetchObservable(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Observable<Pair<List<Chapter>, List<Chapter>>> {
+    override suspend fun restoreChapters(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Pair<List<Chapter>, List<Chapter>> {
         // SY -->
         return if (source is MergedSource) {
-            runAsObservable({
-                val syncedChapters = source.fetchChaptersAndSync(manga, false)
-                syncedChapters.first.onEach {
-                    it.manga_id = manga.id
-                }
-                updateChapters(syncedChapters.first)
-                syncedChapters
-            })
+            val syncedChapters = source.fetchChaptersAndSync(manga, false)
+            syncedChapters.first.onEach {
+                it.manga_id = manga.id
+            }
+            updateChapters(syncedChapters.first)
+            syncedChapters
         } else {
-            super.restoreChapterFetchObservable(source, manga, chapters, throttleManager)
+            super.restoreChapters(source, manga, chapters, throttleManager)
         }
     }
 

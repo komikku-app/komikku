@@ -21,8 +21,8 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.EXHMigrations
-import rx.Observable
 import java.util.Date
 
 class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBackupRestore<LegacyBackupManager>(context, notifier) {
@@ -169,7 +169,7 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
     }
 
     /**
-     * [Observable] that fetches manga information
+     * Fetches manga information.
      *
      * @param manga manga that needs updating
      * @param chapters chapters of manga that needs updating
@@ -183,24 +183,20 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
         history: List<DHistory>,
         tracks: List<Track>
     ) {
-        backupManager.restoreMangaFetchObservable(source, manga)
-            .onErrorReturn {
-                errors.add(Date() to "${manga.title} - ${it.message}")
-                manga
+        launchIO {
+            try {
+                val fetchedManga = backupManager.fetchManga(source, manga)
+                fetchedManga.id ?: (return@launchIO)
+
+                updateChapters(source, fetchedManga, chapters)
+
+                restoreExtraForManga(fetchedManga, categories, history, tracks)
+
+                updateTracking(fetchedManga, tracks)
+            } catch (e: Exception) {
+                errors.add(Date() to "${manga.title} - ${e.message}")
             }
-            .filter { it.id != null }
-            .flatMap {
-                chapterFetchObservable(source, it, chapters)
-                    // Convert to the manga that contains new chapters.
-                    .map { manga }
-            }
-            .doOnNext {
-                restoreExtraForManga(it, categories, history, tracks)
-            }
-            .flatMap {
-                trackingFetchObservable(it, tracks)
-            }
-            .subscribe()
+        }
     }
 
     private fun restoreMangaNoFetch(
@@ -211,22 +207,15 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
         history: List<DHistory>,
         tracks: List<Track>
     ) {
-        Observable.just(backupManga)
-            .flatMap { manga ->
-                if (!backupManager.restoreChaptersForManga(manga, chapters)) {
-                    chapterFetchObservable(source, manga, chapters)
-                        .map { manga }
-                } else {
-                    Observable.just(manga)
-                }
+        launchIO {
+            if (!backupManager.restoreChaptersForManga(backupManga, chapters)) {
+                updateChapters(source, backupManga, chapters)
             }
-            .doOnNext {
-                restoreExtraForManga(it, categories, history, tracks)
-            }
-            .flatMap { manga ->
-                trackingFetchObservable(manga, tracks)
-            }
-            .subscribe()
+
+            restoreExtraForManga(backupManga, categories, history, tracks)
+
+            updateTracking(backupManga, tracks)
+        }
     }
 
     private fun restoreExtraForManga(manga: Manga, categories: List<String>, history: List<DHistory>, tracks: List<Track>) {
