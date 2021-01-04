@@ -799,6 +799,9 @@ z
     <string name="invalid_repo_name">Invalid category name</string>
     <string name="repo_source">Repo source</string>
 
+    <!-- Anime -->
+    <string name="resolution_selection_title">Quality</string>
+    <string name="episodes_tab_title">Episodes</string>
 
     <!-- Library fragment -->
     <string name="buttons_header">Buttons</string>

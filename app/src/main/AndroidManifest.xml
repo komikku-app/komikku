@@ -72,6 +72,9 @@
             android:name=".ui.reader.ReaderActivity"
             android:launchMode="singleTask" />
         <activity
+            android:name=".ui.video.VideoActivity"
+            android:launchMode="singleTask" />
+        <activity
             android:name=".ui.webview.WebViewActivity"
             android:configChanges="uiMode|orientation|screenSize" />
         <activity

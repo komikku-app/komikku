@@ -139,6 +139,10 @@ androidExtensions {
 
 dependencies {
 
+    // Anime dependencies (AZ)
+    implementation 'com.google.android.exoplayer:exoplayer:2.12.2'
+
+
     // Modified dependencies
     implementation 'com.github.inorichi:subsampling-scale-image-view:ac0dae7'
     implementation 'com.github.inorichi:junrar-android:634c1f5'

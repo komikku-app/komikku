@@ -26,9 +26,12 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.databinding.ChaptersControllerBinding
+import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.online.AnimeHttpSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.ui.video.VideoActivity
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
@@ -41,6 +44,7 @@ import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
+import uy.kohesive.injekt.injectLazy
 
 class ChaptersController :
     NucleusController<ChaptersControllerBinding, ChaptersPresenter>(),
@@ -50,6 +54,8 @@ class ChaptersController :
     ChaptersAdapter.OnMenuItemClickListener,
     DownloadCustomChaptersDialog.Listener,
     DeleteChaptersDialog.Listener {
+
+    private val sourceManager: SourceManager by injectLazy()
 
     /**
      * Adapter containing a list of chapters.
@@ -334,7 +340,12 @@ class ChaptersController :
 
     fun openChapter(chapter: Chapter, hasAnimation: Boolean = false) {
         val activity = activity ?: return
-        val intent = ReaderActivity.newIntent(activity, presenter.manga, chapter)
+
+        val intent = if (sourceManager.getOrStub(presenter.manga.source) is AnimeHttpSource) {
+            VideoActivity.newIntent(activity, presenter.manga, chapter)
+        } else {
+            ReaderActivity.newIntent(activity, presenter.manga, chapter)
+        }
         if (hasAnimation) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         }

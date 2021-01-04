@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.MangaControllerBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.online.AnimeHttpSource
 import eu.kanade.tachiyomi.ui.base.controller.RxController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
@@ -183,7 +184,7 @@ class MangaController : RxController<MangaControllerBinding>, TabbedController {
 
         private val tabTitles = listOf(
             R.string.manga_detail_tab,
-            R.string.manga_chapters_tab,
+            if (source is AnimeHttpSource) { R.string.episodes_tab_title } else { R.string.manga_chapters_tab },
             R.string.manga_tracking_tab
         )
             .map { resources!!.getString(it) }
