@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import com.elvishew.xlog.XLog
-import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.plusAssign
@@ -17,6 +16,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.system.toast
 import exh.EH_SOURCE_ID
@@ -24,6 +24,7 @@ import exh.EXH_SOURCE_ID
 import exh.MERGED_SOURCE_ID
 import exh.source.BlacklistedSources
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -56,7 +57,7 @@ class ExtensionManager(
     /**
      * Relay used to notify the installed extensions.
      */
-    private val installedExtensionsRelay = BehaviorRelay.create<List<Extension.Installed>>()
+    val installedExtensionsFlow = MutableStateFlow<List<Extension.Installed>>(emptyList())
 
     private val iconMap = mutableMapOf<String, Drawable>()
 
@@ -66,7 +67,7 @@ class ExtensionManager(
     var installedExtensions = emptyList<Extension.Installed>()
         private set(value) {
             field = value
-            installedExtensionsRelay.call(value)
+            launchIO { installedExtensionsFlow.emit(value) }
         }
 
     fun getAppIconForSource(source: Source): Drawable? {
@@ -88,7 +89,7 @@ class ExtensionManager(
     /**
      * Relay used to notify the available extensions.
      */
-    private val availableExtensionsRelay = BehaviorRelay.create<List<Extension.Available>>()
+    val availableExtensionsFlow = MutableStateFlow<List<Extension.Available>>(emptyList())
 
     /**
      * List of the currently available extensions.
@@ -96,7 +97,7 @@ class ExtensionManager(
     var availableExtensions = emptyList<Extension.Available>()
         private set(value) {
             field = value
-            availableExtensionsRelay.call(value)
+            launchIO { availableExtensionsFlow.emit(value) }
             updatedInstalledExtensionsStatuses(value)
         }
 
@@ -107,7 +108,7 @@ class ExtensionManager(
     /**
      * Relay used to notify the untrusted extensions.
      */
-    private val untrustedExtensionsRelay = BehaviorRelay.create<List<Extension.Untrusted>>()
+    val untrustedExtensionsFlow = MutableStateFlow<List<Extension.Untrusted>>(emptyList())
 
     /**
      * List of the currently untrusted extensions.
@@ -115,7 +116,7 @@ class ExtensionManager(
     var untrustedExtensions = emptyList<Extension.Untrusted>()
         private set(value) {
             field = value
-            untrustedExtensionsRelay.call(value)
+            launchIO { untrustedExtensionsFlow.emit(value) }
         }
 
     /**
@@ -168,27 +169,6 @@ class ExtensionManager(
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
     // EXH <--
-
-    /**
-     * Returns the relay of the installed extensions as an observable.
-     */
-    fun getInstalledExtensionsObservable(): Observable<List<Extension.Installed>> {
-        return installedExtensionsRelay.asObservable()
-    }
-
-    /**
-     * Returns the relay of the available extensions as an observable.
-     */
-    fun getAvailableExtensionsObservable(): Observable<List<Extension.Available>> {
-        return availableExtensionsRelay.asObservable()
-    }
-
-    /**
-     * Returns the relay of the untrusted extensions as an observable.
-     */
-    fun getUntrustedExtensionsObservable(): Observable<List<Extension.Untrusted>> {
-        return untrustedExtensionsRelay.asObservable()
-    }
 
     /**
      * Finds the available extensions in the [api] and updates [availableExtensions].
