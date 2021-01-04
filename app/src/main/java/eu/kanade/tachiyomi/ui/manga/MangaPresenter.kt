@@ -33,9 +33,8 @@ import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.await
-import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -94,7 +93,7 @@ class MangaPresenter(
     /**
      * Subscription to update the manga from the source.
      */
-    private var fetchMangaSubscription: Subscription? = null
+    private var fetchMangaJob: Job? = null
 
     /**
      * List of chapters of the manga. It's always unfiltered and unsorted.
@@ -118,7 +117,7 @@ class MangaPresenter(
     /**
      * Subscription to retrieve the new list of chapters from the source.
      */
-    private var fetchChaptersSubscription: Subscription? = null
+    private var fetchChaptersJob: Job? = null
 
     /**
      * Subscription to observe download status changes.
@@ -286,26 +285,21 @@ class MangaPresenter(
      * Fetch manga information from source.
      */
     fun fetchMangaFromSource(manualFetch: Boolean = false) {
-        if (!fetchMangaSubscription.isNullOrUnsubscribed()) return
-        fetchMangaSubscription = Observable.defer {
-            runAsObservable({
+        if (fetchMangaJob?.isActive == true) return
+        fetchMangaJob = launchIO {
+            try {
                 val networkManga = source.getMangaDetails(manga.toMangaInfo())
                 val sManga = networkManga.toSManga()
                 manga.prepUpdateCover(coverCache, sManga, manualFetch)
                 manga.copyFrom(sManga)
                 manga.initialized = true
-                db.insertManga(manga).executeAsBlocking()
-                manga
-            })
+                db.insertManga(manga).await()
+
+                launchUI { view?.onFetchMangaInfoDone() }
+            } catch (e: Throwable) {
+                launchUI { view?.onFetchMangaInfoError(e) }
+            }
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, _ ->
-                    view.onFetchMangaInfoDone()
-                },
-                MangaController::onFetchMangaInfoError
-            )
     }
 
     // SY -->
@@ -761,44 +755,26 @@ class MangaPresenter(
     fun fetchChaptersFromSource(manualFetch: Boolean = false) {
         hasRequested = true
 
-        if (!fetchChaptersSubscription.isNullOrUnsubscribed()) return
-        fetchChaptersSubscription = /* SY --> */ if (source !is MergedSource) {
-            // SY <--
-            Observable.defer {
-                runAsObservable({
-                    source.getChapterList(manga.toMangaInfo())
+        if (fetchChaptersJob?.isActive == true) return
+        fetchChaptersJob = launchIO {
+            try {
+                if (source !is MergedSource) {
+                    val chapters = source.getChapterList(manga.toMangaInfo())
                         .map { it.toSChapter() }
-                })
-            }
-                .subscribeOn(Schedulers.io())
-                .map { syncChaptersWithSource(db, it, manga, source) }
-                .doOnNext {
+
+                    val (newChapters, _) = syncChaptersWithSource(db, chapters, manga, source)
                     if (manualFetch) {
-                        downloadNewChapters(it.first)
+                        downloadNewChapters(newChapters)
                     }
+                } else {
+                    source.fetchChaptersForMergedManga(manga, manualFetch, true, dedupe)
                 }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeFirst(
-                    { view, _ ->
-                        view.onFetchChaptersDone()
-                    },
-                    MangaController::onFetchChaptersError
-                )
-            // SY -->
-        } else {
-            Observable.defer { runAsObservable({ source.fetchChaptersForMergedManga(manga, manualFetch, true, dedupe) }) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext {
-                }
-                .subscribeFirst(
-                    { view, _ ->
-                        view.onFetchChaptersDone()
-                    },
-                    MangaController::onFetchChaptersError
-                )
+
+                launchUI { view?.onFetchChaptersDone() }
+            } catch (e: Throwable) {
+                view?.onFetchChaptersError(e)
+            }
         }
-        // SY <--
     }
 
     /**
