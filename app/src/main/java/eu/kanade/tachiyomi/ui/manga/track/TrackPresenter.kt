@@ -109,7 +109,7 @@ class TrackPresenter(
 
     fun search(query: String, service: TrackService) {
         searchSubscription?.let { remove(it) }
-        searchSubscription = service.search(query)
+        searchSubscription = runAsObservable({ service.search(query) })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeLatestCache(
