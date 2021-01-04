@@ -47,7 +47,7 @@ class TrackPresenter(
         fetchTrackings()
     }
 
-    fun fetchTrackings() {
+    private fun fetchTrackings() {
         trackSubscription?.let { remove(it) }
         trackSubscription = db.getTracks(manga)
             .asRxObservable()
