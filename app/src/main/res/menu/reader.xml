@@ -14,7 +14,7 @@
         android:icon="@drawable/ic_bookmark_24dp"
         android:title="@string/action_remove_bookmark"
         app:iconTint="?attr/colorOnPrimary"
-        app:showAsAction="ifRoom" />-->
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_custom_filter"
@@ -28,6 +28,6 @@
         android:icon="@drawable/ic_settings_24dp"
         android:title="@string/label_settings"
         app:iconTint="?attr/colorOnPrimary"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" />-->
 
 </menu>

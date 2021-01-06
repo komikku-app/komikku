@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Menu
-import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
@@ -305,16 +304,16 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      * Called when an item of the options menu was clicked. Used to handle clicks on our menu
      * entries.
      */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            /*R.id.action_bookmark -> {
+            R.id.action_bookmark -> {
                 presenter.bookmarkCurrentChapter(true)
                 invalidateOptionsMenu()
             }
             R.id.action_remove_bookmark -> {
                 presenter.bookmarkCurrentChapter(false)
                 invalidateOptionsMenu()
-            }*/
+            }
             R.id.action_settings -> ReaderSettingsSheet(this).show()
             R.id.action_custom_filter -> {
                 val sheet = ReaderColorFilterSheet(this)
@@ -329,7 +328,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         }
         return super.onOptionsItemSelected(item)
-    }
+    }*/
 
     /**
      * Called when the user clicks the back key or the button on the toolbar. The call is
@@ -403,7 +402,27 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         )
 
-        /* SY --> binding.leftChapter.setOnClickListener {
+        // Extra menu buttons
+        binding.filterButton.clicks()
+            .onEach {
+                ReaderColorFilterSheet(this).show()
+            }
+            .launchIn(scope)
+
+        binding.actionSettings.clicks()
+            .onEach {
+                ReaderSettingsSheet(this).show()
+            }
+            .launchIn(scope)
+
+        binding.webviewButton.clicks()
+            .onEach {
+                openMangaInBrowser()
+            }
+            .launchIn(scope)
+        // Extra menu buttons
+
+        binding.leftChapter.setOnClickListener {
             if (viewer != null) {
                 if (viewer is R2LPagerViewer) {
                     loadNextChapter()
@@ -420,7 +439,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     loadNextChapter()
                 }
             }
-        } SY <-- */
+        }
 
         // --> EH
         binding.expandEhButton.clicks()
@@ -830,8 +849,16 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         // Set bottom page number
         binding.pageNumber.text = "${page.number}/${pages.size}"
-        binding.pageText.text = "${page.number}/${pages.size}"
-        // Set seekbar progress
+        // binding.pageText.text = "${page.number}/${pages.size}"
+
+        // Set seekbar page number
+        if (viewer !is R2LPagerViewer) {
+            binding.leftPageText.text = "${page.number}"
+            binding.rightPageText.text = "${pages.size}"
+        } else {
+            binding.rightPageText.text = "${page.number}"
+            binding.leftPageText.text = "${pages.size}"
+        }
 
         binding.pageSeekbar.max = pages.lastIndex
         binding.pageSeekbar.progress = page.index
