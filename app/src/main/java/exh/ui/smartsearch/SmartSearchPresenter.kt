@@ -21,7 +21,7 @@ class SmartSearchPresenter(private val source: CatalogueSource, private val conf
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        scope.launch(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
             val result = try {
                 val resultManga = smartSearchEngine.smartSearch(source, config.origTitle)
                 if (resultManga != null) {

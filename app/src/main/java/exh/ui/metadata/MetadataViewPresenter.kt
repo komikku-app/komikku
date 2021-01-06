@@ -41,13 +41,13 @@ class MetadataViewPresenter(
                     meta.value = it.raise(mainSource.metaClass)
                 }
             }
-            .launchIn(scope + Dispatchers.IO)
+            .launchUnderContext(Dispatchers.IO)
 
         meta
-            .onEachView { view, metadata ->
+            .inView { view, metadata ->
                 view.onNextMangaInfo(metadata)
             }
-            .launchIn(scope)
+            .launch()
     }
 
     private fun getMangaMetaObservable(): Flow<FlatMetadata?> {

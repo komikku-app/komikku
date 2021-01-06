@@ -136,7 +136,7 @@ class MergedSource : SuspendHttpSource() {
 
         val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(db, preferences)
         return mangaReferences.filter { it.mangaSourceId != MERGED_SOURCE_ID }.map {
-            load(db, sourceManager, it)
+            it.load(db, sourceManager)
         }.mapNotNull { loadedManga ->
             withContext(Dispatchers.IO) {
                 if (loadedManga.manga != null && loadedManga.reference.getChapterUpdates) {
@@ -165,23 +165,23 @@ class MergedSource : SuspendHttpSource() {
         }
     }
 
-    suspend fun load(db: DatabaseHelper, sourceManager: SourceManager, reference: MergedMangaReference): LoadedMangaSource {
-        var manga = db.getManga(reference.mangaUrl, reference.mangaSourceId).await()
-        val source = sourceManager.getOrStub(manga?.source ?: reference.mangaSourceId)
+    suspend fun MergedMangaReference.load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource {
+        var manga = db.getManga(mangaUrl, mangaSourceId).await()
+        val source = sourceManager.getOrStub(manga?.source ?: mangaSourceId)
         if (manga == null) {
-            manga = Manga.create(reference.mangaSourceId).apply {
-                url = reference.mangaUrl
+            manga = Manga.create(mangaSourceId).apply {
+                url = mangaUrl
             }
             manga.copyFrom(source.getMangaDetails(manga.toMangaInfo()).toSManga())
             try {
                 manga.id = db.insertManga(manga).await().insertedId()
-                reference.mangaId = manga.id
-                db.insertNewMergedMangaId(reference).await()
+                mangaId = manga.id
+                db.insertNewMergedMangaId(this).await()
             } catch (e: Exception) {
                 XLog.tag("MergedSource").enableStackTrace(e.stackTrace.contentToString(), 5)
             }
         }
-        return LoadedMangaSource(source, manga, reference)
+        return LoadedMangaSource(source, manga, this)
     }
 
     data class LoadedMangaSource(val source: Source, val manga: Manga?, val reference: MergedMangaReference)
