@@ -772,7 +772,7 @@ class MangaPresenter(
 
                 launchUI { view?.onFetchChaptersDone() }
             } catch (e: Throwable) {
-                view?.onFetchChaptersError(e)
+                launchUI { view?.onFetchChaptersError(e) }
             }
         }
     }
