@@ -198,7 +198,7 @@ class SettingsAdvancedController : SettingsController() {
                 summaryRes = R.string.data_saver_server_summary
 
                 preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -207,7 +207,7 @@ class SettingsAdvancedController : SettingsController() {
                 defaultValue = false
 
                 preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -216,7 +216,7 @@ class SettingsAdvancedController : SettingsController() {
                 defaultValue = true
 
                 preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             intListPreference {
@@ -228,7 +228,7 @@ class SettingsAdvancedController : SettingsController() {
                 summaryRes = R.string.data_saver_image_quality_summary
 
                 preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -239,7 +239,7 @@ class SettingsAdvancedController : SettingsController() {
                 summaryOff = context.getString(R.string.data_saver_image_format_summary_off)
 
                 preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -248,7 +248,7 @@ class SettingsAdvancedController : SettingsController() {
                 defaultValue = false
 
                 preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
         }
 

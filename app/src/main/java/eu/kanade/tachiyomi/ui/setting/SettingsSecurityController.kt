@@ -43,7 +43,7 @@ class SettingsSecurityController : SettingsController() {
                 summary = "%s"
 
                 preferences.useBiometricLock().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
         }
 
@@ -66,7 +66,7 @@ class SettingsSecurityController : SettingsController() {
             summary = context.resources.getQuantityString(R.plurals.num_lock_times, timeRanges, timeRanges)
 
             preferences.useBiometricLock().asImmediateFlow { isVisible = it }
-                .launchIn(scope)
+                .launchIn(viewScope)
 
             onClick {
                 router.pushController(BiometricTimesController().withFadeTransaction())

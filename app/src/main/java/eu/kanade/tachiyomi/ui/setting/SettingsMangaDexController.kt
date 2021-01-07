@@ -152,7 +152,7 @@ class SettingsMangaDexController :
                         SimilarUpdateJob.setupTask(context, true)
                     }
                     .drop(1)
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             preference {

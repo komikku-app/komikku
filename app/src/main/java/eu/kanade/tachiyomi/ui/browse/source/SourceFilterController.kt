@@ -191,7 +191,7 @@ class SourceFilterController : SettingsController() {
                 this.query = it.toString()
                 drawSources()
             }
-            .launchIn(scope)
+            .launchIn(viewScope)
 
         // Fixes problem with the overflow icon showing up in lieu of search
         searchItem.setOnActionExpandListener(

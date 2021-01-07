@@ -27,9 +27,6 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.SourceTagsUtil
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -54,7 +51,6 @@ class MangaInfoHeaderAdapter(
     private var source: Source = controller.presenter.source
     private var trackCount: Int = 0
 
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private lateinit var binding: MangaInfoHeaderBinding
 
     private var currentMangaThumbnail: MangaThumbnail? = null
@@ -96,17 +92,17 @@ class MangaInfoHeaderAdapter(
             // SY -->
             binding.mangaCover.clicks()
                 .onEach { controller.onThumbnailClick(binding.mangaCover) }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
             // SY <--
 
             binding.btnFavorite.clicks()
                 .onEach { controller.onFavoriteClick() }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             if (controller.presenter.manga.favorite && controller.presenter.getCategories().isNotEmpty()) {
                 binding.btnFavorite.longClicks()
                     .onEach { controller.onCategoriesClick() }
-                    .launchIn(scope)
+                    .launchIn(controller.viewScope)
             }
 
             with(binding.btnTracking) {
@@ -132,7 +128,7 @@ class MangaInfoHeaderAdapter(
 
                     clicks()
                         .onEach { controller.onTrackingClick() }
-                        .launchIn(scope)
+                        .launchIn(controller.viewScope)
                 } else {
                     isVisible = false
                 }
@@ -142,14 +138,14 @@ class MangaInfoHeaderAdapter(
                 binding.btnWebview.isVisible = true
                 binding.btnWebview.clicks()
                     .onEach { controller.openMangaInWebView() }
-                    .launchIn(scope)
+                    .launchIn(controller.viewScope)
             }
 
             // SY -->
             binding.btnMerge.isVisible = controller.presenter.manga.favorite
             binding.btnMerge.clicks()
                 .onEach { controller.openSmartSearch() }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
             // SY <--
 
             binding.mangaFullTitle.longClicks()
@@ -159,13 +155,13 @@ class MangaInfoHeaderAdapter(
                         binding.mangaFullTitle.text.toString()
                     )
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             binding.mangaFullTitle.clicks()
                 .onEach {
                     controller.performGlobalSearch(binding.mangaFullTitle.text.toString())
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             binding.mangaAuthor.longClicks()
                 .onEach {
@@ -177,7 +173,7 @@ class MangaInfoHeaderAdapter(
                     )
                     // SY <--
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             binding.mangaAuthor.clicks()
                 .onEach {
@@ -186,7 +182,7 @@ class MangaInfoHeaderAdapter(
                     controller.performGlobalSearch(SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = author) ?: author)
                     // SY <--
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             binding.mangaArtist.longClicks()
                 .onEach {
@@ -198,7 +194,7 @@ class MangaInfoHeaderAdapter(
                     )
                     // SY <--
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             binding.mangaArtist.clicks()
                 .onEach {
@@ -207,7 +203,7 @@ class MangaInfoHeaderAdapter(
                     controller.performGlobalSearch(SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist)
                     // SY <--
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             binding.mangaCover.longClicks()
                 .onEach {
@@ -216,7 +212,7 @@ class MangaInfoHeaderAdapter(
                         controller.presenter.manga.title
                     )
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             setMangaInfo(manga, source)
         }

@@ -81,7 +81,7 @@ class SettingsEhController : SettingsController() {
                 // Only listen for first change commit
                 WarnConfigureDialogController.uploadSettings(router)
             }
-            .launchIn(scope)
+            .launchIn(viewScope)
 
         // Always return true to save changes
         return true
@@ -104,7 +104,7 @@ class SettingsEhController : SettingsController() {
                     .onEach {
                         isChecked = it
                     }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
 
                 onChange { newVal ->
                     newVal as Boolean
@@ -136,7 +136,7 @@ class SettingsEhController : SettingsController() {
                 onChange { preferences.useHentaiAtHome().reconfigure() }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -149,7 +149,7 @@ class SettingsEhController : SettingsController() {
                 onChange { preferences.useJapaneseTitle().reconfigure() }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -162,7 +162,7 @@ class SettingsEhController : SettingsController() {
                 onChange { preferences.exhUseOriginalImages().reconfigure() }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             preference {
@@ -179,7 +179,7 @@ class SettingsEhController : SettingsController() {
                 }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             preference {
@@ -218,7 +218,7 @@ class SettingsEhController : SettingsController() {
                 }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             preference {
@@ -258,7 +258,7 @@ class SettingsEhController : SettingsController() {
                 }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             preference {
@@ -402,7 +402,7 @@ class SettingsEhController : SettingsController() {
                 }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             preference {
@@ -459,7 +459,7 @@ class SettingsEhController : SettingsController() {
                 }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -469,7 +469,7 @@ class SettingsEhController : SettingsController() {
                 summaryRes = R.string.watched_list_state_summary
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             listPreference {
@@ -497,7 +497,7 @@ class SettingsEhController : SettingsController() {
                 onChange { preferences.imageQuality().reconfigure() }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
             }
 
             switchPreference {
@@ -592,7 +592,7 @@ class SettingsEhController : SettingsController() {
                             context.getString(R.string.time_between_batches_summary_2, context.getString(R.string.app_name), newVal, EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION)
                         }
                     }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
 
                 onChange { newValue ->
                     val interval = (newValue as String).toInt()
@@ -610,7 +610,7 @@ class SettingsEhController : SettingsController() {
 
                 preferences.exhAutoUpdateFrequency().asFlow()
                     .onEach { isVisible = it > 0 }
-                    .launchIn(scope)
+                    .launchIn(viewScope)
 
                 onChange {
                     // Post to event looper to allow the preference to be updated.
@@ -630,7 +630,7 @@ class SettingsEhController : SettingsController() {
                     progress.show()
 
                     @OptIn(ExperimentalTime::class)
-                    scope.launch(Dispatchers.IO) {
+                    viewScope.launch(Dispatchers.IO) {
                         val updateInfo = try {
                             val stats =
                                 preferences.exhAutoUpdateStats().get().nullIfBlank()?.let {

@@ -27,9 +27,6 @@ import exh.source.getMainSource
 import exh.util.getRaisedTags
 import exh.util.makeSearchChip
 import exh.util.setChipsExtended
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
@@ -47,7 +44,6 @@ class MangaInfoItemAdapter(
     private var source: Source = controller.presenter.source
     private var meta: RaisedSearchMetadata? = controller.presenter.meta
 
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private lateinit var binding: MangaInfoItemBinding
 
     private var initialLoad: Boolean = true
@@ -88,14 +84,14 @@ class MangaInfoItemAdapter(
                         binding.mangaSummaryText.text.toString()
                     )
                 }
-                .launchIn(scope)
+                .launchIn(controller.viewScope)
 
             binding.genreGroups.layoutManager = LinearLayoutManager(itemView.context)
             binding.genreGroups.adapter = mangaTagsInfoAdapter
 
             // SY -->
             mangaTagsInfoAdapter?.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, _ ->
-                scope.launch {
+                controller.viewScope.launch {
                     toggleMangaInfo()
                 }
                 false
@@ -174,7 +170,7 @@ class MangaInfoItemAdapter(
                     binding.mangaInfoToggleLess.clicks()
                 )
                     .onEach { toggleMangaInfo() }
-                    .launchIn(scope)
+                    .launchIn(controller.viewScope)
 
                 // Expand manga info if navigated from source listing
                 if (initialLoad && fromSource) {

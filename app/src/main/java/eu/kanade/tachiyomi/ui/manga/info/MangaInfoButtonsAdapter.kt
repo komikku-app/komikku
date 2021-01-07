@@ -8,9 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MangaInfoButtonsBinding
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -24,7 +21,6 @@ class MangaInfoButtonsAdapter(
 
     private val preferences: PreferencesHelper by injectLazy()
 
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private lateinit var binding: MangaInfoButtonsBinding
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder {
@@ -45,7 +41,7 @@ class MangaInfoButtonsAdapter(
                 binding.recommendBtn.isVisible = !preferences.recommendsInOverflow().get()
                 binding.recommendBtn.clicks()
                     .onEach { controller.openRecommends() }
-                    .launchIn(scope)
+                    .launchIn(controller.viewScope)
             } else {
                 if (controller.smartSearchConfig.origMangaId != null) {
                     binding.mergeBtn.isVisible = true
@@ -55,7 +51,7 @@ class MangaInfoButtonsAdapter(
                         controller.mergeWithAnother()
                     }
 
-                    .launchIn(scope)
+                    .launchIn(controller.viewScope)
             }
             // EXH <--
         }
