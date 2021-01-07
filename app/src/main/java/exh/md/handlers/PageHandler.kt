@@ -32,6 +32,6 @@ class PageHandler(val client: OkHttpClient, val headers: Headers, private val im
 
     private fun pageListRequest(chapter: SChapter): Request {
         val chpUrl = chapter.url.substringBefore(MdUtil.apiChapterSuffix)
-        return GET("${MdUtil.baseUrl}${chpUrl}${MdUtil.apiChapterSuffix}&server=$imageServer&saver=$dataSaver", headers, CacheControl.FORCE_NETWORK)
+        return GET("${MdUtil.apiUrl}${chpUrl}${MdUtil.apiChapterSuffix}&server=$imageServer&saver=$dataSaver", headers, CacheControl.FORCE_NETWORK)
     }
 }

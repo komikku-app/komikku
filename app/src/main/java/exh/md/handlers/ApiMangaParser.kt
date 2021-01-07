@@ -275,7 +275,7 @@ class ApiMangaParser(private val langs: List<String>) {
         groups: Map<Long, String>
     ): SChapter {
         val chapter = SChapter.create()
-        chapter.url = MdUtil.apiChapter + networkChapter.id
+        chapter.url = MdUtil.apiChapterOld + networkChapter.id
         val chapterName = mutableListOf<String>()
         // Build chapter name
 

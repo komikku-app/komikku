@@ -10,8 +10,8 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import exh.md.handlers.serializers.FollowsPageResult
-import exh.md.handlers.serializers.Result
+import exh.md.handlers.serializers.FollowPage
+import exh.md.handlers.serializers.FollowsPageSerializer
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
@@ -50,15 +50,15 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             )
         } catch (e: Exception) {
             XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
-            FollowsPageResult()
+            FollowsPageSerializer(emptyList())
         }
 
-        if (followsPageResult.result.isEmpty()) {
+        if (followsPageResult.data.isEmpty()) {
             return MetadataMangasPage(emptyList(), false, emptyList())
         }
         val lowQualityCovers = if (forceHd) false else useLowQualityCovers
 
-        val follows = followsPageResult.result.map {
+        val follows = followsPageResult.data.map {
             followFromElement(it, lowQualityCovers)
         }
 
@@ -80,19 +80,19 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             )
         } catch (e: Exception) {
             XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
-            FollowsPageResult()
+            FollowsPageSerializer(emptyList())
         }
         val track = Track.create(TrackManager.MDLIST)
-        if (followsPageResult.result.isEmpty()) {
+        if (followsPageResult.data.isEmpty()) {
             track.status = FollowStatus.UNFOLLOWED.int
         } else {
-            val follow = followsPageResult.result.first()
-            track.status = follow.follow_type
-            if (followsPageResult.result[0].chapter.isNotBlank()) {
+            val follow = followsPageResult.data.first()
+            track.status = follow.followType
+            if (followsPageResult.data[0].chapter.isNotBlank()) {
                 track.last_chapter_read = follow.chapter.toFloat().floor()
             }
-            track.tracking_url = MdUtil.baseUrl + follow.manga_id.toString()
-            track.title = follow.title
+            track.tracking_url = MdUtil.baseUrl + follow.mangaId.toString()
+            track.title = follow.mangaTitle
         }
         return track
     }
@@ -101,22 +101,22 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
      * build Request for follows page
      */
     private fun followsListRequest(): Request {
-        return GET("${MdUtil.baseUrl}${MdUtil.followsAllApi}", headers, CacheControl.FORCE_NETWORK)
+        return GET("${MdUtil.apiUrl}${MdUtil.followsAllApi}", headers, CacheControl.FORCE_NETWORK)
     }
 
     /**
      * Parse result element  to manga
      */
-    private fun followFromElement(result: Result, lowQualityCovers: Boolean): Pair<SManga, MangaDexSearchMetadata> {
+    private fun followFromElement(result: FollowPage, lowQualityCovers: Boolean): Pair<SManga, MangaDexSearchMetadata> {
         val manga = SManga.create()
-        manga.title = MdUtil.cleanString(result.title)
-        manga.url = "/manga/${result.manga_id}/"
+        manga.title = MdUtil.cleanString(result.mangaTitle)
+        manga.url = "/manga/${result.mangaId}/"
         manga.thumbnail_url = MdUtil.formThumbUrl(manga.url, lowQualityCovers)
         return manga to MangaDexSearchMetadata().apply {
             title = manga.title
             mdUrl = manga.url
             thumbnail_url = manga.thumbnail_url
-            follow_status = FollowStatus.fromInt(result.follow_type)?.int
+            follow_status = FollowStatus.fromInt(result.followType)?.int
         }
     }
 
@@ -211,7 +211,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     suspend fun fetchTrackingInfo(url: String): Track {
         return withContext(Dispatchers.IO) {
             val request = GET(
-                "${MdUtil.baseUrl}${MdUtil.followsMangaApi}" + MdUtil.getMangaId(url),
+                "${MdUtil.apiUrl}${MdUtil.followsMangaApi}" + MdUtil.getMangaId(url),
                 headers,
                 CacheControl.FORCE_NETWORK
             )

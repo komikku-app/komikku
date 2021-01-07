@@ -114,7 +114,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override fun mapUrlToChapterUrl(uri: Uri): String? {
         if (!uri.pathSegments.firstOrNull().equals("chapter", true)) return null
         val id = uri.pathSegments.getOrNull(1) ?: return null
-        return MdUtil.apiChapter + id
+        return MdUtil.apiChapterOld + id
     }
 
     override suspend fun mapChapterUrlToMangaUrl(uri: Uri): String? {

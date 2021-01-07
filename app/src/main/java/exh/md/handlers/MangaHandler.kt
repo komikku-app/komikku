@@ -56,7 +56,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
 
     suspend fun getMangaIdFromChapterId(urlChapterId: String): Int {
         return withContext(Dispatchers.IO) {
-            val request = GET(MdUtil.baseUrl + MdUtil.apiChapter + urlChapterId + MdUtil.apiChapterSuffix, headers, CacheControl.FORCE_NETWORK)
+            val request = GET(MdUtil.apiUrl + MdUtil.apiChapter + urlChapterId + MdUtil.apiChapterSuffix, headers, CacheControl.FORCE_NETWORK)
             val response = client.newCall(request).await()
             ApiMangaParser(langs).chapterParseForMangaId(response)
         }
@@ -126,10 +126,10 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
     }
 
     private fun apiRequest(manga: SManga): Request {
-        return GET(MdUtil.baseUrl + MdUtil.apiManga + MdUtil.getMangaId(manga.url) + MdUtil.includeChapters, headers, CacheControl.FORCE_NETWORK)
+        return GET(MdUtil.apiUrl + MdUtil.apiManga + MdUtil.getMangaId(manga.url) + MdUtil.includeChapters, headers, CacheControl.FORCE_NETWORK)
     }
 
     private fun coverRequest(manga: SManga): Request {
-        return GET(MdUtil.baseUrl + MdUtil.apiManga + MdUtil.getMangaId(manga.url) + MdUtil.apiCovers, headers, CacheControl.FORCE_NETWORK)
+        return GET(MdUtil.apiUrl + MdUtil.apiManga + MdUtil.getMangaId(manga.url) + MdUtil.apiCovers, headers, CacheControl.FORCE_NETWORK)
     }
 }

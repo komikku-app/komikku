@@ -3,15 +3,15 @@ package exh.md.handlers.serializers
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class FollowsPageResult(
-    val result: List<Result> = emptyList()
+data class FollowsPageSerializer(
+    val data: List<FollowPage>
 )
 
 @Serializable
-data class Result(
-    val title: String,
+data class FollowPage(
+    val mangaTitle: String,
     val chapter: String,
-    val follow_type: Int,
-    val manga_id: Int,
+    val followType: Int,
+    val mangaId: Int,
     val volume: String
 )
