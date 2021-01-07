@@ -159,7 +159,7 @@ open class IndexController :
                     onBrowseClick(presenter.query.nullIfBlank())
                 }
             }
-            .launchIn(scope)
+            .launchIn(viewScope)
 
         searchItem.fixExpand(
             onExpand = { invalidateMenuOnExpand() }
@@ -247,7 +247,7 @@ open class IndexController :
 
         actionFab?.clicks()
             ?.onEach { filterSheet?.show() }
-            ?.launchIn(scope)
+            ?.launchIn(viewScope)
 
         actionFab?.isVisible = true
     }
@@ -263,6 +263,7 @@ open class IndexController :
     }
 
     override fun cleanupFab(fab: ExtendedFloatingActionButton) {
+        fab.setOnClickListener(null)
         actionFabScrollListener?.let { binding.recycler.removeOnScrollListener(it) }
         actionFab = null
     }

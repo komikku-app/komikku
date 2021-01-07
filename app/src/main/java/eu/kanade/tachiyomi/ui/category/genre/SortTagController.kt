@@ -109,19 +109,18 @@ class SortTagController :
         actionFab = fab
         fab.setText(R.string.action_add)
         fab.setIconResource(R.drawable.ic_add_24dp)
-        fab.clicks()
-            .onEach {
-                if (!shownHelpDialog) {
-                    shownHelpDialog = true
-                    helpDialog(true)
-                } else {
-                    SortTagCreateDialog(this@SortTagController).showDialog(router, null)
-                }
+        fab.setOnClickListener {
+            if (!shownHelpDialog) {
+                shownHelpDialog = true
+                helpDialog(true)
+            } else {
+                SortTagCreateDialog(this@SortTagController).showDialog(router, null)
             }
-            .launchIn(scope)
+        }
     }
 
     override fun cleanupFab(fab: ExtendedFloatingActionButton) {
+        fab.setOnClickListener(null)
         actionFabScrollListener?.let { binding.recycler.removeOnScrollListener(it) }
         actionFab = null
     }

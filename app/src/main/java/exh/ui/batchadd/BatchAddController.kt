@@ -37,13 +37,13 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
                 .onEach {
                     addGalleries(binding.galleriesBox.text.toString())
                 }
-                .launchIn(scope)
+                .launchIn(viewScope)
 
             binding.progressDismissBtn.clicks()
                 .onEach {
                     presenter.currentlyAddingRelay.call(BatchAddPresenter.STATE_PROGRESS_TO_INPUT)
                 }
-                .launchIn(scope)
+                .launchIn(viewScope)
 
             val progressSubscriptions = CompositeSubscription()
 

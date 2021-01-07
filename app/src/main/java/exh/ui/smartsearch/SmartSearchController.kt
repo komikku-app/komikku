@@ -68,7 +68,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
                     }
                 }
             }
-            .launchIn(scope + Dispatchers.IO)
+            .launchIn(viewScope + Dispatchers.IO)
     }
 
     companion object {

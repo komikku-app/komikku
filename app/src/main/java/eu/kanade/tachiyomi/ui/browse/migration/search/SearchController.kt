@@ -181,6 +181,6 @@ class SearchController(
                 searchItem.collapseActionView()
                 setTitle() // Update toolbar title
             }
-            .launchIn(scope)
+            .launchIn(viewScope)
     }
 }

@@ -100,14 +100,13 @@ class SourceCategoryController :
         actionFab = fab
         fab.setText(R.string.action_add)
         fab.setIconResource(R.drawable.ic_add_24dp)
-        fab.clicks()
-            .onEach {
-                SourceCategoryCreateDialog(this@SourceCategoryController).showDialog(router, null)
-            }
-            .launchIn(scope)
+        fab.setOnClickListener {
+            SourceCategoryCreateDialog(this@SourceCategoryController).showDialog(router, null)
+        }
     }
 
     override fun cleanupFab(fab: ExtendedFloatingActionButton) {
+        fab.setOnClickListener(null)
         actionFabScrollListener?.let { binding.recycler.removeOnScrollListener(it) }
         actionFab = null
     }

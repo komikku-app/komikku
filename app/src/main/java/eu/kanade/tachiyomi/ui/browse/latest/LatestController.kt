@@ -126,7 +126,7 @@ open class LatestController :
 
         presenter.preferences.latestTabSources()
             .asImmediateFlow { presenter.getLatest() }
-            .launchIn(scope)
+            .launchIn(viewScope)
     }
 
     override fun onDestroyView(view: View) {

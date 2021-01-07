@@ -604,7 +604,7 @@ class SettingsEhController : SettingsController() {
             multiSelectListPreference {
                 key = PreferenceKeys.eh_autoUpdateRestrictions
                 titleRes = R.string.auto_update_restrictions
-                entriesRes = arrayOf(R.string.wifi, R.string.charging)
+                entriesRes = arrayOf(R.string.network_unmetered, R.string.charging)
                 entryValues = arrayOf("wifi", "ac")
                 summaryRes = R.string.pref_library_update_restriction_summary
 

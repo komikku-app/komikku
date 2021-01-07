@@ -125,17 +125,17 @@ class EditMangaDialog : DialogController {
         binding.mangaGenresTags.clearFocus()
         binding.coverLayout.clicks()
             .onEach { infoController.changeCover() }
-            .launchIn(infoController.scope)
+            .launchIn(infoController.viewScope)
         binding.resetTags.clicks()
             .onEach { resetTags() }
-            .launchIn(infoController.scope)
+            .launchIn(infoController.viewScope)
         binding.resetCover.isVisible = !isLocal
         binding.resetCover.clicks()
             .onEach {
                 binding.root.context.toast(R.string.cover_reset_toast)
                 customCoverUri = null
                 willResetCover = true
-            }.launchIn(infoController.scope)
+            }.launchIn(infoController.viewScope)
     }
 
     private fun resetTags() {
@@ -203,7 +203,7 @@ class EditMangaDialog : DialogController {
                     }
                     .negativeButton(android.R.string.cancel)
                     .show()
-            }.launchIn(infoController.scope)
+            }.launchIn(infoController.viewScope)
         }
         addView(addTagChip)
     }

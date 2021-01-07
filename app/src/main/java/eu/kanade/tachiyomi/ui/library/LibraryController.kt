@@ -200,13 +200,13 @@ class LibraryController(
                 activeCategory = it
                 updateTitle()
             }
-            .launchIn(scope)
+            .launchIn(viewScope)
 
         getColumnsPreferenceForCurrentOrientation().asImmediateFlow { mangaPerRow = it }
             .drop(1)
             // Set again the adapter to recalculate the covers height
             .onEach { reattachAdapter() }
-            .launchIn(scope)
+            .launchIn(viewScope)
 
         if (selectedMangas.isNotEmpty()) {
             createActionModeIfNeeded()
@@ -234,7 +234,7 @@ class LibraryController(
                     GlobalSearchController(query).withFadeTransaction()
                 )
             }
-            .launchIn(scope)
+            .launchIn(viewScope)
 
         (activity!! as MainActivity).fixViewToBottom(binding.actionToolbar)
     }
@@ -249,6 +249,7 @@ class LibraryController(
 
     override fun onDestroyView(view: View) {
         destroyActionModeIfNeeded()
+        (activity!! as MainActivity).clearFixViewToBottom(binding.actionToolbar)
         binding.actionToolbar.destroy()
         adapter?.onDestroy()
         adapter = null
@@ -445,7 +446,7 @@ class LibraryController(
                 query = it.toString()
                 performSearch()
             }
-            .launchIn(scope)
+            .launchIn(viewScope)
     }
 
     private fun performSearch() {
@@ -693,7 +694,7 @@ class LibraryController(
                 .onEach {
                     updateSyncStatus(it)
                 }
-                .launchIn(scope)
+                .launchIn(viewScope)
         // <-- EXH
     }
 

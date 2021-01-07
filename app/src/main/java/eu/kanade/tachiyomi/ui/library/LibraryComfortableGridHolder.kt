@@ -42,7 +42,7 @@ class LibraryComfortableGridHolder(
             .onEach {
                 playButtonClicked()
             }
-            .launchIn((adapter as LibraryCategoryAdapter).controller.scope)
+            .launchIn((adapter as LibraryCategoryAdapter).controller.viewScope)
     }
     // SY <--
 
