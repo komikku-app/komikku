@@ -469,7 +469,6 @@ class LibraryUpdateService(
         }
         // SY <--
 
-
         return runAsObservable({
             // SY -->
             if (source is MergedSource) {

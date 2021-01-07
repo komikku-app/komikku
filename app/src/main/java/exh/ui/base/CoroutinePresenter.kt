@@ -1,7 +1,6 @@
 package exh.ui.base
 
 import androidx.annotation.CallSuper
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,9 +19,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 @Suppress("DEPRECATION", "unused")
 open class CoroutinePresenter<V>(
     scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.Main)
-) : Presenter<V>(),
-    CoroutineScope by scope
-{
+) : Presenter<V>(), CoroutineScope by scope {
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use launchInView, Flow.inView, Flow.mapView")
     override fun getView(): V? {
@@ -47,10 +44,10 @@ open class CoroutinePresenter<V>(
         }
     }
 
-    fun Flow<*>.launchUnderContext(context: CoroutineContext = EmptyCoroutineContext)  =
-        launch(this + context) { this@launchInHere.collect() }
+    fun Flow<*>.launchUnderContext(context: CoroutineContext = EmptyCoroutineContext) =
+        launch(context) { this@launchUnderContext.collect() }
 
-    fun Flow<*>.launch() = launchIn(this)
+    fun Flow<*>.launch() = launchIn(this@CoroutinePresenter)
 
     @CallSuper
     override fun destroy() {
