@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -83,7 +84,7 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
         // refreshList()
         binding.webviewButton.clicks()
             .onEach { activity.openMangaInBrowser() }
-            .launchIn(activity.scope)
+            .launchIn(activity.lifecycleScope)
 
         binding.pageSeekbar.setOnSeekBarChangeListener(
             object : SimpleSeekBarListener() {

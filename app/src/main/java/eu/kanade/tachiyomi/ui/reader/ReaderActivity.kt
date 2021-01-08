@@ -24,6 +24,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
+import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.elvishew.xlog.XLog
@@ -428,7 +429,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 ehUtilsVisible = !ehUtilsVisible
                 setEhUtilsVisibility(ehUtilsVisible)
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.ehAutoscrollFreq.setText(
             preferences.autoscrollInterval().get().let {
@@ -450,7 +451,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     }
                 )
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.ehAutoscrollFreq.textChanges()
             .onEach {
@@ -468,7 +469,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     setupAutoscroll(if (binding.ehAutoscroll.isChecked) parsed else -1.0)
                 }
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.ehAutoscrollHelp.clicks()
             .onEach {
@@ -478,7 +479,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     .positiveButton(android.R.string.ok)
                     .show()
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.ehRetryAll.clicks()
             .onEach {
@@ -522,7 +523,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
                 toast("Retrying $retried failed pages...")
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.ehRetryAllHelp.clicks()
             .onEach {
@@ -532,7 +533,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     .positiveButton(android.R.string.ok)
                     .show()
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.ehBoostPage.clicks()
             .onEach {
@@ -559,7 +560,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     }
                 }
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.ehBoostPageHelp.clicks()
             .onEach {
@@ -569,14 +570,14 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     .positiveButton(android.R.string.ok)
                     .show()
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         chapterBottomSheet = ReaderChapterSheet(this)
         binding.chaptersButton.clicks()
             .onEach {
                 chapterBottomSheet.show()
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.toolbar.clicks()
             .onEach {
@@ -589,7 +590,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     )
                 }
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
         // <-- EH
 
         // Set initial visibility
@@ -964,42 +965,42 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     delay(250)
                     setOrientation(it)
                 }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
 
             preferences.readerTheme().asFlow()
                 .drop(1) // We only care about updates
                 .onEach { recreate() }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
 
             preferences.showPageNumber().asFlow()
                 .onEach { setPageNumberVisibility(it) }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
 
             preferences.trueColor().asFlow()
                 .onEach { setTrueColor(it) }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 preferences.cutoutShort().asFlow()
                     .onEach { setCutoutShort(it) }
-                    .launchIn(scope)
+                    .launchIn(lifecycleScope)
             }
 
             preferences.keepScreenOn().asFlow()
                 .onEach { setKeepScreenOn(it) }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
 
             preferences.customBrightness().asFlow()
                 .onEach { setCustomBrightness(it) }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
 
             preferences.colorFilter().asFlow()
                 .onEach { setColorFilter(it) }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
 
             preferences.colorFilterMode().asFlow()
                 .onEach { setColorFilter(preferences.colorFilter().get()) }
-                .launchIn(scope)
+                .launchIn(lifecycleScope)
         }
 
         /**
@@ -1077,7 +1078,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 preferences.customBrightnessValue().asFlow()
                     .sample(100)
                     .onEach { setCustomBrightnessValue(it) }
-                    .launchIn(scope)
+                    .launchIn(lifecycleScope)
             } else {
                 setCustomBrightnessValue(0)
             }
@@ -1091,7 +1092,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 preferences.colorFilterValue().asFlow()
                     .sample(100)
                     .onEach { setColorFilterValue(it) }
-                    .launchIn(scope)
+                    .launchIn(lifecycleScope)
             } else {
                 binding.colorOverlay.isVisible = false
             }

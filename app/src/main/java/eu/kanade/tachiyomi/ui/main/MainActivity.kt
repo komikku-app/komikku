@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceDialogController
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Controller
@@ -114,7 +115,7 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         // Set behavior of bottom nav
         preferences.hideBottomBar()
             .asImmediateFlow { setBottomNavBehaviorOnScroll() }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
             val id = item.itemId
@@ -226,15 +227,15 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
 
         preferences.extensionUpdatesCount()
             .asImmediateFlow { setExtensionsBadge() }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         preferences.downloadedOnly()
             .asImmediateFlow { binding.downloadedOnly.isVisible = it }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         preferences.incognitoMode()
             .asImmediateFlow { binding.incognitoMode.isVisible = it }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onCancel
 import com.afollestad.materialdialogs.callbacks.onDismiss
@@ -94,7 +95,7 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
                     }
                 }
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
     }
 
     override fun onStop() {
@@ -128,7 +129,7 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
     @Synchronized
     private fun loadGalleryEnd(gallery: String, source: UrlImportableSource? = null) {
         // Load gallery async
-        scope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             val result = galleryAdder.addGallery(this@InterceptActivity, gallery, forceSource = source)
 
             status.value = when (result) {
