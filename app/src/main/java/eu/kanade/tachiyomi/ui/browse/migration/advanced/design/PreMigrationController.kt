@@ -27,9 +27,6 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import uy.kohesive.injekt.injectLazy
 
 class PreMigrationController(bundle: Bundle? = null) :
@@ -43,8 +40,6 @@ class PreMigrationController(bundle: Bundle? = null) :
     private var adapter: MigrationSourceAdapter? = null
 
     private val config: LongArray = args.getLongArray(MANGA_IDS_EXTRA) ?: LongArray(0)
-
-    val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     private var actionFab: ExtendedFloatingActionButton? = null
     private var actionFabScrollListener: RecyclerView.OnScrollListener? = null

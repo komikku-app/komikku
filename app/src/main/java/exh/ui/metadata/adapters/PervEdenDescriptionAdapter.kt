@@ -14,13 +14,6 @@ import exh.metadata.MetadataUtil
 import exh.metadata.bindDrawable
 import exh.metadata.metadata.PervEdenSearchMetadata
 import exh.ui.metadata.MetadataViewController
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.android.view.clicks
-import reactivecircus.flowbinding.android.view.longClicks
 import java.util.Locale
 import kotlin.math.round
 
@@ -29,7 +22,6 @@ class PervEdenDescriptionAdapter(
 ) :
     RecyclerView.Adapter<PervEdenDescriptionAdapter.PervEdenDescriptionViewHolder>() {
 
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private lateinit var binding: DescriptionAdapterPeBinding
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PervEdenDescriptionViewHolder {
@@ -70,25 +62,22 @@ class PervEdenDescriptionAdapter(
                 binding.language,
                 binding.rating
             ).forEach { textView ->
-                textView.longClicks()
-                    .onEach {
-                        itemView.context.copyToClipboard(
-                            textView.text.toString(),
-                            textView.text.toString()
-                        )
-                    }
-                    .launchIn(scope)
+                textView.setOnLongClickListener {
+                    itemView.context.copyToClipboard(
+                        textView.text.toString(),
+                        textView.text.toString()
+                    )
+                    true
+                }
             }
 
-            binding.moreInfo.clicks()
-                .onEach {
-                    controller.router?.pushController(
-                        MetadataViewController(
-                            controller.manga
-                        ).withFadeTransaction()
-                    )
-                }
-                .launchIn(scope)
+            binding.moreInfo.setOnClickListener {
+                controller.router?.pushController(
+                    MetadataViewController(
+                        controller.manga
+                    ).withFadeTransaction()
+                )
+            }
         }
     }
 }

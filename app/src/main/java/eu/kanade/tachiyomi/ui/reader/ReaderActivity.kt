@@ -71,15 +71,15 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
 import exh.util.defaultReaderType
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.launch
 import nucleus.factory.RequiresPresenter
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.widget.checkedChanges
@@ -122,7 +122,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     // SY -->
     private var ehUtilsVisible = false
 
-    private var autoscrollScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.Main)
+    private val autoScrollFlow = MutableSharedFlow<Unit>()
     private var autoScrollJob: Job? = null
     private val sourceManager: SourceManager by injectLazy()
 
@@ -219,19 +219,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         if (interval == -1.0) return
 
         val duration = interval.seconds
-        autoScrollJob =
-            flow {
-                while (true) {
-                    delay(duration)
-                    emit(Unit)
-                }
-            }.onEach {
-                viewer.let { v ->
-                    if (v is PagerViewer) v.moveToNext()
-                    else if (v is WebtoonViewer) v.scrollDown()
-                }
+        autoScrollJob = lifecycleScope.launch(Dispatchers.IO) {
+            while (true) {
+                delay(duration)
+                autoScrollFlow.emit(Unit)
             }
-                .launchIn(autoscrollScope)
+        }
     }
     // SY <--
 
@@ -588,6 +581,15 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             .putExtra(MangaController.MANGA_EXTRA, id)
                     )
+                }
+            }
+            .launchIn(lifecycleScope)
+
+        autoScrollFlow
+            .onEach {
+                viewer.let { v ->
+                    if (v is PagerViewer) v.moveToNext()
+                    else if (v is WebtoonViewer) v.scrollDown()
                 }
             }
             .launchIn(lifecycleScope)

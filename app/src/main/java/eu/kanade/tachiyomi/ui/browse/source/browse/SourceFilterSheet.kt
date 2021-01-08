@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bluelinelabs.conductor.Controller
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -17,6 +16,7 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.databinding.SourceFilterSheetBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.BrowseSourceFilterHeader
+import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
@@ -24,7 +24,7 @@ import exh.source.getMainSource
 class SourceFilterSheet(
     activity: Activity,
     // SY -->
-    controller: Controller,
+    controller: BaseController<*>,
     source: CatalogueSource,
     searches: List<EXHSavedSearch> = emptyList(),
     // SY <--
@@ -72,7 +72,7 @@ class SourceFilterSheet(
     }
     // SY <--
 
-    class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null /* SY --> */, searches: List<EXHSavedSearch> = emptyList(), source: CatalogueSource? = null, controller: Controller? = null/* SY <-- */) :
+    class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null /* SY --> */, searches: List<EXHSavedSearch> = emptyList(), source: CatalogueSource? = null, controller: BaseController<*>? = null/* SY <-- */) :
         SimpleNavigationView(context, attrs) {
 
         var onFilterClicked = {}

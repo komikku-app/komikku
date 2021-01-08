@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.source.online
 
 import androidx.recyclerview.widget.RecyclerView
-import com.bluelinelabs.conductor.Controller
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.ui.base.controller.BaseController
 
 interface BrowseSourceFilterHeader : CatalogueSource {
-    fun getFilterHeader(controller: Controller): RecyclerView.Adapter<*>
+    fun getFilterHeader(controller: BaseController<*>): RecyclerView.Adapter<*>
 }

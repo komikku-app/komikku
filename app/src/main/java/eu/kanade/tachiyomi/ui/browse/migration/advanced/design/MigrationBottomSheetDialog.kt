@@ -17,20 +17,10 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.injectLazy
 
 class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val listener: StartMigrationListener) : BottomSheetDialog(activity, theme) {
-    /**
-     * Preferences helper.
-     */
-    private val preferences by injectLazy<PreferencesHelper>()
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
+    private val preferences: PreferencesHelper by injectLazy()
 
     private val binding: MigrationBottomSheetBinding = MigrationBottomSheetBinding.inflate(activity.layoutInflater)
 
@@ -50,7 +40,7 @@ class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val lis
 
         initPreferences()
 
-        binding.fab.clicks().onEach {
+        binding.fab.setOnClickListener {
             preferences.skipPreMigration().set(binding.skipStep.isChecked)
             listener.startMigration(
                 if (binding.useSmartSearch.isChecked && binding.extraSearchParamText.text.isNotBlank()) {
@@ -58,7 +48,7 @@ class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val lis
                 } else null
             )
             dismiss()
-        }.launchIn(scope)
+        }
     }
 
     /**
@@ -75,7 +65,7 @@ class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val lis
         binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags() }
         binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags() }
         binding.migTracking.setOnCheckedChangeListener { _, _ -> setFlags() }
-        binding.migExtra.setOnCheckedChangeListener { buttonView, isChecked -> setFlags() }
+        binding.migExtra.setOnCheckedChangeListener { _, _ -> setFlags() }
 
         binding.useSmartSearch.bindToPreference(preferences.smartMigration())
         binding.extraSearchParamText.isVisible = false

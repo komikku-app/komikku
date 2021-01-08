@@ -4,9 +4,6 @@ import android.os.Bundle
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import rx.Observable
@@ -28,8 +25,6 @@ class SourceCategoryPresenter(
 
     val preferences: PreferencesHelper = Injekt.get()
 
-    val scope = CoroutineScope(Job() + Dispatchers.Main)
-
     /**
      * Called when the presenter is created.
      *
@@ -45,7 +40,7 @@ class SourceCategoryPresenter(
                 .map { it.map(::SourceCategoryItem) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(SourceCategoryController::setCategories)
-        }.launchIn(scope)
+        }.launchIn(presenterScope)
     }
 
     /**

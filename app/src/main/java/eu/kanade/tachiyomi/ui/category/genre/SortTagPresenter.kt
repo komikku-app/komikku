@@ -5,9 +5,6 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.minusAssign
 import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import rx.Observable
@@ -27,8 +24,6 @@ class SortTagPresenter : BasePresenter<SortTagController>() {
 
     val preferences: PreferencesHelper = Injekt.get()
 
-    val scope = CoroutineScope(Job() + Dispatchers.Main)
-
     /**
      * Called when the presenter is created.
      *
@@ -46,7 +41,7 @@ class SortTagPresenter : BasePresenter<SortTagController>() {
                 .map { tagPairs -> tagPairs.map { it.second }.map(::SortTagItem) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(SortTagController::setCategories)
-        }.launchIn(scope)
+        }.launchIn(presenterScope)
     }
 
     /**

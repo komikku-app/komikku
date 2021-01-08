@@ -738,5 +738,10 @@ class LibraryPresenter(
 
         return map to categories
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        favoritesSync.onDestroy()
+    }
     // SY <--
 }

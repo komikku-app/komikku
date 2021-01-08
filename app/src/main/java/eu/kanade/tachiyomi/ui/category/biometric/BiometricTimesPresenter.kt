@@ -5,9 +5,6 @@ import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import rx.Observable
@@ -29,8 +26,6 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
 
     val preferences: PreferencesHelper = Injekt.get()
 
-    val scope = CoroutineScope(Job() + Dispatchers.Main)
-
     /**
      * Called when the presenter is created.
      *
@@ -47,7 +42,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
                 .map { it.map(::BiometricTimesItem) }
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(BiometricTimesController::setBiometricTimeItems)
-        }.launchIn(scope)
+        }.launchIn(presenterScope)
     }
 
     /**

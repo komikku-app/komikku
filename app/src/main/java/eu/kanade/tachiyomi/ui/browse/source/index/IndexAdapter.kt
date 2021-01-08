@@ -8,12 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.IndexAdapterBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.android.view.clicks
 
 /**
  * Adapter that holds the search cards.
@@ -26,7 +20,6 @@ class IndexAdapter(val controller: IndexController) :
     val clickListener: ClickListener = controller
 
     private lateinit var binding: IndexAdapterBinding
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     var holder: IndexAdapter.ViewHolder? = null
 
@@ -50,16 +43,12 @@ class IndexAdapter(val controller: IndexController) :
         private var browseLastBoundResults: List<IndexCardItem>? = null
 
         init {
-            binding.browseBarWrapper.clicks()
-                .onEach {
-                    clickListener.onBrowseClick()
-                }
-                .launchIn(scope)
-            binding.latestBarWrapper.clicks()
-                .onEach {
-                    clickListener.onLatestClick()
-                }
-                .launchIn(scope)
+            binding.browseBarWrapper.setOnClickListener {
+                clickListener.onBrowseClick()
+            }
+            binding.latestBarWrapper.setOnClickListener {
+                clickListener.onLatestClick()
+            }
 
             binding.latestRecycler.layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false)
             binding.latestRecycler.adapter = latestAdapter

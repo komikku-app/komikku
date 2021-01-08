@@ -14,13 +14,6 @@ import exh.metadata.MetadataUtil.getRatingString
 import exh.metadata.bindDrawable
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.MetadataViewController
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.android.view.clicks
-import reactivecircus.flowbinding.android.view.longClicks
 import kotlin.math.round
 
 class MangaDexDescriptionAdapter(
@@ -28,7 +21,6 @@ class MangaDexDescriptionAdapter(
 ) :
     RecyclerView.Adapter<MangaDexDescriptionAdapter.MangaDexDescriptionViewHolder>() {
 
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private lateinit var binding: DescriptionAdapterMdBinding
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MangaDexDescriptionViewHolder {
@@ -55,24 +47,21 @@ class MangaDexDescriptionAdapter(
 
             binding.moreInfo.bindDrawable(itemView.context, R.drawable.ic_info_24dp)
 
-            binding.rating.longClicks()
-                .onEach {
-                    itemView.context.copyToClipboard(
-                        binding.rating.text.toString(),
-                        binding.rating.text.toString()
-                    )
-                }
-                .launchIn(scope)
+            binding.rating.setOnLongClickListener {
+                itemView.context.copyToClipboard(
+                    binding.rating.text.toString(),
+                    binding.rating.text.toString()
+                )
+                true
+            }
 
-            binding.moreInfo.clicks()
-                .onEach {
-                    controller.router?.pushController(
-                        MetadataViewController(
-                            controller.manga
-                        ).withFadeTransaction()
-                    )
-                }
-                .launchIn(scope)
+            binding.moreInfo.setOnClickListener {
+                controller.router?.pushController(
+                    MetadataViewController(
+                        controller.manga
+                    ).withFadeTransaction()
+                )
+            }
         }
     }
 }

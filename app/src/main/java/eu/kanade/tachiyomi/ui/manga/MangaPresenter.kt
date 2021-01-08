@@ -57,8 +57,6 @@ import exh.metadata.metadata.base.insertFlatMetadata
 import exh.source.getMainSource
 import exh.util.shouldDeleteChapters
 import exh.util.trimOrNull
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -87,8 +85,6 @@ class MangaPresenter(
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get()
 ) : BasePresenter<MangaController>() {
-
-    val scope = CoroutineScope(Job() + Dispatchers.IO)
 
     /**
      * Subscription to update the manga from the source.
@@ -236,7 +232,7 @@ class MangaPresenter(
                                         )
                                     )
                                 }
-                            }.launchIn(scope)
+                            }.launchIn(presenterScope)
                     }
                     // SY <--
                 }

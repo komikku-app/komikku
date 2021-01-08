@@ -22,14 +22,11 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.MERGED_SOURCE_ID
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import reactivecircus.flowbinding.android.view.clicks
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.text.DecimalFormat
 
@@ -41,7 +38,6 @@ class MigrationProcessHolder(
     private val sourceManager: SourceManager by injectLazy()
 
     private var item: MigrationProcessItem? = null
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private val binding = MigrationProcessItemBinding.bind(view)
 
     init {
@@ -84,7 +80,7 @@ class MigrationProcessHolder(
                                     true
                                 ).withFadeTransaction()
                             )
-                        }.launchIn(scope)
+                        }.launchIn(adapter.controller.viewScope)
                 }
 
                 /*launchUI {
@@ -120,7 +116,7 @@ class MigrationProcessHolder(
                                         true
                                     ).withFadeTransaction()
                                 )
-                            }.launchIn(scope)
+                            }.launchIn(adapter.controller.viewScope)
                     } else {
                         binding.migrationMangaCardTo.loadingGroup.isVisible = false
                         binding.migrationMangaCardTo.title.text = view.context.applicationContext

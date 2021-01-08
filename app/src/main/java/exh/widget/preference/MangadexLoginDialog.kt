@@ -134,6 +134,11 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        scope.cancel()
+    }
+
     interface Listener {
         fun siteLoginDialogClosed(source: Source)
     }

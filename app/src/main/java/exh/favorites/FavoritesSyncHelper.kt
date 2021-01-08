@@ -30,6 +30,7 @@ import exh.util.wifiManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
@@ -417,6 +418,10 @@ class FavoritesSyncHelper(val context: Context) {
         throttleManager.throttleTime >= THROTTLE_WARN
 
     class IgnoredException : RuntimeException()
+
+    fun onDestroy() {
+        scope.cancel()
+    }
 
     companion object {
         private const val THROTTLE_WARN = 1000

@@ -6,18 +6,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.databinding.MetadataViewItemBinding
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.android.view.clicks
 
 class MetadataViewAdapter(private var data: List<Pair<String, String>>) :
     RecyclerView.Adapter<MetadataViewAdapter.ViewHolder>() {
 
     private lateinit var binding: MetadataViewItemBinding
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MetadataViewAdapter.ViewHolder {
         binding = MetadataViewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -42,11 +35,9 @@ class MetadataViewAdapter(private var data: List<Pair<String, String>>) :
         fun bind(position: Int) {
             binding.infoTitle.text = data[position].first
             binding.infoText.text = data[position].second
-            binding.infoText.clicks()
-                .onEach {
-                    itemView.context.copyToClipboard(data[position].second, data[position].second)
-                }
-                .launchIn(scope)
+            binding.infoText.setOnClickListener {
+                itemView.context.copyToClipboard(data[position].second, data[position].second)
+            }
         }
 
         override fun equals(other: Any?): Boolean {

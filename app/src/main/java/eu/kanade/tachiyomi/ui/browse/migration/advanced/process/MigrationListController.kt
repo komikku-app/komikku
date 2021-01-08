@@ -66,8 +66,6 @@ class MigrationListController(bundle: Bundle? = null) :
 
     private var adapter: MigrationProcessAdapter? = null
 
-    val scope = CoroutineScope(Job() + Dispatchers.Default)
-
     val config: MigrationProcedureConfig? = args.getParcelable(CONFIG_EXTRA)
 
     private val db: DatabaseHelper by injectLazy()
@@ -89,7 +87,7 @@ class MigrationListController(bundle: Bundle? = null) :
         return binding.root
     }
 
-    override fun getTitle(): String? {
+    override fun getTitle(): String {
         return resources?.getString(R.string.migration) + " (${adapter?.items?.count {
             it.manga.migrationStatus != MigrationStatus.RUNNING
         }}/${adapter?.itemCount ?: 0})"
@@ -102,7 +100,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
         val newMigratingManga = migratingManga ?: run {
             val new = config.mangaIds.map {
-                MigratingManga(db, sourceManager, it, scope.coroutineContext)
+                MigratingManga(db, sourceManager, it, viewScope.coroutineContext + Dispatchers.IO)
             }
             migratingManga = new.toMutableList()
             new
@@ -117,7 +115,7 @@ class MigrationListController(bundle: Bundle? = null) :
         adapter?.updateDataSet(newMigratingManga.map { it.toModal() })
 
         if (migrationsJob == null) {
-            migrationsJob = scope.launch {
+            migrationsJob = viewScope.launch(Dispatchers.IO) {
                 runMigrations(newMigratingManga)
             }
         }

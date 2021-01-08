@@ -17,9 +17,7 @@ import eu.kanade.tachiyomi.util.lang.asFlow
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,8 +52,6 @@ open class IndexPresenter(
      * Fetches the different sources by user settings.
      */
     private var fetchSourcesSubscription: Subscription? = null
-
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     /**
      * Query from the view.
@@ -102,7 +98,7 @@ open class IndexPresenter(
         // Create image fetch subscription
         initializeFetchImageSubscription()
 
-        scope.launch(Dispatchers.IO) {
+        presenterScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) {
                 Observable.just(null).subscribeLatestCache({ view, results ->
                     view.setLatestManga(results)
@@ -130,7 +126,7 @@ open class IndexPresenter(
             }
         }
 
-        scope.launch(Dispatchers.IO) {
+        presenterScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) {
                 Observable.just(null).subscribeLatestCache({ view, results ->
                     view.setBrowseManga(results)

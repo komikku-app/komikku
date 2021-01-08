@@ -11,9 +11,7 @@ import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,7 +21,6 @@ import uy.kohesive.injekt.api.get
 class BatchAddPresenter : BasePresenter<BatchAddController>() {
 
     private val galleryAdder by lazy { GalleryAdder() }
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
 
     val progressTotalRelay = BehaviorRelay.create(0)!!
     val progressRelay = BehaviorRelay.create(0)!!
@@ -62,7 +59,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
             XLog.tag("BatchAddPresenter").enableStackTrace(2).e(throwable)
         }
 
-        scope.launch(Dispatchers.IO + handler) {
+        presenterScope.launch(Dispatchers.IO + handler) {
             val succeeded = mutableListOf<String>()
             val failed = mutableListOf<String>()
 

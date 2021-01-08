@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -57,6 +58,11 @@ class ConfiguringDialogController : DialogController() {
     override fun onDestroyView(view: View) {
         super.onDestroyView(view)
         materialDialog = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        scope.cancel()
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
