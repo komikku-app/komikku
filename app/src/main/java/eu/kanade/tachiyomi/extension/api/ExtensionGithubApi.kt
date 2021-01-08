@@ -9,9 +9,8 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.source.BlacklistedSources
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
@@ -25,7 +24,7 @@ internal class ExtensionGithubApi {
     private val preferences: PreferencesHelper by injectLazy()
 
     suspend fun findExtensions(): List<Extension.Available> {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             networkService.client
                 .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
                 .await()
