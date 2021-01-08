@@ -30,9 +30,6 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.injectLazy
 
 class PreMigrationController(bundle: Bundle? = null) :
