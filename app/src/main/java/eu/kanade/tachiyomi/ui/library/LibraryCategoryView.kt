@@ -233,7 +233,12 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         unsubscribe()
     }
 
-    fun unsubscribe() {
+    fun onDestroy() {
+        unsubscribe()
+        scope.cancel()
+    }
+
+    private fun unsubscribe() {
         subscriptions.clear()
         // EXH -->
         supervisorScope.cancel()
