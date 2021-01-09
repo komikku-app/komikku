@@ -171,12 +171,17 @@ class MigrationListController(bundle: Bundle? = null) :
                                             }
 
                                             if (searchResult != null && !(searchResult.url == mangaObj.url && source.id == mangaObj.source)) {
-                                                val localManga =
-                                                    smartSearchEngine.networkToLocalManga(
-                                                        searchResult,
-                                                        source.id
-                                                    )
-                                                val chapters = (if (source is EHentai) source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle) else source.getChapterList(localManga.toMangaInfo()))
+                                                val localManga = smartSearchEngine.networkToLocalManga(
+                                                    searchResult,
+                                                    source.id
+                                                )
+
+                                                val chapters = if (source is EHentai) {
+                                                    source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle)
+                                                } else {
+                                                    source.getChapterList(localManga.toMangaInfo())
+                                                }
+
                                                 try {
                                                     syncChaptersWithSource(db, chapters.map { it.toSChapter() }, localManga, source)
                                                 } catch (e: Exception) {

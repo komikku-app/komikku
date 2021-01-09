@@ -70,6 +70,7 @@ import eu.kanade.tachiyomi.util.view.showBar
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
+import exh.isEhBasedSource
 import exh.util.defaultReaderType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -499,7 +500,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                         // If we are using EHentai/ExHentai, get a new image URL
                         presenter.manga?.let { m ->
                             val src = sourceManager.get(m.source)
-                            if (src is EHentai) {
+                            if (src?.isEhBasedSource() == true) {
                                 page.imageUrl = null
                             }
                         }
