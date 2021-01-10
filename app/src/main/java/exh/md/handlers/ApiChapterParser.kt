@@ -6,6 +6,7 @@ import exh.md.utils.MdUtil
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 
@@ -31,7 +32,7 @@ class ApiChapterParser {
     fun externalParse(response: Response): String {
         val jsonData = response.body!!.string()
         val json = Json.decodeFromString<JsonObject>(jsonData)
-        val external = json["external"]!!.jsonPrimitive.content
+        val external = json["data"]!!.jsonObject["pages"]!!.jsonPrimitive.content
         return external.substringAfterLast("/")
     }
 }
