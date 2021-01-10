@@ -390,6 +390,7 @@ class FavoritesSyncHelper(val context: Context) {
                 val errorString = context.getString(R.string.favorites_sync_failed_to_add_to_local) + when (result) {
                     is GalleryAddEvent.Fail.Error -> context.getString(R.string.favorites_sync_failed_to_add_to_local_error, it.title, result.logMessage)
                     is GalleryAddEvent.Fail.UnknownType -> context.getString(R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl)
+                    is GalleryAddEvent.Fail.UnknownSource -> context.getString(R.string.favorites_sync_failed_to_add_to_local_unknown_type, it.title, result.galleryUrl)
                 }
 
                 if (prefs.exhLenientSync().get()) {
