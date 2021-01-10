@@ -26,7 +26,6 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.util.isLocal
-import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -778,7 +777,7 @@ class ReaderPresenter(
         val trackManager = Injekt.get<TrackManager>()
 
         launchIO {
-            db.getTracks(manga).await()
+            db.getTracks(manga).executeAsBlocking()
                 .mapNotNull { track ->
                     val service = trackManager.getService(track.sync_id)
                     if (service != null && service.isLogged && chapterRead > track.last_chapter_read /* SY --> */ && ((service.id == TrackManager.MDLIST && track.status != FollowStatus.UNFOLLOWED.int) || service.id != TrackManager.MDLIST)/* SY <-- */) {
@@ -789,7 +788,7 @@ class ReaderPresenter(
                         async {
                             runCatching {
                                 service.update(track)
-                                db.insertTrack(track).await()
+                                db.insertTrack(track).executeAsBlocking()
                             }
                         }
                     } else {
@@ -797,8 +796,8 @@ class ReaderPresenter(
                     }
                 }
                 .awaitAll()
-                .filter { it.isFailure }
-                .forEach { it.exceptionOrNull()?.let { e -> Timber.w(e) } }
+                .mapNotNull { it.exceptionOrNull() }
+                .forEach { Timber.w(it) }
         }
     }
 

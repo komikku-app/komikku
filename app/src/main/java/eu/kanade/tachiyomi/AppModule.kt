@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi
 
 import android.app.Application
+import android.os.Handler
 import com.google.gson.Gson
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -13,8 +14,6 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.eh.EHentaiUpdateHelper
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
@@ -56,19 +55,20 @@ class AppModule(val app: Application) : InjektModule {
         // SY <--
 
         // Asynchronously init expensive components for a faster cold start
+        Handler().post {
+            get<PreferencesHelper>()
 
-        GlobalScope.launch { get<PreferencesHelper>() }
+            get<NetworkHelper>()
 
-        GlobalScope.launch { get<NetworkHelper>() }
+            get<SourceManager>()
 
-        GlobalScope.launch { get<SourceManager>() }
+            get<DatabaseHelper>()
 
-        GlobalScope.launch { get<DatabaseHelper>() }
+            get<DownloadManager>()
 
-        GlobalScope.launch { get<DownloadManager>() }
-
-        // SY -->
-        GlobalScope.launch { get<CustomMangaManager>() }
-        // SY <--
+            // SY -->
+            get<CustomMangaManager>()
+            // SY <--
+        }
     }
 }
