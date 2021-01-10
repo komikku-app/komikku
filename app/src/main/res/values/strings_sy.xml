@@ -436,6 +436,7 @@
     <string name="batch_add_summary">\nSummary:\nAdded: %1$d gallerie(s)\nFailed: %2$d gallerie(s)</string>
     <string name="batch_add_success_log_message">Added manga: %1$s</string>
     <string name="batch_add_unknown_type_log_message">Unknown manga type for manga: %1$s</string>
+    <string name="batch_add_unknown_source_log_message">Unknown source for manga: %1$s</string>
     <string name="batch_add_not_exist_log_message">Manga does not exist: %1$s</string>
     <string name="gallery_adder_importing_manga">Importing manga (url: %1$s, fav: %2$s, forceSource: %3$s)…</string>
     <string name="gallery_adder_source_uri_must_match">Source URI match check error!</string>

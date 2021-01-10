@@ -63,7 +63,7 @@ class GalleryAdder {
             val source = if (forceSource != null) {
                 try {
                     if (forceSource.matchesUri(uri)) forceSource
-                    else return GalleryAddEvent.Fail.UnknownType(url, context)
+                    else return GalleryAddEvent.Fail.UnknownSource(url, context)
                 } catch (e: Exception) {
                     logger.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
                     return GalleryAddEvent.Fail.UnknownType(url, context)
@@ -78,7 +78,7 @@ class GalleryAdder {
                         } catch (e: Exception) {
                             false
                         }
-                    } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
+                    } ?: return GalleryAddEvent.Fail.UnknownSource(url, context)
             }
 
             val realChapterUrl = try {
@@ -212,5 +212,9 @@ sealed class GalleryAddEvent {
 
         class NotFound(galleryUrl: String, context: Context) :
             Error(galleryUrl, context.getString(R.string.batch_add_not_exist_log_message, galleryUrl))
+
+        class UnknownSource(override val galleryUrl: String, val context: Context) : Fail() {
+            override val logMessage = context.getString(R.string.batch_add_unknown_source_log_message, galleryUrl)
+        }
     }
 }
