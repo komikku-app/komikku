@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.md.handlers.serializers.FollowPage
+import exh.md.handlers.serializers.FollowsIndividualSerializer
 import exh.md.handlers.serializers.FollowsPageSerializer
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
@@ -50,10 +51,10 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             )
         } catch (e: Exception) {
             XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
-            FollowsPageSerializer(emptyList())
+            FollowsPageSerializer(404, emptyList())
         }
 
-        if (followsPageResult.data.isEmpty()) {
+        if (followsPageResult.data.isNullOrEmpty() || followsPageResult.code != 200) {
             return MetadataMangasPage(emptyList(), false, emptyList())
         }
         val lowQualityCovers = if (forceHd) false else useLowQualityCovers
@@ -75,20 +76,25 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
 
     private fun followStatusParse(response: Response): Track {
         val followsPageResult = try {
-            MdUtil.jsonParser.decodeFromString(
+            MdUtil.jsonParser.decodeFromString<FollowsIndividualSerializer>(
                 response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
             XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
-            FollowsPageSerializer(emptyList())
+            throw e
         }
+
+        if (followsPageResult.data == null) {
+            throw Exception("Invalid response  ${followsPageResult.code}")
+        }
+
         val track = Track.create(TrackManager.MDLIST)
-        if (followsPageResult.data.isEmpty()) {
+        if (followsPageResult.code == 404) {
             track.status = FollowStatus.UNFOLLOWED.int
         } else {
-            val follow = followsPageResult.data.first()
+            val follow = followsPageResult.data
             track.status = follow.followType
-            if (followsPageResult.data[0].chapter.isNotBlank()) {
+            if (follow.chapter.isNotBlank()) {
                 track.last_chapter_read = follow.chapter.toFloat().floor()
             }
             track.tracking_url = MdUtil.baseUrl + follow.mangaId.toString()
@@ -170,7 +176,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_rating&id=$mangaID&rating=${track.score.toInt()}",
                     headers
                 )
-            ).await()
+            ).await().body?.close()
 
             withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
         }
