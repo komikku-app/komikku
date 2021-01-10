@@ -40,7 +40,6 @@ import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController

@@ -21,14 +21,14 @@ import okhttp3.Request
 import rx.Observable
 import tachiyomi.source.model.MangaInfo
 
-class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: List<String>, val forceLatestCovers: Boolean = false) {
+class MangaHandler(val client: OkHttpClient, val headers: Headers, val lang: String, val forceLatestCovers: Boolean = false) {
 
     // TODO make use of this
     suspend fun fetchMangaAndChapterDetails(manga: MangaInfo, sourceId: Long): Pair<MangaInfo, List<SChapter>> {
         return withContext(Dispatchers.IO) {
             val response = client.newCall(apiRequest(manga.toSManga())).await()
             val covers = getCovers(manga, forceLatestCovers)
-            val parser = ApiMangaParser(langs)
+            val parser = ApiMangaParser(lang)
 
             val jsonData = withContext(Dispatchers.IO) { response.body!!.string() }
             if (response.code != 200) {
@@ -58,7 +58,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
         return withContext(Dispatchers.IO) {
             val request = GET(MdUtil.apiUrl + MdUtil.newApiChapter + urlChapterId + MdUtil.apiChapterSuffix, headers, CacheControl.FORCE_NETWORK)
             val response = client.newCall(request).await()
-            ApiMangaParser(langs).chapterParseForMangaId(response)
+            ApiMangaParser(lang).chapterParseForMangaId(response)
         }
     }
 
@@ -66,7 +66,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
         return withContext(Dispatchers.IO) {
             val response = client.newCall(apiRequest(manga.toSManga())).await()
             val covers = getCovers(manga, forceLatestCovers)
-            ApiMangaParser(langs).parseToManga(manga, response, covers, sourceId)
+            ApiMangaParser(lang).parseToManga(manga, response, covers, sourceId)
         }
     }
 
@@ -81,7 +81,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
                 }
             }
             .flatMap {
-                ApiMangaParser(langs).parseToManga(manga, it.first, it.second).andThen(
+                ApiMangaParser(lang).parseToManga(manga, it.first, it.second).andThen(
                     Observable.just(
                         manga.apply {
                             initialized = true
@@ -95,14 +95,14 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
         return client.newCall(apiRequest(manga))
             .asObservableSuccess()
             .map { response ->
-                ApiMangaParser(langs).chapterListParse(response)
+                ApiMangaParser(lang).chapterListParse(response)
             }
     }
 
     suspend fun fetchChapterList(manga: SManga): List<SChapter> {
         return withContext(Dispatchers.IO) {
             val response = client.newCall(apiRequest(manga)).await()
-            ApiMangaParser(langs).chapterListParse(response)
+            ApiMangaParser(lang).chapterListParse(response)
         }
     }
 
@@ -110,14 +110,14 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val langs: Li
         return client.newCall(randomMangaRequest())
             .asObservableSuccess()
             .map { response ->
-                ApiMangaParser(langs).randomMangaIdParse(response)
+                ApiMangaParser(lang).randomMangaIdParse(response)
             }
     }
 
     suspend fun fetchRandomMangaId(): String {
         return withContext(Dispatchers.IO) {
             val response = client.newCall(randomMangaRequest()).await()
-            ApiMangaParser(langs).randomMangaIdParse(response)
+            ApiMangaParser(lang).randomMangaIdParse(response)
         }
     }
 

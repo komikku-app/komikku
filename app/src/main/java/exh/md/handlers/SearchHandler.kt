@@ -18,7 +18,7 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 // Unused, kept for reference todo
-class SearchHandler(val client: OkHttpClient, private val headers: Headers, val langs: List<String>, private val useLowQualityCovers: Boolean) {
+class SearchHandler(val client: OkHttpClient, private val headers: Headers, val lang: String, private val useLowQualityCovers: Boolean) {
 
     fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         return when {
@@ -29,7 +29,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                     .map { response ->
                         val details = SManga.create()
                         details.url = "/manga/$realQuery/"
-                        ApiMangaParser(langs).parseToManga(details, response, emptyList()).await()
+                        ApiMangaParser(lang).parseToManga(details, response, emptyList()).await()
                         MangasPage(listOf(details), false)
                     }
             }

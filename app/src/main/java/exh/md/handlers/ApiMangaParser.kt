@@ -29,7 +29,7 @@ import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class ApiMangaParser(private val langs: List<String>) {
+class ApiMangaParser(private val lang: String) {
     val db: DatabaseHelper get() = Injekt.get()
 
     val metaClass = MangaDexSearchMetadata::class
@@ -186,7 +186,7 @@ class ApiMangaParser(private val langs: List<String>) {
 
     private fun filterChapterForChecking(serializer: ApiMangaSerializer): List<ChapterSerializer> {
         return serializer.data.chapters.asSequence()
-            .filter { langs.contains(it.language) }
+            .filter { lang == it.language }
             .filter {
                 it.chapter?.let { chapterNumber ->
                     if (chapterNumber.toDoubleOrNull() == null) {
@@ -244,9 +244,9 @@ class ApiMangaParser(private val langs: List<String>) {
 
         // Skip chapters that don't match the desired language, or are future releases
 
-        val chapLangs = MdLang.values().filter { langs.contains(it.dexLang) }
+        val chapLangs = MdLang.values().filter { lang == it.dexLang }
         return networkChapters.asSequence()
-            .filter { langs.contains(it.language) && (it.timestamp * 1000) <= now }
+            .filter { lang == it.language && (it.timestamp * 1000) <= now }
             .map { mapChapter(it, finalChapterNumber, status, chapLangs, networkChapters.size, groups) }.toList()
     }
 

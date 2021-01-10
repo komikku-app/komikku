@@ -119,20 +119,20 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override suspend fun mapChapterUrlToMangaUrl(uri: Uri): String? {
         val id = uri.pathSegments.getOrNull(2) ?: return null
-        val mangaId = MangaHandler(client, headers, listOf(mdLang)).getMangaIdFromChapterId(id)
+        val mangaId = MangaHandler(client, headers, mdLang).getMangaIdFromChapterId(id)
         return MdUtil.mapMdIdToMangaUrl(mangaId)
     }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).fetchMangaDetailsObservable(manga)
+        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).fetchMangaDetailsObservable(manga)
     }
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).getMangaDetails(manga, id)
+        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).getMangaDetails(manga, id)
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return MangaHandler(client, headers, listOf(mdLang), preferences.mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
+        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
     }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
@@ -165,7 +165,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
-        ApiMangaParser(listOf(mdLang)).parseIntoMetadata(metadata, input, emptyList())
+        ApiMangaParser(mdLang).parseIntoMetadata(metadata, input, emptyList())
     }
 
     override suspend fun fetchFollows(): MangasPage {
@@ -272,7 +272,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun fetchRandomMangaUrl(): String {
-        return MangaHandler(client, headers, listOf(mdLang)).fetchRandomMangaId()
+        return MangaHandler(client, headers, mdLang).fetchRandomMangaId()
     }
 
     fun fetchMangaSimilar(manga: Manga): Observable<MangasPage> {
