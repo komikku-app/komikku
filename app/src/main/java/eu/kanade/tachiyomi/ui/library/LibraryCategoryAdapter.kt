@@ -177,6 +177,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     manga.title.contains(query, true) ||
                         (manga.author?.contains(query, true) == true) ||
                         (manga.artist?.contains(query, true) == true) ||
+                        (manga.description?.contains(query, true) == true) ||
                         (source?.name?.contains(query, true) == true) ||
                         (hasLoggedServices && tracks != null && filterTracks(query, tracks)) ||
                         (genre.any { it.contains(query, true) }) ||
@@ -201,6 +202,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                         (!manga.title.contains(query, true)) &&
                             (!manga.author.orEmpty().contains(query, true)) &&
                             (!manga.artist.orEmpty().contains(query, true)) &&
+                            (!manga.description.orEmpty().contains(query, true)) &&
                             (!source?.name.orEmpty().contains(query, true)) &&
                             (!hasLoggedServices || hasLoggedServices && tracks == null || tracks != null && !filterTracks(query, tracks)) &&
                             (genre.none { it.contains(query, true) }) &&
