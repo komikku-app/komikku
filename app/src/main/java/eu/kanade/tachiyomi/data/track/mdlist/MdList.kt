@@ -16,6 +16,7 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.util.executeOnIO
 import exh.util.floor
 import uy.kohesive.injekt.injectLazy
 
@@ -49,7 +50,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override suspend fun update(track: Track): Track {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        val mangaMetadata = db.getFlatMetadataForManga(track.manga_id).await()
+        val mangaMetadata = db.getFlatMetadataForManga(track.manga_id).executeAsBlocking()
             ?.raise<MangaDexSearchMetadata>()
             ?: throw Exception("Invalid manga metadata")
         val followStatus = FollowStatus.fromInt(track.status) ?: throw Exception("Follow status was not a valid value")
@@ -88,8 +89,8 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
         val remoteTrack = mdex.fetchTrackingInfo(track.tracking_url)
         track.copyPersonalFrom(remoteTrack)
-        if (track.total_chapters == 0 && db.getManga(track.manga_id).await()?.status == SManga.COMPLETED) {
-            track.total_chapters = db.getChapters(track.manga_id).await().maxOfOrNull { it.chapter_number }?.floor() ?: 0
+        if (track.total_chapters == 0 && db.getManga(track.manga_id).executeOnIO()?.status == SManga.COMPLETED) {
+            track.total_chapters = db.getChapters(track.manga_id).executeOnIO().maxOfOrNull { it.chapter_number }?.floor() ?: 0
         }
         return track
     }

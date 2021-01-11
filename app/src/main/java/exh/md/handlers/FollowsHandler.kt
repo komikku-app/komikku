@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.handlers.serializers.FollowPage
 import exh.md.handlers.serializers.FollowsIndividualSerializer
 import exh.md.handlers.serializers.FollowsPageSerializer
@@ -17,8 +18,6 @@ import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.util.floor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import okhttp3.CacheControl
 import okhttp3.FormBody
@@ -122,7 +121,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             title = manga.title
             mdUrl = manga.url
             thumbnail_url = manga.thumbnail_url
-            follow_status = FollowStatus.fromInt(result.followType)?.int
+            follow_status = FollowStatus.fromInt(result.followType).int
         }
     }
 
@@ -130,7 +129,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
      * Change the status of a manga
      */
     suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             val response: Response =
                 if (followStatus == FollowStatus.UNFOLLOWED) {
                     client.newCall(
@@ -153,12 +152,12 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                         .await()
                 }
 
-            withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
+            withIOContext { response.body?.string().isNullOrEmpty() }
         }
     }
 
     suspend fun updateReadingProgress(track: Track): Boolean {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             val mangaID = MdUtil.getMangaId(track.tracking_url)
             val formBody = FormBody.Builder()
                 .add("chapter", track.last_chapter_read.toString())
@@ -178,12 +177,12 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 )
             ).await().body?.close()
 
-            withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
+            withIOContext { response.body?.string().isNullOrEmpty() }
         }
     }
 
     suspend fun updateRating(track: Track): Boolean {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             val mangaID = MdUtil.getMangaId(track.tracking_url)
             val response = client.newCall(
                 GET(
@@ -193,7 +192,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             )
                 .await()
 
-            withContext(Dispatchers.IO) { response.body?.string().isNullOrEmpty() }
+            withIOContext { response.body?.string().isNullOrEmpty() }
         }
     }
 
@@ -201,7 +200,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
      * fetch all manga from all possible pages
      */
     suspend fun fetchAllFollows(forceHd: Boolean): List<Pair<SManga, MangaDexSearchMetadata>> {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             val listManga = mutableListOf<Pair<SManga, MangaDexSearchMetadata>>()
             val response = client.newCall(followsListRequest()).await()
             val mangasPage = followsParseMangaPage(response, forceHd)
@@ -215,7 +214,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     }
 
     suspend fun fetchTrackingInfo(url: String): Track {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             val request = GET(
                 "${MdUtil.apiUrl}${MdUtil.followsMangaApi}" + MdUtil.getMangaId(url),
                 headers,

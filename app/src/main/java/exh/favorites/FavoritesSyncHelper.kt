@@ -84,13 +84,13 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Validate library state
         status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context)
-        val libraryManga = db.getLibraryMangas().await()
+        val libraryManga = db.getLibraryMangas().executeOnIO()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
             if (it.source != EXH_SOURCE_ID && it.source != EH_SOURCE_ID) return@forEach
 
             if (it.id in seenManga) {
-                val inCategories = db.getCategoriesForManga(it).await()
+                val inCategories = db.getCategoriesForManga(it).executeOnIO()
                 status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(it, inCategories, context)
 
                 logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, it.id))

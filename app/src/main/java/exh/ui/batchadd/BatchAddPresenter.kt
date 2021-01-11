@@ -7,6 +7,7 @@ import com.jakewharton.rxrelay.ReplayRelay
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.util.trimOrNull
@@ -14,7 +15,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -65,7 +65,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
 
             splitGalleries.forEachIndexed { i, s ->
                 ensureActive()
-                val result = withContext(Dispatchers.IO) { galleryAdder.addGallery(context, s, true) }
+                val result = withIOContext { galleryAdder.addGallery(context, s, true) }
                 if (result is GalleryAddEvent.Success) {
                     succeeded.add(s)
                 } else {

@@ -17,11 +17,11 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.MERGED_SOURCE_ID
+import exh.util.executeOnIO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -157,7 +157,7 @@ class MigrationProcessHolder(
 
         gradient.isVisible = true
         mangaSourceLabel.text = if (source.id == MERGED_SOURCE_ID) {
-            db.getMergedMangaReferences(manga.id!!).await().map {
+            db.getMergedMangaReferences(manga.id!!).executeOnIO().map {
                 sourceManager.getOrStub(it.mangaSourceId).toString()
             }.distinct().joinToString()
         } else {

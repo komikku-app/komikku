@@ -250,7 +250,7 @@ class MigrationListController(bundle: Bundle? = null) :
                         val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo())
                         result.copyFrom(newManga.toSManga())
 
-                        db.insertManga(result).await()
+                        db.insertManga(result).executeOnIO()
                     } catch (e: CancellationException) {
                         // Ignore cancellations
                         throw e
@@ -365,7 +365,7 @@ class MigrationListController(bundle: Bundle? = null) :
                     val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo())
                     result.copyFrom(newManga.toSManga())
 
-                    db.insertManga(result).await()
+                    db.insertManga(result).executeOnIO()
                 } catch (e: CancellationException) {
                     // Ignore cancellations
                     throw e

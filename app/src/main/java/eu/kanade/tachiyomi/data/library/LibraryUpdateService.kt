@@ -46,6 +46,7 @@ import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.source.getMainSource
+import exh.util.executeOnIO
 import exh.util.nullIfBlank
 import rx.Observable
 import rx.Subscription
@@ -456,11 +457,11 @@ class LibraryUpdateService(
         // SY -->
         if (source is MangaDex && trackManager.mdList.isLogged) {
             runAsObservable({
-                val tracks = db.getTracks(manga).await()
+                val tracks = db.getTracks(manga).executeOnIO()
                 if (tracks.isEmpty() || tracks.none { it.sync_id == TrackManager.MDLIST }) {
                     var track = trackManager.mdList.createInitialTracker(manga)
                     track = trackManager.mdList.refresh(track)
-                    db.insertTrack(track).await()
+                    db.insertTrack(track).executeOnIO()
                 }
             })
                 .onErrorResumeNext { Observable.just(Unit) }

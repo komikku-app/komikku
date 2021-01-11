@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
-import eu.kanade.tachiyomi.util.lang.await
 import exh.isMetadataSource
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
@@ -115,7 +114,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     // Prepare filter object
                     val parsedQuery = searchEngine.parseQuery(savedSearchText)
 
-                    val mangaWithMetaIdsQuery = db.getIdsOfFavoriteMangaWithMetadata().await()
+                    val mangaWithMetaIdsQuery = db.getIdsOfFavoriteMangaWithMetadata().executeAsBlocking()
                     val mangaWithMetaIds = LongArray(mangaWithMetaIdsQuery.count)
                     if (mangaWithMetaIds.isNotEmpty()) {
                         val mangaIdCol = mangaWithMetaIdsQuery.getColumnIndex(MangaTable.COL_ID)
@@ -138,8 +137,8 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                                 // No meta? Filter using title
                                 filterManga(parsedQuery, item.manga)
                             } else {
-                                val tags = db.getSearchTagsForManga(mangaId).await()
-                                val titles = db.getSearchTitlesForManga(mangaId).await()
+                                val tags = db.getSearchTagsForManga(mangaId).executeAsBlocking()
+                                val titles = db.getSearchTitlesForManga(mangaId).executeAsBlocking()
                                 filterManga(parsedQuery, item.manga, false, tags, titles)
                             }
                         } else {
@@ -167,7 +166,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
 
     private suspend fun filterManga(queries: List<QueryComponent>, manga: LibraryManga, checkGenre: Boolean = true, searchTags: List<SearchTag>? = null, searchTitles: List<SearchTitle>? = null): Boolean {
         val mappedQueries = queries.groupBy { it.excluded }
-        val tracks = if (hasLoggedServices) db.getTracks(manga).await().toList() else null
+        val tracks = if (hasLoggedServices) db.getTracks(manga).executeAsBlocking().toList() else null
         val source = sourceManager.get(manga.source)
         val genre = if (checkGenre) manga.getGenres().orEmpty() else emptyList()
         val hasNormalQuery = mappedQueries[false]?.all { queryComponent ->

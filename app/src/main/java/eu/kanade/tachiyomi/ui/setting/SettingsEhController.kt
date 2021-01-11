@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.EhDialogCategoriesBinding
 import eu.kanade.tachiyomi.databinding.EhDialogLanguagesBinding
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -641,10 +640,10 @@ class SettingsEhController : SettingsController() {
                                 context.getString(R.string.gallery_updater_stats_text, getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context), stats.updateCount, stats.possibleUpdates)
                             } else context.getString(R.string.gallery_updater_not_ran_yet)
 
-                            val allMeta = db.getFavoriteMangaWithMetadata().await().filter {
+                            val allMeta = db.getFavoriteMangaWithMetadata().executeAsBlocking().filter {
                                 it.source == EH_SOURCE_ID || it.source == EXH_SOURCE_ID
                             }.mapNotNull {
-                                db.getFlatMetadataForManga(it.id!!).await()
+                                db.getFlatMetadataForManga(it.id!!).executeAsBlocking()
                                     ?.raise<EHentaiSearchMetadata>()
                             }.toList()
 

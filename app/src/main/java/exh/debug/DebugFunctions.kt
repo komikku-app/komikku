@@ -21,6 +21,7 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.savedsearches.JsonSavedSearch
 import exh.util.cancellable
+import exh.util.executeOnIO
 import exh.util.jobScheduler
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
@@ -51,7 +52,7 @@ object DebugFunctions {
 
     fun resetAgedFlagInEXHManga() {
         runBlocking {
-            val metadataManga = db.getFavoriteMangaWithMetadata().await()
+            val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
@@ -60,7 +61,7 @@ object DebugFunctions {
             }.toList()
 
             allManga.forEach { manga ->
-                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 // remove age flag
                 meta.aged = false
                 db.insertFlatMetadata(meta.flatten()).await()
@@ -74,7 +75,7 @@ object DebugFunctions {
     fun resetEHGalleriesForUpdater() {
         throttleManager.resetThrottle()
         runBlocking {
-            val metadataManga = db.getFavoriteMangaWithMetadata().await()
+            val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
@@ -104,7 +105,7 @@ object DebugFunctions {
     fun getEHMangaListWithAgedFlagInfo(): String {
         val galleries = mutableListOf(String())
         runBlocking {
-            val metadataManga = db.getFavoriteMangaWithMetadata().await()
+            val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
@@ -113,7 +114,7 @@ object DebugFunctions {
             }.toList()
 
             allManga.forEach { manga ->
-                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 galleries += "Aged: ${meta.aged}\t Title: ${manga.title}"
             }
         }
@@ -123,7 +124,7 @@ object DebugFunctions {
     fun countAgedFlagInEXHManga(): Int {
         var agedAmount = 0
         runBlocking {
-            val metadataManga = db.getFavoriteMangaWithMetadata().await()
+            val metadataManga = db.getFavoriteMangaWithMetadata().executeAsBlocking()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
@@ -132,7 +133,7 @@ object DebugFunctions {
             }.toList()
 
             allManga.forEach { manga ->
-                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 if (meta.aged) {
                     // remove age flag
                     agedAmount++

@@ -8,15 +8,13 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SMangaImpl
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
-import eu.kanade.tachiyomi.util.lang.asObservable
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.log.maybeInjectEHLogger
 import exh.util.MangaType
 import exh.util.mangaType
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -32,6 +30,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import timber.log.Timber
 
@@ -55,7 +54,7 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
             .toString()
 
         val response = client.newCall(GET(apiUrl)).await()
-        val body = withContext(Dispatchers.IO) { response.body?.string() } ?: throw Exception("Null Response")
+        val body = withIOContext { response.body?.string() } ?: throw Exception("Null Response")
         val data = Json.decodeFromString<JsonObject>(body)
         val recommendations = data["recommendations"] as? JsonArray
         return recommendations?.filterIsInstance<JsonObject>()?.map { rec ->
@@ -79,7 +78,7 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
             .toString()
 
         val response = client.newCall(GET(url)).await()
-        val body = withContext(Dispatchers.IO) { response.body?.string() } ?: throw Exception("Null Response")
+        val body = withIOContext { response.body?.string() } ?: throw Exception("Null Response")
         val data = Json.decodeFromString<JsonObject>(body)
         val results = data["results"] as? JsonArray
         if (results.isNullOrEmpty()) {
@@ -167,7 +166,7 @@ class Anilist : API("https://graphql.anilist.co/") {
         val payloadBody = payload.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
         val response = client.newCall(POST(endpoint, body = payloadBody)).await()
-        val body = withContext(Dispatchers.IO) { response.body?.string() } ?: throw Exception("Null Response")
+        val body = withIOContext { response.body?.string() } ?: throw Exception("Null Response")
         val data = Json.decodeFromString<JsonObject>(body)["data"] as? JsonObject ?: throw Exception("Unexpected response")
 
         val media = data["Page"]?.jsonObject?.get("media")?.jsonArray
@@ -203,7 +202,7 @@ open class RecommendsPager(
     private var preferredApi: API = API.MYANIMELIST
 ) : Pager() {
     override fun requestNext(): Observable<MangasPage> {
-        return flow {
+        return runAsObservable({
             if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
 
             val apiList = API_MAP.toList().sortedByDescending { it.first == preferredApi }
@@ -223,19 +222,17 @@ open class RecommendsPager(
                 .firstOrNull { it.isNotEmpty() }
                 .orEmpty()
 
-            val page = MangasPage(recs, false)
-            emit(page)
-        }
-            .onEach {
-                withContext(Dispatchers.Main) {
-                    if (it.mangas.isNotEmpty()) {
-                        onPageReceived(it)
-                    } else {
-                        throw NoResultsException()
-                    }
-                }
-            }.asObservable()
+            MangasPage(recs, false)
+        })
             .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnNext {
+                if (it.mangas.isNotEmpty()) {
+                    onPageReceived(it)
+                } else {
+                    throw NoResultsException()
+                }
+            }
     }
 
     companion object {

@@ -28,6 +28,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.cancellable
+import exh.util.executeOnIO
 import exh.util.jobScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -136,7 +137,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
         val startTime = System.currentTimeMillis()
 
         logger.d("Finding manga with metadata...")
-        val metadataManga = db.getFavoriteMangaWithMetadata().await()
+        val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
         logger.d("Filtering manga and raising metadata...")
         val curTime = System.currentTimeMillis()
@@ -145,7 +146,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                 return@mapNotNull null
             }
 
-            val meta = db.getFlatMetadataForManga(manga.id!!).await()
+            val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()
                 ?: return@mapNotNull null
 
             val raisedMeta = meta.raise<EHentaiSearchMetadata>()
@@ -155,7 +156,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                 return@mapNotNull null
             }
 
-            val chapter = db.getChapters(manga.id!!).await().minByOrNull {
+            val chapter = db.getChapters(manga.id!!).executeOnIO().minByOrNull {
                 it.date_upload
             }
 
@@ -265,16 +266,16 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
         try {
             val updatedManga = source.getMangaDetails(manga.toMangaInfo())
             manga.copyFrom(updatedManga.toSManga())
-            db.insertManga(manga).await()
+            db.insertManga(manga).executeOnIO()
 
             val newChapters = source.getChapterList(manga.toMangaInfo())
                 .map { it.toSChapter() }
 
             val (new, _) = syncChaptersWithSource(db, newChapters, manga, source) // Not suspending, but does block, maybe fix this?
-            return new to db.getChapters(manga).await()
+            return new to db.getChapters(manga).executeOnIO()
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {
-                val meta = db.getFlatMetadataForManga(manga.id!!).await()?.raise<EHentaiSearchMetadata>()
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>()
                 if (meta != null) {
                     // Age dead galleries
                     logger.d("Aged %s - notfound", manga.id)

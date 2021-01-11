@@ -19,8 +19,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.isLocal
-import eu.kanade.tachiyomi.util.lang.await
-import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -32,6 +31,7 @@ import exh.MERGED_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import exh.util.executeOnIO
 import exh.util.isLewd
 import exh.util.nullIfBlank
 import kotlinx.coroutines.runBlocking
@@ -499,10 +499,10 @@ class LibraryPresenter(
         mangas.forEach { manga ->
             launchIO {
                 /* SY --> */ val chapters = if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
-                    val chapter = db.getChapters(manga).await().minByOrNull { it.source_order }
+                    val chapter = db.getChapters(manga).executeOnIO().minByOrNull { it.source_order }
                     if (chapter != null && !chapter.read) listOf(chapter) else emptyList()
                 } else if (manga.source == MERGED_SOURCE_ID) {
-                    (sourceManager.getOrStub(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull()?.filter { !it.read }.orEmpty()
+                    (sourceManager.getOrStub(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingle()?.filter { !it.read }.orEmpty()
                 } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
                     .filter { !it.read }
 
@@ -557,7 +557,7 @@ class LibraryPresenter(
     fun markReadStatus(mangas: List<Manga>, read: Boolean) {
         mangas.forEach { manga ->
             launchIO {
-                val chapters = if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingleOrNull().orEmpty() else db.getChapters(manga).executeAsBlocking()
+                val chapters = if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingle().orEmpty() else db.getChapters(manga).executeAsBlocking()
                 chapters.forEach {
                     it.read = read
                     if (!read) {
@@ -612,7 +612,7 @@ class LibraryPresenter(
                     val source = sourceManager.get(manga.source) as? HttpSource
                     if (source != null) {
                         if (source is MergedSource) {
-                            val mergedMangas = db.getMergedMangas(manga.id!!).await()
+                            val mergedMangas = db.getMergedMangas(manga.id!!).executeAsBlocking()
                             val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
                             mergedMangas.forEach merge@{ mergedManga ->
                                 val mergedSource = sources.firstOrNull { mergedManga.source == it.id } ?: return@merge
@@ -644,7 +644,7 @@ class LibraryPresenter(
     // SY -->
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
-        val chapters = (if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource).let { runBlocking { it?.getChaptersFromDB(manga)?.awaitSingleOrNull().orEmpty() } } else db.getChapters(manga).executeAsBlocking())
+        val chapters = (if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource).let { runBlocking { it?.getChaptersFromDB(manga)?.awaitSingle().orEmpty() } } else db.getChapters(manga).executeAsBlocking())
         return if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
             val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
             if (chapter?.read == false) chapter else null

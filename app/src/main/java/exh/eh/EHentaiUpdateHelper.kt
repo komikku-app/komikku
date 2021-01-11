@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.ChapterImpl
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
-import eu.kanade.tachiyomi.util.lang.await
+import exh.util.executeOnIO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -33,13 +33,13 @@ class EHentaiUpdateHelper(context: Context) {
         val chainsFlow = flowOf(chapters)
             .map { chapterList ->
                 chapterList.flatMap { chapter ->
-                    db.getChapters(chapter.url).await().mapNotNull { it.manga_id }
+                    db.getChapters(chapter.url).executeOnIO().mapNotNull { it.manga_id }
                 }.distinct()
             }
             .map { mangaIds ->
                 mangaIds
                     .mapNotNull { mangaId ->
-                        (db.getManga(mangaId).await() ?: return@mapNotNull null) to db.getChapters(mangaId).await()
+                        (db.getManga(mangaId).executeOnIO() ?: return@mapNotNull null) to db.getChapters(mangaId).executeOnIO()
                     }
                     .map {
                         ChapterChain(it.first, it.second)

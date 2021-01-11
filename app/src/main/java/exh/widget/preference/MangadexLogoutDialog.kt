@@ -11,10 +11,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchNow
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.toast
 import exh.source.getMainSource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -37,7 +36,7 @@ class MangadexLogoutDialog(bundle: Bundle? = null) : DialogController(bundle) {
             .positiveButton(R.string.logout) {
                 launchNow {
                     source?.let { source ->
-                        val loggedOut = withContext(Dispatchers.IO) { source.logout() }
+                        val loggedOut = withIOContext { source.logout() }
 
                         if (loggedOut) {
                             trackManager.mdList.logout()

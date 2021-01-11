@@ -29,7 +29,7 @@ import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.lang.asObservable
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.md.MangaDexFabHeaderAdapter
@@ -48,7 +48,6 @@ import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import exh.widget.preference.MangadexLoginDialog
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.CacheControl
 import okhttp3.FormBody
@@ -207,7 +206,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 )
             ).await()
 
-            response.body!!.string().let {
+            withContext(Dispatchers.IO) { response.body!!.string() }.let {
                 if (it.isEmpty()) {
                     true
                 } else {
@@ -230,9 +229,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             }
             val result = client.newCall(
                 POST("${MdUtil.baseUrl}/ajax/actions.ajax.php?function=logout", headers).newBuilder().addHeader(REMEMBER_ME, token).build()
-            ).execute()
-            val resultStr = result.body!!.string()
-            if (resultStr.contains("success", true)) {
+            ).await()
+            val resultStr = withContext(Dispatchers.IO) { result.body?.string() }
+            if (resultStr?.contains("success", true) == true) {
                 network.cookieManager.remove(httpUrl)
                 trackManager.mdList.logout()
                 return@withContext true
@@ -282,10 +281,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
         when {
             query.toIntOrNull() != null -> {
-                flow {
-                    emit(GalleryAdder().addGallery(context, MdUtil.baseUrl + MdUtil.mapMdIdToMangaUrl(query.toInt()), false, this@MangaDex))
-                }
-                    .asObservable()
+                runAsObservable({
+                    GalleryAdder().addGallery(context, MdUtil.baseUrl + MdUtil.mapMdIdToMangaUrl(query.toInt()), false, this@MangaDex)
+                })
                     .map { res ->
                         MangasPage(
                             (

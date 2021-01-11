@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import eu.kanade.tachiyomi.util.system.notificationManager
 import exh.md.similar.sql.models.MangaSimilarImpl
@@ -28,7 +29,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okio.buffer
 import okio.sink
 import okio.source
@@ -149,7 +149,7 @@ class SimilarUpdateService(
     /**
      * Method that updates the similar database for manga
      */
-    private suspend fun updateSimilar() = withContext(Dispatchers.IO) {
+    private suspend fun updateSimilar() = withIOContext {
         val response = client
             .newCall(GET(similarUrl))
             .await()
@@ -157,7 +157,7 @@ class SimilarUpdateService(
             throw Exception("Error trying to download similar file")
         }
         val destinationFile = File(filesDir, "neko-similar.json")
-        val buffer = withContext(Dispatchers.IO) { destinationFile.sink().buffer() }
+        val buffer = withIOContext { destinationFile.sink().buffer() }
 
         // write json to file
         response.body?.byteStream()?.source()?.use { input ->

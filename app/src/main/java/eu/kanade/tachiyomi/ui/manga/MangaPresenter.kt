@@ -143,7 +143,7 @@ class MangaPresenter(
 
         // SY -->
         if (source is MergedSource) {
-            launchIO { mergedManga = db.getMergedMangas(manga.id!!).await() }
+            launchIO { mergedManga = db.getMergedMangas(manga.id!!).executeAsBlocking() }
         }
         // SY <--
 
@@ -379,9 +379,9 @@ class MangaPresenter(
     }
 
     suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
-        val originalManga = db.getManga(originalMangaId).await() ?: throw IllegalArgumentException("Unknown manga ID: $originalMangaId")
+        val originalManga = db.getManga(originalMangaId).executeAsBlocking() ?: throw IllegalArgumentException("Unknown manga ID: $originalMangaId")
         if (originalManga.source == MERGED_SOURCE_ID) {
-            val children = db.getMergedMangaReferences(originalMangaId).await()
+            val children = db.getMergedMangaReferences(originalMangaId).executeAsBlocking()
             if (children.any { it.mangaSourceId == manga.source && it.mangaUrl == manga.url }) {
                 throw IllegalArgumentException("This manga is already merged with the current manga!")
             }
@@ -418,7 +418,7 @@ class MangaPresenter(
                 )
             }
 
-            db.insertMergedMangas(mangaReferences).await()
+            db.insertMergedMangas(mangaReferences).executeAsBlocking()
 
             return originalManga
         } else {
@@ -431,30 +431,30 @@ class MangaPresenter(
                 sorting = Manga.SORTING_NUMBER
                 date_added = System.currentTimeMillis()
             }
-            var existingManga = db.getManga(mergedManga.url, mergedManga.source).await()
+            var existingManga = db.getManga(mergedManga.url, mergedManga.source).executeAsBlocking()
             while (existingManga != null) {
                 if (existingManga.favorite) {
                     throw IllegalArgumentException("This merged manga is a duplicate!")
                 } else if (!existingManga.favorite) {
                     withContext(NonCancellable) {
-                        db.deleteManga(existingManga!!).await()
-                        db.deleteMangaForMergedManga(existingManga!!.id!!).await()
+                        db.deleteManga(existingManga!!).executeAsBlocking()
+                        db.deleteMangaForMergedManga(existingManga!!.id!!).executeAsBlocking()
                     }
                 }
-                existingManga = db.getManga(mergedManga.url, mergedManga.source).await()
+                existingManga = db.getManga(mergedManga.url, mergedManga.source).executeAsBlocking()
             }
 
             // Reload chapters immediately
             mergedManga.initialized = false
 
-            val newId = db.insertManga(mergedManga).await().insertedId()
+            val newId = db.insertManga(mergedManga).executeAsBlocking().insertedId()
             if (newId != null) mergedManga.id = newId
 
             db.getCategoriesForManga(originalManga)
-                .await()
+                .executeAsBlocking()
                 .map { MangaCategory.create(mergedManga, it) }
                 .let {
-                    db.insertMangasCategories(it).await()
+                    db.insertMangasCategories(it).executeAsBlocking()
                 }
 
             val originalMangaReference = MergedMangaReference(
@@ -499,7 +499,7 @@ class MangaPresenter(
                 mangaSourceId = MERGED_SOURCE_ID
             )
 
-            db.insertMergedMangas(listOf(originalMangaReference, newMangaReference, mergedMangaReference)).await()
+            db.insertMergedMangas(listOf(originalMangaReference, newMangaReference, mergedMangaReference)).executeAsBlocking()
 
             return mergedManga
         }
@@ -510,9 +510,9 @@ class MangaPresenter(
     fun updateMergeSettings(mergeReference: MergedMangaReference?, mergedMangaReferences: List<MergedMangaReference>) {
         launchIO {
             mergeReference?.let {
-                db.updateMergeMangaSettings(it).await()
+                db.updateMergeMangaSettings(it).executeAsBlocking()
             }
-            if (mergedMangaReferences.isNotEmpty()) db.updateMergedMangaSettings(mergedMangaReferences).await()
+            if (mergedMangaReferences.isNotEmpty()) db.updateMergedMangaSettings(mergedMangaReferences).executeAsBlocking()
         }
     }
 

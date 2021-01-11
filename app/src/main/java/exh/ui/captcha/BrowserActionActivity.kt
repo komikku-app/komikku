@@ -21,12 +21,11 @@ import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.source.DelegatedHttpSource
 import exh.util.melt
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -188,7 +187,7 @@ class BrowserActionActivity : AppCompatActivity() {
         currentLoopId = null
         validateCurrentLoopId = null
         XLog.tag("BrowserActionActivity").enableStackTrace(2).e(IllegalStateException("Captcha solve failure!"))
-        withContext(Dispatchers.Main) {
+        withUIContext {
             binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             MaterialDialog(this@BrowserActionActivity)
                 .title(R.string.captcha_solve_failure)

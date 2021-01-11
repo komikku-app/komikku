@@ -17,16 +17,12 @@ import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.SuspendHttpSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.await
-import eu.kanade.tachiyomi.util.lang.awaitSingleOrNull
+import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.MERGED_SOURCE_ID
 import exh.merged.sql.models.MergedMangaReference
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import exh.util.executeOnIO
 import okhttp3.Response
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
@@ -59,9 +55,9 @@ class MergedSource : SuspendHttpSource() {
     override suspend fun fetchPopularMangaSuspended(page: Int) = throw UnsupportedOperationException()
 
     override suspend fun fetchMangaDetailsSuspended(manga: SManga): SManga {
-        return withContext(Dispatchers.IO) {
-            val mergedManga = db.getManga(manga.url, id).await() ?: throw Exception("merged manga not in db")
-            val mangaReferences = mergedManga.id?.let { withContext(Dispatchers.IO) { db.getMergedMangaReferences(it).await() } } ?: throw Exception("merged manga id is null")
+        return withIOContext {
+            val mergedManga = db.getManga(manga.url, id).executeAsBlocking() ?: throw Exception("merged manga not in db")
+            val mangaReferences = mergedManga.id?.let { db.getMergedMangaReferences(it).executeOnIO() } ?: throw Exception("merged manga id is null")
             if (mangaReferences.isEmpty()) throw IllegalArgumentException("Manga references are empty, info unavailable, merge is likely corrupted")
             if (mangaReferences.size == 1 || run {
                 val mangaReference = mangaReferences.firstOrNull()
@@ -71,7 +67,7 @@ class MergedSource : SuspendHttpSource() {
 
             SManga.create().apply {
                 val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga } ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
-                val dbManga = mangaInfoReference?.let { withContext(Dispatchers.IO) { db.getManga(it.mangaUrl, it.mangaSourceId).await() } }
+                val dbManga = mangaInfoReference?.let { db.getManga(it.mangaUrl, it.mangaSourceId).executeOnIO() }
                 this.copyFrom(dbManga ?: mergedManga)
                 url = manga.url
             }
@@ -82,7 +78,7 @@ class MergedSource : SuspendHttpSource() {
         // TODO more chapter dedupe
         return db.getChaptersByMergedMangaId(manga.id!!).asRxObservable()
             .map { chapterList ->
-                val mangaReferences = runBlocking(Dispatchers.IO) { db.getMergedMangaReferences(manga.id!!).await().orEmpty() }
+                val mangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
                 if (editScanlators) {
                     val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
                     chapterList.onEach { chapter ->
@@ -124,21 +120,21 @@ class MergedSource : SuspendHttpSource() {
     }
 
     suspend fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             fetchChaptersAndSync(manga, downloadChapters)
-            getChaptersFromDB(manga, editScanlators, dedupe).awaitSingleOrNull() ?: emptyList()
+            getChaptersFromDB(manga, editScanlators, dedupe).awaitSingle()
         }
     }
 
     suspend fun fetchChaptersAndSync(manga: Manga, downloadChapters: Boolean = true): Pair<List<Chapter>, List<Chapter>> {
-        val mangaReferences = db.getMergedMangaReferences(manga.id!!).await()
+        val mangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
         if (mangaReferences.isEmpty()) throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
 
         val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(db, preferences)
         return mangaReferences.filter { it.mangaSourceId != MERGED_SOURCE_ID }.map {
             it.load(db, sourceManager)
         }.mapNotNull { loadedManga ->
-            withContext(Dispatchers.IO) {
+            withIOContext {
                 if (loadedManga.manga != null && loadedManga.reference.getChapterUpdates) {
                     loadedManga.source.getChapterList(loadedManga.manga.toMangaInfo())
                         .map { it.toSChapter() }
@@ -166,7 +162,7 @@ class MergedSource : SuspendHttpSource() {
     }
 
     suspend fun MergedMangaReference.load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource {
-        var manga = db.getManga(mangaUrl, mangaSourceId).await()
+        var manga = db.getManga(mangaUrl, mangaSourceId).executeOnIO()
         val source = sourceManager.getOrStub(manga?.source ?: mangaSourceId)
         if (manga == null) {
             manga = Manga.create(mangaSourceId).apply {
@@ -174,9 +170,9 @@ class MergedSource : SuspendHttpSource() {
             }
             manga.copyFrom(source.getMangaDetails(manga.toMangaInfo()).toSManga())
             try {
-                manga.id = db.insertManga(manga).await().insertedId()
+                manga.id = db.insertManga(manga).executeOnIO().insertedId()
                 mangaId = manga.id
-                db.insertNewMergedMangaId(this).await()
+                db.insertNewMergedMangaId(this).executeOnIO()
             } catch (e: Exception) {
                 XLog.tag("MergedSource").enableStackTrace(e.stackTrace.contentToString(), 5)
             }

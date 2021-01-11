@@ -12,12 +12,12 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.injectLazy
 
 class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartSearchBinding, SmartSearchPresenter>() {
@@ -52,7 +52,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
             .onEach { results ->
                 if (results is SmartSearchPresenter.SearchResults.Found) {
                     val transaction = MangaController(results.manga, true, smartSearchConfig).withFadeTransaction()
-                    withContext(Dispatchers.Main) {
+                    withUIContext {
                         router.replaceTopController(transaction)
                     }
                 } else {
@@ -63,7 +63,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
                     }
 
                     val transaction = BrowseSourceController(source, smartSearchConfig.origTitle, smartSearchConfig).withFadeTransaction()
-                    withContext(Dispatchers.Main) {
+                    withUIContext {
                         router.replaceTopController(transaction)
                     }
                 }
