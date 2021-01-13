@@ -21,6 +21,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 import rx.Completable
@@ -253,13 +254,13 @@ class ApiMangaParser(private val lang: String) {
     fun chapterParseForMangaId(response: Response): Int {
         try {
             if (response.code != 200) throw Exception("HTTP error ${response.code}")
-            val body = response.body?.string().orEmpty()
-            if (body.isEmpty()) {
+            val body = response.body?.string()
+            if (body.isNullOrBlank()) {
                 throw Exception("Null Response")
             }
 
             val jsonObject = Json.decodeFromString<JsonObject>(body)
-            return jsonObject["manga_id"]?.jsonPrimitive?.intOrNull ?: throw Exception("No manga associated with chapter")
+            return jsonObject["data"]!!.jsonObject["mangaId"]?.jsonPrimitive?.intOrNull ?: throw Exception("No manga associated with chapter")
         } catch (e: Exception) {
             XLog.tag("ApiMangaParser").enableStackTrace(2).e(e)
             throw e
