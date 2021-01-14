@@ -53,7 +53,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         val mangaMetadata = db.getFlatMetadataForManga(track.manga_id).executeAsBlocking()
             ?.raise<MangaDexSearchMetadata>()
             ?: throw Exception("Invalid manga metadata")
-        val followStatus = FollowStatus.fromInt(track.status) ?: throw Exception("Follow status was not a valid value")
+        val followStatus = FollowStatus.fromInt(track.status)
 
         // allow follow status to update
         if (mangaMetadata.follow_status != followStatus.int) {
@@ -71,6 +71,14 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         if (followStatus != FollowStatus.UNFOLLOWED) {
             if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
                 track.status = FollowStatus.COMPLETED.int
+                mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), FollowStatus.COMPLETED)
+            }
+            if (followStatus == FollowStatus.PLAN_TO_READ && track.last_chapter_read > 0) {
+                val newFollowStatus = FollowStatus.READING
+                track.status = FollowStatus.READING.int
+                mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), newFollowStatus)
+                mangaMetadata.follow_status = newFollowStatus.int
+                db.insertFlatMetadata(mangaMetadata.flatten()).await()
             }
 
             mdex.updateReadingProgress(track)

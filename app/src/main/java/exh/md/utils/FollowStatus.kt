@@ -10,6 +10,6 @@ enum class FollowStatus(val int: Int) {
     RE_READING(6);
 
     companion object {
-        fun fromInt(value: Int): FollowStatus = FollowStatus.values().find { it.int == value } ?: UNFOLLOWED
+        fun fromInt(value: Int): FollowStatus = values().find { it.int == value } ?: UNFOLLOWED
     }
 }
