@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import exh.md.handlers.serializers.ApiChapterSerializer
 import exh.md.handlers.serializers.ApiMangaSerializer
 import exh.md.handlers.serializers.ChapterSerializer
 import exh.md.utils.MdLang
@@ -254,13 +255,10 @@ class ApiMangaParser(private val lang: String) {
     fun chapterParseForMangaId(response: Response): Int {
         try {
             if (response.code != 200) throw Exception("HTTP error ${response.code}")
-            val body = response.body?.string()
-            if (body.isNullOrBlank()) {
-                throw Exception("Null Response")
+            checkNotNull(response.body) {
+                "Null Response"
             }
-
-            val jsonObject = Json.decodeFromString<JsonObject>(body)
-            return jsonObject["data"]!!.jsonObject["mangaId"]?.jsonPrimitive?.intOrNull ?: throw Exception("No manga associated with chapter")
+            return response.parseAs<ApiChapterSerializer>().data.mangaId
         } catch (e: Exception) {
             XLog.tag("ApiMangaParser").enableStackTrace(2).e(e)
             throw e

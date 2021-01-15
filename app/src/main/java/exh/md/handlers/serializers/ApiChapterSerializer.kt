@@ -19,5 +19,6 @@ data class ApiChapterSerializer(
 data class ChapterPageSerializer(
     val hash: String,
     val pages: List<String>,
-    val server: String
+    val server: String,
+    val mangaId: Int
 )
