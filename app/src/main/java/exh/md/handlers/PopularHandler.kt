@@ -1,6 +1,5 @@
 package exh.md.handlers
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -15,15 +14,12 @@ import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.nodes.Element
 import rx.Observable
-import uy.kohesive.injekt.injectLazy
 
 // Unused, kept for reference todo
 /**
  * Returns the latest manga from the updates url since it actually respects the users settings
  */
 class PopularHandler(val client: OkHttpClient, private val headers: Headers, private val useLowQualityCovers: Boolean) {
-
-    private val preferences: PreferencesHelper by injectLazy()
 
     fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return client.newCall(popularMangaRequest(page))
