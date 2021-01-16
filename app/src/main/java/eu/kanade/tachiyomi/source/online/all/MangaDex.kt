@@ -56,12 +56,14 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
 
+@Suppress("OverridingDeprecatedMember")
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     MetadataSource<MangaDexSearchMetadata, Response>,
@@ -112,7 +114,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override fun mapUrlToChapterUrl(uri: Uri): String? {
         if (!uri.pathSegments.firstOrNull().equals("chapter", true)) return null
-        val id = uri.pathSegments.getOrNull(1) ?: return null
+        val id = uri.pathSegments.getOrNull(1)?.toIntOrNull() ?: return null
         return MdUtil.oldApiChapter + id
     }
 
@@ -132,6 +134,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
+    }
+
+    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
+        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).getChapterList(manga)
     }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {

@@ -3,7 +3,7 @@ package exh.md.handlers
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.md.handlers.serializers.ApiMangaSerializer
@@ -26,6 +26,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 import rx.Completable
 import rx.Single
+import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -94,7 +95,7 @@ class ApiMangaParser(private val lang: String) {
     fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, coverUrls: List<String>) {
         with(metadata) {
             try {
-                val networkApiManga = MdUtil.jsonParser.decodeFromString<ApiMangaSerializer>(input.body!!.string())
+                val networkApiManga = input.parseAs<ApiMangaSerializer>(MdUtil.jsonParser)
                 val networkManga = networkApiManga.data.manga
                 mdId = MdUtil.getMangaId(input.request.url.toString())
                 mdUrl = input.request.url.toString()
@@ -222,13 +223,12 @@ class ApiMangaParser(private val lang: String) {
         return MdUtil.getMangaId(randMangaUrl)
     }
 
-    fun chapterListParse(response: Response): List<SChapter> {
-        return chapterListParse(response.body!!.string())
+    fun chapterListParse(response: Response): List<ChapterInfo> {
+        return chapterListParse(response.parseAs<ApiMangaSerializer>(MdUtil.jsonParser))
     }
 
-    fun chapterListParse(jsonData: String): List<SChapter> {
+    fun chapterListParse(networkApiManga: ApiMangaSerializer): List<ChapterInfo> {
         val now = System.currentTimeMillis()
-        val networkApiManga = MdUtil.jsonParser.decodeFromString<ApiMangaSerializer>(jsonData)
         val networkManga = networkApiManga.data.manga
         val networkChapters = networkApiManga.data.chapters
         val groups = networkApiManga.data.groups.mapNotNull {
@@ -245,10 +245,10 @@ class ApiMangaParser(private val lang: String) {
 
         // Skip chapters that don't match the desired language, or are future releases
 
-        val chapLangs = MdLang.values().filter { lang == it.dexLang }
+        val chapLang = MdLang.values().firstOrNull { lang == it.dexLang }
         return networkChapters.asSequence()
             .filter { lang == it.language && (it.timestamp * 1000) <= now }
-            .map { mapChapter(it, finalChapterNumber, status, chapLangs, networkChapters.size, groups) }.toList()
+            .map { mapChapter(it, finalChapterNumber, status, chapLang, networkChapters.size, groups) }.toList()
     }
 
     fun chapterParseForMangaId(response: Response): Int {
@@ -271,14 +271,14 @@ class ApiMangaParser(private val lang: String) {
         networkChapter: ChapterSerializer,
         finalChapterNumber: String?,
         status: Int,
-        chapLangs: List<MdLang>,
+        chapLang: MdLang?,
         totalChapterCount: Int,
         groups: Map<Long, String>
-    ): SChapter {
-        val chapter = SChapter.create()
-        chapter.url = MdUtil.oldApiChapter + networkChapter.id
-        val chapterName = mutableListOf<String>()
+    ): ChapterInfo {
+        val key = MdUtil.oldApiChapter + networkChapter.id
+
         // Build chapter name
+        val chapterName = mutableListOf<String>()
 
         if (!networkChapter.volume.isNullOrBlank()) {
             val vol = "Vol." + networkChapter.volume
@@ -315,19 +315,24 @@ class ApiMangaParser(private val lang: String) {
             }
         }
 
-        chapter.name = MdUtil.cleanString(chapterName.joinToString(" "))
+        val name = MdUtil.cleanString(chapterName.joinToString(" "))
         // Convert from unix time
-        chapter.date_upload = networkChapter.timestamp * 1000
+        val dateUpload = networkChapter.timestamp * 1000
         val scanlatorName = mutableSetOf<String>()
 
         networkChapter.groups.mapNotNull { groups[it] }.forEach { scanlatorName.add(it) }
 
-        chapter.scanlator = MdUtil.cleanString(MdUtil.getScanlatorString(scanlatorName))
+        val scanlator = MdUtil.cleanString(MdUtil.getScanlatorString(scanlatorName))
 
-        // chapter.mangadex_chapter_id = MdUtil.getChapterId(chapter.url)
+        // val mangadexChapterId = MdUtil.getChapterId(chapter.url)
 
-        // chapter.language = chapLangs.firstOrNull { it.dexLang == networkChapter.language }?.name
+        // val language = chapLang?.name
 
-        return chapter
+        return ChapterInfo(
+            key = key,
+            name = name,
+            dateUpload = dateUpload,
+            scanlator = scanlator
+        )
     }
 }

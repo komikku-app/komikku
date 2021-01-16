@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.follows.MangaDexFollowsController
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -38,9 +39,10 @@ class MangaDexFabHeaderAdapter(val controller: BaseController<*>, val source: Ca
             }
             binding.mangadexRandom.clicks()
                 .onEach {
-                    (source as? RandomMangaSource)?.fetchRandomMangaUrl()?.let { randomMangaId ->
-                        controller.router.replaceTopController(BrowseSourceController(source, randomMangaId).withFadeTransaction())
+                    val randomMangaUrl = withIOContext {
+                        (source as? RandomMangaSource)?.fetchRandomMangaUrl()
                     }
+                    controller.router.replaceTopController(BrowseSourceController(source, randomMangaUrl).withFadeTransaction())
                 }.launchIn(controller.viewScope)
         }
     }

@@ -114,9 +114,9 @@ fun OkHttpClient.newCallWithProgress(request: Request, listener: ProgressListene
     return progressClient.newCall(request)
 }
 
-inline fun <reified T> Response.parseAs(): T {
+inline fun <reified T> Response.parseAs(/* SY --> */ json: Json = Injekt.getInstance(fullType<Json>().type) /* SY <-- */): T {
     // Avoiding Injekt.get<Json>() due to compiler issues
-    val json = Injekt.getInstance<Json>(fullType<Json>().type)
+    // val json = Injekt.getInstance<Json>(fullType<Json>().type)
     this.use {
         val responseBody = it.body?.string().orEmpty()
         return json.decodeFromString(responseBody)

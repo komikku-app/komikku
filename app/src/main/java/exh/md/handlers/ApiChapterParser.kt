@@ -1,5 +1,6 @@
 package exh.md.handlers
 
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.handlers.serializers.ApiChapterSerializer
 import exh.md.utils.MdUtil
@@ -11,22 +12,18 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 
 class ApiChapterParser {
+    // Only used in [PageHandler], which means its currently unused, kept for reference
     fun pageListParse(response: Response): List<Page> {
-        val jsonData = response.body!!.string()
-        val networkApiChapter = MdUtil.jsonParser.decodeFromString<ApiChapterSerializer>(jsonData)
-
-        val pages = mutableListOf<Page>()
+        val networkApiChapter = response.parseAs<ApiChapterSerializer>(MdUtil.jsonParser)
 
         val hash = networkApiChapter.data.hash
         val pageArray = networkApiChapter.data.pages
         val server = networkApiChapter.data.server
 
-        pageArray.forEach {
-            val url = "$hash/$it"
-            pages.add(Page(pages.size, "$server,${response.request.url},${System.currentTimeMillis()}", url))
+        return pageArray.mapIndexed { index, page ->
+            val url = "$hash/$page"
+            Page(index, "$server,${response.request.url},${System.currentTimeMillis()}", url)
         }
-
-        return pages
     }
 
     fun externalParse(response: Response): String {
