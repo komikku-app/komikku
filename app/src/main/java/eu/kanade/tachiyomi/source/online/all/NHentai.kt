@@ -106,14 +106,11 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
             scanlator = jsonResponse.scanlator
 
-            jsonResponse.tags.map {
-                it.type to it.name
-            }.apply {
-                tags.clear()
-            }.forEach {
-                if (it.first != null && it.second != null) {
-                    tags.add(RaisedTag(it.first!!, it.second!!, if (it.first == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE) RaisedSearchMetadata.TAG_TYPE_VIRTUAL else NHentaiSearchMetadata.TAG_TYPE_DEFAULT))
-                }
+            tags.clear()
+            jsonResponse.tags.filter {
+                it.type != null && it.name != null
+            }.mapTo(tags) {
+                RaisedTag(it.type!!, it.name!!, if (it.type == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE) RaisedSearchMetadata.TAG_TYPE_VIRTUAL else NHentaiSearchMetadata.TAG_TYPE_DEFAULT)
             }
         }
     }
