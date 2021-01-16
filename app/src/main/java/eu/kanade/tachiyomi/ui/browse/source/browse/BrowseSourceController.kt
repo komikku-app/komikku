@@ -391,7 +391,7 @@ open class BrowseSourceController(bundle: Bundle) :
         recycler.setHasFixedSize(true)
         recycler.adapter = adapter
 
-        binding.catalogueView.addView(recycler)
+        binding.catalogueView.addView(recycler, 1)
 
         if (oldPosition != RecyclerView.NO_POSITION) {
             recycler.layoutManager?.scrollToPosition(oldPosition)
