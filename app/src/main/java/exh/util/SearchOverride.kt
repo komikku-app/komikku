@@ -3,9 +3,9 @@ package exh.util
 import android.content.Context
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.GalleryAddEvent
 import exh.GalleryAdder
-import kotlinx.coroutines.flow.flow
 import rx.Observable
 
 private val galleryAdder by lazy {
@@ -18,12 +18,9 @@ private val galleryAdder by lazy {
 fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
     when {
         query.startsWith("http://") || query.startsWith("https://") -> {
-            flow {
-                emit(
-                    galleryAdder.addGallery(context, query, false, this@urlImportFetchSearchManga)
-                )
-            }
-                .asObservable()
+            runAsObservable({
+                galleryAdder.addGallery(context, query, false, this@urlImportFetchSearchManga)
+            })
                 .map { res ->
                     MangasPage(
                         (
