@@ -160,6 +160,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         return withIOContext {
             val mangaID = MdUtil.getMangaId(track.tracking_url)
             val formBody = FormBody.Builder()
+                .add("volume", "0")
                 .add("chapter", track.last_chapter_read.toString())
             XLog.tag("FollowsHandler").d("chapter to update %s", track.last_chapter_read.toString())
             val response = client.newCall(
@@ -170,14 +171,11 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 )
             ).await()
 
-            client.newCall(
-                GET(
-                    "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_rating&id=$mangaID&rating=${track.score.toInt()}",
-                    headers
-                )
-            ).await().body?.close()
-
-            withIOContext { response.body?.string().isNullOrEmpty() }
+            withIOContext {
+                response.body?.string()
+                    .also { XLog.tag("FollowsHandler").d(it) }
+                    .let { it != null && it.isEmpty() }
+            }
         }
     }
 
