@@ -24,17 +24,6 @@ if (!gradle.startParameter.taskRequests.toString().contains("Debug")) {
 
 shortcutHelper.setFilePath("./shortcuts.xml")
 
-
-fun runCommand(command: String): String {
-    val byteOut = ByteArrayOutputStream()
-    project.exec {
-        commandLine = command.split(" ")
-        standardOutput = byteOut
-    }
-    return String(byteOut.toByteArray()).trim()
-}
-
-
 android {
     compileSdkVersion(AndroidConfig.compileSdk)
     buildToolsVersion(AndroidConfig.buildTools)
@@ -375,4 +364,13 @@ fun getBuildTime(): String {
     val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
     df.timeZone = TimeZone.getTimeZone("UTC")
     return df.format(Date())
+}
+
+fun runCommand(command: String): String {
+    val byteOut = ByteArrayOutputStream()
+    project.exec {
+        commandLine = command.split(" ")
+        standardOutput = byteOut
+    }
+    return String(byteOut.toByteArray()).trim()
 }
