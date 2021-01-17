@@ -26,10 +26,8 @@ class DownloadPageLoader(
     private val downloadManager: DownloadManager
 ) : PageLoader() {
 
-    /**
-     * The application context. Needed to open input streams.
-     */
-    private val context by injectLazy<Application>()
+    // Needed to open input streams
+    private val context: Application by injectLazy()
 
     private val downloadProvider by lazy { DownloadProvider(context) }
 

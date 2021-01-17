@@ -18,7 +18,7 @@ import kotlin.time.minutes
 
 class SecureActivityDelegate(private val activity: FragmentActivity) {
 
-    private val preferences by injectLazy<PreferencesHelper>()
+    private val preferences: PreferencesHelper by injectLazy()
 
     fun onCreate() {
         preferences.secureScreen().asFlow()

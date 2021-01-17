@@ -98,7 +98,7 @@ import kotlin.time.seconds
 @RequiresPresenter(ReaderPresenter::class)
 class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() {
 
-    private val preferences by injectLazy<PreferencesHelper>()
+    private val preferences: PreferencesHelper by injectLazy()
 
     /**
      * The maximum bitmap size supported by the device.
