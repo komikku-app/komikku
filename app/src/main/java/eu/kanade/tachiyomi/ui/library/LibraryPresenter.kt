@@ -63,9 +63,9 @@ class LibraryPresenter(
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
+    private val trackManager: TrackManager = Injekt.get(),
     // SY -->
-    private val customMangaManager: CustomMangaManager = Injekt.get(),
-    private val trackManager: TrackManager = Injekt.get()
+    private val customMangaManager: CustomMangaManager = Injekt.get()
     // SY <--
 ) : BasePresenter<LibraryController>() {
 
@@ -141,8 +141,8 @@ class LibraryPresenter(
                     lib.copy(mangaMap = map, categories = categories)
                 }
                 // SY <--
-                .combineLatest(filterTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
-                    lib.copy(mangaMap = applyFilters(lib.mangaMap))
+                .combineLatest(getFilterObservable()) { lib, tracks ->
+                    lib.copy(mangaMap = applyFilters(lib.mangaMap, tracks))
                 }
                 .combineLatest(sortTriggerRelay.observeOn(Schedulers.io())) { lib, _ ->
                     lib.copy(mangaMap = applySort(lib.mangaMap))
@@ -159,14 +159,14 @@ class LibraryPresenter(
      *
      * @param map the map to filter.
      */
-    private fun applyFilters(map: LibraryMap): LibraryMap {
+    private fun applyFilters(map: LibraryMap, trackMap: Map<Long, Boolean>): LibraryMap {
         val downloadedOnly = preferences.downloadedOnly().get()
         val filterDownloaded = preferences.filterDownloaded().get()
         val filterUnread = preferences.filterUnread().get()
         val filterCompleted = preferences.filterCompleted().get()
+        val tracking = preferences.filterTracking().get()
         // SY -->
         val filterStarted = preferences.filterStarted().get()
-        val filterTracked = preferences.filterTracked().get()
         val filterLewd = preferences.filterLewd().get()
         // SY <--
 
@@ -198,6 +198,14 @@ class LibraryPresenter(
             else !isDownloaded
         }
 
+        val filterFnTracking: (LibraryItem) -> Boolean = tracking@{ item ->
+            if (tracking == State.IGNORE.value) return@tracking true
+
+            val isTracking = trackMap[item.manga.id ?: -1] ?: false
+
+            return@tracking if (tracking == State.INCLUDE.value) isTracking else !isTracking
+        }
+
         // SY -->
         val filterFnStarted: (LibraryItem) -> Boolean = started@{ item ->
             if (filterStarted == State.IGNORE.value) return@started true
@@ -205,14 +213,6 @@ class LibraryPresenter(
 
             return@started if (filterStarted == State.INCLUDE.value) hasRead
             else !hasRead
-        }
-
-        val filterFnTracked: (LibraryItem) -> Boolean = tracked@{ item ->
-            if (filterTracked == State.IGNORE.value) return@tracked true
-            val hasTracks = db.getTracks(item.manga).executeAsBlocking().filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }.isNotEmpty()
-
-            return@tracked if (filterTracked == State.INCLUDE.value) hasTracks
-            else !hasTracks
         }
 
         val filterFnLewd: (LibraryItem) -> Boolean = lewd@{ item ->
@@ -229,9 +229,9 @@ class LibraryPresenter(
                 !filterFnUnread(item) ||
                     !filterFnCompleted(item) ||
                     !filterFnDownloaded(item) ||
+                    !filterFnTracking(item) ||
                     // SY -->
                     !filterFnStarted(item) ||
-                    !filterFnTracked(item) ||
                     !filterFnLewd(item)
                 // SY <--
                 )
@@ -430,6 +430,29 @@ class LibraryPresenter(
             .map { list ->
                 list.map { LibraryItem(it, libraryDisplayMode) }.groupBy { it.manga.category }
             }
+    }
+
+    /**
+     * Get the tracked manga from the database and checks if the filter gets changed
+     *
+     * @return an observable of tracked manga.
+     */
+    private fun getFilterObservable(): Observable<Map<Long, Boolean>> {
+        return getTracksObservable().combineLatest(filterTriggerRelay.observeOn(Schedulers.io())) { tracks, _ -> tracks }
+    }
+
+    /**
+     * Get the tracked manga from the database
+     *
+     * @return an observable of tracked manga.
+     */
+    private fun getTracksObservable(): Observable<Map<Long, Boolean>> {
+        return db.getTracks().asRxObservable().map { tracks ->
+            tracks.associate { track ->
+                val isLogged = tracks.any { trackManager.getService(it.sync_id)?.isLogged ?: false }
+                Pair(track.manga_id, isLogged)
+            }
+        }.observeOn(Schedulers.io())
     }
 
     /**

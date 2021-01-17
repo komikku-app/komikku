@@ -82,16 +82,19 @@ class LibrarySettingsSheet(
             private val downloaded = Item.TriStateGroup(R.string.action_filter_downloaded, this)
             private val unread = Item.TriStateGroup(R.string.action_filter_unread, this)
             private val completed = Item.TriStateGroup(R.string.completed, this)
+            private val tracking = Item.TriStateGroup(R.string.action_filter_tracking, this)
+
+            // SY -->
             private val started = Item.TriStateGroup(R.string.started, this)
-            private val tracked = Item.TriStateGroup(R.string.tracked, this)
             private val lewd = Item.TriStateGroup(R.string.lewd, this)
+            // SY <--
 
             override val header = null
 
             // SY -->
             override val items = (
                 if (Injekt.get<TrackManager>().hasLoggedServices()) {
-                    listOf(downloaded, unread, completed, started, tracked, lewd)
+                    listOf(downloaded, unread, completed, tracking, started, lewd)
                 } else {
                     listOf(downloaded, unread, completed, started, lewd)
                 }
@@ -109,9 +112,9 @@ class LibrarySettingsSheet(
                 }
                 unread.state = preferences.filterUnread().get()
                 completed.state = preferences.filterCompleted().get()
+                tracking.state = preferences.filterTracking().get()
                 // SY -->
                 started.state = preferences.filterStarted().get()
-                tracked.state = preferences.filterTracked().get()
                 lewd.state = preferences.filterLewd().get()
                 // SY <--
             }
@@ -129,9 +132,9 @@ class LibrarySettingsSheet(
                     downloaded -> preferences.filterDownloaded().set(newState)
                     unread -> preferences.filterUnread().set(newState)
                     completed -> preferences.filterCompleted().set(newState)
+                    tracking -> preferences.filterTracking().set(newState)
                     // SY -->
                     started -> preferences.filterStarted().set(newState)
-                    tracked -> preferences.filterTracked().set(newState)
                     lewd -> preferences.filterLewd().set(newState)
                     // SY <--
                 }

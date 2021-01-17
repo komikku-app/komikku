@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import exh.isMetadataSource
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
@@ -28,7 +29,6 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 
@@ -96,7 +96,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         preferences.filterCompleted().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterStarted().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterUnread().get() == Filter.TriState.STATE_IGNORE &&
-        preferences.filterTracked().get() == Filter.TriState.STATE_IGNORE &&
+        preferences.filterTracking().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterLewd().get() == Filter.TriState.STATE_IGNORE
 
     // EXH -->
@@ -153,7 +153,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     mangas
                 }
 
-                withContext(Dispatchers.Main) {
+                withUIContext {
                     updateDataSet(newManga)
                 }
             }
