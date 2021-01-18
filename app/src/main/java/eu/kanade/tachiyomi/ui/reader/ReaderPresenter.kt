@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.takeBytes
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
@@ -44,11 +45,9 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.getMainSource
 import exh.util.defaultReaderType
 import exh.util.shouldDeleteChapters
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -310,7 +309,7 @@ class ReaderPresenter(
 
     // SY -->
     suspend fun getChapters(context: Context): List<ReaderChapterItem> {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             val currentChapter = getCurrentChapter()
             val decimalFormat = DecimalFormat(
                 "#.###",

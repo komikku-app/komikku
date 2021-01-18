@@ -8,9 +8,8 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.lang.launchUI
-import kotlinx.coroutines.Dispatchers
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.withContext
 import uy.kohesive.injekt.injectLazy
 
 class MigrationProcessAdapter(
@@ -48,7 +47,7 @@ class MigrationProcessAdapter(
     fun mangasSkipped() = items.count { it.manga.migrationStatus == MigrationStatus.MANGA_NOT_FOUND }
 
     suspend fun performMigrations(copy: Boolean) {
-        withContext(Dispatchers.IO) {
+        withIOContext {
             db.inTransaction {
                 currentItems.forEach { migratingManga ->
                     val manga = migratingManga.manga

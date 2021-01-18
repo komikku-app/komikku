@@ -10,7 +10,7 @@ import exh.md.utils.MdUtil
 import exh.md.utils.setMDUrlWithoutDomain
 import okhttp3.CacheControl
 import okhttp3.Headers
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -75,7 +75,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
         val demographics = mutableListOf<String>()
 
         // Do traditional search
-        val url = "${MdUtil.baseUrl}/?page=search".toHttpUrlOrNull()!!.newBuilder()
+        val url = "${MdUtil.baseUrl}/?page=search".toHttpUrl().newBuilder()
             .addQueryParameter("p", page.toString())
             .addQueryParameter("title", query.replace(WHITESPACE_REGEX, " "))
 

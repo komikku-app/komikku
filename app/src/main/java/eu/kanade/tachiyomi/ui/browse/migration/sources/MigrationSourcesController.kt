@@ -19,9 +19,8 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
 import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.openInBrowser
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -100,7 +99,7 @@ class MigrationSourcesController :
         launchUI {
             val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().asRxSingle().await(Schedulers.io())
             val sourceMangas = manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
-            withContext(Dispatchers.Main) {
+            withUIContext {
                 PreMigrationController.navigateToMigration(
                     Injekt.get<PreferencesHelper>().skipPreMigration().get(),
                     if (parentController is BrowseController) {

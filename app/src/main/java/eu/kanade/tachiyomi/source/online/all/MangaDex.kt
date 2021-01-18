@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.md.MangaDexFabHeaderAdapter
@@ -47,12 +48,10 @@ import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import exh.widget.preference.MangadexLoginDialog
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.CacheControl
 import okhttp3.FormBody
 import okhttp3.Headers
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
@@ -184,7 +183,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun isLogged(): Boolean {
-        val httpUrl = MdUtil.baseUrl.toHttpUrlOrNull()!!
+        val httpUrl = MdUtil.baseUrl.toHttpUrl()
         return trackManager.mdList.isLogged && network.cookieManager.get(httpUrl).any { it.name == REMEMBER_ME }
     }
 
@@ -193,12 +192,13 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         password: String,
         twoFactorCode: String
     ): Boolean {
-        return withContext(Dispatchers.IO) {
-            val formBody = FormBody.Builder()
-                .add("login_username", username)
-                .add("login_password", password)
-                .add("no_js", "1")
-                .add("remember_me", "1")
+        return withIOContext {
+            val formBody = FormBody.Builder().apply {
+                add("login_username", username)
+                add("login_password", password)
+                add("no_js", "1")
+                add("remember_me", "1")
+            }
 
             twoFactorCode.let {
                 formBody.add("two_factor", it)
@@ -212,11 +212,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 )
             ).await()
 
-            withContext(Dispatchers.IO) { response.body!!.string() }.let {
-                if (it.isEmpty()) {
+            withIOContext { response.body?.string() }.let { result ->
+                if (result != null && result.isEmpty()) {
                     true
                 } else {
-                    val error = HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                    val error = result?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_COMPACT).toString() }
                     throw Exception(error)
                 }
             }
@@ -224,23 +224,23 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun logout(): Boolean {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             // https://mangadex.org/ajax/actions.ajax.php?function=logout
-            val httpUrl = MdUtil.baseUrl.toHttpUrlOrNull()!!
+            val httpUrl = MdUtil.baseUrl.toHttpUrl()
             val listOfDexCookies = network.cookieManager.get(httpUrl)
             val cookie = listOfDexCookies.find { it.name == REMEMBER_ME }
             val token = cookie?.value
             if (token.isNullOrEmpty()) {
-                return@withContext true
+                return@withIOContext true
             }
             val result = client.newCall(
                 POST("${MdUtil.baseUrl}/ajax/actions.ajax.php?function=logout", headers).newBuilder().addHeader(REMEMBER_ME, token).build()
             ).await()
-            val resultStr = withContext(Dispatchers.IO) { result.body?.string() }
+            val resultStr = withIOContext { result.body?.string() }
             if (resultStr?.contains("success", true) == true) {
                 network.cookieManager.remove(httpUrl)
                 trackManager.mdList.logout()
-                return@withContext true
+                return@withIOContext true
             }
 
             false
@@ -248,19 +248,19 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun fetchAllFollows(forceHd: Boolean): List<Pair<SManga, MangaDexSearchMetadata>> {
-        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchAllFollows(forceHd) }
+        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchAllFollows(forceHd) }
     }
 
     suspend fun updateReadingProgress(track: Track): Boolean {
-        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateReadingProgress(track) }
+        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateReadingProgress(track) }
     }
 
     suspend fun updateRating(track: Track): Boolean {
-        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateRating(track) }
+        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateRating(track) }
     }
 
     override suspend fun fetchTrackingInfo(url: String): Track {
-        return withContext(Dispatchers.IO) {
+        return withIOContext {
             if (!isLogged()) {
                 throw Exception("Not Logged in")
             }
@@ -269,7 +269,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
-        return withContext(Dispatchers.IO) { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateFollowStatus(mangaID, followStatus) }
+        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateFollowStatus(mangaID, followStatus) }
     }
 
     override fun getFilterHeader(controller: BaseController<*>): MangaDexFabHeaderAdapter {
@@ -292,13 +292,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 })
                     .map { res ->
                         MangasPage(
-                            (
-                                if (res is GalleryAddEvent.Success) {
-                                    listOf(res.manga)
-                                } else {
-                                    emptyList()
-                                }
-                                ),
+                            if (res is GalleryAddEvent.Success) {
+                                listOf(res.manga)
+                            } else {
+                                emptyList()
+                            },
                             false
                         )
                     }

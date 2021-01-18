@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiThrottleManager
@@ -51,7 +52,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.atomic.AtomicInteger
@@ -187,7 +187,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                 } catch (e: Exception) {
                                                     return@async2 null
                                                 }
-                                                manga.progress.send(validSources.size to processedSources.incrementAndGet())
+                                                manga.progress.value = validSources.size to processedSources.incrementAndGet()
                                                 localManga to chapters.size
                                             } else {
                                                 null
@@ -222,7 +222,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                             Timber.e(e)
                                             emptyList()
                                         }
-                                        withContext(Dispatchers.IO) {
+                                        withIOContext {
                                             syncChaptersWithSource(db, chapters, localManga, source)
                                         }
                                         localManga
@@ -233,7 +233,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                 } catch (e: Exception) {
                                     null
                                 }
-                                manga.progress.send(validSources.size to (index + 1))
+                                manga.progress.value = validSources.size to (index + 1)
                                 if (searchResult != null) return@async searchResult
                             }
 

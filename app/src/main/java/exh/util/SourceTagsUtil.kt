@@ -49,13 +49,11 @@ object SourceTagsUtil {
     }
 
     fun parseTag(tag: String) = RaisedTag(
-        (
-            if (tag.startsWith("-")) {
-                tag.substringAfter("-")
-            } else {
-                tag
-            }
-            ).substringBefore(':', missingDelimiterValue = "").trimOrNull(),
+        if (tag.startsWith("-")) {
+            tag.substringAfter("-")
+        } else {
+            tag
+        }.substringBefore(':', missingDelimiterValue = "").trimOrNull(),
         tag.substringAfter(':', missingDelimiterValue = tag).trim(),
         if (tag.startsWith("-")) TAG_TYPE_EXCLUDE else TAG_TYPE_DEFAULT
     )
@@ -94,6 +92,6 @@ object SourceTagsUtil {
     private const val TAG_TYPE_DEFAULT = 1
 }
 
-fun Manga.getRaisedTags(genres: List<String>? = null): List<RaisedTag>? = (genres ?: this.getGenres())?.map {
+fun Manga.getRaisedTags(genres: List<String>? = getGenres()): List<RaisedTag>? = genres?.map {
     SourceTagsUtil.parseTag(it)
 }

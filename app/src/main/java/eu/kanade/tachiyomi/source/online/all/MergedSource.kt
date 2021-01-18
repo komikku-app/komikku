@@ -15,7 +15,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
-import eu.kanade.tachiyomi.source.online.SuspendHttpSource
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -25,9 +25,11 @@ import exh.merged.sql.models.MergedMangaReference
 import exh.util.executeOnIO
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.source.model.ChapterInfo
+import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 
-class MergedSource : SuspendHttpSource() {
+class MergedSource : HttpSource() {
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val downloadManager: DownloadManager by injectLazy()
@@ -37,40 +39,42 @@ class MergedSource : SuspendHttpSource() {
 
     override val baseUrl = ""
 
-    override suspend fun popularMangaRequestSuspended(page: Int) = throw UnsupportedOperationException()
-    override suspend fun popularMangaParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override suspend fun searchMangaRequestSuspended(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
-    override suspend fun searchMangaParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override suspend fun latestUpdatesRequestSuspended(page: Int) = throw UnsupportedOperationException()
-    override suspend fun latestUpdatesParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override suspend fun mangaDetailsParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override suspend fun chapterListParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override suspend fun pageListParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override suspend fun imageUrlParseSuspended(response: Response) = throw UnsupportedOperationException()
-    override suspend fun fetchChapterListSuspended(manga: SManga) = throw UnsupportedOperationException()
-    override suspend fun fetchImageSuspended(page: Page) = throw UnsupportedOperationException()
-    override suspend fun fetchImageUrlSuspended(page: Page) = throw UnsupportedOperationException()
-    override suspend fun fetchPageListSuspended(chapter: SChapter) = throw UnsupportedOperationException()
-    override suspend fun fetchLatestUpdatesSuspended(page: Int) = throw UnsupportedOperationException()
-    override suspend fun fetchPopularMangaSuspended(page: Int) = throw UnsupportedOperationException()
+    override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
+    override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
+    override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
+    override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
+    override fun pageListParse(response: Response) = throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
+    override fun fetchChapterList(manga: SManga) = throw UnsupportedOperationException()
+    override suspend fun getChapterList(manga: MangaInfo) = throw UnsupportedOperationException()
+    override fun fetchImage(page: Page) = throw UnsupportedOperationException()
+    override fun fetchImageUrl(page: Page) = throw UnsupportedOperationException()
+    override fun fetchPageList(chapter: SChapter) = throw UnsupportedOperationException()
+    override suspend fun getPageList(chapter: ChapterInfo) = throw UnsupportedOperationException()
+    override fun fetchLatestUpdates(page: Int) = throw UnsupportedOperationException()
+    override fun fetchPopularManga(page: Int) = throw UnsupportedOperationException()
 
-    override suspend fun fetchMangaDetailsSuspended(manga: SManga): SManga {
+    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         return withIOContext {
-            val mergedManga = db.getManga(manga.url, id).executeAsBlocking() ?: throw Exception("merged manga not in db")
-            val mangaReferences = mergedManga.id?.let { db.getMergedMangaReferences(it).executeOnIO() } ?: throw Exception("merged manga id is null")
+            val mergedManga = db.getManga(manga.key, id).executeAsBlocking() ?: throw Exception("merged manga not in db")
+            val mangaReferences = db.getMergedMangaReferences(mergedManga.id ?: throw Exception("merged manga id is null")).executeOnIO()
             if (mangaReferences.isEmpty()) throw IllegalArgumentException("Manga references are empty, info unavailable, merge is likely corrupted")
-            if (mangaReferences.size == 1 || run {
-                val mangaReference = mangaReferences.firstOrNull()
-                mangaReference == null || (mangaReference.mangaSourceId == MERGED_SOURCE_ID)
-            }
+            if (mangaReferences.size == 1 &&
+                run {
+                    val mangaReference = mangaReferences.firstOrNull()
+                    mangaReference == null || mangaReference.mangaSourceId == MERGED_SOURCE_ID
+                }
             ) throw IllegalArgumentException("Manga references contain only the merged reference, merge is likely corrupted")
 
-            SManga.create().apply {
-                val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga } ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
-                val dbManga = mangaInfoReference?.let { db.getManga(it.mangaUrl, it.mangaSourceId).executeOnIO() }
-                this.copyFrom(dbManga ?: mergedManga)
-                url = manga.url
-            }
+            val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga } ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
+            val dbManga = mangaInfoReference?.let { db.getManga(it.mangaUrl, it.mangaSourceId).executeOnIO()?.toMangaInfo() }
+            (dbManga ?: mergedManga.toMangaInfo()).copy(
+                key = manga.key
+            )
         }
     }
 

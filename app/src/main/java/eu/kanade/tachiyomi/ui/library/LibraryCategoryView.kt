@@ -36,7 +36,6 @@ import reactivecircus.flowbinding.recyclerview.scrollStateChanges
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 

@@ -18,14 +18,13 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.MERGED_SOURCE_ID
 import exh.util.executeOnIO
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.withContext
 import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.injectLazy
 import java.text.DecimalFormat
@@ -70,7 +69,7 @@ class MigrationProcessHolder(
             binding.skipManga.isVisible = true
             binding.migrationMangaCardTo.resetManga()
             if (manga != null) {
-                withContext(Dispatchers.Main) {
+                withUIContext {
                     binding.migrationMangaCardFrom.attachManga(manga, source)
                     binding.migrationMangaCardFrom.root.clicks()
                         .onEach {
@@ -85,7 +84,7 @@ class MigrationProcessHolder(
 
                 /*launchUI {
                     item.manga.progress.asFlow().collect { (max, progress) ->
-                        withContext(Dispatchers.Main) {
+                        withUIContext {
                             migration_manga_card_to.search_progress.let { progressBar ->
                                 progressBar.max = max
                                 progressBar.progress = progress
@@ -100,11 +99,11 @@ class MigrationProcessHolder(
                 val resultSource = searchResult?.source?.let {
                     sourceManager.get(it)
                 }
-                withContext(Dispatchers.Main) {
+                withUIContext {
                     if (item.manga.mangaId != this@MigrationProcessHolder.item?.manga?.mangaId ||
                         item.manga.migrationStatus == MigrationStatus.RUNNING
                     ) {
-                        return@withContext
+                        return@withUIContext
                     }
                     if (searchResult != null && resultSource != null) {
                         binding.migrationMangaCardTo.attachManga(searchResult, resultSource)

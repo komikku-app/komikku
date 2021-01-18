@@ -15,12 +15,12 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
 import eu.kanade.tachiyomi.util.lang.asFlow
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import rx.Observable
@@ -99,7 +99,7 @@ open class IndexPresenter(
         initializeFetchImageSubscription()
 
         presenterScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) {
+            withUIContext {
                 Observable.just(null).subscribeLatestCache({ view, results ->
                     view.setLatestManga(results)
                 })
@@ -118,7 +118,7 @@ open class IndexPresenter(
                 }
                 fetchImage(results, true)
 
-                withContext(Dispatchers.Main) {
+                withUIContext {
                     Observable.just(results.map { IndexCardItem(it) }).subscribeLatestCache({ view, results ->
                         view.setLatestManga(results)
                     })
@@ -127,7 +127,7 @@ open class IndexPresenter(
         }
 
         presenterScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) {
+            withUIContext {
                 Observable.just(null).subscribeLatestCache({ view, results ->
                     view.setBrowseManga(results)
                 })
@@ -146,7 +146,7 @@ open class IndexPresenter(
             }
             fetchImage(results, false)
 
-            withContext(Dispatchers.Main) {
+            withUIContext {
                 Observable.just(results.map { IndexCardItem(it) }).subscribeLatestCache({ view, results ->
                     view.setBrowseManga(results)
                 })
