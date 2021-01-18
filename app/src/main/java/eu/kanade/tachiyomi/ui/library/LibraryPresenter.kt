@@ -449,7 +449,7 @@ class LibraryPresenter(
     private fun getTracksObservable(): Observable<Map<Long, Boolean>> {
         return db.getTracks().asRxObservable().map { tracks ->
             tracks.associate { track ->
-                val isLogged = tracks.any { trackManager.getService(it.sync_id)?.isLogged ?: false }
+                val isLogged = tracks.any { trackManager.getService(it.sync_id)?.let { tracker -> tracker.isLogged && ((tracker.id == TrackManager.MDLIST && track.status != FollowStatus.UNFOLLOWED.int) || tracker.id != TrackManager.MDLIST) } ?: false }
                 Pair(track.manga_id, isLogged)
             }
         }.observeOn(Schedulers.io())
