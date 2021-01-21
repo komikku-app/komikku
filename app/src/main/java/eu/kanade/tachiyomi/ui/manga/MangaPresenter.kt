@@ -317,7 +317,7 @@ class MangaPresenter(
             LocalSource(downloadManager.context).updateMangaInfo(manga)
             db.updateMangaInfo(manga).executeAsBlocking()
         } else {
-            val genre = if (!tags.isNullOrEmpty() && tags.joinToString() != manga.genre) {
+            val genre = if (!tags.isNullOrEmpty() && tags.joinToString() != manga.originalGenre) {
                 tags
             } else {
                 null

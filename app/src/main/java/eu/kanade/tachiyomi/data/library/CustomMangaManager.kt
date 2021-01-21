@@ -14,16 +14,12 @@ class CustomMangaManager(val context: Context) {
 
     private val editJson = File(context.getExternalFilesDir(null), "edits.json")
 
-    private var customMangaMap = mutableMapOf<Long, Manga>()
-
-    init {
-        fetchCustomData()
-    }
+    private val customMangaMap = fetchCustomData()
 
     fun getManga(manga: Manga): Manga? = customMangaMap[manga.id]
 
-    private fun fetchCustomData() {
-        if (!editJson.exists() || !editJson.isFile) return
+    private fun fetchCustomData(): MutableMap<Long, Manga> {
+        if (!editJson.exists() || !editJson.isFile) return mutableMapOf()
 
         val json = try {
             Json.decodeFromString<MangaList>(
@@ -31,10 +27,10 @@ class CustomMangaManager(val context: Context) {
             )
         } catch (e: Exception) {
             null
-        } ?: return
+        } ?: return mutableMapOf()
 
-        val mangasJson = json.mangas ?: return
-        customMangaMap = mangasJson.mapNotNull { mangaJson ->
+        val mangasJson = json.mangas ?: return mutableMapOf()
+        return mangasJson.mapNotNull { mangaJson ->
             val id = mangaJson.id ?: return@mapNotNull null
             val manga = MangaImpl().apply {
                 this.id = id
