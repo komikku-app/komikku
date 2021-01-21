@@ -62,13 +62,19 @@ object Notifications {
     const val ID_BACKUP_COMPLETE = -502
     const val ID_RESTORE_COMPLETE = -504
 
+    /**
+     * Notification channel used for crash log file sharing.
+     */
+    const val CHANNEL_CRASH_LOGS = "crash_logs_channel"
+    const val ID_CRASH_LOGS = -601
+
     // SY -->
     /**
      * Notification channel and ids used for backup and restore.
      */
     const val CHANNEL_SIMILAR = "similar_channel"
-    const val ID_SIMILAR_PROGRESS = -601
-    const val ID_SIMILAR_COMPLETE = -602
+    const val ID_SIMILAR_PROGRESS = -901
+    const val ID_SIMILAR_COMPLETE = -902
     // SY <--
 
     private val deprecatedChannels = listOf(
@@ -153,6 +159,11 @@ object Notifications {
                 setShowBadge(false)
                 setSound(null, null)
             },
+            NotificationChannel(
+                CHANNEL_CRASH_LOGS,
+                context.getString(R.string.channel_crash_logs),
+                NotificationManager.IMPORTANCE_HIGH
+            ),
             NotificationChannel(
                 CHANNEL_SIMILAR,
                 context.getString(R.string.similar),
