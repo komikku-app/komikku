@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import exh.debug.DebugToggles
 import exh.eh.EHTags
 import exh.eh.EHentaiUpdateHelper
@@ -44,7 +45,6 @@ import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
-import exh.util.awaitSingle
 import exh.util.dropBlank
 import exh.util.ignore
 import exh.util.nullIfBlank
