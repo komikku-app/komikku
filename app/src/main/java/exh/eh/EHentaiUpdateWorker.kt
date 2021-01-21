@@ -19,14 +19,13 @@ import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.await
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.metadata.metadata.base.insertFlatMetadata
+import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.util.cancellable
 import exh.util.executeOnIO
 import exh.util.jobScheduler
@@ -280,7 +279,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                     // Age dead galleries
                     logger.d("Aged %s - notfound", manga.id)
                     meta.aged = true
-                    db.insertFlatMetadata(meta.flatten()).await()
+                    db.insertFlatMetadataAsync(meta.flatten()).await()
                 }
                 throw GalleryNotUpdatedException(false, t)
             }

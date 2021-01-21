@@ -11,6 +11,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.manga.MangaPresenter
+import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
@@ -19,6 +21,7 @@ import eu.kanade.tachiyomi.widget.TabbedBottomSheetDialog
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.getMainSource
+import kotlinx.coroutines.supervisorScope
 
 class ChaptersSettingsSheet(
     private val router: Router,
@@ -132,13 +135,21 @@ class ChaptersSettingsSheet(
                     MaterialDialog(context)
                         .title(R.string.select_scanlators)
                         .listItemsMultiChoice(items = presenter.allChapterScanlators.toList(), initialSelection = preselected) { _, selections, _ ->
-                            val selected = selections.map { scanlators[it] }.toSet()
-                            presenter.setScanlatorFilter(selected)
-                            onGroupClicked(this)
+                            launchIO {
+                                supervisorScope {
+                                    val selected = selections.map { scanlators[it] }.toSet()
+                                    presenter.setScanlatorFilter(selected)
+                                    withUIContext { onGroupClicked(this@FilterGroup) }
+                                }
+                            }
                         }
                         .negativeButton(R.string.action_reset) {
-                            presenter.setScanlatorFilter(presenter.allChapterScanlators)
-                            onGroupClicked(this)
+                            launchIO {
+                                supervisorScope {
+                                    presenter.setScanlatorFilter(presenter.allChapterScanlators)
+                                    withUIContext { onGroupClicked(this@FilterGroup) }
+                                }
+                            }
                         }
                         .positiveButton(android.R.string.ok)
                         .show()

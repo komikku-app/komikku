@@ -10,7 +10,6 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSManga
-import eu.kanade.tachiyomi.util.lang.await
 import exh.EH_SOURCE_ID
 import exh.EXHMigrations
 import exh.EXH_SOURCE_ID
@@ -18,7 +17,7 @@ import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.metadata.metadata.base.insertFlatMetadata
+import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.savedsearches.JsonSavedSearch
 import exh.util.cancellable
 import exh.util.executeOnIO
@@ -64,7 +63,7 @@ object DebugFunctions {
                 val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 // remove age flag
                 meta.aged = false
-                db.insertFlatMetadata(meta.flatten()).await()
+                db.insertFlatMetadataAsync(meta.flatten()).await()
             }
         }
     }

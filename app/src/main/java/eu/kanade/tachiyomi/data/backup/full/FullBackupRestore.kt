@@ -223,7 +223,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         }
     }
 
-    private fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>, flatMetadata: BackupFlatMetadata?) {
+    private suspend fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>, flatMetadata: BackupFlatMetadata?) {
         // Restore categories
         backupManager.restoreCategoriesForManga(manga, categories, backupCategories)
 

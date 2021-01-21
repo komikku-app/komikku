@@ -18,8 +18,7 @@ open class Page(
     // SY -->
     var imageUrl = imageUrl
         get() {
-            if (field == null) return null
-            return DataSaver().compress(field!!)
+            return field?.let { DataSaver.compress(it) }
         }
     // SY <--
 

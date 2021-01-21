@@ -1,32 +1,8 @@
 package exh.util
 
-import com.pushtorefresh.storio.operations.PreparedOperation
-import com.pushtorefresh.storio.sqlite.operations.get.PreparedGetObject
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import rx.Completable
-import rx.CompletableSubscriber
-import rx.Emitter
 import rx.Observable
-import rx.Observer
-import rx.Scheduler
 import rx.Single
-import rx.SingleSubscriber
-import rx.Subscriber
-import rx.Subscription
 import rx.subjects.ReplaySubject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 /**
  * Transform a cold single to a hot single
@@ -49,7 +25,7 @@ fun <T> Observable<T>.melt(): Observable<T> {
     subscribe(rs)
     return rs
 }
-
+/*
 suspend fun <T> Single<T>.await(subscribeOn: Scheduler? = null): T {
     return suspendCancellableCoroutine { continuation ->
         val self = if (subscribeOn != null) subscribeOn(subscribeOn) else this
@@ -181,11 +157,11 @@ private suspend fun <T> Observable<T>.awaitOne(): T = suspendCancellableCoroutin
                 }
 
                 override fun onError(e: Throwable) {
-          /*
+          *//*
              * Rx1 observable throws NoSuchElementException if cancellation happened before
              * element emission. To mitigate this we try to atomically resume continuation with exception:
              * if resume failed, then we know that continuation successfully cancelled itself
-             */
+             *//*
                     val token = cont.tryResumeWithException(e)
                     if (token != null) {
                         cont.completeResume(token)
@@ -220,10 +196,10 @@ fun <T : Any> Observable<T>.asFlow(): Flow<T> = callbackFlow {
 fun <T : Any> Flow<T>.asObservable(backpressureMode: Emitter.BackpressureMode = Emitter.BackpressureMode.NONE): Observable<T> {
     return Observable.create(
         { emitter ->
-            /*
+            *//*
          * ATOMIC is used here to provide stable behaviour of subscribe+dispose pair even if
          * asObservable is already invoked from unconfined
-         */
+         *//*
             val job = GlobalScope.launch(Dispatchers.Unconfined, start = CoroutineStart.ATOMIC) {
                 try {
                     collect { emitter.onNext(it) }
@@ -241,4 +217,4 @@ fun <T : Any> Flow<T>.asObservable(backpressureMode: Emitter.BackpressureMode = 
         },
         backpressureMode
     )
-}
+}*/

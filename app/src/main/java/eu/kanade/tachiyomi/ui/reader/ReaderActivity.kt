@@ -71,6 +71,7 @@ import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
 import exh.isEhBasedSource
 import exh.util.defaultReaderType
+import exh.util.mangaType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -729,7 +730,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.viewerContainer.addView(newViewer.getView())
 
         // SY -->
-        val defaultReaderType = manga.defaultReaderType()
+        val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.getOrStub(manga.source).name))
         if (preferences.useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == WEBTOON) {
             binding.root.snack(resources.getString(R.string.eh_auto_webtoon_snack), Snackbar.LENGTH_LONG)
         } else if (preferences.showReadingMode()) {

@@ -35,7 +35,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.search.SearchController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.await
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.getResourceColor
@@ -49,7 +49,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import timber.log.Timber
@@ -115,7 +114,7 @@ class MigrationListController(bundle: Bundle? = null) :
         adapter?.updateDataSet(newMigratingManga.map { it.toModal() })
 
         if (migrationsJob == null) {
-            migrationsJob = viewScope.launch(Dispatchers.IO) {
+            migrationsJob = viewScope.launchIO {
                 runMigrations(newMigratingManga)
             }
         }
@@ -128,7 +127,7 @@ class MigrationListController(bundle: Bundle? = null) :
         val useSmartSearch = preferences.smartMigration().get()
 
         val sources = preferences.migrationSources().get().split("/").mapNotNull {
-            val value = it.toLongOrNull() ?: return
+            val value = it.toLongOrNull() ?: return@mapNotNull null
             sourceManager.get(value) as? CatalogueSource
         }
         for (manga in mangas) {

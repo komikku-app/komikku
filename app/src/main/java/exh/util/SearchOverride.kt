@@ -23,13 +23,11 @@ fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: Strin
             })
                 .map { res ->
                     MangasPage(
-                        (
-                            if (res is GalleryAddEvent.Success) {
-                                listOf(res.manga)
-                            } else {
-                                emptyList()
-                            }
-                            ),
+                        if (res is GalleryAddEvent.Success) {
+                            listOf(res.manga)
+                        } else {
+                            emptyList()
+                        },
                         false
                     )
                 }

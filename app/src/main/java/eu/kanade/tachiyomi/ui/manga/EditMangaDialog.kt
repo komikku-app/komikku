@@ -208,7 +208,7 @@ class EditMangaDialog : DialogController {
         addView(addTagChip)
     }
 
-    private fun ChipGroup.getTextStrings(): List<String>? = children.mapNotNull {
+    private fun ChipGroup.getTextStrings(): List<String> = children.mapNotNull {
         if (it is Chip && !it.text.toString().contains(context.getString(R.string.add_tag), ignoreCase = true)) {
             it.text.toString()
         } else null

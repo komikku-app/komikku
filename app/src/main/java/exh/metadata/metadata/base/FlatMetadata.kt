@@ -5,9 +5,12 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
+import exh.util.executeOnIO
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.serializer
 import rx.Completable
 import rx.Single
@@ -97,5 +100,17 @@ fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata): Completable =
         insertSearchMetadata(flatMetadata.metadata).executeAsBlocking()
         setSearchTagsForManga(flatMetadata.metadata.mangaId, flatMetadata.tags)
         setSearchTitlesForManga(flatMetadata.metadata.mangaId, flatMetadata.titles)
+    }
+}
+
+suspend fun DatabaseHelper.insertFlatMetadataAsync(flatMetadata: FlatMetadata): Deferred<Unit> = coroutineScope {
+    async {
+        require(flatMetadata.metadata.mangaId != -1L)
+
+        inTransaction {
+            insertSearchMetadata(flatMetadata.metadata).executeOnIO()
+            setSearchTagsForManga(flatMetadata.metadata.mangaId, flatMetadata.tags)
+            setSearchTitlesForManga(flatMetadata.metadata.mangaId, flatMetadata.titles)
+        }
     }
 }

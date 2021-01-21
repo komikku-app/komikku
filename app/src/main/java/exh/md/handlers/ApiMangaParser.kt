@@ -15,7 +15,8 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.util.await
+import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.util.executeOnIO
 import exh.util.floor
 import exh.util.nullIfZero
 import okhttp3.Response
@@ -70,16 +71,16 @@ class ApiMangaParser(private val lang: String) {
     }
 
     suspend fun parseToManga(manga: MangaInfo, input: Response, coverUrls: List<String>, sourceId: Long): MangaInfo {
-        val mangaId = db.getManga(manga.key, sourceId).await()?.id
+        val mangaId = db.getManga(manga.key, sourceId).executeOnIO()?.id
         val metadata = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).await()
+            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeOnIO()
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
         parseInfoIntoMetadata(metadata, input, coverUrls)
         if (mangaId != null) {
             metadata.mangaId = mangaId
-            db.insertFlatMetadata(metadata.flatten()).await()
+            db.insertFlatMetadataAsync(metadata.flatten()).await()
         }
 
         return metadata.createMangaInfo(manga)

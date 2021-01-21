@@ -11,7 +11,8 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.util.await
+import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.util.executeOnIO
 import rx.Completable
 import rx.Single
 import tachiyomi.source.model.MangaInfo
@@ -79,14 +80,14 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     suspend fun parseToManga(manga: MangaInfo, input: I): MangaInfo {
         val mangaId = manga.id()
         val metadata = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).await()
+            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeOnIO()
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
         parseInfoIntoMetadata(metadata, input)
         if (mangaId != null) {
             metadata.mangaId = mangaId
-            db.insertFlatMetadata(metadata.flatten()).await()
+            db.insertFlatMetadataAsync(metadata.flatten()).await()
         }
 
         return metadata.createMangaInfo(manga)
@@ -134,7 +135,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      */
     suspend fun fetchOrLoadMetadata(mangaId: Long?, inputProducer: suspend () -> I): M {
         val meta = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).await()
+            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeOnIO()
             flatMetadata?.raise(metaClass)
         } else {
             null
@@ -145,14 +146,14 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
             parseInfoIntoMetadata(newMeta, input)
             if (mangaId != null) {
                 newMeta.mangaId = mangaId
-                db.insertFlatMetadata(newMeta.flatten()).let { newMeta }
+                db.insertFlatMetadataAsync(newMeta.flatten()).await().let { newMeta }
             } else newMeta
         }
     }
 
     fun getDescriptionAdapter(controller: MangaController): RecyclerView.Adapter<*>?
 
-    suspend fun MangaInfo.id() = db.getManga(key, id).await()?.id
+    suspend fun MangaInfo.id() = db.getManga(key, id).executeOnIO()?.id
     val SManga.id get() = (this as? Manga)?.id
     val SChapter.mangaId get() = (this as? Chapter)?.manga_id
 }

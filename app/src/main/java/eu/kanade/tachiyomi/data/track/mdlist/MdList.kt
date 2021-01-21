@@ -10,12 +10,11 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.util.lang.await
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.metadata.metadata.base.insertFlatMetadata
+import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.util.executeOnIO
 import exh.util.floor
 import uy.kohesive.injekt.injectLazy
@@ -59,7 +58,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         if (mangaMetadata.follow_status != followStatus.int) {
             mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)
             mangaMetadata.follow_status = followStatus.int
-            db.insertFlatMetadata(mangaMetadata.flatten()).await()
+            db.insertFlatMetadataAsync(mangaMetadata.flatten()).await()
         }
 
         if (track.score.toInt() > 0) {
@@ -78,7 +77,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
                 track.status = FollowStatus.READING.int
                 mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), newFollowStatus)
                 mangaMetadata.follow_status = newFollowStatus.int
-                db.insertFlatMetadata(mangaMetadata.flatten()).await()
+                db.insertFlatMetadataAsync(mangaMetadata.flatten()).await()
             }
 
             mdex.updateReadingProgress(track)

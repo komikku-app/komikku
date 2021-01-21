@@ -52,7 +52,7 @@ import exh.merged.sql.models.MergedMangaReference
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.metadata.metadata.base.insertFlatMetadata
+import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.source.getMainSource
 import exh.util.shouldDeleteChapters
 import exh.util.trimOrNull
@@ -1002,11 +1002,11 @@ class MangaPresenter(
     }
 
     // SY -->
-    fun setScanlatorFilter(filteredScanlators: Set<String>) {
+    suspend fun setScanlatorFilter(filteredScanlators: Set<String>) {
         val meta = meta ?: return
         meta.filteredScanlators = if (filteredScanlators.size == allChapterScanlators.size) null else MdUtil.getScanlatorString(filteredScanlators)
         meta.flatten().let {
-            db.insertFlatMetadata(it).await()
+            db.insertFlatMetadataAsync(it).await()
         }
         refreshChapters()
     }

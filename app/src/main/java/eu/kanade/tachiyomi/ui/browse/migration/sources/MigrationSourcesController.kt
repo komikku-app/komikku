@@ -17,11 +17,10 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
-import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.openInBrowser
-import rx.schedulers.Schedulers
+import exh.util.executeOnIO
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -84,8 +83,9 @@ class MigrationSourcesController :
     override fun onItemClick(view: View?, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
         val controller = MigrationMangaController(item.source.id, item.source.name)
+        val parentController = parentController
         if (parentController is BrowseController) {
-            parentController!!.router.pushController(controller.withFadeTransaction())
+            parentController.router.pushController(controller.withFadeTransaction())
         } else {
             router.pushController(controller.withFadeTransaction())
         }
@@ -97,15 +97,18 @@ class MigrationSourcesController :
         val item = adapter?.getItem(position) as? SourceItem ?: return
 
         launchUI {
-            val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().asRxSingle().await(Schedulers.io())
-            val sourceMangas = manga.asSequence().filter { it.source == item.source.id }.map { it.id!! }.toList()
+            val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().executeOnIO()
+            val sourceMangas = manga.asSequence().filter { it.source == item.source.id }.mapNotNull { it.id }.toList()
             withUIContext {
                 PreMigrationController.navigateToMigration(
                     Injekt.get<PreferencesHelper>().skipPreMigration().get(),
-                    if (parentController is BrowseController) {
-                        parentController!!.router
-                    } else {
-                        router
+                    run {
+                        val parentController = parentController
+                        if (parentController is BrowseController) {
+                            parentController.router
+                        } else {
+                            router
+                        }
                     },
                     sourceMangas
                 )

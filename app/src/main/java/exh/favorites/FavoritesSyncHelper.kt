@@ -10,10 +10,10 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.lang.await
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
@@ -239,17 +239,15 @@ class FavoritesSyncHelper(val context: Context) {
     private suspend fun addGalleryRemote(errorList: MutableList<String>, gallery: FavoriteEntry) {
         val url = "${exh.baseUrl}/gallerypopups.php?gid=${gallery.gid}&t=${gallery.token}&act=addfav"
 
-        val request = Request.Builder()
-            .url(url)
-            .post(
-                FormBody.Builder()
-                    .add("favcat", gallery.category.toString())
-                    .add("favnote", "")
-                    .add("apply", "Add to Favorites")
-                    .add("update", "1")
-                    .build()
-            )
-            .build()
+        val request = POST(
+            url = url,
+            body = FormBody.Builder()
+                .add("favcat", gallery.category.toString())
+                .add("favnote", "")
+                .add("apply", "Add to Favorites")
+                .add("update", "1")
+                .build()
+        )
 
         if (!explicitlyRetryExhRequest(10, request)) {
             val errorString = "Unable to add gallery to remote server: '${gallery.title}' (GID: ${gallery.gid})!"
@@ -296,10 +294,10 @@ class FavoritesSyncHelper(val context: Context) {
                 formBody.add("modifygids[]", it.gid)
             }
 
-            val request = Request.Builder()
-                .url("https://exhentai.org/favorites.php")
-                .post(formBody.build())
-                .build()
+            val request = POST(
+                url = "https://exhentai.org/favorites.php",
+                body = formBody.build()
+            )
 
             if (!explicitlyRetryExhRequest(10, request)) {
                 val errorString = context.getString(R.string.favorites_sync_unable_to_delete)
@@ -408,8 +406,8 @@ class FavoritesSyncHelper(val context: Context) {
         }
 
         // Can't do too many DB OPs in one go
-        insertedMangaCategories.chunked(10).map {
-            Pair(it.map { it.first }, it.map { it.second })
+        insertedMangaCategories.chunked(10).map { mangaCategories ->
+            mangaCategories.map { it.first } to mangaCategories.map { it.second }
         }.forEach {
             db.setMangaCategories(it.first, it.second)
         }

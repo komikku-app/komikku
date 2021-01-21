@@ -1,11 +1,10 @@
 package exh.util
 
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
-class DataSaver {
-    private val preferences: PreferencesHelper = Injekt.get()
+object DataSaver {
+    private val preferences: PreferencesHelper by injectLazy()
 
     fun compress(imageUrl: String): String {
         return if (preferences.dataSaver().get() && preferences.dataSaverServer().get().isNotBlank() && !imageUrl.contains(preferences.dataSaverServer().get() + "/?")) {
@@ -20,10 +19,10 @@ class DataSaver {
     private fun getUrl(imageUrl: String): String {
         val server = preferences.dataSaverServer().get() + "/?"
         val format = "jpg=${if (preferences.dataSaverImageFormatJpeg().get()) "1" else "0"}"
-        val quality = "&l=${preferences.dataSaverImageQuality().get()}"
-        val colorBW = "&bw=${if (preferences.dataSaverColorBW().get()) "1" else "0"}"
-        val url = "$server$format$quality$colorBW&url="
+        val quality = "l=${preferences.dataSaverImageQuality().get()}"
+        val colorBW = "bw=${if (preferences.dataSaverColorBW().get()) "1" else "0"}"
+        val url = "url=$imageUrl"
 
-        return url + imageUrl
+        return "$server&$format&$quality&$colorBW&$url"
     }
 }

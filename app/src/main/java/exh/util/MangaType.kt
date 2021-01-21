@@ -24,21 +24,27 @@ fun Manga.mangaType(context: Context): String {
 /**
  * The type of comic the manga is (ie. manga, manhwa, manhua)
  */
-fun Manga.mangaType(): MangaType {
-    val sourceName = Injekt.get<SourceManager>().getOrStub(source).name
+fun Manga.mangaType(sourceName: String = Injekt.get<SourceManager>().getOrStub(source).name): MangaType {
     val currentTags = getGenres().orEmpty()
-    return if (currentTags.any { tag -> isMangaTag(tag) }) {
-        MangaType.TYPE_MANGA
-    } else if (currentTags.any { tag -> isWebtoonTag(tag) } || isWebtoonSource(sourceName)) {
-        MangaType.TYPE_WEBTOON
-    } else if (currentTags.any { tag -> isComicTag(tag) } || isComicSource(sourceName)) {
-        MangaType.TYPE_COMIC
-    } else if (currentTags.any { tag -> isManhuaTag(tag) } || isManhuaSource(sourceName)) {
-        MangaType.TYPE_MANHUA
-    } else if (currentTags.any { tag -> isManhwaTag(tag) } || isManhwaSource(sourceName)) {
-        MangaType.TYPE_MANHWA
-    } else {
-        MangaType.TYPE_MANGA
+    return when {
+        currentTags.any { tag -> isMangaTag(tag) } -> {
+            MangaType.TYPE_MANGA
+        }
+        currentTags.any { tag -> isWebtoonTag(tag) } || isWebtoonSource(sourceName) -> {
+            MangaType.TYPE_WEBTOON
+        }
+        currentTags.any { tag -> isComicTag(tag) } || isComicSource(sourceName) -> {
+            MangaType.TYPE_COMIC
+        }
+        currentTags.any { tag -> isManhuaTag(tag) } || isManhuaSource(sourceName) -> {
+            MangaType.TYPE_MANHUA
+        }
+        currentTags.any { tag -> isManhwaTag(tag) } || isManhwaSource(sourceName) -> {
+            MangaType.TYPE_MANHWA
+        }
+        else -> {
+            MangaType.TYPE_MANGA
+        }
     }
 }
 
@@ -46,8 +52,7 @@ fun Manga.mangaType(): MangaType {
  * The type the reader should use. Different from manga type as certain manga has different
  * read types
  */
-fun Manga.defaultReaderType(): Int? {
-    val type = mangaType()
+fun Manga.defaultReaderType(type: MangaType = mangaType()): Int? {
     return if (type == MangaType.TYPE_MANHWA || type == MangaType.TYPE_WEBTOON) {
         ReaderActivity.WEBTOON
     } else null
