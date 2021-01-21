@@ -14,6 +14,8 @@ import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.toast
 import exh.source.getMainSource
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.supervisorScope
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -35,17 +37,30 @@ class MangadexLogoutDialog(bundle: Bundle? = null) : DialogController(bundle) {
             .title(R.string.logout)
             .positiveButton(R.string.logout) {
                 launchNow {
-                    source?.let { source ->
-                        val loggedOut = withIOContext { source.logout() }
+                    supervisorScope {
+                        if (source != null) {
+                            var exception: Exception? = null
+                            val loggedOut = try {
+                                withIOContext { source.logout() }
+                            } catch (e: Exception) {
+                                if (e is CancellationException) throw e
+                                exception = e
+                                false
+                            }
 
-                        if (loggedOut) {
-                            trackManager.mdList.logout()
-                            activity?.toast(R.string.logout_success)
-                            (targetController as? Listener)?.siteLogoutDialogClosed(source)
-                        } else {
-                            activity?.toast(R.string.unknown_error)
-                        }
-                    } ?: activity!!.toast("Mangadex not enabled")
+                            if (loggedOut) {
+                                trackManager.mdList.logout()
+                                activity?.toast(R.string.logout_success)
+                                (targetController as? Listener)?.siteLogoutDialogClosed(source)
+                            } else {
+                                if (exception != null) {
+                                    activity?.toast(exception.message)
+                                } else {
+                                    activity?.toast(R.string.unknown_error)
+                                }
+                            }
+                        } else activity?.toast("Mangadex not enabled")
+                    }
                 }
             }
             .negativeButton(android.R.string.cancel)
