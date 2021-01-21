@@ -151,8 +151,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     private fun mangaPlusPageListRequest(chapter: SChapter): Request {
-        val chpUrl = chapter.url.substringBefore(MdUtil.apiChapterSuffix)
-        return GET(MdUtil.baseUrl + chpUrl + MdUtil.apiChapterSuffix, headers, CacheControl.FORCE_NETWORK)
+        val urlChapterId = MdUtil.getChapterId(chapter.url)
+        return GET(MdUtil.apiUrl + MdUtil.newApiChapter + urlChapterId + MdUtil.apiChapterSuffix, headers, CacheControl.FORCE_NETWORK)
     }
 
     override fun fetchImage(page: Page): Observable<Response> {

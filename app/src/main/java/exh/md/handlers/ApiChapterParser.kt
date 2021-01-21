@@ -4,8 +4,6 @@ import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.handlers.serializers.ApiChapterSerializer
 import exh.md.utils.MdUtil
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -27,8 +25,7 @@ class ApiChapterParser {
     }
 
     fun externalParse(response: Response): String {
-        val jsonData = response.body!!.string()
-        val json = Json.decodeFromString<JsonObject>(jsonData)
+        val json = response.parseAs<JsonObject>()
         val external = json["data"]!!.jsonObject["pages"]!!.jsonPrimitive.content
         return external.substringAfterLast("/")
     }
