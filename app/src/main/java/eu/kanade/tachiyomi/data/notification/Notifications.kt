@@ -166,7 +166,7 @@ object Notifications {
             ),
             NotificationChannel(
                 CHANNEL_SIMILAR,
-                context.getString(R.string.similar),
+                context.getString(R.string.similar_manga),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 setShowBadge(false)
