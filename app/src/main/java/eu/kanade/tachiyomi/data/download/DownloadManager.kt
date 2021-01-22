@@ -212,18 +212,7 @@ class DownloadManager(/* SY private */ val context: Context) {
     fun deleteChapters(chapters: List<Chapter>, manga: Manga, source: Source): List<Chapter> {
         val filteredChapters = getChaptersToDelete(chapters)
 
-        val wasRunning = downloader.isRunning
-        downloader.pause()
-
-        downloader.queue.remove(filteredChapters)
-        queue.remove(filteredChapters)
-
-        if (downloader.queue.isEmpty()) {
-            DownloadService.stop(context)
-            downloader.stop()
-        } else if (wasRunning && downloader.queue.isNotEmpty()) {
-            downloader.start()
-        }
+        removeFromDownloadQueue(filteredChapters)
 
         val chapterDirs = provider.findChapterDirs(filteredChapters, manga, source)
         chapterDirs.forEach { it.delete() }
@@ -233,6 +222,24 @@ class DownloadManager(/* SY private */ val context: Context) {
         }
 
         return filteredChapters
+    }
+
+    private fun removeFromDownloadQueue(chapters: List<Chapter>) {
+        val wasRunning = downloader.isRunning
+        if (wasRunning) {
+            downloader.pause()
+        }
+
+        downloader.queue.remove(chapters)
+
+        if (wasRunning) {
+            if (downloader.queue.isEmpty()) {
+                DownloadService.stop(context)
+                downloader.stop()
+            } else if (downloader.queue.isNotEmpty()) {
+                downloader.start()
+            }
+        }
     }
 
     // SY -->
@@ -295,7 +302,7 @@ class DownloadManager(/* SY private */ val context: Context) {
      * @param source the source of the manga.
      */
     fun deleteManga(manga: Manga, source: Source) {
-        queue.remove(manga)
+        downloader.queue.remove(manga)
         provider.findMangaDir(manga, source)?.delete()
         cache.removeManga(manga)
     }
