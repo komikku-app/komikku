@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.util.system.WebViewUtil
 import exh.log.maybeInjectEHLogger
 import exh.patch.injectPatches
 import exh.source.DelegatedHttpSource
@@ -105,7 +106,7 @@ abstract class HttpSource : CatalogueSource {
      * Headers builder for requests. Implementations can override this method for custom headers.
      */
     protected open fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", DEFAULT_USERAGENT)
+        add("User-Agent", WebViewUtil.DEFAULT_USER_AGENT)
     }
 
     /**
@@ -413,8 +414,4 @@ abstract class HttpSource : CatalogueSource {
         this.delegate = delegate
     }
     // EXH <--
-
-    companion object {
-        const val DEFAULT_USERAGENT = "Mozilla/5.0 (Windows NT 6.3; WOW64)"
-    }
 }
