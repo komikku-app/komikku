@@ -104,6 +104,7 @@ class TrackController :
     @Suppress("UNUSED_PARAMETER")
     fun onSearchResultsError(error: Throwable) {
         Timber.e(error)
+        activity?.toast(error.message)
         getSearchDialog()?.onSearchResultsError()
     }
 
