@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class MigrationProcedureConfig(
