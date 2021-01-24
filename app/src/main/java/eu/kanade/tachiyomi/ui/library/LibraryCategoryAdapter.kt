@@ -50,7 +50,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
     private val hasLoggedServices by lazy {
         trackManager.hasLoggedServices()
     }
-    private val services = trackManager.services.map { it.name }
+    private val services = trackManager.services.map { service -> service.id to controller.activity!!.getString(service.nameRes()) }.toMap()
 
     // Keep compatibility as searchText field was replaced when we upgraded FlexibleAdapter
     var searchText
@@ -98,7 +98,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         preferences.filterCompleted().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterStarted().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterUnread().get() == Filter.TriState.STATE_IGNORE &&
-        services.all { preferences.filterTracking(it).get() == Filter.TriState.STATE_IGNORE } &&
+        services.all { preferences.filterTracking(it.key).get() == Filter.TriState.STATE_IGNORE } &&
         preferences.filterLewd().get() == Filter.TriState.STATE_IGNORE
 
     // EXH -->
@@ -237,8 +237,8 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
             val trackService = trackManager.getService(it.sync_id)
             if (trackService != null) {
                 val status = trackService.getStatus(it.status)
-                val name = trackService.name
-                return@any status.contains(constraint, true) || name.contains(constraint, true)
+                val name = services[it.sync_id]
+                return@any status.contains(constraint, true) || name?.contains(constraint, true) == true
             }
             return@any false
         }

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.track.mdlist
 
 import android.content.Context
 import android.graphics.Color
+import androidx.annotation.StringRes
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -24,7 +25,8 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     private val mdex by lazy { MdUtil.getEnabledMangaDex() }
     private val db: DatabaseHelper by injectLazy()
 
-    override val name = context.getString(R.string.mdlist)
+    @StringRes
+    override fun nameRes(): Int = R.string.mdlist
 
     override fun getLogo(): Int {
         return R.drawable.ic_tracker_mangadex_logo
