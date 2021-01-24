@@ -48,6 +48,7 @@ import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
 import exh.util.executeOnIO
 import exh.util.nullIfBlank
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -336,6 +337,10 @@ class LibraryUpdateService(
 
         mangaToUpdate
             .mapNotNull { manga ->
+                if (updateJob?.isActive != true) {
+                    throw CancellationException()
+                }
+
                 // Notify manga that will update.
                 notifier.showProgressNotification(manga, progressCount.andIncrement, mangaToUpdate.size)
 
@@ -457,6 +462,10 @@ class LibraryUpdateService(
         var progressCount = 0
 
         mangaToUpdate.forEach { manga ->
+            if (updateJob?.isActive != true) {
+                throw CancellationException()
+            }
+
             notifier.showProgressNotification(manga, progressCount++, mangaToUpdate.size)
 
             sourceManager.get(manga.source)?.let { source ->
@@ -487,6 +496,10 @@ class LibraryUpdateService(
         val loggedServices = trackManager.services.filter { it.isLogged }
 
         mangaToUpdate.forEach { manga ->
+            if (updateJob?.isActive != true) {
+                throw CancellationException()
+            }
+
             // Notify manga that will update.
             notifier.showProgressNotification(manga, progressCount++, mangaToUpdate.size)
 
@@ -528,7 +541,12 @@ class LibraryUpdateService(
             }
 
         mangadexFollows.forEach { (networkManga, metadata) ->
+            if (updateJob?.isActive != true) {
+                throw CancellationException()
+            }
+
             notifier.showProgressNotification(networkManga, count.andIncrement, mangadexFollows.size)
+
             var dbManga = db.getManga(networkManga.url, mangaDex.id)
                 .executeOnIO()
             if (dbManga == null) {
@@ -562,6 +580,10 @@ class LibraryUpdateService(
         // filter all follows from Mangadex and only add reading or rereading manga to library
         if (trackManager.mdList.isLogged) {
             listManga.forEach { manga ->
+                if (updateJob?.isActive != true) {
+                    throw CancellationException()
+                }
+
                 notifier.showProgressNotification(manga, count.andIncrement, listManga.size)
 
                 // Get this manga's trackers from the database
