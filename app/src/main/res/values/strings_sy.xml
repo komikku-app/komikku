@@ -568,6 +568,7 @@
     <string name="refresh_merge">Refresh to get proper info</string>
 
     <!-- MangaDex -->
+    <string name="mdlist">MDList</string>
     <string name="md_follows_unfollowed">Unfollowed</string>
     <string name="mangadex_specific_settings">MangaDex settings</string>
     <string name="mangadex_sync_follows_to_library">Sync Mangadex manga to your library</string>
@@ -657,5 +658,6 @@
         <item quantity="other">%1$d second ago</item>
     </plurals>
     <string name="humanize_fallback">moments ago</string>
+
 
 </resources>

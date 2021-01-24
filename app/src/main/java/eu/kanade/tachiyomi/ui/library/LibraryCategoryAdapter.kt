@@ -50,6 +50,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
     private val hasLoggedServices by lazy {
         trackManager.hasLoggedServices()
     }
+    private val services = trackManager.services.map { it.name }
 
     // Keep compatibility as searchText field was replaced when we upgraded FlexibleAdapter
     var searchText
@@ -97,7 +98,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         preferences.filterCompleted().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterStarted().get() == Filter.TriState.STATE_IGNORE &&
         preferences.filterUnread().get() == Filter.TriState.STATE_IGNORE &&
-        preferences.filterTracking().get() == Filter.TriState.STATE_IGNORE &&
+        services.all { preferences.filterTracking(it).get() == Filter.TriState.STATE_IGNORE } &&
         preferences.filterLewd().get() == Filter.TriState.STATE_IGNORE
 
     // EXH -->

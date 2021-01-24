@@ -158,13 +158,16 @@ class LibraryPresenter(
      *
      * @param map the map to filter.
      */
-    private fun applyFilters(map: LibraryMap, trackMap: Map<Long, Boolean>): LibraryMap {
+    private fun applyFilters(map: LibraryMap, trackMap: Map<Long, Map<Int, Boolean>>): LibraryMap {
         val downloadedOnly = preferences.downloadedOnly().get()
         val filterDownloaded = preferences.filterDownloaded().get()
         val filterUnread = preferences.filterUnread().get()
         val filterCompleted = preferences.filterCompleted().get()
-        val tracking = preferences.filterTracking().get()
-        val isNotLogged = !trackManager.hasLoggedServices()
+        val loggedInServices = trackManager.services.filter { trackService -> trackService.isLogged }
+            .associate { trackService ->
+                Pair(trackService.id, preferences.filterTracking(trackService.name).get())
+            }
+        val isNotAnyLoggedIn = !loggedInServices.values.any()
         // SY -->
         val filterStarted = preferences.filterStarted().get()
         val filterLewd = preferences.filterLewd().get()
@@ -199,11 +202,27 @@ class LibraryPresenter(
         }
 
         val filterFnTracking: (LibraryItem) -> Boolean = tracking@{ item ->
-            if (isNotLogged || tracking == State.IGNORE.value) return@tracking true
+            if (isNotAnyLoggedIn) return@tracking true
 
-            val isTracking = trackMap[item.manga.id ?: -1] ?: false
+            val trackedManga = trackMap[item.manga.id ?: -1]
 
-            return@tracking if (tracking == State.INCLUDE.value) isTracking else !isTracking
+            val containsExclude = loggedInServices.filterValues { it == State.EXCLUDE.value }
+            val containsInclude = loggedInServices.filterValues { it == State.INCLUDE.value }
+
+            if (!containsExclude.any() && !containsInclude.any()) return@tracking true
+
+            val exclude = trackedManga?.filterKeys { containsExclude.containsKey(it) }?.values ?: emptyList()
+            val include = trackedManga?.filterKeys { containsInclude.containsKey(it) }?.values ?: emptyList()
+
+            if (containsInclude.any() && containsExclude.any()) {
+                return@tracking if (exclude.isNotEmpty()) !exclude.any() else include.any()
+            }
+
+            if (containsExclude.any()) return@tracking !exclude.any()
+
+            if (containsInclude.any()) return@tracking include.any()
+
+            return@tracking false
         }
 
         // SY -->
@@ -437,7 +456,7 @@ class LibraryPresenter(
      *
      * @return an observable of tracked manga.
      */
-    private fun getFilterObservable(): Observable<Map<Long, Boolean>> {
+    private fun getFilterObservable(): Observable<Map<Long, Map<Int, Boolean>>> {
         return getTracksObservable().combineLatest(filterTriggerRelay.observeOn(Schedulers.io())) { tracks, _ -> tracks }
     }
 
@@ -446,13 +465,13 @@ class LibraryPresenter(
      *
      * @return an observable of tracked manga.
      */
-    private fun getTracksObservable(): Observable<Map<Long, Boolean>> {
+    private fun getTracksObservable(): Observable<Map<Long, Map<Int, Boolean>>> {
         return db.getTracks().asRxObservable().map { tracks ->
             tracks.groupBy { it.manga_id }
                 .mapValues { tracksForMangaId ->
                     // Check if any of the trackers is logged in for the current manga id
-                    tracksForMangaId.value.any {
-                        trackManager.getService(it.sync_id)?.let { tracker -> tracker.isLogged && ((tracker.id == TrackManager.MDLIST && it.status != FollowStatus.UNFOLLOWED.int) || tracker.id != TrackManager.MDLIST) } ?: false
+                    tracksForMangaId.value.associate {
+                        Pair(it.sync_id, trackManager.getService(it.sync_id)?.let { tracker -> tracker.isLogged && ((tracker.id == TrackManager.MDLIST && it.status != FollowStatus.UNFOLLOWED.int) || tracker.id != TrackManager.MDLIST) } ?: false)
                     }
                 }
         }.observeOn(Schedulers.io())

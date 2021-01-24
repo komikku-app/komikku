@@ -24,7 +24,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     private val mdex by lazy { MdUtil.getEnabledMangaDex() }
     private val db: DatabaseHelper by injectLazy()
 
-    override val name = "MDList"
+    override val name = context.getString(R.string.mdlist)
 
     override fun getLogo(): Int {
         return R.drawable.ic_tracker_mangadex_logo
