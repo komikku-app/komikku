@@ -36,6 +36,7 @@ import eu.kanade.tachiyomi.util.lang.truncateCenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 import kotlin.math.roundToInt
 
 /**
@@ -254,4 +255,13 @@ fun Context.openInBrowser(uri: Uri, @ColorInt toolbarColor: Int? = null) {
     } catch (e: Exception) {
         toast(e.message)
     }
+}
+
+fun Context.createFileInCacheDir(name: String): File {
+    val file = File(externalCacheDir, name)
+    if (file.exists()) {
+        file.delete()
+    }
+    file.createNewFile()
+    return file
 }

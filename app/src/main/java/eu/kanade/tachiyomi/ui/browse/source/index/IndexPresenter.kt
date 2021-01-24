@@ -13,13 +13,12 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
-import eu.kanade.tachiyomi.util.lang.asFlow
+import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -107,10 +106,8 @@ open class IndexPresenter(
             if (source.supportsLatest) {
                 val results = try {
                     source.fetchLatestUpdates(1)
-                        .asFlow()
-                        .singleOrNull()
-                        ?.mangas
-                        .orEmpty()
+                        .awaitSingle()
+                        .mangas
                         .take(10)
                         .map { networkToLocalManga(it, source.id) }
                 } catch (e: Exception) {
@@ -135,10 +132,8 @@ open class IndexPresenter(
 
             val results = try {
                 source.fetchPopularManga(1)
-                    .asFlow()
-                    .singleOrNull()
-                    ?.mangas
-                    .orEmpty()
+                    .awaitSingle()
+                    .mangas
                     .take(10)
                     .map { networkToLocalManga(it, source.id) }
             } catch (e: Exception) {

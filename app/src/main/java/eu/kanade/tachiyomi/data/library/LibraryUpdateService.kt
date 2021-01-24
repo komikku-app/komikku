@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
+import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
@@ -328,13 +329,9 @@ class LibraryUpdateService(
      * @return an observable delivering the progress of each update.
      */
     suspend fun updateChapterList(mangaToUpdate: List<LibraryManga>) {
-        // Initialize the variables holding the progress of the updates.
         val progressCount = AtomicInteger(0)
-        // List containing new updates
         val newUpdates = mutableListOf<Pair<LibraryManga, Array<Chapter>>>()
-        // List containing failed updates
         val failedUpdates = mutableListOf<Pair<Manga, String?>>()
-        // Boolean to determine if DownloadManager has downloads
         var hasDownloads = false
 
         mangaToUpdate
@@ -433,7 +430,7 @@ class LibraryUpdateService(
             }
         }
 
-        scope.launchIO {
+        ioScope.launchIO {
             if (source is MangaDex && trackManager.mdList.isLogged) {
                 val tracks = db.getTracks(manga).executeOnIO()
                 if (tracks.isEmpty() || tracks.none { it.sync_id == TrackManager.MDLIST }) {
@@ -591,15 +588,14 @@ class LibraryUpdateService(
     private fun writeErrorFile(errors: List<Pair<Manga, String?>>): File {
         try {
             if (errors.isNotEmpty()) {
-                val destFile = File(externalCacheDir, "tachiyomi_update_errors.txt")
-
-                destFile.bufferedWriter().use { out ->
+                val file = createFileInCacheDir("tachiyomi_update_errors.txt")
+                file.bufferedWriter().use { out ->
                     errors.forEach { (manga, error) ->
                         val source = sourceManager.getOrStub(manga.source)
                         out.write("${manga.title} ($source): $error\n")
                     }
                 }
-                return destFile
+                return file
             }
         } catch (e: Exception) {
             // Empty
