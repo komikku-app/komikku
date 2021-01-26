@@ -38,10 +38,14 @@ class EHentaiDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is EHentaiSearchMetadata) return
 
-            binding.genre.text = meta.genre?.let { MetadataUtil.getGenreAndColour(itemView.context, it) }?.let {
-                binding.genre.setBackgroundColor(it.first)
-                it.second
-            } ?: meta.genre ?: itemView.context.getString(R.string.unknown)
+            binding.genre.text =
+                meta.genre?.let { MetadataUtil.getGenreAndColour(itemView.context, it) }
+                ?.let {
+                    binding.genre.setBackgroundColor(it.first)
+                    it.second
+                }
+                ?: meta.genre
+                ?: itemView.context.getString(R.string.unknown)
 
             binding.visible.text = itemView.context.getString(R.string.is_visible, meta.visible ?: itemView.context.getString(R.string.unknown))
 
@@ -53,7 +57,8 @@ class EHentaiDescriptionAdapter(
             binding.size.text = MetadataUtil.humanReadableByteCount(meta.size ?: 0, true)
             binding.size.bindDrawable(itemView.context, R.drawable.ic_outline_sd_card_24)
 
-            binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, meta.length ?: 0, meta.length ?: 0)
+            val length = meta.length ?: 0
+            binding.pages.text = itemView.resources.getQuantityString(R.plurals.num_pages, length, length)
             binding.pages.bindDrawable(itemView.context, R.drawable.ic_baseline_menu_book_24)
 
             val language = meta.language ?: itemView.context.getString(R.string.unknown)
