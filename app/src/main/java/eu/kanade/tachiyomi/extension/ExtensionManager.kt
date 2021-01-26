@@ -19,10 +19,10 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.system.toast
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
-import exh.MERGED_SOURCE_ID
 import exh.source.BlacklistedSources
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
+import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.async
 import rx.Observable
 import uy.kohesive.injekt.Injekt

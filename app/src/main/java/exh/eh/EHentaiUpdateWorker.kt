@@ -20,13 +20,12 @@ import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.source.isEhBasedManga
 import exh.util.cancellable
 import exh.util.executeOnIO
 import exh.util.jobScheduler
@@ -140,7 +139,7 @@ class EHentaiUpdateWorker : JobService() {
         logger.d("Filtering manga and raising metadata...")
         val curTime = System.currentTimeMillis()
         val allMeta = metadataManga.asFlow().cancellable().mapNotNull { manga ->
-            if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
+            if (!manga.isEhBasedManga()) {
                 return@mapNotNull null
             }
 

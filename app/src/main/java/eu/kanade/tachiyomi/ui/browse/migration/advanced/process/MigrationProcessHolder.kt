@@ -21,7 +21,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
-import exh.MERGED_SOURCE_ID
+import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach

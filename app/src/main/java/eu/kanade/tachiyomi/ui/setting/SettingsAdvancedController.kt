@@ -39,11 +39,11 @@ import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.debug.SettingsDebugController
 import exh.log.EHLogLevel
 import exh.source.BlacklistedSources
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

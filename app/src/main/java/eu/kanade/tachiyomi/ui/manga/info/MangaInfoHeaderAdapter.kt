@@ -24,7 +24,7 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import exh.MERGED_SOURCE_ID
+import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.SourceTagsUtil
 import kotlinx.coroutines.flow.launchIn

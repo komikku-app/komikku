@@ -16,6 +16,7 @@ import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.EhDialogCategoriesBinding
@@ -34,8 +35,6 @@ import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.toast
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.eh.EHentaiUpdateWorker
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
@@ -43,6 +42,7 @@ import exh.favorites.FavoritesIntroDialog
 import exh.favorites.LocalFavoritesStorage
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
+import exh.source.isEhBasedManga
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.LoginController
 import exh.util.floor
@@ -640,12 +640,12 @@ class SettingsEhController : SettingsController() {
                                 context.getString(R.string.gallery_updater_stats_text, getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context), stats.updateCount, stats.possibleUpdates)
                             } else context.getString(R.string.gallery_updater_not_ran_yet)
 
-                            val allMeta = db.getFavoriteMangaWithMetadata().executeAsBlocking().filter {
-                                it.source == EH_SOURCE_ID || it.source == EXH_SOURCE_ID
-                            }.mapNotNull {
-                                db.getFlatMetadataForManga(it.id!!).executeOnIO()
-                                    ?.raise<EHentaiSearchMetadata>()
-                            }.toList()
+                            val allMeta = db.getFavoriteMangaWithMetadata().executeAsBlocking()
+                                .filter(Manga::isEhBasedManga)
+                                .mapNotNull {
+                                    db.getFlatMetadataForManga(it.id!!).executeOnIO()
+                                        ?.raise<EHentaiSearchMetadata>()
+                                }.toList()
 
                             fun metaInRelativeDuration(duration: Duration): Int {
                                 val durationMs = duration.toLongMilliseconds()

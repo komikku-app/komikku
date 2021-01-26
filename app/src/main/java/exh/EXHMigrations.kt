@@ -26,6 +26,13 @@ import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.BlacklistedSources
+import exh.source.EH_SOURCE_ID
+import exh.source.HBROWSE_SOURCE_ID
+import exh.source.HENTAI_CAFE_SOURCE_ID
+import exh.source.MERGED_SOURCE_ID
+import exh.source.PERV_EDEN_EN_SOURCE_ID
+import exh.source.PERV_EDEN_IT_SOURCE_ID
+import exh.source.TSUMINO_SOURCE_ID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -41,7 +48,7 @@ object EXHMigrations {
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
 
-    private val logger = XLog.tag("EXHMigrations")
+    private val logger by lazy { XLog.tag("EXHMigrations") }
 
     /**
      * Performs a migration when the application is updated.

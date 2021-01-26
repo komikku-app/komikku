@@ -2,13 +2,13 @@ package exh.util
 
 import android.graphics.Color
 import eu.kanade.tachiyomi.data.database.models.Manga
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
-import exh.PURURIN_SOURCE_ID
-import exh.TSUMINO_SOURCE_ID
-import exh.hitomiSourceIds
 import exh.metadata.metadata.base.RaisedTag
-import exh.nHentaiSourceIds
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
+import exh.source.PURURIN_SOURCE_ID
+import exh.source.TSUMINO_SOURCE_ID
+import exh.source.hitomiSourceIds
+import exh.source.nHentaiSourceIds
 import java.util.Locale
 
 object SourceTagsUtil {

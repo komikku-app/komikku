@@ -12,13 +12,13 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import exh.isMetadataSource
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
 import exh.search.Namespace
 import exh.search.QueryComponent
 import exh.search.SearchEngine
 import exh.search.Text
+import exh.source.isMetadataSource
 import exh.util.cancellable
 import exh.util.executeOnIO
 import kotlinx.coroutines.CancellationException

@@ -10,8 +10,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerPageHolder
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.ImageUtil
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
+import exh.source.isEhBasedSource
 import rx.Completable
 import rx.Observable
 import rx.schedulers.Schedulers
@@ -188,7 +187,7 @@ class HttpPageLoader(
         }
         // EXH -->
         // Grab a new image URL on EXH sources
-        if (source.id == EH_SOURCE_ID || source.id == EXH_SOURCE_ID) {
+        if (source.isEhBasedSource()) {
             page.imageUrl = null
         }
 

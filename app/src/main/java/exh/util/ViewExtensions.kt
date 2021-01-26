@@ -3,9 +3,9 @@ package exh.util
 import android.content.Context
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 
 /**
  * Replaces chips in a ChipGroup.

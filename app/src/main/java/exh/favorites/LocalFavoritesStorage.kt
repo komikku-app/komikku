@@ -3,9 +3,8 @@ package exh.favorites
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.source.isEhBasedManga
 import exh.util.executeOnIO
 import io.realm.Realm
 import io.realm.RealmConfiguration
@@ -128,7 +127,7 @@ class LocalFavoritesStorage {
         }
 
     private fun validateDbManga(manga: Manga) =
-        manga.favorite && (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID)
+        manga.favorite && manga.isEhBasedManga()
 
     companion object {
         const val MAX_CATEGORIES = 9

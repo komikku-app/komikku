@@ -42,14 +42,13 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
-import exh.PERV_EDEN_EN_SOURCE_ID
-import exh.PERV_EDEN_IT_SOURCE_ID
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
-import exh.mangaDexSourceIds
-import exh.nHentaiSourceIds
+import exh.source.PERV_EDEN_EN_SOURCE_ID
+import exh.source.PERV_EDEN_IT_SOURCE_ID
+import exh.source.isEhBasedManga
+import exh.source.mangaDexSourceIds
+import exh.source.nHentaiSourceIds
 import exh.ui.LoaderManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop
@@ -524,8 +523,7 @@ class LibraryController(
 
             // SY -->
             binding.actionToolbar.findItem(R.id.action_clean)?.isVisible = selectedMangas.any {
-                it.source == EH_SOURCE_ID ||
-                    it.source == EXH_SOURCE_ID ||
+                it.isEhBasedManga() ||
                     it.source in nHentaiSourceIds ||
                     it.source == PERV_EDEN_EN_SOURCE_ID ||
                     it.source == PERV_EDEN_IT_SOURCE_ID
@@ -653,8 +651,7 @@ class LibraryController(
     // SY -->
     private fun cleanTitles() {
         val mangas = selectedMangas.filter {
-            it.source == EH_SOURCE_ID ||
-                it.source == EXH_SOURCE_ID ||
+            it.isEhBasedManga() ||
                 it.source in nHentaiSourceIds ||
                 it.source == PERV_EDEN_EN_SOURCE_ID ||
                 it.source == PERV_EDEN_IT_SOURCE_ID

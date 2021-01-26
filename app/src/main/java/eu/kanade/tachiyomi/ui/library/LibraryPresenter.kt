@@ -25,12 +25,11 @@ import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
-import exh.MERGED_SOURCE_ID
 import exh.favorites.FavoritesSyncHelper
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import exh.source.MERGED_SOURCE_ID
+import exh.source.isEhBasedManga
 import exh.util.executeOnIO
 import exh.util.isLewd
 import exh.util.nullIfBlank
@@ -525,7 +524,7 @@ class LibraryPresenter(
     fun downloadUnreadChapters(mangas: List<Manga>) {
         mangas.forEach { manga ->
             launchIO {
-                /* SY --> */ val chapters = if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
+                /* SY --> */ val chapters = if (manga.isEhBasedManga()) {
                     val chapter = db.getChapters(manga).executeOnIO().minByOrNull { it.source_order }
                     if (chapter != null && !chapter.read) listOf(chapter) else emptyList()
                 } else if (manga.source == MERGED_SOURCE_ID) {
@@ -672,7 +671,7 @@ class LibraryPresenter(
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
         val chapters = (if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource).let { runBlocking { it?.getChaptersFromDB(manga)?.awaitSingle().orEmpty() } } else db.getChapters(manga).executeAsBlocking())
-        return if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
+        return if (manga.isEhBasedManga()) {
             val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
             if (chapter?.read == false) chapter else null
         } else {

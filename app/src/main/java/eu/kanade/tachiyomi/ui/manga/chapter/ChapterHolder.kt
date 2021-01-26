@@ -10,9 +10,8 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.ChaptersItemBinding
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.manga.chapter.base.BaseChapterHolder
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.metadata.MetadataUtil
+import exh.source.isEhBasedManga
 import java.util.Date
 
 class ChapterHolder(
@@ -60,11 +59,11 @@ class ChapterHolder(
 
         if (chapter.date_upload > 0) {
             // SY -->
-            if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
+            if (manga.isEhBasedManga()) {
                 descriptions.add(MetadataUtil.EX_DATE_FORMAT.format(Date(chapter.date_upload)))
             } else /* SY <-- */ descriptions.add(adapter.dateFormat.format(Date(chapter.date_upload)))
         }
-        if ((!chapter.read || (adapter.preserveReadingPosition && (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID))) && chapter.last_page_read > 0) {
+        if ((!chapter.read || (adapter.preserveReadingPosition && manga.isEhBasedManga())) && chapter.last_page_read > 0) {
             val lastPageRead = SpannableString(itemView.context.getString(R.string.chapter_progress, chapter.last_page_read + 1)).apply {
                 setSpan(ForegroundColorSpan(adapter.readColor), 0, length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
             }

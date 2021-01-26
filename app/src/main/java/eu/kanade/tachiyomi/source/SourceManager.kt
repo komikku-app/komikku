@@ -19,18 +19,19 @@ import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.HentaiCafe
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
-import exh.EH_SOURCE_ID
-import exh.EIGHTMUSES_SOURCE_ID
-import exh.EXH_SOURCE_ID
-import exh.HBROWSE_SOURCE_ID
-import exh.HENTAI_CAFE_SOURCE_ID
-import exh.PERV_EDEN_EN_SOURCE_ID
-import exh.PERV_EDEN_IT_SOURCE_ID
-import exh.PURURIN_SOURCE_ID
-import exh.TSUMINO_SOURCE_ID
 import exh.source.BlacklistedSources
 import exh.source.DelegatedHttpSource
+import exh.source.EH_SOURCE_ID
+import exh.source.EIGHTMUSES_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import exh.source.EnhancedHttpSource
+import exh.source.HBROWSE_SOURCE_ID
+import exh.source.HENTAI_CAFE_SOURCE_ID
+import exh.source.PERV_EDEN_EN_SOURCE_ID
+import exh.source.PERV_EDEN_IT_SOURCE_ID
+import exh.source.PURURIN_SOURCE_ID
+import exh.source.TSUMINO_SOURCE_ID
+import exh.source.handleSourceLibrary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -119,8 +120,14 @@ open class SourceManager(private val context: Context) {
                 source,
                 delegate.newSourceClass.constructors.find { it.parameters.size == 2 }!!.call(source, context)
             )
-            val map = listOf(DelegatedSource(enhancedSource.originalSource.name, enhancedSource.originalSource.id, enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName, (enhancedSource.enhancedSource as DelegatedHttpSource)::class, delegate.factory)).associateBy { it.sourceId }
-            currentDelegatedSources.plusAssign(map)
+
+            currentDelegatedSources[enhancedSource.originalSource.id] = DelegatedSource(
+                enhancedSource.originalSource.name,
+                enhancedSource.originalSource.id,
+                enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName,
+                (enhancedSource.enhancedSource as DelegatedHttpSource)::class,
+                delegate.factory
+            )
             enhancedSource
         } else source
 
@@ -137,6 +144,9 @@ open class SourceManager(private val context: Context) {
 
     internal fun unregisterSource(source: Source) {
         sourcesMap.remove(source.id)
+        // SY -->
+        currentDelegatedSources.remove(source.id)
+        // SY <--
     }
 
     private fun createInternalSources(): List<Source> = listOf(
@@ -250,7 +260,7 @@ open class SourceManager(private val context: Context) {
             )
         ).associateBy { it.originalSourceQualifiedClassName }
 
-        var currentDelegatedSources = mutableMapOf<Long, DelegatedSource>()
+        val currentDelegatedSources = ListenMutableMap(mutableMapOf<Long, DelegatedSource>(), ::handleSourceLibrary)
 
         data class DelegatedSource(
             val sourceName: String,
@@ -260,5 +270,47 @@ open class SourceManager(private val context: Context) {
             val factory: Boolean = false
         )
     }
+
+    class ListenMutableMap<K, V>(private val internalMap: MutableMap<K, V>, val listener: () -> Unit) : MutableMap<K, V> {
+        override val size: Int
+            get() = internalMap.size
+        override fun containsKey(key: K): Boolean = internalMap.containsKey(key)
+        override fun containsValue(value: V): Boolean = internalMap.containsValue(value)
+        override fun get(key: K): V? = get(key)
+        override fun isEmpty(): Boolean = internalMap.isEmpty()
+        override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
+            get() = internalMap.entries
+        override val keys: MutableSet<K>
+            get() = internalMap.keys
+        override val values: MutableCollection<V>
+            get() = internalMap.values
+        override fun clear() {
+            val clearResult = internalMap.clear()
+            listener()
+            return clearResult
+        }
+
+        override fun put(key: K, value: V): V? {
+            val putResult = internalMap.put(key, value)
+            if (putResult == null) {
+                listener()
+            }
+            return putResult
+        }
+
+        override fun putAll(from: Map<out K, V>) {
+            internalMap.putAll(from)
+            listener()
+        }
+
+        override fun remove(key: K): V? {
+            val removeResult = internalMap.remove(key)
+            if (removeResult != null) {
+                listener()
+            }
+            return removeResult
+        }
+    }
+
     // SY <--
 }

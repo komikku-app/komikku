@@ -99,12 +99,12 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
-import exh.MERGED_SOURCE_ID
-import exh.isEhBasedSource
 import exh.md.similar.ui.MangaDexSimilarController
 import exh.metadata.metadata.base.FlatMetadata
 import exh.recs.RecommendsController
+import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.source.isEhBasedSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable

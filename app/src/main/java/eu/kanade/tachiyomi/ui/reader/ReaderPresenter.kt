@@ -34,15 +34,14 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
-import exh.MERGED_SOURCE_ID
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.md.utils.scanlatorList
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
+import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.source.isEhBasedManga
 import exh.util.defaultReaderType
 import exh.util.mangaType
 import exh.util.shouldDeleteChapters
@@ -451,7 +450,7 @@ class ReaderPresenter(
         if (selectedChapter.pages?.lastIndex == page.index && shouldTrack) {
             selectedChapter.chapter.read = true
             // SY -->
-            if (manga?.source == EH_SOURCE_ID || manga?.source == EXH_SOURCE_ID) {
+            if (manga?.isEhBasedManga() == true) {
                 chapterList
                     .filter { it.chapter.source_order > selectedChapter.chapter.source_order }
                     .onEach {

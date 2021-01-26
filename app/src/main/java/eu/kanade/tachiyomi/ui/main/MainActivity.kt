@@ -42,11 +42,11 @@ import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
-import exh.EH_SOURCE_ID
 import exh.EXHMigrations
-import exh.EXH_SOURCE_ID
 import exh.eh.EHentaiUpdateWorker
 import exh.source.BlacklistedSources
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import exh.uconfig.WarnConfigureDialogController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn

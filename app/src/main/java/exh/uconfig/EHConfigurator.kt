@@ -8,9 +8,9 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.asJsoup
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.log.maybeInjectEHLogger
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request

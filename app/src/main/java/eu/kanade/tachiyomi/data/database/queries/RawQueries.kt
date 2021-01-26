@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.data.database.queries
 
-import exh.MERGED_SOURCE_ID
+import exh.source.MERGED_SOURCE_ID
 import eu.kanade.tachiyomi.data.database.tables.CategoryTable as Category
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable as Chapter
 import eu.kanade.tachiyomi.data.database.tables.HistoryTable as History

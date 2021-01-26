@@ -19,7 +19,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.EXHMigrations
-import exh.MERGED_SOURCE_ID
+import exh.source.MERGED_SOURCE_ID
 import kotlinx.serialization.ExperimentalSerializationApi
 import okio.buffer
 import okio.gzip

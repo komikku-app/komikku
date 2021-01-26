@@ -17,10 +17,8 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import uy.kohesive.injekt.api.get
+import exh.source.isEhBasedManga
 import uy.kohesive.injekt.injectLazy
 
 class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMode> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
@@ -30,7 +28,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
     // SY <--
 
     override fun getLayoutRes(): Int {
-        return /* SY --> */ if ((manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) && preferences.enhancedEHentaiView().get()) R.layout.source_enhanced_ehentai_list_item
+        return /* SY --> */ if (manga.isEhBasedManga() && preferences.enhancedEHentaiView().get()) R.layout.source_enhanced_ehentai_list_item
         else /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item
             DisplayMode.COMFORTABLE_GRID, /* SY --> */ DisplayMode.NO_TITLE_GRID /* SY <-- */ -> R.layout.source_comfortable_grid_item
@@ -42,7 +40,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         view: View,
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
     ): SourceHolder<*> {
-        return /* SY --> */ if ((manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) && preferences.enhancedEHentaiView().get()) {
+        return /* SY --> */ if (manga.isEhBasedManga() && preferences.enhancedEHentaiView().get()) {
             SourceEnhancedEHentaiListHolder(view, adapter)
         } else /* SY <-- */ when (displayMode.get()) {
             DisplayMode.COMPACT_GRID -> {

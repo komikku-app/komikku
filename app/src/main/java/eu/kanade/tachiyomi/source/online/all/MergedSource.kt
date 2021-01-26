@@ -20,8 +20,8 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
-import exh.MERGED_SOURCE_ID
 import exh.merged.sql.models.MergedMangaReference
+import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
 import okhttp3.Response
 import rx.Observable

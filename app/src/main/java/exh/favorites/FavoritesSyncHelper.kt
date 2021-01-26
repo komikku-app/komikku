@@ -17,12 +17,13 @@ import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
+import exh.source.isEhBasedManga
 import exh.util.executeOnIO
 import exh.util.ignore
 import exh.util.trans
@@ -87,7 +88,7 @@ class FavoritesSyncHelper(val context: Context) {
         val libraryManga = db.getLibraryMangas().executeOnIO()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
-            if (it.source != EXH_SOURCE_ID && it.source != EH_SOURCE_ID) return@forEach
+            if (!it.isEhBasedManga()) return@forEach
 
             if (it.id in seenManga) {
                 val inCategories = db.getCategoriesForManga(it).executeOnIO()

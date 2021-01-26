@@ -54,10 +54,10 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import exh.MERGED_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
 import exh.savedsearches.JsonSavedSearch
+import exh.source.MERGED_SOURCE_ID
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

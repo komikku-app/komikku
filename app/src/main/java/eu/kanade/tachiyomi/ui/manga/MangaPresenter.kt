@@ -41,10 +41,8 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
-import exh.MERGED_SOURCE_ID
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
-import exh.isEhBasedSource
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.md.utils.scanlatorList
@@ -53,7 +51,9 @@ import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.source.isEhBasedSource
 import exh.util.shouldDeleteChapters
 import exh.util.trimOrNull
 import kotlinx.coroutines.Job

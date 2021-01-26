@@ -14,8 +14,8 @@ import eu.kanade.tachiyomi.databinding.EditMergedSettingsDialogBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
-import exh.MERGED_SOURCE_ID
 import exh.merged.sql.models.MergedMangaReference
+import exh.source.MERGED_SOURCE_ID
 import uy.kohesive.injekt.injectLazy
 
 class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMergedMangaItemListener {

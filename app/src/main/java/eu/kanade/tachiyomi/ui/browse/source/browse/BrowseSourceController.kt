@@ -56,10 +56,10 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
-import exh.isEhBasedSource
 import exh.md.similar.ui.EnableMangaDexSimilarDialogController
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
+import exh.source.isEhBasedSource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter

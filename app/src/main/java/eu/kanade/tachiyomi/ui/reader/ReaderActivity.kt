@@ -68,7 +68,7 @@ import eu.kanade.tachiyomi.util.view.showBar
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
-import exh.isEhBasedSource
+import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.mangaType
 import kotlinx.coroutines.Dispatchers

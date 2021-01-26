@@ -38,13 +38,13 @@ import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
-import exh.LIBRARY_UPDATE_EXCLUDED_SOURCES
-import exh.MERGED_SOURCE_ID
-import exh.mangaDexSourceIds
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
+import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.source.mangaDexSourceIds
 import exh.util.executeOnIO
 import exh.util.nullIfBlank
 import rx.Observable

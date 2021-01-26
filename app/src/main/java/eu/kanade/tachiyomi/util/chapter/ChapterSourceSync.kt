@@ -7,8 +7,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.online.HttpSource
-import exh.EH_SOURCE_ID
-import exh.EXH_SOURCE_ID
+import exh.source.isEhBasedManga
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Date
@@ -134,7 +133,7 @@ fun syncChaptersWithSource(
             }
 
             // --> EXH (carry over reading progress)
-            if (manga.source == EH_SOURCE_ID || manga.source == EXH_SOURCE_ID) {
+            if (manga.isEhBasedManga()) {
                 val finalAdded = toAdd.subtract(readded)
                 if (finalAdded.isNotEmpty()) {
                     val max = dbChapters.maxByOrNull { it.last_page_read }

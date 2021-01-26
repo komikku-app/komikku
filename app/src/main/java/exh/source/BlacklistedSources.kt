@@ -1,7 +1,5 @@
 package exh.source
 
-import exh.MERGED_SOURCE_ID
-
 object BlacklistedSources {
     val EHENTAI_EXT_SOURCES = listOf(
         8100626124886895451,

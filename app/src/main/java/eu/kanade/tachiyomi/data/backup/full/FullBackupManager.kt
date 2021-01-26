@@ -34,10 +34,10 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import exh.MERGED_SOURCE_ID
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.savedsearches.JsonSavedSearch
+import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -529,7 +529,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
     internal suspend fun restoreFlatMetadata(manga: Manga, backupFlatMetadata: BackupFlatMetadata) {
         manga.id?.let { mangaId ->
-            databaseHelper.getFlatMetadataForManga(mangaId).executeAsBlocking().let {
+            databaseHelper.getFlatMetadataForManga(mangaId).executeOnIO().let {
                 if (it == null) {
                     val flatMetadata = backupFlatMetadata.getFlatMetadata(mangaId)
                     databaseHelper.insertFlatMetadataAsync(flatMetadata).await()

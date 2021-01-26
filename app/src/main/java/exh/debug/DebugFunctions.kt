@@ -10,15 +10,16 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSManga
-import exh.EH_SOURCE_ID
 import exh.EXHMigrations
-import exh.EXH_SOURCE_ID
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.savedsearches.JsonSavedSearch
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
+import exh.source.isEhBasedManga
 import exh.util.cancellable
 import exh.util.executeOnIO
 import exh.util.jobScheduler
@@ -54,9 +55,8 @@ object DebugFunctions {
             val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
-                if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    null
-                } else manga
+                if (manga.isEhBasedManga()) manga
+                else null
             }.toList()
 
             allManga.forEach { manga ->
@@ -77,9 +77,8 @@ object DebugFunctions {
             val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
-                if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    null
-                } else manga
+                if (manga.isEhBasedManga()) manga
+                else null
             }.toList()
             val eh = sourceManager.get(EH_SOURCE_ID)
             val ex = sourceManager.get(EXH_SOURCE_ID)
@@ -107,9 +106,8 @@ object DebugFunctions {
             val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
-                if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    null
-                } else manga
+                if (manga.isEhBasedManga()) manga
+                else null
             }.toList()
 
             allManga.forEach { manga ->
@@ -126,9 +124,8 @@ object DebugFunctions {
             val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
-                if (manga.source != EH_SOURCE_ID && manga.source != EXH_SOURCE_ID) {
-                    null
-                } else manga
+                if (manga.isEhBasedManga()) manga
+                else null
             }.toList()
 
             allManga.forEach { manga ->
