@@ -211,8 +211,8 @@ class LibraryPresenter(
 
             if (!containsExclude.any() && !containsInclude.any()) return@tracking true
 
-            val exclude = trackedManga?.filterKeys { containsExclude.containsKey(it) }?.values ?: emptyList()
-            val include = trackedManga?.filterKeys { containsInclude.containsKey(it) }?.values ?: emptyList()
+            val exclude = trackedManga?.filter { containsExclude.containsKey(it.key) && it.value }?.values ?: emptyList()
+            val include = trackedManga?.filter { containsInclude.containsKey(it.key) && it.value }?.values ?: emptyList()
 
             if (containsInclude.any() && containsExclude.any()) {
                 return@tracking if (exclude.isNotEmpty()) !exclude.any() else include.any()
@@ -471,7 +471,7 @@ class LibraryPresenter(
                 .mapValues { tracksForMangaId ->
                     // Check if any of the trackers is logged in for the current manga id
                     tracksForMangaId.value.associate {
-                        Pair(it.sync_id, trackManager.getService(it.sync_id)?.let { tracker -> tracker.isLogged && ((tracker.id == TrackManager.MDLIST && it.status != FollowStatus.UNFOLLOWED.int) || tracker.id != TrackManager.MDLIST) } ?: false)
+                        Pair(it.sync_id, trackManager.getService(it.sync_id)?.isLogged.takeUnless { isLogged -> isLogged == true && it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int } ?: false)
                     }
                 }
         }.observeOn(Schedulers.io())
