@@ -1,7 +1,6 @@
 package exh.metadata
 
 import android.content.Context
-import android.graphics.Color
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.FloatRange
@@ -68,7 +67,7 @@ object MetadataUtil {
 
     val EX_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
 
-    fun getRatingString(context: Context, @FloatRange(from = 0.0, to = 10.0) rating: Float?) = when ((rating ?: 100F).roundToInt()) {
+    fun getRatingString(context: Context, @FloatRange(from = 0.0, to = 10.0) rating: Float? = null) = when (rating?.roundToInt()) {
         0 -> R.string.rating0
         1 -> R.string.rating1
         2 -> R.string.rating2
@@ -84,24 +83,24 @@ object MetadataUtil {
     }.let { context.getString(it) }
 
     fun getGenreAndColour(context: Context, genre: String) = when (genre) {
-        "doujinshi", "Doujinshi" -> SourceTagsUtil.DOUJINSHI_COLOR to R.string.doujinshi
-        "manga", "Japanese Manga", "Manga" -> SourceTagsUtil.MANGA_COLOR to R.string.manga
-        "artistcg", "artist CG", "artist-cg", "Artist CG" -> SourceTagsUtil.ARTIST_CG_COLOR to R.string.artist_cg
-        "gamecg", "game CG", "game-cg", "Game CG" -> SourceTagsUtil.GAME_CG_COLOR to R.string.game_cg
-        "western" -> SourceTagsUtil.WESTERN_COLOR to R.string.western
-        "non-h", "non-H" -> SourceTagsUtil.NON_H_COLOR to R.string.non_h
-        "imageset", "image Set" -> SourceTagsUtil.IMAGE_SET_COLOR to R.string.image_set
-        "cosplay" -> SourceTagsUtil.COSPLAY_COLOR to R.string.cosplay
-        "asianporn", "asian Porn" -> SourceTagsUtil.ASIAN_PORN_COLOR to R.string.asian_porn
-        "misc" -> SourceTagsUtil.MISC_COLOR to R.string.misc
-        "Korean Manhwa" -> SourceTagsUtil.ARTIST_CG_COLOR to R.string.manhwa
-        "Chinese Manhua" -> SourceTagsUtil.GAME_CG_COLOR to R.string.manhua
-        "Comic" -> SourceTagsUtil.WESTERN_COLOR to R.string.comic
-        "artbook" -> SourceTagsUtil.IMAGE_SET_COLOR to R.string.artbook
-        "webtoon" -> SourceTagsUtil.NON_H_COLOR to R.string.webtoon
-        "Video" -> SourceTagsUtil.WESTERN_COLOR to R.string.video
-        else -> "" to 0
-    }.let { if (it.second == 0) null else Color.parseColor(it.first) to context.getString(it.second) }
+        "doujinshi", "Doujinshi" -> SourceTagsUtil.GenreColor.DOUJINSHI_COLOR to R.string.doujinshi
+        "manga", "Japanese Manga", "Manga" -> SourceTagsUtil.GenreColor.MANGA_COLOR to R.string.manga
+        "artistcg", "artist CG", "artist-cg", "Artist CG" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
+        "gamecg", "game CG", "game-cg", "Game CG" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.game_cg
+        "western" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.western
+        "non-h", "non-H" -> SourceTagsUtil.GenreColor.NON_H_COLOR to R.string.non_h
+        "imageset", "image Set" -> SourceTagsUtil.GenreColor.IMAGE_SET_COLOR to R.string.image_set
+        "cosplay" -> SourceTagsUtil.GenreColor.COSPLAY_COLOR to R.string.cosplay
+        "asianporn", "asian Porn" -> SourceTagsUtil.GenreColor.ASIAN_PORN_COLOR to R.string.asian_porn
+        "misc" -> SourceTagsUtil.GenreColor.MISC_COLOR to R.string.misc
+        "Korean Manhwa" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.manhwa
+        "Chinese Manhua" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.manhua
+        "Comic" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.comic
+        "artbook" -> SourceTagsUtil.GenreColor.IMAGE_SET_COLOR to R.string.artbook
+        "webtoon" -> SourceTagsUtil.GenreColor.NON_H_COLOR to R.string.webtoon
+        "Video" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.video
+        else -> null
+    }?.let { it.first.color to context.getString(it.second) }
 }
 
 fun <K, V> Set<Map.Entry<K, V>>.forEach(action: (K, V) -> Unit) {

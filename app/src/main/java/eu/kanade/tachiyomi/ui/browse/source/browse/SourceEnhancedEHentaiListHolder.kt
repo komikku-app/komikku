@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
-import android.graphics.Color
 import android.view.View
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -59,21 +58,21 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
         }
 
         val pair = when (metadata.genre) {
-            "doujinshi" -> SourceTagsUtil.DOUJINSHI_COLOR to R.string.doujinshi
-            "manga" -> SourceTagsUtil.MANGA_COLOR to R.string.manga
-            "artistcg" -> SourceTagsUtil.ARTIST_CG_COLOR to R.string.artist_cg
-            "gamecg" -> SourceTagsUtil.GAME_CG_COLOR to R.string.game_cg
-            "western" -> SourceTagsUtil.WESTERN_COLOR to R.string.western
-            "non-h" -> SourceTagsUtil.NON_H_COLOR to R.string.non_h
-            "imageset" -> SourceTagsUtil.IMAGE_SET_COLOR to R.string.image_set
-            "cosplay" -> SourceTagsUtil.COSPLAY_COLOR to R.string.cosplay
-            "asianporn" -> SourceTagsUtil.ASIAN_PORN_COLOR to R.string.asian_porn
-            "misc" -> SourceTagsUtil.MISC_COLOR to R.string.misc
-            else -> "" to 0
+            "doujinshi" -> SourceTagsUtil.GenreColor.DOUJINSHI_COLOR to R.string.doujinshi
+            "manga" -> SourceTagsUtil.GenreColor.MANGA_COLOR to R.string.manga
+            "artistcg" -> SourceTagsUtil.GenreColor.ARTIST_CG_COLOR to R.string.artist_cg
+            "gamecg" -> SourceTagsUtil.GenreColor.GAME_CG_COLOR to R.string.game_cg
+            "western" -> SourceTagsUtil.GenreColor.WESTERN_COLOR to R.string.western
+            "non-h" -> SourceTagsUtil.GenreColor.NON_H_COLOR to R.string.non_h
+            "imageset" -> SourceTagsUtil.GenreColor.IMAGE_SET_COLOR to R.string.image_set
+            "cosplay" -> SourceTagsUtil.GenreColor.COSPLAY_COLOR to R.string.cosplay
+            "asianporn" -> SourceTagsUtil.GenreColor.ASIAN_PORN_COLOR to R.string.asian_porn
+            "misc" -> SourceTagsUtil.GenreColor.MISC_COLOR to R.string.misc
+            else -> null
         }
 
-        if (pair.first.isNotBlank()) {
-            binding.genre.setBackgroundColor(Color.parseColor(pair.first))
+        if (pair != null) {
+            binding.genre.setBackgroundColor(pair.first.color)
             binding.genre.text = view.context.getString(pair.second)
         } else binding.genre.text = metadata.genre
 

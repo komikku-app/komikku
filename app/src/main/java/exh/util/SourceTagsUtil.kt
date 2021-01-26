@@ -1,5 +1,6 @@
 package exh.util
 
+import android.graphics.Color
 import eu.kanade.tachiyomi.data.database.models.Manga
 import exh.EH_SOURCE_ID
 import exh.EXH_SOURCE_ID
@@ -13,7 +14,11 @@ import java.util.Locale
 object SourceTagsUtil {
     fun getWrappedTag(sourceId: Long, namespace: String? = null, tag: String? = null, fullTag: String? = null): String? {
         return if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId in nHentaiSourceIds || sourceId in hitomiSourceIds) {
-            val parsed = if (fullTag != null) parseTag(fullTag) else if (namespace != null && tag != null) RaisedTag(namespace, tag, TAG_TYPE_DEFAULT) else null
+            val parsed = if (fullTag != null) {
+                parseTag(fullTag)
+            } else if (namespace != null && tag != null) {
+                RaisedTag(namespace, tag, TAG_TYPE_DEFAULT)
+            } else null
             if (parsed?.namespace != null) {
                 when (sourceId) {
                     in hitomiSourceIds -> wrapTagHitomi(parsed.namespace, parsed.name.substringBefore('|').trim())
@@ -60,16 +65,20 @@ object SourceTagsUtil {
 
     const val TAG_TYPE_EXCLUDE = 69 // why not
 
-    const val DOUJINSHI_COLOR = "#f44336"
-    const val MANGA_COLOR = "#ff9800"
-    const val ARTIST_CG_COLOR = "#fbc02d"
-    const val GAME_CG_COLOR = "#4caf50"
-    const val WESTERN_COLOR = "#8bc34a"
-    const val NON_H_COLOR = "#2196f3"
-    const val IMAGE_SET_COLOR = "#3f51b5"
-    const val COSPLAY_COLOR = "#9c27b0"
-    const val ASIAN_PORN_COLOR = "#9575cd"
-    const val MISC_COLOR = "#f06292"
+    enum class GenreColor(val color: Int) {
+        DOUJINSHI_COLOR("#f44336"),
+        MANGA_COLOR("#ff9800"),
+        ARTIST_CG_COLOR("#fbc02d"),
+        GAME_CG_COLOR("#4caf50"),
+        WESTERN_COLOR("#8bc34a"),
+        NON_H_COLOR("#2196f3"),
+        IMAGE_SET_COLOR("#3f51b5"),
+        COSPLAY_COLOR("#9c27b0"),
+        ASIAN_PORN_COLOR("#9575cd"),
+        MISC_COLOR("#f06292");
+
+        constructor(color: String) : this(Color.parseColor(color))
+    }
 
     fun getLocaleSourceUtil(language: String?) = when (language) {
         "english", "eng" -> Locale("en")
