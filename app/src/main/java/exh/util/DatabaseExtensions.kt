@@ -1,6 +1,7 @@
 package exh.util
 
-import com.pushtorefresh.storio.operations.PreparedOperation
+import android.database.Cursor
+import com.pushtorefresh.storio.sqlite.operations.get.PreparedGetCursor
 import com.pushtorefresh.storio.sqlite.operations.get.PreparedGetListOfObjects
 import com.pushtorefresh.storio.sqlite.operations.get.PreparedGetObject
 import com.pushtorefresh.storio.sqlite.operations.put.PreparedPutCollectionOfObjects
@@ -18,4 +19,4 @@ suspend fun <T> PreparedPutObject<T>.executeOnIO(): PutResult = withContext(Disp
 
 suspend fun <T> PreparedPutCollectionOfObjects<T>.executeOnIO(): PutResults<T> = withContext(Dispatchers.IO) { executeAsBlocking() }
 
-suspend fun <T> PreparedOperation<T>.executeOnIO(): T? = withContext(Dispatchers.IO) { executeAsBlocking() }
+suspend fun PreparedGetCursor.executeOnIO(): Cursor = withContext(Dispatchers.IO) { executeAsBlocking() }

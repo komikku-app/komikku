@@ -2,6 +2,8 @@ package exh.metadata.metadata.base
 
 import com.pushtorefresh.storio.operations.PreparedOperation
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
@@ -9,6 +11,9 @@ import exh.util.executeOnIO
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
@@ -32,23 +37,35 @@ data class FlatMetadata(
             }
 }
 
-fun DatabaseHelper.getFlatMetadataForManga(mangaId: Long): PreparedOperation<FlatMetadata?> {
-    // We have to use fromCallable because StorIO messes up the thread scheduling if we use their rx functions
-    val single = Single.fromCallable {
-        val meta = getSearchMetadataForManga(mangaId).executeAsBlocking()
+interface PreparedSuspendOperation<T> : PreparedOperation<T> {
+    /**
+     * Creates a [Flow] that emits the result of of Operation
+     *
+     * Example:
+     *  override fun asFlow(): Flow<T> = flow { emit(operation()) }
+     *
+     */
+    fun asFlow(): Flow<T>
+
+    /**
+     * Executes operation asynchronously in the I/O thread pool.
+     */
+    suspend fun executeOnIO(): T
+}
+
+fun DatabaseHelper.getFlatMetadataForManga(mangaId: Long): PreparedSuspendOperation<FlatMetadata?> =
+    preparedOperationFromSuspend {
+        val meta = getSearchMetadataForManga(mangaId).executeOnIO()
         if (meta != null) {
-            val tags = getSearchTagsForManga(mangaId).executeAsBlocking()
-            val titles = getSearchTitlesForManga(mangaId).executeAsBlocking()
+            val tags = getSearchTagsForManga(mangaId).executeOnIO()
+            val titles = getSearchTitlesForManga(mangaId).executeOnIO()
 
             FlatMetadata(meta, tags, titles)
         } else null
     }
 
-    return preparedOperationFromSingle(single)
-}
-
-private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperation<T> {
-    return object : PreparedOperation<T> {
+private fun <T> preparedOperationFromSuspend(operation: suspend () -> T): PreparedSuspendOperation<T> {
+    return object : PreparedSuspendOperation<T> {
         /**
          * Creates [rx.Observable] that emits result of Operation.
          *
@@ -57,7 +74,7 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
          *
          * @return observable result of operation with only one [rx.Observer.onNext] call.
          */
-        override fun createObservable() = single.toObservable()
+        override fun createObservable() = runAsObservable(operation)
 
         /**
          * Executes operation synchronously in current thread.
@@ -66,11 +83,11 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
          * Notice: Blocking I/O operation should not be executed on the Main Thread,
          * it can cause ANR (Activity Not Responding dialog), block the UI and drop animations frames.
          * So please, execute blocking I/O operation only from background thread.
-         * See [WorkerThread].
+         * See [androidx.annotation.WorkerThread].
          *
          * @return nullable result of operation.
          */
-        override fun executeAsBlocking() = single.toBlocking().value()
+        override fun executeAsBlocking() = runBlocking { operation() }
 
         /**
          * Creates [rx.Observable] that emits result of Operation.
@@ -80,7 +97,7 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
          *
          * @return observable result of operation with only one [rx.Observer.onNext] call.
          */
-        override fun asRxObservable() = single.toObservable()
+        override fun asRxObservable() = runAsObservable(operation)
 
         /**
          * Creates [rx.Single] that emits result of Operation lazily when somebody subscribes to it.
@@ -89,7 +106,21 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
          *
          * @return single result of operation.
          */
-        override fun asRxSingle() = single
+        override fun asRxSingle(): Single<T> = runAsObservable(operation).toSingle()
+
+        /**
+         * Creates a [Flow] that emits the result of of Operation
+         *
+         * Example:
+         *  override fun asFlow(): Flow<T> = flow { emit(operation()) }
+         *
+         */
+        override fun asFlow(): Flow<T> = flow { emit(operation()) }
+
+        /**
+         * Executes operation asynchronously in the I/O thread pool.
+         */
+        override suspend fun executeOnIO(): T = withIOContext { operation() }
     }
 }
 
