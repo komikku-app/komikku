@@ -24,9 +24,7 @@ import eu.kanade.tachiyomi.util.view.inflate
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.ui.LoadingHandle
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -87,11 +85,6 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
 
     // EXH -->
     private var initialLoadHandle: LoadingHandle? = null
-    private lateinit var supervisorScope: CoroutineScope
-
-    private fun newScope() = object : CoroutineScope {
-        override val coroutineContext = SupervisorJob() + Dispatchers.Main
-    }
     // EXH <--
 
     fun onCreate(controller: LibraryController, binding: LibraryCategoryBinding) {
@@ -163,7 +156,6 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         // SY <--
 
         // EXH -->
-        supervisorScope = newScope()
         initialLoadHandle = controller.loaderManager.openProgressBar()
         // EXH <--
 
@@ -174,7 +166,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 // EXH -->
-                supervisorScope.launch {
+                scope.launch {
                     val handle = controller.loaderManager.openProgressBar()
                     try {
                         // EXH <--
@@ -190,7 +182,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         subscriptions += controller.libraryMangaRelay
             .subscribe {
                 // EXH -->
-                supervisorScope.launch {
+                scope.launch {
                     try {
                         // EXH <--
                         onNextLibraryManga(this, it)
@@ -235,14 +227,13 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     fun onDestroy() {
         unsubscribe()
         scope.cancel()
+        // SY -->
+        controller.loaderManager.closeProgressBar(initialLoadHandle)
+        // SY <--
     }
 
     private fun unsubscribe() {
         subscriptions.clear()
-        // EXH -->
-        supervisorScope.cancel()
-        controller.loaderManager.closeProgressBar(initialLoadHandle)
-        // EXH <--
     }
 
     /**
