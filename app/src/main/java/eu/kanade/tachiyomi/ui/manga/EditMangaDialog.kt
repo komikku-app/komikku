@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.ui.manga
 
 import android.app.Dialog
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.afollestad.materialdialogs.MaterialDialog
@@ -45,11 +47,10 @@ class EditMangaDialog : DialogController {
     private val infoController
         get() = targetController as MangaController
 
+    private val context: Context get() = binding.root.context
+
     constructor(target: MangaController, manga: Manga) : super(
-        Bundle()
-            .apply {
-                putLong(KEY_MANGA, manga.id!!)
-            }
+        bundleOf(KEY_MANGA to manga.id!!)
     ) {
         targetController = target
         this.manga = manga
@@ -75,7 +76,7 @@ class EditMangaDialog : DialogController {
     fun onViewCreated() {
         val mangaThumbnail = manga.toMangaThumbnail()
 
-        GlideApp.with(binding.root.context)
+        GlideApp.with(context)
             .load(mangaThumbnail)
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .centerCrop()
@@ -85,13 +86,13 @@ class EditMangaDialog : DialogController {
 
         if (isLocal) {
             if (manga.title != manga.url) {
-                binding.title.append(manga.title)
+                binding.title.setText(manga.title)
             }
             binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.url}"
-            binding.mangaAuthor.append(manga.author.orEmpty())
-            binding.mangaArtist.append(manga.artist.orEmpty())
-            binding.mangaDescription.append(manga.description.orEmpty())
-            binding.mangaGenresTags.setChips(manga.getGenres())
+            binding.mangaAuthor.setText(manga.author.orEmpty())
+            binding.mangaArtist.setText(manga.artist.orEmpty())
+            binding.mangaDescription.setText(manga.description.orEmpty())
+            binding.mangaGenresTags.setChips(manga.getGenres().orEmpty())
         } else {
             if (manga.title != manga.originalTitle) {
                 binding.title.append(manga.title)
@@ -105,7 +106,7 @@ class EditMangaDialog : DialogController {
             if (manga.description != manga.originalDescription) {
                 binding.mangaDescription.append(manga.description.orEmpty())
             }
-            binding.mangaGenresTags.setChips(manga.getGenres())
+            binding.mangaGenresTags.setChips(manga.getGenres().orEmpty())
 
             binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.originalTitle}"
             if (manga.originalAuthor != null) {
@@ -132,22 +133,24 @@ class EditMangaDialog : DialogController {
         binding.resetCover.isVisible = !isLocal
         binding.resetCover.clicks()
             .onEach {
-                binding.root.context.toast(R.string.cover_reset_toast)
+                context.toast(R.string.cover_reset_toast)
                 customCoverUri = null
                 willResetCover = true
-            }.launchIn(infoController.viewScope)
+            }
+            .launchIn(infoController.viewScope)
     }
 
     private fun resetTags() {
-        if (manga.genre.isNullOrBlank() || manga.source == LocalSource.ID) binding.mangaGenresTags.setChips(
-            emptyList()
-        )
-        else binding.mangaGenresTags.setChips(manga.getOriginalGenres())
+        if (manga.genre.isNullOrBlank() || manga.source == LocalSource.ID) {
+            binding.mangaGenresTags.setChips(emptyList())
+        } else {
+            binding.mangaGenresTags.setChips(manga.getOriginalGenres().orEmpty())
+        }
     }
 
     fun updateCover(uri: Uri) {
         willResetCover = false
-        GlideApp.with(binding.root.context)
+        GlideApp.with(context)
             .load(uri)
             .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
             .centerCrop()
@@ -167,10 +170,10 @@ class EditMangaDialog : DialogController {
         )
     }
 
-    private fun ChipGroup.setChips(items: List<String>?) {
+    private fun ChipGroup.setChips(items: List<String>) {
         removeAllViews()
 
-        items?.forEach { item ->
+        items.forEach { item ->
             val chip = Chip(context).apply {
                 text = item
 
@@ -198,8 +201,7 @@ class EditMangaDialog : DialogController {
                     .positiveButton(android.R.string.ok) {
                         val newTag = it.getInputField().text.toString().trimOrNull()
 
-                        if (items != null && newTag != null) setChips(items + listOf(newTag))
-                        else if (newTag != null) setChips(listOf(newTag))
+                        if (newTag != null) setChips(items + listOf(newTag))
                     }
                     .negativeButton(android.R.string.cancel)
                     .show()
