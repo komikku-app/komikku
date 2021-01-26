@@ -16,7 +16,7 @@ import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
-import exh.plusAssign
+import exh.util.plusAssign
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

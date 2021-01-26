@@ -1,6 +1,6 @@
 package exh.search
 
-import exh.plusAssign
+import exh.util.plusAssign
 
 class Text : QueryComponent() {
     val components = mutableListOf<TextComponent>()
