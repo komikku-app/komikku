@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.manga.merged
 
 import android.app.Dialog
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
@@ -32,10 +33,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
         get() = targetController as MangaController
 
     constructor(target: MangaController, manga: Manga) : super(
-        Bundle()
-            .apply {
-                putLong(KEY_MANGA, manga.id!!)
-            }
+        bundleOf(KEY_MANGA to manga.id!!)
     ) {
         targetController = target
         this.manga = manga
