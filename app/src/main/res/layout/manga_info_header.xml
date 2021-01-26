@@ -178,7 +178,7 @@
             android:layout_height="wrap_content"
             android:text="@string/merge"
             android:visibility="gone"
-            app:icon="@drawable/eh_ic_find_replace_white_24dp"
+            app:icon="@drawable/ic_merge_type_24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btn_webview"
             app:layout_constraintTop_toBottomOf="@+id/manga_info"

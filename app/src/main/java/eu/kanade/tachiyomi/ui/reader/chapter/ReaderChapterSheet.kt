@@ -112,7 +112,7 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDial
             refreshList()
             initialized = true
         }
-        binding.pageText.text = activity.binding.pageText.text
+        binding.pageText.text = activity.binding.pageNumber.text
         binding.pageSeekbar.max = activity.binding.pageSeekbar.max
         binding.pageSeekbar.progress = activity.binding.pageSeekbar.progress
         super.show()
