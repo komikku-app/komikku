@@ -27,7 +27,11 @@ fun ChipGroup.setChipsExtended(items: List<String>?, onClick: (item: String) -> 
 fun makeSearchChip(item: String, onClick: (item: String) -> Unit = {}, onLongClick: (item: String) -> Unit = {}, sourceId: Long, context: Context, namespace: String? = null, type: Int? = null): Chip {
     return Chip(context).apply {
         text = item
-        val search = (if (namespace != null) SourceTagsUtil.getWrappedTag(sourceId, namespace = namespace, tag = item) else SourceTagsUtil.getWrappedTag(sourceId, fullTag = item)) ?: item
+        val search = if (namespace != null) {
+            SourceTagsUtil.getWrappedTag(sourceId, namespace = namespace, tag = item)
+        } else {
+            SourceTagsUtil.getWrappedTag(sourceId, fullTag = item)
+        } ?: item
         setOnClickListener { onClick(search) }
         setOnLongClickListener {
             onLongClick(search)
