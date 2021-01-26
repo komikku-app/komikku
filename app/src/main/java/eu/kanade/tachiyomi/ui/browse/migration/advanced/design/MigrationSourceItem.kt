@@ -55,19 +55,19 @@ class MigrationSourceItem(val source: HttpSource, var sourceEnabled: Boolean) : 
     }
 
     @Parcelize
-    data class ParcelableSI(val sourceId: Long, val sourceEnabled: Boolean) : Parcelable
+    data class MigrationSource(val sourceId: Long, val sourceEnabled: Boolean) : Parcelable
 
-    fun asParcelable(): ParcelableSI {
-        return ParcelableSI(source.id, sourceEnabled)
+    fun asParcelable(): MigrationSource {
+        return MigrationSource(source.id, sourceEnabled)
     }
 
     companion object {
-        fun fromParcelable(sourceManager: SourceManager, si: ParcelableSI): MigrationSourceItem? {
-            val source = sourceManager.get(si.sourceId) as? HttpSource ?: return null
+        fun fromParcelable(sourceManager: SourceManager, migrationSource: MigrationSource): MigrationSourceItem? {
+            val source = sourceManager.get(migrationSource.sourceId) as? HttpSource ?: return null
 
             return MigrationSourceItem(
                 source,
-                si.sourceEnabled
+                migrationSource.sourceEnabled
             )
         }
     }

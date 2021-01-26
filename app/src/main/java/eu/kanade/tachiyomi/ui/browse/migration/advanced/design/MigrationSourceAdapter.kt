@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.os.Bundle
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import uy.kohesive.injekt.injectLazy
 
@@ -13,6 +14,9 @@ class MigrationSourceAdapter(
     controllerPre,
     true
 ) {
+    val preferences: PreferencesHelper by injectLazy()
+    val sourceManager: SourceManager by injectLazy()
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
@@ -27,10 +31,10 @@ class MigrationSourceAdapter(
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        val sourceManager: SourceManager by injectLazy()
-        savedInstanceState.getParcelableArrayList<MigrationSourceItem.ParcelableSI>(
-            SELECTED_SOURCES_KEY
-        )?.let { selectedSources ->
+        val selectedSources = savedInstanceState
+            .getParcelableArrayList<MigrationSourceItem.MigrationSource>(SELECTED_SOURCES_KEY)
+
+        if (selectedSources != null) {
             updateDataSet(selectedSources.map { MigrationSourceItem.fromParcelable(sourceManager, it) })
         }
 

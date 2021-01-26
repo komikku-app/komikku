@@ -3,11 +3,9 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
 import android.view.View
 import eu.davidea.viewholders.FlexibleViewHolder
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationSourceItemBinding
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
-import uy.kohesive.injekt.injectLazy
 
 class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
     FlexibleViewHolder(view, adapter) {
@@ -17,8 +15,7 @@ class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
     }
 
     fun bind(source: HttpSource, sourceEnabled: Boolean) {
-        val preferences by injectLazy<PreferencesHelper>()
-        val isMultiLanguage = preferences.enabledLanguages().get().size > 1
+        val isMultiLanguage = adapter.preferences.enabledLanguages().get().size > 1
         // Set capitalized title.
         val sourceName = if (isMultiLanguage) source.toString() else source.name.capitalize()
         binding.title.text = sourceName
