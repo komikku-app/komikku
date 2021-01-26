@@ -402,19 +402,19 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .onEach {
                 ReaderColorFilterSheet(this).show()
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.actionSettings.clicks()
             .onEach {
                 ReaderSettingsSheet(this).show()
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
 
         binding.webviewButton.clicks()
             .onEach {
                 openMangaInBrowser()
             }
-            .launchIn(scope)
+            .launchIn(lifecycleScope)
         // Extra menu buttons
 
         binding.leftChapter.setOnClickListener {
