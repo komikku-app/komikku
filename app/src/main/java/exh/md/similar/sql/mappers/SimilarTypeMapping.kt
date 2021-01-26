@@ -1,7 +1,7 @@
 package exh.md.similar.sql.mappers
 
-import android.content.ContentValues
 import android.database.Cursor
+import androidx.core.content.contentValuesOf
 import com.pushtorefresh.storio.sqlite.SQLiteTypeMapping
 import com.pushtorefresh.storio.sqlite.operations.delete.DefaultDeleteResolver
 import com.pushtorefresh.storio.sqlite.operations.get.DefaultGetResolver
@@ -35,12 +35,12 @@ class SimilarPutResolver : DefaultPutResolver<MangaSimilar>() {
         .whereArgs(obj.id)
         .build()
 
-    override fun mapToContentValues(obj: MangaSimilar) = ContentValues(4).apply {
-        put(COL_ID, obj.id)
-        put(COL_MANGA_ID, obj.manga_id)
-        put(COL_MANGA_SIMILAR_MATCHED_IDS, obj.matched_ids)
-        put(COL_MANGA_SIMILAR_MATCHED_TITLES, obj.matched_titles)
-    }
+    override fun mapToContentValues(obj: MangaSimilar) = contentValuesOf(
+        COL_ID to obj.id,
+        COL_MANGA_ID to obj.manga_id,
+        COL_MANGA_SIMILAR_MATCHED_IDS to obj.matched_ids,
+        COL_MANGA_SIMILAR_MATCHED_TITLES to obj.matched_titles
+    )
 }
 
 class SimilarGetResolver : DefaultGetResolver<MangaSimilar>() {

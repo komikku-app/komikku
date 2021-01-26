@@ -1,6 +1,6 @@
 package exh.merged.sql.resolvers
 
-import android.content.ContentValues
+import androidx.core.content.contentValuesOf
 import com.pushtorefresh.storio.sqlite.StorIOSQLite
 import com.pushtorefresh.storio.sqlite.operations.put.PutResolver
 import com.pushtorefresh.storio.sqlite.operations.put.PutResult
@@ -25,7 +25,7 @@ class MergeMangaSettingsPutResolver(val reset: Boolean = false) : PutResolver<Me
         .whereArgs(mergedMangaReference.id)
         .build()
 
-    fun mapToContentValues(mergedMangaReference: MergedMangaReference) = ContentValues(1).apply {
-        put(MergedTable.COL_CHAPTER_SORT_MODE, mergedMangaReference.chapterSortMode)
-    }
+    fun mapToContentValues(mergedMangaReference: MergedMangaReference) = contentValuesOf(
+        MergedTable.COL_CHAPTER_SORT_MODE to mergedMangaReference.chapterSortMode,
+    )
 }

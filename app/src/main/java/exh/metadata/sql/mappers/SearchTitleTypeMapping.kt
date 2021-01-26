@@ -1,7 +1,7 @@
 package exh.metadata.sql.mappers
 
-import android.content.ContentValues
 import android.database.Cursor
+import androidx.core.content.contentValuesOf
 import com.pushtorefresh.storio.sqlite.SQLiteTypeMapping
 import com.pushtorefresh.storio.sqlite.operations.delete.DefaultDeleteResolver
 import com.pushtorefresh.storio.sqlite.operations.get.DefaultGetResolver
@@ -34,12 +34,12 @@ class SearchTitlePutResolver : DefaultPutResolver<SearchTitle>() {
         .whereArgs(obj.id)
         .build()
 
-    override fun mapToContentValues(obj: SearchTitle) = ContentValues(4).apply {
-        put(COL_ID, obj.id)
-        put(COL_MANGA_ID, obj.mangaId)
-        put(COL_TITLE, obj.title)
-        put(COL_TYPE, obj.type)
-    }
+    override fun mapToContentValues(obj: SearchTitle) = contentValuesOf(
+        COL_ID to obj.id,
+        COL_MANGA_ID to obj.mangaId,
+        COL_TITLE to obj.title,
+        COL_TYPE to obj.type,
+    )
 }
 
 class SearchTitleGetResolver : DefaultGetResolver<SearchTitle>() {

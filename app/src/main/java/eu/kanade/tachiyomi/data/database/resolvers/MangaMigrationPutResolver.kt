@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.data.database.resolvers
 
-import android.content.ContentValues
+import androidx.core.content.contentValuesOf
 import com.pushtorefresh.storio.sqlite.StorIOSQLite
 import com.pushtorefresh.storio.sqlite.operations.put.PutResolver
 import com.pushtorefresh.storio.sqlite.operations.put.PutResult
@@ -25,11 +25,11 @@ class MangaMigrationPutResolver : PutResolver<Manga>() {
         .whereArgs(manga.id)
         .build()
 
-    fun mapToContentValues(manga: Manga) = ContentValues(5).apply {
-        put(MangaTable.COL_FAVORITE, manga.favorite)
-        put(MangaTable.COL_DATE_ADDED, manga.date_added)
-        put(MangaTable.COL_TITLE, manga.title)
-        put(MangaTable.COL_CHAPTER_FLAGS, manga.chapter_flags)
-        put(MangaTable.COL_VIEWER, manga.viewer)
-    }
+    fun mapToContentValues(manga: Manga) = contentValuesOf(
+        MangaTable.COL_FAVORITE to manga.favorite,
+        MangaTable.COL_DATE_ADDED to manga.date_added,
+        MangaTable.COL_TITLE to manga.title,
+        MangaTable.COL_CHAPTER_FLAGS to manga.chapter_flags,
+        MangaTable.COL_VIEWER to manga.viewer
+    )
 }

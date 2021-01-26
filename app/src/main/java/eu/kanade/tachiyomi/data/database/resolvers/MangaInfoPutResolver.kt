@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.database.resolvers
 
 import android.content.ContentValues
+import androidx.core.content.contentValuesOf
 import com.pushtorefresh.storio.sqlite.StorIOSQLite
 import com.pushtorefresh.storio.sqlite.operations.put.PutResolver
 import com.pushtorefresh.storio.sqlite.operations.put.PutResult
@@ -25,13 +26,13 @@ class MangaInfoPutResolver(val reset: Boolean = false) : PutResolver<Manga>() {
         .whereArgs(manga.id)
         .build()
 
-    fun mapToContentValues(manga: Manga) = ContentValues(1).apply {
-        put(MangaTable.COL_TITLE, manga.originalTitle)
-        put(MangaTable.COL_GENRE, manga.originalGenre)
-        put(MangaTable.COL_AUTHOR, manga.originalAuthor)
-        put(MangaTable.COL_ARTIST, manga.originalArtist)
-        put(MangaTable.COL_DESCRIPTION, manga.originalDescription)
-    }
+    fun mapToContentValues(manga: Manga) = contentValuesOf(
+        MangaTable.COL_TITLE to manga.originalTitle,
+        MangaTable.COL_GENRE to manga.originalGenre,
+        MangaTable.COL_AUTHOR to manga.originalAuthor,
+        MangaTable.COL_ARTIST to manga.originalArtist,
+        MangaTable.COL_DESCRIPTION to manga.originalDescription
+    )
 
     fun resetToContentValues(manga: Manga) = ContentValues(1).apply {
         val splitter = "▒ ▒∩▒"

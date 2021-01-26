@@ -1,7 +1,7 @@
 package exh.merged.sql.mappers
 
-import android.content.ContentValues
 import android.database.Cursor
+import androidx.core.content.contentValuesOf
 import androidx.core.database.getLongOrNull
 import com.pushtorefresh.storio.sqlite.SQLiteTypeMapping
 import com.pushtorefresh.storio.sqlite.operations.delete.DefaultDeleteResolver
@@ -42,19 +42,19 @@ class MergedMangaPutResolver : DefaultPutResolver<MergedMangaReference>() {
         .whereArgs(obj.id)
         .build()
 
-    override fun mapToContentValues(obj: MergedMangaReference) = ContentValues(5).apply {
-        put(COL_ID, obj.id)
-        put(COL_IS_INFO_MANGA, obj.isInfoManga)
-        put(COL_GET_CHAPTER_UPDATES, obj.getChapterUpdates)
-        put(COL_CHAPTER_SORT_MODE, obj.chapterSortMode)
-        put(COL_CHAPTER_PRIORITY, obj.chapterPriority)
-        put(COL_DOWNLOAD_CHAPTERS, obj.downloadChapters)
-        put(COL_MERGE_ID, obj.mergeId)
-        put(COL_MERGE_URL, obj.mergeUrl)
-        put(COL_MANGA_ID, obj.mangaId)
-        put(COL_MANGA_URL, obj.mangaUrl)
-        put(COL_MANGA_SOURCE, obj.mangaSourceId)
-    }
+    override fun mapToContentValues(obj: MergedMangaReference) = contentValuesOf(
+        COL_ID to obj.id,
+        COL_IS_INFO_MANGA to obj.isInfoManga,
+        COL_GET_CHAPTER_UPDATES to obj.getChapterUpdates,
+        COL_CHAPTER_SORT_MODE to obj.chapterSortMode,
+        COL_CHAPTER_PRIORITY to obj.chapterPriority,
+        COL_DOWNLOAD_CHAPTERS to obj.downloadChapters,
+        COL_MERGE_ID to obj.mergeId,
+        COL_MERGE_URL to obj.mergeUrl,
+        COL_MANGA_ID to obj.mangaId,
+        COL_MANGA_URL to obj.mangaUrl,
+        COL_MANGA_SOURCE to obj.mangaSourceId
+    )
 }
 
 class MergedMangaGetResolver : DefaultGetResolver<MergedMangaReference>() {
