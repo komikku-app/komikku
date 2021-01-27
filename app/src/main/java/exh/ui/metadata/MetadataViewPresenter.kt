@@ -6,17 +6,13 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.util.lang.asFlow
-import exh.metadata.metadata.base.FlatMetadata
+import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.getMainSource
 import exh.ui.base.CoroutinePresenter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import exh.util.executeOnIO
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.plus
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -32,24 +28,18 @@ class MetadataViewPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        getMangaMetaObservable()
-            .onEach {
-                if (it == null) return@onEach
-                val mainSource = source.getMainSource()
-                if (mainSource is MetadataSource<*, *>) {
-                    meta.value = it.raise(mainSource.metaClass)
-                }
+        launchIO {
+            val flatMetadata = db.getFlatMetadataForManga(manga.id!!).executeOnIO() ?: return@launchIO
+            val mainSource = source.getMainSource()
+            if (mainSource is MetadataSource<*, *>) {
+                meta.value = flatMetadata.raise(mainSource.metaClass)
             }
-            .launchUnderContext(Dispatchers.IO)
+        }
 
         meta
             .inView { view, metadata ->
                 view.onNextMangaInfo(metadata)
             }
             .launch()
-    }
-
-    private fun getMangaMetaObservable(): Flow<FlatMetadata?> {
-        return db.getFlatMetadataForManga(manga.id!!).asRxObservable().asFlow()
     }
 }
