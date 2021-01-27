@@ -247,12 +247,15 @@ class ReaderPresenter(
             .first()
             .observeOn(AndroidSchedulers.mainThread())
             // SY -->
-            .map { manga ->
+            .flatMap { manga ->
                 val source = sourceManager.get(manga.source)?.getMainSource()
                 if (manga.initialized && source is MetadataSource<*, *>) {
-                    val flatMeta = db.getFlatMetadataForManga(mangaId).executeAsBlocking()
-                    manga to flatMeta?.raise(source.metaClass)
-                } else manga to null
+                    db.getFlatMetadataForManga(mangaId).asRxSingle().map {
+                        manga to it?.raise(source.metaClass)
+                    }.toObservable()
+                } else {
+                    Observable.just(manga to null)
+                }
             }
             .doOnNext { init(it.first, initialChapterId, it.second) }
             // SY <--
