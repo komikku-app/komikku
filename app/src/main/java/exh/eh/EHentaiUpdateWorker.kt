@@ -7,7 +7,6 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build
-import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -45,18 +44,20 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.days
 import kotlin.time.hours
 
-class EHentaiUpdateWorker : JobService() {
-    private val scope = CoroutineScope(Dispatchers.Default + Job())
+class EHentaiUpdateWorker : JobService(), CoroutineScope {
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default + Job()
 
     private val db: DatabaseHelper by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
-    private val logger: Logger = XLog.tag("EHUpdater").build()
+    private val logger = XLog.tag("EHUpdater")
 
     private val updateNotifier by lazy { LibraryUpdateNotifier(this) }
 
@@ -84,7 +85,7 @@ class EHentaiUpdateWorker : JobService() {
      * to end the job entirely.  Regardless of the value returned, your job must stop executing.
      */
     override fun onStopJob(params: JobParameters?): Boolean {
-        runBlocking { scope.coroutineContext[Job]?.cancelAndJoin() }
+        runBlocking { this@EHentaiUpdateWorker.coroutineContext[Job]?.cancelAndJoin() }
         return false
     }
 
@@ -120,7 +121,7 @@ class EHentaiUpdateWorker : JobService() {
      * extras configured with [     This object serves to identify this specific running job instance when calling][JobInfo.Builder.setExtras]
      */
     override fun onStartJob(params: JobParameters): Boolean {
-        scope.launch {
+        launch {
             startUpdating()
             logger.d("Update job completed!")
             jobFinished(params, false)
@@ -143,7 +144,7 @@ class EHentaiUpdateWorker : JobService() {
                 return@mapNotNull null
             }
 
-            val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()
+            val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()
                 ?: return@mapNotNull null
 
             val raisedMeta = meta.raise<EHentaiSearchMetadata>()
@@ -272,7 +273,7 @@ class EHentaiUpdateWorker : JobService() {
             return new to db.getChapters(manga).executeOnIO()
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {
-                val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()?.raise<EHentaiSearchMetadata>()
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>()
                 if (meta != null) {
                     // Age dead galleries
                     logger.d("Aged %s - notfound", manga.id)
@@ -343,7 +344,8 @@ class EHentaiUpdateWorker : JobService() {
         }
 
         fun launchBackgroundTest(context: Context): String {
-            return if (context.jobScheduler.schedule(context.testBackgroundJobInfo()) == JobScheduler.RESULT_FAILURE) {
+            val jobScheduler = context.jobScheduler
+            return if (jobScheduler.schedule(context.testBackgroundJobInfo()) == JobScheduler.RESULT_FAILURE) {
                 logger.e("Failed to schedule background test job!")
                 "Failed"
             } else {

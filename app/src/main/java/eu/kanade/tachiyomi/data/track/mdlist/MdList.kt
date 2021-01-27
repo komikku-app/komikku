@@ -51,7 +51,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override suspend fun update(track: Track): Track {
         val mdex = mdex ?: throw Exception("Mangadex not enabled")
-        val mangaMetadata = db.getFlatMetadataForManga(track.manga_id).executeOnIO()
+        val mangaMetadata = db.getFlatMetadataForManga(track.manga_id).executeAsBlocking()
             ?.raise<MangaDexSearchMetadata>()
             ?: throw Exception("Invalid manga metadata")
         val followStatus = FollowStatus.fromInt(track.status)

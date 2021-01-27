@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.util.lang.asFlow
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.plus
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -48,6 +50,6 @@ class MetadataViewPresenter(
     }
 
     private fun getMangaMetaObservable(): Flow<FlatMetadata?> {
-        return db.getFlatMetadataForManga(manga.id!!).asFlow()
+        return db.getFlatMetadataForManga(manga.id!!).asRxObservable().asFlow()
     }
 }

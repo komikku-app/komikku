@@ -643,7 +643,7 @@ class SettingsEhController : SettingsController() {
                             val allMeta = db.getFavoriteMangaWithMetadata().executeAsBlocking()
                                 .filter(Manga::isEhBasedManga)
                                 .mapNotNull {
-                                    db.getFlatMetadataForManga(it.id!!).executeOnIO()
+                                    db.getFlatMetadataForManga(it.id!!).executeAsBlocking()
                                         ?.raise<EHentaiSearchMetadata>()
                                 }.toList()
 

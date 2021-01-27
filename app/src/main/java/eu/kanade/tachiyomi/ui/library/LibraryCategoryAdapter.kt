@@ -20,7 +20,6 @@ import exh.search.SearchEngine
 import exh.search.Text
 import exh.source.isMetadataSource
 import exh.util.cancellable
-import exh.util.executeOnIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -116,7 +115,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     // Prepare filter object
                     val parsedQuery = searchEngine.parseQuery(savedSearchText)
 
-                    val mangaWithMetaIdsQuery = db.getIdsOfFavoriteMangaWithMetadata().executeOnIO()
+                    val mangaWithMetaIdsQuery = db.getIdsOfFavoriteMangaWithMetadata().executeAsBlocking()
                     val mangaWithMetaIds = LongArray(mangaWithMetaIdsQuery.count)
                     if (mangaWithMetaIds.isNotEmpty()) {
                         val mangaIdCol = mangaWithMetaIdsQuery.getColumnIndex(MangaTable.COL_ID)
@@ -139,8 +138,8 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                                 // No meta? Filter using title
                                 filterManga(parsedQuery, item.manga)
                             } else {
-                                val tags = db.getSearchTagsForManga(mangaId).executeOnIO()
-                                val titles = db.getSearchTitlesForManga(mangaId).executeOnIO()
+                                val tags = db.getSearchTagsForManga(mangaId).executeAsBlocking()
+                                val titles = db.getSearchTitlesForManga(mangaId).executeAsBlocking()
                                 filterManga(parsedQuery, item.manga, false, tags, titles)
                             }
                         } else {
@@ -168,7 +167,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
 
     private suspend fun filterManga(queries: List<QueryComponent>, manga: LibraryManga, checkGenre: Boolean = true, searchTags: List<SearchTag>? = null, searchTitles: List<SearchTitle>? = null): Boolean {
         val mappedQueries = queries.groupBy { it.excluded }
-        val tracks = if (hasLoggedServices) db.getTracks(manga).executeOnIO() else null
+        val tracks = if (hasLoggedServices) db.getTracks(manga).executeAsBlocking().toList() else null
         val source = sourceManager.get(manga.source)
         val genre = if (checkGenre) manga.getGenres().orEmpty() else emptyList()
         val hasNormalQuery = mappedQueries[false]?.all { queryComponent ->
