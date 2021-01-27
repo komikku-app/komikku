@@ -78,42 +78,6 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        mdUrl?.let {
-            manga.url = try {
-                val uri = it.toUri()
-                val out = uri.path!!.removePrefix("/api")
-                out + if (out.endsWith("/")) "" else "/"
-            } catch (e: Exception) {
-                it
-            }
-        }
-
-        title?.let {
-            manga.title = it
-        }
-
-        manga.thumbnail_url = thumbnail_url
-
-        author?.let {
-            manga.author = it
-        }
-
-        artist?.let {
-            manga.artist = it
-        }
-
-        status?.let {
-            manga.status = it
-        }
-
-        manga.genre = tagsToGenreString()
-
-        description?.let {
-            manga.description = it
-        }
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         mdId?.let { pairs += context.getString(R.string.id) to it }

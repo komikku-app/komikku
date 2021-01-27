@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.PururinSearchMetadata
-import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
+import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.PururinDescriptionAdapter
@@ -108,7 +108,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
                             tags += RaisedTag(
                                 namespace,
                                 searchUrl.lastPathSegment!!.substringBefore("."),
-                                if (namespace != PururinSearchMetadata.TAG_NAMESPACE_CATEGORY) PururinSearchMetadata.TAG_TYPE_DEFAULT else TAG_TYPE_VIRTUAL
+                                if (namespace != PururinSearchMetadata.TAG_NAMESPACE_CATEGORY) PururinSearchMetadata.TAG_TYPE_DEFAULT else RaisedSearchMetadata.TAG_TYPE_VIRTUAL
                             )
                         }
                     }
@@ -122,7 +122,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
         "www.pururin.io"
     )
 
-    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String {
         return "${PururinSearchMetadata.BASE_URL}/gallery/${uri.pathSegments[1]}/${uri.lastPathSegment}"
     }
 

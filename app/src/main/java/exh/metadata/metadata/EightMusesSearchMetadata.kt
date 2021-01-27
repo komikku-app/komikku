@@ -38,24 +38,6 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        manga.url = path.joinToString("/", prefix = "/")
-
-        title?.let {
-            manga.title = it
-        }
-
-        thumbnailUrl?.let {
-            manga.thumbnail_url = it
-        }
-
-        manga.artist = tags.ofNamespace(ARTIST_NAMESPACE).joinToString { it.name }
-
-        manga.genre = tagsToGenreString()
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         title?.let { pairs += context.getString(R.string.title) to it }

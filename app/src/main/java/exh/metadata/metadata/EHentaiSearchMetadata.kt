@@ -90,44 +90,6 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        gId?.let { gId ->
-            gToken?.let { gToken ->
-                manga.url = idAndTokenToUrl(gId, gToken)
-            }
-        }
-        thumbnailUrl?.let { manga.thumbnail_url = it }
-
-        // No title bug?
-        val titleObj = if (Injekt.get<PreferencesHelper>().useJapaneseTitle().get()) {
-            altTitle ?: title
-        } else {
-            title
-        }
-        titleObj?.let { manga.title = it }
-
-        // Set artist (if we can find one)
-        tags.filter { it.namespace == EH_ARTIST_NAMESPACE }.let { tags ->
-            if (tags.isNotEmpty()) manga.artist = tags.joinToString(transform = { it.name })
-        }
-
-        // Copy tags -> genres
-        manga.genre = tagsToGenreString()
-
-        // Try to automatically identify if it is ongoing, we try not to be too lenient here to avoid making mistakes
-        // We default to completed
-        manga.status = SManga.COMPLETED
-        title?.let { t ->
-            MetadataUtil.ONGOING_SUFFIX.find {
-                t.endsWith(it, ignoreCase = true)
-            }?.let {
-                manga.status = SManga.ONGOING
-            }
-        }
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
 

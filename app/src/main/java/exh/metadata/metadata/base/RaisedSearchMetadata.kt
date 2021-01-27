@@ -2,6 +2,8 @@ package exh.metadata.metadata.base
 
 import android.content.Context
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSManga
 import exh.metadata.forEach
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EightMusesSearchMetadata
@@ -56,7 +58,10 @@ abstract class RaisedSearchMetadata {
         if (newTitle != null) titles += RaisedTitle(newTitle, type)
     }
 
-    abstract fun copyTo(manga: SManga)
+    open fun copyTo(manga: SManga) {
+        val infoManga = createMangaInfo(manga.toMangaInfo()).toSManga()
+        manga.copyFrom(infoManga)
+    }
 
     abstract fun createMangaInfo(manga: MangaInfo): MangaInfo
 

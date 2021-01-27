@@ -46,27 +46,6 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        hbUrl?.let {
-            manga.url = it
-        }
-
-        title?.let {
-            manga.title = it
-        }
-
-        // Guess thumbnail URL if manga does not have thumbnail URL
-        if (manga.thumbnail_url.isNullOrBlank()) {
-            manga.thumbnail_url = guessThumbnailUrl(hbId.toString())
-        }
-
-        manga.artist = tags.ofNamespace(ARTIST_NAMESPACE).joinToString { it.name }
-
-        manga.genre = tagsToGenreString()
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         hbId?.let { pairs += context.getString(R.string.id) to it.toString() }

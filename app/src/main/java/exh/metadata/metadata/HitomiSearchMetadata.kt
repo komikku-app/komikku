@@ -62,23 +62,6 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        thumbnailUrl?.let { manga.thumbnail_url = it }
-
-        title?.let {
-            manga.title = it
-        }
-
-        // Copy tags -> genres
-        manga.genre = tagsToGenreString()
-
-        manga.artist = artists.joinToString()
-
-        manga.status = SManga.UNKNOWN
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         with(context) {

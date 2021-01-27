@@ -3,6 +3,8 @@ package exh.metadata.metadata
 import android.content.Context
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSManga
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
@@ -83,43 +85,6 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             status = status,
             description = description
         )
-    }
-
-    override fun copyTo(manga: SManga) {
-        nhId?.let { manga.url = nhIdToPath(it) }
-
-        if (mediaId != null) {
-            typeToExtension(coverImageType)?.let {
-                manga.thumbnail_url = "https://t.nhentai.net/galleries/$mediaId/cover.$it"
-            }
-        }
-
-        manga.title = when (preferredTitle) {
-            TITLE_TYPE_SHORT -> shortTitle ?: englishTitle ?: japaneseTitle!!
-            0, TITLE_TYPE_ENGLISH -> englishTitle ?: japaneseTitle ?: shortTitle!!
-            else -> englishTitle ?: japaneseTitle ?: shortTitle!!
-        }
-
-        // Set artist (if we can find one)
-        tags.filter { it.namespace == NHENTAI_ARTIST_NAMESPACE }.let { tags ->
-            if (tags.isNotEmpty()) manga.artist = tags.joinToString(transform = { it.name })
-        }
-
-        // Copy tags -> genres
-        manga.genre = tagsToGenreString()
-
-        // Try to automatically identify if it is ongoing, we try not to be too lenient here to avoid making mistakes
-        // We default to completed
-        manga.status = SManga.COMPLETED
-        englishTitle?.let { t ->
-            MetadataUtil.ONGOING_SUFFIX.find {
-                t.endsWith(it, ignoreCase = true)
-            }?.let {
-                manga.status = SManga.ONGOING
-            }
-        }
-
-        manga.description = "meta"
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {

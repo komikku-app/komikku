@@ -64,32 +64,6 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        url?.let { manga.url = it }
-        thumbnailUrl?.let { manga.thumbnail_url = it }
-
-        title?.let {
-            manga.title = it
-        }
-
-        artist?.let {
-            manga.artist = it
-        }
-
-        status?.let {
-            manga.status = when (it) {
-                "Ongoing" -> SManga.ONGOING
-                "Completed", "Suspended" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
-        }
-
-        // Copy tags -> genres
-        manga.genre = tagsToGenreString()
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         pvId?.let { pairs += context.getString(R.string.id) to it }

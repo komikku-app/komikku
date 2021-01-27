@@ -54,28 +54,6 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        prId?.let { prId ->
-            prShortLink?.let { prShortLink ->
-                manga.url = "/gallery/$prId/$prShortLink"
-            }
-        }
-
-        (title ?: altTitle)?.let {
-            manga.title = it
-        }
-
-        thumbnailUrl?.let {
-            manga.thumbnail_url = it
-        }
-
-        manga.artist = tags.ofNamespace(TAG_NAMESPACE_ARTIST).joinToString { it.name }
-
-        manga.genre = tagsToGenreString()
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         prId?.let { pairs += context.getString(R.string.id) to it.toString() }
@@ -100,6 +78,6 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
         private const val TAG_NAMESPACE_ARTIST = "artist"
         const val TAG_NAMESPACE_CATEGORY = "category"
 
-        val BASE_URL = "https://pururin.io"
+        const val BASE_URL = "https://pururin.io"
     }
 }

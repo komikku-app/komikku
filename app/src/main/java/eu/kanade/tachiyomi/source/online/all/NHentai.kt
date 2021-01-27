@@ -119,14 +119,18 @@ class NHentai(delegate: HttpSource, val context: Context) :
     @Serializable
     data class JsonResponse(
         val id: Long,
-        @SerialName("media_id") val mediaId: String? = null,
+        @SerialName("media_id")
+        val mediaId: String? = null,
         val title: JsonTitle? = null,
         val images: JsonImages? = null,
         val scanlator: String? = null,
-        @SerialName("upload_date") val uploadDate: Long? = null,
+        @SerialName("upload_date")
+        val uploadDate: Long? = null,
         val tags: List<JsonTag> = emptyList(),
-        @SerialName("num_pages") val numPages: Int? = null,
-        @SerialName("num_favorites") val numFavorites: Long? = null
+        @SerialName("num_pages")
+        val numPages: Int? = null,
+        @SerialName("num_favorites")
+        val numFavorites: Long? = null
     )
 
     @Serializable
@@ -145,9 +149,12 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
     @Serializable
     data class JsonPage(
-        @SerialName("t") val type: String? = null,
-        @SerialName("w") val width: Long? = null,
-        @SerialName("h") val height: Long? = null
+        @SerialName("t")
+        val type: String? = null,
+        @SerialName("w")
+        val width: Long? = null,
+        @SerialName("h")
+        val height: Long? = null
     )
 
     @Serializable

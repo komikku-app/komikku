@@ -50,21 +50,6 @@ class HentaiCafeSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        thumbnailUrl?.let { manga.thumbnail_url = it }
-
-        manga.title = title!!
-        manga.artist = artist
-        manga.author = artist
-
-        // Not available
-        manga.status = SManga.UNKNOWN
-
-        manga.genre = tagsToGenreString()
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         hcId?.let { pairs += context.getString(R.string.id) to it }

@@ -65,20 +65,6 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
         )
     }
 
-    override fun copyTo(manga: SManga) {
-        title?.let { manga.title = it }
-        manga.thumbnail_url = BASE_URL.replace("www", "content") + thumbUrlFromId(tmId.toString())
-
-        artist?.let { manga.artist = it }
-
-        manga.status = SManga.UNKNOWN
-
-        // Copy tags -> genres
-        manga.genre = tagsToGenreString()
-
-        manga.description = "meta"
-    }
-
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         val pairs = mutableListOf<Pair<String, String>>()
         tmId?.let { pairs += context.getString(R.string.id) to it.toString() }
