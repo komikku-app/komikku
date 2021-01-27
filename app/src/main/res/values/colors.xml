@@ -22,6 +22,9 @@
     <color name="dialogLight">@color/md_white_1000</color>
     <color name="selectorColorLight">@color/md_blue_A400_38</color>
 
+    <color name="FOOF">#FF00FF</color>
+    <color name="FOO" >#FFFF00</color>
+
     <!-- Dark Theme -->
     <color name="colorAccentDark">#3399FF</color>
     <color name="textColorPrimaryDark">@color/md_white_1000</color>

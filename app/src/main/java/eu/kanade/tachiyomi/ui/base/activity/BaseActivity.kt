@@ -23,6 +23,7 @@ abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
     private val lightTheme: Int by lazy {
         when (preferences.themeLight().get()) {
             Values.LightThemeVariant.blue -> R.style.Theme_Tachiyomi_LightBlue
+            values.LightThemeVariant.smoothie -> R.style.Theme_Tachiyomi_Smoothie
             else -> {
                 when {
                     // Light status + navigation bar

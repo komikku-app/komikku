@@ -812,5 +812,6 @@ z
     <string name="manhua">Manhua</string>
     <string name="comic">Comic</string>
     <string name="webtoon">Webtoon</string>
+    <string name="theme_smoothie">Smoothie</string>
 
 </resources>

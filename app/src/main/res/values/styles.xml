@@ -10,6 +10,10 @@
         <item name="android:textColorPrimary">@color/red</item>
     </style>
 
+    <style name="Theme.Toolbar.FOOF" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        <item name="android:textColorPrimary">@color/FOOF</item>
+    </style>
+
     <style name="Theme.Toolbar.Light" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
         <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
     </style>
@@ -74,7 +78,9 @@
     <style name="Theme.Widget.NavigationView.Red" parent="Theme.Widget.NavigationView.Amoled">
         <item name="colorOnSurface">@color/red</item>
     </style>
-
+    <style name="Theme.Widget.NavigationView.FOOF" parent="Theme.Widget.NavigationView.Light">
+        <item name="colorOnSurface">@color/FOOF</item>
+    </style>
     <!--===============-->
     <!--Text Appearance-->
     <!--===============-->

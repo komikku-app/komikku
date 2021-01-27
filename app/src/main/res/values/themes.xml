@@ -103,6 +103,24 @@
         <!-- Attributes specific for SDK 16 to SDK 20 -->
     </style>
 
+    <style name="Theme.Tachiyomi.Smoothie" parent="Theme.Tachiyomi.Light">
+        <item name="actionBarTheme">@style/Theme.Toolbar.FOOF</item>
+        <item name="colorPrimary">@color/FOO</item>
+        <item name="colorPrimaryVariant">@color/FOOF</item>
+        <item name="colorSecondary">@color/FOOF</item>
+        <item name="colorOnSurface">@color/FOOF</item>
+        <item name="colorAccent">@color/FOOF</item>
+        <item name="colorOnPrimary">@color/FOOF</item>
+        <item name="android:navigationBarColor">@color/FOOF</item>
+        <item name="android:textColor">@color/FOOF</item>
+        <item name="android:textColorPrimary">@color/FOOF</item>
+        <item name="android:textColorSecondary">@color/FOOF</item>
+        <item name="android:textColorHint">@color/FOOF</item>
+        <item name="navigation_view_theme">@style/Theme.Widget.NavigationView.FOOF</item>
+        <item name="md_color_title">@color/FOOF</item>
+        <item name="md_color_compact_title">@color/FOOF</item>
+    </style>
+
     <!--=============-->
     <!-- Dark Themes -->
     <!--=============-->

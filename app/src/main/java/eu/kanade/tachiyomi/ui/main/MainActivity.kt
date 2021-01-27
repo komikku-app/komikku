@@ -147,6 +147,9 @@ class MainActivity : BaseActivity<MainActivityBinding>() {
         if (navIconColor == Color.WHITE && preferences.themeDark().get() == PreferenceValues.DarkThemeVariant.red) {
             navIconColor = Color.RED
         }
+        if (navIconColor == Color.BLACK && preferences.themeLight().get() == PreferenceValues.LightThemeVariant.smoothie) {
+            navIconColor = Color.MAGENTA
+        }
 
         drawerArrow?.color = navIconColor
 
