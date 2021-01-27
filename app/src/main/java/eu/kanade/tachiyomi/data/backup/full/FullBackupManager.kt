@@ -39,6 +39,7 @@ import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.savedsearches.JsonSavedSearch
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.util.executeOnIO
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
