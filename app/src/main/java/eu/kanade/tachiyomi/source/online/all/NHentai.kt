@@ -19,6 +19,7 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.NHentaiDescriptionAdapter
+import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -104,7 +105,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
                 thumbnailImageType = images.thumbnail?.type
             }
 
-            scanlator = jsonResponse.scanlator
+            scanlator = jsonResponse.scanlator?.trimOrNull()
 
             tags.clear()
             jsonResponse.tags.filter {
