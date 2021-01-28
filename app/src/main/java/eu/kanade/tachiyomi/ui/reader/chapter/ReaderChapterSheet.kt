@@ -8,7 +8,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.listeners.ClickEventHook
@@ -19,6 +18,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
+import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import exh.util.isExpanded
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -27,7 +27,7 @@ import reactivecircus.flowbinding.android.view.clicks
 /**
  * Color filter sheet to toggle custom filter and brightness overlay.
  */
-class ReaderChapterSheet(private val activity: ReaderActivity) : BottomSheetDialog(activity) {
+class ReaderChapterSheet(private val activity: ReaderActivity) : BaseBottomSheetDialog(activity) {
     private var sheetBehavior: BottomSheetBehavior<*>? = null
 
     private val binding = ReaderChaptersSheetBinding.inflate(activity.layoutInflater, null, false)

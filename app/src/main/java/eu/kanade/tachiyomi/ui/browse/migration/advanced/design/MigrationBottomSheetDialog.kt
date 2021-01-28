@@ -10,16 +10,16 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.Controller
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import uy.kohesive.injekt.injectLazy
 
-class MigrationBottomSheetDialog(activity: Activity, theme: Int, private val listener: StartMigrationListener) : BottomSheetDialog(activity, theme) {
+class MigrationBottomSheetDialog(activity: Activity, private val listener: StartMigrationListener) : BaseBottomSheetDialog(activity) {
     private val preferences: PreferencesHelper by injectLazy()
 
     private val binding: MigrationBottomSheetBinding = MigrationBottomSheetBinding.inflate(activity.layoutInflater)

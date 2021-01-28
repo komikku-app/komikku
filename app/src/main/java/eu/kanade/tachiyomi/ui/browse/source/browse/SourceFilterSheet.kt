@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -18,6 +17,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.BrowseSourceFilterHeader
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
+import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
 
@@ -35,7 +35,7 @@ class SourceFilterSheet(
     var onSavedSearchClicked: (Int) -> Unit = {},
     var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
     // EXH <--
-) : BottomSheetDialog(activity) {
+) : BaseBottomSheetDialog(activity) {
 
     private var filterNavView: FilterNavigationView
 

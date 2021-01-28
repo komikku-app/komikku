@@ -17,7 +17,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
-import eu.kanade.tachiyomi.widget.TabbedBottomSheetDialog
+import eu.kanade.tachiyomi.widget.sheet.TabbedBottomSheetDialog
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.getMainSource

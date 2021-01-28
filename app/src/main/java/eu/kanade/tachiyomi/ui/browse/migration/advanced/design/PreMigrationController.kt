@@ -7,13 +7,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bluelinelabs.conductor.Router
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
@@ -44,7 +41,7 @@ class PreMigrationController(bundle: Bundle? = null) :
     private var actionFab: ExtendedFloatingActionButton? = null
     private var actionFabScrollListener: RecyclerView.OnScrollListener? = null
 
-    private var dialog: BottomSheetDialog? = null
+    private lateinit var dialog: MigrationBottomSheetDialog
 
     override fun getTitle() = view?.context?.getString(R.string.select_sources)
 
@@ -66,7 +63,7 @@ class PreMigrationController(bundle: Bundle? = null) :
         binding.recycler.adapter = ourAdapter
         ourAdapter.itemTouchHelperCallback = null // Reset adapter touch adapter to fix drag after rotation
         ourAdapter.isHandleDragEnabled = true
-        dialog = null
+        dialog = MigrationBottomSheetDialog(activity!!, this)
 
         actionFabScrollListener = actionFab?.shrinkOnScroll(binding.recycler)
     }
@@ -76,17 +73,8 @@ class PreMigrationController(bundle: Bundle? = null) :
         fab.setText(R.string.action_migrate)
         fab.setIconResource(R.drawable.ic_arrow_forward_24dp)
         fab.setOnClickListener {
-            if (dialog?.isShowing != true) {
-                dialog = MigrationBottomSheetDialog(activity!!, R.style.SheetDialog, this)
-                dialog?.show()
-                val bottomSheet = dialog?.findViewById<FrameLayout>(
-                    com.google.android.material.R.id.design_bottom_sheet
-                )
-                if (bottomSheet != null) {
-                    val behavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheet)
-                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    behavior.skipCollapsed = true
-                }
+            if (!dialog.isShowing) {
+                dialog.show()
             }
         }
     }
