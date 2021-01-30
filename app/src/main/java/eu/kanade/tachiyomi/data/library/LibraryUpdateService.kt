@@ -407,10 +407,6 @@ class LibraryUpdateService(
         downloadManager.downloadChapters(manga, /* SY --> */ chapters.filter { it.manga_id !in chapterFilter } /* SY <-- */, false)
     }
 
-    val handler = CoroutineExceptionHandler { _, throwable ->
-        XLog.e(throwable)
-    }
-
     /**
      * Updates the chapters for the given manga and adds them to the database.
      *
@@ -422,6 +418,9 @@ class LibraryUpdateService(
 
         // Update manga details metadata in the background
         if (preferences.autoUpdateMetadata()) {
+            val handler = CoroutineExceptionHandler { _, exception ->
+                Timber.e(exception)
+            }
             ioScope.launch(handler) {
                 val updatedManga = source.getMangaDetails(manga.toMangaInfo())
                 val sManga = updatedManga.toSManga()
