@@ -52,9 +52,9 @@ class SourceHolder(private val view: View, val adapter: SourceAdapter /* SY --> 
 
         binding.pin.isVisible = showPins
         if (item.isPinned) {
-            binding.pin.setVectorCompat(R.drawable.ic_push_pin_filled_24dp, view.context.getResourceColor(R.attr.colorAccent))
+            binding.pin.setVectorCompat(R.drawable.ic_push_pin_24dp, view.context.getResourceColor(R.attr.colorAccent))
         } else {
-            binding.pin.setVectorCompat(R.drawable.ic_push_pin_24dp, view.context.getResourceColor(android.R.attr.textColorHint))
+            binding.pin.setVectorCompat(R.drawable.ic_push_pin_outline_24dp, view.context.getResourceColor(android.R.attr.textColorHint))
         }
     }
 }
