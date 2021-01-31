@@ -175,7 +175,7 @@ object PreferenceKeys {
 
     const val categoryTabs = "display_category_tabs"
 
-    const val skipPreMigration = "skip_pre_migration"
+    const val categoryNumberOfItems = "display_number_of_items"
 
     const val alwaysShowChapterTransition = "always_show_chapter_transition"
 
@@ -202,6 +202,8 @@ object PreferenceKeys {
     fun trackPassword(syncId: Int) = "pref_mangasync_password_$syncId"
 
     fun trackToken(syncId: Int) = "track_token_$syncId"
+
+    const val skipPreMigration = "skip_pre_migration"
 
     const val eh_showSyncIntro = "eh_show_sync_intro"
 
