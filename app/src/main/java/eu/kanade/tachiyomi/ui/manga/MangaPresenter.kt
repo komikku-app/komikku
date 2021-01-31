@@ -900,7 +900,7 @@ class MangaPresenter(
         if (source is MergedSource) {
             chapters.groupBy { it.manga_id }.forEach { map ->
                 val manga = mergedManga.firstOrNull { it.id == map.key } ?: return@forEach
-                downloadManager.downloadChapters(manga, map.value)
+                downloadManager.downloadChapters(manga, map.value.onEach { chapter -> chapter.scanlator?.let { chapter.scanlator = it.substringBefore(":") } })
             }
         } else /* SY <-- */ downloadManager.downloadChapters(manga, chapters)
     }
