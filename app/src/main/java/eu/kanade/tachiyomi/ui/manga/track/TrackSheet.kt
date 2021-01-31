@@ -51,7 +51,7 @@ class TrackSheet(
 
     override fun show() {
         super.show()
-        controller.presenter.trackingRefresh()
+        controller.presenter.refreshTrackers()
         sheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 

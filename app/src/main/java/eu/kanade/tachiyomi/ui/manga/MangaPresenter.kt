@@ -134,8 +134,8 @@ class MangaPresenter(
     private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
     private var trackSubscription: Subscription? = null
-    private var searchJob: Job? = null
-    private var refreshJob: Job? = null
+    private var searchTrackerJob: Job? = null
+    private var refreshTrackersJob: Job? = null
 
     // EXH -->
     private val customMangaManager: CustomMangaManager by injectLazy()
@@ -1142,9 +1142,9 @@ class MangaPresenter(
     }
     // SY <--
 
-    fun trackingRefresh() {
-        refreshJob?.cancel()
-        refreshJob = launchIO {
+    fun refreshTrackers() {
+        refreshTrackersJob?.cancel()
+        refreshTrackersJob = launchIO {
             supervisorScope {
                 try {
                     trackList
@@ -1166,8 +1166,8 @@ class MangaPresenter(
     }
 
     fun trackingSearch(query: String, service: TrackService) {
-        searchJob?.cancel()
-        searchJob = launchIO {
+        searchTrackerJob?.cancel()
+        searchTrackerJob = launchIO {
             try {
                 val results = service.search(query)
                 withUIContext { view?.onTrackingSearchResults(results) }
