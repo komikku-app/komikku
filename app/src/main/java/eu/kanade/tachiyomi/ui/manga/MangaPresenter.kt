@@ -13,12 +13,14 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
+import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -29,6 +31,7 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
+import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.isLocal
@@ -39,6 +42,7 @@ import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.updateCoverLastModified
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
 import exh.debug.DebugToggles
@@ -54,13 +58,17 @@ import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
+import exh.source.mangaDexSourceIds
 import exh.util.shouldDeleteChapters
 import exh.util.trimOrNull
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Single
@@ -119,6 +127,15 @@ class MangaPresenter(
      */
     private var observeDownloadsStatusSubscription: Subscription? = null
     private var observeDownloadsPageSubscription: Subscription? = null
+
+    private var _trackList: List<TrackItem> = emptyList()
+    val trackList get() = _trackList
+
+    private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
+
+    private var trackSubscription: Subscription? = null
+    private var searchJob: Job? = null
+    private var refreshJob: Job? = null
 
     // EXH -->
     private val customMangaManager: CustomMangaManager by injectLazy()
@@ -239,6 +256,8 @@ class MangaPresenter(
         )
 
         // Chapters list - end
+
+        fetchTrackers()
     }
 
     // Manga info - start
@@ -1082,4 +1101,152 @@ class MangaPresenter(
     }
 
     // Chapters list - end
+
+    // Track sheet - start
+
+    private fun fetchTrackers() {
+        trackSubscription?.let { remove(it) }
+        trackSubscription = db.getTracks(manga)
+            .asRxObservable()
+            .map { tracks ->
+                loggedServices.map { service ->
+                    TrackItem(tracks.find { it.sync_id == service.id }, service)
+                }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            // SY -->
+            .map { trackItems ->
+                val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
+                if (manga.source in mangaDexSourceIds) {
+                    when {
+                        mdTrack == null -> {
+                            trackItems
+                        }
+                        mdTrack.track == null -> {
+                            trackItems - mdTrack + createMdListTrack()
+                        }
+                        else -> trackItems
+                    }
+                } else mdTrack?.let { trackItems - it } ?: trackItems
+            }
+            // SY <--
+            .doOnNext { _trackList = it }
+            .subscribeLatestCache(MangaController::onNextTrackers)
+    }
+
+    // SY -->
+    private fun createMdListTrack(): TrackItem {
+        val track = trackManager.mdList.createInitialTracker(manga)
+        track.id = db.insertTrack(track).executeAsBlocking().insertedId()
+        return TrackItem(track, trackManager.mdList)
+    }
+    // SY <--
+
+    fun trackingRefresh() {
+        refreshJob?.cancel()
+        refreshJob = launchIO {
+            supervisorScope {
+                try {
+                    trackList
+                        .filter { it.track != null }
+                        .map {
+                            async {
+                                val track = it.service.refresh(it.track!!)
+                                db.insertTrack(track).executeAsBlocking()
+                            }
+                        }
+                        .awaitAll()
+
+                    withUIContext { view?.onTrackingRefreshDone() }
+                } catch (e: Throwable) {
+                    withUIContext { view?.onTrackingRefreshError(e) }
+                }
+            }
+        }
+    }
+
+    fun trackingSearch(query: String, service: TrackService) {
+        searchJob?.cancel()
+        searchJob = launchIO {
+            try {
+                val results = service.search(query)
+                withUIContext { view?.onTrackingSearchResults(results) }
+            } catch (e: Throwable) {
+                withUIContext { view?.onTrackingSearchResultsError(e) }
+            }
+        }
+    }
+
+    fun registerTracking(item: Track?, service: TrackService) {
+        if (item != null) {
+            item.manga_id = manga.id!!
+            launchIO {
+                try {
+                    service.bind(item)
+                    db.insertTrack(item).executeAsBlocking()
+                } catch (e: Throwable) {
+                    withUIContext { view?.applicationContext?.toast(e.message) }
+                }
+            }
+        } else {
+            unregisterTracking(service)
+        }
+    }
+
+    fun unregisterTracking(service: TrackService) {
+        db.deleteTrackForManga(manga, service).executeAsBlocking()
+    }
+
+    private fun updateRemote(track: Track, service: TrackService) {
+        launchIO {
+            try {
+                service.update(track)
+                db.insertTrack(track).executeAsBlocking()
+                withUIContext { view?.onTrackingRefreshDone() }
+            } catch (e: Throwable) {
+                withUIContext { view?.onTrackingRefreshError(e) }
+
+                // Restart on error to set old values
+                fetchTrackers()
+            }
+        }
+    }
+
+    fun setTrackerStatus(item: TrackItem, index: Int) {
+        val track = item.track!!
+        track.status = item.service.getStatusList()[index]
+        if (track.status == item.service.getCompletionStatus() && track.total_chapters != 0) {
+            track.last_chapter_read = track.total_chapters
+        }
+        updateRemote(track, item.service)
+    }
+
+    fun setTrackerScore(item: TrackItem, index: Int) {
+        val track = item.track!!
+        track.score = item.service.indexToScore(index)
+        updateRemote(track, item.service)
+    }
+
+    fun setTrackerLastChapterRead(item: TrackItem, chapterNumber: Int) {
+        val track = item.track!!
+        track.last_chapter_read = chapterNumber
+        if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
+            track.status = item.service.getCompletionStatus()
+        }
+        updateRemote(track, item.service)
+    }
+
+    fun setTrackerStartDate(item: TrackItem, date: Long) {
+        val track = item.track!!
+        track.started_reading_date = date
+        updateRemote(track, item.service)
+    }
+
+    fun setTrackerFinishDate(item: TrackItem, date: Long) {
+        val track = item.track!!
+        track.finished_reading_date = date
+        updateRemote(track, item.service)
+    }
+
+    // Track sheet - end
 }

@@ -52,6 +52,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.databinding.MangaControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
@@ -86,7 +87,9 @@ import eu.kanade.tachiyomi.ui.manga.info.MangaInfoButtonsAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoHeaderAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoItemAdapter
 import eu.kanade.tachiyomi.ui.manga.merged.EditMergedSettingsDialog
-import eu.kanade.tachiyomi.ui.manga.track.TrackController
+import eu.kanade.tachiyomi.ui.manga.track.TrackItem
+import eu.kanade.tachiyomi.ui.manga.track.TrackSearchDialog
+import eu.kanade.tachiyomi.ui.manga.track.TrackSheet
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
@@ -222,6 +225,8 @@ class MangaController :
     private var isRefreshingInfo = false
     private var isRefreshingChapters = false
 
+    private var trackSheet: TrackSheet? = null
+
     // EXH -->
     val smartSearchConfig: SourceController.SmartSearchConfig? = args.getParcelable(
         SMART_SEARCH_CONFIG_EXTRA
@@ -345,6 +350,8 @@ class MangaController :
                 chaptersAdapter?.notifyDataSetChanged()
             }
         }
+
+        trackSheet = TrackSheet(this, manga!!)
 
         presenter.redirectFlow
             .onEach { redirect ->
@@ -659,7 +666,7 @@ class MangaController :
     }
 
     fun onTrackingClick() {
-        router.pushController(TrackController(manga).withFadeTransaction())
+        trackSheet?.show()
     }
 
     private fun addToLibrary(manga: Manga) {
@@ -1444,6 +1451,35 @@ class MangaController :
     }
 
     // Chapters list - end
+
+    // Tracker sheet - start
+    fun onNextTrackers(trackers: List<TrackItem>) {
+        trackSheet?.onNextTrackers(trackers)
+    }
+
+    fun onTrackingRefreshDone() {
+    }
+
+    fun onTrackingRefreshError(error: Throwable) {
+        Timber.e(error)
+        activity?.toast(error.message)
+    }
+
+    fun onTrackingSearchResults(results: List<TrackSearch>) {
+        getTrackingSearchDialog()?.onSearchResults(results)
+    }
+
+    fun onTrackingSearchResultsError(error: Throwable) {
+        Timber.e(error)
+        activity?.toast(error.message)
+        getTrackingSearchDialog()?.onSearchResultsError()
+    }
+
+    private fun getTrackingSearchDialog(): TrackSearchDialog? {
+        return trackSheet?.getSearchDialog()
+    }
+
+    // Tracker sheet - end
 
     companion object {
         const val FROM_SOURCE_EXTRA = "from_source"
