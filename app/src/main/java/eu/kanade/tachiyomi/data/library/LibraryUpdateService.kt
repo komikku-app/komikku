@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -436,6 +435,10 @@ class LibraryUpdateService(
             }
         }
 
+        // SY -->
+        val handler = CoroutineExceptionHandler { _, exception ->
+            Timber.e(exception)
+        }
         ioScope.launch(handler) {
             if (source is MangaDex && trackManager.mdList.isLogged) {
                 val tracks = db.getTracks(manga).executeOnIO()
@@ -447,7 +450,6 @@ class LibraryUpdateService(
             }
         }
 
-        // SY -->
         if (source is MergedSource) {
             return source.fetchChaptersAndSync(manga, false)
         }
