@@ -440,9 +440,8 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         val dbChapters = databaseHelper.getChapters(manga).executeAsBlocking()
 
         chapters.forEach { chapter ->
-            val pos = dbChapters.indexOfFirst { it.url == chapter.url }
-            if (pos != -1) {
-                val dbChapter = dbChapters[pos]
+            val dbChapter = dbChapters.find { it.url == chapter.url }
+            if (dbChapter != null) {
                 chapter.id = dbChapter.id
                 chapter.copyFrom(dbChapter)
                 if (dbChapter.read && !chapter.read) {
@@ -456,10 +455,11 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 }
             }
         }
-        chapters.map { it.manga_id = manga.id }
+        chapters.forEach { it.manga_id = manga.id }
 
-        updateChapters(chapters.filter { it.id != null })
-        insertChapters(chapters.filter { it.id == null })
+        val newChapters = chapters.groupBy { it.id != null }
+        newChapters[true]?.let { updateChapters(it) }
+        newChapters[false]?.let { insertChapters(it) }
     }
 
     // SY -->
