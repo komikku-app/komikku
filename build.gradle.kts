@@ -9,11 +9,9 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
-        jcenter()
         google()
         maven { setUrl("https://www.jitpack.io") }
-        maven { setUrl("https://oss.sonatype.org/content/repositories/snapshots/") }
-        maven { setUrl("https://dl.bintray.com/ibm-cloud-sdks/ibm-cloud-sdk-repo") }
+        jcenter()
     }
 }
 
