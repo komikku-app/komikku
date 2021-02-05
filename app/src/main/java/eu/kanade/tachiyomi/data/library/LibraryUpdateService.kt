@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.storage.getUriCompat
@@ -58,6 +59,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -327,54 +330,62 @@ class LibraryUpdateService(
      * @return an observable delivering the progress of each update.
      */
     suspend fun updateChapterList(mangaToUpdate: List<LibraryManga>) {
+        val semaphore = Semaphore(5)
         val progressCount = AtomicInteger(0)
         val newUpdates = mutableListOf<Pair<LibraryManga, Array<Chapter>>>()
         val failedUpdates = mutableListOf<Pair<Manga, String?>>()
         var hasDownloads = false
 
-        mangaToUpdate
-            .mapNotNull { manga ->
-                if (updateJob?.isActive != true) {
-                    throw CancellationException()
-                }
+        withIOContext {
+            mangaToUpdate.groupBy { it.source }
+                .filterNot { it.key in LIBRARY_UPDATE_EXCLUDED_SOURCES }
+                .values.map { mangaInSource ->
+                    async {
+                        semaphore.withPermit {
+                            mangaInSource
+                                .map { manga ->
+                                    if (updateJob?.isActive != true) {
+                                        throw CancellationException()
+                                    }
 
-                // Notify manga that will update.
-                notifier.showProgressNotification(manga, progressCount.andIncrement, mangaToUpdate.size)
+                                    // Notify manga that will update.
+                                    notifier.showProgressNotification(manga, progressCount.andIncrement, mangaToUpdate.size)
 
-                // SY -->
-                if (manga.source in LIBRARY_UPDATE_EXCLUDED_SOURCES) return@mapNotNull null
-                // SY <--
-                // Update the chapters of the manga
-                try {
-                    val newChapters = updateManga(manga).first
-                    Pair(manga, newChapters)
-                } catch (e: Throwable) {
-                    // If there's any error, return empty update and continue.
-                    val errorMessage = if (e is NoChaptersException) {
-                        getString(R.string.no_chapters_error)
-                    } else {
-                        e.message
+                                    // Update the chapters of the manga
+                                    try {
+                                        val newChapters = updateManga(manga).first
+                                        Pair(manga, newChapters)
+                                    } catch (e: Throwable) {
+                                        // If there's any error, return empty update and continue.
+                                        val errorMessage = if (e is NoChaptersException) {
+                                            getString(R.string.no_chapters_error)
+                                        } else {
+                                            e.message
+                                        }
+                                        failedUpdates.add(Pair(manga, errorMessage))
+                                        Pair(manga, emptyList())
+                                    }
+                                }
+                                // Filter out mangas without new chapters (or failed).
+                                .filter { (_, newChapters) -> newChapters.isNotEmpty() }
+                                .forEach { (manga, newChapters) ->
+                                    if (manga.shouldDownloadNewChapters(db, preferences)) {
+                                        downloadChapters(manga, newChapters)
+                                        hasDownloads = true
+                                    }
+
+                                    // Convert to the manga that contains new chapters.
+                                    newUpdates.add(
+                                        Pair(
+                                            manga,
+                                            newChapters.sortedByDescending { ch -> ch.source_order }.toTypedArray()
+                                        )
+                                    )
+                                }
+                        }
                     }
-                    failedUpdates.add(Pair(manga, errorMessage))
-                    Pair(manga, emptyList())
-                }
-            }
-            // Filter out mangas without new chapters (or failed).
-            .filter { (_, newChapters) -> newChapters.isNotEmpty() }
-            .forEach { (manga, newChapters) ->
-                if (manga.shouldDownloadNewChapters(db, preferences)) {
-                    downloadChapters(manga, newChapters)
-                    hasDownloads = true
-                }
-
-                // Convert to the manga that contains new chapters.
-                newUpdates.add(
-                    Pair(
-                        manga,
-                        newChapters.sortedByDescending { ch -> ch.source_order }.toTypedArray()
-                    )
-                )
-            }
+                }.awaitAll()
+        }
 
         // Notify result of the overall update.
         notifier.cancelProgressNotification()
