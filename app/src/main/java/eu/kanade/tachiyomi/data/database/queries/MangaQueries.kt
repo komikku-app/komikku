@@ -79,6 +79,15 @@ interface MangaQueries : DbProvider {
         .prepare()
 
     // SY -->
+    fun getReadNotInLibraryMangas() = db.get()
+        .listOfObjects(Manga::class.java)
+        .withQuery(
+            RawQuery.builder()
+                .query(getReadMangaNotInLibraryQuery())
+                .build()
+        )
+        .prepare()
+
     fun updateMangaInfo(manga: Manga) = db.put()
         .`object`(manga)
         .withPutResolver(MangaInfoPutResolver())

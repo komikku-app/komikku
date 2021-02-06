@@ -67,7 +67,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         var backup: Backup? = null
 
         databaseHelper.inTransaction {
-            val databaseManga = getFavoriteManga() /* SY --> */ + getMergedManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY <-- */
+            val databaseManga = getFavoriteManga() /* SY --> */ + getReadManga() + getMergedManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY <-- */
 
             backup = Backup(
                 backupManga(databaseManga, flags),

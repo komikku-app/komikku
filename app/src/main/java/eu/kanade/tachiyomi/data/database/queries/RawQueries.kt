@@ -62,6 +62,18 @@ fun getMergedChaptersQuery() =
 """
 
 /**
+ * Query to get manga that are not in library, but have read chapters
+ */
+fun getReadMangaNotInLibraryQuery() =
+    """
+    SELECT ${Manga.TABLE}.* 
+    FROM ${Manga.TABLE} 
+    WHERE ${Manga.COL_FAVORITE} = 0 AND ${Manga.COL_ID} IN(
+        SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} FROM ${Chapter.TABLE} WHERE ${Chapter.COL_READ} = 1
+    )
+"""
+
+/**
  * Query to get the manga from the library, with their categories and unread count.
  */
 val libraryQuery =

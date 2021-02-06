@@ -68,6 +68,9 @@ abstract class AbstractBackupManager(protected val context: Context) {
         databaseHelper.getFavoriteMangas().executeAsBlocking()
 
     // SY -->
+    protected fun getReadManga(): List<Manga> =
+        databaseHelper.getReadNotInLibraryMangas().executeAsBlocking()
+
     /**
      * Returns list containing merged manga that are possibly not in the library
      *
