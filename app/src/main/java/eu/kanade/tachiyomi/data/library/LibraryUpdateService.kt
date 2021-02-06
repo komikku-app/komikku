@@ -48,7 +48,6 @@ import exh.source.getMainSource
 import exh.source.mangaDexSourceIds
 import exh.util.executeOnIO
 import exh.util.nullIfBlank
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -345,7 +344,7 @@ class LibraryUpdateService(
                             mangaInSource
                                 .map { manga ->
                                     if (updateJob?.isActive != true) {
-                                        throw CancellationException()
+                                        return@async
                                     }
 
                                     // Notify manga that will update.
@@ -477,7 +476,7 @@ class LibraryUpdateService(
 
         mangaToUpdate.forEach { manga ->
             if (updateJob?.isActive != true) {
-                throw CancellationException()
+                return
             }
 
             notifier.showProgressNotification(manga, progressCount++, mangaToUpdate.size)
@@ -511,7 +510,7 @@ class LibraryUpdateService(
 
         mangaToUpdate.forEach { manga ->
             if (updateJob?.isActive != true) {
-                throw CancellationException()
+                return
             }
 
             // Notify manga that will update.
@@ -556,7 +555,7 @@ class LibraryUpdateService(
 
         mangadexFollows.forEach { (networkManga, metadata) ->
             if (updateJob?.isActive != true) {
-                throw CancellationException()
+                return
             }
 
             notifier.showProgressNotification(networkManga, count.andIncrement, mangadexFollows.size)
@@ -595,7 +594,7 @@ class LibraryUpdateService(
         if (trackManager.mdList.isLogged) {
             listManga.forEach { manga ->
                 if (updateJob?.isActive != true) {
-                    throw CancellationException()
+                    return
                 }
 
                 notifier.showProgressNotification(manga, count.andIncrement, listManga.size)
