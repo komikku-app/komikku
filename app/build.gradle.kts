@@ -209,7 +209,7 @@ dependencies {
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
     kapt("com.github.bumptech.glide:compiler:$glideVersion")
 
-    // implementation"("com.github.tachiyomiorg:subsampling-scale-image-view:6caf219")
+    // implementation("com.github.tachiyomiorg:subsampling-scale-image-view:6caf219")
     // TODO: switch to new decoder for stable releases
     implementation("com.github.tachiyomiorg:subsampling-scale-image-view:ca26317")
 
