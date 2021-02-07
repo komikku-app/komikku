@@ -713,6 +713,7 @@ class MangaPresenter(
         observeDownloadsStatusSubscription?.let { remove(it) }
         observeDownloadsStatusSubscription = downloadManager.queue.getStatusObservable()
             .observeOn(AndroidSchedulers.mainThread())
+            .onBackpressureLatest()
             .filter { download -> /* SY --> */ if (isMergedSource) download.manga.id in mergedIds else /* SY <-- */ download.manga.id == manga.id }
             .doOnNext { onDownloadStatusChange(it) }
             .subscribeLatestCache(MangaController::onChapterDownloadUpdate) { _, error ->
@@ -722,6 +723,7 @@ class MangaPresenter(
         observeDownloadsPageSubscription?.let { remove(it) }
         observeDownloadsPageSubscription = downloadManager.queue.getProgressObservable()
             .observeOn(AndroidSchedulers.mainThread())
+            .onBackpressureLatest()
             .filter { download -> /* SY --> */ if (isMergedSource) download.manga.id in mergedIds else /* SY <-- */ download.manga.id == manga.id }
             .subscribeLatestCache(MangaController::onChapterDownloadUpdate) { _, error ->
                 Timber.e(error)
