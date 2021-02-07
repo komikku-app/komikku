@@ -908,7 +908,7 @@ class MangaPresenter(
             db.updateChaptersProgress(chapters).executeAsBlocking()
 
             if (preferences.removeAfterMarkedAsRead() /* SY --> */ && manga.shouldDeleteChapters(db, preferences) /* SY <-- */) {
-                deleteChapters(chapters)
+                deleteChapters(chapters.filter { it.read })
             }
         }
     }
