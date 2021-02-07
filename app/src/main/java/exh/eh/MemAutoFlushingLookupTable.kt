@@ -2,6 +2,7 @@ package exh.eh
 
 import android.util.SparseArray
 import androidx.core.util.AtomicFile
+import androidx.core.util.forEach
 import com.elvishew.xlog.XLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -128,10 +129,9 @@ class MemAutoFlushingLookupTable<T>(
         val fos = atomicFile.startWrite()
         try {
             val out = fos.buffered()
-            for (i in 0 until table.size()) {
-                val k = table.keyAt(i)
-                val v = serializer.write(table.valueAt(i)).toByteArray(Charsets.UTF_8)
-                bb.putInt(0, k)
+            table.forEach { key, value ->
+                val v = serializer.write(value).toByteArray(Charsets.UTF_8)
+                bb.putInt(0, key)
                 bb.putInt(4, v.size)
                 out.write(bb.array())
                 out.write(v)
