@@ -321,7 +321,7 @@
     <!--Widgets.TabLayout-->
     <!--=================-->
     <style name="Theme.Widget.Tabs" parent="Widget.MaterialComponents.TabLayout.Colored">
-        <item name="tabGravity">center</item>
+        <item name="tabGravity">start</item>
         <item name="tabIndicator">@drawable/tab_indicator</item>
         <item name="tabIndicatorFullWidth">false</item>
         <item name="tabIndicatorHeight">3dp</item>

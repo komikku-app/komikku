@@ -1,7 +1,7 @@
 package exh.log
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.elvishew.xlog.printer.Printer
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import eu.kanade.tachiyomi.BuildConfig
 
 class CrashlyticsPrinter(private val logLevel: Int) : Printer {
