@@ -35,10 +35,10 @@ class MigrationMangaPresenter(
             .subscribeLatestCache(MigrationMangaController::setManga)
     }
 
-    private fun libraryToMigrationItem(library: List<Manga>): List<MangaItem> {
+    private fun libraryToMigrationItem(library: List<Manga>): List<MigrationMangaItem> {
         return library.filter { it.source == sourceId }
             .sortedBy { it.originalTitle }
-            .map { MangaItem(it) }
+            .map { MigrationMangaItem(it) }
     }
 
     // SY -->

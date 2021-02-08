@@ -7,23 +7,25 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationMangaControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
+import eu.kanade.tachiyomi.ui.manga.MangaController
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class MigrationMangaController :
     NucleusController<MigrationMangaControllerBinding, MigrationMangaPresenter>,
     FlexibleAdapter.OnItemClickListener,
+    MigrationMangaAdapter.OnCoverClickListener,
     // SY -->
     MigrationInterface {
     // SY <--
 
-    private var adapter: FlexibleAdapter<IFlexible<*>>? = null
+    private var adapter: MigrationMangaAdapter? = null
 
     constructor(sourceId: Long, sourceName: String?) : super(
         bundleOf(
@@ -57,7 +59,7 @@ class MigrationMangaController :
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        adapter = FlexibleAdapter<IFlexible<*>>(null, this)
+        adapter = MigrationMangaAdapter(this)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
         binding.recycler.adapter = adapter
         adapter?.fastScroller = binding.fastScroller
@@ -68,12 +70,12 @@ class MigrationMangaController :
         super.onDestroyView(view)
     }
 
-    fun setManga(manga: List<MangaItem>) {
+    fun setManga(manga: List<MigrationMangaItem>) {
         adapter?.updateDataSet(manga)
     }
 
     override fun onItemClick(view: View, position: Int): Boolean {
-        val item = adapter?.getItem(position) as? MangaItem ?: return false
+        val item = adapter?.getItem(position) as? MigrationMangaItem ?: return false
         // SY -->
         PreMigrationController.navigateToMigration(
             Injekt.get<PreferencesHelper>().skipPreMigration().get(),
@@ -82,6 +84,11 @@ class MigrationMangaController :
         )
         // SY <--
         return false
+    }
+
+    override fun onCoverClick(position: Int) {
+        val mangaItem = adapter?.getItem(position) as? MigrationMangaItem ?: return
+        router.pushController(MangaController(mangaItem.manga).withFadeTransaction())
     }
 
     // SY -->
