@@ -103,6 +103,13 @@ abstract class AbstractBackupManager(protected val context: Context) {
     }
 
     /**
+     * Updates a list of chapters with known database ids
+     */
+    protected fun updateKnownChapters(chapters: List<Chapter>) {
+        databaseHelper.updateKnownChaptersBackup(chapters).executeAsBlocking()
+    }
+
+    /**
      * Return number of backups.
      *
      * @return number of backups selected by user
