@@ -342,51 +342,40 @@ class LibraryUpdateService(
                     async {
                         semaphore.withPermit {
                             mangaInSource
-                                .map { manga ->
+                                .onEach { manga ->
                                     if (updateJob?.isActive != true) {
                                         return@async
                                     }
 
-                                    // Notify manga that will update.
                                     notifier.showProgressNotification(manga, progressCount.andIncrement, mangaToUpdate.size)
 
-                                    // Update the chapters of the manga
                                     try {
-                                        val newChapters = updateManga(manga).first
-                                        Pair(manga, newChapters)
+                                        val (newChapters, _) = updateManga(manga)
+
+                                        if (newChapters.isNotEmpty()) {
+                                            if (manga.shouldDownloadNewChapters(db, preferences)) {
+                                                downloadChapters(manga, newChapters)
+                                                hasDownloads = true
+                                            }
+
+                                            // Convert to the manga that contains new chapters
+                                            newUpdates.add(manga to newChapters.sortedByDescending { ch -> ch.source_order }
+                                                .toTypedArray())
+                                        }
                                     } catch (e: Throwable) {
-                                        // If there's any error, return empty update and continue.
                                         val errorMessage = if (e is NoChaptersException) {
                                             getString(R.string.no_chapters_error)
                                         } else {
                                             e.message
                                         }
-                                        failedUpdates.add(Pair(manga, errorMessage))
-                                        Pair(manga, emptyList())
+                                        failedUpdates.add(manga to errorMessage)
                                     }
-                                }
-                                // Filter out mangas without new chapters (or failed).
-                                .filter { (_, newChapters) -> newChapters.isNotEmpty() }
-                                .forEach { (manga, newChapters) ->
-                                    if (manga.shouldDownloadNewChapters(db, preferences)) {
-                                        downloadChapters(manga, newChapters)
-                                        hasDownloads = true
-                                    }
-
-                                    // Convert to the manga that contains new chapters.
-                                    newUpdates.add(
-                                        Pair(
-                                            manga,
-                                            newChapters.sortedByDescending { ch -> ch.source_order }.toTypedArray()
-                                        )
-                                    )
                                 }
                         }
                     }
                 }.awaitAll()
         }
 
-        // Notify result of the overall update.
         notifier.cancelProgressNotification()
 
         if (newUpdates.isNotEmpty()) {
