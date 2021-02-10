@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.merged.sql.models.MergedMangaReference
@@ -78,22 +77,30 @@ class MergedSource : HttpSource() {
         }
     }
 
-    fun getChaptersFromDB(manga: Manga, editScanlators: Boolean = false, dedupe: Boolean = true): Observable<List<Chapter>> {
-        // TODO more chapter dedupe
+    // TODO more chapter dedupe
+    private fun transformMergedChapters(manga: Manga, chapterList: List<Chapter>, editScanlators: Boolean, dedupe: Boolean): List<Chapter> {
+        val mangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
+        if (editScanlators) {
+            val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
+            chapterList.onEach { chapter ->
+                val source = sources.firstOrNull { chapter.manga_id == it.second }?.first
+                if (source != null) {
+                    chapter.scanlator = if (chapter.scanlator.isNullOrBlank()) source.name
+                    else "$source: ${chapter.scanlator}"
+                }
+            }
+        }
+        return if (dedupe) dedupeChapterList(mangaReferences, chapterList) else chapterList
+    }
+
+    fun getChaptersAsBlocking(manga: Manga, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
+        return transformMergedChapters(manga, db.getChaptersByMergedMangaId(manga.id!!).executeAsBlocking(), editScanlators, dedupe)
+    }
+
+    fun getChaptersObservable(manga: Manga, editScanlators: Boolean = false, dedupe: Boolean = true): Observable<List<Chapter>> {
         return db.getChaptersByMergedMangaId(manga.id!!).asRxObservable()
             .map { chapterList ->
-                val mangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
-                if (editScanlators) {
-                    val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
-                    chapterList.onEach { chapter ->
-                        val source = sources.firstOrNull { chapter.manga_id == it.second }?.first
-                        if (source != null) {
-                            chapter.scanlator = if (chapter.scanlator.isNullOrBlank()) source.name
-                            else "$source: ${chapter.scanlator}"
-                        }
-                    }
-                }
-                if (dedupe) dedupeChapterList(mangaReferences, chapterList) else chapterList
+                transformMergedChapters(manga, chapterList, editScanlators, dedupe)
             }
     }
 
@@ -126,7 +133,7 @@ class MergedSource : HttpSource() {
     suspend fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
         return withIOContext {
             fetchChaptersAndSync(manga, downloadChapters)
-            getChaptersFromDB(manga, editScanlators, dedupe).awaitSingle()
+            getChaptersAsBlocking(manga, editScanlators, dedupe)
         }
     }
 

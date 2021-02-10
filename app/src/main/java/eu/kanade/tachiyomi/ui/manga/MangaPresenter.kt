@@ -211,7 +211,7 @@ class MangaPresenter(
         // Add the subscription that retrieves the chapters from the database, keeps subscribed to
         // changes, and sends the list of chapters to the relay.
         add(
-            (/* SY --> */if (source is MergedSource) source.getChaptersFromDB(manga, true, dedupe) else /* SY <-- */ db.getChapters(manga).asRxObservable())
+            (/* SY --> */if (source is MergedSource) source.getChaptersObservable(manga, true, dedupe) else /* SY <-- */ db.getChapters(manga).asRxObservable())
                 .map { chapters ->
                     // Convert every chapter to a model.
                     chapters.map { it.toModel() }
@@ -759,8 +759,15 @@ class MangaPresenter(
         val isMergedSource = source is MergedSource
         // SY <--
         chapters
-            .filter { downloadManager.isChapterDownloaded(it, /* SY --> */ if (isMergedSource) mergedManga.firstOrNull { manga -> it.manga_id == manga.id } ?: manga else /* SY <-- */ manga) }
+            .filter { downloadManager.isChapterDownloaded(/* SY --> */ if (isMergedSource) it.toMergedDownloadChapter() else it, if (isMergedSource) mergedManga.firstOrNull { manga -> it.manga_id == manga.id } ?: manga else /* SY <-- */ manga) }
             .forEach { it.status = Download.State.DOWNLOADED }
+    }
+
+    private fun Chapter.toMergedDownloadChapter() = Chapter.create().apply {
+        url = this@toMergedDownloadChapter.url
+        name = this@toMergedDownloadChapter.name
+        id = this@toMergedDownloadChapter.id
+        scanlator = this@toMergedDownloadChapter.scanlator?.substringAfter(": ")
     }
 
     /**
@@ -919,7 +926,7 @@ class MangaPresenter(
         if (source is MergedSource) {
             chapters.groupBy { it.manga_id }.forEach { map ->
                 val manga = mergedManga.firstOrNull { it.id == map.key } ?: return@forEach
-                downloadManager.downloadChapters(manga, map.value.onEach { chapter -> chapter.scanlator?.let { chapter.scanlator = it.substringBefore(":") } })
+                downloadManager.downloadChapters(manga, map.value.map { it.toMergedDownloadChapter() })
             }
         } else /* SY <-- */ downloadManager.downloadChapters(manga, chapters)
     }

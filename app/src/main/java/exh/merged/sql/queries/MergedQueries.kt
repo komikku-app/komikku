@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.data.database.queries.getAllMergedMangaQuery
 import eu.kanade.tachiyomi.data.database.queries.getMergedChaptersQuery
 import eu.kanade.tachiyomi.data.database.queries.getMergedMangaFromUrlQuery
 import eu.kanade.tachiyomi.data.database.queries.getMergedMangaQuery
+import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import exh.merged.sql.models.MergedMangaReference
 import exh.merged.sql.resolvers.MergeMangaSettingsPutResolver
 import exh.merged.sql.resolvers.MergedMangaIdPutResolver
@@ -105,6 +106,7 @@ interface MergedQueries : DbProvider {
             RawQuery.builder()
                 .query(getMergedChaptersQuery())
                 .args(mergedMangaId)
+                .observesTables(ChapterTable.TABLE, MergedTable.TABLE)
                 .build()
         )
         .prepare()

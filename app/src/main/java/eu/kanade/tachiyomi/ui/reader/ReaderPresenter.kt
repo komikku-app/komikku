@@ -26,7 +26,6 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.util.isLocal
-import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.takeBytes
@@ -47,7 +46,6 @@ import exh.util.mangaType
 import exh.util.shouldDeleteChapters
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -118,7 +116,10 @@ class ReaderPresenter(
         val meta = meta
         val filteredScanlators = meta?.filteredScanlators?.let { MdUtil.getScanlators(it) }
         // SY <--
-        val dbChapters = /* SY --> */if (manga.source == MERGED_SOURCE_ID) runBlocking { (sourceManager.get(MERGED_SOURCE_ID) as? MergedSource)?.getChaptersFromDB(manga)?.awaitSingle().orEmpty() } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
+        val dbChapters = /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
+            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
+                .getChaptersAsBlocking(manga)
+        } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
 
         val selectedChapter = dbChapters.find { it.id == chapterId }
             ?: error("Requested chapter of id $chapterId not found in chapter list")
