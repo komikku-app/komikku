@@ -21,11 +21,14 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.source.mangaDexSourceIds
 import exh.util.SourceTagsUtil
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -45,6 +48,8 @@ class MangaInfoHeaderAdapter(
     // SY -->
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
+
+    private var mergedMangaReferences: List<MergedMangaReference> = emptyList()
     // SY <--
 
     private var manga: Manga = controller.presenter.manga
@@ -75,6 +80,11 @@ class MangaInfoHeaderAdapter(
     fun update(manga: Manga, source: Source) {
         this.manga = manga
         this.source = source
+        // SY -->
+        if (source is MergedSource) {
+            mergedMangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
+        }
+        // SY <--
 
         notifyDataSetChanged()
     }
@@ -107,7 +117,7 @@ class MangaInfoHeaderAdapter(
 
             with(binding.btnTracking) {
                 // SY -->
-                val sourceIsMangaDex = source.getMainSource() is MangaDex
+                val sourceIsMangaDex = source.getMainSource() is MangaDex || mergedMangaReferences.any { it.mangaSourceId in mangaDexSourceIds }
                 // SY <--
                 if (trackManager.hasLoggedServices(/* SY --> */sourceIsMangaDex/* SY <-- */)) {
                     isVisible = true
@@ -250,7 +260,7 @@ class MangaInfoHeaderAdapter(
             with(binding.mangaSource) {
                 // SY -->
                 if (source?.id == MERGED_SOURCE_ID) {
-                    text = db.getMergedMangaReferences(manga.id!!).executeAsBlocking().map {
+                    text = mergedMangaReferences.map {
                         sourceManager.getOrStub(it.mangaSourceId).toString()
                     }.distinct().joinToString()
                 } else /* SY <-- */ if (mangaSource != null) {

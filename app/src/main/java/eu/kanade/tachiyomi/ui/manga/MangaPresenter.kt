@@ -268,7 +268,7 @@ class MangaPresenter(
 
     private fun getTrackingObservable(): Observable<Int> {
         // SY -->
-        val sourceIsMangaDex = source.getMainSource() is MangaDex
+        val sourceIsMangaDex = source.getMainSource() is MangaDex || mergedManga.any { it.source in mangaDexSourceIds }
         // SY <--
         if (!trackManager.hasLoggedServices(/* SY --> */sourceIsMangaDex/* SY <-- */)) {
             return Observable.just(0)
@@ -1124,7 +1124,7 @@ class MangaPresenter(
             // SY -->
             .map { trackItems ->
                 val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
-                if (manga.source in mangaDexSourceIds) {
+                if (manga.source in mangaDexSourceIds || mergedManga.any { it.source in mangaDexSourceIds }) {
                     when {
                         mdTrack == null -> {
                             trackItems
@@ -1143,7 +1143,8 @@ class MangaPresenter(
 
     // SY -->
     private fun createMdListTrack(): TrackItem {
-        val track = trackManager.mdList.createInitialTracker(manga)
+        val mdManga = mergedManga.find { it.source in mangaDexSourceIds }
+        val track = trackManager.mdList.createInitialTracker(manga, mdManga ?: manga)
         track.id = db.insertTrack(track).executeAsBlocking().insertedId()
         return TrackItem(track, trackManager.mdList)
     }

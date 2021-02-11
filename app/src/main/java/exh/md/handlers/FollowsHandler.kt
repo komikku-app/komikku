@@ -222,7 +222,6 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 followStatusParse(response)
             } catch (e: Exception) {
                 if (e.message.equals("HTTP error 404", true)) {
-                    XLog.enableStackTrace(10).e(e)
                     Track.create(TrackManager.MDLIST).apply {
                         status = FollowStatus.UNFOLLOWED.int
                     }
