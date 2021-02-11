@@ -48,7 +48,7 @@ class TrackManager(context: Context) {
 
     fun getService(id: Int) = services.find { it.id == id }
 
-    fun hasLoggedServices(isMangaDexManga: Boolean = true) = services.any { it.isLogged && ((it.id == MDLIST && isMangaDexManga) || it.id != MDLIST) }
+    fun hasLoggedServices() = services.any { it.isLogged }
 
     // SY -->
     fun mapTrackingOrder(status: String, context: Context): Int {

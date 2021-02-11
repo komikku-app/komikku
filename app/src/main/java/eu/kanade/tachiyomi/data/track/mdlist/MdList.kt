@@ -10,8 +10,12 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toMangaInfo
+import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import tachiyomi.source.model.MangaInfo
 
 class MdList(private val context: Context, id: Int) : TrackService(id) {
 
@@ -42,7 +46,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     override suspend fun add(track: Track): Track = update(track)
 
     override suspend fun update(track: Track): Track {
-        val mdex = mdex ?: throw Exception("Mangadex not enabled")
+        val mdex = mdex ?: throw MangaDexNotFoundException()
 
         val remoteTrack = mdex.fetchTrackingInfo(track.tracking_url)
         val followStatus = FollowStatus.fromInt(track.status)
@@ -87,7 +91,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     override suspend fun bind(track: Track): Track = update(refresh(track))
 
     override suspend fun refresh(track: Track): Track {
-        val mdex = mdex ?: throw Exception("Mangadex not enabled")
+        val mdex = mdex ?: throw MangaDexNotFoundException()
         val (remoteTrack, mangaMetadata) = mdex.getTrackingAndMangaInfo(track)
         track.copyPersonalFrom(remoteTrack)
         if (track.total_chapters == 0 && mangaMetadata.status == SManga.COMPLETED) {
@@ -105,7 +109,27 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
         return track
     }
 
-    override suspend fun search(query: String): List<TrackSearch> = throw Exception("not used")
+    override suspend fun search(query: String): List<TrackSearch> {
+        val mdex = mdex ?: throw MangaDexNotFoundException()
+        return mdex.fetchSearchManga(0, query, mdex.getFilterList())
+            .flatMap { page ->
+                runAsObservable({
+                    page.mangas.map {
+                        toTrackSearch(mdex.getMangaDetails(it.toMangaInfo()))
+                    }
+                })
+            }
+            .awaitSingle()
+    }
+
+    private fun toTrackSearch(mangaInfo: MangaInfo): TrackSearch = TrackSearch.create(TrackManager.MDLIST).apply {
+        tracking_url = MdUtil.baseUrl + mangaInfo.key
+        title = mangaInfo.title
+        cover_url = mangaInfo.cover
+        summary = mangaInfo.description
+    }
 
     override suspend fun login(username: String, password: String): Unit = throw Exception("not used")
+
+    class MangaDexNotFoundException : Exception("Mangadex not enabled")
 }

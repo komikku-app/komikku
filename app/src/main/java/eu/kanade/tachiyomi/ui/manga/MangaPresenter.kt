@@ -27,7 +27,6 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
@@ -267,16 +266,13 @@ class MangaPresenter(
     }
 
     private fun getTrackingObservable(): Observable<Int> {
-        // SY -->
-        val sourceIsMangaDex = source.getMainSource() is MangaDex || mergedManga.any { it.source in mangaDexSourceIds }
-        // SY <--
-        if (!trackManager.hasLoggedServices(/* SY --> */sourceIsMangaDex/* SY <-- */)) {
+        if (!trackManager.hasLoggedServices()) {
             return Observable.just(0)
         }
 
         return db.getTracks(manga).asRxObservable()
             .map { tracks ->
-                val loggedServices = trackManager.services.filter { it.isLogged /* SY --> */ && ((it.id == TrackManager.MDLIST && sourceIsMangaDex) || it.id != TrackManager.MDLIST) /* SY <-- */ }.map { it.id }
+                val loggedServices = trackManager.services.filter { it.isLogged }.map { it.id }
                 tracks
                     // SY -->
                     .filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }
@@ -1123,8 +1119,8 @@ class MangaPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             // SY -->
             .map { trackItems ->
-                val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
                 if (manga.source in mangaDexSourceIds || mergedManga.any { it.source in mangaDexSourceIds }) {
+                    val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
                     when {
                         mdTrack == null -> {
                             trackItems
@@ -1134,7 +1130,7 @@ class MangaPresenter(
                         }
                         else -> trackItems
                     }
-                } else mdTrack?.let { trackItems - it } ?: trackItems
+                } else trackItems
             }
             // SY <--
             .doOnNext { _trackList = it }
