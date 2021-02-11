@@ -4,6 +4,7 @@
     <!--========-->
     <!--Toolbars-->
     <!--========-->
+
     <style name="Theme.Toolbar" parent="@style/ThemeOverlay.MaterialComponents.ActionBar" />
 
     <style name="Theme.Toolbar.Red" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
