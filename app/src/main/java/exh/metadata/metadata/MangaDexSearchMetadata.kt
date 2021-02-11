@@ -40,6 +40,8 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
 
     var follow_status: Int? = null
 
+    var maxChapterNumber: Int? = null
+
     override fun createMangaInfo(manga: MangaInfo): MangaInfo {
         val key = mdUrl?.let {
             try {

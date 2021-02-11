@@ -1,5 +1,6 @@
 package exh.md.handlers
 
+import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
@@ -13,6 +14,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.handlers.serializers.ApiCovers
 import exh.md.handlers.serializers.ApiMangaSerializer
 import exh.md.utils.MdUtil
+import exh.metadata.metadata.MangaDexSearchMetadata
 import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.OkHttpClient
@@ -20,6 +22,8 @@ import okhttp3.Request
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 class MangaHandler(val client: OkHttpClient, val headers: Headers, val lang: String, val forceLatestCovers: Boolean = false) {
 
@@ -113,6 +117,16 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val lang: Str
             val response = client.newCall(randomMangaRequest()).await()
             ApiMangaParser(lang).randomMangaIdParse(response)
         }
+    }
+
+    suspend fun getTrackingInfo(track: Track, useLowQualityCovers: Boolean): Pair<Track, MangaDexSearchMetadata> {
+        val mangaUrl = MdUtil.mapMdIdToMangaUrl(MdUtil.getMangaId(track.tracking_url).toInt())
+        val manga = MangaInfo(mangaUrl, track.title)
+        val response = client.newCall(apiRequest(manga)).await()
+        val metadata = MangaDexSearchMetadata()
+        ApiMangaParser(lang).parseIntoMetadata(metadata, response, emptyList())
+        val remoteTrack = FollowsHandler(client, headers, Injekt.get(), useLowQualityCovers).fetchTrackingInfo(track.tracking_url)
+        return remoteTrack to metadata
     }
 
     private fun randomMangaRequest(): Request {

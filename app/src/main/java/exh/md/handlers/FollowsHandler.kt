@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
@@ -75,9 +76,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
 
     private fun followStatusParse(response: Response): Track {
         val followsPageResult = try {
-            MdUtil.jsonParser.decodeFromString<FollowsIndividualSerializer>(
-                response.body?.string().orEmpty()
-            )
+            response.parseAs<FollowsIndividualSerializer>(MdUtil.jsonParser)
         } catch (e: Exception) {
             XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
             throw e
@@ -214,14 +213,21 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     suspend fun fetchTrackingInfo(url: String): Track {
         return withIOContext {
             val request = GET(
-                "${MdUtil.apiUrl}${MdUtil.followsMangaApi}" + MdUtil.getMangaId(url),
+                MdUtil.apiUrl + MdUtil.followsMangaApi + MdUtil.getMangaId(url),
                 headers,
                 CacheControl.FORCE_NETWORK
             )
-            val response = client.newCall(request).await()
-            val track = followStatusParse(response)
-
-            track
+            try {
+                val response = client.newCall(request).await()
+                followStatusParse(response)
+            } catch (e: Exception) {
+                if (e.message.equals("HTTP error 404", true)) {
+                    XLog.enableStackTrace(10).e(e)
+                    Track.create(TrackManager.MDLIST).apply {
+                        status = FollowStatus.UNFOLLOWED.int
+                    }
+                } else throw e
+            }
         }
     }
 }

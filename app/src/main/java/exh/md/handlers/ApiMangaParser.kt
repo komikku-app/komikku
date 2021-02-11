@@ -126,6 +126,7 @@ class ApiMangaParser(private val lang: String) {
                 if (publishedOrCancelled && isMangaCompleted(networkApiManga, filteredChapters)) {
                     status = SManga.COMPLETED
                     missing_chapters = null
+                    maxChapterNumber = networkApiManga.data.manga.lastChapter?.toDoubleOrNull()?.floor()
                 } else {
                     status = tempStatus
                 }
