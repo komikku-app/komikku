@@ -113,7 +113,6 @@ class ReaderPresenter(
     private val chapterList by lazy {
         val manga = manga!!
         // SY -->
-        val meta = meta
         val filteredScanlators = meta?.filteredScanlators?.let { MdUtil.getScanlators(it) }
         // SY <--
         val dbChapters = /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
