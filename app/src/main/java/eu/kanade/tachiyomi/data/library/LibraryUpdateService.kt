@@ -548,37 +548,38 @@ class LibraryUpdateService(
         val count = AtomicInteger(0)
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager) ?: return
 
-        val mangadexFollows = mangaDex.fetchAllFollows(true)
+        val size: Int
+        mangaDex.fetchAllFollows(true)
             .filter { (_, metadata) ->
                 metadata.follow_status == FollowStatus.RE_READING.int || metadata.follow_status == FollowStatus.READING.int
             }
+            .also { size = it.size }
+            .forEach { (networkManga, metadata) ->
+                if (updateJob?.isActive != true) {
+                    return
+                }
 
-        mangadexFollows.forEach { (networkManga, metadata) ->
-            if (updateJob?.isActive != true) {
-                return
+                notifier.showProgressNotification(networkManga, count.andIncrement, size)
+
+                var dbManga = db.getManga(networkManga.url, mangaDex.id)
+                    .executeOnIO()
+                if (dbManga == null) {
+                    dbManga = Manga.create(
+                        networkManga.url,
+                        networkManga.title,
+                        mangaDex.id
+                    )
+                    dbManga.date_added = System.currentTimeMillis()
+                }
+
+                dbManga.copyFrom(networkManga)
+                dbManga.favorite = true
+                val id = db.insertManga(dbManga).executeOnIO().insertedId()
+                if (id != null) {
+                    metadata.mangaId = id
+                    db.insertFlatMetadata(metadata.flatten()).await()
+                }
             }
-
-            notifier.showProgressNotification(networkManga, count.andIncrement, mangadexFollows.size)
-
-            var dbManga = db.getManga(networkManga.url, mangaDex.id)
-                .executeOnIO()
-            if (dbManga == null) {
-                dbManga = Manga.create(
-                    networkManga.url,
-                    networkManga.title,
-                    mangaDex.id
-                )
-                dbManga.date_added = System.currentTimeMillis()
-            }
-
-            dbManga.copyFrom(networkManga)
-            dbManga.favorite = true
-            val id = db.insertManga(dbManga).executeOnIO().insertedId()
-            if (id != null) {
-                metadata.mangaId = id
-                db.insertFlatMetadata(metadata.flatten()).await()
-            }
-        }
 
         notifier.cancelProgressNotification()
     }
