@@ -253,7 +253,7 @@ class LibraryController(
             }
             .launchIn(viewScope)
 
-        (activity!! as MainActivity).fixViewToBottom(binding.actionToolbar)
+        (activity as? MainActivity)?.fixViewToBottom(binding.actionToolbar)
     }
 
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
@@ -266,7 +266,7 @@ class LibraryController(
 
     override fun onDestroyView(view: View) {
         destroyActionModeIfNeeded()
-        (activity!! as MainActivity).clearFixViewToBottom(binding.actionToolbar)
+        (activity as? MainActivity)?.clearFixViewToBottom(binding.actionToolbar)
         binding.actionToolbar.destroy()
         adapter?.onDestroy()
         adapter = null
