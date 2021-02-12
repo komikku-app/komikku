@@ -359,8 +359,10 @@ class LibraryUpdateService(
                                             }
 
                                             // Convert to the manga that contains new chapters
-                                            newUpdates.add(manga to newChapters.sortedByDescending { ch -> ch.source_order }
-                                                .toTypedArray())
+                                            newUpdates.add(
+                                                manga to newChapters.sortedByDescending { ch -> ch.source_order }
+                                                    .toTypedArray()
+                                            )
                                         }
                                     } catch (e: Throwable) {
                                         val errorMessage = if (e is NoChaptersException) {
