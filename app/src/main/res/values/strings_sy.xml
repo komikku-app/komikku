@@ -151,6 +151,7 @@
     <string name="data_saver_color_bw">Convert to Black And White</string>
     <string name="data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
+    <string name="update_monthly">Monthly</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Minimal</string>
