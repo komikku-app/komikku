@@ -1,13 +1,12 @@
 package eu.kanade.tachiyomi.ui.setting
 
-import android.content.Intent
-import androidx.core.net.toUri
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.ui.base.controller.openInBrowser
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -161,8 +160,7 @@ class SettingsMangaDexController :
                 val url = "https://github.com/goldbattle/MangadexRecomendations"
                 summary = context.getString(R.string.similar_credit_message, url)
                 onClick {
-                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-                    startActivity(intent)
+                    openInBrowser(url)
                 }
                 isIconSpaceReserved = true
             }
