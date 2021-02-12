@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
-import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
 import okio.buffer
@@ -27,7 +26,7 @@ import java.util.Date
 
 class FullBackupRestore(context: Context, notifier: BackupNotifier, private val online: Boolean) : AbstractBackupRestore<FullBackupManager>(context, notifier) {
 
-    override fun performRestore(uri: Uri): Boolean {
+    override suspend fun performRestore(uri: Uri): Boolean {
         // SY -->
         throttleManager.resetThrottle()
         // SY <--
@@ -82,7 +81,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
     }
     // SY <--
 
-    private fun restoreManga(backupManga: BackupManga, backupCategories: List<BackupCategory>, online: Boolean) {
+    private suspend fun restoreManga(backupManga: BackupManga, backupCategories: List<BackupCategory>, online: Boolean) {
         var manga = backupManga.getMangaImpl()
         val chapters = backupManga.getChaptersImpl()
         val categories = backupManga.categories
@@ -124,7 +123,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
      * @param history history data from json
      * @param tracks tracking data from json
      */
-    private fun restoreMangaData(
+    private suspend fun restoreMangaData(
         manga: Manga,
         source: Source?,
         chapters: List<Chapter>,
@@ -158,7 +157,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
      * @param chapters chapters of manga that needs updating
      * @param categories categories that need updating
      */
-    private fun restoreMangaFetch(
+    private suspend fun restoreMangaFetch(
         source: Source?,
         manga: Manga,
         chapters: List<Chapter>,
@@ -170,31 +169,29 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
-        launchIO {
-            try {
-                val fetchedManga = backupManager.restoreMangaFetch(source, manga, online)
-                fetchedManga.id ?: (return@launchIO)
+        try {
+            val fetchedManga = backupManager.restoreMangaFetch(source, manga, online)
+            fetchedManga.id ?: return
 
-                if (online && source != null) {
-                    // SY -->
-                    if (source !is MergedSource) {
-                        updateChapters(source, fetchedManga, chapters)
-                    }
-                    // SY <--
-                } else {
-                    backupManager.restoreChaptersForMangaOffline(fetchedManga, chapters)
+            if (online && source != null) {
+                // SY -->
+                if (source !is MergedSource) {
+                    updateChapters(source, fetchedManga, chapters)
                 }
-
-                restoreExtraForManga(fetchedManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
-
-                updateTracking(fetchedManga, tracks)
-            } catch (e: Exception) {
-                errors.add(Date() to "${manga.title} - ${e.message}")
+                // SY <--
+            } else {
+                backupManager.restoreChaptersForMangaOffline(fetchedManga, chapters)
             }
+
+            restoreExtraForManga(fetchedManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+
+            updateTracking(fetchedManga, tracks)
+        } catch (e: Exception) {
+            errors.add(Date() to "${manga.title} - ${e.message}")
         }
     }
 
-    private fun restoreMangaNoFetch(
+    private suspend fun restoreMangaNoFetch(
         source: Source?,
         backupManga: Manga,
         chapters: List<Chapter>,
@@ -206,19 +203,17 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
-        launchIO {
-            if (online && source != null) {
-                if (/* SY --> */ source !is MergedSource && /* SY <-- */ !backupManager.restoreChaptersForManga(backupManga, chapters)) {
-                    updateChapters(source, backupManga, chapters)
-                }
-            } else {
-                backupManager.restoreChaptersForMangaOffline(backupManga, chapters)
+        if (online && source != null) {
+            if (/* SY --> */ source !is MergedSource && /* SY <-- */ !backupManager.restoreChaptersForManga(backupManga, chapters)) {
+                updateChapters(source, backupManga, chapters)
             }
-
-            restoreExtraForManga(backupManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
-
-            updateTracking(backupManga, tracks)
+        } else {
+            backupManager.restoreChaptersForMangaOffline(backupManga, chapters)
         }
+
+        restoreExtraForManga(backupManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+
+        updateTracking(backupManga, tracks)
     }
 
     private suspend fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>, flatMetadata: BackupFlatMetadata?) {
