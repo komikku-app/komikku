@@ -40,7 +40,7 @@ class CrashLogUtil(private val context: Context) {
             setContentTitle(context.getString(R.string.crash_log_saved))
 
             // Clear old actions if they exist
-            clearActions()
+            // clearActions()
 
             addAction(
                 R.drawable.ic_folder_24dp,
