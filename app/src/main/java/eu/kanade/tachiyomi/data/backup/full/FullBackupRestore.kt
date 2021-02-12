@@ -20,13 +20,11 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
-import kotlinx.serialization.ExperimentalSerializationApi
 import okio.buffer
 import okio.gzip
 import okio.source
 import java.util.Date
 
-@OptIn(ExperimentalSerializationApi::class)
 class FullBackupRestore(context: Context, notifier: BackupNotifier, private val online: Boolean) : AbstractBackupRestore<FullBackupManager>(context, notifier) {
 
     override fun performRestore(uri: Uri): Boolean {

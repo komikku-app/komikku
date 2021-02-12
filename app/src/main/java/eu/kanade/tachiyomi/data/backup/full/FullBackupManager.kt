@@ -40,7 +40,6 @@ import exh.savedsearches.JsonSavedSearch
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.executeOnIO
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -51,7 +50,6 @@ import okio.sink
 import timber.log.Timber
 import kotlin.math.max
 
-@OptIn(ExperimentalSerializationApi::class)
 class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
     val parser = ProtoBuf
