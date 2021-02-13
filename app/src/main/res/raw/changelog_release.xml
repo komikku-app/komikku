@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.5.0" changeDate="Feb 12,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.9(from 0.10.7)[/b] </changelogtext>
+        <changelogtext>[b]New[/b] Clicking the title now takes you to the manga page</changelogtext>
+        <changelogtext>[b]New[/b] Enhanced Reader Bottom menu</changelogtext>
+        <changelogtext>[b]New[/b] MDList now works for all manga, not just mangadex manga</changelogtext>
+        <changelogtext>[b]New[/b] Backup now backs up read manga not in library</changelogtext>
+        <changelogtext>[b]New[/b] Library update now updates manga from different sources in parallel</changelogtext>
+        <changelogtext>[b]New[/b] Use new Mangadex API server and API v2</changelogtext>
+        <changelogtext>[b]New[/b] Deeplink Mangadex chapters</changelogtext>
+        <changelogtext>Fix Mangadex Deeplink errors</changelogtext>
+        <changelogtext>Fix Mangadex login autofill saving wrong info</changelogtext>
+        <changelogtext>Fix Merged manga chapters not being marked as read on the manga page after reading</changelogtext>
+        <changelogtext>Fix Merged manga downloads</changelogtext>
+        <changelogtext>Fix Similar Manga notification</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.4.1" changeDate="Dec 14,2020">
         <changelogtext>[b]Based on Tachiyomi stable 0.10.7(from 0.10.6)[/b] </changelogtext>
         <changelogtext>[b]New[/b] Add separate crop borders setting for Continues Vertical</changelogtext>

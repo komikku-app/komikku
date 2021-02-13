@@ -9,7 +9,7 @@ labels: "feature"
 
 I acknowledge that:
 
-- I have updated to the latest version of the app (stable is v1.4.1)
+- I have updated to the latest version of the app (stable is v1.5.0)
 - I have updated all extensions
 - If this is an issue with an extension, that I should be opening an issue in https://github.com/tachiyomiorg/tachiyomi-extensions
 
