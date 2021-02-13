@@ -367,7 +367,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
     private fun initializeMenu() {
-        // Set toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
@@ -385,6 +384,18 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 )
             }
             insets
+        }
+
+        binding.toolbar.setOnClickListener {
+            presenter.manga?.id?.let { id ->
+                startActivity(
+                    Intent(this, MainActivity::class.java).apply {
+                        action = MainActivity.SHORTCUT_MANGA
+                        putExtra(MangaController.MANGA_EXTRA, id)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    }
+                )
+            }
         }
 
         // Init listeners on bottom menu
@@ -590,19 +601,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.chaptersButton.clicks()
             .onEach {
                 chapterBottomSheet.show()
-            }
-            .launchIn(lifecycleScope)
-
-        binding.toolbar.clicks()
-            .onEach {
-                presenter.manga?.id?.let { id ->
-                    startActivity(
-                        Intent(this, MainActivity::class.java)
-                            .setAction(MainActivity.SHORTCUT_MANGA)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            .putExtra(MangaController.MANGA_EXTRA, id)
-                    )
-                }
             }
             .launchIn(lifecycleScope)
 
