@@ -33,9 +33,6 @@ import androidx.core.net.toUri
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.lang.truncateCenter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.math.roundToInt
 
@@ -45,12 +42,8 @@ import kotlin.math.roundToInt
  * @param resource the text resource.
  * @param duration the duration of the toast. Defaults to short.
  */
-fun Context.toast(@StringRes resource: Int, duration: Int = Toast.LENGTH_SHORT) {
-    // SY -->
-    GlobalScope.launch(Dispatchers.Main) {
-        Toast.makeText(this@toast, resource, duration).show()
-    }
-    // SY <--
+fun Context.toast(@StringRes resource: Int, duration: Int = Toast.LENGTH_SHORT): Toast {
+    return Toast.makeText(this, resource, duration).also { it.show() }
 }
 
 /**
@@ -59,12 +52,8 @@ fun Context.toast(@StringRes resource: Int, duration: Int = Toast.LENGTH_SHORT) 
  * @param text the text to display.
  * @param duration the duration of the toast. Defaults to short.
  */
-fun Context.toast(text: String?, duration: Int = Toast.LENGTH_SHORT) {
-    // SY -->
-    GlobalScope.launch(Dispatchers.Main) {
-        Toast.makeText(this@toast, text.orEmpty(), duration).show()
-    }
-    // SY <--
+fun Context.toast(text: String?, duration: Int = Toast.LENGTH_SHORT): Toast {
+    return Toast.makeText(this, text.orEmpty(), duration).also { it.show() }
 }
 
 /**
