@@ -310,18 +310,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 presenter.bookmarkCurrentChapter(false)
                 invalidateOptionsMenu()
             }
-            R.id.action_settings -> ReaderSettingsSheet(this).show()
-            R.id.action_custom_filter -> {
-                val sheet = ReaderColorFilterSheet(this)
-                    // Remove dimmed backdrop so changes can be previewed
-                    .apply { window?.setDimAmount(0f) }
-
-                // Hide toolbars while sheet is open for better preview
-                sheet.setOnDismissListener { setMenuVisibility(true) }
-                setMenuVisibility(false)
-
-                sheet.show()
-            }
         }
         return super.onOptionsItemSelected(item)
     }*/
@@ -410,24 +398,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         )
 
         // Extra menu buttons
-        binding.filterButton.clicks()
-            .onEach {
-                ReaderColorFilterSheet(this).show()
-            }
-            .launchIn(lifecycleScope)
-
-        binding.actionSettings.clicks()
-            .onEach {
-                ReaderSettingsSheet(this).show()
-            }
-            .launchIn(lifecycleScope)
-
-        binding.webviewButton.clicks()
-            .onEach {
-                openMangaInBrowser()
-            }
-            .launchIn(lifecycleScope)
-        // Extra menu buttons
 
         binding.leftChapter.setOnClickListener {
             if (viewer != null) {
@@ -448,7 +418,29 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         }
 
+        binding.actionCustomFilter.setOnClickListener {
+            val sheet = ReaderColorFilterSheet(this)
+                // Remove dimmed backdrop so changes can be previewed
+                .apply { window?.setDimAmount(0f) }
+
+            // Hide toolbars while sheet is open for better preview
+            sheet.setOnDismissListener { setMenuVisibility(true) }
+            setMenuVisibility(false)
+
+            sheet.show()
+        }
+        binding.actionSettings.setOnClickListener {
+            ReaderSettingsSheet(this).show()
+        }
+
         // --> EH
+        binding.actionWebView.setOnClickListener {
+            openMangaInBrowser()
+        }
+        binding.actionChapterList.setOnClickListener {
+            chapterBottomSheet.show()
+        }
+
         binding.expandEhButton.clicks()
             .onEach {
                 ehUtilsVisible = !ehUtilsVisible
@@ -597,13 +589,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
             .launchIn(lifecycleScope)
 
-        chapterBottomSheet = ReaderChapterSheet(this)
-        binding.chaptersButton.clicks()
-            .onEach {
-                chapterBottomSheet.show()
-            }
-            .launchIn(lifecycleScope)
-
         autoScrollFlow
             .onEach {
                 viewer.let { v ->
@@ -612,6 +597,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
             }
             .launchIn(lifecycleScope)
+
+        chapterBottomSheet = ReaderChapterSheet(this)
         // <-- EH
 
         // Set initial visibility
