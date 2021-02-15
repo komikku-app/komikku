@@ -82,56 +82,58 @@ class AboutController : SettingsController() {
             preference {
                 key = "pref_about_website"
                 titleRes = R.string.website
-                val url = "https://tachiyomi.org"
-                summary = url
-                onClick {
-                    openInBrowser(url)
+                "https://tachiyomi.org".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
+                }
+            }
+            preference {
+                key = "pref_about_twitter"
+                title = "Twitter"
+                "https://twitter.com/tachiyomiorg".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
                 }
             }
             preference {
                 key = "pref_about_discord"
                 title = "Discord"
-                val url = "https://discord.gg/tachiyomi"
-                summary = url
-                onClick {
-                    openInBrowser(url)
+                "https://discord.gg/tachiyomi".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
                 }
             }
             preference {
                 key = "pref_about_github"
                 title = "GitHub"
                 // SY -->
-                val url = "https://github.com/jobobby04/TachiyomiSY"
-                // SY <--
-                summary = url
-                onClick {
-                    openInBrowser(url)
+                "https://github.com/jobobby04/TachiyomiSY".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
                 }
+                // SY <--
             }
             // SY -->
             preference {
                 key = "pref_about_label_original_tachiyomi_github"
                 title = "Original Tachiyomi GitHub "
-                val url = "https://github.com/tachiyomiorg/tachiyomi"
-                summary = url
-                onClick {
-                    openInBrowser(url)
+                "https://github.com/tachiyomiorg/tachiyomi".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
                 }
             }
             // SY <--
             preference {
                 key = "pref_about_label_extensions"
                 titleRes = R.string.label_extensions
-                val url = "https://github.com/tachiyomiorg/tachiyomi-extensions"
-                summary = url
-                onClick {
-                    openInBrowser(url)
+                "https://github.com/tachiyomiorg/tachiyomi-extensions".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
                 }
             }
             preference {
                 key = "pref_about_licenses"
                 titleRes = R.string.licenses
-
                 onClick {
                     LibsBuilder()
                         .withActivityTitle(activity!!.getString(R.string.licenses))
