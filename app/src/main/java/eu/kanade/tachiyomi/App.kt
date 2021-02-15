@@ -38,9 +38,6 @@ import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
 import exh.syDebugVersion
 import io.realm.Realm
-import io.realm.RealmConfiguration
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.conscrypt.Conscrypt
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -51,7 +48,6 @@ import java.security.Security
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.net.ssl.SSLContext
-import kotlin.concurrent.thread
 import kotlin.time.ExperimentalTime
 import kotlin.time.days
 
@@ -78,7 +74,6 @@ open class App : Application(), LifecycleObserver {
 
         setupNotificationChannels()
         Realm.init(this)
-        GlobalScope.launch { deleteOldMetadataRealm() } // Delete old metadata DB (EH)
         if ((BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest") && DebugToggles.ENABLE_DEBUG_OVERLAY.enabled) {
             setupDebugOverlay()
         }
@@ -138,29 +133,6 @@ open class App : Application(), LifecycleObserver {
     }
 
     // EXH
-    private fun deleteOldMetadataRealm() {
-        val config = RealmConfiguration.Builder()
-            .name("gallery-metadata.realm")
-            .schemaVersion(3)
-            .deleteRealmIfMigrationNeeded()
-            .build()
-        Realm.deleteRealm(config)
-
-        // Delete old paper db files
-        listOf(
-            File(filesDir, "gallery-ex"),
-            File(filesDir, "gallery-perveden"),
-            File(filesDir, "gallery-nhentai")
-        ).forEach {
-            if (it.exists()) {
-                thread {
-                    it.deleteRecursively()
-                }
-            }
-        }
-    }
-
-    // EXH
     private fun setupExhLogging() {
         EHLogLevel.init(this)
 
@@ -217,7 +189,7 @@ open class App : Application(), LifecycleObserver {
         )
 
         XLog.tag("Init").d("Application booting...")
-        XLog.tag("Init").disableStackTrace().d(
+        XLog.tag("Init").d(
             "App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})\n" +
                 "Preview build: $syDebugVersion\n" +
                 "Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) \n" +

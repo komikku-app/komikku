@@ -33,7 +33,7 @@ buildscript {
         classpath("io.realm:realm-gradle-plugin:7.0.1")
 
         // Firebase Crashlytics
-        classpath("com.google.firebase:firebase-crashlytics-gradle:2.4.1")
+        classpath("com.google.firebase:firebase-crashlytics-gradle:2.5.0")
     }
     repositories {
         google()

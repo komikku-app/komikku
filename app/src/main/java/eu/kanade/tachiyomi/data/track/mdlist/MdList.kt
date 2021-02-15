@@ -101,12 +101,12 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     }
 
     fun createInitialTracker(dbManga: Manga, mdManga: Manga = dbManga): Track {
-        val track = Track.create(TrackManager.MDLIST)
-        track.manga_id = dbManga.id!!
-        track.status = FollowStatus.UNFOLLOWED.int
-        track.tracking_url = MdUtil.baseUrl + mdManga.url
-        track.title = mdManga.title
-        return track
+        return Track.create(TrackManager.MDLIST).apply {
+            manga_id = dbManga.id!!
+            status = FollowStatus.UNFOLLOWED.int
+            tracking_url = MdUtil.baseUrl + mdManga.url
+            title = mdManga.title
+        }
     }
 
     override suspend fun search(query: String): List<TrackSearch> {

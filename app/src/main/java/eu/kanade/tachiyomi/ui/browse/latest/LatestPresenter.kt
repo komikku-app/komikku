@@ -30,7 +30,6 @@ import uy.kohesive.injekt.api.get
  * @param preferences manages the preference calls.
  */
 open class LatestPresenter(
-    private val sourcesToUse: List<CatalogueSource>? = null,
     val sourceManager: SourceManager = Injekt.get(),
     val db: DatabaseHelper = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get()

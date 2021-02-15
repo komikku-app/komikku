@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.ui.browse.latest
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,10 +30,6 @@ open class LatestController :
      * Adapter containing search results grouped by lang.
      */
     protected var adapter: LatestAdapter? = null
-
-    /*init {
-        setHasOptionsMenu(true)
-    }*/
 
     /**
      * Initiate the view with [R.layout.global_search_controller].
@@ -80,34 +74,6 @@ open class LatestController :
     override fun onMangaLongClick(manga: Manga) {
         // Delegate to single click by default.
         onMangaClick(manga)
-    }
-
-    /**
-     * Adds items to the options menu.
-     *
-     * @param menu menu containing options.
-     * @param inflater used to load the menu xml.
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate menu.
-        /*inflater.inflate(R.menu.global_search, menu)
-
-        // Initialize search menu
-        val searchItem = menu.findItem(R.id.action_search)
-        val searchView = searchItem.actionView as SearchView
-        searchView.maxWidth = Int.MAX_VALUE
-
-        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-                searchView.onActionViewExpanded() // Required to show the query in the view
-                searchView.setQuery(presenter.query, false)
-                return true
-            }
-
-            override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                return true
-            }
-        })*/
     }
 
     /**

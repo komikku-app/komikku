@@ -713,7 +713,7 @@ class EHentai(
             page++
         } while (parsed.second)
 
-        return Pair(result.toList(), favNames!!)
+        return Pair(result.toList(), favNames.orEmpty())
     }
 
     fun spPref() = if (exh) {

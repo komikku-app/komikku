@@ -23,7 +23,7 @@ class ConfiguringDialogController : DialogController() {
                 try {
                     EHConfigurator(activity!!).configureAll()
                     launchUI {
-                        activity?.toast(activity?.getString(R.string.eh_settings_successfully_uploaded))
+                        activity?.toast(R.string.eh_settings_successfully_uploaded)
                     }
                 } catch (e: Exception) {
                     launchUI {
