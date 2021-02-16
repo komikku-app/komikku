@@ -198,7 +198,7 @@ open class SourceManager(private val context: Context) {
             DelegatedSource(
                 "Hentai Cafe",
                 HENTAI_CAFE_SOURCE_ID,
-                "eu.kanade.tachiyomi.extension.all.foolslide.HentaiCafe",
+                "eu.kanade.tachiyomi.extension.en.hentaicafe.HentaiCafe",
                 HentaiCafe::class
             ),
             DelegatedSource(
@@ -229,7 +229,7 @@ open class SourceManager(private val context: Context) {
             DelegatedSource(
                 "8Muses",
                 EIGHTMUSES_SOURCE_ID,
-                "eu.kanade.tachiyomi.extension.all.eromuse.EroMuse",
+                "eu.kanade.tachiyomi.extension.en.eightmuses.EightMuses",
                 EightMuses::class
             ),
             DelegatedSource(
