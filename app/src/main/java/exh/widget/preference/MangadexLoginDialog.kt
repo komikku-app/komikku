@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
 import exh.source.getMainSource
 import kotlinx.coroutines.CoroutineScope
@@ -79,7 +80,9 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
         val twoFactor = binding.twoFactorEdit.text?.toString()
         if (username.isNullOrBlank() || password.isNullOrBlank() || (binding.twoFactorCheck.isChecked && twoFactor.isNullOrBlank())) {
             errorResult()
-            binding.root.context.toast(R.string.fields_cannot_be_blank)
+            launchUI {
+                binding.root.context.toast(R.string.fields_cannot_be_blank)
+            }
             return
         }
 
@@ -98,13 +101,15 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
                 if (result) {
                     dialog?.dismiss()
                     preferences.setTrackCredentials(service, username, password)
-                    binding.root.context.toast(R.string.login_success)
+                    launchUI {
+                        binding.root.context.toast(R.string.login_success)
+                    }
                 } else {
                     errorResult()
                 }
             } catch (error: Exception) {
                 errorResult()
-                error.message?.let { binding.root.context.toast(it) }
+                error.message?.let { launchUI { binding.root.context.toast(it) } }
             }
         }
     }

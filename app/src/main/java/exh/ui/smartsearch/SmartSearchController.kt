@@ -56,10 +56,12 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
                         router.replaceTopController(transaction)
                     }
                 } else {
-                    if (results is SmartSearchPresenter.SearchResults.NotFound) {
-                        applicationContext?.toast("Couldn't find the manga in the source!")
-                    } else {
-                        applicationContext?.toast("Error performing automatic search!")
+                    withUIContext {
+                        if (results is SmartSearchPresenter.SearchResults.NotFound) {
+                            applicationContext?.toast("Couldn't find the manga in the source!")
+                        } else {
+                            applicationContext?.toast("Error performing automatic search!")
+                        }
                     }
 
                     val transaction = BrowseSourceController(source, smartSearchConfig.origTitle, smartSearchConfig).withFadeTransaction()

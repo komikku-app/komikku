@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchNow
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.toast
 import exh.source.getMainSource
@@ -53,13 +54,15 @@ class MangadexLogoutDialog(bundle: Bundle? = null) : DialogController(bundle) {
                                 activity?.toast(R.string.logout_success)
                                 (targetController as? Listener)?.siteLogoutDialogClosed(source)
                             } else {
-                                if (exception != null) {
-                                    activity?.toast(exception.message)
-                                } else {
-                                    activity?.toast(R.string.unknown_error)
+                                launchUI {
+                                    if (exception != null) {
+                                        activity?.toast(exception.message)
+                                    } else {
+                                        activity?.toast(R.string.unknown_error)
+                                    }
                                 }
                             }
-                        } else activity?.toast("Mangadex not enabled")
+                        } else launchUI { activity?.toast("Mangadex not enabled") }
                     }
                 }
             }
