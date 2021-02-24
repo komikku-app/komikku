@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -19,6 +20,7 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import eu.kanade.tachiyomi.util.system.notificationManager
 import exh.md.similar.sql.models.MangaSimilarImpl
@@ -35,7 +37,6 @@ import okio.source
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 class SimilarUpdateService(
     val db: DatabaseHelper = Injekt.get()
@@ -59,7 +60,7 @@ class SimilarUpdateService(
      */
     private lateinit var wakeLock: PowerManager.WakeLock
 
-    var similarServiceScope = CoroutineScope(Dispatchers.IO + Job())
+    private val similarServiceScope = CoroutineScope(Dispatchers.IO + Job())
 
     /**
      * Subscription where the update is done.
@@ -93,31 +94,32 @@ class SimilarUpdateService(
      */
     override fun onCreate() {
         super.onCreate()
+        wakeLock = acquireWakeLock("SimilarUpdateService")
         startForeground(Notifications.ID_SIMILAR_PROGRESS, progressNotification.build())
-        wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            "SimilarUpdateService:WakeLock"
-        )
-        wakeLock.acquire(TimeUnit.MINUTES.toMillis(30))
     }
 
-    /**
-     * Method called when the service is destroyed. It destroys subscriptions and releases the wake
-     * lock.
-     */
+    override fun stopService(name: Intent?): Boolean {
+        destroyJob()
+        return super.stopService(name)
+    }
+
     override fun onDestroy() {
+        destroyJob()
+        super.onDestroy()
+    }
+
+    private fun destroyJob() {
         job?.cancel()
-        similarServiceScope.cancel()
+        if (similarServiceScope.isActive) similarServiceScope.cancel()
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
-        super.onDestroy()
     }
 
     /**
      * This method needs to be implemented, but it's not used/needed.
      */
-    override fun onBind(intent: Intent) = null
+    override fun onBind(intent: Intent): IBinder? = null
 
     /**
      * Method called when the service receives an intent.
@@ -128,7 +130,7 @@ class SimilarUpdateService(
      * @return the start value of the command.
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null) return Service.START_NOT_STICKY
+        if (intent == null) return START_NOT_STICKY
 
         // Unsubscribe from any previous subscription if needed.
         job?.cancel()
@@ -182,12 +184,12 @@ class SimilarUpdateService(
                 return@mapIndexed null
             }
 
-            val similar = MangaSimilarImpl()
-            similar.id = index.toLong()
-            similar.manga_id = similarFromJson.id.toLong()
-            similar.matched_ids = similarFromJson.similarIds.joinToString(MangaSimilarImpl.DELIMITER)
-            similar.matched_titles = similarFromJson.similarTitles.joinToString(MangaSimilarImpl.DELIMITER)
-            return@mapIndexed similar
+            MangaSimilarImpl().apply {
+                id = index.toLong()
+                manga_id = similarFromJson.id.toLong()
+                matched_ids = similarFromJson.similarIds.joinToString(MangaSimilarImpl.DELIMITER)
+                matched_titles = similarFromJson.similarTitles.joinToString(MangaSimilarImpl.DELIMITER)
+            }
         }.filterNotNull()
 
         showProgressNotification(dataToInsert.size, totalManga)
@@ -211,39 +213,46 @@ class SimilarUpdateService(
         val similars = mutableListOf<SimilarFromJson>()
 
         while (reader.peek() != JsonReader.Token.END_DOCUMENT) {
-            val nextToken = reader.peek()
-
-            if (JsonReader.Token.BEGIN_OBJECT == nextToken) {
-                reader.beginObject()
-            } else if (JsonReader.Token.NAME == nextToken) {
-                val name = reader.nextName()
-                if (!processingManga && name.isDigitsOnly()) {
-                    processingManga = true
-                    // similar add id
-                    mangaId = name
-                } else if (name == "m_titles") {
-                    processingTitles = true
+            when (reader.peek()) {
+                JsonReader.Token.BEGIN_OBJECT -> {
+                    reader.beginObject()
                 }
-            } else if (JsonReader.Token.BEGIN_ARRAY == nextToken) {
-                reader.beginArray()
-            } else if (JsonReader.Token.END_ARRAY == nextToken) {
-                reader.endArray()
-                if (processingTitles) {
-                    processingManga = false
-                    processingTitles = false
-                    similars.add(SimilarFromJson(mangaId!!, similarIds.toList(), similarTitles.toList()))
-                    mangaId = null
-                    similarIds = mutableListOf()
-                    similarTitles = mutableListOf()
+                JsonReader.Token.NAME -> {
+                    val name = reader.nextName()
+                    if (!processingManga && name.isDigitsOnly()) {
+                        processingManga = true
+                        // similar add id
+                        mangaId = name
+                    } else if (name == "m_titles") {
+                        processingTitles = true
+                    }
                 }
-            } else if (JsonReader.Token.NUMBER == nextToken) {
-                similarIds.add(reader.nextInt().toString())
-            } else if (JsonReader.Token.STRING == nextToken) {
-                if (processingTitles) {
-                    similarTitles.add(reader.nextString())
+                JsonReader.Token.BEGIN_ARRAY -> {
+                    reader.beginArray()
                 }
-            } else if (JsonReader.Token.END_OBJECT == nextToken) {
-                reader.endObject()
+                JsonReader.Token.END_ARRAY -> {
+                    reader.endArray()
+                    if (processingTitles) {
+                        processingManga = false
+                        processingTitles = false
+                        similars.add(SimilarFromJson(mangaId!!, similarIds.toList(), similarTitles.toList()))
+                        mangaId = null
+                        similarIds = mutableListOf()
+                        similarTitles = mutableListOf()
+                    }
+                }
+                JsonReader.Token.NUMBER -> {
+                    similarIds.add(reader.nextInt().toString())
+                }
+                JsonReader.Token.STRING -> {
+                    if (processingTitles) {
+                        similarTitles.add(reader.nextString())
+                    }
+                }
+                JsonReader.Token.END_OBJECT -> {
+                    reader.endObject()
+                }
+                else -> Unit
             }
         }
 

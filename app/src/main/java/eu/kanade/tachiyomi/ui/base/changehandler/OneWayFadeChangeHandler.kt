@@ -7,11 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.changehandler.AnimatorChangeHandler
+import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 
 /**
  * An [AnimatorChangeHandler] that will cross fade two views
  */
-class OneWayFadeChangeHandler : AnimatorChangeHandler {
+class OneWayFadeChangeHandler : FadeChangeHandler {
     constructor()
     constructor(removesFromViewOnPush: Boolean) : super(removesFromViewOnPush)
     constructor(duration: Long) : super(duration)
@@ -31,10 +32,6 @@ class OneWayFadeChangeHandler : AnimatorChangeHandler {
             container.removeView(from)
         }
         return animator
-    }
-
-    override fun resetFromView(from: View) {
-        from.alpha = 1f
     }
 
     override fun copy(): ControllerChangeHandler {
