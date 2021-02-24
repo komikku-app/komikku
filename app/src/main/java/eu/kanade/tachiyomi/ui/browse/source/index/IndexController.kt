@@ -10,12 +10,11 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.LatestControllerBinding
+import eu.kanade.tachiyomi.databinding.IndexControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -31,6 +30,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.buildJsonObject
+import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
@@ -43,10 +43,9 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * [IndexCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
 open class IndexController :
-    NucleusController<LatestControllerBinding, IndexPresenter>,
+    NucleusController<IndexControllerBinding, IndexPresenter>,
     FabController,
-    IndexCardAdapter.OnMangaClickListener,
-    IndexAdapter.ClickListener {
+    IndexCardAdapter.OnMangaClickListener {
 
     constructor(source: CatalogueSource?) : super(
         bundleOf(
@@ -65,13 +64,10 @@ open class IndexController :
 
     var source: CatalogueSource? = null
 
-    /**
-     * Adapter containing search results grouped by lang.
-     */
-    protected var adapter: IndexAdapter? = null
+    private var latestAdapter: IndexCardAdapter? = null
+    private var browseAdapter: IndexCardAdapter? = null
 
     private var actionFab: ExtendedFloatingActionButton? = null
-    private var actionFabScrollListener: RecyclerView.OnScrollListener? = null
 
     /**
      * Sheet containing filter items.
@@ -90,7 +86,7 @@ open class IndexController :
      * @return inflated view
      */
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = LatestControllerBinding.inflate(inflater)
+        binding = IndexControllerBinding.inflate(inflater)
         return binding.root
     }
 
@@ -176,11 +172,39 @@ open class IndexController :
         // Prepare filter sheet
         initFilterSheet()
 
-        adapter = IndexAdapter(this)
+        latestAdapter = IndexCardAdapter(this)
 
-        // Create recycler and set adapter.
-        binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.adapter = adapter
+        binding.latestRecycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
+        binding.latestRecycler.adapter = latestAdapter
+
+        browseAdapter = IndexCardAdapter(this)
+
+        binding.browseRecycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false)
+        binding.browseRecycler.adapter = browseAdapter
+
+        binding.latestBarWrapper.clicks()
+            .onEach {
+                onLatestClick()
+            }
+            .launchIn(viewScope)
+
+        binding.browseBarWrapper.clicks()
+            .onEach {
+                onBrowseClick()
+            }
+            .launchIn(viewScope)
+
+        presenter.latestItems
+            .onEach {
+                bindLatest(it)
+            }
+            .launchIn(viewScope)
+
+        presenter.browseItems
+            .onEach {
+                bindBrowse(it)
+            }
+            .launchIn(viewScope)
 
         presenter.getLatest()
     }
@@ -261,28 +285,91 @@ open class IndexController :
 
     override fun cleanupFab(fab: ExtendedFloatingActionButton) {
         fab.setOnClickListener(null)
-        actionFabScrollListener?.let { binding.recycler.removeOnScrollListener(it) }
         actionFab = null
     }
 
-    fun setLatestManga(results: List<IndexCardItem>?) {
-        adapter?.holder?.bindLatest(results)
+    private fun bindLatest(latestResults: List<IndexCardItem>?) {
+        when {
+            latestResults == null -> {
+                binding.latestProgress.isVisible = true
+                showLatestResultsHolder()
+            }
+            latestResults.isEmpty() -> {
+                binding.latestProgress.isVisible = false
+                showLatestNoResults()
+            }
+            else -> {
+                binding.latestProgress.isVisible = false
+                showLatestResultsHolder()
+            }
+        }
+
+        latestAdapter?.updateDataSet(latestResults)
     }
 
-    fun setBrowseManga(results: List<IndexCardItem>?) {
-        adapter?.holder?.bindBrowse(results)
+    private fun bindBrowse(browseResults: List<IndexCardItem>?) {
+        when {
+            browseResults == null -> {
+                binding.browseProgress.isVisible = true
+                showBrowseResultsHolder()
+            }
+            browseResults.isEmpty() -> {
+                binding.browseProgress.isVisible = false
+                showBrowseNoResults()
+            }
+            else -> {
+                binding.browseProgress.isVisible = false
+                showBrowseResultsHolder()
+            }
+        }
+
+        browseAdapter?.updateDataSet(browseResults)
+    }
+
+    private fun showLatestResultsHolder() {
+        binding.latestNoResultsFound.isVisible = false
+    }
+
+    private fun showLatestNoResults() {
+        binding.latestNoResultsFound.isVisible = true
+    }
+
+    private fun showBrowseResultsHolder() {
+        binding.browseNoResultsFound.isVisible = false
+    }
+
+    private fun showBrowseNoResults() {
+        binding.browseNoResultsFound.isVisible = true
+    }
+
+    private fun setLatestImage(manga: Manga) {
+        val latestAdapter = latestAdapter ?: return
+        latestAdapter.allBoundViewHolders.forEach {
+            if (it !is IndexCardHolder) return@forEach
+            if (latestAdapter.getItem(it.bindingAdapterPosition)?.manga?.id != manga.id) return@forEach
+            it.setImage(manga)
+        }
+    }
+    private fun setBrowseImage(manga: Manga) {
+        val browseAdapter = browseAdapter ?: return
+        browseAdapter.allBoundViewHolders.forEach {
+            if (it !is IndexCardHolder) return@forEach
+            if (browseAdapter.getItem(it.bindingAdapterPosition)?.manga?.id != manga.id) return@forEach
+            it.setImage(manga)
+        }
     }
 
     override fun onDestroyView(view: View) {
-        adapter = null
+        latestAdapter = null
+        browseAdapter = null
         super.onDestroyView(view)
     }
 
-    override fun onBrowseClick(search: String?, filters: String?) {
+    private fun onBrowseClick(search: String? = null, filters: String? = null) {
         router.replaceTopController(BrowseSourceController(presenter.source, search, filterList = filters).withFadeTransaction())
     }
 
-    override fun onLatestClick() {
+    private fun onLatestClick() {
         router.replaceTopController(LatestUpdatesController(presenter.source).withFadeTransaction())
     }
 
@@ -292,8 +379,8 @@ open class IndexController :
      * @param manga the initialized manga.
      */
     fun onMangaInitialized(manga: Manga, isLatest: Boolean) {
-        if (isLatest) adapter?.holder?.setLatestImage(manga)
-        else adapter?.holder?.setBrowseImage(manga)
+        if (isLatest) setLatestImage(manga)
+        else setBrowseImage(manga)
     }
 
     companion object {

@@ -15,10 +15,10 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -78,6 +78,10 @@ open class IndexPresenter(
      */
     private var fetchImageSubscription: Subscription? = null
 
+    val latestItems = MutableStateFlow<List<IndexCardItem>?>(null)
+
+    val browseItems = MutableStateFlow<List<IndexCardItem>?>(null)
+
     override fun onDestroy() {
         fetchSourcesSubscription?.unsubscribe()
         fetchImageSubscription?.unsubscribe()
@@ -98,54 +102,37 @@ open class IndexPresenter(
         initializeFetchImageSubscription()
 
         presenterScope.launch(Dispatchers.IO) {
-            withUIContext {
-                Observable.just(null).subscribeLatestCache({ view, results ->
-                    view.setLatestManga(results)
-                })
-            }
-            if (source.supportsLatest) {
-                val results = try {
+            if (latestItems.value != null) return@launch
+            val results = if (source.supportsLatest) {
+                try {
                     source.fetchLatestUpdates(1)
                         .awaitSingle()
                         .mangas
-                        .take(10)
                         .map { networkToLocalManga(it, source.id) }
                 } catch (e: Exception) {
                     emptyList()
                 }
-                fetchImage(results, true)
+            } else emptyList()
 
-                withUIContext {
-                    Observable.just(results.map { IndexCardItem(it) }).subscribeLatestCache({ view, results ->
-                        view.setLatestManga(results)
-                    })
-                }
-            }
+            fetchImage(results, true)
+
+            latestItems.value = results.map { IndexCardItem(it) }
         }
 
         presenterScope.launch(Dispatchers.IO) {
-            withUIContext {
-                Observable.just(null).subscribeLatestCache({ view, results ->
-                    view.setBrowseManga(results)
-                })
-            }
-
+            if (browseItems.value != null) return@launch
             val results = try {
                 source.fetchPopularManga(1)
                     .awaitSingle()
                     .mangas
-                    .take(10)
                     .map { networkToLocalManga(it, source.id) }
             } catch (e: Exception) {
                 emptyList()
             }
+
             fetchImage(results, false)
 
-            withUIContext {
-                Observable.just(results.map { IndexCardItem(it) }).subscribeLatestCache({ view, results ->
-                    view.setBrowseManga(results)
-                })
-            }
+            browseItems.value = results.map { IndexCardItem(it) }
         }
     }
 
@@ -221,10 +208,10 @@ open class IndexPresenter(
 
     fun loadSearches(): List<EXHSavedSearch> {
         val loaded = preferences.savedSearches().get()
-        return loaded.map {
+        return loaded.mapNotNull {
             try {
                 val id = it.substringBefore(':').toLong()
-                if (id != source.id) return@map null
+                if (id != source.id) return@mapNotNull null
                 val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content.filters)
@@ -239,6 +226,6 @@ open class IndexPresenter(
                 t.printStackTrace()
                 null
             }
-        }.filterNotNull()
+        }
     }
 }
