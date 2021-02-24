@@ -786,6 +786,7 @@ z
     <string name="smart_based_on_page_and_theme">Smart (based on page and theme)</string>
 
     <!-- AZ -->
+    <string name="pref_dual_page_spread">Enable two page spread</string>
     <string name="az_recommends">See Recommendations</string>
     <string name="lewd">Lewd</string>
     <string name="ext_redundant">Redundant</string>

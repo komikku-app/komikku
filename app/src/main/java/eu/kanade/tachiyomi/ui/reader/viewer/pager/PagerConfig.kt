@@ -25,12 +25,16 @@ class PagerConfig(private val viewer: PagerViewer, preferences: PreferencesHelpe
 
     // SY -->
     var readerTheme = 0
+    var landscapeMode = false
         private set
     // SY <--
 
     init {
         preferences.pageTransitions()
             .register({ usePageTransitions = it })
+
+        preferences.landscapeMode()
+            .register({ landscapeMode = it })
 
         preferences.imageScaleType()
             .register({ imageScaleType = it }, { imagePropertyChangedListener?.invoke() })

@@ -5,6 +5,8 @@ package eu.kanade.tachiyomi.data.preference
  */
 object PreferenceKeys {
 
+    const val doublePageLandscape = "pref_two_page_key" // //LOOPDEER PAGER
+
     const val themeMode = "pref_theme_mode_key"
 
     const val themeLight = "pref_theme_light_key"
