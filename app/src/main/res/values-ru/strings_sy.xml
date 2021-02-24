@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Actions -->
+    <string name="action_sort_first_checked">Первый проверенный</string>
+    <string name="action_sort_drag_and_drop">Перетаскивание</string>
+    <string name="action_sort_enabled">Enabled</string>
+    <string name="action_skip_manga">Не перемещать</string>
+    <string name="action_search_manually">Искать вручную</string>
+    <string name="action_migrate_now">Переместить сейчас</string>
+    <string name="action_copy_now">Копировать сейчас</string>
+    <string name="action_clean_titles">Очистить заголовки</string>
+    <string name="action_start_reading_button">Кнопка начать чтение</string>
+    <string name="action_display_no_title_grid">Сетка без заголовка</string>
+    <string name="action_start_reading">Начать чтение</string>
+    <string name="action_edit_info">Редактировать информацию</string>
+
+    <!-- Library fragment -->
+    <string name="buttons_header">Кнопки</string>
+
+    <!-- Manga Type -->
+    <string name="manhwa">Манхва</string>
+    <string name="manhua">Маньхуа</string>
+    <string name="comic">Комикс</string>
+    <string name="webtoon">Веб-комикс</string>
+
+    <!-- Captcha -->
+    <string name="captcha_solve_failure">Сбой решателя капчи</string>
+    <string name="captcha_solve_failure_message">Не удалось автоматически решить капчу!</string>
+    <string name="please_login">Пожалуйста, авторизуйтесь!</string>
+
+    <!-- Preferences -->
+    <!-- Subsections -->
+    <string name="pref_category_all_sources">Все источники</string>
+    <string name="pref_category_eh">E-Hentai</string>
+    <string name="pref_category_fork">Настройки Fork-а</string>
+    <string name="pref_category_mangadex">MangaDex</string>
+
+
+    <!-- EH Settings -->
+    <string name="ehentai_prefs_account_settings">E-Hentai Настройки Учетной записи</string>
+    <string name="enable_exhentai">Включить ExHentai</string>
+    <string name="requires_login">Требуется авторизация</string>
+    <string name="use_hentai_at_home">Использовать Hentai@Home Network</string>
+    <string name="use_hentai_at_home_summary">Вы хотите загрузить изображения через Hentai@Home Network, если существует? Отключение этой опции уменьшит количество страниц, которые вы можете просматривать\nOptions:\n- Любой клиент (Рекомендуется)\n- Только клиенты портов по умолчанию (могут быть медленнее. Включите если отстает firewall/proxy, который блокирует исходящие нестандартные порты.)</string>
+    <string name="use_hentai_at_home_option_1">Любой клиент (Рекомендуется)</string>
+    <string name="use_hentai_at_home_option_2">Только клиенты портов по умолчанию</string>
+    <string name="show_japanese_titles">Показывать японские названия в результатах поиска</string>
+    <string name="show_japanese_titles_option_1">В настоящее время показываются японские названия в результатах поиска. Очистите кэш глав после изменения этого параметра (в разделе Дополнительно)</string>
+    <string name="show_japanese_titles_option_2">В настоящее время в результатах поиска отображаются английские/латинизированные названия. Очистите кэш глав после изменения этого параметра (в разделе Дополнительно)</string>
+    <string name="use_original_images">Используйте оригинальные изображения</string>
+    <string name="use_original_images_on">В настоящее время используются оригинальные изображения</string>
+    <string name="use_original_images_off">В настоящее время используется повторная выборка изображений</string>
+    <string name="watched_tags">Отслеживание Тегов</string>
+    <string name="watched_tags_summary">Открывает  webview для E/ExHentai страницу отслеживания тегов</string>
+    <string name="watched_tags_exh">ExHentai Отслеживание Тегов</string>
+    <string name="watched_tags_eh">E-Hentai Отслеживание Тегов</string>
+    <string name="tag_filtering_threshold">Порог фильтрации тегов</string>
+    <string name="tag_filtering_threshhold_error">Должно быть между -9999 и 0!</string>
+    <string name="tag_filtering_threshhold_summary">Вы можете мягко фильтровать теги, добавляя их в раздел "Мои теги" E/ExHentai страница с отрицательным значением. Если в галерее есть теги, которые добавляются ниже этого значения, они отфильтровываются из поля зрени. Этот порог может быть установлен в диапазоне от -9999 до 0. В настоящее время: %1$d</string>
+    <string name="tag_watching_threshhold">Порог наблюдения за тегами</string>
+    <string name="tag_watching_threshhold_error">Должно быть между 0 и 9999!</string>
+    <string name="tag_watching_threshhold_summary">Недавно загруженные галереи будут включены на экран просмотра, если у него есть хотя бы один просмотренный тег с положительным значением, а сумма значений на его отслеживаемых тегах складывается с этим значением или выше. Этот порог может быть установлен в диапазоне от 0 до 9999. В настоящий момент: %1$d</string>
+    <string name="language_filtering">Фильтрация Языков</string>
+    <string name="language_filtering_summary">Если вы хотите скрыть галереи на определенных языках из списка галерей и поиска, выберите их в появившемся диалоговом окне.\nОбратите внимание, что соответствующие галереи никогда не появятся независимо от вашего поискового запроса.\nTldr checkmarked = exclude</string>
+    <string name="frong_page_categories">Категории Первой Страницы</string>
+    <string name="fromt_page_categories_summary">Эти категории вы хотели бы показывать по умолчанию на главной странице и в поиске? Они все еще могут быть включены, задействовав соответствующие фильтры</string>
+    <string name="watched_list_default">Состояние Фильтра Списка По умолчанию</string>
+    <string name="watched_list_state_summary">При просмотре ExHentai/E-Hentai должен ли фильтр списка быть включен по умолчанию</string>
+    <string name="eh_image_quality_summary">Качество загруженных изображений</string>
+    <string name="eh_image_quality">Качество изображения</string>
+    <string name="eh_image_quality_auto">Авто</string>
+    <string name="eh_image_quality_2400">2400x</string>
+    <string name="eh_image_quality_1600">1600x</string>
+    <string name="eh_image_quality_1280">1280x</string>
+    <string name="eh_image_quality_980">980x</string>
+    <string name="eh_image_quality_780">780x</string>
+    <string name="pref_enhanced_e_hentai_view">Улучшения E/ExHentai</string>
+    <string name="pref_enhanced_e_hentai_view_summary">Включить/отключить расширенное меню просмотра, созданное для E/ExHentai</string>
+    <string name="favorites_sync">Синхронизация избранного</string>
+    <string name="disable_favorites_uploading">Отключить загрузку избранного</string>
+    <string name="disable_favorites_uploading_summary">Избранное загружается только с ExHentai. Любые изменения в избранном в приложении не будут загружены. Предотвращает случайную потерю избранных ExHentai. Обратите внимание, что удаления все равно будут загружены (если вы удалите избранное на ExHentai, оно также будет удалено в приложении).</string>
+    <string name="show_favorite_sync_notes">Показать избранное синхронизировать заметки</string>
+    <string name="show_favorite_sync_notes_summary">Показать некоторую информацию о функции синхронизации избранного</string>
+    <string name="ignore_sync_errors">Игнорировать ошибки синхронизации, когда это возможно</string>
+    <string name="ignore_sync_errors_summary">Не прерывайте немедленно при возникновении ошибок в процессе синхронизации. Ошибки по-прежнему будут отображаться после окончания синхронизации. В некоторых случаях это может привести к потере избранного. Полезно при синхронизации больших библиотек.</string>
+    <string name="force_sync_state_reset">Принудительный сброс состояния синхронизации</string>
+    <string name="force_sync_state_reset_summary">Выполняет полную ресинхронизацию при следующей синхронизации. Удаление не будет синхронизировано. Все избранное в приложении будет повторно загружено в ExHentai, а все избранное на ExHentai будет повторно загружено в приложение. Полезно для восстановления синхронизации после того, как синхронизация была прервана.</string>
+    <string name="sync_state_reset">Сброс состояния синхронизации</string>
+    <string name="gallery_update_checker">Проверка обновлений галереи</string>
+    <string name="auto_update_restrictions">Ограничения автоматического обновления</string>
+    <string name="time_between_batches">Время между пакетами обновлений</string>
+    <string name="time_between_batches_never">Никогда не обновляйте галереи</string>
+    <string name="time_between_batches_1_hour">1 час</string>
+    <string name="time_between_batches_2_hours">2 часа</string>
+    <string name="time_between_batches_3_hours">3 часа</string>
+    <string name="time_between_batches_6_hours">6 часов</string>
+    <string name="time_between_batches_12_hours">12 часов</string>
+    <string name="time_between_batches_24_hours">24 часа</string>
+    <string name="time_between_batches_48_hours">48 часов</string>
+    <string name="time_between_batches_summary_1">%1$s в настоящее время никогда не будет проверять галереи в вашей библиотеке на наличие обновлений.</string>
+    <string name="time_between_batches_summary_2">%1$s проверяет/обновляет галереи пакетами. Это означает, что он будет ждать %2$d час(ы), проверка %3$d галереи, подождите %2$d час(ы), проверка %3$d и так далее…</string>
+    <string name="show_updater_statistics">Показать статистику обновления</string>
+    <string name="gallery_updater_statistics_collection">Сбор статистики…</string>
+    <string name="gallery_updater_statistics">Статистика обновления галереи</string>
+    <string name="gallery_updater_stats_text">Последний раз программа обновления запустила %1$s, и проверила %2$d из %3$d галерей которые были готовы к проверке.</string>
+    <string name="gallery_updater_not_ran_yet">Программа обновления еще не запущена.</string>
+    <string name="gallery_updater_stats_time">\nГалереи, которые были проверены в последний раз:\n- час: %1$d\n- 6 часов: %2$d\n- 12 часов: %3$d\n- день: %4$d\n- 2 дня: %5$d\n- неделя: %6$d\n- месяц: %7$d\n- год: %8$d</string>
+
+    <!-- EH Settings Upload Dialogs -->
+    <string name="settings_profile_note">Настройки профиля примечание</string>
+    <string name="settings_profile_note_message">Теперь приложение добавит новый профиль настроек на E-Hentai и ExHentai для оптимизации производительности приложения. Пожалуйста, убедитесь, что у вас есть менее трех профилей с обеих сторон.\n\nЕсли вы понятия не имеете, что такое профили настроек, то это, вероятно, не имеет значения, просто нажмите "ОК".</string>
+    <string name="eh_settings_successfully_uploaded">Настройки успешно загружены!</string>
+    <string name="eh_settings_configuration_failed">Настройка не удалась!</string>
+    <string name="eh_settings_configuration_failed_message">В процессе настройки произошла ошибка: %1$s</string>
+    <string name="eh_settings_uploading_to_server">Загрузка настроек на сервер</string>
+    <string name="eh_settings_uploading_to_server_message">Пожалуйста, подождите, это может занять некоторое время…</string>
+    <string name="eh_settings_out_of_slots_error">Вы находитесь вне профильных слотов на %1$s, пожалуйста, удалите профиль!</string>
+
+    <!-- Advanced Settings -->
+    <string name="developer_tools">Инструменты разработчика</string>
+    <string name="toggle_hentai_features">Включить интегрированные функции для хентая</string>
+    <string name="toggle_hentai_features_summary">Это экспериментальная функция, которая отключит все функции хентай, если ее выключить</string>
+    <string name="toggle_delegated_sources">Включить интегрированные источники</string>
+    <string name="toggle_delegated_sources_summary">Использовать %1$s усовершенствования следующих источников, если они установлены: %2$s</string>
+    <string name="log_level">Уровень логирования</string>
+    <string name="log_level_summary">Изменение этого параметра может повлиять на производительность приложения. Принудительный перезапуск приложения после изменения. Текущее значение: %s</string>
+    <string name="enable_source_blacklist">Включить черный список источников</string>
+    <string name="enable_source_blacklist_summary">Скрыть расширения/источники, несовместимые с %1$s. Принудительный перезапуск приложения после изменения.</string>
+    <string name="open_debug_menu">Открыть меню отладки</string>
+    <string name="open_debug_menu_summary"><![CDATA[НЕ ПРИКАСАЙТЕСЬ К ЭТОМУ МЕНЮ, ЕСЛИ ВЫ НЕ ЗНАЕТЕ, ЧТО ДЕЛАЕТЕ! <font color=\'red\'>ЭТО МОЖЕТ ИСПОРТИТЬ ВАШУ БИБЛИОТЕКУ!</font>]]></string>
+    <string name="starting_cleanup">Начало очистки</string>
+    <string name="clean_up_downloaded_chapters">Очистка загруженных глав</string>
+    <string name="delete_unused_chapters">Удаляет несуществующие, частично скачанные и прочитанные главы</string>
+    <string name="no_folders_to_cleanup">Нет папок для удаления</string>
+    <string name="clean_orphaned_downloads">Очистить потерянные</string>
+    <string name="clean_read_downloads">Очистить прочитанные</string>
+    <string name="clean_read_manga_not_in_library">Очистить отсутствующие в библиотеке</string>
+    <plurals name="cleanup_done">
+        <item quantity="one">Очистка завершена. %d папка удалена.</item>
+        <item quantity="few">Очистка завершена. %d папки удалено.</item>
+        <item quantity="many">Очистка завершена. %d папок удалено.</item>
+        <item quantity="other">Очистка завершена. %d папок удалено.</item>
+    </plurals>
+    <string name="data_saver">Экономия данных</string>
+    <string name="data_saver_summary">Сжатие изображений перед скачиванием или загрузкой в Читалке требует наличия прокси-сервера Bandwidth Hero</string>
+    <string name="ignore_jpeg">Игнорировать изображения Jpeg</string>
+    <string name="ignore_gif">Игнорировать Gif-Анимацию</string>
+    <string name="data_saver_image_quality">Качество изображения</string>
+    <string name="data_saver_image_quality_summary">Более высокие значения означают, что сохраняется более высокий процент качества изображения, но это также означает, что размер файла больше, 80 процентов-это хорошая промежуточная величина между размером файла и качеством изображения</string>
+    <string name="data_saver_image_format">Сжатие в Jpeg</string>
+    <string name="data_saver_image_format_summary_on">Размер файла Jpeg значительно меньше, чем Webp(это означает, что сохраняется больше данных), но из-за этого изображения также теряют больше качества.\nВ настоящее время сжимается в Jpeg</string>
+    <string name="data_saver_image_format_summary_off">Размер файла Jpeg значительно меньше, чем Webp(это означает, что сохраняется больше данных), но из-за этого изображения также теряют больше качества.\nВ настоящее время сжимается в Webp</string>
+    <string name="data_saver_color_bw">Преобразование в Черно - Белое</string>
+    <string name="data_saver_server">Прокси-сервер Bandwidth Hero</string>
+    <string name="data_saver_server_summary">Поместите URL-адрес прокси-сервера Bandwidth Hero здесь</string>
+    <string name="update_monthly">Ежемесячно</string>
+
+    <!-- Log Level -->
+    <string name="log_minimal">Минимальный</string>
+    <string name="log_extra">Дополнительный</string>
+    <string name="log_extreme">Экстремальный</string>
+    <string name="log_minimal_desc">только критические ошибки</string>
+    <string name="log_extra_desc">регистрируйте все</string>
+    <string name="log_extreme_desc">режим проверки сети</string>
+
+    <!-- General Settings -->
+    <string name="toggle_expand_search_filters">Разверните все фильтры поиска по умолчанию</string>
+    <string name="auto_solve_captchas">Автоматического решения капчи</string>
+    <string name="auto_solve_captchas_summary">Использовать В ВЫСШЕЙ СТЕПЕНИ ЭКСПЕРИМЕНТАЛЬНЫЙ автомат ReCAPTCHA решатель. Если ваше устройство не поддерживается, оно будет выделено серым цветом.</string>
+    <string name="put_recommends_in_overflow">Рекомендации в переполнении</string>
+    <string name="put_recommends_in_overflow_summary">Поместите кнопку рекомендации в меню переполнения вместо страницы манги</string>
+
+    <!-- Library settings -->
+    <string name="pref_sorting_settings">Настройки Сортировки</string>
+    <string name="pref_skip_pre_migration_summary">Используйте последние сохраненные настройки и источники перед миграцией для массовой миграции</string>
+    <string name="library_settings_sheet">Лист настроек библиотеки</string>
+    <string name="library_settings_sheet_summary">Дополнительные настройки отображения библиотеки</string>
+    <string name="library_group_updates">Динамическе обновление категорий библиотеки</string>
+    <string name="library_group_updates_global">Всегда запускать глобальные обновления</string>
+    <string name="library_group_updates_all_but_ungrouped">Запускать глобальные обновления только для негруппированных, обновления категорий для других</string>
+    <string name="library_group_updates_all">Запускать обновления категорий постоянно</string>
+
+    <!-- Browse settings -->
+    <string name="pref_latest_position">Последняя позиция</string>
+    <string name="pref_latest_position_summery">Вы хотите, чтобы вкладка \'Последняя\' была первой вкладкой в поисковика? Это сделает его вкладкой по умолчанию при открытии поисковика, не рекомендуется, если вы находитесь на дозированной сети</string>
+    <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
+    <string name="pref_source_source_filtering_summery">Фильтруйте источники, которые находятся в категориях, чтобы источники не попадали под категорию языка, если они находятся в категории</string>
+    <string name="pref_source_navigation">Заменить кнопку \'Последняя\'</string>
+    <string name="pref_source_navigation_summery">Заменить кнопку \'Последняя\' в поисковике на выбор, который включает разделы последние и обзор</string>
+    <string name="pref_local_source_hidden_folders">Скрытые папки в локальном источнике</string>
+    <string name="pref_local_source_hidden_folders_summery">Разрешить локальному источнику читать скрытые папки</string>
+
+    <!-- Download settings -->
+    <string name="save_chapter_as_cbz">Сохранить главы как CBZ</string>
+    <string name="save_chapter_as_cbz_level">CBZ степень сжатия</string>
+    <string name="pref_dont_delete_from_categories">Категории, исключаемые из удаления</string>
+    <string name="pref_dont_delete_from_categories_summary">Если манга относится к любой из этих категорий, главы не будут удалены при пометке как прочитанные и при завершении главы.\nКатегории:\n%1$s</string>
+
+    <!-- Security settings -->
+    <string name="biometric_lock_times">Время биометрической блокировки</string>
+    <string name="action_edit_biometric_lock_times">Изменить время блокировки</string>
+    <string name="biometric_lock_times_empty">У вас есть время биометрической блокировки. Нажмите кнопку "плюс", чтобы создать его.</string>
+    <string name="biometric_lock_time_conflicts">Время блокировки конфликтует с тем, которое уже существует!</string>
+    <plurals name="num_lock_times">
+        <item quantity="one">%d таймер блокировки </item>
+        <item quantity="few">%d таймера блокировки</item>
+        <item quantity="many">%d таймеров блокировки</item>
+        <item quantity="other">%d таймеров блокировки</item>
+    </plurals>
+    <string name="biometric_lock_start_time">Введите время начала</string>
+    <string name="biometric_lock_end_time">Введите время окончания</string>
+    <string name="biometric_lock_time_deleted_snack">Время биометрической блокировки завершено</string>
+    <string name="biometric_lock_invalid_time_selected">Выбрано неверное время</string>
+
+    <!-- Reader Settings -->
+    <string name="download_threads">Скачать темы</string>
+    <string name="download_threads_summary">Более высокие значения могут значительно ускорить загрузку изображений, но также могут вызвать запреты. Рекомендуемое значение-2 или 3. Текущее значение: %s</string>
+    <string name="aggressively_load_pages">Агрессивная загрузка страниц</string>
+    <string name="aggressively_load_pages_summary">Медленно загружайте всю главу во время чтения, а не просто загружайте страницы, которые вы просматриваете.</string>
+    <string name="skip_queue_on_retry">Пропустить очередь при повторной попытке</string>
+    <string name="skip_queue_on_retry_summary">Обычно нажатие кнопки повтора при неудачной загрузке будет ждать, пока загрузчик закончит загрузку последней страницы, прежде чем начать повторную загрузку неудачной страницы. Включение этого режима заставит загрузчик начать повторную загрузку неудачной страницы, как только вы нажмете кнопку повтора.</string>
+    <string name="reader_preload_amount">Объем предварительной загрузки страницы</string>
+    <string name="reader_preload_amount_4_pages">4 Страницы</string>
+    <string name="reader_preload_amount_6_pages">6 Страниц</string>
+    <string name="reader_preload_amount_8_pages">8 Страниц</string>
+    <string name="reader_preload_amount_10_pages">10 Страниц</string>
+    <string name="reader_preload_amount_12_pages">12 Страниц</string>
+    <string name="reader_preload_amount_14_pages">14 Страниц</string>
+    <string name="reader_preload_amount_16_pages">16 Страниц</string>
+    <string name="reader_preload_amount_18_pages">18 Страниц</string>
+    <string name="reader_preload_amount_20_pages">20 Страниц</string>
+    <string name="reader_preload_amount_summary">Количество страниц для предварительной загрузки при чтении. Более высокие значения приведут к более плавному чтению, за счет более высокого использования кэша рекомендуется увеличить объем выделяемого кэша при использовании больших значений</string>
+    <string name="reader_cache_size">Размер кэша читалки</string>
+    <string name="reader_cache_size_summary">Количество изображений, сохраняемых на устройстве во время чтения. Более высокие значения приведут к более плавному чтению за счет более высокого использования дискового пространства</string>
+    <string name="preserve_reading_position">Сохранить позицию чтения при чтении манги</string>
+    <string name="auto_webtoon_mode">Автоматический веб-комикс</string>
+    <string name="auto_webtoon_mode_summary">Использовать автоматический режим для веб-комикса, в которых выявлены вероятно, использовать длинные полосы формате</string>
+    <string name="enable_zoom_out">Включить зум</string>
+    <string name="smart_based_on_page">Умный (по странице)</string>
+    <string name="smart_based_on_page_and_theme">Умный (по странице и теме)</string>
+    <string name="tap_scroll_page">Нажмите прокрутить по странице</string>
+    <string name="tap_scroll_page_summary">Нажатие будет прокручиваться по странице, а не по размеру экрана, если эта опция включена</string>
+
+    <!-- Reader -->
+    <!-- Reader Actions -->
+    <string name="eh_autoscroll">Автопрокрутка</string>
+    <string name="eh_retry_all">Повторите все</string>
+    <string name="eh_boost_page">Буст страницы</string>
+    <string name="eh_autoscroll_help">Автопрокрутка помощь</string>
+    <string name="eh_autoscroll_help_message">Автоматически переходите к следующей странице через указанный интервал. Интервал указывается в секундах.</string>
+    <string name="eh_retry_all_help">Повторите все помощь</string>
+    <string name="eh_retry_all_help_message">Повторно добавьте все неудачные страницы в очередь загрузки.</string>
+    <string name="eh_boost_page_help">Буст страницы помощь</string>
+    <string name="eh_boost_page_help_message">Обычно загрузчик может одновременно загружать только определенное количество страниц. Это означает, что вы можете ждать загрузки страницы, но загрузчик не начнет загрузку страницы до тех пор, пока у него не будет свободного слота для загрузки. Нажатие \'Буст страницы\' заставит загрузчик начать загрузку текущей страницы, независимо от того, есть ли свободный слот или нет.</string>
+
+    <!-- Auto Webtoon Mode -->
+    <string name="eh_auto_webtoon_snack">Стиль чтения веб-комикс</string>
+
+    <!-- Manga Page -->
+    <!-- Manga Info -->
+    <string name="az_recommends">Смотреть Рекомендации</string>
+    <string name="merge">Миграция</string>
+    <string name="merge_with_another_source">Слиться С Другим</string>
+    <string name="cover_saved">Обложка сохранена </string>
+    <string name="share_cover">Поделиться обложкой </string>
+    <string name="error_saving_cover">Ошибка при сохранении обложки</string>
+    <string name="error_sharing_cover">Ошибка при публикации обложки</string>
+
+    <!-- Manga info fragment -->
+    <string name="hiatus">Перерыв</string>
+    <string name="cancelled">Отмененный</string>
+    <string name="publication_complete">Публикация Завершена</string>
+
+    <!-- Manga Info Edit -->
+    <string name="reset_tags">Сбросить Теги</string>
+    <string name="reset_cover">Сброс Обложки</string>
+    <string name="add_tag">Добавить Тег</string>
+    <string name="cover_reset_toast">Обложка будет обновлена, когда вы выйдете из редактора манги. </string>
+
+    <!-- Browse -->
+    <!-- Smart Search -->
+    <string name="searching_source">Поиск источника…</string>
+
+    <!-- Saved Searches -->
+    <string name="saved_searches">Сохранение поиска</string>
+    <string name="save_search">Сохранить текущий поисковой запрос?</string>
+    <string name="save_search_hint">Мое поисковое имя</string>
+    <string name="save_search_failed_to_load">Не удалось загрузить сохраненный поисковой запрос!</string>
+    <string name="save_search_failed_to_load_message">При загрузке сохраненных поисковых запросов произошла ошибка.</string>
+    <string name="save_search_failed_to_delete">Не удалось удалить сохраненный поисковой запрос!</string>
+    <string name="save_search_failed_to_delete_message">При удалении поиска произошла ошибка.</string>
+    <string name="save_search_delete">Удалить сохраненный поисковый запрос?</string>
+    <string name="save_search_delete_message">Вы уверены, что хотите удалить сохраненный поисковый запрос: \'%1$s\'?</string>
+
+    <!-- Source Categories -->
+    <string name="no_source_categories">Нет доступных категорий источников</string>
+    <string name="invalid_category_name">Недопустимое имя категории</string>
+
+    <!-- Latest Tab -->
+    <string name="watch">Отслеживать</string>
+    <string name="unwatch">Не отслеживать</string>
+    <string name="too_many_watched">Слишком много отслеживаемых источников, нельзя добавить больше 5 </string>
+    <string name="latest_tab_empty">У вас нет отслеживаемых источников, перейдите на вкладку источников и удерживайте источник, чтобы отслеживать его. </string>
+
+    <!-- Sort by tags -->
+    <string name="pref_tag_sorting">Теги сортировка тегов</string>
+    <string name="tag_sorting">Сортировка тегов</string>
+    <plurals name="pref_tag_sorting_desc">
+        <item quantity="zero">Никаких тегов в списке сортировки. Это добавляет в библиотеку опцию сортировки по списку тегов на основе приоритета, что означает, что манга будет отсортирована таким образом, чтобы расставить приоритеты по тем тегам, которые вы хотите</item>
+        <item quantity="one">%1$d тег в списке сортировки. Это добавляет в библиотеку опцию сортировки по списку тегов на основе приоритета, что означает, что манга будет отсортирована таким образом, чтобы расставить приоритеты по тем тегам, которые вы хотите</item>
+        <item quantity="other">%1$d теги в списке сортировки. Это добавляет в библиотеку опцию сортировки по списку тегов на основе приоритета, что означает, что манга будет отсортирована таким образом, чтобы расставить приоритеты по тем тегам, которые вы хотите</item>
+    </plurals>
+    <string name="pref_tag_sorting_desc">Список сортировки тегов</string>
+    <string name="action_add_tags">Добавить тег</string>
+    <string name="action_add_tags_message">Прочитайте это! Теги должны быть точными, частичных совпадений нет, вы не можете делать netorare, чтобы отфильтровать женский: netorare или подобное! \nСтиль тегов пространства имен: \n\"female: sole female\"\nбез кавычек!\nПоддерживается добавление нескольких вариантов одного и того же тега, так что не стесняйтесь делать  \"tag: netorare\" для NHentai и  \"female: netorare\" для E-Hentai!</string>
+    <string name="action_edit_tags">Редактирование тегов</string>
+    <string name="information_empty_tags">У вас нет тегов. Нажмите кнопку плюс, чтобы создать ее для сортировки вашей библиотеки по тегам</string>
+    <string name="error_tag_exists">Этот тег существует!</string>
+    <string name="snack_tags_deleted">Теги удалены</string>
+
+    <!-- Extension section -->
+    <string name="ext_redundant">Избыточный</string>
+    <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
+
+    <!-- Extension Repos -->
+    <string name="information_empty_repos">У вас нет дополнительных репозиториев. Нажмите кнопку плюс, чтобы создать ее для добавления внешних расширений.</string>
+    <string name="action_add_repo">Добавить репозиторий</string>
+    <string name="action_add_repo_message">Добавьте дополнительные репозиторий в Tachiyomi, формат  \'username/repo\' , с username, являющимся владельцем репозитория, а repo - именем репозитория </string>
+    <string name="action_edit_repos">Редактировать репозитории</string>
+    <plurals name="num_repos">
+        <item quantity="one">%d дополнительный репозиторий</item>
+        <item quantity="other">%d дополнительных репозиториев</item>
+    </plurals>
+    <string name="error_repo_exists">Это репозиторий уже существует !</string>
+    <string name="snack_repo_deleted">Репозиторий удалён</string>
+    <string name="invalid_repo_name">Недопустимое имя категории</string>
+    <string name="repo_source">Источник репозитория</string>
+
+    <!-- Migration -->
+    <string name="select_sources">Выберите источники</string>
+    <string name="select_none">Ничего не выбрано</string>
+    <string name="source_migration">Перемещение источника</string>
+    <string name="migration">Перемещение</string>
+    <string name="skip_pre_migration">Пропустить настройку перемещения</string>
+    <string name="pre_migration_skip_toast">Чтобы снова показать этот экран, перейдите в Настройки -> Библиотека.</string>
+    <string name="select_a_source_to_migrate_from">Выберите источник для миграции</string>
+    <string name="use_intelligent_search">Поиск названия + ключевые слова названия</string>
+    <string name="data_to_include_in_migration">Данные, которые будут перемещены</string>
+    <string name="include_extra_search_parameter">Дополнительный параметр при поиске</string>
+    <string name="use_most_chapters">Использовать источник с наибольшим количеством глав (медленнее)</string>
+    <string name="use_first_source">Использовать первый источник с альтернативой</string>
+    <string name="skip_this_step_next_time">Не показывать этот диалог в следующий раз</string>
+    <string name="search_parameter">Параметр поиска (например: language:english)</string>
+    <string name="latest_">Последняя глава: %1$s</string>
+    <string name="migrating_to">переместится в</string>
+    <string name="match_pinned_sources">Соответствие закрепленных источников</string>
+    <string name="match_enabled_sources">Соответствие включенных источников</string>
+    <string name="no_chapters_found_for_migration">Главы не найдены, эта манга не может быть использована для перемещения</string>
+    <string name="no_alternatives_found">Альтернатив не найдено</string>
+    <string name="stop_migrating">Остановить перемещение?</string>
+    <plurals name="migrate_manga">
+        <item quantity="one">Переместить %1$d%2$s мангу?</item>
+        <item quantity="few">Переместить %1$d%2$s манги?</item>
+        <item quantity="many">Переместить %1$d%2$s манг?</item>
+        <item quantity="other">Переместить %1$d%2$s манг?</item>
+    </plurals>
+    <plurals name="copy_manga">
+        <item quantity="one">Копировать %1$d%2$s мангу?</item>
+        <item quantity="few">Копировать %1$d%2$s манги?</item>
+        <item quantity="many">Копировать %1$d%2$s манг?</item>
+        <item quantity="other">Копировать %1$d%2$s манг?</item>
+    </plurals>
+    <string name="skipping_">(пропуская %1$d)</string>
+    <plurals name="manga_migrated">
+        <item quantity="one">%d манга перемещена</item>
+        <item quantity="few">%d манги перемещена</item>
+        <item quantity="many">%d манг перемещена</item>
+        <item quantity="other">%d манг перемещена</item>
+    </plurals>
+
+    <!-- Library -->
+    <!-- Library Sheet -->
+    <string name="tracked">Отслеживается</string>
+    <string name="lewd">Развратный</string>
+    <string name="started">Начато</string>
+
+    <!-- Library Grouping -->
+    <string name="tracking_status">Статус отслеживания</string>
+    <string name="ungrouped">Не группировать</string>
+    <string name="not_tracked">Не отслеживается</string>
+
+    <!-- Favorites Sync -->
+    <string name="sync_favorites">Синхронизация избранного</string>
+    <string name="favorites_sync_error">Ошибка синхронизации избранного</string>
+    <string name="show_gallery">Показать Галерею</string>
+    <string name="favorites_sync_bad_library_state">%1$s Синхронизация не начнется, пока галерея не будет находиться только в одной категории.</string>
+    <string name="favorites_syncing">Синхронизация избранного</string>
+    <string name="favorites_sync_error_string">Во время процесса синхронизации произошла ошибка: %1$s</string>
+    <string name="favorites_sync_done_errors">Синхронизация избранного в комплекте с ошибками</string>
+    <string name="favorites_sync_done_errors_message">Во время процесса синхронизации возникли ошибки, которые были проигнорированы:\n%1$s</string>
+    <string name="favorites_sync_verifying_library">Проверка локальной библиотеки</string>
+    <string name="favorites_sync_manga_multiple_categories_error">Манга %1$d находится в нескольких категориях!</string>
+    <string name="favorites_sync_downloading">Загрузка избранного с удаленного сервера</string>
+    <string name="favorites_sync_failed_to_featch">Не удалось получить избранное с удаленного сервера!</string>
+    <string name="favorites_sync_could_not_fetch">Не удалось получить избранное! </string>
+    <string name="favorites_sync_calculating_remote_changes">Расчет удаленных изменений</string>
+    <string name="favorites_sync_calculating_local_changes">Расчет локальных изменений</string>
+    <string name="favorites_sync_syncing_category_names">Обновление названий категорий </string>
+    <string name="favorites_sync_cleaning_up">Уборка</string>
+    <string name="favorites_sync_complete">Синхронизация завершена!</string>
+    <string name="favorites_sync_ignoring_exception">Игнорирование исключения!</string>
+    <string name="favorites_sync_sync_error">Ошибка синхронизации!</string>
+    <string name="favorites_sync_unknown_error">Неизвестная ошибка: %1$s</string>
+    <string name="favorites_sync_network_error">Ошибка сети!</string>
+    <string name="favorites_sync_removing_galleries">Удаление %1$d галереи с удаленного сервера</string>
+    <string name="favorites_sync_unable_to_delete">Невозможно удалить галереи с удаленных серверов!</string>
+    <string name="favorites_sync_adding_to_remote">Добавление галереи %1$d из %2$d на удаленный сервер</string>
+    <string name="favorites_sync_remove_from_local">Удаление галереи %1$d из %2$d из локальной библиотеки</string>
+    <string name="favorites_sync_add_to_local">Добавление галереи %1$d из %2$d в локальную библиотеку</string>
+    <string name="favorites_sync_remote_not_exist">Удаленная галерея не существует, пропуск: %1$s!</string>
+    <string name="favorites_sync_failed_to_add_to_local">Не удалось добавить галерею в локальную базу данных:</string>
+    <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
+    <string name="favorites_sync_failed_to_add_to_local_unknown_type">\'%1$s\' (%2$s) это не действительная галерея!</string>
+    <string name="favorites_sync_waiting_for_start">Ожидание начала синхронизации</string>
+    <string name="favorites_sync_manga_in_multiple_categories">Галерея: %1$s находится более чем в одной категории (%2$s)!</string>
+    <string name="favorites_sync_initializing">Инициализация синхронизации</string>
+    <string name="favorites_sync_processing_throttle">%1$s\n\nСинхронизация в настоящее время регулируется (чтобы избежать блокировки в ExHentai), и ее выполнение может занять много времени. </string>
+    <string name="favorites_sync_notes">ВАЖНЫЕ ИЗБРАННЫЕ ЗАМЕТКИ СИНХРОНИЗАЦИИ</string>
+    <string name="favorites_sync_notes_message"><![CDATA[1. Изменения в названиях категорий в приложении <b>НЕ</b> синхронизировано! Пожалуйста <i>вместо этого измените названия категорий на ExHentai</i>. Имена категорий будут копироваться с серверов ExHentai каждую синхронизацию.<br><br>2. Любимые категории на ExHentai соответствуют <b>первым 10 категориям в приложении</b> (за исключением \'Default\' категории). <i>Галереи в других категориях будут <b>НЕ</b> будут синхронизированы!</i><br><br>3. <font color=\'red\'><b>УБЕДИТЕСЬ, ЧТО У ВАС ЕСТЬ СТАБИЛЬНОЕ ПОДКЛЮЧЕНИЕ К ИНТЕРНЕТУ ВО ВРЕМЯ СИНХРОНИЗАЦИИ!</b></font> Если интернет отключается во время синхронизации приложения, ваши избранные могут быть оставлены в<i>частично синхронизированном состояние</i>.<br><br>4. Держите приложение открытым во время синхронизации избранного. Android иногда закрывает приложения, которые находятся в фоновом режиме, и это может быть плохо, если это произойдет во время синхронизации приложения.<br><br>5. <b>НЕ помещайте избранное в несколько категорий</b> (приложение поддерживает это). Это может сбить с толку алгоритм синхронизации, поскольку ExHentai позволяет каждому избранному быть только в одной категории.<br><br>Это диалоговое окно появится только один раз. Вы можете прочитать эти заметки еще раз, перейдя по ссылке \'Настройки > E-Hentai > Показать избранное синхронизировать заметки\'.]]></string>
+    <string name="favorites_sync_reset">Вы уверены?</string>
+    <string name="favorites_sync_reset_message">Сброс состояния синхронизации может привести к тому, что ваша следующая синхронизация будет чрезвычайно медленной.</string>
+
+    <!-- Gallery Adder -->
+    <!-- Batch Add -->
+    <string name="eh_batch_add">Пакетное добавление</string>
+    <string name="eh_batch_add_description">Пример:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nОн также поддерживает E-H посещенные экспортированные данные\n</string>
+    <string name="eh_batch_add_title">Введите галереи для добавления \n(разделенные новой строкой):</string>
+    <string name="eh_batch_add_button">Добавить галереи</string>
+    <string name="eh_batch_add_adding_galleries">Добавление галерей…</string>
+    <string name="eh_batch_add_finish">Заканчить</string>
+    <string name="batch_add_no_valid_galleries">Никаких галерей для добавления!</string>
+    <string name="batch_add_no_valid_galleries_message">Вы должны указать хотя бы одну мангу для добавления!</string>
+    <string name="batch_add">Добавить пакет</string>
+    <string name="batch_add_ok">[OK]</string>
+    <string name="batch_add_error">[ERROR]</string>
+    <string name="batch_add_summary">\nSummary:\nДобавлен: %1$d галерея(и)\nНеудачный: %2$d галерея(и)</string>
+    <string name="batch_add_success_log_message">Добавлена манга: %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Неизвестный тип манги для манги: %1$s</string>
+    <string name="batch_add_unknown_source_log_message">Неизвестный источник для манги: %1$s</string>
+    <string name="batch_add_not_exist_log_message">Манга не существует: %1$s</string>
+    <string name="gallery_adder_importing_manga">Манга импорта (URL-адрес: %1$s, избр: %2$s, источник силы: %3$s)…</string>
+    <string name="gallery_adder_source_uri_must_match">Ошибка проверки соответствия исходного URI!</string>
+    <string name="gallery_adder_uri_map_to_manga_error">Исходная ошибка URI map-to-manga!</string>
+    <string name="gallery_adder_uri_map_to_chapter_error">Исходная ошибка URI map-to-chapter!</string>
+    <string name="gallery_adder_uri_clean_error">Источник URI чистая ошибка!</string>
+    <string name="gallery_adder_chapter_fetch_error">Не удалось обновить главы манги:  %1$s!</string>
+    <string name="gallery_adder_could_not_add_manga">Не удалось добавить мангу (URL:  %1$s)!</string>
+    <string name="gallery_adder_could_not_identify_chapter">Не удалось идентифицировать главу (url: %1$s)!</string>
+
+    <!-- Intercept Activity -->
+    <string name="launching_app">Запуск приложения…</string>
+    <string name="error_with_reason">Ошибка: %1$s</string>
+    <string name="could_not_open_manga">Не удалось открыть эту мангу:\n\n%1$s</string>
+    <string name="manga_id_is_null">Манга ID равна null!</string>
+    <string name="loading_manga">Загрузка манги…</string>
+
+    <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
+    <string name="rating10">Шедевр</string>
+    <string name="rating9">Удивительный</string>
+    <string name="rating8">Отличный</string>
+    <string name="rating7">Хорошо</string>
+    <string name="rating6">Окей</string>
+    <string name="rating5">Посредственный</string>
+    <string name="rating4">Плохой</string>
+    <string name="rating3">Ужасный</string>
+    <string name="rating2">Мучительно</string>
+    <string name="rating1">Невыносимый</string>
+    <string name="rating0">Катастрофа</string>
+    <string name="no_rating">Нет рейтинга</string>
+
+
+    <!-- Gallery types -->
+    <string name="doujinshi">Додзинси</string>
+    <string name="artist_cg">Художник CG</string>
+    <string name="game_cg">Игра CG</string>
+    <string name="western">Западный</string>
+    <string name="non_h">Non-H</string>
+    <string name="image_set">Набор изображений</string>
+    <string name="cosplay">Косплей</string>
+    <string name="asian_porn">Азиатское Порно</string>
+    <string name="misc">Разное</string>
+    <string name="artbook">Артбук</string>
+    <string name="video">Видео</string>
+
+    <!-- More Info Menu -->
+    <string name="more_info">Дополнительная информация</string>
+    <string name="alt_title">Названия</string>
+    <string name="id">Id</string>
+    <string name="token">Token</string>
+    <string name="is_exhentai_gallery">это Exhentai галерея</string>
+    <string name="thumbnail_url">URL-адрес миниатюры</string>
+    <string name="genre">Жанр</string>
+    <string name="date_posted">Дата публикации</string>
+    <string name="page_count">Количество страниц</string>
+    <string name="parent">Родитель</string>
+    <string name="visible">Видимый</string>
+    <string name="language">Язык</string>
+    <string name="gallery_size">Размер галереи</string>
+    <string name="total_favorites">Всего избранных</string>
+    <string name="total_ratings">Общий рейтинг</string>
+    <string name="average_rating">Средний рейтинг</string>
+    <string name="aged">Престарелый</string>
+    <string name="last_update_check">Проверка последнего обновления</string>
+    <string name="path">Путь</string>
+    <string name="artist">Художник</string>
+    <string name="reader_id">Читатель id</string>
+    <string name="series">Серии</string>
+    <string name="characters">Characters</string>
+    <string name="group">Персонажи</string>
+    <string name="media_id">Медиа id</string>
+    <string name="japanese_title">Японское название</string>
+    <string name="english_title">Английское название</string>
+    <string name="short_title">Краткое название</string>
+    <string name="cover_image_file_type">Тип изображения обложки</string>
+    <string name="thumbnail_image_file_type">Тип файла миниатюры изображения</string>
+    <string name="scanlator">Сканлэйтор</string>
+    <string name="url">Url</string>
+    <string name="alt_titles">Альтернативные названия</string>
+    <string name="uploader_capital">Загрузчик с заглавной буквы</string>
+    <string name="uploader">Загрузчик</string>
+    <string name="rating_string">Строка рейтинга</string>
+    <string name="collection">Коллекция</string>
+    <string name="parodies">Пародии</string>
+    <string name="author">Автор</string>
+    <string name="last_chapter_number">Номер последней главы</string>
+    <string name="missing_chapters">Недостающие главы</string>
+    <string name="follow_status">Следить за статусом</string>
+    <string name="anilist_id">Anilist id</string>
+    <string name="kitsu_id">Kitsu id</string>
+    <string name="mal_id">Mal id</string>
+    <string name="manga_updates_id">Обновления манги id</string>
+    <string name="anime_planet_id">Планета аниме id</string>
+
+    <!-- Extra gallery info -->
+    <plurals name="num_pages">
+        <item quantity="one">%1$d страница</item>
+        <item quantity="few">%1$d страницы</item>
+        <item quantity="many">%1$d страниц</item>
+        <item quantity="other">%1$d страниц</item>
+    </plurals>
+    <string name="tags">Теги</string>
+    <string name="is_visible">Видимый: %1$s</string>
+    <string name="language_translated">%1$s TR</string>
+
+    <!-- Enhanced E/ExHentai Browse View -->
+    <plurals name="browse_language_and_pages">
+        <item quantity="one">%2$s, %1$d страница</item>
+        <item quantity="few">%2$s, %1$d страницы</item>
+        <item quantity="many">%2$s, %1$d страниц</item>
+        <item quantity="other">%2$s, %1$d страниц</item>
+    </plurals>
+
+    <!-- Merged manga -->
+    <string name="merge_settings">Параметры миграции</string>
+    <string name="fetch_chapter_updates">Получить обновления глав </string>
+    <string name="delete_merged_manga">Вы уверены?</string>
+    <string name="delete_merged_manga_desc">Это приведет к удалению манги из слияния, а также потеряет все несохраненные изменения, примененные к объединенной манге</string>
+    <string name="chapter_updates_merged_manga">Переключение обновлений глав</string>
+    <string name="chapter_updates_merged_manga_desc">Переключение этого параметра отключит или включит обновления глав для этой объединенной манги</string>
+    <string name="download_merged_manga">Переключение загрузки новых глав</string>
+    <string name="download_merged_manga_desc">Переключение этого параметра отключит или включит загрузку глав для этой объединенной манги</string>
+    <string name="merged_references_invalid">Недопустимые объединенные ссылки</string>
+    <string name="merged_chapter_updates_error">Ошибка переключения обновлений глав</string>
+    <string name="merged_references">Миграция ссылки</string>
+    <string name="merged_toggle_chapter_updates_find_error">Не удалось найти мангу для переключения обновлений глав</string>
+    <string name="merged_toggle_download_chapters_error">Ошибка переключения загрузки глав</string>
+    <string name="merged_toggle_download_chapters_find_error">Не удалось найти мангу для переключения загрузки глав</string>
+    <string name="allow_deduplication">Разрешить дедупликацию: </string>
+    <string name="deduplication_mode">Режим дедупликации:</string>
+    <string name="manga_info_manga">Информация о манге:</string>
+    <string name="toggle_dedupe">Переключение уровней</string>
+    <string name="refresh_merge">Обновите, чтобы получить правильную информацию</string>
+
+    <!-- MangaDex -->
+    <string name="mdlist">MDList</string>
+    <string name="md_follows_unfollowed">Нарушенными</string>
+    <string name="mangadex_specific_settings">MangaDex настройки</string>
+    <string name="mangadex_sync_follows_to_library">Синхронизация Mangadex мангу в вашу библиотеку</string>
+    <string name="mangadex_sync_follows_to_library_summary">Тянет чтение/перечитывание манги из MangaDex в вашу библиотеку, если они еще не добавлены.</string>
+    <string name="mangadex_low_quality_covers">Используйте миниатюры низкого качества</string>
+    <string name="mangadex_use_latest_cover">Использовать последние загруженные обложки</string>
+    <string name="mangadex_use_latest_cover_summary">Когда он включен, он использует последнюю загруженную обложку манги под /covers url iвместо того чтобы использовать обложку на MangaDex странице манги</string>
+    <string name="mangadex_preffered_source">Предпочтительный MangaDex источник</string>
+    <string name="mangadex_preffered_source_summary">Установите выбранный вами источник MangaDex, он будет использоваться для следующих и еще нескольких функций вокруг приложения</string>
+    <string name="two_factor">2FA Code</string>
+    <string name="fields_cannot_be_blank">Поля не могут быть пустыми</string>
+    <string name="mangadex_add_to_follows">Добавьте в MangaDex следующее</string>
+    <string name="mangadex_follows">MangaDex последователи</string>
+    <string name="random">Random</string>
+    <string name="mangadex_push_favorites_to_mangadex">Синхронизация библиотеки манги с MangaDex</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любые не MdList отслеживаемая манга MangaDex как чтение.</string>
+    <string name="mangadex_push_favorites_to_mangadex_toast">Переместил %d мангу в MangaDex</string>
+
+
+    <!-- Scanlator filters -->
+    <string name="select_scanlators">Показать Сканлэйтор группы</string>
+    <string name="metadata_corrupted">Метаданные повреждены, пожалуйста, обновите мангу</string>
+    <string name="no_scanlators">Сканлэйторы отсутствуют</string>
+
+    <!-- Similar -->
+    <string name="similar">Аналогично %1$s</string>
+    <string name="similar_manga">Похожая Манга</string>
+    <string name="similar_loading_percent">Обновление похожая манга (%1$d / %2$d обновлена)</string>
+    <string name="similar_loading_complete">Обновлена похожая манга</string>
+    <string name="similar_loading_complete_error">Ошибка при попытке загрузить/обработать похожую мангу</string>
+    <string name="similar_loading_progress_start">Загрузка файла данных похожей манги…</string>
+    <string name="similar_ask_to_enable_title">Включить Похожую Мангу?</string>
+    <string name="similar_ask_to_enable">
+       Хотели бы вы включить аналогичные рекомендации по манге?
+       Это позволит загрузить примерно 9 МБ данных, если включить их прямо сейчас.
+       Вы всегда можете включить его в меню Настройки / Менеджер.
+    </string>
+    <string name="similar_ask_to_enable_yes">Включить</string>
+    <string name="similar_ask_to_enable_no">Пропускать</string>
+    <string name="similar_settings">Настройка Похожей Манги </string>
+    <string name="similar_screen">Показать похожую мангу</string>
+    <string name="similar_manually_update">Получить последнюю базу данных </string>
+    <string name="similar_manually_toast">Запуск обновления вручную</string>
+    <string name="similar_manually_update_message">
+       Скачайте последнюю аналогичную базу данных манги.
+       Это около 9 МБ в размере и обновляется ежедневно.
+    </string>
+    <string name="similar_update_fequency">Частота обновления Похожей</string>
+    <string name="similar_screen_summary_message">
+Это функция, где можно получить рекомендации по манге.
+Это рекомендательная система за пределами MangaDex, и она работает путем сопоставления по жанрам,
+демографии, типу контента, темам, а затем с помощью термина frequency–inverse document frequency (tf–idf), чтобы получить
+сходство двух описаний манги. При включении этот файл будет загружаться немедленно!! Размер файла составляет около 9 МБ.
+    </string>
+    <string name="similar_credit_message">
+        Для получения дополнительной информации и просмотра исходного кода:\n%s
+    </string>
+    <string name="similar_no_results">Подобной манги не найдено</string>
+
+    <!-- Humanize time -->
+    <plurals name="humanize_year">
+        <item quantity="one">%1$d год назад</item>
+        <item quantity="few">%1$d года назад</item>
+        <item quantity="many">%1$d лет назад</item>
+        <item quantity="other">%1$d лет назад</item>
+    </plurals>
+    <plurals name="humanize_month">
+        <item quantity="one">%1$d месяц назад</item>
+        <item quantity="few">%1$d месяца назад</item>
+        <item quantity="many">%1$d месяцев назад</item>
+        <item quantity="other">%1$d месяцев назад</item>
+    </plurals>
+    <plurals name="humanize_week">
+        <item quantity="one">%1$d неделю назад</item>
+        <item quantity="few">%1$d недели назад</item>
+        <item quantity="many">%1$d недель назад</item>
+        <item quantity="other">%1$d недель назад</item>
+    </plurals>
+    <plurals name="humanize_day">
+        <item quantity="one">%1$d день назад</item>
+        <item quantity="few">%1$d дня назад</item>
+        <item quantity="many">%1$d дней назад</item>
+        <item quantity="other">%1$d дней назад</item>
+    </plurals>
+    <plurals name="humanize_hour">
+        <item quantity="one">%1$d час назад</item>
+        <item quantity="few">%1$d часа назад</item>
+        <item quantity="many">%1$d часов назад</item>
+        <item quantity="other">%1$d часов назад</item>
+    </plurals>
+    <plurals name="humanize_minute">
+        <item quantity="one">%1$d минуту назад</item>
+        <item quantity="few">%1$d минуты назад</item>
+        <item quantity="many">%1$d минут назад</item>
+        <item quantity="other">%1$d минут назад</item>
+    </plurals>
+    <plurals name="humanize_second">
+        <item quantity="one">%1$d секунду назад</item>
+        <item quantity="few">%1$d секунды назад</item>
+        <item quantity="many">%1$d секунд назад</item>
+        <item quantity="other">%1$d секунд назад</item>
+    </plurals>
+    <string name="humanize_fallback">мгновение назад</string>
+    <!-- Themes -->
+    <string name="theme_dark_red">Чёрный-Красный</string>
+    <string name="theme_dark_midnightdusk">Полуночные Сумерки</string>
+</resources>
