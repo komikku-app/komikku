@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.data.database.resolvers
 
-import android.content.ContentValues
 import androidx.core.content.contentValuesOf
 import com.pushtorefresh.storio.sqlite.StorIOSQLite
 import com.pushtorefresh.storio.sqlite.operations.put.PutResolver
@@ -9,6 +8,7 @@ import com.pushtorefresh.storio.sqlite.queries.UpdateQuery
 import eu.kanade.tachiyomi.data.database.inTransactionReturn
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
+import exh.util.nullIfZero
 
 class MangaInfoPutResolver(val reset: Boolean = false) : PutResolver<Manga>() {
 
@@ -31,15 +31,20 @@ class MangaInfoPutResolver(val reset: Boolean = false) : PutResolver<Manga>() {
         MangaTable.COL_GENRE to manga.originalGenre,
         MangaTable.COL_AUTHOR to manga.originalAuthor,
         MangaTable.COL_ARTIST to manga.originalArtist,
-        MangaTable.COL_DESCRIPTION to manga.originalDescription
+        MangaTable.COL_DESCRIPTION to manga.originalDescription,
+        MangaTable.COL_STATUS to manga.originalStatus
     )
 
-    fun resetToContentValues(manga: Manga) = ContentValues(1).apply {
-        val splitter = "▒ ▒∩▒"
-        put(MangaTable.COL_TITLE, manga.title.split(splitter).last())
-        put(MangaTable.COL_GENRE, manga.genre?.split(splitter)?.lastOrNull())
-        put(MangaTable.COL_AUTHOR, manga.author?.split(splitter)?.lastOrNull())
-        put(MangaTable.COL_ARTIST, manga.artist?.split(splitter)?.lastOrNull())
-        put(MangaTable.COL_DESCRIPTION, manga.description?.split(splitter)?.lastOrNull())
+    private fun resetToContentValues(manga: Manga) = contentValuesOf(
+        MangaTable.COL_TITLE to manga.title.split(splitter).last(),
+        MangaTable.COL_GENRE to manga.genre?.split(splitter)?.lastOrNull(),
+        MangaTable.COL_AUTHOR to manga.author?.split(splitter)?.lastOrNull(),
+        MangaTable.COL_ARTIST to manga.artist?.split(splitter)?.lastOrNull(),
+        MangaTable.COL_DESCRIPTION to manga.description?.split(splitter)?.lastOrNull(),
+        MangaTable.COL_STATUS to manga.status.nullIfZero()?.toString()?.split(splitter)?.lastOrNull()
+    )
+
+    companion object {
+        const val splitter = "▒ ▒∩▒"
     }
 }

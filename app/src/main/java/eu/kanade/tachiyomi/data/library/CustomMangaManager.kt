@@ -32,30 +32,15 @@ class CustomMangaManager(val context: Context) {
         val mangasJson = json.mangas ?: return mutableMapOf()
         return mangasJson.mapNotNull { mangaJson ->
             val id = mangaJson.id ?: return@mapNotNull null
-            val manga = MangaImpl().apply {
-                this.id = id
-                title = mangaJson.title ?: ""
-                author = mangaJson.author
-                artist = mangaJson.artist
-                description = mangaJson.description
-                genre = mangaJson.genre?.joinToString(", ")
-            }
-            id to manga
+            id to mangaJson.toManga()
         }.toMap().toMutableMap()
     }
 
     fun saveMangaInfo(manga: MangaJson) {
-        if (manga.title == null && manga.author == null && manga.artist == null && manga.description == null && manga.genre == null) {
+        if (manga.title == null && manga.author == null && manga.artist == null && manga.description == null && manga.genre == null && manga.status == null) {
             customMangaMap.remove(manga.id!!)
         } else {
-            customMangaMap[manga.id!!] = MangaImpl().apply {
-                id = manga.id
-                title = manga.title ?: ""
-                author = manga.author
-                artist = manga.artist
-                description = manga.description
-                genre = manga.genre?.joinToString(", ")
-            }
+            customMangaMap[manga.id!!] = manga.toManga()
         }
         saveCustomInfo()
     }
@@ -75,7 +60,8 @@ class CustomMangaManager(val context: Context) {
             author,
             artist,
             description,
-            genre?.split(", ")
+            genre?.split(", "),
+            status
         )
     }
 
@@ -91,8 +77,19 @@ class CustomMangaManager(val context: Context) {
         val author: String? = null,
         val artist: String? = null,
         val description: String? = null,
-        val genre: List<String>? = null
+        val genre: List<String>? = null,
+        val status: Int? = null
     ) {
+
+        fun toManga() = MangaImpl().apply {
+            id = this@MangaJson.id
+            title = this@MangaJson.title ?: ""
+            author = this@MangaJson.author
+            artist = this@MangaJson.artist
+            description = this@MangaJson.description
+            genre = this@MangaJson.genre?.joinToString(", ")
+            status = this@MangaJson.status ?: 0
+        }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

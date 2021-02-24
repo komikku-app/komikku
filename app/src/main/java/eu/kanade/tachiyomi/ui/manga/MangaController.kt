@@ -706,7 +706,7 @@ class MangaController :
 
     // SY -->
     fun changeCover() {
-        if (manga?.favorite == true) {
+        if (manga?.favorite == true || source?.id == LocalSource.ID) {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             startActivityForResult(
@@ -1036,7 +1036,7 @@ class MangaController :
                 val uri = data.data ?: return
                 if (editMangaDialog != null) editMangaDialog?.updateCover(uri)
                 else {
-                    presenter.editCoverWithStream(uri)
+                    presenter.editCoverWithStream(activity, uri)
                 }
             } catch (error: IOException) {
                 activity.toast(R.string.notification_cover_update_failed)

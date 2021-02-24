@@ -35,6 +35,8 @@ interface SManga : Serializable {
         get() = (this as? MangaImpl)?.ogDesc ?: description
     val originalGenre: String?
         get() = (this as? MangaImpl)?.ogGenre ?: genre
+    val originalStatus: Int
+        get() = (this as? MangaImpl)?.ogStatus ?: status
     // SY <--
 
     fun copyFrom(other: SManga) {

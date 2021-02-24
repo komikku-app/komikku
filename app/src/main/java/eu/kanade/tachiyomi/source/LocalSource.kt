@@ -64,6 +64,12 @@ class LocalSource(private val context: Context) : CatalogueSource {
             val c = context.getString(R.string.app_name) + File.separator + "local"
             return DiskUtil.getExternalStorages(context).map { File(it.absolutePath, c) }
         }
+
+        // SY -->
+        val json = Json {
+            prettyPrint = true
+        }
+        // SY <--
     }
 
     override val id = ID
@@ -151,19 +157,16 @@ class LocalSource(private val context: Context) : CatalogueSource {
 
     // SY -->
     fun updateMangaInfo(manga: SManga) {
-        val directory = getBaseDirectories(context).mapNotNull { File(it, manga.url) }.find {
+        val directory = getBaseDirectories(context).map { File(it, manga.url) }.find {
             it.exists()
         } ?: return
-        val json = Json {
-            prettyPrint = true
-        }
         val existingFileName = directory.listFiles()?.find { it.extension == "json" }?.name
         val file = File(directory, existingFileName ?: "info.json")
         file.writeText(json.encodeToString(manga.toJson()))
     }
 
     private fun SManga.toJson(): MangaJson {
-        return MangaJson(title, author, artist, description, genre?.split(", ")?.toTypedArray())
+        return MangaJson(title, author, artist, description, genre?.split(", "), status)
     }
 
     @Serializable
@@ -172,7 +175,8 @@ class LocalSource(private val context: Context) : CatalogueSource {
         val author: String?,
         val artist: String?,
         val description: String?,
-        val genre: Array<String>?
+        val genre: List<String>?,
+        val status: Int
     ) {
 
         override fun equals(other: Any?): Boolean {

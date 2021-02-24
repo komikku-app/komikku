@@ -22,16 +22,31 @@
             android:src="@mipmap/ic_launcher"/>
     </FrameLayout>
 
-    <Button
-        android:id="@+id/reset_cover"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Theme.Widget.Button.FilledAccent"
-        android:textAllCaps="false"
-        android:layout_gravity="center"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:text="@string/reset_cover" />
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/reset_cover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Theme.Widget.Button.FilledAccent"
+            android:textAllCaps="false"
+            android:layout_gravity="center"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:text="@string/reset_cover" />
+
+        <Spinner
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Theme.Widget.TextInputLayout.OutlinedBox.Dense"

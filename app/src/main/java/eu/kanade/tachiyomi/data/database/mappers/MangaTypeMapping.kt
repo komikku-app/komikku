@@ -59,8 +59,8 @@ class MangaPutResolver : DefaultPutResolver<Manga>() {
             COL_DESCRIPTION to obj.originalDescription,
             COL_GENRE to obj.originalGenre,
             COL_TITLE to obj.originalTitle,
+            COL_STATUS to obj.originalStatus,
             // SY <--
-            COL_STATUS to obj.status,
             COL_THUMBNAIL_URL to obj.thumbnail_url,
             COL_FAVORITE to obj.favorite,
             COL_LAST_UPDATE to obj.last_update,

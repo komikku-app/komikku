@@ -314,11 +314,13 @@ class MangaPresenter(
 
     // SY -->
     fun updateMangaInfo(
+        context: Context,
         title: String?,
         author: String?,
         artist: String?,
         description: String?,
         tags: List<String>?,
+        status: Int?,
         uri: Uri?,
         resetCover: Boolean = false
     ) {
@@ -329,7 +331,8 @@ class MangaPresenter(
             manga.description = description?.trimOrNull()
             val tagsString = tags?.joinToString()
             manga.genre = if (tags.isNullOrEmpty()) null else tagsString?.trim()
-            LocalSource(downloadManager.context).updateMangaInfo(manga)
+            manga.status = status ?: 0
+            (sourceManager.get(LocalSource.ID) as LocalSource).updateMangaInfo(manga)
             db.updateMangaInfo(manga).executeAsBlocking()
         } else {
             val genre = if (!tags.isNullOrEmpty() && tags.joinToString() != manga.originalGenre) {
@@ -343,13 +346,14 @@ class MangaPresenter(
                 author?.trimOrNull(),
                 artist?.trimOrNull(),
                 description?.trimOrNull(),
-                genre
+                genre,
+                status.takeUnless { it == manga.originalStatus }
             )
             customMangaManager.saveMangaInfo(manga)
         }
 
         if (uri != null) {
-            editCoverWithStream(uri)
+            editCoverWithStream(context, uri)
         } else if (resetCover) {
             coverCache.deleteCustomCover(manga)
             manga.updateCoverLastModified(db)
@@ -377,11 +381,14 @@ class MangaPresenter(
         }
     }
 
-    fun editCoverWithStream(uri: Uri): Boolean {
-        val inputStream = downloadManager.context.contentResolver.openInputStream(uri) ?: return false
+    fun editCoverWithStream(context: Context, uri: Uri): Boolean {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return false
         if (manga.source == LocalSource.ID) {
-            LocalSource.updateCover(downloadManager.context, manga, inputStream)
-            manga.updateCoverLastModified(db)
+            val cover = LocalSource.updateCover(context, manga, inputStream)
+            if (manga.thumbnail_url.isNullOrBlank() && cover != null) {
+                manga.thumbnail_url = cover.absolutePath
+                db.updateMangaThumbnail(manga).executeAsBlocking()
+            }
             return true
         }
 

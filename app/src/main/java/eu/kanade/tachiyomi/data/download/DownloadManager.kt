@@ -23,7 +23,7 @@ import uy.kohesive.injekt.injectLazy
  *
  * @param context the application context.
  */
-class DownloadManager(/* SY private */ val context: Context) {
+class DownloadManager(private val context: Context) {
 
     private val sourceManager: SourceManager by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()

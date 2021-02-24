@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.database.resolvers.MangaFlagsPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaInfoPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaLastUpdatedPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaMigrationPutResolver
+import eu.kanade.tachiyomi.data.database.resolvers.MangaThumbnailPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaTitlePutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaViewerPutResolver
 import eu.kanade.tachiyomi.data.database.tables.CategoryTable
@@ -101,6 +102,11 @@ interface MangaQueries : DbProvider {
     fun updateMangaMigrate(manga: Manga) = db.put()
         .`object`(manga)
         .withPutResolver(MangaMigrationPutResolver())
+        .prepare()
+
+    fun updateMangaThumbnail(manga: Manga) = db.put()
+        .`object`(manga)
+        .withPutResolver(MangaThumbnailPutResolver())
         .prepare()
     // SY <--
 

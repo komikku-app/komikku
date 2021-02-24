@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
+import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
@@ -23,10 +24,12 @@ import eu.kanade.tachiyomi.data.glide.GlideApp
 import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.LocalSource
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
+import exh.util.dropBlank
 import exh.util.trimOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -84,6 +87,36 @@ class EditMangaDialog : DialogController {
 
         val isLocal = manga.source == LocalSource.ID
 
+        val statusAdapter: ArrayAdapter<String> = ArrayAdapter(
+            context,
+            android.R.layout.simple_spinner_item,
+            listOf(
+                R.string.manga,
+                R.string.ongoing,
+                R.string.completed,
+                R.string.licensed,
+                R.string.publication_complete,
+                R.string.hiatus,
+                R.string.cancelled
+            ).map { context.getString(it) }
+        )
+
+        binding.status.adapter = statusAdapter
+        if (manga.status != manga.originalStatus) {
+            binding.status.setSelection(
+                when (manga.status) {
+                    SManga.UNKNOWN -> 0
+                    SManga.ONGOING -> 1
+                    SManga.COMPLETED -> 2
+                    SManga.LICENSED -> 3
+                    SManga.PUBLICATION_COMPLETE -> 4
+                    SManga.HIATUS -> 5
+                    SManga.CANCELLED -> 6
+                    else -> 0
+                }
+            )
+        }
+
         if (isLocal) {
             if (manga.title != manga.url) {
                 binding.title.setText(manga.title)
@@ -92,7 +125,7 @@ class EditMangaDialog : DialogController {
             binding.mangaAuthor.setText(manga.author.orEmpty())
             binding.mangaArtist.setText(manga.artist.orEmpty())
             binding.mangaDescription.setText(manga.description.orEmpty())
-            binding.mangaGenresTags.setChips(manga.getGenres().orEmpty())
+            binding.mangaGenresTags.setChips(manga.getGenres().orEmpty().dropBlank())
         } else {
             if (manga.title != manga.originalTitle) {
                 binding.title.append(manga.title)
@@ -160,11 +193,23 @@ class EditMangaDialog : DialogController {
 
     private fun onPositiveButtonClick() {
         infoController.presenter.updateMangaInfo(
+            context,
             binding.title.text.toString(),
             binding.mangaAuthor.text.toString(),
             binding.mangaArtist.text.toString(),
             binding.mangaDescription.text.toString(),
             binding.mangaGenresTags.getTextStrings(),
+            binding.status.selectedItemPosition.let {
+                when (it) {
+                    1 -> SManga.ONGOING
+                    2 -> SManga.COMPLETED
+                    3 -> SManga.LICENSED
+                    4 -> SManga.PUBLICATION_COMPLETE
+                    5 -> SManga.HIATUS
+                    6 -> SManga.CANCELLED
+                    else -> null
+                }
+            },
             customCoverUri,
             willResetCover
         )
