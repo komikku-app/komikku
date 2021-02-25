@@ -624,6 +624,7 @@
         demographics, content type, themes, and then using term frequency–inverse document frequency (tf–idf) to get the
         similarity of two manga\'s descriptions. When enabled this file will download immediately!! The file is about 9 MB in size.
     </string>
+    <string name="similar_credit">Credits</string>
     <string name="similar_credit_message">
         For more information and to view the source code:\n%s
     </string>
@@ -659,6 +660,5 @@
         <item quantity="other">%1$d second ago</item>
     </plurals>
     <string name="humanize_fallback">moments ago</string>
-
 
 </resources>

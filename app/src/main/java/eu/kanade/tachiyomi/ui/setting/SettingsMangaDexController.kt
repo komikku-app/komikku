@@ -100,7 +100,6 @@ class SettingsMangaDexController :
 
             preference {
                 key = "pref_similar_screen"
-                titleRes = R.string.similar_screen
                 summaryRes = R.string.similar_screen_summary_message
                 isIconSpaceReserved = true
             }
@@ -156,7 +155,7 @@ class SettingsMangaDexController :
 
             preference {
                 key = "similar_credits"
-                title = "Credits"
+                titleRes = R.string.similar_credit
                 val url = "https://github.com/goldbattle/MangadexRecomendations"
                 summary = context.getString(R.string.similar_credit_message, url)
                 onClick {
