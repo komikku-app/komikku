@@ -83,7 +83,9 @@ class PreferencesHelper(val context: Context) {
 
     fun rotation() = flowPrefs.getInt(Keys.rotation, 1)
 
-    fun pageTransitions() = flowPrefs.getBoolean(Keys.enableTransitions, true)
+    fun pageTransitionsPager() = flowPrefs.getBoolean(Keys.enableTransitionsPager, true)
+
+    fun pageTransitionsWebtoon() = flowPrefs.getBoolean(Keys.enableTransitionsWebtoon, true)
 
     fun doubleTapAnimSpeed() = flowPrefs.getInt(Keys.doubleTapAnimationSpeed, 500)
 

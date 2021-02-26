@@ -65,12 +65,20 @@
         app:layout_constraintTop_toBottomOf="@+id/webtoon_side_padding" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/page_transitions_webtoon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pref_page_transitions"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@+id/crop_borders_webtoon" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/zoom_out_webtoon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/enable_zoom_out"
         android:textColor="?android:attr/textColorSecondary"
-        app:layout_constraintTop_toBottomOf="@+id/crop_borders_webtoon" />
+        app:layout_constraintTop_toBottomOf="@+id/page_transitions_webtoon" />
 
     <TextView
         android:id="@+id/tapping_inverted_text"

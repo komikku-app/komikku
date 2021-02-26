@@ -72,7 +72,6 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BaseBottomShee
         binding.keepscreen.bindToPreference(preferences.keepScreenOn())
         binding.longTap.bindToPreference(preferences.readWithLongTap())
         binding.alwaysShowChapterTransition.bindToPreference(preferences.alwaysShowChapterTransition())
-        binding.pageTransitions.bindToPreference(preferences.pageTransitions())
         // SY -->
         binding.autoWebtoonMode.bindToPreference(preferences.useAutoWebtoon())
         // SY <--
@@ -105,6 +104,10 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BaseBottomShee
         binding.pagerPrefsGroup.scaleType.bindToPreference(preferences.imageScaleType(), 1)
         binding.pagerPrefsGroup.zoomStart.bindToPreference(preferences.zoomStart(), 1)
         binding.pagerPrefsGroup.cropBorders.bindToPreference(preferences.cropBorders())
+
+        // SY -->
+        binding.pagerPrefsGroup.pageTransitionsPager.bindToPreference(preferences.pageTransitionsPager())
+        // SY <--
     }
 
     /**
@@ -125,6 +128,7 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BaseBottomShee
         // SY -->
         binding.webtoonPrefsGroup.zoomOutWebtoon.bindToPreference(preferences.webtoonEnableZoomOut())
         binding.webtoonPrefsGroup.cropBordersContinuesVertical.bindToPreference(preferences.cropBordersContinuesVertical())
+        binding.webtoonPrefsGroup.pageTransitionsWebtoon.bindToPreference(preferences.pageTransitionsWebtoon())
         // SY <--
     }
 

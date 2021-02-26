@@ -82,6 +82,14 @@
         android:textColor="?android:attr/textColorSecondary"
         app:layout_constraintTop_toBottomOf="@id/zoom_start" />
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/page_transitions_pager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pref_page_transitions"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@+id/crop_borders" />
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/verticalcenter"
         android:layout_width="wrap_content"

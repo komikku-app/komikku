@@ -70,11 +70,6 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = false
             }
         }
-        switchPreference {
-            key = Keys.enableTransitions
-            titleRes = R.string.pref_page_transitions
-            defaultValue = true
-        }
 
         preferenceCategory {
             titleRes = R.string.pref_category_display
@@ -319,6 +314,11 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_crop_borders
                 defaultValue = false
             }
+            switchPreference {
+                key = Keys.enableTransitionsPager
+                titleRes = R.string.pref_page_transitions
+                defaultValue = true
+            }
         }
 
         preferenceCategory {
@@ -373,6 +373,11 @@ class SettingsReaderController : SettingsController() {
                 key = Keys.cropBordersWebtoon
                 titleRes = R.string.pref_crop_borders
                 defaultValue = false
+            }
+            switchPreference {
+                key = Keys.enableTransitionsWebtoon
+                titleRes = R.string.pref_page_transitions
+                defaultValue = true
             }
             switchPreference {
                 key = Keys.webtoonEnableZoomOut

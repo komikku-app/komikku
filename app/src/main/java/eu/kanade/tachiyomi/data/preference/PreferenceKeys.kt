@@ -17,7 +17,9 @@ object PreferenceKeys {
 
     const val rotation = "pref_rotation_type_key"
 
-    const val enableTransitions = "pref_enable_transitions_key"
+    const val enableTransitionsPager = "pref_enable_transitions_pager_key"
+
+    const val enableTransitionsWebtoon = "pref_enable_transitions_webtoon_key"
 
     const val doubleTapAnimationSpeed = "pref_double_tap_anim_speed"
 

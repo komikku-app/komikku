@@ -61,27 +61,6 @@
         app:layout_constraintStart_toEndOf="@id/verticalcenter"
         app:layout_constraintTop_toBottomOf="@id/series_prefs" />
 
-    <!-- General display preferences -->
-
-    <TextView
-        android:id="@+id/general_prefs"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/pref_category_general"
-        android:textColor="?attr/colorAccent"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/viewer" />
-
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/page_transitions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/pref_page_transitions"
-        android:textColor="?android:attr/textColorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/general_prefs" />
-
     <!-- General reading mode preferences -->
 
     <TextView
@@ -93,7 +72,7 @@
         android:textColor="?attr/colorAccent"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/page_transitions" />
+        app:layout_constraintTop_toBottomOf="@+id/viewer" />
 
     <TextView
         android:id="@+id/rotation_mode_text"

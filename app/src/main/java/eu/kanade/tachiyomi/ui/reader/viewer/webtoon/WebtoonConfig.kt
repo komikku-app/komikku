@@ -26,6 +26,8 @@ class WebtoonConfig(
         private set
 
     // SY -->
+    var usePageTransitions = false
+
     var enableZoomOut = false
         private set
 
@@ -54,6 +56,9 @@ class WebtoonConfig(
 
         preferences.cropBordersContinuesVertical()
             .register({ continuesCropBorders = it }, { imagePropertyChangedListener?.invoke() })
+
+        preferences.pageTransitionsWebtoon()
+            .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })
         // SY <--
     }
 

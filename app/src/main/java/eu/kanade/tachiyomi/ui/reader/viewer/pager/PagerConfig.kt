@@ -29,6 +29,10 @@ class PagerConfig(
     var imageCropBorders = false
         private set
 
+    // SY -->
+    var usePageTransitions = false
+    // SY <--
+
     init {
         preferences.imageScaleType()
             .register({ imageScaleType = it }, { imagePropertyChangedListener?.invoke() })
@@ -44,6 +48,11 @@ class PagerConfig(
 
         preferences.pagerNavInverted()
             .register({ tappingInverted = it }, { navigator.invertMode = it })
+
+        // SY -->
+        preferences.pageTransitionsPager()
+            .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })
+        // SY <--
     }
 
     private fun zoomTypeFromPreference(value: Int) {
