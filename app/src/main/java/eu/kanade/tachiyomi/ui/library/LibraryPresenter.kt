@@ -659,7 +659,7 @@ class LibraryPresenter(
                             val mergedMangas = db.getMergedMangas(manga.id!!).executeAsBlocking()
                             val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
                             mergedMangas.forEach merge@{ mergedManga ->
-                                val mergedSource = sources.firstOrNull { mergedManga.source == it.id } ?: return@merge
+                                val mergedSource = sources.firstOrNull { mergedManga.source == it.id } as? HttpSource ?: return@merge
                                 downloadManager.deleteManga(mergedManga, mergedSource)
                             }
                         } else downloadManager.deleteManga(manga, source)
