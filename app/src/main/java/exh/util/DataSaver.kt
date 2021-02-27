@@ -1,5 +1,6 @@
 package exh.util
 
+import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import uy.kohesive.injekt.injectLazy
 
@@ -18,11 +19,13 @@ object DataSaver {
 
     private fun getUrl(imageUrl: String): String {
         val server = preferences.dataSaverServer().get() + "/?"
-        val format = "jpg=${if (preferences.dataSaverImageFormatJpeg().get()) "1" else "0"}"
-        val quality = "l=${preferences.dataSaverImageQuality().get()}"
-        val colorBW = "bw=${if (preferences.dataSaverColorBW().get()) "1" else "0"}"
+        val format = "jpg=" + preferences.dataSaverImageFormatJpeg().toIntRepresentation()
+        val quality = "l=" + preferences.dataSaverImageQuality().get()
+        val colorBW = "bw=" + preferences.dataSaverColorBW().toIntRepresentation()
         val url = "url=$imageUrl"
 
         return "$server&$format&$quality&$colorBW&$url"
     }
+
+    private fun Preference<Boolean>.toIntRepresentation() = if (get()) "1" else "0"
 }
