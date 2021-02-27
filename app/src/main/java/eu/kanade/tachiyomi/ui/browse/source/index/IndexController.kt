@@ -326,6 +326,18 @@ open class IndexController :
         browseAdapter?.updateDataSet(browseResults)
     }
 
+    fun onLatestError(e: Exception) {
+        e.message?.let {
+            binding.latestNoResultsFound.text = it
+        }
+    }
+
+    fun onBrowseError(e: Exception) {
+        e.message?.let {
+            binding.browseNoResultsFound.text = it
+        }
+    }
+
     private fun showLatestResultsHolder() {
         binding.latestNoResultsFound.isVisible = false
     }

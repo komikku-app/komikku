@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Dispatchers
@@ -110,6 +111,9 @@ open class IndexPresenter(
                         .mangas
                         .map { networkToLocalManga(it, source.id) }
                 } catch (e: Exception) {
+                    withUIContext {
+                        view?.onLatestError(e)
+                    }
                     emptyList()
                 }
             } else emptyList()
@@ -127,6 +131,9 @@ open class IndexPresenter(
                     .mangas
                     .map { networkToLocalManga(it, source.id) }
             } catch (e: Exception) {
+                withUIContext {
+                    view?.onBrowseError(e)
+                }
                 emptyList()
             }
 
