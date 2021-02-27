@@ -565,18 +565,19 @@ class LibraryPresenter(
                 }
             }
             if (manga.title == editedTitle) return@forEach
-            val mangaJson = manga.id?.let {
+            val mangaJson = manga.id?.let { mangaId ->
                 CustomMangaManager.MangaJson(
-                    it,
+                    mangaId,
                     editedTitle.nullIfBlank(),
-                    (if (manga.author != manga.originalAuthor) manga.author else null),
-                    (if (manga.artist != manga.originalArtist) manga.artist else null),
-                    (if (manga.description != manga.originalDescription) manga.description else null),
-                    (if (manga.genre != manga.originalGenre) manga.getGenres() else null)
+                    manga.author.takeUnless { it == manga.originalAuthor },
+                    manga.artist.takeUnless { it == manga.originalArtist },
+                    manga.description.takeUnless { it == manga.originalDescription },
+                    manga.genre.takeUnless { it == manga.originalGenre }?.let { manga.getGenres() },
+                    manga.status.takeUnless { it == manga.originalStatus }
                 )
             }
-            mangaJson?.let {
-                customMangaManager.saveMangaInfo(it)
+            if (mangaJson != null) {
+                customMangaManager.saveMangaInfo(mangaJson)
             }
         }
     }
