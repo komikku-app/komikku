@@ -157,7 +157,13 @@ interface MangaQueries : DbProvider {
         .byQuery(
             DeleteQuery.builder()
                 .table(MangaTable.TABLE)
-                .where("${MangaTable.COL_FAVORITE} = ? AND ${MangaTable.COL_ID} NOT IN (SELECT ${MergedTable.COL_MANGA_ID} FROM ${MergedTable.TABLE})")
+                .where(
+                    """
+                    ${MangaTable.COL_FAVORITE} = ? AND ${MangaTable.COL_ID} NOT IN (
+                        SELECT ${MergedTable.COL_MANGA_ID} FROM ${MergedTable.TABLE} WHERE ${MergedTable.COL_MANGA_ID} != ${MergedTable.COL_MERGE_ID}
+                    )
+                    """.trimIndent()
+                )
                 .whereArgs(0)
                 .build()
         )
