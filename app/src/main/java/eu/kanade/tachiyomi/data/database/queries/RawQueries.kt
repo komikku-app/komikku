@@ -69,7 +69,7 @@ fun getReadMangaNotInLibraryQuery() =
     SELECT ${Manga.TABLE}.* 
     FROM ${Manga.TABLE} 
     WHERE ${Manga.COL_FAVORITE} = 0 AND ${Manga.COL_ID} IN(
-        SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} FROM ${Chapter.TABLE} WHERE ${Chapter.COL_READ} = 1
+        SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} FROM ${Chapter.TABLE} WHERE ${Chapter.COL_READ} = 1 OR ${Chapter.COL_LAST_PAGE_READ} != 0
     )
 """
 
