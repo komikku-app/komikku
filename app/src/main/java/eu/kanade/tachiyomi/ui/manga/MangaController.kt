@@ -528,16 +528,18 @@ class MangaController :
             R.id.action_migrate -> migrateManga()
             // SY -->
             R.id.action_save -> {
-                if (presenter.saveCover(activity!!)) {
+                try {
+                    presenter.saveCover(activity!!)
                     activity?.toast(R.string.cover_saved)
-                } else {
-                    activity?.toast(R.string.error_saving_cover)
+                } catch (e: Exception) {
+                    e.message?.let { activity?.toast(it) } ?: activity?.toast(R.string.error_saving_cover)
                 }
             }
             R.id.action_share_cover -> {
-                val cover = presenter.shareCover(activity!!)
-                if (cover != null) {
-                    val stream = cover.getUriCompat(activity!!)
+                try {
+                    val activity = activity!!
+                    val cover = presenter.shareCover(activity)
+                    val stream = cover.getUriCompat(activity)
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         putExtra(Intent.EXTRA_STREAM, stream)
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -545,8 +547,8 @@ class MangaController :
                         type = "image/*"
                     }
                     startActivity(Intent.createChooser(intent, activity?.getString(R.string.action_share)))
-                } else {
-                    activity?.toast(R.string.error_sharing_cover)
+                } catch (e: Exception) {
+                    e.message?.let { activity?.toast(it) } ?: activity?.toast(R.string.error_sharing_cover)
                 }
             }
             // SY <--

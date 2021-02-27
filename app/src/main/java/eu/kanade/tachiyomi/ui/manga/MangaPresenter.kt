@@ -542,32 +542,23 @@ class MangaPresenter(
         // I cant find any way to call the chapter list subscription to get the chapters again
     }
 
-    fun shareCover(context: Context): File? {
-        return try {
-            val destDir = File(context.cacheDir, "shared_image")
-            val file = saveCover(destDir)
-            file
-        } catch (e: Exception) {
-            null
-        }
+    fun shareCover(context: Context): File {
+        val destDir = File(context.cacheDir, "shared_image")
+        return saveCover(destDir)
     }
 
-    fun saveCover(context: Context): Boolean {
-        return try {
-            val directory = File(
-                Environment.getExternalStorageDirectory().absolutePath +
-                    File.separator + Environment.DIRECTORY_PICTURES +
-                    File.separator + context.getString(R.string.app_name)
-            )
-            saveCover(directory)
-            true
-        } catch (e: Exception) {
-            false
-        }
+    fun saveCover(context: Context) {
+        val directory = File(
+            Environment.getExternalStorageDirectory().absolutePath +
+                File.separator + Environment.DIRECTORY_PICTURES +
+                File.separator + context.getString(R.string.app_name)
+        )
+        saveCover(directory)
     }
 
     private fun saveCover(directory: File): File {
-        val cover = coverCache.getCoverFile(manga)!!
+        val cover = coverCache.getCoverFile(manga) ?: throw Exception("Cover url was null")
+        if (!cover.exists()) throw Exception("Cover not in cache")
         val type = ImageUtil.findImageType(cover.inputStream())
             ?: throw Exception("Not an image")
 
