@@ -169,6 +169,26 @@ interface MangaQueries : DbProvider {
         )
         .prepare()
 
+    // SY -->
+    fun deleteMangasNotInLibraryAndNotRead() = db.delete()
+        .byQuery(
+            DeleteQuery.builder()
+                .table(MangaTable.TABLE)
+                .where(
+                    """
+                    ${MangaTable.COL_FAVORITE} = ? AND ${MangaTable.COL_ID} NOT IN (
+                        SELECT ${MergedTable.COL_MANGA_ID} FROM ${MergedTable.TABLE} WHERE ${MergedTable.COL_MANGA_ID} != ${MergedTable.COL_MERGE_ID}
+                    ) AND ${MangaTable.COL_ID} NOT IN (
+                        SELECT ${ChapterTable.COL_MANGA_ID} FROM ${ChapterTable.TABLE} WHERE ${ChapterTable.COL_READ} = 1 OR ${ChapterTable.COL_LAST_PAGE_READ} != 0
+                    )
+                    """.trimIndent()
+                )
+                .whereArgs(0)
+                .build()
+        )
+        .prepare()
+    // SY <--
+
     fun deleteMangas() = db.delete()
         .byQuery(
             DeleteQuery.builder()

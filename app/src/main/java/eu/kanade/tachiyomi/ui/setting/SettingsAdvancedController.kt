@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
 import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -413,11 +414,20 @@ class SettingsAdvancedController : SettingsController() {
     }
 
     class ClearDatabaseDialogController : DialogController() {
+        // SY -->
+        var keepReadManga = false
+        // SY <--
+
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             return MaterialDialog(activity!!)
                 .message(R.string.clear_database_confirmation)
+                // SY -->
+                .checkBoxPrompt(R.string.clear_db_exclude_read) {
+                    keepReadManga = it
+                }
+                // SY <--
                 .positiveButton(android.R.string.ok) {
-                    (targetController as? SettingsAdvancedController)?.clearDatabase()
+                    (targetController as? SettingsAdvancedController)?.clearDatabase(/* SY --> */keepReadManga/* SY <-- */)
                 }
                 .negativeButton(android.R.string.cancel)
         }
@@ -439,8 +449,14 @@ class SettingsAdvancedController : SettingsController() {
         activity?.toast(R.string.clear_history_completed)
     }
 
-    private fun clearDatabase() {
-        db.deleteMangasNotInLibrary().executeAsBlocking()
+    private fun clearDatabase(keepReadManga: Boolean) {
+        // SY -->
+        if (keepReadManga) {
+            db.deleteMangasNotInLibraryAndNotRead().executeAsBlocking()
+        } else {
+            db.deleteMangasNotInLibrary().executeAsBlocking()
+        }
+        // SY <--
         db.deleteHistoryNoLastRead().executeAsBlocking()
         activity?.toast(R.string.clear_database_completed)
     }
@@ -448,6 +464,8 @@ class SettingsAdvancedController : SettingsController() {
     private companion object {
         const val CLEAR_CACHE_KEY = "pref_clear_cache_key"
 
+        // SY -->
         private var job: Job? = null
+        // SY <--
     }
 }
