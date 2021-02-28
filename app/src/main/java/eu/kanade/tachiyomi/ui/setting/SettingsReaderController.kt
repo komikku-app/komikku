@@ -141,112 +141,6 @@ class SettingsReaderController : SettingsController() {
             }
         }
 
-        // EXH -->
-        preferenceCategory {
-            titleRes = R.string.pref_category_fork
-
-            intListPreference {
-                key = Keys.eh_readerThreads
-                titleRes = R.string.download_threads
-                entries = arrayOf("1", "2", "3", "4", "5")
-                entryValues = entries
-                defaultValue = "2"
-                summaryRes = R.string.download_threads_summary
-            }
-            switchPreference {
-                key = Keys.eh_aggressivePageLoading
-                titleRes = R.string.aggressively_load_pages
-                summaryRes = R.string.aggressively_load_pages_summary
-                defaultValue = false
-            }
-            switchPreference {
-                key = Keys.eh_readerInstantRetry
-                titleRes = R.string.skip_queue_on_retry
-                summaryRes = R.string.skip_queue_on_retry_summary
-                defaultValue = true
-            }
-            intListPreference {
-                key = Keys.eh_preload_size
-                titleRes = R.string.reader_preload_amount
-                entryValues = arrayOf(
-                    "4",
-                    "6",
-                    "8",
-                    "10",
-                    "12",
-                    "14",
-                    "16",
-                    "20",
-                )
-                entriesRes = arrayOf(
-                    R.string.reader_preload_amount_4_pages,
-                    R.string.reader_preload_amount_6_pages,
-                    R.string.reader_preload_amount_8_pages,
-                    R.string.reader_preload_amount_10_pages,
-                    R.string.reader_preload_amount_12_pages,
-                    R.string.reader_preload_amount_14_pages,
-                    R.string.reader_preload_amount_16_pages,
-                    R.string.reader_preload_amount_20_pages
-                )
-                defaultValue = "10"
-                summaryRes = R.string.reader_preload_amount_summary
-            }
-            listPreference {
-                key = Keys.eh_cacheSize
-                titleRes = R.string.reader_cache_size
-                entryValues = arrayOf(
-                    "50",
-                    "75",
-                    "100",
-                    "150",
-                    "250",
-                    "500",
-                    "750",
-                    "1000",
-                    "1500",
-                    "2000",
-                    "2500",
-                    "3000",
-                    "3500",
-                    "4000",
-                    "4500",
-                    "5000"
-                )
-                entries = arrayOf(
-                    "50 MB",
-                    "75 MB",
-                    "100 MB",
-                    "150 MB",
-                    "250 MB",
-                    "500 MB",
-                    "750 MB",
-                    "1 GB",
-                    "1.5 GB",
-                    "2 GB",
-                    "2.5 GB",
-                    "3 GB",
-                    "3.5 GB",
-                    "4 GB",
-                    "4.5 GB",
-                    "5 GB"
-                )
-                defaultValue = "75"
-                summaryRes = R.string.reader_cache_size_summary
-            }
-            switchPreference {
-                key = Keys.eh_preserveReadingPosition
-                titleRes = R.string.preserve_reading_position
-                defaultValue = false
-            }
-            switchPreference {
-                key = Keys.eh_use_auto_webtoon
-                titleRes = R.string.auto_webtoon_mode
-                summaryRes = R.string.auto_webtoon_mode_summary
-                defaultValue = true
-            }
-        }
-        // EXH <--
-
         preferenceCategory {
             titleRes = R.string.pager_viewer
 
@@ -430,5 +324,111 @@ class SettingsReaderController : SettingsController() {
                 preferences.readWithVolumeKeys().asImmediateFlow { isVisible = it }.launchIn(viewScope)
             }
         }
+
+        // EXH -->
+        preferenceCategory {
+            titleRes = R.string.pref_category_fork
+
+            intListPreference {
+                key = Keys.eh_readerThreads
+                titleRes = R.string.download_threads
+                entries = arrayOf("1", "2", "3", "4", "5")
+                entryValues = entries
+                defaultValue = "2"
+                summaryRes = R.string.download_threads_summary
+            }
+            switchPreference {
+                key = Keys.eh_aggressivePageLoading
+                titleRes = R.string.aggressively_load_pages
+                summaryRes = R.string.aggressively_load_pages_summary
+                defaultValue = false
+            }
+            switchPreference {
+                key = Keys.eh_readerInstantRetry
+                titleRes = R.string.skip_queue_on_retry
+                summaryRes = R.string.skip_queue_on_retry_summary
+                defaultValue = true
+            }
+            intListPreference {
+                key = Keys.eh_preload_size
+                titleRes = R.string.reader_preload_amount
+                entryValues = arrayOf(
+                    "4",
+                    "6",
+                    "8",
+                    "10",
+                    "12",
+                    "14",
+                    "16",
+                    "20",
+                )
+                entriesRes = arrayOf(
+                    R.string.reader_preload_amount_4_pages,
+                    R.string.reader_preload_amount_6_pages,
+                    R.string.reader_preload_amount_8_pages,
+                    R.string.reader_preload_amount_10_pages,
+                    R.string.reader_preload_amount_12_pages,
+                    R.string.reader_preload_amount_14_pages,
+                    R.string.reader_preload_amount_16_pages,
+                    R.string.reader_preload_amount_20_pages
+                )
+                defaultValue = "10"
+                summaryRes = R.string.reader_preload_amount_summary
+            }
+            listPreference {
+                key = Keys.eh_cacheSize
+                titleRes = R.string.reader_cache_size
+                entryValues = arrayOf(
+                    "50",
+                    "75",
+                    "100",
+                    "150",
+                    "250",
+                    "500",
+                    "750",
+                    "1000",
+                    "1500",
+                    "2000",
+                    "2500",
+                    "3000",
+                    "3500",
+                    "4000",
+                    "4500",
+                    "5000"
+                )
+                entries = arrayOf(
+                    "50 MB",
+                    "75 MB",
+                    "100 MB",
+                    "150 MB",
+                    "250 MB",
+                    "500 MB",
+                    "750 MB",
+                    "1 GB",
+                    "1.5 GB",
+                    "2 GB",
+                    "2.5 GB",
+                    "3 GB",
+                    "3.5 GB",
+                    "4 GB",
+                    "4.5 GB",
+                    "5 GB"
+                )
+                defaultValue = "75"
+                summaryRes = R.string.reader_cache_size_summary
+            }
+            switchPreference {
+                key = Keys.eh_preserveReadingPosition
+                titleRes = R.string.preserve_reading_position
+                defaultValue = false
+            }
+            switchPreference {
+                key = Keys.eh_use_auto_webtoon
+                titleRes = R.string.auto_webtoon_mode
+                summaryRes = R.string.auto_webtoon_mode_summary
+                defaultValue = true
+            }
+        }
+        // EXH <--
     }
 }
