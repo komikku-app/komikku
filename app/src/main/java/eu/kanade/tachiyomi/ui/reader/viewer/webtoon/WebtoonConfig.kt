@@ -50,6 +50,12 @@ class WebtoonConfig(
         preferences.webtoonNavInverted()
             .register({ tappingInverted = it }, { navigator.invertMode = it })
 
+        preferences.dualPageSplitWebtoon()
+            .register({ dualPageSplit = it }, { imagePropertyChangedListener?.invoke() })
+
+        preferences.dualPageInvertWebtoon()
+            .register({ dualPageInvert = it }, { imagePropertyChangedListener?.invoke() })
+
         // SY -->
         preferences.webtoonEnableZoomOut()
             .register({ enableZoomOut = it }, { zoomPropertyChangedListener?.invoke(it) })

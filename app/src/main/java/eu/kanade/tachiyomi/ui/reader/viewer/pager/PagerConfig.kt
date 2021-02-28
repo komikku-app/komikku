@@ -49,6 +49,12 @@ class PagerConfig(
         preferences.pagerNavInverted()
             .register({ tappingInverted = it }, { navigator.invertMode = it })
 
+        preferences.dualPageSplitPaged()
+            .register({ dualPageSplit = it }, { imagePropertyChangedListener?.invoke() })
+
+        preferences.dualPageInvertPaged()
+            .register({ dualPageInvert = it }, { imagePropertyChangedListener?.invoke() })
+
         // SY -->
         preferences.pageTransitionsPager()
             .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })

@@ -25,13 +25,13 @@ object PreferenceKeys {
 
     const val showPageNumber = "pref_show_page_number_key"
 
-    const val landscapeVerticalSeekbar = "pref_show_vert_seekbar_landscape"
+    const val dualPageSplitPaged = "pref_dual_page_split"
 
-    const val leftVerticalSeekbar = "pref_left_handed_vertical_seekbar"
+    const val dualPageSplitWebtoon = "pref_dual_page_split_webtoon"
 
-    const val dualPageSplit = "pref_dual_page_split"
+    const val dualPageInvertPaged = "pref_dual_page_invert"
 
-    const val dualPageInvert = "pref_dual_page_invert"
+    const val dualPageInvertWebtoon = "pref_dual_page_invert_webtoon"
 
     const val showReadingMode = "pref_show_reading_mode"
 
@@ -207,6 +207,8 @@ object PreferenceKeys {
 
     const val incognitoMode = "incognito_mode"
 
+    const val createLegacyBackup = "create_legacy_backup"
+
     fun trackUsername(syncId: Int) = "pref_mangasync_username_$syncId"
 
     fun trackPassword(syncId: Int) = "pref_mangasync_password_$syncId"
@@ -347,11 +349,13 @@ object PreferenceKeys {
 
     const val sortTagsForLibrary = "sort_tags_for_library"
 
-    const val createLegacyBackup = "create_legacy_backup"
-
     const val dontDeleteFromCategories = "dont_delete_from_categories"
 
     const val extensionRepos = "extension_repos"
 
     const val cropBordersContinuesVertical = "crop_borders_continues_vertical"
+
+    const val landscapeVerticalSeekbar = "pref_show_vert_seekbar_landscape"
+
+    const val leftVerticalSeekbar = "pref_left_handed_vertical_seekbar"
 }
