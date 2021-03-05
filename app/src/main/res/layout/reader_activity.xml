@@ -44,7 +44,7 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/reader_menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -58,7 +58,10 @@
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
             android:background="?attr/colorPrimary"
-            app:elevation="0dp">
+            app:elevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
@@ -150,17 +153,144 @@
                 android:layout_height="wrap_content"
                 android:padding="0dp"
                 app:srcCompat="@drawable/ic_keyboard_arrow_down_white_32dp" />
+
         </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/above_guideline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.3"
+            app:layout_constraintTop_toBottomOf="@id/header"/>
+
+        <RelativeLayout
+            android:id="@+id/seekbar_vert_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/below_guideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/above_guideline"
+            tools:ignore="NotSibling">
+
+            <LinearLayout
+                android:id="@+id/reader_nav_vert"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/above_chapter"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="80dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/reader_seekbar_button"
+                    android:contentDescription="@string/action_previous_chapter"
+                    android:padding="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:rotation="90"
+                    app:srcCompat="@drawable/ic_skip_previous_24dp"
+                    app:tint="?attr/colorOnPrimary" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/reader_seekbar_background"
+                    android:orientation="vertical">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/above_page_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="15sp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            tools:text="1" />
+
+                        <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
+                            android:id="@+id/page_seekbar_vert"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="27dp"
+                            android:layout_marginBottom="27dp"
+                            android:layout_gravity="center|top"
+                            android:rotation="90"
+                            android:progress="30"
+                            app:layout_constraintDimensionRatio="1:1"
+                            app:layout_constraintBottom_toTopOf="@id/below_page_text"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/above_page_text" />
+
+                        <TextView
+                            android:id="@+id/below_page_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="12dp"
+                            android:gravity="center"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:textSize="15sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            tools:text="15" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/below_chapter"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="80dp"
+                    android:background="@drawable/reader_seekbar_button"
+                    android:contentDescription="@string/action_next_chapter"
+                    android:padding="@dimen/material_layout_keylines_screen_edge_margin"
+                    android:rotation="90"
+                    app:srcCompat="@drawable/ic_skip_next_24dp"
+                    app:tint="?attr/colorOnPrimary" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/below_guideline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.9"
+            app:layout_constraintBottom_toTopOf="@id/reader_menu_bottom"/>
 
         <LinearLayout
             android:id="@+id/reader_menu_bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
             <LinearLayout
-                android:id="@+id/reader_nav"
+                android:id="@+id/reader_nav_horz"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -174,7 +304,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginEnd="8dp"
-                    android:background="@drawable/reader_seekbar_background"
+                    android:background="@drawable/reader_seekbar_button"
                     android:contentDescription="@string/action_previous_chapter"
                     android:padding="@dimen/material_layout_keylines_screen_edge_margin"
                     app:srcCompat="@drawable/ic_skip_previous_24dp"
@@ -185,7 +315,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="@drawable/reader_seekbar_button"
+                    android:background="@drawable/reader_seekbar_background"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp">
 
@@ -207,8 +337,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:maxHeight="?attr/actionBarSize"
-                        android:minHeight="?attr/actionBarSize" />
+                        android:maxHeight="40dp"
+                        android:minHeight="40dp" />
 
                     <TextView
                         android:id="@+id/right_page_text"
@@ -223,8 +353,8 @@
 
                 <ImageButton
                     android:id="@+id/right_chapter"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_marginStart="8dp"
                     android:background="@drawable/reader_seekbar_button"
                     android:contentDescription="@string/action_next_chapter"
@@ -296,7 +426,7 @@
 
         </LinearLayout>
 
-    </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
         android:id="@+id/brightness_overlay"

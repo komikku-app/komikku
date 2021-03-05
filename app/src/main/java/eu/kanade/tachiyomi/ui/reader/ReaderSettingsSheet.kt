@@ -67,6 +67,8 @@ class ReaderSettingsSheet(private val activity: ReaderActivity) : BaseBottomShee
         binding.rotationMode.bindToPreference(preferences.rotation(), 1)
         binding.backgroundColor.bindToIntPreference(preferences.readerTheme(), R.array.reader_themes_values)
         binding.showPageNumber.bindToPreference(preferences.showPageNumber())
+        binding.landscapeVerticalSeekbar.bindToPreference(preferences.landscapeVerticalSeekbar())
+        binding.leftVerticalSeekbar.bindToPreference(preferences.leftVerticalSeekbar())
         binding.fullscreen.bindToPreference(preferences.fullscreen())
         binding.dualPageSplit.bindToPreference(preferences.dualPageSplit())
         binding.keepscreen.bindToPreference(preferences.keepScreenOn())

@@ -123,12 +123,28 @@
         app:layout_constraintTop_toBottomOf="@id/background_color" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/landscape_vertical_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pref_show_vert_seekbar_landscape"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/show_page_number" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/left_vertical_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pref_left_handed_vertical_seekbar"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/landscape_vertical_seekbar" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/fullscreen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/pref_fullscreen"
         android:textColor="?android:attr/textColorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/show_page_number" />
+        app:layout_constraintTop_toBottomOf="@id/left_vertical_seekbar" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/dual_page_split"

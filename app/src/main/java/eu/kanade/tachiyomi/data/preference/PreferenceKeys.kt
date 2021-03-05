@@ -25,6 +25,10 @@ object PreferenceKeys {
 
     const val showPageNumber = "pref_show_page_number_key"
 
+    const val landscapeVerticalSeekbar = "pref_show_vert_seekbar_landscape"
+
+    const val leftVerticalSeekbar = "pref_left_handed_vertical_seekbar"
+
     const val dualPageSplit = "pref_dual_page_split"
 
     const val dualPageInvert = "pref_dual_page_invert"
