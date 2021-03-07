@@ -19,6 +19,7 @@ import exh.md.handlers.serializers.FollowsPageSerializer
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
+import exh.util.awaitResponse
 import exh.util.floor
 import kotlinx.serialization.decodeFromString
 import okhttp3.CacheControl
@@ -218,16 +219,8 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 headers,
                 CacheControl.FORCE_NETWORK
             )
-            try {
-                val response = client.newCall(request).await()
-                followStatusParse(response)
-            } catch (e: Exception) {
-                if (e.message.equals("HTTP error 404", true)) {
-                    Track.create(TrackManager.MDLIST).apply {
-                        status = FollowStatus.UNFOLLOWED.int
-                    }
-                } else throw e
-            }
+            val response = client.newCall(request).awaitResponse()
+            followStatusParse(response)
         }
     }
 }

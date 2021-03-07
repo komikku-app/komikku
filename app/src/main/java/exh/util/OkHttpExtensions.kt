@@ -1,11 +1,16 @@
 package exh.util
 
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.Response
 import rx.Observable
 import rx.Producer
 import rx.Subscription
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 fun Call.asObservableWithAsyncStacktrace(): Observable<Pair<Exception, Response>> {
     // Record stacktrace at creation time for easier debugging
@@ -50,5 +55,34 @@ fun Call.asObservableWithAsyncStacktrace(): Observable<Pair<Exception, Response>
 
         subscriber.add(requestArbiter)
         subscriber.setProducer(requestArbiter)
+    }
+}
+
+/**
+ * Similar to [Call.await] but it doesn't throw when the response is not successful
+ */
+suspend fun Call.awaitResponse(): Response {
+    return suspendCancellableCoroutine { continuation ->
+        enqueue(
+            object : Callback {
+                override fun onResponse(call: Call, response: Response) {
+                    continuation.resume(response)
+                }
+
+                override fun onFailure(call: Call, e: IOException) {
+                    // Don't bother with resuming the continuation if it is already cancelled.
+                    if (continuation.isCancelled) return
+                    continuation.resumeWithException(e)
+                }
+            }
+        )
+
+        continuation.invokeOnCancellation {
+            try {
+                cancel()
+            } catch (ex: Throwable) {
+                // Ignore cancel exception
+            }
+        }
     }
 }
