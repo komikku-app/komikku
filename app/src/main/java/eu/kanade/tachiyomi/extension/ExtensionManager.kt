@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.extension
 import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
-import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -19,6 +18,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.system.toast
+import exh.log.xLogD
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -158,7 +158,7 @@ class ExtensionManager(
         val blacklistEnabled = preferences.enableSourceBlacklist().get()
         return filter {
             if (it.isBlacklisted(blacklistEnabled)) {
-                XLog.tag("ExtensionManager").d("Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
+                xLogD("Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
                 false
             } else true
         }
@@ -333,7 +333,7 @@ class ExtensionManager(
     private fun registerNewExtension(extension: Extension.Installed) {
         // SY -->
         if (extension.isBlacklisted()) {
-            XLog.tag("ExtensionManager").d("Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
+            xLogD("Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }
         // SY <--
@@ -351,7 +351,7 @@ class ExtensionManager(
     private fun registerUpdatedExtension(extension: Extension.Installed) {
         // SY -->
         if (extension.isBlacklisted()) {
-            XLog.tag("ExtensionManager").d("Removing blacklisted extension: (name: String, pkgName: %s)!", extension.name, extension.pkgName)
+            xLogD("Removing blacklisted extension: (name: %s, pkgName: %s)!", extension.name, extension.pkgName)
             return
         }
         // SY <--

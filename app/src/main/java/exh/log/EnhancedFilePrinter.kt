@@ -119,22 +119,22 @@ class EnhancedFilePrinter internal constructor(
         /**
          * The file name generator for log file.
          */
-        private var fileNameGenerator: FileNameGenerator? = null
+        var fileNameGenerator: FileNameGenerator? = null
 
         /**
          * The backup strategy for log file.
          */
-        private var backupStrategy: BackupStrategy? = null
+        var backupStrategy: BackupStrategy? = null
 
         /**
          * The clean strategy for log file.
          */
-        private var cleanStrategy: CleanStrategy? = null
+        var cleanStrategy: CleanStrategy? = null
 
         /**
          * The flattener when print a log.
          */
-        private var flattener: Flattener? = null
+        var flattener: Flattener? = null
 
         /**
          * Set the file name generator for log file.
@@ -193,6 +193,12 @@ class EnhancedFilePrinter internal constructor(
                 cleanStrategy ?: DefaultsFactory.createCleanStrategy(),
                 flattener ?: DefaultsFactory.createFlattener2()
             )
+        }
+
+        companion object {
+            operator fun invoke(folderPath: String, block: Builder.() -> Unit): EnhancedFilePrinter {
+                return Builder(folderPath).apply(block).build()
+            }
         }
     }
 

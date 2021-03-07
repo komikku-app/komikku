@@ -22,7 +22,6 @@ import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.security.ProviderInstaller
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.ms_square.debugoverlay.DebugOverlay
@@ -36,6 +35,9 @@ import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
+import exh.log.XLogTree
+import exh.log.xLogD
+import exh.log.xLogE
 import exh.syDebugVersion
 import io.realm.Realm
 import org.conscrypt.Conscrypt
@@ -55,12 +57,11 @@ open class App : Application(), LifecycleObserver {
 
     private val preferences: PreferencesHelper by injectLazy()
 
-    private lateinit var firebaseAnalytics: FirebaseAnalytics
-
     override fun onCreate() {
         super.onCreate()
-        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
+        // if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         setupExhLogging() // EXH logging
+        Timber.plant(XLogTree()) // SY Redirect Timber to XLog
         if (!BuildConfig.DEBUG) addAnalytics()
 
         workaroundAndroid7BrokenSSL()
@@ -100,23 +101,22 @@ open class App : Application(), LifecycleObserver {
             try {
                 SSLContext.getInstance("TLSv1.2")
             } catch (e: NoSuchAlgorithmException) {
-                XLog.tag("Init").e("Could not install Android 7 broken SSL workaround!", e)
+                xLogE("Could not install Android 7 broken SSL workaround!", e)
             }
 
             try {
                 ProviderInstaller.installIfNeeded(applicationContext)
             } catch (e: GooglePlayServicesRepairableException) {
-                XLog.tag("Init").e("Could not install Android 7 broken SSL workaround!", e)
+                xLogE("Could not install Android 7 broken SSL workaround!", e)
             } catch (e: GooglePlayServicesNotAvailableException) {
-                XLog.tag("Init").e("Could not install Android 7 broken SSL workaround!", e)
+                xLogE("Could not install Android 7 broken SSL workaround!", e)
             }
         }
     }
 
     private fun addAnalytics() {
-        firebaseAnalytics = Firebase.analytics
         if (syDebugVersion != "0") {
-            firebaseAnalytics.setUserProperty("preview_version", syDebugVersion)
+            Firebase.analytics.setUserProperty("preview_version", syDebugVersion)
         }
     }
 
@@ -137,8 +137,8 @@ open class App : Application(), LifecycleObserver {
         EHLogLevel.init(this)
 
         val logLevel = when {
-            EHLogLevel.shouldLog(EHLogLevel.EXTRA) -> LogLevel.ALL
-            BuildConfig.DEBUG -> LogLevel.DEBUG
+            EHLogLevel.shouldLog(EHLogLevel.EXTREME) -> LogLevel.ALL
+            EHLogLevel.shouldLog(EHLogLevel.EXTRA) || BuildConfig.DEBUG -> LogLevel.DEBUG
             else -> LogLevel.WARN
         }
 
@@ -160,9 +160,8 @@ open class App : Application(), LifecycleObserver {
 
         @OptIn(ExperimentalTime::class)
         printers += EnhancedFilePrinter
-            .Builder(logFolder.absolutePath)
-            .fileNameGenerator(
-                object : DateFileNameGenerator() {
+            .Builder(logFolder.absolutePath) {
+                fileNameGenerator = object : DateFileNameGenerator() {
                     override fun generateFileName(logLevel: Int, timestamp: Long): String {
                         return super.generateFileName(
                             logLevel,
@@ -170,13 +169,12 @@ open class App : Application(), LifecycleObserver {
                         ) + "-${BuildConfig.BUILD_TYPE}.log"
                     }
                 }
-            )
-            .flattener { timeMillis, level, tag, message ->
-                "${dateFormat.format(timeMillis)} ${LogLevel.getShortLevelName(level)}/$tag: $message"
+                flattener { timeMillis, level, tag, message ->
+                    "${dateFormat.format(timeMillis)} ${LogLevel.getShortLevelName(level)}/$tag: $message"
+                }
+                cleanStrategy = FileLastModifiedCleanStrategy(7.days.toLongMilliseconds())
+                backupStrategy = NeverBackupStrategy()
             }
-            .cleanStrategy(FileLastModifiedCleanStrategy(7.days.toLongMilliseconds()))
-            .backupStrategy(NeverBackupStrategy())
-            .build()
 
         // Install Crashlytics in prod
         if (!BuildConfig.DEBUG) {
@@ -188,8 +186,8 @@ open class App : Application(), LifecycleObserver {
             *printers.toTypedArray()
         )
 
-        XLog.tag("Init").d("Application booting...")
-        XLog.tag("Init").d(
+        xLogD("Application booting...")
+        xLogD(
             "App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})\n" +
                 "Preview build: $syDebugVersion\n" +
                 "Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT}) \n" +
@@ -214,7 +212,7 @@ open class App : Application(), LifecycleObserver {
                 .install()
         } catch (e: IllegalStateException) {
             // Crashes if app is in background
-            XLog.tag("Init").e("Failed to initialize debug overlay, app in background?", e)
+            xLogE("Failed to initialize debug overlay, app in background?", e)
         }
     }
 }

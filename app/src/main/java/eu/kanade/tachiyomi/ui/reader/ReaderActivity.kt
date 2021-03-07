@@ -28,7 +28,6 @@ import androidx.core.view.setPadding
 import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-import com.elvishew.xlog.XLog
 import com.google.android.material.snackbar.Snackbar
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -70,6 +69,7 @@ import eu.kanade.tachiyomi.util.view.showBar
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
+import exh.log.xLogE
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.mangaType
@@ -127,8 +127,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     private val autoScrollFlow = MutableSharedFlow<Unit>()
     private var autoScrollJob: Job? = null
     private val sourceManager: SourceManager by injectLazy()
-
-    private val logger = XLog.tag("ReaderActivity")
 
     private lateinit var chapterBottomSheet: ReaderChapterSheet
     // SY <--
@@ -985,7 +983,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             ReaderPageSheet(this, page).show()
             // EXH -->
         } catch (e: WindowManager.BadTokenException) {
-            logger.e("Caught and ignoring reader page sheet launch exception!", e)
+            xLogE("Caught and ignoring reader page sheet launch exception!", e)
         }
         // EXH <--
     }

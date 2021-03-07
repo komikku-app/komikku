@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.annotations.Nsfw
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -31,6 +30,7 @@ import exh.eh.EHTags
 import exh.eh.EHentaiUpdateHelper
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.GalleryEntry
+import exh.log.xLogD
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
@@ -325,7 +325,7 @@ class EHentai(
                             url = EHentaiSearchMetadata.normalizeUrl(parentLink)
                         } else break
                     } else {
-                        XLog.tag("EHentai").d("Parent cache hit: %s!", gid)
+                        xLogD("Parent cache hit: %s!", gid)
                         url = EHentaiSearchMetadata.idAndTokenToUrl(
                             cachedParent.gId,
                             cachedParent.gToken
@@ -613,7 +613,7 @@ class EHentai(
                     lastUpdateCheck - datePosted!! > EHentaiUpdateWorkerConstants.GALLERY_AGE_TIME
                 ) {
                     aged = true
-                    XLog.tag("EHentai").d("aged %s - too old", title)
+                    xLogD("aged %s - too old", title)
                 }
 
                 // Parse ratings
@@ -879,7 +879,7 @@ class EHentai(
             stringBuilder.append(" ")
         }
 
-        XLog.tag("EHentai").d(stringBuilder.toString())
+        xLogD(stringBuilder.toString())
         return stringBuilder.toString().trim()
     }
 

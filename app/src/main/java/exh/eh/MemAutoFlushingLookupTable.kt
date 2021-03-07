@@ -3,7 +3,7 @@ package exh.eh
 import android.util.SparseArray
 import androidx.core.util.AtomicFile
 import androidx.core.util.forEach
-import com.elvishew.xlog.XLog
+import exh.log.xLogD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -95,7 +95,7 @@ class MemAutoFlushingLookupTable<T>(
                     }
                 }
             } catch (e: FileNotFoundException) {
-                XLog.tag("MemAutoFlushingLookupTable").enableStackTrace(2).d("Lookup table not found!", e)
+                xLogD("Lookup table not found!", e)
                 // Ignored
             }
 

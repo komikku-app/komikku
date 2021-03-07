@@ -1,7 +1,6 @@
 package exh
 
 import android.content.Context
-import com.elvishew.xlog.XLog
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
@@ -24,6 +23,8 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
+import exh.log.xLogE
+import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
@@ -47,8 +48,6 @@ import java.net.URISyntaxException
 object EXHMigrations {
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
-
-    private val logger by lazy { XLog.tag("EXHMigrations") }
 
     /**
      * Performs a migration when the application is updated.
@@ -272,14 +271,14 @@ object EXHMigrations {
                 // if (oldVersion < 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
 
-                // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
+                // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLsxdcsv
 
                 preferences.ehLastVersionCode().set(BuildConfig.VERSION_CODE)
 
                 return true
             }
         } catch (e: Exception) {
-            logger.e("Failed to migrate app from $oldVersion -> ${BuildConfig.VERSION_CODE}!", e)
+            xLogE("Failed to migrate app from $oldVersion -> ${BuildConfig.VERSION_CODE}!", e)
         }
         return false
     }
@@ -334,7 +333,7 @@ object EXHMigrations {
         try {
             dbLocation.copyTo(backupLocation, overwrite = true)
         } catch (t: Throwable) {
-            logger.enableStackTrace(2).w("Failed to backup database!")
+            xLogW("Failed to backup database!")
         }
     }
 

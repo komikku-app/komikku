@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItems
-import com.elvishew.xlog.XLog
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.tfcporciuncula.flow.Preference
@@ -57,6 +56,7 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
+import exh.log.xLogW
 import exh.md.similar.ui.EnableMangaDexSimilarDialogController
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
@@ -542,8 +542,8 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     /* SY --> */ open /* SY <-- */fun onAddPageError(error: Throwable) {
         // SY -->
-        XLog.tag("BrowseSourceController").enableStackTrace(2).w("> Failed to load next catalogue page!", error)
-        XLog.tag("BrowseSourceController").enableStackTrace(2).w(
+        xLogW("> Failed to load next catalogue page!", error)
+        xLogW(
             "> (source.id: %s, source.name: %s)",
             presenter.source.id,
             presenter.source.name

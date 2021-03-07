@@ -10,7 +10,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
-import com.elvishew.xlog.XLog
 import com.squareup.moshi.JsonReader
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -23,6 +22,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.acquireWakeLock
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import eu.kanade.tachiyomi.util.system.notificationManager
+import exh.log.xLogE
 import exh.md.similar.sql.models.MangaSimilarImpl
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -135,7 +135,7 @@ class SimilarUpdateService(
         // Unsubscribe from any previous subscription if needed.
         job?.cancel()
         val handler = CoroutineExceptionHandler { _, exception ->
-            XLog.tag("SimilarUpdateService").enableStackTrace(2).e(exception)
+            xLogE(exception)
             stopSelf(startId)
             showResultNotification(true)
             cancelProgressNotification()

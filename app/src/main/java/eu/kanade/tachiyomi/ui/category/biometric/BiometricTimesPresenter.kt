@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.ui.category.biometric
 
 import android.os.Bundle
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import exh.log.xLogD
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import rx.Observable
@@ -36,7 +36,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
 
         preferences.biometricTimeRanges().asFlow().onEach { prefTimeRanges ->
             timeRanges = prefTimeRanges.toList()
-                .mapNotNull { TimeRange.fromPreferenceString(it) }.onEach { XLog.disableStackTrace().d(it) }
+                .mapNotNull { TimeRange.fromPreferenceString(it) }.onEach { xLogD(it) }
 
             Observable.just(timeRanges)
                 .map { it.map(::BiometricTimesItem) }
@@ -57,7 +57,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
             return
         }
 
-        XLog.disableStackTrace().d(timeRange)
+        xLogD(timeRange)
 
         preferences.biometricTimeRanges() += timeRange.toPreferenceString()
     }

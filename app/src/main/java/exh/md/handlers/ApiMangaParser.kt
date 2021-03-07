@@ -1,11 +1,11 @@
 package exh.md.handlers
 
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import exh.log.xLogE
 import exh.md.handlers.serializers.ApiChapterSerializer
 import exh.md.handlers.serializers.ApiMangaSerializer
 import exh.md.handlers.serializers.ChapterSerializer
@@ -150,7 +150,7 @@ class ApiMangaParser(private val lang: String) {
                 if (tags.isNotEmpty()) tags.clear()
                 tags += genres.map { RaisedTag(null, it, MangaDexSearchMetadata.TAG_TYPE_DEFAULT) }
             } catch (e: Exception) {
-                XLog.tag("ApiMangaParser").enableStackTrace(2).e(e)
+                xLogE(e)
                 throw e
             }
         }
@@ -256,7 +256,7 @@ class ApiMangaParser(private val lang: String) {
             }
             return response.parseAs<ApiChapterSerializer>().data.mangaId
         } catch (e: Exception) {
-            XLog.tag("ApiMangaParser").enableStackTrace(2).e(e)
+            xLogE(e)
             throw e
         }
     }

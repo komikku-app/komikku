@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsHeaderBinding
 import eu.kanade.tachiyomi.source.SourceManager
+import exh.log.xLogD
 import exh.merged.sql.models.MergedMangaReference
 import uy.kohesive.injekt.injectLazy
 
@@ -74,7 +74,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                         3 -> MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER
                         else -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
                     }
-                    XLog.d(controller.mergeReference?.chapterSortMode)
+                    xLogD(controller.mergeReference?.chapterSortMode)
                     editMergedMangaItemSortingListener.onSetPrioritySort(canMove())
                 }
 

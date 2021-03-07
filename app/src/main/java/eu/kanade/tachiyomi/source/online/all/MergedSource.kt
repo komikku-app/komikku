@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.source.online.all
 
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -19,6 +18,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
+import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
@@ -185,7 +185,7 @@ class MergedSource : HttpSource() {
                 mangaId = manga.id
                 db.insertNewMergedMangaId(this).executeOnIO()
             } catch (e: Exception) {
-                XLog.tag("MergedSource").enableStackTrace(e.stackTrace.contentToString(), 5)
+                xLogW("Error inserting merged manga id", e)
             }
         }
         return LoadedMangaSource(source, manga, this)

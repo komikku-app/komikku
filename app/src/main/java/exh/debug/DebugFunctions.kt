@@ -1,7 +1,6 @@
 package exh.debug
 
 import android.app.Application
-import com.elvishew.xlog.XLog
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
@@ -13,6 +12,7 @@ import eu.kanade.tachiyomi.source.model.toSManga
 import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
+import exh.log.xLogE
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
@@ -60,7 +60,7 @@ object DebugFunctions {
             }.toList()
 
             allManga.forEach { manga ->
-                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 // remove age flag
                 meta.aged = false
                 db.insertFlatMetadataAsync(meta.flatten()).await()
@@ -94,7 +94,7 @@ object DebugFunctions {
                     )?.getMangaDetails(manga.toMangaInfo())?.let { networkManga ->
                     manga.copyFrom(networkManga.toSManga())
                     manga.initialized = true
-                    db.insertManga(manga).executeAsBlocking()
+                    db.insertManga(manga).executeOnIO()
                 }
             }
         }
@@ -111,7 +111,7 @@ object DebugFunctions {
             }.toList()
 
             allManga.forEach { manga ->
-                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 galleries += "Aged: ${meta.aged}\t Title: ${manga.title}"
             }
         }
@@ -121,7 +121,7 @@ object DebugFunctions {
     fun countAgedFlagInEXHManga(): Int {
         var agedAmount = 0
         runBlocking {
-            val metadataManga = db.getFavoriteMangaWithMetadata().executeAsBlocking()
+            val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
 
             val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
                 if (manga.isEhBasedManga()) manga
@@ -129,7 +129,7 @@ object DebugFunctions {
             }.toList()
 
             allManga.forEach { manga ->
-                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>() ?: return@forEach
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 if (meta.aged) {
                     // remove age flag
                     agedAmount++
@@ -239,7 +239,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
+                    xLogE("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -251,7 +251,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
+                    xLogE("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -278,7 +278,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
+                    xLogE("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }
@@ -290,7 +290,7 @@ object DebugFunctions {
                     Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 } catch (t: RuntimeException) {
                     // Load failed
-                    XLog.tag("DebugFunctions").e("Failed to load saved search!", t)
+                    xLogE("Failed to load saved search!", t)
                     t.printStackTrace()
                     null
                 }

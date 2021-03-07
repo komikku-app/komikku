@@ -1,6 +1,5 @@
 package exh.md.handlers
 
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -12,6 +11,8 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import exh.log.xLogD
+import exh.log.xLogE
 import exh.md.handlers.serializers.FollowPage
 import exh.md.handlers.serializers.FollowsIndividualSerializer
 import exh.md.handlers.serializers.FollowsPageSerializer
@@ -50,7 +51,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 response.body?.string().orEmpty()
             )
         } catch (e: Exception) {
-            XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
+            xLogE("error parsing follows", e)
             FollowsPageSerializer(404, emptyList())
         }
 
@@ -78,7 +79,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
         val followsPageResult = try {
             response.parseAs<FollowsIndividualSerializer>(MdUtil.jsonParser)
         } catch (e: Exception) {
-            XLog.tag("FollowsHandler").enableStackTrace(2).e("error parsing follows", e)
+            xLogE("error parsing follows", e)
             throw e
         }
 
@@ -161,7 +162,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             val formBody = FormBody.Builder()
                 .add("volume", "0")
                 .add("chapter", track.last_chapter_read.toString())
-            XLog.tag("FollowsHandler").d("chapter to update %s", track.last_chapter_read.toString())
+            xLogD("chapter to update %s", track.last_chapter_read.toString())
             val response = client.newCall(
                 POST(
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=edit_progress&id=$mangaID",
@@ -172,7 +173,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
 
             withIOContext {
                 response.body?.string()
-                    .also { XLog.tag("FollowsHandler").d(it) }
+                    .also { xLogD(it) }
                     .let { it != null && it.isEmpty() }
             }
         }

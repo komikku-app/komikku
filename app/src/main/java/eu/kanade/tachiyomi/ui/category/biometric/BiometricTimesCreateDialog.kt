@@ -5,9 +5,9 @@ import android.os.Bundle
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.datetime.timePicker
 import com.bluelinelabs.conductor.Controller
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
+import exh.log.xLogD
 import java.util.Calendar
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -48,9 +48,9 @@ class BiometricTimesCreateDialog<T>(bundle: Bundle? = null) : DialogController(b
             .title(if (startTime == null) R.string.biometric_lock_start_time else R.string.biometric_lock_end_time)
             .timePicker(show24HoursView = false) { _, datetime ->
                 val hour = datetime.get(Calendar.HOUR_OF_DAY)
-                XLog.disableStackTrace().d(hour)
+                xLogD(hour)
                 val minute = datetime.get(Calendar.MINUTE)
-                XLog.disableStackTrace().d(minute)
+                xLogD(minute)
                 if (hour !in 0..24 || minute !in 0..60) return@timePicker
                 if (startTime != null) {
                     endTime = hour.hours + minute.minutes

@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -46,6 +45,7 @@ import eu.kanade.tachiyomi.util.updateCoverLastModified
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
+import exh.log.xLogD
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.md.utils.scanlatorList
@@ -236,7 +236,7 @@ class MangaPresenter(
                                 // Redirect if we are not the accepted root
                                 if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
                                     // Update if any of our chapters are not in accepted manga's chapters
-                                    XLog.disableStackTrace().d("Found accepted manga ${manga.url}")
+                                    xLogD("Found accepted manga %s", manga.url)
                                     val ourChapterUrls = chapters.map { it.url }.toSet()
                                     val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
                                     val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()

@@ -1,7 +1,7 @@
 package exh.util
 
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.util.asJsoup
+import exh.log.xLogW
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.jsoup.nodes.Document
@@ -21,7 +21,7 @@ fun Response.interceptAsHtml(block: (Document) -> Unit): Response {
             block(parsed)
         } catch (t: Throwable) {
             // Ignore all errors
-            XLog.tag("Response.interceptAsHtml").enableStackTrace(2).w("Interception error!", t)
+            xLogW("Interception error!", t)
         } finally {
             close()
         }

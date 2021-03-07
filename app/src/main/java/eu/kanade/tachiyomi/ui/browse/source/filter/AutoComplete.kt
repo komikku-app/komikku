@@ -7,7 +7,6 @@ import android.widget.AutoCompleteTextView
 import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.RecyclerView
-import com.elvishew.xlog.XLog
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -17,6 +16,7 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.widget.AutoCompleteAdapter
+import exh.log.xLogD
 
 open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<AutoComplete.Holder>() {
 
@@ -97,7 +97,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
             addChipToGroup(name, holder)
             filter.state += name
         } else {
-            XLog.tag("AutoComplete").d("Invalid tag: $name")
+            xLogD("Invalid tag: %s", name)
         }
     }
 

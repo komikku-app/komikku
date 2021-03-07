@@ -12,7 +12,6 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import com.afollestad.materialdialogs.MaterialDialog
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityCaptchaBinding
@@ -23,6 +22,8 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import exh.log.xLogD
+import exh.log.xLogE
 import exh.source.DelegatedHttpSource
 import exh.util.melt
 import kotlinx.coroutines.runBlocking
@@ -186,7 +187,7 @@ class BrowserActionActivity : AppCompatActivity() {
     suspend fun captchaSolveFail() {
         currentLoopId = null
         validateCurrentLoopId = null
-        XLog.tag("BrowserActionActivity").enableStackTrace(2).e(IllegalStateException("Captcha solve failure!"))
+        xLogE(IllegalStateException("Captcha solve failure!"))
         withUIContext {
             binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             MaterialDialog(this@BrowserActionActivity)
@@ -230,7 +231,7 @@ class BrowserActionActivity : AppCompatActivity() {
                     val ih = splitResult[3]
                     val x = binding.webview.x + origX / iw * binding.webview.width
                     val y = binding.webview.y + origY / ih * binding.webview.height
-                    XLog.tag("BrowserActionActivity").d("Found audio button coords: %f %f", x, y)
+                    xLogD("Found audio button coords: %f %f", x, y)
                     simulateClick(x + 50, y + 50)
                     binding.webview.post {
                         doStageDownloadAudio(loopId)
@@ -246,12 +247,12 @@ class BrowserActionActivity : AppCompatActivity() {
             }
             STAGE_DOWNLOAD_AUDIO -> {
                 if (result != null) {
-                    XLog.tag("BrowserActionActivity").d("Got audio URL: $result")
+                    xLogD("Got audio URL: $result")
                     performRecognize(result)
                         .observeOn(Schedulers.io())
                         .subscribe(
                             {
-                                XLog.tag("BrowserActionActivity").d("Got audio transcript: $it")
+                                xLogD("Got audio transcript: $it")
                                 binding.webview.post {
                                     typeResult(
                                         loopId,
@@ -464,7 +465,7 @@ class BrowserActionActivity : AppCompatActivity() {
         if (loopId != validateCurrentLoopId) return
 
         if (result) {
-            XLog.tag("BrowserActionActivity").d("Captcha solved!")
+            xLogD("Captcha solved!")
             binding.webview.post {
                 binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             }

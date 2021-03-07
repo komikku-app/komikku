@@ -289,7 +289,7 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics-ktx:17.3.1")
 
     // Better logging (EH)
-    implementation("com.elvishew:xlog:1.7.1")
+    implementation("com.elvishew:xlog:1.8.0")
 
     // Debug utils (EH)
     val debugOverlayVersion = "1.1.3"
@@ -307,7 +307,7 @@ dependencies {
     implementation("androidx.gridlayout:gridlayout:1.0.0")
 
     implementation("com.mikepenz:fastadapter:5.3.4")
-    // SY -->
+    // SY <--
 }
 
 tasks {

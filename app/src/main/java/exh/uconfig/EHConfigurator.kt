@@ -1,7 +1,6 @@
 package exh.uconfig
 
 import android.content.Context
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.await
@@ -9,6 +8,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.log.maybeInjectEHLogger
+import exh.log.xLogD
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import okhttp3.FormBody
@@ -81,7 +81,7 @@ class EHConfigurator(val context: Context) {
             }
         }
 
-        XLog.tag("EHConfigurator").d("Hath perks: $hathPerks")
+        xLogD("Hath perks: %s", hathPerks.toString())
 
         configure(ehSource, hathPerks)
         configure(exhSource, hathPerks)

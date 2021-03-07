@@ -2,7 +2,6 @@ package exh
 
 import android.content.Context
 import androidx.core.net.toUri
-import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -15,6 +14,7 @@ import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import exh.log.xLogStack
 import exh.source.getMainSource
 import exh.util.executeOnIO
 import uy.kohesive.injekt.Injekt
@@ -32,7 +32,7 @@ class GalleryAdder {
         preferences.enabledLanguages().get() to preferences.disabledSources().get().map { it.toLong() }.toSet()
     }
 
-    private val logger = XLog.tag("GalleryAdder").enableStackTrace(2).build()
+    private val logger = xLogStack()
 
     fun pickSource(url: String): List<UrlImportableSource> {
         val uri = url.toUri()

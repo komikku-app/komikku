@@ -1,7 +1,6 @@
 package exh.ui.batchadd
 
 import android.content.Context
-import com.elvishew.xlog.XLog
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.ReplayRelay
 import eu.kanade.tachiyomi.R
@@ -10,6 +9,7 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.GalleryAddEvent
 import exh.GalleryAdder
+import exh.log.xLogE
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +56,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
         currentlyAddingRelay.call(STATE_INPUT_TO_PROGRESS)
 
         val handler = CoroutineExceptionHandler { _, throwable ->
-            XLog.tag("BatchAddPresenter").enableStackTrace(2).e(throwable)
+            xLogE(throwable)
         }
 
         presenterScope.launch(Dispatchers.IO + handler) {
