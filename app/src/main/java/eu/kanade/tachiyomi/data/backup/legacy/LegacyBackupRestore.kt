@@ -91,7 +91,7 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
     // SY <--
 
     private suspend fun restoreManga(mangaJson: JsonObject) {
-        /* SY --> */ var /* SY <-- */ manga = backupManager.parser.fromJson<MangaImpl>(
+        val manga = backupManager.parser.fromJson<MangaImpl>(
             mangaJson.get(
                 Backup.MANGA
             )
@@ -114,7 +114,7 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
         )
 
         // EXH -->
-        manga = EXHMigrations.migrateBackupEntry(manga)
+        EXHMigrations.migrateBackupEntry(manga)
         // <-- EXH
 
         val source = backupManager.sourceManager.get(manga.source)

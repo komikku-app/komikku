@@ -21,12 +21,11 @@ class SimilarHandler(val preferences: PreferencesHelper, private val useLowQuali
         // Parse the Mangadex id from the URL
         return Observable.just(MdUtil.getMangaId(manga.url).toLong())
             .flatMap { mangaId ->
-                val db = Injekt.get<DatabaseHelper>()
-                db.getSimilar(mangaId).asRxObservable()
+                Injekt.get<DatabaseHelper>().getSimilar(mangaId).asRxObservable()
             }.map { similarMangaDb: MangaSimilar? ->
-                similarMangaDb?.let { mangaSimilar ->
-                    val similarMangaTitles = mangaSimilar.matched_titles.split(MangaSimilarImpl.DELIMITER)
-                    val similarMangaIds = mangaSimilar.matched_ids.split(MangaSimilarImpl.DELIMITER)
+                if (similarMangaDb != null) {
+                    val similarMangaTitles = similarMangaDb.matched_titles.split(MangaSimilarImpl.DELIMITER)
+                    val similarMangaIds = similarMangaDb.matched_ids.split(MangaSimilarImpl.DELIMITER)
                     val similarMangas = similarMangaIds.mapIndexed { index, similarId ->
                         SManga.create().apply {
                             title = similarMangaTitles[index]
@@ -35,7 +34,7 @@ class SimilarHandler(val preferences: PreferencesHelper, private val useLowQuali
                         }
                     }
                     MangasPage(similarMangas, false)
-                } ?: MangasPage(mutableListOf(), false)
+                } else MangasPage(mutableListOf(), false)
             }
     }
 }

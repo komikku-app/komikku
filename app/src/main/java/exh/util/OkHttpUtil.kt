@@ -8,7 +8,7 @@ import org.jsoup.nodes.Document
 
 fun Response.interceptAsHtml(block: (Document) -> Unit): Response {
     val body = body
-    if (body?.contentType()?.type == "text" &&
+    return if (body?.contentType()?.type == "text" &&
         body.contentType()?.subtype == "html"
     ) {
         val bodyString = body.string()
@@ -26,7 +26,6 @@ fun Response.interceptAsHtml(block: (Document) -> Unit): Response {
             close()
         }
 
-        return rebuiltResponse
-    }
-    return this
+        rebuiltResponse
+    } else this
 }

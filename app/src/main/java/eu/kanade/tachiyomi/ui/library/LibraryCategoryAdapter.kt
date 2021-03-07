@@ -20,6 +20,7 @@ import exh.search.SearchEngine
 import exh.search.Text
 import exh.source.isMetadataSource
 import exh.util.cancellable
+import exh.util.executeOnIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -115,7 +116,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     // Prepare filter object
                     val parsedQuery = searchEngine.parseQuery(savedSearchText)
 
-                    val mangaWithMetaIdsQuery = db.getIdsOfFavoriteMangaWithMetadata().executeAsBlocking()
+                    val mangaWithMetaIdsQuery = db.getIdsOfFavoriteMangaWithMetadata().executeOnIO()
                     val mangaWithMetaIds = LongArray(mangaWithMetaIdsQuery.count)
                     if (mangaWithMetaIds.isNotEmpty()) {
                         val mangaIdCol = mangaWithMetaIdsQuery.getColumnIndex(MangaTable.COL_ID)

@@ -200,7 +200,7 @@ object DebugFunctions {
         EHentaiUpdateWorker.scheduleBackground(app)
     }
 
-    fun listScheduledJobs() = app.jobScheduler.allPendingJobs.map { j ->
+    fun listScheduledJobs() = app.jobScheduler.allPendingJobs.joinToString(",\n") { j ->
         """
         {
             info: ${j.id},
@@ -209,7 +209,7 @@ object DebugFunctions {
             intervalMillis: ${j.intervalMillis},
         }
         """.trimIndent()
-    }.joinToString(",\n")
+    }
 
     fun cancelAllScheduledJobs() = app.jobScheduler.cancelAll()
 

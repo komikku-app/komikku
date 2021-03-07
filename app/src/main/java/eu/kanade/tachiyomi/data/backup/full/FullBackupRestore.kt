@@ -82,7 +82,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
     // SY <--
 
     private suspend fun restoreManga(backupManga: BackupManga, backupCategories: List<BackupCategory>, online: Boolean) {
-        var manga = backupManga.getMangaImpl()
+        val manga = backupManga.getMangaImpl()
         val chapters = backupManga.getChaptersImpl()
         val categories = backupManga.categories
         val history = backupManga.history
@@ -93,7 +93,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         // SY <--
 
         // SY -->
-        manga = EXHMigrations.migrateBackupEntry(manga)
+        EXHMigrations.migrateBackupEntry(manga)
         // SY <--
 
         val source = backupManager.sourceManager.get(manga.source)

@@ -7,6 +7,7 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build
+import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -21,6 +22,7 @@ import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
+import exh.log.xLog
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
@@ -44,20 +46,18 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.days
 import kotlin.time.hours
 
-class EHentaiUpdateWorker : JobService(), CoroutineScope {
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Default + Job()
+class EHentaiUpdateWorker : JobService() {
+    private val scope = CoroutineScope(Dispatchers.Default + Job())
 
     private val db: DatabaseHelper by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
-    private val logger = XLog.tag("EHUpdater")
+    private val logger: Logger = xLog()
 
     private val updateNotifier by lazy { LibraryUpdateNotifier(this) }
 
@@ -85,7 +85,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
      * to end the job entirely.  Regardless of the value returned, your job must stop executing.
      */
     override fun onStopJob(params: JobParameters?): Boolean {
-        runBlocking { this@EHentaiUpdateWorker.coroutineContext[Job]?.cancelAndJoin() }
+        runBlocking { scope.coroutineContext[Job]?.cancelAndJoin() }
         return false
     }
 
@@ -121,7 +121,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
      * extras configured with [     This object serves to identify this specific running job instance when calling][JobInfo.Builder.setExtras]
      */
     override fun onStartJob(params: JobParameters): Boolean {
-        launch {
+        scope.launch {
             startUpdating()
             logger.d("Update job completed!")
             jobFinished(params, false)
@@ -144,7 +144,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
                 return@mapNotNull null
             }
 
-            val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()
+            val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()
                 ?: return@mapNotNull null
 
             val raisedMeta = meta.raise<EHentaiSearchMetadata>()
@@ -273,7 +273,7 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
             return new to db.getChapters(manga).executeOnIO()
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {
-                val meta = db.getFlatMetadataForManga(manga.id!!).executeAsBlocking()?.raise<EHentaiSearchMetadata>()
+                val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()?.raise<EHentaiSearchMetadata>()
                 if (meta != null) {
                     // Age dead galleries
                     logger.d("Aged %s - notfound", manga.id)
@@ -297,62 +297,54 @@ class EHentaiUpdateWorker : JobService(), CoroutineScope {
 
         private val logger by lazy { XLog.tag("EHUpdaterScheduler") }
 
-        private fun Context.componentName(): ComponentName {
-            return ComponentName(this, EHentaiUpdateWorker::class.java)
-        }
+        private fun Context.componentName(): ComponentName =
+            ComponentName(this, EHentaiUpdateWorker::class.java)
 
-        private fun Context.baseBackgroundJobInfo(isTest: Boolean): JobInfo.Builder {
-            return JobInfo.Builder(
+        private fun Context.baseBackgroundJobInfo(isTest: Boolean): JobInfo.Builder =
+            JobInfo.Builder(
                 if (isTest) JOB_ID_UPDATE_BACKGROUND_TEST
                 else JOB_ID_UPDATE_BACKGROUND,
                 componentName()
             )
-        }
 
         private fun Context.periodicBackgroundJobInfo(
             period: Long,
             requireCharging: Boolean,
             requireUnmetered: Boolean
-        ): JobInfo {
-            return baseBackgroundJobInfo(false)
-                .setPeriodic(period)
-                .setPersisted(true)
-                .setRequiredNetworkType(
-                    if (requireUnmetered) JobInfo.NETWORK_TYPE_UNMETERED
-                    else JobInfo.NETWORK_TYPE_ANY
-                )
-                .apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        setRequiresBatteryNotLow(true)
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        setEstimatedNetworkBytes(
-                            15000L * UPDATES_PER_ITERATION,
-                            1000L * UPDATES_PER_ITERATION
-                        )
-                    }
+        ): JobInfo = baseBackgroundJobInfo(false)
+            .setPeriodic(period)
+            .setPersisted(true)
+            .setRequiredNetworkType(
+                if (requireUnmetered) JobInfo.NETWORK_TYPE_UNMETERED
+                else JobInfo.NETWORK_TYPE_ANY
+            )
+            .apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    setRequiresBatteryNotLow(true)
                 }
-                .setRequiresCharging(requireCharging)
-//                    .setRequiresDeviceIdle(true) Job never seems to run with this
-                .build()
-        }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    setEstimatedNetworkBytes(
+                        15000L * UPDATES_PER_ITERATION,
+                        1000L * UPDATES_PER_ITERATION
+                    )
+                }
+            }
+            .setRequiresCharging(requireCharging)
+//            .setRequiresDeviceIdle(true) Job never seems to run with this
+            .build()
 
-        private fun Context.testBackgroundJobInfo(): JobInfo {
-            return baseBackgroundJobInfo(true)
-                .setOverrideDeadline(1)
-                .build()
-        }
+        private fun Context.testBackgroundJobInfo(): JobInfo = baseBackgroundJobInfo(true)
+            .setOverrideDeadline(1)
+            .build()
 
-        fun launchBackgroundTest(context: Context): String {
-            val jobScheduler = context.jobScheduler
-            return if (jobScheduler.schedule(context.testBackgroundJobInfo()) == JobScheduler.RESULT_FAILURE) {
+        fun launchBackgroundTest(context: Context): String =
+            if (context.jobScheduler.schedule(context.testBackgroundJobInfo()) == JobScheduler.RESULT_FAILURE) {
                 logger.e("Failed to schedule background test job!")
                 "Failed"
             } else {
                 logger.d("Successfully scheduled background test job!")
                 "Success"
             }
-        }
 
         fun scheduleBackground(context: Context, prefInterval: Int? = null) {
             cancelBackground(context)

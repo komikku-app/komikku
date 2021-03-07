@@ -17,7 +17,7 @@ import java.util.Locale
 
 class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(null, null) {
     private var textView: TextView? = null
-    private val prefs: PreferencesHelper by injectLazy()
+    private val preferences: PreferencesHelper by injectLazy()
 
     override fun start() {}
     override fun stop() {}
@@ -27,25 +27,29 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
     }
     override fun removeObserver(observer: DataObserver<Any>) {}
     override fun onDataAvailable(data: String?) {
-        textView?.text = HtmlCompat.fromHtml(data!!, HtmlCompat.FROM_HTML_MODE_LEGACY)
+        textView?.text = HtmlCompat.fromHtml(data.orEmpty(), HtmlCompat.FROM_HTML_MODE_LEGACY)
     }
 
     override fun createView(root: ViewGroup, textColor: Int, textSize: Float, textAlpha: Float): View {
-        val view = LinearLayout(root.context)
-        view.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        view.setPadding(4.dpToPx, 0, 4.dpToPx, 4.dpToPx)
-        val textView = TextView(view.context)
-        textView.setTextColor(textColor)
-        textView.textSize = textSize
-        textView.alpha = textAlpha
-        textView.text = HtmlCompat.fromHtml(buildInfo(), HtmlCompat.FROM_HTML_MODE_LEGACY)
-        textView.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+        val view = LinearLayout(root.context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setPadding(4.dpToPx, 0, 4.dpToPx, 4.dpToPx)
+        }
+
+        val textView = TextView(view.context).apply {
+            setTextColor(textColor)
+            this.textSize = textSize
+            alpha = textAlpha
+            text = HtmlCompat.fromHtml(buildInfo(), HtmlCompat.FROM_HTML_MODE_LEGACY)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
         view.addView(textView)
         this.textView = textView
         return view
@@ -59,7 +63,7 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
         <b>Version code:</b> ${BuildConfig.VERSION_CODE}<br>
         <b>Commit SHA:</b> ${BuildConfig.COMMIT_SHA}<br>
         <b>Log level:</b> ${EHLogLevel.currentLogLevel.name.toLowerCase(Locale.getDefault())}<br>
-        <b>Source blacklist:</b> ${prefs.enableSourceBlacklist().get().asEnabledString()}
+        <b>Source blacklist:</b> ${preferences.enableSourceBlacklist().get().asEnabledString()}
         """.trimIndent()
 
     private fun Boolean.asEnabledString() = if (this) "enabled" else "disabled"

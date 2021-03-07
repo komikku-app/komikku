@@ -44,6 +44,7 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.isEhBasedManga
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.LoginController
+import exh.util.executeOnIO
 import exh.util.floor
 import exh.util.nullIfBlank
 import exh.util.trans
@@ -635,10 +636,10 @@ class SettingsEhController : SettingsController() {
                                 context.getString(R.string.gallery_updater_stats_text, getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context), stats.updateCount, stats.possibleUpdates)
                             } else context.getString(R.string.gallery_updater_not_ran_yet)
 
-                            val allMeta = db.getFavoriteMangaWithMetadata().executeAsBlocking()
+                            val allMeta = db.getFavoriteMangaWithMetadata().executeOnIO()
                                 .filter(Manga::isEhBasedManga)
                                 .mapNotNull {
-                                    db.getFlatMetadataForManga(it.id!!).executeAsBlocking()
+                                    db.getFlatMetadataForManga(it.id!!).executeOnIO()
                                         ?.raise<EHentaiSearchMetadata>()
                                 }.toList()
 

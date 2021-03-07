@@ -304,8 +304,6 @@ dependencies {
     // JsonReader for similar manga
     implementation("com.squareup.moshi:moshi:1.11.0")
 
-    implementation("androidx.gridlayout:gridlayout:1.0.0")
-
     implementation("com.mikepenz:fastadapter:5.3.4")
     // SY <--
 }
