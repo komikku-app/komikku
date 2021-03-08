@@ -188,8 +188,8 @@
 
                 <ImageButton
                     android:id="@+id/above_chapter"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_gravity="center"
                     android:layout_marginTop="80dp"
                     android:layout_marginBottom="8dp"
@@ -255,8 +255,8 @@
 
                 <ImageButton
                     android:id="@+id/below_chapter"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_gravity="center"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="80dp"
@@ -337,8 +337,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:maxHeight="40dp"
-                        android:minHeight="40dp" />
+                        android:maxHeight="?attr/actionBarSize"
+                        android:minHeight="?attr/actionBarSize" />
 
                     <TextView
                         android:id="@+id/right_page_text"
@@ -353,8 +353,8 @@
 
                 <ImageButton
                     android:id="@+id/right_chapter"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_marginStart="8dp"
                     android:background="@drawable/reader_seekbar_button"
                     android:contentDescription="@string/action_next_chapter"
