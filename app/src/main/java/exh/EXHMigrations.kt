@@ -57,6 +57,8 @@ object EXHMigrations {
         val oldVersion = preferences.ehLastVersionCode().get()
         try {
             if (oldVersion < BuildConfig.VERSION_CODE) {
+                preferences.ehLastVersionCode().set(BuildConfig.VERSION_CODE)
+
                 // Fresh install
                 if (oldVersion == 0) {
                     // Set up default background tasks
@@ -214,8 +216,6 @@ object EXHMigrations {
                 // do stuff here when releasing changed crap
 
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
-
-                preferences.ehLastVersionCode().set(BuildConfig.VERSION_CODE)
 
                 return true
             }
