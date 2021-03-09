@@ -377,23 +377,10 @@
                     android:background="?selectableItemBackgroundBorderless"
                     android:contentDescription="@string/custom_filter"
                     android:padding="@dimen/material_layout_keylines_screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@+id/action_custom_filter"
+                    app:layout_constraintEnd_toStartOf="@+id/action_web_view"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_format_list_numbered_24dp"
-                    app:tint="?attr/colorOnPrimary" />
-
-                <ImageButton
-                    android:id="@+id/action_custom_filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="?selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/custom_filter"
-                    android:padding="@dimen/material_layout_keylines_screen_edge_margin"
-                    app:layout_constraintStart_toEndOf="@id/action_chapter_list"
-                    app:layout_constraintEnd_toStartOf="@id/action_web_view"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_brightness_4_24dp"
                     app:tint="?attr/colorOnPrimary" />
 
                 <ImageButton
@@ -403,10 +390,23 @@
                     android:background="?selectableItemBackgroundBorderless"
                     android:contentDescription="@string/custom_filter"
                     android:padding="@dimen/material_layout_keylines_screen_edge_margin"
-                    app:layout_constraintStart_toEndOf="@id/action_custom_filter"
-                    app:layout_constraintEnd_toStartOf="@id/action_settings"
+                    app:layout_constraintStart_toEndOf="@id/action_chapter_list"
+                    app:layout_constraintEnd_toStartOf="@id/action_custom_filter"
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_public_24dp"
+                    app:tint="?attr/colorOnPrimary" />
+
+                <ImageButton
+                    android:id="@+id/action_custom_filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/custom_filter"
+                    android:padding="@dimen/material_layout_keylines_screen_edge_margin"
+                    app:layout_constraintStart_toEndOf="@id/action_web_view"
+                    app:layout_constraintEnd_toStartOf="@id/action_settings"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/ic_brightness_4_24dp"
                     app:tint="?attr/colorOnPrimary" />
 
                 <ImageButton
@@ -417,7 +417,7 @@
                     android:contentDescription="@string/action_settings"
                     android:padding="@dimen/material_layout_keylines_screen_edge_margin"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/action_web_view"
+                    app:layout_constraintStart_toEndOf="@id/action_custom_filter"
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_settings_24dp"
                     app:tint="?attr/colorOnPrimary" />
