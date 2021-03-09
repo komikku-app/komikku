@@ -135,7 +135,7 @@ class SimilarUpdateService(
         // Unsubscribe from any previous subscription if needed.
         job?.cancel()
         val handler = CoroutineExceptionHandler { _, exception ->
-            xLogE(exception)
+            xLogE("Similar manga update error", exception)
             stopSelf(startId)
             showResultNotification(true)
             cancelProgressNotification()

@@ -150,7 +150,7 @@ class ApiMangaParser(private val lang: String) {
                 if (tags.isNotEmpty()) tags.clear()
                 tags += genres.map { RaisedTag(null, it, MangaDexSearchMetadata.TAG_TYPE_DEFAULT) }
             } catch (e: Exception) {
-                xLogE(e)
+                xLogE("Parse into metadata error", e)
                 throw e
             }
         }
@@ -250,13 +250,9 @@ class ApiMangaParser(private val lang: String) {
 
     fun chapterParseForMangaId(response: Response): Int {
         try {
-            if (response.code != 200) throw Exception("HTTP error ${response.code}")
-            checkNotNull(response.body) {
-                "Null Response"
-            }
             return response.parseAs<ApiChapterSerializer>().data.mangaId
         } catch (e: Exception) {
-            xLogE(e)
+            xLogE("Parse for manga id error", e)
             throw e
         }
     }

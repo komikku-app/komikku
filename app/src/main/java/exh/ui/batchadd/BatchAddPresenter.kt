@@ -56,7 +56,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
         currentlyAddingRelay.call(STATE_INPUT_TO_PROGRESS)
 
         val handler = CoroutineExceptionHandler { _, throwable ->
-            xLogE(throwable)
+            xLogE("Batch add error", throwable)
         }
 
         presenterScope.launch(Dispatchers.IO + handler) {

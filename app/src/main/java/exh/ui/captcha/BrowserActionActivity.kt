@@ -187,7 +187,7 @@ class BrowserActionActivity : AppCompatActivity() {
     suspend fun captchaSolveFail() {
         currentLoopId = null
         validateCurrentLoopId = null
-        xLogE(IllegalStateException("Captcha solve failure!"))
+        xLogE("Captcha solve Error", IllegalStateException("Captcha solve failure!"))
         withUIContext {
             binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
             MaterialDialog(this@BrowserActionActivity)

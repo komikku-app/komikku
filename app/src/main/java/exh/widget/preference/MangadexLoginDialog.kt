@@ -20,6 +20,7 @@ import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
+import exh.log.xLogW
 import exh.source.getMainSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -109,6 +110,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
                 }
             } catch (error: Exception) {
                 errorResult()
+                xLogW("Login to Mangadex error", error)
                 error.message?.let { launchUI { binding.root.context.toast(it) } }
             }
         }
