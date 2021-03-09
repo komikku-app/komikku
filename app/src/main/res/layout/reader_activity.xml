@@ -177,7 +177,7 @@
 
             <LinearLayout
                 android:id="@+id/reader_nav_vert"
-                android:layout_width="40dp"
+                android:layout_width="48dp"
                 android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
