@@ -28,6 +28,7 @@ import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okio.EOFException
 
 class FollowsHandler(val client: OkHttpClient, val headers: Headers, val preferences: PreferencesHelper, private val useLowQualityCovers: Boolean) {
 
@@ -75,7 +76,6 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
     /**
      * fetch follow status used when fetching status for 1 manga
      */
-
     private fun followStatusParse(response: Response): Track {
         val followsPageResult = try {
             response.parseAs<FollowsIndividualSerializer>(MdUtil.jsonParser)
@@ -84,15 +84,11 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
             throw e
         }
 
-        if (followsPageResult.data == null) {
-            throw Exception("Invalid response  ${followsPageResult.code}")
-        }
-
         val track = Track.create(TrackManager.MDLIST)
         if (followsPageResult.code == 404) {
             track.status = FollowStatus.UNFOLLOWED.int
         } else {
-            val follow = followsPageResult.data
+            val follow = followsPageResult.data ?: throw Exception("Invalid response ${followsPageResult.code}")
             track.status = follow.followType
             if (follow.chapter.isNotBlank()) {
                 track.last_chapter_read = follow.chapter.toFloat().floor()
@@ -153,7 +149,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                         .await()
                 }
 
-            withIOContext { response.body?.string().isNullOrEmpty() }
+            response.succeeded()
         }
     }
 
@@ -172,11 +168,7 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 )
             ).await()
 
-            withIOContext {
-                response.body?.string()
-                    .also { xLogD(it) }
-                    .let { it != null && it.isEmpty() }
-            }
+            response.succeeded()
         }
     }
 
@@ -188,10 +180,21 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_rating&id=$mangaID&rating=${track.score.toInt()}",
                     headers
                 )
-            )
-                .await()
+            ).await()
 
-            withIOContext { response.body?.string().isNullOrEmpty() }
+            response.succeeded()
+        }
+    }
+
+    private suspend fun Response.succeeded() = withIOContext {
+        try {
+            body?.string().let { body ->
+                (body != null && body.isEmpty()).also {
+                    if (!it) xLogD(body)
+                }
+            }
+        } catch (e: EOFException) {
+            true
         }
     }
 

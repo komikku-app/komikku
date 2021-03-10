@@ -15,6 +15,7 @@ import exh.md.handlers.serializers.ApiCovers
 import exh.md.handlers.serializers.ApiMangaSerializer
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
+import kotlinx.coroutines.async
 import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.OkHttpClient
@@ -30,7 +31,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val lang: Str
     // TODO make use of this
     suspend fun fetchMangaAndChapterDetails(manga: MangaInfo, sourceId: Long): Pair<MangaInfo, List<ChapterInfo>> {
         return withIOContext {
-            val apiNetworkManga = client.newCall(apiRequest(manga)).await().parseAs<ApiMangaSerializer>()
+            val apiNetworkManga = client.newCall(apiRequest(manga)).await().parseAs<ApiMangaSerializer>(MdUtil.jsonParser)
             val covers = getCovers(manga, forceLatestCovers)
             val parser = ApiMangaParser(lang)
 
@@ -120,17 +121,22 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val lang: Str
     }
 
     suspend fun getTrackingInfo(track: Track, useLowQualityCovers: Boolean): Pair<Track, MangaDexSearchMetadata> {
-        val mangaUrl = MdUtil.mapMdIdToMangaUrl(MdUtil.getMangaId(track.tracking_url).toInt())
-        val manga = MangaInfo(mangaUrl, track.title)
-        val response = client.newCall(apiRequest(manga)).await()
-        val metadata = MangaDexSearchMetadata()
-        ApiMangaParser(lang).parseIntoMetadata(metadata, response, emptyList())
-        val remoteTrack = FollowsHandler(client, headers, Injekt.get(), useLowQualityCovers).fetchTrackingInfo(track.tracking_url)
-        return remoteTrack to metadata
+        return withIOContext {
+            val metadata = async {
+                val mangaUrl = MdUtil.mapMdIdToMangaUrl(MdUtil.getMangaId(track.tracking_url).toInt())
+                val manga = MangaInfo(mangaUrl, track.title)
+                val response = client.newCall(apiRequest(manga)).await()
+                val metadata = MangaDexSearchMetadata()
+                ApiMangaParser(lang).parseIntoMetadata(metadata, response, emptyList())
+                metadata
+            }
+            val remoteTrack = async { FollowsHandler(client, headers, Injekt.get(), useLowQualityCovers).fetchTrackingInfo(track.tracking_url) }
+            remoteTrack.await() to metadata.await()
+        }
     }
 
     private fun randomMangaRequest(): Request {
-        return GET(MdUtil.baseUrl + MdUtil.randMangaPage, cache = CacheControl.Builder().noCache().build())
+        return GET(MdUtil.baseUrl + MdUtil.randMangaPage, cache = CacheControl.FORCE_NETWORK)
     }
 
     private fun apiRequest(manga: MangaInfo): Request {

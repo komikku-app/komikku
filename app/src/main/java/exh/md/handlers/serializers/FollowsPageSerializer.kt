@@ -11,7 +11,7 @@ data class FollowsPageSerializer(
 @Serializable
 data class FollowsIndividualSerializer(
     val code: Int,
-    val data: FollowPage?
+    val data: FollowPage? = null
 )
 
 @Serializable

@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import tachiyomi.source.model.MangaInfo
@@ -46,58 +47,60 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     override suspend fun add(track: Track): Track = update(track)
 
     override suspend fun update(track: Track): Track {
-        val mdex = mdex ?: throw MangaDexNotFoundException()
+        return withIOContext {
+            val mdex = mdex ?: throw MangaDexNotFoundException()
 
-        val remoteTrack = mdex.fetchTrackingInfo(track.tracking_url)
-        val followStatus = FollowStatus.fromInt(track.status)
+            val remoteTrack = mdex.fetchTrackingInfo(track.tracking_url)
+            val followStatus = FollowStatus.fromInt(track.status)
 
-        // this updates the follow status in the metadata
-        // allow follow status to update
-        if (remoteTrack.status != followStatus.int) {
-            mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)
-            remoteTrack.status = followStatus.int
-            // db.insertFlatMetadataAsync(mangaMetadata.flatten()).await()
-        }
-
-        if (track.score.toInt() > 0) {
-            mdex.updateRating(track)
-        }
-
-        // mangadex wont update chapters if manga is not follows this prevents unneeded network call
-
-        if (followStatus != FollowStatus.UNFOLLOWED) {
-            if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
-                track.status = FollowStatus.COMPLETED.int
-                mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), FollowStatus.COMPLETED)
-            }
-            if (followStatus == FollowStatus.PLAN_TO_READ && track.last_chapter_read > 0) {
-                val newFollowStatus = FollowStatus.READING
-                track.status = FollowStatus.READING.int
-                mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), newFollowStatus)
-                remoteTrack.status = newFollowStatus.int
-                // db.insertFlatMetadataAsync(mangaMetadata.flatten()).await()
+            // this updates the follow status in the metadata
+            // allow follow status to update
+            if (remoteTrack.status != followStatus.int) {
+                mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)
+                remoteTrack.status = followStatus.int
             }
 
-            mdex.updateReadingProgress(track)
-        } else if (track.last_chapter_read != 0) {
-            // When followStatus has been changed to unfollowed 0 out read chapters since dex does
-            track.last_chapter_read = 0
+            if (track.score.toInt() > 0) {
+                mdex.updateRating(track)
+            }
+
+            // mangadex wont update chapters if manga is not follows this prevents unneeded network call
+
+            if (followStatus != FollowStatus.UNFOLLOWED) {
+                if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
+                    track.status = FollowStatus.COMPLETED.int
+                    mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), FollowStatus.COMPLETED)
+                }
+                if (followStatus == FollowStatus.PLAN_TO_READ && track.last_chapter_read > 0) {
+                    val newFollowStatus = FollowStatus.READING
+                    track.status = FollowStatus.READING.int
+                    mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), newFollowStatus)
+                    remoteTrack.status = newFollowStatus.int
+                }
+
+                mdex.updateReadingProgress(track)
+            } else if (track.last_chapter_read != 0) {
+                // When followStatus has been changed to unfollowed 0 out read chapters since dex does
+                track.last_chapter_read = 0
+            }
+            track
         }
-        return track
     }
 
     override fun getCompletionStatus(): Int = FollowStatus.COMPLETED.int
 
-    override suspend fun bind(track: Track): Track = update(refresh(track))
+    override suspend fun bind(track: Track): Track = update(refresh(track).also { it.status = FollowStatus.READING.int })
 
     override suspend fun refresh(track: Track): Track {
-        val mdex = mdex ?: throw MangaDexNotFoundException()
-        val (remoteTrack, mangaMetadata) = mdex.getTrackingAndMangaInfo(track)
-        track.copyPersonalFrom(remoteTrack)
-        if (track.total_chapters == 0 && mangaMetadata.status == SManga.COMPLETED) {
-            track.total_chapters = mangaMetadata.maxChapterNumber ?: 0
+        return withIOContext {
+            val mdex = mdex ?: throw MangaDexNotFoundException()
+            val (remoteTrack, mangaMetadata) = mdex.getTrackingAndMangaInfo(track)
+            track.copyPersonalFrom(remoteTrack)
+            if (track.total_chapters == 0 && mangaMetadata.status == SManga.COMPLETED) {
+                track.total_chapters = mangaMetadata.maxChapterNumber ?: 0
+            }
+            track
         }
-        return track
     }
 
     fun createInitialTracker(dbManga: Manga, mdManga: Manga = dbManga): Track {
@@ -110,16 +113,18 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     }
 
     override suspend fun search(query: String): List<TrackSearch> {
-        val mdex = mdex ?: throw MangaDexNotFoundException()
-        return mdex.fetchSearchManga(0, query, mdex.getFilterList())
-            .flatMap { page ->
-                runAsObservable({
-                    page.mangas.map {
-                        toTrackSearch(mdex.getMangaDetails(it.toMangaInfo()))
-                    }
-                })
-            }
-            .awaitSingle()
+        return withIOContext {
+            val mdex = mdex ?: throw MangaDexNotFoundException()
+            mdex.fetchSearchManga(0, query, mdex.getFilterList())
+                .flatMap { page ->
+                    runAsObservable({
+                        page.mangas.map {
+                            toTrackSearch(mdex.getMangaDetails(it.toMangaInfo()))
+                        }
+                    })
+                }
+                .awaitSingle()
+        }
     }
 
     private fun toTrackSearch(mangaInfo: MangaInfo): TrackSearch = TrackSearch.create(TrackManager.MDLIST).apply {

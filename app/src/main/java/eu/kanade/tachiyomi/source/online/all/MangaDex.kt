@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
-import androidx.core.text.HtmlCompat
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -48,12 +47,17 @@ import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import exh.widget.preference.MangadexLoginDialog
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.int
 import okhttp3.CacheControl
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
+import okio.EOFException
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
@@ -73,11 +77,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     RandomMangaSource {
     override val lang: String = delegate.lang
 
-    override val headers: Headers
-        get() = super.headers.newBuilder().apply {
-            add("X-Requested-With", "XMLHttpRequest")
-            add("Referer", MdUtil.baseUrl)
-        }.build()
+    override val headers: Headers = super.headers.newBuilder().apply {
+        add("X-Requested-With", "XMLHttpRequest")
+        add("Referer", MdUtil.baseUrl)
+    }.build()
 
     private val mdLang by lazy {
         MdLang.values().find { it.lang == lang }?.dexLang ?: lang
@@ -198,13 +201,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 add("login_password", password)
                 add("no_js", "1")
                 add("remember_me", "1")
+                add("two_factor", twoFactorCode)
             }
 
-            twoFactorCode.let {
-                formBody.add("two_factor", it)
-            }
-
-            val response = client.newCall(
+            client.newCall(
                 POST(
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=login",
                     headers,
@@ -212,12 +212,13 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 )
             ).await()
 
-            withIOContext { response.body?.string() }.let { result ->
-                if (result != null && result.isEmpty()) {
-                    true
+            val response = client.newCall(GET(MdUtil.apiUrl + MdUtil.isLoggedInApi, headers)).await()
+
+            withIOContext { response.body?.string() }.let { jsonData ->
+                if (jsonData != null) {
+                    MdUtil.jsonParser.decodeFromString<JsonObject>(jsonData)["code"]?.let { it as? JsonPrimitive }?.int == 200
                 } else {
-                    val error = result?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_COMPACT).toString() }
-                    throw Exception(error)
+                    throw Exception("Json data was null")
                 }
             }
         }
@@ -236,8 +237,14 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             val result = client.newCall(
                 POST("${MdUtil.baseUrl}/ajax/actions.ajax.php?function=logout", headers).newBuilder().addHeader(REMEMBER_ME, token).build()
             ).await()
-            val resultStr = withIOContext { result.body?.string() }
-            if (resultStr?.contains("success", true) == true) {
+            try {
+                val resultStr = withIOContext { result.body?.string() }
+                if (resultStr?.contains("success", true) == true) {
+                    network.cookieManager.remove(httpUrl)
+                    trackManager.mdList.logout()
+                    return@withIOContext true
+                }
+            } catch (e: EOFException) {
                 network.cookieManager.remove(httpUrl)
                 trackManager.mdList.logout()
                 return@withIOContext true
@@ -281,7 +288,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun fetchRandomMangaUrl(): String {
-        return MangaHandler(client, headers, mdLang).fetchRandomMangaId()
+        return withIOContext { MangaHandler(client, headers, mdLang).fetchRandomMangaId() }
     }
 
     fun fetchMangaSimilar(manga: Manga): Observable<MangasPage> {
