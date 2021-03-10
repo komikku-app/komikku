@@ -155,13 +155,12 @@ open class SourceManager(private val context: Context) {
 
     // SY -->
     private fun createEHSources(): List<Source> {
-        val exSrcs = mutableListOf<HttpSource>(
+        val sources = listOf<HttpSource>(
             EHentai(EH_SOURCE_ID, false, context)
         )
-        if (prefs.enableExhentai().get()) {
-            exSrcs += EHentai(EXH_SOURCE_ID, true, context)
-        }
-        return exSrcs
+        return if (prefs.enableExhentai().get()) {
+            sources + EHentai(EXH_SOURCE_ID, true, context)
+        } else sources
     }
     // SY <--
 

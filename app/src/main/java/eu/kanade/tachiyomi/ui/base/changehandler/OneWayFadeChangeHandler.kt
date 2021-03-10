@@ -10,7 +10,7 @@ import com.bluelinelabs.conductor.changehandler.AnimatorChangeHandler
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 
 /**
- * An [AnimatorChangeHandler] that will cross fade two views
+ * An [AnimatorChangeHandler] that will remove the from view and fade in the to view
  */
 class OneWayFadeChangeHandler : FadeChangeHandler {
     constructor()
