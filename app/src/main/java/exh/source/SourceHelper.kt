@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.source.online.all.PervEden
 import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
-import eu.kanade.tachiyomi.source.online.english.HentaiCafe
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
 
@@ -23,7 +22,6 @@ const val EH_SOURCE_ID = LEWD_SOURCE_SERIES + 1
 const val EXH_SOURCE_ID = LEWD_SOURCE_SERIES + 2
 const val PERV_EDEN_EN_SOURCE_ID = 4673633799850248749
 const val PERV_EDEN_IT_SOURCE_ID = 1433898225963724122
-const val HENTAI_CAFE_SOURCE_ID = 260868874183818481
 const val PURURIN_SOURCE_ID = 2221515250486218861
 const val TSUMINO_SOURCE_ID = 6707338697138388238
 const val EIGHTMUSES_SOURCE_ID = 1802675169972965535
@@ -32,7 +30,6 @@ const val MERGED_SOURCE_ID = LEWD_SOURCE_SERIES + 69
 
 private val DELEGATED_METADATA_SOURCES by lazy {
     listOf(
-        HentaiCafe::class,
         Pururin::class,
         Tsumino::class,
         HBrowse::class,
@@ -55,7 +52,6 @@ var mangaDexSourceIds: List<Long> = emptyList()
 var LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
     EH_SOURCE_ID,
     EXH_SOURCE_ID,
-    HENTAI_CAFE_SOURCE_ID,
     TSUMINO_SOURCE_ID,
     PURURIN_SOURCE_ID
 )
@@ -92,7 +88,6 @@ fun handleSourceLibrary() {
     LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
         EH_SOURCE_ID,
         EXH_SOURCE_ID,
-        HENTAI_CAFE_SOURCE_ID,
         TSUMINO_SOURCE_ID,
         PURURIN_SOURCE_ID
     ) + hitomiSourceIds + nHentaiSourceIds

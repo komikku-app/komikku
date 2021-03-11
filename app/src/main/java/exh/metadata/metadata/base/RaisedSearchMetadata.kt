@@ -8,7 +8,6 @@ import exh.metadata.forEach
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.HBrowseSearchMetadata
-import exh.metadata.metadata.HentaiCafeSearchMetadata
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.NHentaiSearchMetadata
@@ -161,7 +160,6 @@ abstract class RaisedSearchMetadata {
                 subclass(EHentaiSearchMetadata::class)
                 subclass(EightMusesSearchMetadata::class)
                 subclass(HBrowseSearchMetadata::class)
-                subclass(HentaiCafeSearchMetadata::class)
                 subclass(HitomiSearchMetadata::class)
                 subclass(MangaDexSearchMetadata::class)
                 subclass(NHentaiSearchMetadata::class)

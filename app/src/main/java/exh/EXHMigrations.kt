@@ -26,7 +26,6 @@ import exh.merged.sql.models.MergedMangaReference
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.HBROWSE_SOURCE_ID
-import exh.source.HENTAI_CAFE_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
@@ -239,11 +238,6 @@ object EXHMigrations {
             manga.source = NHentai.otherId
             // Migrate nhentai URLs
             manga.url = getUrlWithoutDomain(manga.url)
-        }
-
-        // Migrate HentaiCafe source IDs
-        if (manga.source == 6908L) {
-            manga.source = HENTAI_CAFE_SOURCE_ID
         }
 
         // Migrate Tsumino source IDs
