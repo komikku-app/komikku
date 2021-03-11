@@ -42,7 +42,7 @@
         <item name="colorAccent">@color/colorAccentPink</item>
         <item name="background">@color/backgroundPink</item>
 
-        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@color/backgroundPink</item>
         <item name="android:windowBackground">@color/backgroundPink</item>
         <item name="android:statusBarColor">@color/dialogPink</item>
 
