@@ -14,6 +14,10 @@
         <item name="android:textColorPrimary">@color/md_white_1000</item>
     </style>
 
+    <style name="Theme.Toolbar.HotPink" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        <item name="android:textColorPrimary">@color/md_white_1000</item>
+    </style>
+
     <style name="Theme.Toolbar.Light" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
         <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
     </style>

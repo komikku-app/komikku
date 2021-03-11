@@ -25,6 +25,7 @@ object PreferenceValues {
         amoled,
         red,
         midnightdusk,
+        hotpink,
     }
 
     enum class DisplayMode {

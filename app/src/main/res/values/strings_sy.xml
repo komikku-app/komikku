@@ -165,6 +165,7 @@
     <!-- General Settings -->
     <string name="theme_dark_red">Black-Red</string>
     <string name="theme_dark_midnightdusk">Midnight Dusk</string>
+    <string name="theme_dark_hotpink">Hot Pink</string>
     <string name="toggle_expand_search_filters">Expand all search filters by default</string>
     <string name="auto_solve_captchas">Automatically solve captcha</string>
     <string name="auto_solve_captchas_summary">Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device.</string>
