@@ -29,9 +29,11 @@ import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.savedsearches.JsonSavedSearch
@@ -45,7 +47,6 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import okio.buffer
 import okio.gzip
 import okio.sink
-import tachiyomi.source.model.MangaInfo
 import timber.log.Timber
 import kotlin.math.max
 
@@ -240,19 +241,20 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      * @param manga manga that needs updating
      * @return Updated manga info.
      */
-    fun restoreMangaFetch(manga: Manga, networkManga: MangaInfo) {
-        manga.apply {
-            copyFrom(networkManga.toSManga())
-            favorite = manga.favorite
-            initialized = true
-            id = insertManga(manga)
-        }
-    }
-
-    fun restoreMangaNoFetch(manga: Manga) {
-        manga.apply {
-            initialized = description != null
-            id = insertManga(this)
+    suspend fun restoreMangaFetch(source: Source?, manga: Manga, online: Boolean): Manga {
+        return if (online && source != null /* SY --> */ && source !is MergedSource /* SY <-- */) {
+            val networkManga = source.getMangaDetails(manga.toMangaInfo())
+            manga.also {
+                it.copyFrom(networkManga.toSManga())
+                it.favorite = manga.favorite
+                it.initialized = true
+                it.id = insertManga(manga)
+            }
+        } else {
+            manga.also {
+                it.initialized = it.description != null
+                it.id = insertManga(it)
+            }
         }
     }
 
@@ -497,18 +499,21 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      * @param backupMergedMangaReferences the list of backup manga references for the merged manga
      */
     internal fun restoreMergedMangaReferencesForManga(manga: Manga, backupMergedMangaReferences: List<BackupMergedMangaReference>) {
-        if (backupMergedMangaReferences.isEmpty()) return
-
         // Get merged manga references from file and from db
         val dbMergedMangaReferences = databaseHelper.getMergedMangaReferences().executeAsBlocking()
 
         // Iterate over them
         backupMergedMangaReferences.forEach { backupMergedMangaReference ->
             // Used to know if the merged manga reference is already in the db
-            // If the backupMergedMangaReference is already in the db, assign the id to the file's backupMergedMangaReference
-            // and do nothing
-            val found = dbMergedMangaReferences.any { backupMergedMangaReference.mergeUrl == it.mergeUrl && backupMergedMangaReference.mangaUrl == it.mangaUrl }
-
+            var found = false
+            for (dbMergedMangaReference in dbMergedMangaReferences) {
+                // If the backupMergedMangaReference is already in the db, assign the id to the file's backupMergedMangaReference
+                // and do nothing
+                if (backupMergedMangaReference.mergeUrl == dbMergedMangaReference.mergeUrl && backupMergedMangaReference.mangaUrl == dbMergedMangaReference.mangaUrl) {
+                    found = true
+                    break
+                }
+            }
             // If the backupMergedMangaReference isn't in the db, remove the id and insert a new backupMergedMangaReference
             // Store the inserted id in the backupMergedMangaReference
             if (!found) {

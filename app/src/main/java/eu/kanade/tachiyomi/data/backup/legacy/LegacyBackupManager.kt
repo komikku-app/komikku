@@ -48,19 +48,19 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
+import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
 import exh.savedsearches.JsonSavedSearch
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import tachiyomi.source.model.MangaInfo
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -278,12 +278,13 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
      * @param manga manga that needs updating
      * @return Updated manga.
      */
-    fun fetchManga(networkManga: MangaInfo, manga: Manga) {
-        manga.apply {
-            copyFrom(networkManga.toSManga())
-            favorite = true
-            initialized = true
-            id = insertManga(this)
+    suspend fun fetchManga(source: Source, manga: Manga): Manga {
+        val networkManga = source.getMangaDetails(manga.toMangaInfo())
+        return manga.also {
+            it.copyFrom(networkManga.toSManga())
+            it.favorite = true
+            it.initialized = true
+            it.id = insertManga(manga)
         }
     }
 
@@ -294,7 +295,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
      * @param manga manga that needs updating
      * @return [Observable] that contains manga
      */
-    override suspend fun restoreChapters(source: Source, manga: Manga, chapters: List<Chapter>, fetchedChapters: List<SChapter>): Pair<List<Chapter>, List<Chapter>> {
+    override suspend fun restoreChapters(source: Source, manga: Manga, chapters: List<Chapter>, throttleManager: EHentaiThrottleManager): Pair<List<Chapter>, List<Chapter>> {
         // SY -->
         return if (source is MergedSource) {
             val syncedChapters = source.fetchChaptersAndSync(manga, false)
@@ -304,7 +305,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
             updateChapters(syncedChapters.first)
             syncedChapters
         } else {
-            super.restoreChapters(source, manga, chapters, fetchedChapters)
+            super.restoreChapters(source, manga, chapters, throttleManager)
         }
     }
 

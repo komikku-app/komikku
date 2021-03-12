@@ -15,7 +15,6 @@ import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import exh.EXHMigrations
@@ -138,14 +137,16 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
     ) {
         val dbManga = backupManager.getMangaFromDatabase(manga)
 
-        if (dbManga == null) {
-            // Manga not in database
-            restoreMangaFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
-        } else { // Manga in database
-            // Copy information from manga already in database
-            backupManager.restoreMangaNoFetch(manga, dbManga)
-            // Fetch rest of manga information
-            restoreMangaNoFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
+        db.inTransaction {
+            if (dbManga == null) {
+                // Manga not in database
+                restoreMangaFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
+            } else { // Manga in database
+                // Copy information from manga already in database
+                backupManager.restoreMangaNoFetch(manga, dbManga)
+                // Fetch rest of manga information
+                restoreMangaNoFetch(source, manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata, online)
+            }
         }
     }
 
@@ -169,36 +170,22 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         online: Boolean
     ) {
         try {
-            val networkManga = if (online && source != null /* SY --> */ && source !is MergedSource /* SY <-- */) {
-                source.getMangaDetails(manga.toMangaInfo())
-            } else null
-            val fetchedChapters = if (online && source != null && source !is MergedSource) {
-                backupManager.getChapters(source, manga, throttleManager)
-            } else null
+            val fetchedManga = backupManager.restoreMangaFetch(source, manga, online)
+            fetchedManga.id ?: return
 
-            db.inTransaction {
-                if (networkManga != null) {
-                    backupManager.restoreMangaFetch(manga, networkManga)
-                } else {
-                    backupManager.restoreMangaNoFetch(manga)
+            if (online && source != null) {
+                // SY -->
+                if (source !is MergedSource) {
+                    updateChapters(source, fetchedManga, chapters)
                 }
-
-                manga.id ?: return
-
-                if (fetchedChapters != null && source != null) {
-                    // SY -->
-                    if (source !is MergedSource) {
-                        updateChapters(source, manga, chapters, fetchedChapters)
-                    }
-                    // SY <--
-                } else {
-                    backupManager.restoreChaptersForMangaOffline(manga, chapters)
-                }
-
-                restoreExtraForManga(manga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+                // SY <--
+            } else {
+                backupManager.restoreChaptersForMangaOffline(fetchedManga, chapters)
             }
 
-            updateTracking(manga, tracks)
+            restoreExtraForManga(fetchedManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+
+            updateTracking(fetchedManga, tracks)
         } catch (e: Exception) {
             errors.add(Date() to "${manga.title} - ${e.message}")
         }
@@ -216,23 +203,15 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier, private val 
         flatMetadata: BackupFlatMetadata?,
         online: Boolean
     ) {
-        val dbChapters = if (source !is MergedSource) backupManager.databaseHelper.getChapters(backupManga).executeAsBlocking() else emptyList()
-
-        val fetchedChapters = if (online && source != null && source !is MergedSource && !(dbChapters.isNotEmpty() && dbChapters.size >= chapters.size)) {
-            backupManager.getChapters(source, backupManga, throttleManager)
-        } else null
-
-        db.inTransaction {
-            if (fetchedChapters != null && source != null) {
-                if (/* SY --> */ source !is MergedSource && /* SY <-- */ !backupManager.restoreChaptersForManga(backupManga, chapters)) {
-                    updateChapters(source, backupManga, chapters, fetchedChapters)
-                }
-            } else {
-                backupManager.restoreChaptersForMangaOffline(backupManga, chapters)
+        if (online && source != null) {
+            if (/* SY --> */ source !is MergedSource && /* SY <-- */ !backupManager.restoreChaptersForManga(backupManga, chapters)) {
+                updateChapters(source, backupManga, chapters)
             }
-
-            restoreExtraForManga(backupManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+        } else {
+            backupManager.restoreChaptersForMangaOffline(backupManga, chapters)
         }
+
+        restoreExtraForManga(backupManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
 
         updateTracking(backupManga, tracks)
     }
