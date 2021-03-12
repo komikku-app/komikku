@@ -323,6 +323,8 @@ object PreferenceKeys {
 
     const val mangadexSimilarOnlyOverWifi = "pref_simular_only_over_wifi_key"
 
+    const val mangadexSyncToLibraryIndexes = "pref_mangadex_sync_to_library_indexes"
+
     const val preferredMangaDexId = "preferred_mangaDex_id"
 
     const val dataSaver = "data_saver"

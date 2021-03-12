@@ -433,6 +433,8 @@ class PreferencesHelper(val context: Context) {
 
     fun mangadexSimilarOnlyOverWifi() = flowPrefs.getBoolean(Keys.mangadexSimilarOnlyOverWifi, true)
 
+    fun mangadexSyncToLibraryIndexes() = flowPrefs.getStringSet(Keys.mangadexSyncToLibraryIndexes, emptySet())
+
     fun mangadexSimilarUpdateInterval() = flowPrefs.getInt(Keys.mangadexSimilarUpdateInterval, 2)
 
     fun dataSaver() = flowPrefs.getBoolean(Keys.dataSaver, false)

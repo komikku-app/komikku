@@ -539,11 +539,12 @@ class LibraryUpdateService(
     private suspend fun syncFollows() {
         val count = AtomicInteger(0)
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager) ?: return
+        val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
 
         val size: Int
         mangaDex.fetchAllFollows(true)
             .filter { (_, metadata) ->
-                metadata.follow_status == FollowStatus.RE_READING.int || metadata.follow_status == FollowStatus.READING.int
+                syncFollowStatusInts.contains(metadata.follow_status)
             }
             .also { size = it.size }
             .forEach { (networkManga, metadata) ->

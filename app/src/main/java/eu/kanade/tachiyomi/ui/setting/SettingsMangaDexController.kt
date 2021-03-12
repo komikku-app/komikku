@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.ui.setting
 
 import androidx.preference.PreferenceScreen
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
@@ -76,10 +78,22 @@ class SettingsMangaDexController :
             summaryRes = R.string.mangadex_sync_follows_to_library_summary
 
             onClick {
-                LibraryUpdateService.start(
-                    context,
-                    target = LibraryUpdateService.Target.SYNC_FOLLOWS
-                )
+                MaterialDialog(context)
+                    .title(R.string.mangadex_sync_follows_to_library)
+                    .message(R.string.mangadex_sync_follows_to_library_message)
+                    .listItemsMultiChoice(
+                        items = context.resources.getStringArray(R.array.md_follows_options).toList().let { it.subList(1, it.size) },
+                        initialSelection = intArrayOf(0, 5)
+                    ) { _, indices, _ ->
+                        preferences.mangadexSyncToLibraryIndexes().set(indices.map { (it + 1).toString() }.toSet())
+                        LibraryUpdateService.start(
+                            context,
+                            target = LibraryUpdateService.Target.SYNC_FOLLOWS
+                        )
+                    }
+                    .positiveButton(android.R.string.ok)
+                    .negativeButton(android.R.string.cancel)
+                    .show()
             }
         }
 
