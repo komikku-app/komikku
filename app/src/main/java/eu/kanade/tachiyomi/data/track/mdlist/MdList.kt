@@ -89,7 +89,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun getCompletionStatus(): Int = FollowStatus.COMPLETED.int
 
-    override suspend fun bind(track: Track): Track = update(refresh(track).also { it.status = FollowStatus.READING.int })
+    override suspend fun bind(track: Track): Track = update(refresh(track).also { if (it.status == FollowStatus.UNFOLLOWED.int) it.status = FollowStatus.READING.int })
 
     override suspend fun refresh(track: Track): Track {
         return withIOContext {
