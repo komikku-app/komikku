@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import exh.eh.EHentaiThrottleManager
@@ -69,9 +70,9 @@ abstract class AbstractBackupRestore<T : AbstractBackupManager>(protected val co
      * @param manga manga that needs updating
      * @return Updated manga chapters.
      */
-    internal suspend fun updateChapters(source: Source, manga: Manga, chapters: List<Chapter>): Pair<List<Chapter>, List<Chapter>> {
+    internal suspend fun updateChapters(source: Source, manga: Manga, chapters: List<Chapter>, fetchedChapters: List<SChapter>): Pair<List<Chapter>, List<Chapter>> {
         return try {
-            backupManager.restoreChapters(source, manga, chapters /* SY --> */, throttleManager /* SY <-- */)
+            backupManager.restoreChapters(source, manga, chapters, fetchedChapters)
         } catch (e: Exception) {
             // If there's any error, return empty update and continue.
             val errorMessage = if (e is NoChaptersException) {

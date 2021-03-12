@@ -20,7 +20,9 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import exh.EXHMigrations
 import java.util.Date
 
@@ -154,16 +156,14 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
     ) {
         val dbManga = backupManager.getMangaFromDatabase(manga)
 
-        db.inTransaction {
-            if (dbManga == null) {
-                // Manga not in database
-                restoreMangaFetch(source, manga, chapters, categories, history, tracks)
-            } else { // Manga in database
-                // Copy information from manga already in database
-                backupManager.restoreMangaNoFetch(manga, dbManga)
-                // Fetch rest of manga information
-                restoreMangaNoFetch(source, manga, chapters, categories, history, tracks)
-            }
+        if (dbManga == null) {
+            // Manga not in database
+            restoreMangaFetch(source, manga, chapters, categories, history, tracks)
+        } else { // Manga in database
+            // Copy information from manga already in database
+            backupManager.restoreMangaNoFetch(manga, dbManga)
+            // Fetch rest of manga information
+            restoreMangaNoFetch(source, manga, chapters, categories, history, tracks)
         }
     }
 
@@ -183,14 +183,19 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
         tracks: List<Track>
     ) {
         try {
-            val fetchedManga = backupManager.fetchManga(source, manga)
-            fetchedManga.id ?: return
+            val networkManga = source.getMangaDetails(manga.toMangaInfo())
+            val fetchedChapters = if (source !is MergedSource) {
+                backupManager.getChapters(source, manga, throttleManager)
+            } else emptyList()
+            db.inTransaction {
+                backupManager.fetchManga(networkManga, manga)
+                manga.id ?: return
 
-            updateChapters(source, fetchedManga, chapters)
+                updateChapters(source, manga, chapters, fetchedChapters)
 
-            restoreExtraForManga(fetchedManga, categories, history, tracks)
-
-            updateTracking(fetchedManga, tracks)
+                restoreExtraForManga(manga, categories, history, tracks)
+            }
+            updateTracking(manga, tracks)
         } catch (e: Exception) {
             errors.add(Date() to "${manga.title} - ${e.message}")
         }
@@ -204,11 +209,21 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
         history: List<DHistory>,
         tracks: List<Track>
     ) {
-        if (!backupManager.restoreChaptersForManga(backupManga, chapters)) {
-            updateChapters(source, backupManga, chapters)
+        val dbChapters = backupManager.databaseHelper.getChapters(backupManga).executeAsBlocking()
+
+        val fetchedChapters = if (dbChapters.isNotEmpty() && dbChapters.size >= chapters.size) {
+            backupManager.getChapters(source, backupManga, throttleManager)
+        } else {
+            null
         }
 
-        restoreExtraForManga(backupManga, categories, history, tracks)
+        db.inTransaction {
+            if (!backupManager.restoreChaptersForManga(backupManga, chapters) && fetchedChapters != null) {
+                updateChapters(source, backupManga, chapters, fetchedChapters)
+            }
+
+            restoreExtraForManga(backupManga, categories, history, tracks)
+        }
 
         updateTracking(backupManga, tracks)
     }
