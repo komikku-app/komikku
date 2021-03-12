@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
+import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.savedsearches.JsonSavedSearch
@@ -528,7 +529,8 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     }
 
     internal suspend fun restoreFlatMetadata(manga: Manga, backupFlatMetadata: BackupFlatMetadata) {
-        manga.id?.let { mangaId ->
+        val mangaId = manga.id ?: return
+        launchIO {
             databaseHelper.getFlatMetadataForManga(mangaId).executeOnIO().let {
                 if (it == null) {
                     val flatMetadata = backupFlatMetadata.getFlatMetadata(mangaId)
