@@ -203,15 +203,11 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
      */
     suspend fun fetchAllFollows(forceHd: Boolean): List<Pair<SManga, MangaDexSearchMetadata>> {
         return withIOContext {
-            val listManga = mutableListOf<Pair<SManga, MangaDexSearchMetadata>>()
             val response = client.newCall(followsListRequest()).await()
             val mangasPage = followsParseMangaPage(response, forceHd)
-            listManga.addAll(
-                mangasPage.mangas.mapIndexed { index, sManga ->
-                    sManga to mangasPage.mangasMetadata[index] as MangaDexSearchMetadata
-                }
-            )
-            listManga
+            mangasPage.mangas.mapIndexed { index, sManga ->
+                sManga to mangasPage.mangasMetadata[index] as MangaDexSearchMetadata
+            }
         }
     }
 

@@ -41,7 +41,7 @@ import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.isServiceRunning
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
-import exh.metadata.metadata.base.insertFlatMetadata
+import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
@@ -569,7 +569,7 @@ class LibraryUpdateService(
                 val id = db.insertManga(dbManga).executeOnIO().insertedId()
                 if (id != null) {
                     metadata.mangaId = id
-                    db.insertFlatMetadata(metadata.flatten()).await()
+                    db.insertFlatMetadataAsync(metadata.flatten()).await()
                 }
             }
 

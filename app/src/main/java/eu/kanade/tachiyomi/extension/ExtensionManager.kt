@@ -156,11 +156,11 @@ class ExtensionManager(
     // EXH -->
     private fun <T : Extension> Iterable<T>.filterNotBlacklisted(): List<T> {
         val blacklistEnabled = preferences.enableSourceBlacklist().get()
-        return filter {
-            if (it.isBlacklisted(blacklistEnabled)) {
-                xLogD("Removing blacklisted extension: (name: %s, pkgName: %s)!", it.name, it.pkgName)
-                false
-            } else true
+        return filterNot { extension ->
+            extension.isBlacklisted(blacklistEnabled)
+                .also {
+                    if (it) xLogD("Removing blacklisted extension: (name: %s, pkgName: %s)!", extension.name, extension.pkgName)
+                }
         }
     }
 
