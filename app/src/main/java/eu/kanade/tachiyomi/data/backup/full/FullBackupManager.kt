@@ -29,11 +29,7 @@ import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
-import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
@@ -238,24 +234,13 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     /**
      * Fetches manga information
      *
-     * @param source source of manga
      * @param manga manga that needs updating
      * @return Updated manga info.
      */
-    suspend fun restoreMangaFetch(source: Source?, manga: Manga, online: Boolean): Manga {
-        return if (online && source != null /* SY --> */ && source !is MergedSource /* SY <-- */) {
-            val networkManga = source.getMangaDetails(manga.toMangaInfo())
-            manga.also {
-                it.copyFrom(networkManga.toSManga())
-                it.favorite = manga.favorite
-                it.initialized = true
-                it.id = insertManga(manga)
-            }
-        } else {
-            manga.also {
-                it.initialized = it.description != null
-                it.id = insertManga(it)
-            }
+    fun restoreManga(manga: Manga): Manga {
+        return manga.also {
+            it.initialized = it.description != null
+            it.id = insertManga(it)
         }
     }
 
@@ -364,29 +349,26 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         val trackToUpdate = mutableListOf<Track>()
 
         tracks.forEach { track ->
-            val service = trackManager.getService(track.sync_id)
-            if (service != null && service.isLogged) {
-                var isInDatabase = false
-                for (dbTrack in dbTracks) {
-                    if (track.sync_id == dbTrack.sync_id) {
-                        // The sync is already in the db, only update its fields
-                        if (track.media_id != dbTrack.media_id) {
-                            dbTrack.media_id = track.media_id
-                        }
-                        if (track.library_id != dbTrack.library_id) {
-                            dbTrack.library_id = track.library_id
-                        }
-                        dbTrack.last_chapter_read = max(dbTrack.last_chapter_read, track.last_chapter_read)
-                        isInDatabase = true
-                        trackToUpdate.add(dbTrack)
-                        break
+            var isInDatabase = false
+            for (dbTrack in dbTracks) {
+                if (track.sync_id == dbTrack.sync_id) {
+                    // The sync is already in the db, only update its fields
+                    if (track.media_id != dbTrack.media_id) {
+                        dbTrack.media_id = track.media_id
                     }
+                    if (track.library_id != dbTrack.library_id) {
+                        dbTrack.library_id = track.library_id
+                    }
+                    dbTrack.last_chapter_read = max(dbTrack.last_chapter_read, track.last_chapter_read)
+                    isInDatabase = true
+                    trackToUpdate.add(dbTrack)
+                    break
                 }
-                if (!isInDatabase) {
-                    // Insert new sync. Let the db assign the id
-                    track.id = null
-                    trackToUpdate.add(track)
-                }
+            }
+            if (!isInDatabase) {
+                // Insert new sync. Let the db assign the id
+                track.id = null
+                trackToUpdate.add(track)
             }
         }
         // Update database
@@ -395,47 +377,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         }
     }
 
-    /**
-     * Restore the chapters for manga if chapters already in database
-     *
-     * @param manga manga of chapters
-     * @param chapters list containing chapters that get restored
-     * @return boolean answering if chapter fetch is not needed
-     */
-    internal fun restoreChaptersForManga(manga: Manga, chapters: List<Chapter>): Boolean {
-        val dbChapters = databaseHelper.getChapters(manga).executeAsBlocking()
-
-        // Return if fetch is needed
-        if (dbChapters.isEmpty() || dbChapters.size < chapters.size) {
-            return false
-        }
-
-        chapters.forEach { chapter ->
-            val dbChapter = dbChapters.find { it.url == chapter.url }
-            if (dbChapter != null) {
-                chapter.id = dbChapter.id
-                chapter.copyFrom(dbChapter)
-                if (dbChapter.read && !chapter.read) {
-                    chapter.read = dbChapter.read
-                    chapter.last_page_read = dbChapter.last_page_read
-                } else if (chapter.last_page_read == 0 && dbChapter.last_page_read != 0) {
-                    chapter.last_page_read = dbChapter.last_page_read
-                }
-                if (!chapter.bookmark && dbChapter.bookmark) {
-                    chapter.bookmark = dbChapter.bookmark
-                }
-            }
-
-            chapter.manga_id = manga.id
-        }
-
-        // Filter the chapters that couldn't be found.
-        updateChapters(chapters.filter { it.id != null })
-
-        return true
-    }
-
-    internal fun restoreChaptersForMangaOffline(manga: Manga, chapters: List<Chapter>) {
+    internal fun restoreChaptersForManga(manga: Manga, chapters: List<Chapter>) {
         val dbChapters = databaseHelper.getChapters(manga).executeAsBlocking()
 
         chapters.forEach { chapter ->
@@ -528,7 +470,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         }
     }
 
-    internal suspend fun restoreFlatMetadata(manga: Manga, backupFlatMetadata: BackupFlatMetadata) {
+    internal fun restoreFlatMetadata(manga: Manga, backupFlatMetadata: BackupFlatMetadata) {
         val mangaId = manga.id ?: return
         launchIO {
             databaseHelper.getFlatMetadataForManga(mangaId).executeOnIO().let {
