@@ -4,7 +4,7 @@ import android.content.Context
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Locale
@@ -54,7 +54,7 @@ fun Manga.mangaType(sourceName: String = Injekt.get<SourceManager>().getOrStub(s
  */
 fun Manga.defaultReaderType(type: MangaType = mangaType()): Int? {
     return if (type == MangaType.TYPE_MANHWA || type == MangaType.TYPE_WEBTOON) {
-        ReaderActivity.WEBTOON
+        ReadingModeType.WEBTOON.prefValue
     } else null
 }
 
