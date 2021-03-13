@@ -267,7 +267,7 @@ open class SourceManager(private val context: Context) {
             get() = internalMap.size
         override fun containsKey(key: K): Boolean = internalMap.containsKey(key)
         override fun containsValue(value: V): Boolean = internalMap.containsValue(value)
-        override fun get(key: K): V? = get(key)
+        override fun get(key: K): V? = internalMap[key]
         override fun isEmpty(): Boolean = internalMap.isEmpty()
         override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
             get() = internalMap.entries
