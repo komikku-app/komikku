@@ -1,6 +1,6 @@
 | Preview Builds | Release Builds | Tachiyomi Support Server |
 |-------|----------|----------|
-| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![stable release](https://img.shields.io/github/release/jobobby04/tachiyomisy.svg?maxAge=3600&label=download)](https://github.com/jobobby04/tachiyomisy/releases/latest) | [![Discord](https://img.shields.io/discord/349436576037732353.svg)](https://discord.gg/tachiyomi) |
+| [![Preview](https://github.com/jobobby04/TachiyomiSYPreview/workflows/Remote%20Dispatch%20Build%20App/badge.svg)](https://github.com/jobobby04/TachiyomiSYPreview/releases) | [![stable release](https://img.shields.io/github/release/jobobby04/tachiyomisy.svg?maxAge=3600&label=download)](https://github.com/jobobby04/tachiyomisy/releases/latest) | [![Discord](https://img.shields.io/discord/349436576037732353.svg?label=discord&labelColor=7289da&color=2c2f33&style=flat)](https://discord.gg/tachiyomi) |
 
 
 # ![app icon](./.github/readme-images/app-icon.png)TachiyomiSY
@@ -109,7 +109,12 @@ Source requests should be created at https://github.com/tachiyomiorg/tachiyomi-e
 
 <details><summary>Contributing</summary>
 
-See [CONTRIBUTING.md](https://github.com/tachiyomiorg/tachiyomi/blob/master/CONTRIBUTING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
+</details>
+
+<details><summary>Code of Conduct</summary>
+
+See [CODE_OF_CONDUCT.md](./CONTRIBUTING.md).
 </details>
 
 ## FAQ
