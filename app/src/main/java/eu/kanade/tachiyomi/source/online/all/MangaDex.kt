@@ -57,6 +57,7 @@ import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.internal.closeQuietly
 import okio.EOFException
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
@@ -210,7 +211,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                     headers,
                     formBody.build()
                 )
-            ).await()
+            ).await().closeQuietly()
 
             val response = client.newCall(GET(MdUtil.apiUrl + MdUtil.isLoggedInApi, headers)).await()
 
