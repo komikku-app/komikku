@@ -17,16 +17,6 @@ fun Any.xLog(logLevel: LogLevel, log: String) = xLog().log(logLevel.int, log)
 fun Any.xLogJson(log: String) = xLog().json(log)
 fun Any.xLogXML(log: String) = xLog().xml(log)
 
-@Deprecated("Use proper throwable function", ReplaceWith("""xLogE("", log)"""))
-fun Any.xLogE(log: Throwable) = xLogStack().e(log)
-@Deprecated("Use proper throwable function", ReplaceWith("""xLogW("", log)"""))
-fun Any.xLogW(log: Throwable) = xLogStack().w(log)
-@Deprecated("Use proper throwable function", ReplaceWith("""xLogD("", log)"""))
-fun Any.xLogD(log: Throwable) = xLogStack().d(log)
-@Deprecated("Use proper throwable function", ReplaceWith("""xLogI("", log)"""))
-fun Any.xLogI(log: Throwable) = xLogStack().i(log)
-@Deprecated("Use proper throwable function", ReplaceWith("""xLog(logLevel, "", log)"""))
-fun Any.xLog(logLevel: LogLevel, log: Throwable) = xLogStack().log(logLevel.int, log)
 
 fun Any.xLogE(log: String, e: Throwable) = xLogStack().e(log, e)
 fun Any.xLogW(log: String, e: Throwable) = xLogStack().w(log, e)
@@ -79,3 +69,19 @@ sealed class LogLevel(val int: Int, val androidLevel: Int) {
         )
     }
 }
+
+
+@Deprecated("Use proper throwable function", ReplaceWith("""xLogE("", log)"""))
+fun Any.xLogE(log: Throwable) = xLogStack().e(log)
+
+@Deprecated("Use proper throwable function", ReplaceWith("""xLogW("", log)"""))
+fun Any.xLogW(log: Throwable) = xLogStack().w(log)
+
+@Deprecated("Use proper throwable function", ReplaceWith("""xLogD("", log)"""))
+fun Any.xLogD(log: Throwable) = xLogStack().d(log)
+
+@Deprecated("Use proper throwable function", ReplaceWith("""xLogI("", log)"""))
+fun Any.xLogI(log: Throwable) = xLogStack().i(log)
+
+@Deprecated("Use proper throwable function", ReplaceWith("""xLog(logLevel, "", log)"""))
+fun Any.xLog(logLevel: LogLevel, log: Throwable) = xLogStack().log(logLevel.int, log)
