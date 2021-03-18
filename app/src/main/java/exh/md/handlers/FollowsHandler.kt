@@ -23,6 +23,7 @@ import exh.util.awaitResponse
 import exh.util.floor
 import kotlinx.serialization.decodeFromString
 import okhttp3.CacheControl
+import okhttp3.Call
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.OkHttpClient
@@ -127,29 +128,24 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
      */
     suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
         return withIOContext {
-            val response: Response =
-                if (followStatus == FollowStatus.UNFOLLOWED) {
-                    client.newCall(
-                        GET(
-                            "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_unfollow&id=$mangaID&type=$mangaID",
-                            headers,
-                            CacheControl.FORCE_NETWORK
-                        )
+            if (followStatus == FollowStatus.UNFOLLOWED) {
+                client.newCall(
+                    GET(
+                        "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_unfollow&id=$mangaID&type=$mangaID",
+                        headers,
+                        CacheControl.FORCE_NETWORK
                     )
-                        .await()
-                } else {
-                    val status = followStatus.int
-                    client.newCall(
-                        GET(
-                            "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_follow&id=$mangaID&type=$status",
-                            headers,
-                            CacheControl.FORCE_NETWORK
-                        )
+                )
+            } else {
+                val status = followStatus.int
+                client.newCall(
+                    GET(
+                        "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_follow&id=$mangaID&type=$status",
+                        headers,
+                        CacheControl.FORCE_NETWORK
                     )
-                        .await()
-                }
-
-            response.succeeded()
+                )
+            }.succeeded()
         }
     }
 
@@ -160,35 +156,31 @@ class FollowsHandler(val client: OkHttpClient, val headers: Headers, val prefere
                 .add("volume", "0")
                 .add("chapter", track.last_chapter_read.toString())
             xLogD("chapter to update %s", track.last_chapter_read.toString())
-            val response = client.newCall(
+            client.newCall(
                 POST(
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=edit_progress&id=$mangaID",
                     headers,
                     formBody.build()
                 )
-            ).await()
-
-            response.succeeded()
+            ).succeeded()
         }
     }
 
     suspend fun updateRating(track: Track): Boolean {
         return withIOContext {
             val mangaID = MdUtil.getMangaId(track.tracking_url)
-            val response = client.newCall(
+            client.newCall(
                 GET(
                     "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=manga_rating&id=$mangaID&rating=${track.score.toInt()}",
                     headers
                 )
-            ).await()
-
-            response.succeeded()
+            ).succeeded()
         }
     }
 
-    private suspend fun Response.succeeded() = withIOContext {
+    private suspend fun Call.succeeded() = withIOContext {
         try {
-            body?.string().let { body ->
+            await().body?.string().let { body ->
                 (body != null && body.isEmpty()).also {
                     if (!it) xLogD(body)
                 }
