@@ -127,7 +127,7 @@ class GalleryAdder {
             // Insert created manga if not in DB before fetching details
             // This allows us to keep the metadata when fetching details
             if (manga.id == null) {
-                db.insertManga(manga).executeOnIO().insertedId()?.let {
+                db.insertManga(manga).executeAsBlocking().insertedId()?.let {
                     manga.id = it
                 }
             }
