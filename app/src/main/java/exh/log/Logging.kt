@@ -17,7 +17,6 @@ fun Any.xLog(logLevel: LogLevel, log: String) = xLog().log(logLevel.int, log)
 fun Any.xLogJson(log: String) = xLog().json(log)
 fun Any.xLogXML(log: String) = xLog().xml(log)
 
-
 fun Any.xLogE(log: String, e: Throwable) = xLogStack().e(log, e)
 fun Any.xLogW(log: String, e: Throwable) = xLogStack().w(log, e)
 fun Any.xLogD(log: String, e: Throwable) = xLogStack().d(log, e)
@@ -69,7 +68,6 @@ sealed class LogLevel(val int: Int, val androidLevel: Int) {
         )
     }
 }
-
 
 @Deprecated("Use proper throwable function", ReplaceWith("""xLogE("", log)"""))
 fun Any.xLogE(log: Throwable) = xLogStack().e(log)

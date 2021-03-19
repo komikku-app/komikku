@@ -229,7 +229,7 @@ class EHentai(
         } else {
             parsedLocation.queryParameter(REVERSE_PARAM)!!.toBoolean()
         }
-        Pair(parsedMangas, hasNextPage)
+        parsedMangas to hasNextPage
     }
 
     private fun getGenre(element: Element? = null, genreString: String? = null): String? {
@@ -879,8 +879,7 @@ class EHentai(
             stringBuilder.append(" ")
         }
 
-        xLogD(stringBuilder.toString())
-        return stringBuilder.toString().trim()
+        return stringBuilder.toString().trim().also { xLogD(it) }
     }
 
     data class AdvSearchEntry(val search: Pair<String, String>, val exclude: Boolean)

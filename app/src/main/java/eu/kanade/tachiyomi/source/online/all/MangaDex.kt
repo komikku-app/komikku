@@ -215,7 +215,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 ).await().closeQuietly()
             }
 
-
             val response = client.newCall(GET(MdUtil.apiUrl + MdUtil.isLoggedInApi, headers)).await()
 
             withIOContext { response.body?.string() }.let { jsonData ->
