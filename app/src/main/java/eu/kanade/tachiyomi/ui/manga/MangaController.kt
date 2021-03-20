@@ -95,6 +95,7 @@ import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.hasCustomCover
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
@@ -1401,7 +1402,9 @@ class MangaController :
         chapters.forEach {
             chaptersAdapter?.updateItem(it)
         }
-        chaptersAdapter?.notifyDataSetChanged()
+        launchUI {
+            chaptersAdapter?.notifyDataSetChanged()
+        }
     }
 
     fun onChaptersDeletedError(error: Throwable) {
