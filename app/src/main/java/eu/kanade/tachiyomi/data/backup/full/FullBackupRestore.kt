@@ -58,6 +58,8 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
             restoreManga(it, backup.backupCategories)
         }
 
+        // TODO: optionally trigger online library + tracker update
+
         return true
     }
 
@@ -94,16 +96,10 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         EXHMigrations.migrateBackupEntry(manga)
         // SY <--
 
-        val source = backupManager.sourceManager.get(manga.source)
-        val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
-
         try {
-            if (source != null) {
-                restoreMangaData(manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
-            } else {
-                errors.add(Date() to "${manga.title} [$sourceName]: ${context.getString(R.string.source_not_found_name, sourceName)}")
-            }
+            restoreMangaData(manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
         } catch (e: Exception) {
+            val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
             errors.add(Date() to "${manga.title} [$sourceName]: ${e.message}")
         }
 
