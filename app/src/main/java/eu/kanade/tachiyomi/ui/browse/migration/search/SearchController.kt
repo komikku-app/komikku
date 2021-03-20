@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.bundleOf
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsMultiChoice
+import com.bluelinelabs.conductor.Controller
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -24,6 +26,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.appcompat.QueryTextEvent
 import reactivecircus.flowbinding.appcompat.queryTextEvents
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class SearchController(
@@ -70,19 +74,15 @@ class SearchController(
         newManga = savedInstanceState.getSerializable(::newManga.name) as? Manga
     }
 
-    fun migrateManga() {
+    fun migrateManga(manga: Manga, newManga: Manga) {
         val target = targetController as? MigrationInterface ?: return
-        val manga = manga ?: return
-        val newManga = newManga ?: return
 
         val nextManga = target.migrateManga(manga, newManga, true)
         replaceWithNewSearchController(nextManga)
     }
 
-    fun copyManga() {
+    fun copyManga(manga: Manga, newManga: Manga) {
         val target = targetController as? MigrationInterface ?: return
-        val manga = manga ?: return
-        val newManga = newManga ?: return
 
         val nextManga = target.migrateManga(manga, newManga, false)
         replaceWithNewSearchController(nextManga)
@@ -102,14 +102,14 @@ class SearchController(
     override fun onMangaClick(manga: Manga) {
         if (targetController is MigrationListController) {
             val migrationListController = targetController as? MigrationListController
-            val sourceManager: SourceManager by injectLazy()
+            val sourceManager = Injekt.get<SourceManager>()
             val source = sourceManager.get(manga.source) ?: return
             migrationListController?.useMangaForMigration(manga, source)
             router.popCurrentController()
             return
         }
         newManga = manga
-        val dialog = MigrationDialog()
+        val dialog = MigrationDialog(manga, newManga ?: return, this)
         dialog.targetController = this
         dialog.showDialog(router)
     }
@@ -119,12 +119,26 @@ class SearchController(
         super.onMangaClick(manga)
     }
 
-    class MigrationDialog : DialogController() {
+    class MigrationDialog(bundle: Bundle) : DialogController(bundle) {
+
+        constructor(manga: Manga, newManga: Manga, callingController: Controller) : this(
+            bundleOf(
+                MANGA_KEY to manga,
+                NEW_MANGA_KEY to newManga
+            )
+        ) {
+            this.callingController = callingController
+        }
+
+        private val manga: Manga = args.getSerializable(MANGA_KEY) as Manga
+        private val newManga: Manga = args.getSerializable(NEW_MANGA_KEY) as Manga
+        private var callingController: Controller? = null
 
         private val preferences: PreferencesHelper by injectLazy()
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val prefValue = preferences.migrateFlags().get()
+            val callingController = callingController
 
             val preselected =
                 MigrationFlags.getEnabledFlagsPositions(
@@ -145,12 +159,26 @@ class SearchController(
                     preferences.migrateFlags().set(newValue)
                 }
                 .positiveButton(R.string.migrate) {
-                    (targetController as? SearchController)?.migrateManga()
+                    if (callingController != null) {
+                        if (callingController.javaClass == SourceSearchController::class.java) {
+                            router.popController(callingController)
+                        }
+                    }
+                    (targetController as? SearchController)?.migrateManga(manga, newManga)
                 }
                 .negativeButton(R.string.copy) {
-                    (targetController as? SearchController)?.copyManga()
+                    if (callingController != null) {
+                        if (callingController.javaClass == SourceSearchController::class.java) {
+                            router.popController(callingController)
+                        }
+                    }
+                    (targetController as? SearchController)?.copyManga(manga, newManga)
                 }
                 .neutralButton(android.R.string.cancel)
+        }
+        companion object {
+            const val MANGA_KEY = "manga_key"
+            const val NEW_MANGA_KEY = "new_manga_key"
         }
     }
 
@@ -182,5 +210,11 @@ class SearchController(
                 setTitle() // Update toolbar title
             }
             .launchIn(viewScope)
+    }
+
+    override fun onTitleClick(source: CatalogueSource) {
+        presenter.preferences.lastUsedSource().set(source.id)
+
+        router.pushController(SourceSearchController(manga!!, source, presenter.query).withFadeTransaction())
     }
 }
