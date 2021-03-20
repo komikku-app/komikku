@@ -86,5 +86,6 @@ class WebtoonConfig(
             4 -> RightAndLeftNavigation()
             else -> defaultNavigation()
         }
+        navigationModeChangedListener?.invoke()
     }
 }

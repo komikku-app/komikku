@@ -51,6 +51,12 @@ class SettingsReaderController : SettingsController() {
             defaultValue = true
         }
         switchPreference {
+            key = Keys.showNavigationOverlayOnStart
+            titleRes = R.string.pref_show_navigation_mode
+            summaryRes = R.string.pref_show_navigation_mode_summary
+            defaultValue = false
+        }
+        switchPreference {
             key = Keys.forceHorizontalSeekbar
             titleRes = R.string.pref_force_horz_seekbar
             summaryRes = R.string.pref_force_horz_seekbar_summary

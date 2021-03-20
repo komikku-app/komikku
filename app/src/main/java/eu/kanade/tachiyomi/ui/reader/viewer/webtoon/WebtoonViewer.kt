@@ -136,6 +136,11 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             refreshAdapter()
         }
 
+        config.navigationModeChangedListener = {
+            val showOnStart = config.navigationOverlayOnStart || config.forceNavigationOverlay
+            activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
+        }
+
         // SY -->
         config.zoomPropertyChangedListener = {
             frame.enableZoomOut = it
