@@ -360,4 +360,6 @@ object PreferenceKeys {
     const val landscapeVerticalSeekbar = "pref_show_vert_seekbar_landscape"
 
     const val leftVerticalSeekbar = "pref_left_handed_vertical_seekbar"
+
+    const val forceHorizontalSeekbar = "pref_force_horz_seekbar"
 }

@@ -262,10 +262,6 @@
     <string name="pref_show_page_number">Show page number</string>
     <string name="pref_show_reading_mode">Show reading mode</string>
     <string name="pref_show_reading_mode_summary">Briefly show current mode when reader is opened</string>
-    <string name="pref_show_vert_seekbar_landscape">Show vertical seekbar in landscape</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Enables vertical seekbar when in landscape</string>
-    <string name="pref_left_handed_vertical_seekbar">Left-handed vertical seekbar</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Switches which side the seekbar is on</string>
     <string name="pref_true_color">32-bit color</string>
     <string name="pref_true_color_summary">Reduces banding, but impacts performance</string>
     <string name="pref_crop_borders">Crop borders</string>

@@ -51,6 +51,12 @@ class SettingsReaderController : SettingsController() {
             defaultValue = true
         }
         switchPreference {
+            key = Keys.forceHorizontalSeekbar
+            titleRes = R.string.pref_force_horz_seekbar
+            summaryRes = R.string.pref_force_horz_seekbar_summary
+            defaultValue = false
+        }
+        switchPreference {
             key = Keys.landscapeVerticalSeekbar
             titleRes = R.string.pref_show_vert_seekbar_landscape
             summaryRes = R.string.pref_show_vert_seekbar_landscape_summary

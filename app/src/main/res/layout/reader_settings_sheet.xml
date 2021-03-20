@@ -123,12 +123,20 @@
         app:layout_constraintTop_toBottomOf="@id/background_color" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/force_horz_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pref_force_horz_seekbar"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/show_page_number" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/landscape_vertical_seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/pref_show_vert_seekbar_landscape"
         android:textColor="?android:attr/textColorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/show_page_number" />
+        app:layout_constraintTop_toBottomOf="@id/force_horz_seekbar" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/left_vertical_seekbar"
