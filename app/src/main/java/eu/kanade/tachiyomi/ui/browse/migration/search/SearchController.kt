@@ -109,7 +109,8 @@ class SearchController(
             return
         }
         newManga = manga
-        val dialog = MigrationDialog(manga, newManga ?: return, this)
+        val dialog =
+            MigrationDialog(this.manga ?: return, newManga ?: return, this)
         dialog.targetController = this
         dialog.showDialog(router)
     }
