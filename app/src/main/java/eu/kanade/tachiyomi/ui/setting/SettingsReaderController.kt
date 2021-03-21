@@ -67,12 +67,14 @@ class SettingsReaderController : SettingsController() {
             titleRes = R.string.pref_show_vert_seekbar_landscape
             summaryRes = R.string.pref_show_vert_seekbar_landscape_summary
             defaultValue = false
+            preferences.forceHorizontalSeekbar().asImmediateFlow { isVisible = !it }.launchIn(viewScope)
         }
         switchPreference {
             key = Keys.leftVerticalSeekbar
             titleRes = R.string.pref_left_handed_vertical_seekbar
             summaryRes = R.string.pref_left_handed_vertical_seekbar_summary
             defaultValue = false
+            preferences.forceHorizontalSeekbar().asImmediateFlow { isVisible = !it }.launchIn(viewScope)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             switchPreference {
