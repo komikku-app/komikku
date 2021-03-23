@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
-import exh.util.executeOnIO
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -66,7 +65,7 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
          * Notice: Blocking I/O operation should not be executed on the Main Thread,
          * it can cause ANR (Activity Not Responding dialog), block the UI and drop animations frames.
          * So please, execute blocking I/O operation only from background thread.
-         * See [WorkerThread].
+         * See [androidx.annotation.WorkerThread].
          *
          * @return nullable result of operation.
          */
@@ -93,7 +92,7 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
     }
 }
 
-fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata): Completable = Completable.fromCallable {
+fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata) {
     require(flatMetadata.metadata.mangaId != -1L)
 
     inTransaction {
@@ -103,12 +102,16 @@ fun DatabaseHelper.insertFlatMetadata(flatMetadata: FlatMetadata): Completable =
     }
 }
 
+fun DatabaseHelper.insertFlatMetadataCompletable(flatMetadata: FlatMetadata): Completable = Completable.fromCallable {
+    insertFlatMetadata(flatMetadata)
+}
+
 suspend fun DatabaseHelper.insertFlatMetadataAsync(flatMetadata: FlatMetadata): Deferred<Unit> = coroutineScope {
     async {
         require(flatMetadata.metadata.mangaId != -1L)
 
         inTransaction {
-            insertSearchMetadata(flatMetadata.metadata).executeOnIO()
+            insertSearchMetadata(flatMetadata.metadata).executeAsBlocking()
             setSearchTagsForManga(flatMetadata.metadata.mangaId, flatMetadata.tags)
             setSearchTitlesForManga(flatMetadata.metadata.mangaId, flatMetadata.titles)
         }

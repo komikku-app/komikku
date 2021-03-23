@@ -142,7 +142,7 @@ class GalleryAdder {
                 manga.date_added = System.currentTimeMillis()
             }
 
-            db.insertManga(manga).executeOnIO()
+            db.insertManga(manga).executeAsBlocking()
 
             // Fetch and copy chapters
             try {

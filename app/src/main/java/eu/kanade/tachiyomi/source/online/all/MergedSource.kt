@@ -181,9 +181,9 @@ class MergedSource : HttpSource() {
             }
             manga.copyFrom(source.getMangaDetails(manga.toMangaInfo()).toSManga())
             try {
-                manga.id = db.insertManga(manga).executeOnIO().insertedId()
+                manga.id = db.insertManga(manga).executeAsBlocking().insertedId()
                 mangaId = manga.id
-                db.insertNewMergedMangaId(this).executeOnIO()
+                db.insertNewMergedMangaId(this).executeAsBlocking()
             } catch (e: Exception) {
                 xLogW("Error inserting merged manga id", e)
             }

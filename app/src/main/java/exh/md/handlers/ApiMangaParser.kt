@@ -15,7 +15,7 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.metadata.metadata.base.insertFlatMetadataCompletable
 import exh.util.executeOnIO
 import exh.util.floor
 import exh.util.nullIfZero
@@ -65,7 +65,7 @@ class ApiMangaParser(private val lang: String) {
         }.flatMapCompletable {
             if (mangaId != null) {
                 it.mangaId = mangaId
-                db.insertFlatMetadata(it.flatten())
+                db.insertFlatMetadataCompletable(it.flatten())
             } else Completable.complete()
         }
     }
@@ -80,7 +80,7 @@ class ApiMangaParser(private val lang: String) {
         parseInfoIntoMetadata(metadata, input, coverUrls)
         if (mangaId != null) {
             metadata.mangaId = mangaId
-            db.insertFlatMetadataAsync(metadata.flatten()).await()
+            db.insertFlatMetadata(metadata.flatten())
         }
 
         return metadata.createMangaInfo(manga)

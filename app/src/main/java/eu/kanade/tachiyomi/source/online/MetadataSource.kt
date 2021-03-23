@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.metadata.metadata.base.insertFlatMetadataCompletable
 import exh.util.executeOnIO
 import rx.Completable
 import rx.Single
@@ -72,7 +72,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
         }.flatMapCompletable {
             if (mangaId != null) {
                 it.mangaId = mangaId
-                db.insertFlatMetadata(it.flatten())
+                db.insertFlatMetadataCompletable(it.flatten())
             } else Completable.complete()
         }
     }
@@ -87,7 +87,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
         parseInfoIntoMetadata(metadata, input)
         if (mangaId != null) {
             metadata.mangaId = mangaId
-            db.insertFlatMetadataAsync(metadata.flatten()).await()
+            db.insertFlatMetadata(metadata.flatten())
         }
 
         return metadata.createMangaInfo(manga)
@@ -119,7 +119,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
                     val newMetaSingle = Single.just(newMeta)
                     if (mangaId != null) {
                         newMeta.mangaId = mangaId
-                        db.insertFlatMetadata(newMeta.flatten()).andThen(newMetaSingle)
+                        db.insertFlatMetadataCompletable(newMeta.flatten()).andThen(newMetaSingle)
                     } else newMetaSingle
                 }
             } else Single.just(existingMeta)
@@ -146,7 +146,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
             parseInfoIntoMetadata(newMeta, input)
             if (mangaId != null) {
                 newMeta.mangaId = mangaId
-                db.insertFlatMetadataAsync(newMeta.flatten()).await().let { newMeta }
+                db.insertFlatMetadata(newMeta.flatten()).let { newMeta }
             } else newMeta
         }
     }
