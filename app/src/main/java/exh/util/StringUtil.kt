@@ -7,7 +7,7 @@ fun List<String>.dropEmpty() = filter { it.isNotEmpty() }
 private val articleRegex by lazy { "^(an|a|the) ".toRegex(RegexOption.IGNORE_CASE) }
 
 fun String.removeArticles(): String {
-    return this.replace(articleRegex, "")
+    return replace(articleRegex, "")
 }
 
 fun String.trimOrNull(): String? {

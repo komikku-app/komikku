@@ -232,7 +232,7 @@ class EHentaiUpdateWorker : JobService() {
                 if ((new.isNotEmpty() && manga.id == acceptedRoot.manga.id) ||
                     (hasNew && updatedManga.none { it.first.id == acceptedRoot.manga.id })
                 ) {
-                    updatedManga += Pair(acceptedRoot.manga, new.toTypedArray())
+                    updatedManga += acceptedRoot.manga to new.toTypedArray()
                 }
 
                 modifiedThisIteration += acceptedRoot.manga.id!!

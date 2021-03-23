@@ -843,10 +843,11 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             !preferences.forceHorizontalSeekbar().get() &&
             (
                 (
-                    resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && preferences.landscapeVerticalSeekbar().get()) ||
+                    resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && preferences.landscapeVerticalSeekbar().get()
+                    ) ||
                     resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-                )
-            && (viewer is WebtoonViewer || viewer is VerticalPagerViewer)
+                ) &&
+            (viewer is WebtoonViewer || viewer is VerticalPagerViewer)
         ) {
             binding.readerNavVert.isVisible = true
             binding.readerNavHorz.isVisible = false
