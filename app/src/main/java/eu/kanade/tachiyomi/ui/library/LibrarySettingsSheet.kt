@@ -21,7 +21,7 @@ class LibrarySettingsSheet(
     router: Router,
     private val trackManager: TrackManager = Injekt.get(),
     onGroupClickListener: (ExtendedNavigationView.Group) -> Unit
-) : TabbedBottomSheetDialog(router) {
+) : TabbedBottomSheetDialog(router.activity!!) {
 
     val filters: Filter
     private val sort: Sort

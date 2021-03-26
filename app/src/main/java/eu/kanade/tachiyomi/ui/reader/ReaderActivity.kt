@@ -52,7 +52,6 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderColorFilterSheet
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsSheet
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
@@ -446,17 +445,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .launchIn(lifecycleScope)
          */
 
-        binding.actionCustomFilter.setOnClickListener {
-            val sheet = ReaderColorFilterSheet(this)
-                // Remove dimmed backdrop so changes can be previewed
-                .apply { window?.setDimAmount(0f) }
-
-            // Hide toolbars while sheet is open for better preview
-            sheet.setOnDismissListener { setMenuVisibility(true) }
-            setMenuVisibility(false)
-
-            sheet.show()
-        }
         binding.actionSettings.setOnClickListener {
             ReaderSettingsSheet(this).show()
         }
@@ -485,17 +473,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .launchIn(lifecycleScope)
          */
 
-        binding.actionCustomFilter.setOnClickListener {
-            val sheet = ReaderColorFilterSheet(this)
-                // Remove dimmed backdrop so changes can be previewed
-                .apply { window?.setDimAmount(0f) }
-
-            // Hide toolbars while sheet is open for better preview
-            sheet.setOnDismissListener { setMenuVisibility(true) }
-            setMenuVisibility(false)
-
-            sheet.show()
-        }
         binding.actionSettings.setOnClickListener {
             ReaderSettingsSheet(this).show()
         }
@@ -692,7 +669,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      * Sets the visibility of the menu according to [visible] and with an optional parameter to
      * [animate] the views.
      */
-    private fun setMenuVisibility(visible: Boolean, animate: Boolean = true) {
+    fun setMenuVisibility(visible: Boolean, animate: Boolean = true) {
         menuVisible = visible
         if (visible) {
             if (preferences.fullscreen().get()) {
