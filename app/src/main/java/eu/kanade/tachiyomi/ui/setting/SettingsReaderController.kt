@@ -265,11 +265,6 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_crop_borders
                 defaultValue = false
             }
-            switchPreference {
-                key = Keys.doublePageLandscape
-                titleRes = R.string.pref_dual_page_spread
-                defaultValue = false
-            }
         }
 
         preferenceCategory {

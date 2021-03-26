@@ -24,24 +24,6 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         private set
 
     var currentChapter: ReaderChapter? = null
-
-    // ///LOOPDEER
-    var twoPageSpreadMode = true
-    val config = viewer.config
-
-    override fun getPageWidth(position: Int): Float {
-        if (twoPageSpreadMode && config.landscapeMode) {
-            return 0.5f
-        } else {
-            return 1.0f
-        }
-    }
-
-    fun setBoolS(bool: Boolean) {
-        twoPageSpreadMode = bool
-    }
-    // ///PORTED FROM
-
     /**
      * Updates this adapter with the given [chapters]. It handles setting a few pages of the
      * next/previous chapter to allow seamless transitions and inverting the pages if the viewer
