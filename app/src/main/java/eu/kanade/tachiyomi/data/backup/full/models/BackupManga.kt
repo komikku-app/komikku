@@ -4,6 +4,7 @@ import eu.kanade.tachiyomi.data.database.models.ChapterImpl
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
+import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
@@ -36,7 +37,15 @@ data class BackupManga(
     @ProtoNumber(102) var history: List<BackupHistory> = emptyList(),
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
-    @ProtoNumber(601) var flatMetadata: BackupFlatMetadata? = null
+    @ProtoNumber(601) var flatMetadata: BackupFlatMetadata? = null,
+    @ProtoNumber(602) var customStatus: Int = 0,
+
+    // J2K specific values
+    @ProtoNumber(800) var customTitle: String? = null,
+    @ProtoNumber(801) var customArtist: String? = null,
+    @ProtoNumber(802) var customAuthor: String? = null,
+    @ProtoNumber(803) var customDescription: String? = null,
+    @ProtoNumber(803) var customGenre: List<String>? = null
 ) {
     fun getMangaImpl(): MangaImpl {
         return MangaImpl().apply {
@@ -62,6 +71,29 @@ data class BackupManga(
         }
     }
 
+    // SY -->
+    fun getCustomMangaInfo(): CustomMangaManager.MangaJson? {
+        if (customTitle != null ||
+            customArtist != null ||
+            customAuthor != null ||
+            customDescription != null ||
+            customGenre != null ||
+            customStatus != 0
+        ) {
+            return CustomMangaManager.MangaJson(
+                id = 0L,
+                title = customTitle,
+                author = customAuthor,
+                artist = customArtist,
+                description = customDescription,
+                genre = customGenre,
+                status = customStatus.takeUnless { it == 0 }
+            )
+        }
+        return null
+    }
+    // SY <--
+
     fun getTrackingImpl(): List<TrackImpl> {
         return tracking.map {
             it.getTrackingImpl()
@@ -69,22 +101,35 @@ data class BackupManga(
     }
 
     companion object {
-        fun copyFrom(manga: Manga): BackupManga {
+        fun copyFrom(manga: Manga /* SY --> */, customMangaManager: CustomMangaManager?/* SY <-- */): BackupManga {
             return BackupManga(
                 url = manga.url,
-                title = manga.title,
-                artist = manga.artist,
-                author = manga.author,
-                description = manga.description,
-                genre = manga.getGenres() ?: emptyList(),
-                status = manga.status,
+                // SY -->
+                title = manga.originalTitle,
+                artist = manga.originalArtist,
+                author = manga.originalAuthor,
+                description = manga.originalDescription,
+                genre = manga.getOriginalGenres() ?: emptyList(),
+                status = manga.originalStatus,
+                // SY <--
                 thumbnailUrl = manga.thumbnail_url,
                 favorite = manga.favorite,
                 source = manga.source,
                 dateAdded = manga.date_added,
                 viewer = manga.viewer,
                 chapterFlags = manga.chapter_flags
-            )
+                // SY -->
+            ).also { backupManga ->
+                customMangaManager?.getManga(manga)?.let {
+                    backupManga.customTitle = it.title
+                    backupManga.customArtist = it.artist
+                    backupManga.customAuthor = it.author
+                    backupManga.customDescription = it.description
+                    backupManga.customGenre = it.getGenres()
+                    backupManga.customStatus = it.status
+                }
+            }
+            // SY <--
         }
     }
 }

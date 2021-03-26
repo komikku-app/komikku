@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
+import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import exh.EXHMigrations
 import exh.source.MERGED_SOURCE_ID
 import okio.buffer
@@ -90,6 +91,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         // SY -->
         val mergedMangaReferences = backupManga.mergedMangaReferences
         val flatMetadata = backupManga.flatMetadata
+        val customManga = backupManga.getCustomMangaInfo()
         // SY <--
 
         // SY -->
@@ -97,7 +99,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         // SY <--
 
         try {
-            restoreMangaData(manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+            restoreMangaData(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
         } catch (e: Exception) {
             val sourceName = sourceMapping[manga.source] ?: manga.source.toString()
             errors.add(Date() to "${manga.title} [$sourceName]: ${e.message}")
@@ -123,20 +125,23 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         history: List<BackupHistory>,
         tracks: List<Track>,
         backupCategories: List<BackupCategory>,
+        // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
-        flatMetadata: BackupFlatMetadata?
+        flatMetadata: BackupFlatMetadata?,
+        customManga: CustomMangaManager.MangaJson?,
+        // SY -->
     ) {
         db.inTransaction {
             val dbManga = backupManager.getMangaFromDatabase(manga)
             if (dbManga == null) {
                 // Manga not in database
-                restoreMangaFetch(manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+                restoreMangaFetch(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
             } else {
                 // Manga in database
                 // Copy information from manga already in database
                 backupManager.restoreMangaNoFetch(manga, dbManga)
                 // Fetch rest of manga information
-                restoreMangaNoFetch(manga, chapters, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+                restoreMangaNoFetch(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
             }
         }
     }
@@ -155,16 +160,18 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         history: List<BackupHistory>,
         tracks: List<Track>,
         backupCategories: List<BackupCategory>,
+        // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
-        flatMetadata: BackupFlatMetadata?
+        flatMetadata: BackupFlatMetadata?,
+        customManga: CustomMangaManager.MangaJson?,
+        // SY <--
     ) {
         try {
             val fetchedManga = backupManager.restoreManga(manga)
             fetchedManga.id ?: return
-
             backupManager.restoreChaptersForManga(fetchedManga, chapters)
 
-            restoreExtraForManga(fetchedManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+            restoreExtraForManga(fetchedManga, categories, history, tracks, backupCategories /* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
         } catch (e: Exception) {
             errors.add(Date() to "${manga.title} - ${e.message}")
         }
@@ -177,15 +184,29 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         history: List<BackupHistory>,
         tracks: List<Track>,
         backupCategories: List<BackupCategory>,
+        // SY -->
         mergedMangaReferences: List<BackupMergedMangaReference>,
-        flatMetadata: BackupFlatMetadata?
+        flatMetadata: BackupFlatMetadata?,
+        customManga: CustomMangaManager.MangaJson?,
+        // SY <--
     ) {
         backupManager.restoreChaptersForManga(backupManga, chapters)
 
-        restoreExtraForManga(backupManga, categories, history, tracks, backupCategories, mergedMangaReferences, flatMetadata)
+        restoreExtraForManga(backupManga, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
     }
 
-    private fun restoreExtraForManga(manga: Manga, categories: List<Int>, history: List<BackupHistory>, tracks: List<Track>, backupCategories: List<BackupCategory>, mergedMangaReferences: List<BackupMergedMangaReference>, flatMetadata: BackupFlatMetadata?) {
+    private fun restoreExtraForManga(
+        manga: Manga,
+        categories: List<Int>,
+        history: List<BackupHistory>,
+        tracks: List<Track>,
+        backupCategories: List<BackupCategory>,
+        // SY -->
+        mergedMangaReferences: List<BackupMergedMangaReference>,
+        flatMetadata: BackupFlatMetadata?,
+        customManga: CustomMangaManager.MangaJson?,
+        // SY <--
+    ) {
         // Restore categories
         backupManager.restoreCategoriesForManga(manga, categories, backupCategories)
 
@@ -201,6 +222,10 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
 
         // Restore flat metadata for metadata sources
         flatMetadata?.let { backupManager.restoreFlatMetadata(manga, it) }
+
+        // Restore Custom Info
+        customManga?.id = manga.id!!
+        customManga?.let { customMangaManager.saveMangaInfo(it) }
         // SY <--
     }
 }

@@ -72,7 +72,7 @@ class CustomMangaManager(val context: Context) {
 
     @Serializable
     data class MangaJson(
-        val id: Long? = null,
+        var id: Long? = null,
         val title: String? = null,
         val author: String? = null,
         val artist: String? = null,

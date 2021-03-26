@@ -8,6 +8,8 @@ import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATE
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CATEGORY_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CHAPTER
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CHAPTER_MASK
+import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CUSTOM_INFO
+import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CUSTOM_INFO_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_HISTORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_HISTORY_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_TRACK
@@ -161,7 +163,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      */
     private fun backupMangaObject(manga: Manga, options: Int): BackupManga {
         // Entry for this manga
-        val mangaObject = BackupManga.copyFrom(manga)
+        val mangaObject = BackupManga.copyFrom(manga /* SY --> */, if (options and BACKUP_CUSTOM_INFO_MASK == BACKUP_CUSTOM_INFO) customMangaManager else null /* SY <-- */)
 
         // SY -->
         if (manga.source == MERGED_SOURCE_ID) {
