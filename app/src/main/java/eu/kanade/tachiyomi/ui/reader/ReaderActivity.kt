@@ -68,6 +68,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.defaultBar
 import eu.kanade.tachiyomi.util.view.hideBar
 import eu.kanade.tachiyomi.util.view.isDefaultBar
+import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.showBar
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
@@ -449,22 +450,33 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             ReaderSettingsSheet(this).show()
         }
 
-        /*binding.actionReaderMode.setOnClickListener {
-            val newReadingMode = ReadingModeType.getNextReadingMode(presenter.getMangaViewer(resolveDefault = false))
-            presenter.setMangaViewer(newReadingMode.prefValue)
 
-            menuToggleToast?.cancel()
-            menuToggleToast = toast(newReadingMode.stringRes)
+        /*with(binding.actionReaderMode) {
+            setTooltip(R.string.viewer)
+
+            setOnClickListener {
+                val newReadingMode =
+                    ReadingModeType.getNextReadingMode(presenter.getMangaViewer(resolveDefault = false))
+                presenter.setMangaViewer(newReadingMode.prefValue)
+
+                menuToggleToast?.cancel()
+                menuToggleToast = toast(newReadingMode.stringRes)
+            }
         }
 
-        binding.actionRotation.setOnClickListener {
-            val newOrientation = OrientationType.getNextOrientation(preferences.rotation().get(), resources)
+        with(binding.actionRotation) {
+            setTooltip(R.string.pref_rotation_type)
 
-            preferences.rotation().set(newOrientation.prefValue)
-            setOrientation(newOrientation.flag)
+            setOnClickListener {
+                val newOrientation =
+                    OrientationType.getNextOrientation(preferences.rotation().get(), resources)
 
-            menuToggleToast?.cancel()
-            menuToggleToast = toast(newOrientation.stringRes)
+                preferences.rotation().set(newOrientation.prefValue)
+                setOrientation(newOrientation.flag)
+
+                menuToggleToast?.cancel()
+                menuToggleToast = toast(newOrientation.stringRes)
+            }
         }
         preferences.rotation().asImmediateFlow { updateRotationShortcut(it) }
             .onEach {
@@ -473,16 +485,29 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             .launchIn(lifecycleScope)
          */
 
-        binding.actionSettings.setOnClickListener {
-            ReaderSettingsSheet(this).show()
+        with(binding.actionSettings) {
+            setTooltip(R.string.action_settings)
+
+            setOnClickListener {
+                ReaderSettingsSheet(this@ReaderActivity).show()
+            }
         }
 
         // --> EH
-        binding.actionWebView.setOnClickListener {
-            openMangaInBrowser()
+        with(binding.actionWebView) {
+            setTooltip(R.string.action_open_in_web_view)
+
+            setOnClickListener {
+                openMangaInBrowser()
+            }
         }
-        binding.actionChapterList.setOnClickListener {
-            chapterBottomSheet.show()
+
+        with(binding.actionChapterList) {
+            setTooltip(R.string.chapters)
+
+            setOnClickListener {
+                chapterBottomSheet.show()
+            }
         }
 
         binding.expandEhButton.clicks()
