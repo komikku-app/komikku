@@ -450,7 +450,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             ReaderSettingsSheet(this).show()
         }
 
-
         /*with(binding.actionReaderMode) {
             setTooltip(R.string.viewer)
 
