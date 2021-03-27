@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,20 +18,17 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.base.controller.FabController
-import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import exh.util.nullIfBlank
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.buildJsonObject
 import reactivecircus.flowbinding.android.view.clicks
-import reactivecircus.flowbinding.appcompat.QueryTextEvent
-import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -43,7 +39,7 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * [IndexCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
 open class IndexController :
-    NucleusController<IndexControllerBinding, IndexPresenter>,
+    SearchableNucleusController<IndexControllerBinding, IndexPresenter>,
     FabController,
     IndexCardAdapter.OnMangaClickListener {
 
@@ -130,35 +126,11 @@ open class IndexController :
      * @param inflater used to load the menu xml.
      */
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate menu.
-        inflater.inflate(R.menu.global_search, menu)
+        createOptionsMenu(menu, inflater, R.menu.global_search, R.id.action_search)
+    }
 
-        // Initialize search menu
-        val searchItem = menu.findItem(R.id.action_search)
-        val searchView = searchItem.actionView as SearchView
-        searchView.maxWidth = Int.MAX_VALUE
-
-        val query = presenter.query
-        if (query.isNotBlank()) {
-            searchItem.expandActionView()
-            searchView.setQuery(query, true)
-            searchView.clearFocus()
-        }
-
-        searchView.queryTextEvents()
-            .filter { router.backstack.lastOrNull()?.controller() == this@IndexController }
-            .onEach {
-                if (it is QueryTextEvent.QueryChanged) {
-                    presenter.query = it.queryText.toString()
-                } else if (it is QueryTextEvent.QuerySubmitted) {
-                    onBrowseClick(presenter.query.nullIfBlank())
-                }
-            }
-            .launchIn(viewScope)
-
-        searchItem.fixExpand(
-            onExpand = { invalidateMenuOnExpand() }
-        )
+    override fun onSearchViewQueryTextSubmit(query: String?) {
+        onBrowseClick(presenter.query.nullIfBlank())
     }
 
     /**

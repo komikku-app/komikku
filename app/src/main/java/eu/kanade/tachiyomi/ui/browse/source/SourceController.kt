@@ -10,7 +10,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
@@ -28,7 +27,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
@@ -39,12 +38,7 @@ import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.category.sources.ChangeSourceCategoriesDialog
 import eu.kanade.tachiyomi.util.system.toast
 import exh.ui.smartsearch.SmartSearchController
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
-import reactivecircus.flowbinding.appcompat.QueryTextEvent
-import reactivecircus.flowbinding.appcompat.queryTextEvents
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -55,7 +49,7 @@ import uy.kohesive.injekt.api.get
  * [SourceAdapter.OnLatestClickListener] call function data on latest item click
  */
 class SourceController(bundle: Bundle? = null) :
-    NucleusController<SourceMainControllerBinding, SourcePresenter>(bundle),
+    SearchableNucleusController<SourceMainControllerBinding, SourcePresenter>(bundle),
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     SourceAdapter.OnSourceClickListener,
@@ -334,44 +328,6 @@ class SourceController(bundle: Bundle? = null) :
     // SY <--
 
     /**
-     * Adds items to the options menu.
-     *
-     * @param menu menu containing options.
-     * @param inflater used to load the menu xml.
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        // Inflate menu
-        inflater.inflate(R.menu.source_main, menu)
-
-        // SY -->
-        if (mode == Mode.SMART_SEARCH) {
-            menu.findItem(R.id.action_search).isVisible = false
-            menu.findItem(R.id.action_settings).isVisible = false
-        }
-        // SY <--
-
-        // Initialize search option.
-        val searchItem = menu.findItem(R.id.action_search)
-        val searchView = searchItem.actionView as SearchView
-        searchView.maxWidth = Int.MAX_VALUE
-
-        // Change hint to show global search.
-        searchView.queryHint = applicationContext?.getString(R.string.action_global_search_hint)
-
-        // Create query listener which opens the global search view.
-        searchView.queryTextEvents()
-            .filterIsInstance<QueryTextEvent.QuerySubmitted>()
-            .onEach { performGlobalSearch(it.queryText.toString()) }
-            .launchIn(viewScope)
-    }
-
-    private fun performGlobalSearch(query: String) {
-        parentController!!.router.pushController(
-            GlobalSearchController(query).withFadeTransaction()
-        )
-    }
-
-    /**
      * Called when an option menu item has been selected by the user.
      *
      * @param item The selected item.
@@ -429,6 +385,27 @@ class SourceController(bundle: Bundle? = null) :
                     dialog.dismiss()
                 }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        createOptionsMenu(
+            menu,
+            inflater,
+            R.menu.source_main,
+            R.id.action_search,
+            R.string.action_global_search_hint,
+            false // GlobalSearch handles the searching here
+        )
+    }
+
+    override fun onSearchViewQueryTextSubmit(query: String?) {
+        // SY -->
+        if (mode != Mode.SMART_SEARCH) {
+            parentController!!.router.pushController(
+                GlobalSearchController(query).withFadeTransaction()
+            )
+        }
+        // SY <--
     }
 
     // SY -->

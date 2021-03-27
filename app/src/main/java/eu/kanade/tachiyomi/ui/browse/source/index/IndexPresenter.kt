@@ -54,11 +54,6 @@ open class IndexPresenter(
     private var fetchSourcesSubscription: Subscription? = null
 
     /**
-     * Query from the view.
-     */
-    var query = ""
-
-    /**
      * Subject which fetches image of given manga.
      */
     private val fetchImageSubject = PublishSubject.create<List<Pair<Manga, Boolean>>>()
@@ -82,6 +77,10 @@ open class IndexPresenter(
     val latestItems = MutableStateFlow<List<IndexCardItem>?>(null)
 
     val browseItems = MutableStateFlow<List<IndexCardItem>?>(null)
+
+    init {
+        query = ""
+    }
 
     override fun onDestroy() {
         fetchSourcesSubscription?.unsubscribe()
