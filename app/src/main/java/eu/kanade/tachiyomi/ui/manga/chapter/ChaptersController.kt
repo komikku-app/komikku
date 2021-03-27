@@ -27,7 +27,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.databinding.ChaptersControllerBinding
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.AnimeHttpSource
+import eu.kanade.tachiyomi.source.online.AnimeSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -341,7 +341,7 @@ class ChaptersController :
     fun openChapter(chapter: Chapter, hasAnimation: Boolean = false) {
         val activity = activity ?: return
 
-        val intent = if (sourceManager.getOrStub(presenter.manga.source) is AnimeHttpSource) {
+        val intent = if (sourceManager.getOrStub(presenter.manga.source) is AnimeSource) {
             VideoActivity.newIntent(activity, presenter.manga, chapter)
         } else {
             ReaderActivity.newIntent(activity, presenter.manga, chapter)
