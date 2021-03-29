@@ -20,6 +20,8 @@ class PagerConfig(
     preferences: PreferencesHelper = Injekt.get()
 ) : ViewerConfig(preferences, scope) {
 
+    var dualPageSplitChangedListener: ((Boolean) -> Unit)? = null
+
     var imageScaleType = 1
         private set
 
@@ -56,7 +58,13 @@ class PagerConfig(
             )
 
         preferences.dualPageSplitPaged()
-            .register({ dualPageSplit = it }, { imagePropertyChangedListener?.invoke() })
+            .register(
+                { dualPageSplit = it },
+                {
+                    imagePropertyChangedListener?.invoke()
+                    dualPageSplitChangedListener?.invoke(it)
+                }
+            )
 
         preferences.dualPageInvertPaged()
             .register({ dualPageInvert = it }, { imagePropertyChangedListener?.invoke() })
