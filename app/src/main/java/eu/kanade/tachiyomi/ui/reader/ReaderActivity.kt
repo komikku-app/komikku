@@ -489,11 +489,18 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             setTooltip(R.string.pref_crop_borders)
 
             setOnClickListener {
-                val isPagerType = ReadingModeType.isPagerType(presenter.getMangaViewer())
+                val mangaViewer = presenter.getMangaViewer()
+                val isPagerType = ReadingModeType.isPagerType(mangaViewer)
                 if (isPagerType) {
                     preferences.cropBorders().toggle()
                 } else {
-                    preferences.cropBordersWebtoon().toggle()
+                    // SY -->
+                    if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
+                        preferences.cropBordersContinuesVertical().toggle()
+                    } else {
+                        preferences.cropBordersWebtoon().toggle()
+                    }
+                    // SY <--
                 }
             }
         }
