@@ -451,7 +451,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             ReaderSettingsSheet(this).show()
         }
 
-        /*with(binding.actionReaderMode) {
+        // Reading mode
+        /*with(binding.actionReadingMode) {
             setTooltip(R.string.viewer)
 
             setOnClickListener {
@@ -460,10 +461,13 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 presenter.setMangaViewer(newReadingMode.prefValue)
 
                 menuToggleToast?.cancel()
-                menuToggleToast = toast(newReadingMode.stringRes)
+                if (!preferences.showReadingMode()) {
+                    menuToggleToast = toast(newReadingMode.stringRes)
+                }
             }
         }
 
+        // Rotation
         with(binding.actionRotation) {
             setTooltip(R.string.pref_rotation_type)
 
@@ -479,12 +483,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         }
         preferences.rotation().asImmediateFlow { updateRotationShortcut(it) }
-            .onEach {
-                updateRotationShortcut(it)
-            }
             .launchIn(lifecycleScope)
          */
 
+        // Crop borders
         with(binding.actionCropBorders) {
             setTooltip(R.string.pref_crop_borders)
 
@@ -504,7 +506,15 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
             }
         }
+        updateCropBordersShortcut()
+        listOf(preferences.cropBorders(), preferences.cropBordersWebtoon() /* SY --> */, preferences.cropBordersContinuesVertical()/* SY <-- */)
+            .forEach { pref ->
+                pref.asFlow()
+                    .onEach { updateCropBordersShortcut() }
+                    .launchIn(lifecycleScope)
+            }
 
+        // Settings sheet
         with(binding.actionSettings) {
             setTooltip(R.string.action_settings)
 
@@ -710,6 +720,30 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.actionRotation.setImageResource(orientation.iconRes)
     }*/
 
+    private fun updateCropBordersShortcut() {
+        val mangaViewer = presenter.getMangaViewer()
+        val isPagerType = ReadingModeType.isPagerType(mangaViewer)
+        val enabled = if (isPagerType) {
+            preferences.cropBorders().get()
+        } else {
+            // SY -->
+            if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
+                preferences.cropBordersContinuesVertical().get()
+            } else {
+                preferences.cropBordersWebtoon().get()
+            }
+            // SY <--
+        }
+
+        binding.actionCropBorders.setImageResource(
+            if (enabled) {
+                R.drawable.ic_crop_24dp
+            } else {
+                R.drawable.ic_crop_off_24dp
+            }
+        )
+    }
+
     /**
      * Sets the visibility of the menu according to [visible] and with an optional parameter to
      * [animate] the views.
@@ -830,7 +864,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         val prevViewer = viewer
 
         /*val viewerMode = ReadingModeType.fromPreference(presenter.getMangaViewer(resolveDefault = false))
-        binding.actionReaderMode.setImageResource(viewerMode.iconRes)*/
+        binding.actionReadingMode.setImageResource(viewerMode.iconRes)*/
 
         val newViewer = when (presenter.getMangaViewer()) {
             ReadingModeType.LEFT_TO_RIGHT.prefValue -> L2RPagerViewer(this)
