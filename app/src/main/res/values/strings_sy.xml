@@ -343,7 +343,7 @@
     </plurals>
     <string name="error_repo_exists">This repo already exists!</string>
     <string name="snack_repo_deleted">Repo deleted</string>
-    <string name="invalid_repo_name">Invalid category name</string>
+    <string name="invalid_repo_name">Invalid repo name</string>
     <string name="repo_source">Repo source</string>
 
     <!-- Migration -->

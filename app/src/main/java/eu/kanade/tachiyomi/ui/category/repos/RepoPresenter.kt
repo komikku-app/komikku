@@ -79,6 +79,6 @@ class RepoPresenter(
     }
 
     companion object {
-        val repoRegex = """^[a-zA-Z-_.]*?\/[a-zA-Z-_.]*?$""".toRegex()
+        val repoRegex = """^[a-zA-Z0-9-_.]*?\/[a-zA-Z0-9-_.]*?$""".toRegex()
     }
 }
