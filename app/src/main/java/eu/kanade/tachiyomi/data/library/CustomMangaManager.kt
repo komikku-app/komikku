@@ -8,7 +8,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.util.Scanner
 
 class CustomMangaManager(val context: Context) {
 
@@ -23,7 +22,7 @@ class CustomMangaManager(val context: Context) {
 
         val json = try {
             Json.decodeFromString<MangaList>(
-                Scanner(editJson).useDelimiter("\\Z").next()
+                editJson.bufferedReader().use { it.readText() }
             )
         } catch (e: Exception) {
             null
@@ -89,18 +88,6 @@ class CustomMangaManager(val context: Context) {
             description = this@MangaJson.description
             genre = this@MangaJson.genre?.joinToString(", ")
             status = this@MangaJson.status ?: 0
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-            other as MangaJson
-            if (id != other.id) return false
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return id.hashCode()
         }
     }
 }
