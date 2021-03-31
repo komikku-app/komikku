@@ -35,7 +35,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.search.SearchController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.getResourceColor
@@ -48,7 +47,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import timber.log.Timber
@@ -73,6 +74,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     private val smartSearchEngine = SmartSearchEngine(config?.extraSearchParams)
 
+    private val migrationScope = CoroutineScope(Job() + Dispatchers.IO)
     var migrationsJob: Job? = null
         private set
     private var migratingManga: MutableList<MigratingManga>? = null
@@ -99,7 +101,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
         val newMigratingManga = migratingManga ?: run {
             val new = config.mangaIds.map {
-                MigratingManga(db, sourceManager, it, viewScope.coroutineContext + Dispatchers.IO)
+                MigratingManga(db, sourceManager, it, migrationScope.coroutineContext)
             }
             migratingManga = new.toMutableList()
             new
@@ -114,7 +116,7 @@ class MigrationListController(bundle: Bundle? = null) :
         adapter?.updateDataSet(newMigratingManga.map { it.toModal() })
 
         if (migrationsJob == null) {
-            migrationsJob = viewScope.launchIO {
+            migrationsJob = migrationScope.launch {
                 runMigrations(newMigratingManga)
             }
         }
@@ -275,6 +277,7 @@ class MigrationListController(bundle: Bundle? = null) :
     override fun onDestroy() {
         super.onDestroy()
 
+        migrationScope.cancel()
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 
