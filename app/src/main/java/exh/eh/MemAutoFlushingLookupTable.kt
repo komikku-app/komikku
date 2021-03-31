@@ -95,7 +95,7 @@ class MemAutoFlushingLookupTable<T>(
                     }
                 }
             } catch (e: FileNotFoundException) {
-                xLogD("Lookup table not found!", e)
+                this@MemAutoFlushingLookupTable.xLogD("Lookup table not found!", e)
                 // Ignored
             }
 

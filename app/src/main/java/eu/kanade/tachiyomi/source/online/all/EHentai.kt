@@ -325,7 +325,7 @@ class EHentai(
                             url = EHentaiSearchMetadata.normalizeUrl(parentLink)
                         } else break
                     } else {
-                        xLogD("Parent cache hit: %s!", gid)
+                        this@EHentai.xLogD("Parent cache hit: %s!", gid)
                         url = EHentaiSearchMetadata.idAndTokenToUrl(
                             cachedParent.gId,
                             cachedParent.gToken
@@ -613,7 +613,7 @@ class EHentai(
                     lastUpdateCheck - datePosted!! > EHentaiUpdateWorkerConstants.GALLERY_AGE_TIME
                 ) {
                     aged = true
-                    xLogD("aged %s - too old", title)
+                    this@EHentai.xLogD("aged %s - too old", title)
                 }
 
                 // Parse ratings
@@ -884,7 +884,15 @@ class EHentai(
 
     data class AdvSearchEntry(val search: Pair<String, String>, val exclude: Boolean)
 
-    class AutoCompleteTags(tags: List<String>, skipAutoFillTags: List<String>, excludePrefix: String) : Filter.AutoComplete(name = "Tags", hint = "Search tags here (limit of 8)", values = tags, skipAutoFillTags = skipAutoFillTags, excludePrefix = excludePrefix, state = emptyList())
+    class AutoCompleteTags(tags: List<String>, skipAutoFillTags: List<String>, excludePrefix: String) :
+        Filter.AutoComplete(
+            name = "Tags",
+            hint = "Search tags here (limit of 8)",
+            values = tags,
+            skipAutoFillTags = skipAutoFillTags,
+            excludePrefix = excludePrefix,
+            state = emptyList()
+        )
 
     class MinPagesOption : PageOption("Minimum Pages", "f_spf")
     class MaxPagesOption : PageOption("Maximum Pages", "f_spt")
