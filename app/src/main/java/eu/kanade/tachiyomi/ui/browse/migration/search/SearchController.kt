@@ -10,6 +10,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import com.bluelinelabs.conductor.Controller
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -33,11 +34,29 @@ import uy.kohesive.injekt.injectLazy
 class SearchController(
     private var manga: Manga? = null,
     private var sources: List<CatalogueSource>? = null
-) : GlobalSearchController(manga?.originalTitle) {
+) : GlobalSearchController(
+    manga?.originalTitle,
+    bundle = bundleOf(
+        OLD_MANGA to manga?.id,
+        SOURCES to sources?.map { it.id }?.toLongArray()
+    )
+) {
 
     private var newManga: Manga? = null
     private var progress = 1
     var totalProgress = 0
+
+    constructor(mangaId: Long, sources: LongArray):
+        this(
+            Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking(),
+            sources.map { Injekt.get<SourceManager>().getOrStub(it) }.filterIsInstance<CatalogueSource>()
+        )
+
+    @Suppress("unused")
+    constructor(bundle: Bundle): this(
+        bundle.getLong(OLD_MANGA),
+        bundle.getLongArray(SOURCES) ?: LongArray(0)
+    )
 
     /**
      * Called when controller is initialized.
@@ -60,18 +79,6 @@ class SearchController(
             manga!!,
             sources
         )
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(::manga.name, manga)
-        outState.putSerializable(::newManga.name, newManga)
-        super.onSaveInstanceState(outState)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        manga = savedInstanceState.getSerializable(::manga.name) as? Manga
-        newManga = savedInstanceState.getSerializable(::newManga.name) as? Manga
     }
 
     fun migrateManga(manga: Manga, newManga: Manga) {
@@ -217,5 +224,10 @@ class SearchController(
         presenter.preferences.lastUsedSource().set(source.id)
 
         router.pushController(SourceSearchController(manga!!, source, presenter.query).withFadeTransaction())
+    }
+
+    companion object {
+        const val OLD_MANGA = "old_manga"
+        const val SOURCES = "sources"
     }
 }
