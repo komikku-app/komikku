@@ -130,7 +130,13 @@ open class IndexController :
     }
 
     override fun onSearchViewQueryTextSubmit(query: String?) {
-        onBrowseClick(presenter.query.nullIfBlank())
+        onBrowseClick(query.nullIfBlank())
+    }
+
+    override fun onSearchViewQueryTextChange(newText: String?) {
+        if (router.backstack.lastOrNull()?.controller() == this) {
+            presenter.query = newText ?: ""
+        }
     }
 
     /**
@@ -168,13 +174,13 @@ open class IndexController :
 
         presenter.latestItems
             .onEach {
-                bindLatest(it)
+                bind(it, true)
             }
             .launchIn(viewScope)
 
         presenter.browseItems
             .onEach {
-                bindBrowse(it)
+                bind(it, false)
             }
             .launchIn(viewScope)
 
@@ -260,87 +266,48 @@ open class IndexController :
         actionFab = null
     }
 
-    private fun bindLatest(latestResults: List<IndexCardItem>?) {
+    private fun bind(results: List<IndexCardItem>?, isLatest: Boolean) {
+        val progress = if (isLatest) binding.latestProgress else binding.browseProgress
         when {
-            latestResults == null -> {
-                binding.latestProgress.isVisible = true
-                showLatestResultsHolder()
+            results == null -> {
+                progress.isVisible = true
+                showResultsHolder(isLatest)
             }
-            latestResults.isEmpty() -> {
-                binding.latestProgress.isVisible = false
-                showLatestNoResults()
+            results.isEmpty() -> {
+                progress.isVisible = false
+                showNoResults(isLatest)
             }
             else -> {
-                binding.latestProgress.isVisible = false
-                showLatestResultsHolder()
+                progress.isVisible = false
+                showResultsHolder(isLatest)
             }
         }
 
-        latestAdapter?.updateDataSet(latestResults)
-    }
-
-    private fun bindBrowse(browseResults: List<IndexCardItem>?) {
-        when {
-            browseResults == null -> {
-                binding.browseProgress.isVisible = true
-                showBrowseResultsHolder()
-            }
-            browseResults.isEmpty() -> {
-                binding.browseProgress.isVisible = false
-                showBrowseNoResults()
-            }
-            else -> {
-                binding.browseProgress.isVisible = false
-                showBrowseResultsHolder()
-            }
+        val adapter = if (isLatest) {
+            latestAdapter
+        } else {
+            browseAdapter
         }
-
-        browseAdapter?.updateDataSet(browseResults)
+        adapter?.updateDataSet(results)
     }
 
-    fun onLatestError(e: Exception) {
+    fun onError(e: Exception, isLatest: Boolean) {
         e.message?.let {
-            binding.latestNoResultsFound.text = it
+            val textView = if (isLatest) {
+                binding.latestNoResultsFound
+            } else {
+                binding.browseNoResultsFound
+            }
+            textView.text = it
         }
     }
 
-    fun onBrowseError(e: Exception) {
-        e.message?.let {
-            binding.browseNoResultsFound.text = it
-        }
+    private fun showResultsHolder(isLatest: Boolean) {
+        (if (isLatest) binding.latestNoResultsFound else binding.browseNoResultsFound).isVisible = false
     }
 
-    private fun showLatestResultsHolder() {
-        binding.latestNoResultsFound.isVisible = false
-    }
-
-    private fun showLatestNoResults() {
-        binding.latestNoResultsFound.isVisible = true
-    }
-
-    private fun showBrowseResultsHolder() {
-        binding.browseNoResultsFound.isVisible = false
-    }
-
-    private fun showBrowseNoResults() {
-        binding.browseNoResultsFound.isVisible = true
-    }
-
-    private fun setLatestImage(manga: Manga) {
-        val latestAdapter = latestAdapter ?: return
-        latestAdapter.allBoundViewHolders.forEach {
-            if (it !is IndexCardHolder) return@forEach
-            if (latestAdapter.getItem(it.bindingAdapterPosition)?.manga?.id != manga.id) return@forEach
-            it.setImage(manga)
-        }
-    }
-    private fun setBrowseImage(manga: Manga) {
-        val browseAdapter = browseAdapter ?: return
-        browseAdapter.allBoundViewHolders.forEach {
-            if (it !is IndexCardHolder) return@forEach
-            if (browseAdapter.getItem(it.bindingAdapterPosition)?.manga?.id != manga.id) return@forEach
-            it.setImage(manga)
-        }
+    private fun showNoResults(isLatest: Boolean) {
+        (if (isLatest) binding.latestNoResultsFound else binding.browseNoResultsFound).isVisible = true
     }
 
     override fun onDestroyView(view: View) {
@@ -363,8 +330,14 @@ open class IndexController :
      * @param manga the initialized manga.
      */
     fun onMangaInitialized(manga: Manga, isLatest: Boolean) {
-        if (isLatest) setLatestImage(manga)
-        else setBrowseImage(manga)
+        val adapter = if (isLatest) latestAdapter else browseAdapter
+        adapter ?: return
+
+        adapter.allBoundViewHolders.forEach {
+            if (it !is IndexCardHolder) return@forEach
+            if (adapter.getItem(it.bindingAdapterPosition)?.manga?.id != manga.id) return@forEach
+            it.setImage(manga)
+        }
     }
 
     companion object {

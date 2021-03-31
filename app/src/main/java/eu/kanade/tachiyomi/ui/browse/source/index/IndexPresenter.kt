@@ -111,7 +111,7 @@ open class IndexPresenter(
                         .map { networkToLocalManga(it, source.id) }
                 } catch (e: Exception) {
                     withUIContext {
-                        view?.onLatestError(e)
+                        view?.onError(e, true)
                     }
                     emptyList()
                 }
@@ -131,7 +131,7 @@ open class IndexPresenter(
                     .map { networkToLocalManga(it, source.id) }
             } catch (e: Exception) {
                 withUIContext {
-                    view?.onBrowseError(e)
+                    view?.onError(e, true)
                 }
                 emptyList()
             }
