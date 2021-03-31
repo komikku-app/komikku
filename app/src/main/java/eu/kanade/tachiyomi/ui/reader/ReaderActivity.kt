@@ -498,7 +498,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 } else {
                     // SY -->
                     if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
-                        preferences.cropBordersContinuesVertical().toggle()
+                        preferences.cropBordersContinuousVertical().toggle()
                     } else {
                         preferences.cropBordersWebtoon().toggle()
                     }
@@ -507,7 +507,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         }
         updateCropBordersShortcut()
-        listOf(preferences.cropBorders(), preferences.cropBordersWebtoon() /* SY --> */, preferences.cropBordersContinuesVertical()/* SY <-- */)
+        listOf(preferences.cropBorders(), preferences.cropBordersWebtoon() /* SY --> */, preferences.cropBordersContinuousVertical()/* SY <-- */)
             .forEach { pref ->
                 pref.asFlow()
                     .onEach { updateCropBordersShortcut() }
@@ -728,7 +728,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         } else {
             // SY -->
             if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
-                preferences.cropBordersContinuesVertical().get()
+                preferences.cropBordersContinuousVertical().get()
             } else {
                 preferences.cropBordersWebtoon().get()
             }

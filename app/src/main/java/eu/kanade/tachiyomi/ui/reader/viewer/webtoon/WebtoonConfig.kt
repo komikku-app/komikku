@@ -34,7 +34,7 @@ class WebtoonConfig(
     var enableZoomOut = false
         private set
 
-    var continuesCropBorders = false
+    var continuousCropBorders = false
         private set
 
     var zoomPropertyChangedListener: ((Boolean) -> Unit)? = null
@@ -67,8 +67,8 @@ class WebtoonConfig(
         preferences.webtoonEnableZoomOut()
             .register({ enableZoomOut = it }, { zoomPropertyChangedListener?.invoke(it) })
 
-        preferences.cropBordersContinuesVertical()
-            .register({ continuesCropBorders = it }, { imagePropertyChangedListener?.invoke() })
+        preferences.cropBordersContinuousVertical()
+            .register({ continuousCropBorders = it }, { imagePropertyChangedListener?.invoke() })
 
         preferences.pageTransitionsWebtoon()
             .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })

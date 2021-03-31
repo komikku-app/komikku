@@ -333,7 +333,7 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = false
             }
             switchPreference {
-                key = Keys.cropBordersContinuesVertical
+                key = Keys.cropBordersContinuousVertical
                 titleRes = R.string.pref_crop_borders
                 defaultValue = false
             }

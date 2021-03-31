@@ -89,7 +89,7 @@
         android:textAppearance="@style/TextAppearance.Medium.SubHeading" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/crop_borders_continues_vertical"
+        android:id="@+id/crop_borders_continuous_vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="16dp"

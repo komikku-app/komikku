@@ -473,7 +473,7 @@ class PreferencesHelper(val context: Context) {
 
     fun extensionRepos() = flowPrefs.getStringSet(Keys.extensionRepos, emptySet())
 
-    fun cropBordersContinuesVertical() = flowPrefs.getBoolean(Keys.cropBordersContinuesVertical, false)
+    fun cropBordersContinuousVertical() = flowPrefs.getBoolean(Keys.cropBordersContinuousVertical, false)
 
     fun forceHorizontalSeekbar() = flowPrefs.getBoolean(Keys.forceHorizontalSeekbar, false)
 

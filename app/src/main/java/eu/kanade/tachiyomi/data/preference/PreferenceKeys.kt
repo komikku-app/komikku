@@ -359,7 +359,7 @@ object PreferenceKeys {
 
     const val extensionRepos = "extension_repos"
 
-    const val cropBordersContinuesVertical = "crop_borders_continues_vertical"
+    const val cropBordersContinuousVertical = "crop_borders_continues_vertical"
 
     const val landscapeVerticalSeekbar = "pref_show_vert_seekbar_landscape"
 

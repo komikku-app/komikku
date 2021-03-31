@@ -364,7 +364,7 @@ class WebtoonPageHolder(
         val config = viewer.config
 
         // SY -->
-        val imageCropBorders = if (!viewer.isContinuous) config.continuesCropBorders else config.imageCropBorders
+        val imageCropBorders = if (!viewer.isContinuous) config.continuousCropBorders else config.imageCropBorders
         // SY <--
         if (subsamplingImageView != null && /* SY --> */ imageCropBorders /* SY <-- */  == cropBorders) {
             return subsamplingImageView!!
