@@ -169,7 +169,7 @@ open class GlobalSearchPresenter(
         val initialItems = sources.map { createCatalogueSearchItem(it, null) }
         var items = initialItems
 
-        val pinnedSourceIds = preferences.pinnedSources().get()
+        val pinnedSourceIds = preferences.pinnedCatalogues().get()
 
         fetchSourcesSubscription?.unsubscribe()
         fetchSourcesSubscription = Observable.from(sources)
