@@ -2,11 +2,11 @@ package eu.kanade.tachiyomi.ui.security
 
 import android.content.Intent
 import android.view.WindowManager
-import androidx.biometric.BiometricManager
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
+import eu.kanade.tachiyomi.widget.BiometricUtil
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.injectLazy
@@ -37,7 +37,7 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
 
     fun onResume() {
         val lockApp = preferences.useBiometricLock().get()
-        if (lockApp && BiometricManager.from(activity).canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS) {
+        if (lockApp && BiometricUtil.isSupported(activity)) {
             if (isAppLocked()) {
                 val intent = Intent(activity, BiometricUnlockActivity::class.java)
                 activity.startActivity(intent)
