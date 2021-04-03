@@ -889,9 +889,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.getOrStub(manga.source).name))
         if (preferences.useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
             readingModeToast?.cancel()
-            readingModeToast = Toast.makeText(this, resources.getString(R.string.eh_auto_webtoon_snack), Toast.LENGTH_SHORT).also {
+            readingModeToast = this.toast(resources.getString(R.string.eh_auto_webtoon_snack)) {
                 it.setGravity(Gravity.CENTER_VERTICAL or Gravity.CENTER_HORIZONTAL, 0, 0)
-                it.show()
             }
         } else if (preferences.showReadingMode()) {
             // SY <--
@@ -950,9 +949,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     private fun showReadingModeToast(mode: Int) {
         val strings = resources.getStringArray(R.array.viewers_selector)
         readingModeToast?.cancel()
-        readingModeToast = Toast.makeText(this, strings[mode], Toast.LENGTH_SHORT).also {
+        readingModeToast = toast(strings[mode]) {
             it.setGravity(Gravity.CENTER_VERTICAL or Gravity.CENTER_HORIZONTAL, 0, 0)
-            it.show()
         }
     }
 
