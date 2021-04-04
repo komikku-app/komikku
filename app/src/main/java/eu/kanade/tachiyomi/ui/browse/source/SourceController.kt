@@ -388,19 +388,21 @@ class SourceController(bundle: Bundle? = null) :
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        createOptionsMenu(
-            menu,
-            inflater,
-            R.menu.source_main,
-            R.id.action_search,
-            R.string.action_global_search_hint,
-            false // GlobalSearch handles the searching here
-        )
+        if (mode == Mode.CATALOGUE) {
+            createOptionsMenu(
+                menu,
+                inflater,
+                R.menu.source_main,
+                R.id.action_search,
+                R.string.action_global_search_hint,
+                false // GlobalSearch handles the searching here
+            )
+        }
     }
 
     override fun onSearchViewQueryTextSubmit(query: String?) {
         // SY -->
-        if (mode != Mode.SMART_SEARCH) {
+        if (mode == Mode.CATALOGUE) {
             parentController!!.router.pushController(
                 GlobalSearchController(query).withFadeTransaction()
             )
