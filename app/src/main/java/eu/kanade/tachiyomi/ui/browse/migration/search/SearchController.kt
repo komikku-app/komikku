@@ -46,14 +46,14 @@ class SearchController(
     private var progress = 1
     var totalProgress = 0
 
-    constructor(mangaId: Long, sources: LongArray):
+    constructor(mangaId: Long, sources: LongArray) :
         this(
             Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking(),
             sources.map { Injekt.get<SourceManager>().getOrStub(it) }.filterIsInstance<CatalogueSource>()
         )
 
     @Suppress("unused")
-    constructor(bundle: Bundle): this(
+    constructor(bundle: Bundle) : this(
         bundle.getLong(OLD_MANGA),
         bundle.getLongArray(SOURCES) ?: LongArray(0)
     )
