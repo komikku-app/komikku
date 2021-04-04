@@ -277,11 +277,20 @@ class LibraryUpdateService(
             // SY -->
         } else if (group == LibraryGroup.BY_DEFAULT || groupLibraryUpdateType == PreferenceValues.GroupLibraryMode.GLOBAL || (groupLibraryUpdateType == PreferenceValues.GroupLibraryMode.ALL_BUT_UNGROUPED && group == LibraryGroup.UNGROUPED)) {
             val categoriesToUpdate = preferences.libraryUpdateCategories().get().map(String::toInt)
-            if (categoriesToUpdate.isNotEmpty()) {
+            val listToInclude = if (categoriesToUpdate.isNotEmpty()) {
                 libraryManga.filter { it.category in categoriesToUpdate }
             } else {
                 libraryManga
             }
+
+            val categoriesToExclude = preferences.libraryUpdateCategoriesExclude().get().map(String::toInt)
+            val listToExclude = if (categoriesToExclude.isNotEmpty()) {
+                listToInclude.filter { it.category in categoriesToExclude }
+            } else {
+                emptyList()
+            }
+
+            listToInclude.minus(listToExclude)
         } else {
             when (group) {
                 LibraryGroup.BY_TRACK_STATUS -> {
