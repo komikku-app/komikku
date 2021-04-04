@@ -325,6 +325,10 @@ class LibraryPresenter(
             var counter = 0
             db.getLatestChapterManga().executeAsBlocking().associate { it.id!! to counter++ }
         }
+        val chapterFetchDateManga by lazy {
+            var counter = 0
+            db.getChapterFetchDateManga().executeAsBlocking().associate { it.id!! to counter++ }
+        }
 
         // SY -->
         val listOfTags by lazy {
@@ -369,6 +373,13 @@ class LibraryPresenter(
                     val manga2latestChapter = latestChapterManga[i2.manga.id!!]
                         ?: latestChapterManga.size
                     manga1latestChapter.compareTo(manga2latestChapter)
+                }
+                LibrarySort.CHAPTER_FETCH_DATE -> {
+                    val manga1chapterFetchDate = chapterFetchDateManga[i1.manga.id!!]
+                        ?: chapterFetchDateManga.size
+                    val manga2chapterFetchDate = chapterFetchDateManga[i2.manga.id!!]
+                        ?: chapterFetchDateManga.size
+                    manga1chapterFetchDate.compareTo(manga2chapterFetchDate)
                 }
                 LibrarySort.DATE_ADDED -> i2.manga.date_added.compareTo(i1.manga.date_added)
                 // SY -->

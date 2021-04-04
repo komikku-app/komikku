@@ -190,6 +190,7 @@ class LibrarySettingsSheet(
             private val lastChecked = Item.MultiSort(R.string.action_sort_last_checked, this)
             private val unread = Item.MultiSort(R.string.action_filter_unread, this)
             private val latestChapter = Item.MultiSort(R.string.action_sort_latest_chapter, this)
+            private val chapterFetchDate = Item.MultiSort(R.string.action_sort_chapter_fetch_date, this)
             private val dateAdded = Item.MultiSort(R.string.action_sort_date_added, this)
 
             // SY -->
@@ -200,7 +201,7 @@ class LibrarySettingsSheet(
             override val header = null
 
             override val items =
-                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, dateAdded /* SY --> */, dragAndDrop) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() /* SY <-- */
+                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, chapterFetchDate, dateAdded /* SY --> */, dragAndDrop) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() /* SY <-- */
             override val footer = null
 
             override fun initModels() {
@@ -223,6 +224,8 @@ class LibrarySettingsSheet(
                     if (sorting == LibrarySort.TOTAL) order else Item.MultiSort.SORT_NONE
                 latestChapter.state =
                     if (sorting == LibrarySort.LATEST_CHAPTER) order else Item.MultiSort.SORT_NONE
+                chapterFetchDate.state =
+                    if (sorting == LibrarySort.CHAPTER_FETCH_DATE) order else Item.MultiSort.SORT_NONE
                 dateAdded.state =
                     if (sorting == LibrarySort.DATE_ADDED) order else Item.MultiSort.SORT_NONE
                 // SY -->
@@ -264,6 +267,7 @@ class LibrarySettingsSheet(
                         unread -> LibrarySort.UNREAD
                         total -> LibrarySort.TOTAL
                         latestChapter -> LibrarySort.LATEST_CHAPTER
+                        chapterFetchDate -> LibrarySort.CHAPTER_FETCH_DATE
                         dateAdded -> LibrarySort.DATE_ADDED
                         // SY -->
                         dragAndDrop -> LibrarySort.DRAG_AND_DROP
