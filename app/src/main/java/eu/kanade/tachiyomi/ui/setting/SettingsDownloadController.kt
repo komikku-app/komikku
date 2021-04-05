@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.core.text.buildSpannedString
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
@@ -115,14 +116,18 @@ class SettingsDownloadController : SettingsController() {
                 defaultValue = false
             }
             // SY -->
-            multiSelectListPreference {
+            preference {
                 val dbCategories = db.getCategories().executeAsBlocking()
                 val categories = listOf(Category.createDefault()) + dbCategories
 
                 key = Keys.dontDeleteFromCategories
                 titleRes = R.string.pref_dont_delete_from_categories
-                entries = categories.map { it.name }.toTypedArray()
-                entryValues = categories.map { it.id.toString() }.toTypedArray()
+
+                onClick {
+                    val ctrl = DontDeleteFromCategoriesDialog()
+                    ctrl.targetController = this@SettingsDownloadController
+                    ctrl.showDialog(router)
+                }
 
                 preferences.dontDeleteFromCategories().asFlow()
                     .onEach { mutableSet ->
@@ -307,6 +312,41 @@ class SettingsDownloadController : SettingsController() {
 
                     preferences.downloadNewCategories().set(included)
                     preferences.downloadNewCategoriesExclude().set(excluded)
+                }
+                .positiveButton(android.R.string.ok)
+                .negativeButton(android.R.string.cancel)
+        }
+    }
+
+    class DontDeleteFromCategoriesDialog : DialogController() {
+
+        private val preferences: PreferencesHelper = Injekt.get()
+        private val db: DatabaseHelper = Injekt.get()
+
+        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+            val dbCategories = db.getCategories().executeAsBlocking()
+            val categories = listOf(Category.createDefault()) + dbCategories
+
+            val items = categories.map { it.name }
+            val preselected = categories
+                .mapIndexedNotNull { index, category ->
+                    if (category.id in preferences.dontDeleteFromCategories().get().map { it.toInt() }) {
+                        index
+                    } else null
+                }
+                .toIntArray()
+
+            return MaterialDialog(activity!!)
+                .title(R.string.pref_download_new_categories)
+                .listItemsMultiChoice(
+                    items = items,
+                    initialSelection = preselected
+                ) { _: MaterialDialog, selections: IntArray, _: List<CharSequence> ->
+                    val included = selections
+                        .map { categories[it].id.toString() }
+                        .toSet()
+
+                    preferences.dontDeleteFromCategories().set(included)
                 }
                 .positiveButton(android.R.string.ok)
                 .negativeButton(android.R.string.cancel)
