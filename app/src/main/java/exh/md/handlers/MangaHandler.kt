@@ -44,7 +44,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, val lang: Str
         }
     }
 
-    suspend fun getCovers(manga: MangaInfo, forceLatestCovers: Boolean): List<String> {
+    private suspend fun getCovers(manga: MangaInfo, forceLatestCovers: Boolean): List<String> {
         return if (forceLatestCovers) {
             val covers = client.newCall(coverRequest(manga)).await().parseAs<ApiCovers>(MdUtil.jsonParser)
             covers.data.map { it.url }

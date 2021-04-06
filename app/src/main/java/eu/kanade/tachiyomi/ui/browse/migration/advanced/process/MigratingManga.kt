@@ -24,7 +24,7 @@ class MigratingManga(
 
     val migrationJob = parentContext + SupervisorJob() + Dispatchers.Default
 
-    var migrationStatus: Int = MigrationStatus.RUNNING
+    var migrationStatus = MigrationStatus.RUNNING
 
     @Volatile
     private var manga: Manga? = null
@@ -40,13 +40,5 @@ class MigratingManga(
     fun toModal(): MigrationProcessItem {
         // Create the model object.
         return MigrationProcessItem(this)
-    }
-}
-
-class MigrationStatus {
-    companion object {
-        const val RUNNING = 0
-        const val MANGA_FOUND = 1
-        const val MANGA_NOT_FOUND = 2
     }
 }

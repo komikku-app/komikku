@@ -55,14 +55,12 @@ class MigrationProcessHolder(
 
             binding.migrationMenu.setVectorCompat(
                 R.drawable.ic_more_vert_24dp,
-                view.context
-                    .getResourceColor(R.attr.colorOnPrimary)
+                view.context.getResourceColor(R.attr.colorOnPrimary)
             )
             binding.skipManga.setVectorCompat(
                 R.drawable.ic_close_24dp,
                 view.context.getResourceColor(
-                    R
-                        .attr.colorOnPrimary
+                    R.attr.colorOnPrimary
                 )
             )
             binding.migrationMenu.isInvisible = true
@@ -79,7 +77,8 @@ class MigrationProcessHolder(
                                     true
                                 ).withFadeTransaction()
                             )
-                        }.launchIn(adapter.controller.viewScope)
+                        }
+                        .launchIn(adapter.controller.viewScope)
                 }
 
                 /*launchUI {
@@ -115,7 +114,8 @@ class MigrationProcessHolder(
                                         true
                                     ).withFadeTransaction()
                                 )
-                            }.launchIn(adapter.controller.viewScope)
+                            }
+                            .launchIn(adapter.controller.viewScope)
                     } else {
                         binding.migrationMangaCardTo.loadingGroup.isVisible = false
                         binding.migrationMangaCardTo.title.text = view.context.applicationContext
