@@ -19,6 +19,7 @@ import com.afollestad.materialdialogs.list.listItems
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.tfcporciuncula.flow.Preference
+import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
@@ -379,6 +380,11 @@ open class BrowseSourceController(bundle: Bundle) :
         if (filterSheet != null) {
             // Add bottom padding if filter FAB is visible
             recycler.updatePadding(bottom = view.resources.getDimensionPixelOffset(R.dimen.fab_list_padding))
+            recycler.applyInsetter {
+                type(navigationBars = true) {
+                    padding()
+                }
+            }
             recycler.clipToPadding = false
 
             actionFab?.shrinkOnScroll(recycler)

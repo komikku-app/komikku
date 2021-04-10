@@ -95,6 +95,7 @@ android {
         exclude("META-INF/LICENSE")
         exclude("META-INF/LICENSE.txt")
         exclude("META-INF/NOTICE")
+        exclude("META-INF/*.kotlin_module")
 
         // Compatibility for two RxJava versions (EXH)
         exclude("META-INF/rxjava.properties")
@@ -228,6 +229,7 @@ dependencies {
     implementation("com.nightlynexus.viewstatepageradapter:viewstatepageradapter:1.1.0")
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
     implementation("com.github.tachiyomiorg:DirectionalViewPager:1.0.0")
+    implementation("dev.chrisbanes.insetter:insetter:0.5.0")
 
     // 3.2.0+ introduces weird UI blinking or cut off issues on some devices
     val materialDialogsVersion = "3.1.1"
