@@ -316,7 +316,7 @@ open class IndexController :
         super.onDestroyView(view)
     }
 
-    private fun onBrowseClick(search: String? = null, filters: String? = null) {
+    fun onBrowseClick(search: String? = null, filters: String? = null) {
         router.replaceTopController(BrowseSourceController(presenter.source, search, filterList = filters).withFadeTransaction())
     }
 

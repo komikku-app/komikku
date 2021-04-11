@@ -70,6 +70,7 @@ import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController.Companion.SMART_SEARCH_SOURCE_TAG
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
+import eu.kanade.tachiyomi.ui.browse.source.index.IndexController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCoverDialog
@@ -981,6 +982,12 @@ class MangaController :
                 router.handleBack()
                 previousController.searchWithQuery(query)
             }
+            // SY -->
+            is IndexController -> {
+                router.handleBack()
+                previousController.onBrowseClick(query)
+            }
+            // SY <--
         }
     }
 
