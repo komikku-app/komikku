@@ -1,6 +1,8 @@
 package exh
 
 import android.content.Context
+import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
@@ -11,10 +13,12 @@ import eu.kanade.tachiyomi.data.database.resolvers.MangaUrlPutResolver
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.updater.UpdaterJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
+import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
@@ -209,6 +213,17 @@ object EXHMigrations {
                     // Force MAL log out due to login flow change
                     val trackManager = Injekt.get<TrackManager>()
                     trackManager.myAnimeList.logout()
+                }
+                if (oldVersion < 14) {
+                    // Migrate DNS over HTTPS setting
+                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+                    val wasDohEnabled = prefs.getBoolean("enable_doh", false)
+                    if (wasDohEnabled) {
+                        prefs.edit {
+                            putInt(PreferenceKeys.dohProvider, PREF_DOH_CLOUDFLARE)
+                            remove("enable_doh")
+                        }
+                    }
                 }
 
                 // if (oldVersion < 1) { } (1 is current release version)
