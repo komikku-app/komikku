@@ -154,6 +154,7 @@
     <string name="data_saver_server">Прокси-сервер Bandwidth Hero</string>
     <string name="data_saver_server_summary">Поместите URL-адрес прокси-сервера Bandwidth Hero здесь</string>
     <string name="update_monthly">Ежемесячно</string>
+    <string name="clear_db_exclude_read">Оставляйте мангу с читаемыми главами</string>
 
     <!-- Log Level -->
     <string name="log_minimal">Минимальный</string>
@@ -190,6 +191,9 @@
     <string name="pref_local_source_hidden_folders">Скрытые папки в локальном источнике</string>
     <string name="pref_local_source_hidden_folders_summery">Разрешить локальному источнику читать скрытые папки</string>
 
+    <!-- Backup settings -->
+    <string name="custom_manga_info">Кастомная информация о манге</string>
+
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Сохранить главы как CBZ</string>
     <string name="save_chapter_as_cbz_level">CBZ степень сжатия</string>
@@ -213,7 +217,7 @@
     <string name="biometric_lock_invalid_time_selected">Выбрано неверное время</string>
 
     <!-- Reader Settings -->
-    <string name="download_threads">Скачать темы</string>
+    <string name="download_threads">Потоки загрузки</string>
     <string name="download_threads_summary">Более высокие значения могут значительно ускорить загрузку изображений, но также могут вызвать запреты. Рекомендуемое значение-2 или 3. Текущее значение: %s</string>
     <string name="aggressively_load_pages">Агрессивная загрузка страниц</string>
     <string name="aggressively_load_pages_summary">Медленно загружайте всю главу во время чтения, а не просто загружайте страницы, которые вы просматриваете.</string>
@@ -241,6 +245,12 @@
     <string name="tap_scroll_page">Нажмите прокрутить по странице</string>
     <string name="tap_scroll_page_summary">Нажатие будет прокручиваться по странице, а не по размеру экрана, если эта опция включена</string>
 
+    <string name="pref_show_vert_seekbar_landscape">Показать вертикальную панель поиска в альбомной ориентации</string>
+    <string name="pref_show_vert_seekbar_landscape_summary">Включает вертикальную панель поиска в ландшафтном режиме</string>
+    <string name="pref_left_handed_vertical_seekbar">Левая вертикальная панель поиска</string>
+    <string name="pref_left_handed_vertical_seekbar_summary">Переключает, на какой стороне находится панель поиска</string>
+    <string name="pref_force_horz_seekbar">Принудительная горизонтальная панель поиска</string>
+    <string name="pref_force_horz_seekbar_summary">Убирает вертикальную панель поиска полностью в пользу горизонтальной</string>
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">Автопрокрутка</string>
@@ -587,6 +597,7 @@
     <string name="mangadex_specific_settings">MangaDex настройки</string>
     <string name="mangadex_sync_follows_to_library">Синхронизация Mangadex мангу в вашу библиотеку</string>
     <string name="mangadex_sync_follows_to_library_summary">Тянет чтение/перечитывание манги из MangaDex в вашу библиотеку, если они еще не добавлены.</string>
+    <string name="mangadex_sync_follows_to_library_message">Выберите статус Манги, чтобы вытащить из Mangadex</string>
     <string name="mangadex_low_quality_covers">Используйте миниатюры низкого качества</string>
     <string name="mangadex_use_latest_cover">Использовать последние загруженные обложки</string>
     <string name="mangadex_use_latest_cover_summary">Когда он включен, он использует последнюю загруженную обложку манги под /covers url iвместо того чтобы использовать обложку на MangaDex странице манги</string>
@@ -637,6 +648,7 @@
 демографии, типу контента, темам, а затем с помощью термина frequency–inverse document frequency (tf–idf), чтобы получить
 сходство двух описаний манги. При включении этот файл будет загружаться немедленно!! Размер файла составляет около 9 МБ.
     </string>
+    <string name="similar_credit">Кредиты</string>
     <string name="similar_credit_message">
         Для получения дополнительной информации и просмотра исходного кода:\n%s
     </string>
@@ -687,6 +699,7 @@
     </plurals>
     <string name="humanize_fallback">мгновение назад</string>
     <!-- Themes -->
-    <string name="theme_dark_red">Чёрный-Красный</string>
+    <string name="theme_dark_red">Чёрное и Красное</string>
     <string name="theme_dark_midnightdusk">Полуночные Сумерки</string>
+    <string name="theme_dark_hotpink">Горячий Розовый</string>
 </resources>
