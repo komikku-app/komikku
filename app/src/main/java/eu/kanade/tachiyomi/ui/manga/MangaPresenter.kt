@@ -1170,7 +1170,7 @@ class MangaPresenter(
 
                     withUIContext { view?.onTrackingRefreshDone() }
                 } catch (e: Throwable) {
-                    xLogD("Error registering tracking", e)
+                    this@MangaPresenter.xLogD("Error registering tracking", e)
                     withUIContext { view?.onTrackingRefreshError(e) }
                 }
             }
@@ -1184,7 +1184,7 @@ class MangaPresenter(
                 val results = service.search(query)
                 withUIContext { view?.onTrackingSearchResults(results) }
             } catch (e: Throwable) {
-                xLogD("Error searching tracking", e)
+                this@MangaPresenter.xLogD("Error searching tracking", e)
                 withUIContext { view?.onTrackingSearchResultsError(e) }
             }
         }
@@ -1198,7 +1198,7 @@ class MangaPresenter(
                     service.bind(item)
                     db.insertTrack(item).executeAsBlocking()
                 } catch (e: Throwable) {
-                    xLogD("Error registering tracking", e)
+                    this@MangaPresenter.xLogD("Error registering tracking", e)
                     withUIContext { view?.applicationContext?.toast(e.message) }
                 }
             }
@@ -1218,7 +1218,7 @@ class MangaPresenter(
                 db.insertTrack(track).executeAsBlocking()
                 withUIContext { view?.onTrackingRefreshDone() }
             } catch (e: Throwable) {
-                xLogD("Error updating tracking", e)
+                this@MangaPresenter.xLogD("Error updating tracking", e)
                 withUIContext { view?.onTrackingRefreshError(e) }
 
                 // Restart on error to set old values
