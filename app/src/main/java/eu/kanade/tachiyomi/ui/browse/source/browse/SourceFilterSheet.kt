@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -37,10 +38,17 @@ class SourceFilterSheet(
     // EXH <--
 ) : BaseBottomSheetDialog(activity) {
 
-    private var filterNavView: FilterNavigationView
+    private var filterNavView: FilterNavigationView = FilterNavigationView(
+        activity,
+        // SY -->
+        searches = searches,
+        source = source,
+        controller = controller
+        // SY <--
+    )
+    private val sheetBehavior: BottomSheetBehavior<*>
 
     init {
-        filterNavView = FilterNavigationView(activity /* SY --> */, searches = searches, source = source, controller = controller/* SY <-- */)
         filterNavView.onFilterClicked = {
             onFilterClicked()
             this.dismiss()
@@ -56,6 +64,13 @@ class SourceFilterSheet(
         // EXH <--
 
         setContentView(filterNavView)
+
+        sheetBehavior = BottomSheetBehavior.from(filterNavView.parent as ViewGroup)
+    }
+
+    override fun show() {
+        super.show()
+        sheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     fun setFilters(items: List<IFlexible<*>>) {
@@ -72,7 +87,15 @@ class SourceFilterSheet(
     }
     // SY <--
 
-    class FilterNavigationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null /* SY --> */, searches: List<EXHSavedSearch> = emptyList(), source: CatalogueSource? = null, controller: BaseController<*>? = null/* SY <-- */) :
+    class FilterNavigationView @JvmOverloads constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        // SY -->
+        searches: List<EXHSavedSearch> = emptyList(),
+        source: CatalogueSource? = null,
+        controller: BaseController<*>? = null
+        // SY <--
+    ) :
         SimpleNavigationView(context, attrs) {
 
         var onFilterClicked = {}
@@ -91,8 +114,13 @@ class SourceFilterSheet(
         // SY <--
 
         val adapter: FlexibleAdapter<IFlexible<*>> = FlexibleAdapter<IFlexible<*>>(null)
+            .setDisplayHeadersAtStartUp(true)
 
-        private val binding = SourceFilterSheetBinding.inflate(LayoutInflater.from(context), null, false)
+        private val binding = SourceFilterSheetBinding.inflate(
+            LayoutInflater.from(context),
+            null,
+            false
+        )
 
         init {
             // SY -->

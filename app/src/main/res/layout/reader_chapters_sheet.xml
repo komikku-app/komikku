@@ -15,18 +15,6 @@
         android:clickable="true"
         android:focusable="true">
 
-        <ImageView
-            android:id="@+id/pill"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:contentDescription="@string/action_sort_drag_and_drop"
-            android:src="@drawable/ic_drag_pill_24dp"
-            android:tint="?attr/colorOnSurface"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <ImageButton
             android:id="@+id/webview_button"
             android:layout_width="wrap_content"
@@ -34,11 +22,11 @@
             android:background="?selectableItemBackgroundBorderless"
             android:contentDescription="@string/action_open_in_web_view"
             android:padding="@dimen/material_layout_keylines_screen_edge_margin"
-            android:tint="?attr/colorOnBackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_public_24dp" />
+            app:srcCompat="@drawable/ic_public_24dp"
+            app:tint="?attr/colorOnBackground" />
 
         <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
             android:id="@+id/page_seekbar"
