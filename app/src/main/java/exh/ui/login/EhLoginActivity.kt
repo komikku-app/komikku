@@ -1,21 +1,32 @@
 package exh.ui.login
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.net.Uri
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.os.Bundle
 import android.webkit.CookieManager
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.activity.BaseViewBindingActivity
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
+import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogD
-import exh.uconfig.WarnConfigureDialogController
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import reactivecircus.flowbinding.appcompat.navigationClicks
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
 import java.util.Locale
@@ -24,24 +35,72 @@ import java.util.Locale
  * LoginController
  */
 
-class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter>() {
+class EhLoginActivity : BaseViewBindingActivity<EhActivityLoginBinding>() {
     val preferenceManager: PreferencesHelper by injectLazy()
 
     val sourceManager: SourceManager by injectLazy()
 
-    override fun getTitle() = "ExHentai login"
+    private var bundle: Bundle? = null
 
-    override fun createPresenter() = LoginPresenter()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = EhActivityLoginBinding.inflate(inflater)
-        return binding.root
+        if (!WebViewUtil.supportsWebView(this)) {
+            toast(R.string.information_webview_required, Toast.LENGTH_LONG)
+            finish()
+            return
+        }
+
+        try {
+            binding = EhActivityLoginBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+        } catch (e: Throwable) {
+            // Potentially throws errors like "Error inflating class android.webkit.WebView"
+            toast(R.string.information_webview_required, Toast.LENGTH_LONG)
+            finish()
+            return
+        }
+
+        title = "ExHentai login"
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        binding.toolbar.navigationClicks()
+            .onEach { finish() }
+            .launchIn(lifecycleScope)
+
+        onViewCreated()
+
+        if (bundle == null) {
+            binding.webview.setDefaultSettings()
+
+            // Debug mode (chrome://inspect/#devices)
+            if (BuildConfig.DEBUG && 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) {
+                WebView.setWebContentsDebuggingEnabled(true)
+            }
+
+            binding.webview.webChromeClient = object : WebChromeClient() {
+                override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                    binding.progressBar.isVisible = true
+                    binding.progressBar.progress = newProgress
+                    if (newProgress == 100) {
+                        binding.progressBar.isInvisible = true
+                    }
+                    super.onProgressChanged(view, newProgress)
+                }
+            }
+        } else {
+            binding.webview.restoreState(bundle)
+        }
+
+        if (bundle == null) {
+            startWebview()
+        }
     }
 
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
-
-        binding.btnCancel.setOnClickListener { router.popCurrentController() }
+    fun onViewCreated() {
+        binding.btnCancel.setOnClickListener { finish() }
 
         binding.btnAdvanced.setOnClickListener {
             binding.advancedOptions.isVisible = true
@@ -71,7 +130,9 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
 
         CookieManager.getInstance().removeAllCookies {
             launchUI {
-                startWebview()
+                if (bundle == null) {
+                    startWebview()
+                }
             }
         }
     }
@@ -107,18 +168,17 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
                     // At ExHentai, check that everything worked out...
                     if (applyExHentaiCookies(url)) {
                         preferenceManager.enableExhentai().set(true)
-                        finishLogin()
+                        setResult(RESULT_OK)
+                        finish()
                     }
                 }
             }
         }
     }
 
-    fun finishLogin() {
-        router.popCurrentController()
-
-        // Upload settings
-        WarnConfigureDialogController.uploadSettings(router)
+    override fun onDestroy() {
+        binding.webview?.destroy()
+        super.onDestroy()
     }
 
     /**
@@ -216,5 +276,11 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
                         if(pc != null) pc.style.color = "#26353F";
                     })()
                     """
+
+        fun newIntent(context: Context): Intent {
+            return Intent(context, EhLoginActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
+        }
     }
 }

@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.ui.setting
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Handler
 import android.text.InputType
 import android.widget.Toast
@@ -19,7 +21,6 @@ import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.EhDialogCategoriesBinding
 import eu.kanade.tachiyomi.databinding.EhDialogLanguagesBinding
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
@@ -43,7 +44,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.isEhBasedManga
 import exh.uconfig.WarnConfigureDialogController
-import exh.ui.login.LoginController
+import exh.ui.login.EhLoginActivity
 import exh.util.executeOnIO
 import exh.util.floor
 import exh.util.nullIfBlank
@@ -111,7 +112,7 @@ class SettingsEhController : SettingsController() {
                         preferences.enableExhentai().set(false)
                         true
                     } else {
-                        router.pushController(LoginController().withFadeTransaction())
+                        startActivityForResult(EhLoginActivity.newIntent(activity!!), LOGIN_RESULT)
                         false
                     }
                 }
@@ -751,4 +752,17 @@ class SettingsEhController : SettingsController() {
     }
 
     data class RelativeTime(var years: Int? = null, var months: Int? = null, var weeks: Int? = null, var days: Int? = null, var hours: Int? = null, var minutes: Int? = null, var seconds: Int? = null, var milliseconds: Int? = null)
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == LOGIN_RESULT) {
+                // Upload settings
+                WarnConfigureDialogController.uploadSettings(router)
+            }
+        }
+    }
+
+    companion object {
+        const val LOGIN_RESULT = 500
+    }
 }

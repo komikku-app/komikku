@@ -150,6 +150,10 @@
             android:name=".extension.util.ExtensionInstallActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <activity
+            android:name="exh.ui.login.EhLoginActivity"
+            android:label="EHentaiLogin" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

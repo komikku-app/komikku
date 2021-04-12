@@ -40,7 +40,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
-import exh.ui.login.LoginController
+import exh.ui.login.EhLoginActivity
 import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
@@ -725,9 +725,9 @@ class EHentai(
     private fun rawCookies(sp: Int): Map<String, String> {
         val cookies: MutableMap<String, String> = mutableMapOf()
         if (preferences.enableExhentai().get()) {
-            cookies[LoginController.MEMBER_ID_COOKIE] = preferences.memberIdVal().get()
-            cookies[LoginController.PASS_HASH_COOKIE] = preferences.passHashVal().get()
-            cookies[LoginController.IGNEOUS_COOKIE] = preferences.igneousVal().get()
+            cookies[EhLoginActivity.MEMBER_ID_COOKIE] = preferences.memberIdVal().get()
+            cookies[EhLoginActivity.PASS_HASH_COOKIE] = preferences.passHashVal().get()
+            cookies[EhLoginActivity.IGNEOUS_COOKIE] = preferences.igneousVal().get()
             cookies["sp"] = sp.toString()
 
             val sessionKey = preferences.exhSettingsKey().get()
