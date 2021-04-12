@@ -285,11 +285,11 @@ dependencies {
     implementation ("info.debatty:java-string-similarity:2.0.0")
 
     // Firebase (EH)
-    implementation("com.google.firebase:firebase-analytics-ktx:18.0.2")
+    implementation("com.google.firebase:firebase-analytics-ktx:18.0.3")
     implementation("com.google.firebase:firebase-crashlytics-ktx:17.4.1")
 
     // Better logging (EH)
-    implementation("com.elvishew:xlog:1.8.0")
+    implementation("com.elvishew:xlog:1.9.0")
 
     // Debug utils (EH)
     val debugOverlayVersion = "1.1.3"
@@ -302,9 +302,9 @@ dependencies {
     implementation ("me.zhanghai.android.materialratingbar:library:1.4.0")
 
     // JsonReader for similar manga
-    implementation("com.squareup.moshi:moshi:1.11.0")
+    implementation("com.squareup.moshi:moshi:1.12.0")
 
-    implementation("com.mikepenz:fastadapter:5.3.5")
+    implementation("com.mikepenz:fastadapter:5.4.0")
     // SY <--
 }
 
