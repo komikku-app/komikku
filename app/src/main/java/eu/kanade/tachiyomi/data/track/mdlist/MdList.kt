@@ -136,5 +136,8 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override suspend fun login(username: String, password: String): Unit = throw Exception("not used")
 
+    override val isLogged: Boolean
+        get() = false
+
     class MangaDexNotFoundException : Exception("Mangadex not enabled")
 }
