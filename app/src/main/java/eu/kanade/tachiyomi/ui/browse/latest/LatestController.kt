@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
@@ -40,6 +41,11 @@ open class LatestController :
      */
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = LatestControllerBinding.inflate(inflater)
+        binding.recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
         return binding.root
     }
 

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
+import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MetadataViewControllerBinding
@@ -51,6 +52,11 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = MetadataViewControllerBinding.inflate(inflater)
+        binding.recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
         return binding.root
     }
 
