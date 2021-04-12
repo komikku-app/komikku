@@ -32,8 +32,8 @@ class GithubUpdateChecker {
                 .parseAs<GithubRelease>()
                 .let {
                     // Check if latest version is different from current version
-        			if (/* SY --> */ isNewVersionSY(it.version) /* SY <-- */) {
-						GithubUpdateResult.NewUpdate(it)
+                    if (/* SY --> */ isNewVersionSY(it.version) /* SY <-- */) {
+                        GithubUpdateResult.NewUpdate(it)
                     } else {
                         GithubUpdateResult.NoNewUpdate()
                     }

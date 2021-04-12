@@ -32,7 +32,7 @@ internal class ExtensionGithubApi {
                 .let { parseResponse(it) }
         } /* SY --> */ + preferences.extensionRepos().get().flatMap { repoPath ->
             val url = "$BASE_URL$repoPath/repo/"
-        	networkService.client
+            networkService.client
                 .newCall(GET("${url}index.min.json"))
                 .await()
                 .parseAs<JsonArray>()

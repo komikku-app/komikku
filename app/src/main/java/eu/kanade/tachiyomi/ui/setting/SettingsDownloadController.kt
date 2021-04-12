@@ -338,7 +338,7 @@ class SettingsDownloadController : SettingsController() {
                 .toIntArray()
 
             return MaterialDialog(activity!!)
-                .title(R.string.pref_download_new_categories)
+                .title(R.string.categories)
                 .listItemsMultiChoice(
                     items = items,
                     initialSelection = preselected

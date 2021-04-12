@@ -203,7 +203,7 @@ class SourceController(bundle: Bundle? = null) :
 
         items.add(
             Pair(
-                activity.getString(R.string.label_categories),
+                activity.getString(R.string.categories),
                 { addToCategories(item.source) }
             )
         )
