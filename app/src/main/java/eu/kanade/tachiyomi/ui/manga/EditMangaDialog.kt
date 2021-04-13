@@ -218,8 +218,8 @@ class EditMangaDialog : DialogController {
     private fun ChipGroup.setChips(items: List<String>) {
         removeAllViews()
 
-        items.forEach { item ->
-            val chip = Chip(context).apply {
+        items.asSequence().map { item ->
+            Chip(context).apply {
                 text = item
 
                 isCloseIconVisible = true
@@ -228,15 +228,16 @@ class EditMangaDialog : DialogController {
                     removeView(this)
                 }
             }
-
-            addView(chip)
+        }.forEach {
+            addView(it)
         }
 
         val addTagChip = Chip(context).apply {
             setText(R.string.add_tag)
 
-            chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_add_24dp)
-            chipIcon?.setTint(context.getResourceColor(R.attr.colorAccent))
+            chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_add_24dp)?.apply {
+                setTint(context.getResourceColor(R.attr.colorAccent))
+            }
             textStartPadding = 0F
 
             clicks().onEach {

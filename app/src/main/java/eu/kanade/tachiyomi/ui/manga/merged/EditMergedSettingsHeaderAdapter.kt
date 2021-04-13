@@ -85,7 +85,13 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
 
             val mergedMangas = controller.mergedMangas
 
-            val mangaInfoAdapter: ArrayAdapter<String> = ArrayAdapter(itemView.context, android.R.layout.simple_spinner_item, mergedMangas.map { sourceManager.getOrStub(it.second.mangaSourceId).toString() + " " + it.first?.title })
+            val mangaInfoAdapter: ArrayAdapter<String> = ArrayAdapter(
+                itemView.context,
+                android.R.layout.simple_spinner_item,
+                mergedMangas.map {
+                    sourceManager.getOrStub(it.second.mangaSourceId).toString() + " " + it.first?.title
+                }
+            )
             mangaInfoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.mangaInfoSpinner.adapter = mangaInfoAdapter
 
@@ -102,11 +108,16 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                     position: Int,
                     id: Long
                 ) {
-                    controller.mergedMangas.find { mergedManga -> mergedManga.second.id == mergedMangas.getOrNull(position)?.second?.id }?.second?.let { newInfoManga ->
+                    val mergedInfoManga = controller.mergedMangas
+                        .find { mergedManga ->
+                            mergedManga.second.id == mergedMangas.getOrNull(position)?.second?.id
+                        }
+
+                    if (mergedInfoManga != null) {
                         controller.mergedMangas.onEach {
                             it.second.isInfoManga = false
                         }
-                        newInfoManga.isInfoManga = true
+                        mergedInfoManga.second.isInfoManga = true
                     }
                 }
 
