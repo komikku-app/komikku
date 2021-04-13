@@ -61,6 +61,7 @@ import exh.md.similar.ui.EnableMangaDexSimilarDialogController
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
+import exh.widget.preference.MangadexLoginDialog
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
@@ -182,8 +183,8 @@ open class BrowseSourceController(bundle: Bundle) :
             preferences.shownMangaDexSimilarAskDialog().set(true)
         }
 
-        if (mainSource is LoginSource && mainSource.needsLogin && !mainSource.isLogged()) {
-            val dialog = mainSource.getLoginDialog(mainSource, activity!!)
+        if (mainSource is LoginSource && mainSource.requiresLogin && !mainSource.isLogged()) {
+            val dialog = MangadexLoginDialog(mainSource)
             dialog.showDialog(router)
         }
         // SY <--

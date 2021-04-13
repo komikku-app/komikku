@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.source.online.all
 
-import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
@@ -12,7 +11,6 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -26,7 +24,6 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
-import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -46,7 +43,6 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
-import exh.widget.preference.MangadexLoginDialog
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -180,21 +176,27 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchFollows()
     }
 
-    override val needsLogin: Boolean = true
+    override val requiresLogin: Boolean = true
 
-    override fun getLoginDialog(source: Source, activity: Activity): DialogController {
-        return MangadexLoginDialog(source as MangaDex)
-    }
+    override val twoFactorAuth = LoginSource.AuthSupport.SUPPORTED
 
     override fun isLogged(): Boolean {
         val httpUrl = MdUtil.baseUrl.toHttpUrl()
         return trackManager.mdList.isLogged && network.cookieManager.get(httpUrl).any { it.name == REMEMBER_ME }
     }
 
+    override fun getUsername(): String {
+        return trackManager.mdList.getUsername()
+    }
+
+    override fun getPassword(): String {
+        return trackManager.mdList.getPassword()
+    }
+
     override suspend fun login(
         username: String,
         password: String,
-        twoFactorCode: String
+        twoFactorCode: String?
     ): Boolean {
         return withIOContext {
             val formBody = FormBody.Builder().apply {
@@ -202,7 +204,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 add("login_password", password)
                 add("no_js", "1")
                 add("remember_me", "1")
-                add("two_factor", twoFactorCode)
+                add("two_factor", twoFactorCode ?: "")
             }
 
             runCatching {
@@ -223,6 +225,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                 } else {
                     throw Exception("Json data was null")
                 }
+            }.also {
+                preferences.setTrackCredentials(trackManager.mdList, username, password)
             }
         }
     }

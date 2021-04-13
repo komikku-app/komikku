@@ -1,17 +1,25 @@
 package eu.kanade.tachiyomi.source.online
 
-import android.app.Activity
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.ui.base.controller.DialogController
 
 interface LoginSource : Source {
-    val needsLogin: Boolean
+    val requiresLogin: Boolean
+
+    val twoFactorAuth: AuthSupport
 
     fun isLogged(): Boolean
 
-    fun getLoginDialog(source: Source, activity: Activity): DialogController
+    fun getUsername(): String
 
-    suspend fun login(username: String, password: String, twoFactorCode: String = ""): Boolean
+    fun getPassword(): String
+
+    suspend fun login(username: String, password: String, twoFactorCode: String?): Boolean
 
     suspend fun logout(): Boolean
+
+    enum class AuthSupport {
+        NOT_SUPPORTED,
+        SUPPORTED,
+        REQUIRED
+    }
 }

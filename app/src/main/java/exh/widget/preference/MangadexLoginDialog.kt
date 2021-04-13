@@ -12,11 +12,10 @@ import com.bluelinelabs.conductor.ControllerChangeType
 import com.dd.processbutton.iml.ActionProcessButton
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.PrefSiteLoginTwoFactorAuthBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
@@ -33,9 +32,7 @@ import uy.kohesive.injekt.injectLazy
 
 class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
-    val source = Injekt.get<SourceManager>().get(args.getLong("key", 0))?.getMainSource() as? MangaDex
-
-    val service = Injekt.get<TrackManager>().mdList
+    val source = Injekt.get<SourceManager>().get(args.getLong("key", 0))?.getMainSource() as LoginSource
 
     val preferences: PreferencesHelper by injectLazy()
 
@@ -43,7 +40,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     lateinit var binding: PrefSiteLoginTwoFactorAuthBinding
 
-    constructor(source: MangaDex) : this(
+    constructor(source: LoginSource) : this(
         bundleOf(
             "key" to source.id
         )
@@ -65,14 +62,26 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
         setCredentialsOnView()
 
-        binding.twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
-            binding.twoFactorHolder.isVisible = isChecked
+        when (source.twoFactorAuth) {
+            LoginSource.AuthSupport.REQUIRED -> {
+                binding.twoFactorCheck.isVisible = false
+                binding.twoFactorHolder.isVisible = true
+            }
+            LoginSource.AuthSupport.SUPPORTED -> {
+                binding.twoFactorCheck.setOnCheckedChangeListener { _, isChecked ->
+                    binding.twoFactorHolder.isVisible = isChecked
+                }
+            }
+            LoginSource.AuthSupport.NOT_SUPPORTED -> {
+                binding.twoFactorCheck.isVisible = false
+                binding.twoFactorHolder.isVisible = false
+            }
         }
     }
 
     private fun setCredentialsOnView() {
-        binding.username.setText(service.getUsername())
-        binding.password.setText(service.getPassword())
+        binding.username.setText(source.getUsername())
+        binding.password.setText(source.getPassword())
     }
 
     private fun checkLogin() {
@@ -94,14 +103,13 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
         scope.launch {
             try {
-                val result = source?.login(
+                val result = source.login(
                     username,
                     password,
                     twoFactor.toString()
-                ) ?: false
+                )
                 if (result) {
                     dialog?.dismiss()
-                    preferences.setTrackCredentials(service, username, password)
                     launchUI {
                         binding.root.context.toast(R.string.login_success)
                     }
@@ -135,9 +143,9 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
     private fun onDialogClosed() {
         scope.cancel()
         if (activity != null) {
-            (activity as? Listener)?.siteLoginDialogClosed(source!!)
+            (activity as? Listener)?.siteLoginDialogClosed(source)
         } else {
-            (targetController as? Listener)?.siteLoginDialogClosed(source!!)
+            (targetController as? Listener)?.siteLoginDialogClosed(source)
         }
     }
 
