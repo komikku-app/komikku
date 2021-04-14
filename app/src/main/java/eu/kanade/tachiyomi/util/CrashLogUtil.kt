@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.notificationBuilder
 import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.toast
+import exh.syDebugVersion
 
 class CrashLogUtil(private val context: Context) {
 
