@@ -140,6 +140,7 @@ class AboutController : SettingsController() {
                         .withAboutIconShown(false)
                         .withAboutVersionShown(false)
                         .withLicenseShown(true)
+                        .withEdgeToEdge(true)
                         .start(activity!!)
                 }
             }
