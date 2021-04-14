@@ -305,4 +305,21 @@ object DebugFunctions {
             prefs.savedSearches().set((otherSerialized + newSerialized).toSet())
         }
     }
+
+    fun fixReaderToastCrash() {
+        db.inTransaction {
+            db.lowLevel().executeSQL(
+                RawQuery.builder()
+                    .query(
+                        """
+                        UPDATE ${MangaTable.TABLE}
+                            SET ${MangaTable.COL_VIEWER} = 0
+                            WHERE ${MangaTable.COL_VIEWER} = -1
+                        """.trimIndent()
+                    )
+                    .affectsTables(MangaTable.TABLE)
+                    .build()
+            )
+        }
+    }
 }
