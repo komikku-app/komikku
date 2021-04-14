@@ -306,7 +306,7 @@ object DebugFunctions {
         }
     }
 
-    fun fixReaderToastCrash() {
+    fun fixReaderViewerBackupBug() {
         db.inTransaction {
             db.lowLevel().executeSQL(
                 RawQuery.builder()
