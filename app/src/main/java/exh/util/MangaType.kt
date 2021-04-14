@@ -24,22 +24,22 @@ fun Manga.mangaType(context: Context): String {
 /**
  * The type of comic the manga is (ie. manga, manhwa, manhua)
  */
-fun Manga.mangaType(sourceName: String = Injekt.get<SourceManager>().getOrStub(source).name): MangaType {
+fun Manga.mangaType(sourceName: String? = Injekt.get<SourceManager>().get(source)?.name): MangaType {
     val currentTags = getGenres().orEmpty()
     return when {
         currentTags.any { tag -> isMangaTag(tag) } -> {
             MangaType.TYPE_MANGA
         }
-        currentTags.any { tag -> isWebtoonTag(tag) } || isWebtoonSource(sourceName) -> {
+        currentTags.any { tag -> isWebtoonTag(tag) } || sourceName?.let { isWebtoonSource(it) } == true -> {
             MangaType.TYPE_WEBTOON
         }
-        currentTags.any { tag -> isComicTag(tag) } || isComicSource(sourceName) -> {
+        currentTags.any { tag -> isComicTag(tag) } || sourceName?.let { isComicSource(it) } == true -> {
             MangaType.TYPE_COMIC
         }
-        currentTags.any { tag -> isManhuaTag(tag) } || isManhuaSource(sourceName) -> {
+        currentTags.any { tag -> isManhuaTag(tag) } || sourceName?.let { isManhuaSource(it) } == true -> {
             MangaType.TYPE_MANHUA
         }
-        currentTags.any { tag -> isManhwaTag(tag) } || isManhwaSource(sourceName) -> {
+        currentTags.any { tag -> isManhwaTag(tag) } || sourceName?.let { isManhwaSource(it) } == true -> {
             MangaType.TYPE_MANHWA
         }
         else -> {

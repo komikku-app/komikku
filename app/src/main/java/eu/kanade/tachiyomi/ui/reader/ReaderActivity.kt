@@ -885,7 +885,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.viewerContainer.addView(newViewer.getView())
 
         // SY -->
-        val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.getOrStub(manga.source).name))
+        val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
         if (preferences.useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
             readingModeToast?.cancel()
             readingModeToast = this.toast(resources.getString(R.string.eh_auto_webtoon_snack)) {
