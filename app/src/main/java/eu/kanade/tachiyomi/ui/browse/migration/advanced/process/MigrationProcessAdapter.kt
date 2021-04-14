@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 import android.view.MenuItem
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -102,16 +103,30 @@ class MigrationProcessAdapter(
         // Update chapters read
         if (MigrationFlags.hasChapters(flags)) {
             val prevMangaChapters = db.getChapters(prevManga).executeAsBlocking()
-            val maxChapterRead = prevMangaChapters.filter { it.read }.maxByOrNull { it.chapter_number }?.chapter_number
-            if (maxChapterRead != null) {
-                val dbChapters = db.getChapters(manga).executeAsBlocking()
-                for (chapter in dbChapters) {
-                    if (chapter.isRecognizedNumber && chapter.chapter_number <= maxChapterRead) {
+            val maxChapterRead =
+                prevMangaChapters.filter { it.read }.maxOf { it.chapter_number }
+            val dbChapters = db.getChapters(manga).executeAsBlocking()
+            val prevHistoryList = db.getHistoryByMangaId(prevManga.id!!).executeAsBlocking()
+            val historyList = mutableListOf<History>()
+            for (chapter in dbChapters) {
+                if (chapter.isRecognizedNumber) {
+                    val prevChapter =
+                        prevMangaChapters.find { it.isRecognizedNumber && it.chapter_number == chapter.chapter_number }
+                    if (prevChapter != null) {
+                        chapter.bookmark = prevChapter.bookmark
+                        chapter.read = prevChapter.read
+                        chapter.date_fetch = prevChapter.date_fetch
+                        prevHistoryList.find { it.chapter_id == prevChapter.id }?.let { prevHistory ->
+                            val history = History.create(chapter).apply { last_read = prevHistory.last_read }
+                            historyList.add(history)
+                        }
+                    } else if (chapter.chapter_number <= maxChapterRead) {
                         chapter.read = true
                     }
                 }
-                db.insertChapters(dbChapters).executeAsBlocking()
             }
+            db.insertChapters(dbChapters).executeAsBlocking()
+            db.updateHistoryLastRead(historyList).executeAsBlocking()
         }
         // Update categories
         if (MigrationFlags.hasCategories(flags)) {
