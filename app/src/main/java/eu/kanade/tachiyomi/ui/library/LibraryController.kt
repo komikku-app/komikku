@@ -44,6 +44,7 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
+import exh.source.MERGED_SOURCE_ID
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -545,9 +546,13 @@ class LibraryController(
             // SY -->
             R.id.action_migrate -> {
                 val skipPre = preferences.skipPreMigration().get()
-                val selectedMangaIds = selectedMangas.mapNotNull { it.id }
+                val selectedMangaIds = selectedMangas.filterNot { it.source == MERGED_SOURCE_ID }.mapNotNull { it.id }
                 destroyActionModeIfNeeded()
-                PreMigrationController.navigateToMigration(skipPre, router, selectedMangaIds)
+                if (selectedMangaIds.isNotEmpty()) {
+                    PreMigrationController.navigateToMigration(skipPre, router, selectedMangaIds)
+                } else {
+                    activity?.toast(R.string.no_valid_manga)
+                }
             }
             R.id.action_clean -> cleanTitles()
             R.id.action_push_to_mdlist -> pushToMdList()

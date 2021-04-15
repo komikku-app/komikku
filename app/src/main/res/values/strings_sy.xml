@@ -384,6 +384,9 @@
     </plurals>
 
     <!-- Library -->
+    <!-- Library Actions -->
+    <string name="no_valid_manga">No valid manga selected</string>
+
     <!-- Library Sheet -->
     <string name="tracked">Tracked</string>
     <string name="lewd">Lewd</string>

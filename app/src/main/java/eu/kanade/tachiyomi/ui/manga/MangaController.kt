@@ -484,7 +484,7 @@ class MangaController :
         // Hide options for non-library manga
         menu.findItem(R.id.action_edit_categories).isVisible = presenter.manga.favorite && presenter.getCategories().isNotEmpty()
         menu.findItem(R.id.action_edit_cover).isVisible = /* SY --> */ false /* presenter.manga.favorite SY <-- */
-        menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite
+        menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite /* SY --> */ && presenter.manga.source != MERGED_SOURCE_ID /* SY <-- */
 
         // SY -->
         menu.findItem(R.id.action_edit).isVisible = presenter.manga.favorite || isLocalSource
