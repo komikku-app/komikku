@@ -479,9 +479,6 @@ class LibraryController(
                 }
             }
             // SY -->
-            R.id.action_source_migration -> {
-                router.pushController(MigrationSourcesController().withFadeTransaction())
-            }
             R.id.action_sync_favorites -> {
                 if (preferences.exhShowSyncIntro().get()) {
                     activity?.let { FavoritesIntroDialog().show(it) }

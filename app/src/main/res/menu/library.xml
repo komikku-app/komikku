@@ -31,10 +31,4 @@
         android:title="@string/sync_favorites"
         app:showAsAction="never"/>
 
-
-    <item
-        android:id="@+id/action_source_migration"
-        android:title="@string/source_migration"
-        app:showAsAction="never"/>
-
 </menu>
