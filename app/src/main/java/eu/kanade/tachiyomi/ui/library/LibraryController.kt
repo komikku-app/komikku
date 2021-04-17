@@ -197,6 +197,11 @@ class LibraryController(
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
         binding = LibraryControllerBinding.inflate(inflater)
+        binding.actionToolbar.applyInsetter {
+            type(navigationBars = true) {
+                margin(bottom = true)
+            }
+        }
         return binding.root
     }
 
