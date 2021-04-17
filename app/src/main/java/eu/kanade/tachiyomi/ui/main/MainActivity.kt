@@ -177,14 +177,9 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
                         val controller = router.getControllerWithTag(id.toString()) as? LibraryController
                         controller?.showSettingsSheet()
                     }
-                    // SY -->
                     R.id.nav_updates -> {
-                        if (router.backstack.lastOrNull()?.controller() !is DownloadController) {
-                            val controller = router.getControllerWithTag(id.toString()) as? UpdatesController
-                            controller?.router?.pushController(DownloadController().withFadeTransaction())
-                        }
+                        router.pushController(DownloadController().withFadeTransaction())
                     }
-                    // SY <--
                 }
             }
             true
