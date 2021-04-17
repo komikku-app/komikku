@@ -1423,13 +1423,14 @@ class MangaController :
     // OVERFLOW MENU DIALOGS
 
     private fun getUnreadChaptersSorted() = /* SY --> */ if (presenter.source.isEhBasedSource()) presenter.chapters
+        .sortedWith(presenter.getChapterSort())
         .filter { !it.read && it.status == Download.State.NOT_DOWNLOADED }
         .distinctBy { it.name }
-        .sortedBy { it.source_order }
     else /* SY <-- */ presenter.chapters
+        .sortedWith(presenter.getChapterSort())
         .filter { !it.read && it.status == Download.State.NOT_DOWNLOADED }
         .distinctBy { it.name }
-        .sortedByDescending { it.source_order }
+        .reversed()
 
     private fun downloadChapters(choice: Int) {
         val chaptersToDownload = when (choice) {

@@ -846,7 +846,11 @@ class MangaPresenter(
         }
         // SY <--
 
-        val sortFunction: (Chapter, Chapter) -> Int = when (manga.sorting) {
+        return observable.toSortedList(getChapterSort())
+    }
+
+    fun getChapterSort(): (Chapter, Chapter) -> Int {
+        return when (manga.sorting) {
             Manga.SORTING_SOURCE -> when (sortDescending()) {
                 true -> { c1, c2 -> c1.source_order.compareTo(c2.source_order) }
                 false -> { c1, c2 -> c2.source_order.compareTo(c1.source_order) }
@@ -861,8 +865,6 @@ class MangaPresenter(
             }
             else -> throw NotImplementedError("Unimplemented sorting method")
         }
-
-        return observable.toSortedList(sortFunction)
     }
 
     /**
