@@ -11,7 +11,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MotionEvent
@@ -893,9 +892,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
         if (preferences.useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
             readingModeToast?.cancel()
-            readingModeToast = this.toast(resources.getString(R.string.eh_auto_webtoon_snack)) {
-                it.setGravity(Gravity.CENTER_VERTICAL or Gravity.CENTER_HORIZONTAL, 0, 0)
-            }
+            readingModeToast = toast(resources.getString(R.string.eh_auto_webtoon_snack))
         } else if (preferences.showReadingMode()) {
             // SY <--
             showReadingModeToast(presenter.getMangaViewer())
@@ -954,9 +951,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         try {
             val strings = resources.getStringArray(R.array.viewers_selector)
             readingModeToast?.cancel()
-            readingModeToast = toast(strings[mode]) {
-                it.setGravity(Gravity.CENTER_VERTICAL or Gravity.CENTER_HORIZONTAL, 0, 0)
-            }
+            readingModeToast = toast(strings[mode])
         } catch (e: ArrayIndexOutOfBoundsException) {
             Timber.e("Unknown reading mode: $mode")
         }
