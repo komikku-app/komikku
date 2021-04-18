@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -46,18 +45,16 @@ class PreMigrationController(bundle: Bundle? = null) :
 
     override fun getTitle() = view?.context?.getString(R.string.select_sources)
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = PreMigrationControllerBinding.inflate(inflater)
+    override fun createBinding(inflater: LayoutInflater) = PreMigrationControllerBinding.inflate(inflater)
+
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+
         binding.recycler.applyInsetter {
             type(navigationBars = true) {
                 padding()
             }
         }
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
 
         val ourAdapter = adapter ?: MigrationSourceAdapter(
             getEnabledSources().map { MigrationSourceItem(it, isEnabled(it.id.toString())) },

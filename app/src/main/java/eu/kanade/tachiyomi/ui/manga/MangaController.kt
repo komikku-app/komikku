@@ -17,7 +17,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -276,8 +275,11 @@ class MangaController :
         )
     }
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = MangaControllerBinding.inflate(inflater)
+    override fun createBinding(inflater: LayoutInflater) = MangaControllerBinding.inflate(inflater)
+
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+
         binding.recycler.applyInsetter {
             type(navigationBars = true) {
                 padding()
@@ -288,11 +290,6 @@ class MangaController :
                 margin(bottom = true)
             }
         }
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
 
         if (manga == null || source == null) return
         val adapters: MutableList<RecyclerView.Adapter<out RecyclerView.ViewHolder>?> = mutableListOf()

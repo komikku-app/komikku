@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.browse.latest
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
@@ -31,23 +30,6 @@ open class LatestController :
      * Adapter containing search results grouped by lang.
      */
     protected var adapter: LatestAdapter? = null
-
-    /**
-     * Initiate the view with [R.layout.global_search_controller].
-     *
-     * @param inflater used to load the layout xml.
-     * @param container containing parent views.
-     * @return inflated view
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = LatestControllerBinding.inflate(inflater)
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-        return binding.root
-    }
 
     override fun getTitle(): String? {
         return applicationContext?.getString(R.string.latest)
@@ -82,6 +64,8 @@ open class LatestController :
         onMangaClick(manga)
     }
 
+    override fun createBinding(inflater: LayoutInflater): LatestControllerBinding = LatestControllerBinding.inflate(inflater)
+
     /**
      * Called when the view is created
      *
@@ -89,6 +73,12 @@ open class LatestController :
      */
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
+
+        binding.recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
 
         adapter = LatestAdapter(this)
 

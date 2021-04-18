@@ -3,7 +3,6 @@ package exh.ui.smartsearch
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import eu.kanade.tachiyomi.databinding.EhSmartSearchBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
@@ -28,14 +27,11 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
         ARG_SMART_SEARCH_CONFIG
     )
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = EhSmartSearchBinding.inflate(inflater)
-        return binding.root
-    }
-
     override fun getTitle() = source?.name.orEmpty()
 
     override fun createPresenter() = SmartSearchPresenter(source!!, smartSearchConfig!!)
+
+    override fun createBinding(inflater: LayoutInflater) = EhSmartSearchBinding.inflate(inflater)
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)

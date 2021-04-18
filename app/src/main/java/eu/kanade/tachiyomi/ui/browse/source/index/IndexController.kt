@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -74,18 +73,6 @@ open class IndexController :
         setHasOptionsMenu(true)
     }
 
-    /**
-     * Initiate the view with [R.layout.latest_controller].
-     *
-     * @param inflater used to load the layout xml.
-     * @param container containing parent views.
-     * @return inflated view
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = IndexControllerBinding.inflate(inflater)
-        return binding.root
-    }
-
     override fun getTitle(): String? {
         return source!!.name
     }
@@ -138,6 +125,8 @@ open class IndexController :
             presenter.query = newText ?: ""
         }
     }
+
+    override fun createBinding(inflater: LayoutInflater) = IndexControllerBinding.inflate(inflater)
 
     /**
      * Called when the view is created

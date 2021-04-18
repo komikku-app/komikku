@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -65,21 +64,7 @@ class RepoController :
         return resources?.getString(R.string.action_edit_repos)
     }
 
-    /**
-     * Returns the view of this controller.
-     *
-     * @param inflater The layout inflater to create the view from XML.
-     * @param container The parent view for this one.
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = CategoriesControllerBinding.inflate(inflater)
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-        return binding.root
-    }
+    override fun createBinding(inflater: LayoutInflater) = CategoriesControllerBinding.inflate(inflater)
 
     /**
      * Called after view inflation. Used to initialize the view.
@@ -88,6 +73,12 @@ class RepoController :
      */
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
+
+        binding.recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
 
         adapter = RepoAdapter(this@RepoController)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)

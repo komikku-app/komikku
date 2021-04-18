@@ -5,7 +5,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -74,21 +73,7 @@ class SortTagController :
         setHasOptionsMenu(true)
     }
 
-    /**
-     * Returns the view of this controller.
-     *
-     * @param inflater The layout inflater to create the view from XML.
-     * @param container The parent view for this one.
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = CategoriesControllerBinding.inflate(inflater)
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-        return binding.root
-    }
+    override fun createBinding(inflater: LayoutInflater) = CategoriesControllerBinding.inflate(inflater)
 
     /**
      * Called after view inflation. Used to initialize the view.
@@ -97,6 +82,12 @@ class SortTagController :
      */
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
+
+        binding.recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
 
         adapter = SortTagAdapter(this@SortTagController)
         binding.recycler.layoutManager = LinearLayoutManager(view.context)

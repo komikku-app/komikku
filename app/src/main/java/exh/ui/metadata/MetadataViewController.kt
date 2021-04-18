@@ -3,7 +3,6 @@ package exh.ui.metadata
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.chrisbanes.insetter.applyInsetter
@@ -50,16 +49,6 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
         return manga?.title
     }
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = MetadataViewControllerBinding.inflate(inflater)
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-        return binding.root
-    }
-
     override fun createPresenter(): MetadataViewPresenter {
         return MetadataViewPresenter(
             manga!!,
@@ -67,8 +56,16 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
         )
     }
 
+    override fun createBinding(inflater: LayoutInflater) = MetadataViewControllerBinding.inflate(inflater)
+
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
+
+        binding.recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
 
         if (manga == null || source == null) return
         binding.recycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.VERTICAL, false)

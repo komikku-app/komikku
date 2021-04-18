@@ -2,7 +2,6 @@ package exh.ui.batchadd
 
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import com.afollestad.materialdialogs.MaterialDialog
 import eu.kanade.tachiyomi.R
@@ -20,85 +19,80 @@ import rx.subscriptions.CompositeSubscription
  * Batch add screen
  */
 class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAddPresenter>() {
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = EhFragmentBatchAddBinding.inflate(inflater)
-        return binding.root
-    }
-
     override fun getTitle() = activity!!.getString(R.string.batch_add)
 
     override fun createPresenter() = BatchAddPresenter()
 
+    override fun createBinding(inflater: LayoutInflater) = EhFragmentBatchAddBinding.inflate(inflater)
+
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        with(view) {
-            binding.btnAddGalleries.clicks()
-                .onEach {
-                    addGalleries(binding.galleriesBox.text.toString())
+        binding.btnAddGalleries.clicks()
+            .onEach {
+                addGalleries(binding.galleriesBox.text.toString())
+            }
+            .launchIn(viewScope)
+
+        binding.progressDismissBtn.clicks()
+            .onEach {
+                presenter.currentlyAddingRelay.call(BatchAddPresenter.STATE_PROGRESS_TO_INPUT)
+            }
+            .launchIn(viewScope)
+
+        val progressSubscriptions = CompositeSubscription()
+
+        presenter.currentlyAddingRelay
+            .onBackpressureBuffer()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeUntilDestroy {
+                progressSubscriptions.clear()
+                if (it == BatchAddPresenter.STATE_INPUT_TO_PROGRESS) {
+                    showProgress(binding)
+                    progressSubscriptions += presenter.progressRelay
+                        .onBackpressureBuffer()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .combineLatest(presenter.progressTotalRelay) { progress, total ->
+                            // Show hide dismiss button
+                            binding.progressDismissBtn.visibility =
+                                if (progress == total) {
+                                    View.VISIBLE
+                                } else {
+                                    View.GONE
+                                }
+
+                            formatProgress(progress, total)
+                        }.subscribeUntilDestroy {
+                            binding.progressText.text = it
+                        }
+
+                    progressSubscriptions += presenter.progressTotalRelay
+                        .onBackpressureBuffer()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeUntilDestroy {
+                            binding.progressBar.max = it
+                        }
+
+                    progressSubscriptions += presenter.progressRelay
+                        .onBackpressureBuffer()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeUntilDestroy {
+                            binding.progressBar.progress = it
+                        }
+
+                    presenter.eventRelay
+                        ?.onBackpressureBuffer()
+                        ?.observeOn(AndroidSchedulers.mainThread())
+                        ?.subscribeUntilDestroy {
+                            binding.progressLog.append("$it\n")
+                        }?.let {
+                            progressSubscriptions += it
+                        }
+                } else if (it == BatchAddPresenter.STATE_PROGRESS_TO_INPUT) {
+                    hideProgress(binding)
+                    presenter.currentlyAddingRelay.call(BatchAddPresenter.STATE_IDLE)
                 }
-                .launchIn(viewScope)
-
-            binding.progressDismissBtn.clicks()
-                .onEach {
-                    presenter.currentlyAddingRelay.call(BatchAddPresenter.STATE_PROGRESS_TO_INPUT)
-                }
-                .launchIn(viewScope)
-
-            val progressSubscriptions = CompositeSubscription()
-
-            presenter.currentlyAddingRelay
-                .onBackpressureBuffer()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeUntilDestroy {
-                    progressSubscriptions.clear()
-                    if (it == BatchAddPresenter.STATE_INPUT_TO_PROGRESS) {
-                        showProgress(binding)
-                        progressSubscriptions += presenter.progressRelay
-                            .onBackpressureBuffer()
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .combineLatest(presenter.progressTotalRelay) { progress, total ->
-                                // Show hide dismiss button
-                                binding.progressDismissBtn.visibility =
-                                    if (progress == total) {
-                                        View.VISIBLE
-                                    } else {
-                                        View.GONE
-                                    }
-
-                                formatProgress(progress, total)
-                            }.subscribeUntilDestroy {
-                                binding.progressText.text = it
-                            }
-
-                        progressSubscriptions += presenter.progressTotalRelay
-                            .onBackpressureBuffer()
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribeUntilDestroy {
-                                binding.progressBar.max = it
-                            }
-
-                        progressSubscriptions += presenter.progressRelay
-                            .onBackpressureBuffer()
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribeUntilDestroy {
-                                binding.progressBar.progress = it
-                            }
-
-                        presenter.eventRelay
-                            ?.onBackpressureBuffer()
-                            ?.observeOn(AndroidSchedulers.mainThread())
-                            ?.subscribeUntilDestroy {
-                                binding.progressLog.append("$it\n")
-                            }?.let {
-                                progressSubscriptions += it
-                            }
-                    } else if (it == BatchAddPresenter.STATE_PROGRESS_TO_INPUT) {
-                        hideProgress(binding)
-                        presenter.currentlyAddingRelay.call(BatchAddPresenter.STATE_IDLE)
-                    }
-                }
-        }
+            }
     }
 
     private val EhFragmentBatchAddBinding.progressViews

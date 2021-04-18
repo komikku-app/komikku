@@ -8,7 +8,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.graphics.ColorUtils
 import androidx.core.os.bundleOf
@@ -84,24 +83,23 @@ class MigrationListController(bundle: Bundle? = null) :
 
     private val throttleManager = EHentaiThrottleManager()
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = MigrationListControllerBinding.inflate(inflater)
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-        return binding.root
-    }
-
     override fun getTitle(): String {
         return resources?.getString(R.string.migration) + " (${adapter?.items?.count {
             it.manga.migrationStatus != MigrationStatus.RUNNING
         }}/${adapter?.itemCount ?: 0})"
     }
 
+    override fun createBinding(inflater: LayoutInflater) = MigrationListControllerBinding.inflate(inflater)
+
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
+
+        binding.recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
+
         setTitle()
         val config = this.config ?: return
 

@@ -9,7 +9,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
@@ -88,25 +87,16 @@ class SourceController(bundle: Bundle? = null) :
         return SourcePresenter(/* SY --> */ controllerMode = mode /* SY <-- */)
     }
 
-    /**
-     * Initiate the view with [R.layout.source_main_controller].
-     *
-     * @param inflater used to load the layout xml.
-     * @param container containing parent views.
-     * @return inflated view.
-     */
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup): View {
-        binding = SourceMainControllerBinding.inflate(inflater)
+    override fun createBinding(inflater: LayoutInflater) = SourceMainControllerBinding.inflate(inflater)
+
+    override fun onViewCreated(view: View) {
+        super.onViewCreated(view)
+
         binding.recycler.applyInsetter {
             type(navigationBars = true) {
                 padding()
             }
         }
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
 
         adapter = SourceAdapter(this)
 
