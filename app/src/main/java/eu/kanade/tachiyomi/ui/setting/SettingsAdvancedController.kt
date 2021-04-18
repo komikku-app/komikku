@@ -29,7 +29,8 @@ import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.util.CrashLogUtil
-import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.editTextPreference
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -53,9 +54,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -372,8 +370,8 @@ class SettingsAdvancedController : SettingsController() {
                     foldersCleared += downloadManager.cleanupChapters(chapterList, manga, source, removeRead, removeNonFavorite)
                 }
             }
-            launchUI {
-                val activity = activity ?: return@launchUI
+            withUIContext {
+                val activity = activity ?: return@withUIContext
                 val cleanupString =
                     if (foldersCleared == 0) activity.getString(R.string.no_folders_to_cleanup)
                     else resources!!.getQuantityString(
@@ -389,27 +387,18 @@ class SettingsAdvancedController : SettingsController() {
 
     private fun clearChapterCache() {
         if (activity == null) return
-        val files = chapterCache.cacheDir.listFiles() ?: return
-
-        var deletedFiles = 0
-
-        Observable.defer { Observable.from(files) }
-            .doOnNext { file ->
-                if (chapterCache.removeFileFromCache(file.name)) {
-                    deletedFiles++
+        launchIO {
+            try {
+                val deletedFiles = chapterCache.clear()
+                withUIContext {
+                    activity?.toast(resources?.getString(R.string.cache_deleted, deletedFiles))
+                    findPreference(CLEAR_CACHE_KEY)?.summary =
+                        resources?.getString(R.string.used_cache, chapterCache.readableSize)
                 }
+            } catch (e: Throwable) {
+                withUIContext { activity?.toast(R.string.cache_delete_error) }
             }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnError {
-                activity?.toast(R.string.cache_delete_error)
-            }
-            .doOnCompleted {
-                activity?.toast(resources?.getString(R.string.cache_deleted, deletedFiles))
-                findPreference(CLEAR_CACHE_KEY)?.summary =
-                    resources?.getString(R.string.used_cache, chapterCache.readableSize)
-            }
-            .subscribe()
+        }
     }
 
     class ClearDatabaseDialogController : DialogController() {
