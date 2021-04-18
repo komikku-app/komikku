@@ -4,7 +4,22 @@
     <!--=============-->
     <!-- Dark Themes -->
     <!--=============-->
-    <style name="Theme.Tachiyomi.MidnightDusk" parent="Theme.Base.Dark">
+    <style name="Theme.Tachiyomi.Dark.Red" parent="Theme.Tachiyomi.Dark.Amoled">
+        <item name="actionBarTheme">@style/Theme.Toolbar.Red</item>
+        <item name="colorPrimary">@color/md_black_1000</item>
+        <item name="colorPrimaryVariant">@color/red</item>
+        <item name="colorSecondary">@color/dark_red</item>
+        <item name="colorOnSurface">@color/red</item>
+        <item name="colorAccent">@color/dark_red</item>
+        <item name="colorOnPrimary">@color/red</item>
+        <item name="android:textColor">@color/red</item>
+        <item name="android:textColorPrimary">@color/red</item>
+        <item name="android:textColorSecondary">@color/dark_red</item>
+        <item name="android:textColorHint">@color/dark_red</item>
+        <item name="md_color_title">@color/red</item>
+    </style>
+
+    <style name="Theme.Tachiyomi.Dark.MidnightDusk" parent="Theme.Base.Dark">
         <item name="colorPrimary">@color/dialogDusk</item>
         <item name="colorOnPrimary">@color/textColorPrimaryDusk</item>
         <item name="colorAccentOnPrimary">@color/colorAccentDusk</item>
@@ -27,8 +42,7 @@
         <item name="colorLibrarySelectionActive">@color/selectorColorDark</item>
     </style>
 
-
-    <style name="Theme.Tachiyomi.HotPink" parent="Theme.Base.Dark">
+    <style name="Theme.Tachiyomi.Dark.HotPink" parent="Theme.Base.Dark">
         <item name="colorPrimary">@color/dialogPink</item>
         <item name="colorPrimaryDark">@color/dialogPink</item>
         <item name="colorOnPrimary">@color/textColorPrimaryPink</item>
