@@ -163,11 +163,6 @@ class AboutController : SettingsController() {
     private fun checkVersion() {
         if (activity == null) return
 
-        if (Build.VERSION.SDK_INT under Build.VERSION_CODES.M) {
-            activity?.toast(R.string.update_check_eol)
-            return
-        }
-
         activity?.toast(R.string.update_check_look_for_updates)
 
         launchNow {

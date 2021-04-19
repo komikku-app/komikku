@@ -1,7 +1,5 @@
 package eu.kanade.tachiyomi.ui.manga.info
 
-import android.graphics.PorterDuff
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +17,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.system.getResourceColor
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.source.getMainSource
@@ -177,15 +174,6 @@ class MangaInfoItemAdapter(
                     toggleMangaInfo()
                     initialLoad = false
                 }
-            }
-
-            // backgroundTint attribute doesn't work properly on Android 5
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-                @Suppress("DEPRECATION")
-                binding.mangaInfoToggleMoreScrim.background.setColorFilter(
-                    view.context.getResourceColor(android.R.attr.colorBackground),
-                    PorterDuff.Mode.SRC_ATOP
-                )
             }
         }
 
