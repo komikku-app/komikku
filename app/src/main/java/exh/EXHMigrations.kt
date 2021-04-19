@@ -1,6 +1,7 @@
 package exh
 
 import android.content.Context
+import android.os.Build
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.pushtorefresh.storio.sqlite.queries.Query
@@ -34,6 +35,8 @@ import exh.source.MERGED_SOURCE_ID
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
+import exh.util.over
+import exh.util.under
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -65,12 +68,14 @@ object EXHMigrations {
                 // Fresh install
                 if (oldVersion == 0) {
                     // Set up default background tasks
-                    UpdaterJob.setupTask(context)
+                    if (BuildConfig.INCLUDE_UPDATER && Build.VERSION.SDK_INT over Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        UpdaterJob.setupTask(context)
+                    }
                     ExtensionUpdateJob.setupTask(context)
                     LibraryUpdateJob.setupTask(context)
                     return false
                 }
-                if (oldVersion < 4) {
+                if (oldVersion under 4) {
                     db.inTransaction {
                         updateSourceId(HBROWSE_SOURCE_ID, 6912)
                         // Migrate BHrowse URLs
@@ -96,20 +101,20 @@ object EXHMigrations {
                             .executeAsBlocking()
                     }
                 }
-                if (oldVersion < 5) {
+                if (oldVersion under 5) {
                     db.inTransaction {
                         // Migrate Hitomi source IDs
                         updateSourceId(Hitomi.otherId, 6910)
                     }
                 }
-                if (oldVersion < 6) {
+                if (oldVersion under 6) {
                     db.inTransaction {
                         updateSourceId(PERV_EDEN_EN_SOURCE_ID, 6905)
                         updateSourceId(PERV_EDEN_IT_SOURCE_ID, 6906)
                         updateSourceId(NHentai.otherId, 6907)
                     }
                 }
-                if (oldVersion < 7) {
+                if (oldVersion under 7) {
                     db.inTransaction {
                         val mergedMangas = db.db.get()
                             .listOfObjects(Manga::class.java)
@@ -209,12 +214,12 @@ object EXHMigrations {
                         }
                     }
                 }
-                if (oldVersion < 12) {
+                if (oldVersion under 12) {
                     // Force MAL log out due to login flow change
                     val trackManager = Injekt.get<TrackManager>()
                     trackManager.myAnimeList.logout()
                 }
-                if (oldVersion < 14) {
+                if (oldVersion under 14) {
                     // Migrate DNS over HTTPS setting
                     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                     val wasDohEnabled = prefs.getBoolean("enable_doh", false)
@@ -225,12 +230,16 @@ object EXHMigrations {
                         }
                     }
                 }
-                if (oldVersion < 16) {
+                if (oldVersion under 16) {
                     // Reset rotation to Free after replacing Lock
                     preferences.rotation().set(1)
+                    // Disable update check for Android 5.x users
+                    if (BuildConfig.INCLUDE_UPDATER && Build.VERSION.SDK_INT under Build.VERSION_CODES.M) {
+                        UpdaterJob.cancelTask(context)
+                    }
                 }
 
-                // if (oldVersion < 1) { } (1 is current release version)
+                // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
 
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
