@@ -88,6 +88,14 @@ class AboutController : SettingsController() {
                 }
             }
             preference {
+                key = "pref_about_facebook"
+                title = "Facebook"
+                "https://facebook.com/tachiyomiorg".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
+                }
+            }
+            preference {
                 key = "pref_about_twitter"
                 title = "Twitter"
                 "https://twitter.com/tachiyomiorg".also {
@@ -117,7 +125,7 @@ class AboutController : SettingsController() {
             preference {
                 key = "pref_about_label_original_tachiyomi_github"
                 title = "Original Tachiyomi GitHub "
-                "https://github.com/tachiyomiorg/tachiyomi".also {
+                "https://github.com/tachiyomiorg".also {
                     summary = it
                     onClick { openInBrowser(it) }
                 }
