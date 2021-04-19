@@ -3,7 +3,7 @@
     <!-- Actions -->
     <string name="action_sort_first_checked">Первый проверенный</string>
     <string name="action_sort_drag_and_drop">Перетаскивание</string>
-    <string name="action_sort_enabled">Enabled</string>
+    <string name="action_sort_enabled">Активные</string>
     <string name="action_skip_manga">Не перемещать</string>
     <string name="action_search_manually">Искать вручную</string>
     <string name="action_migrate_now">Переместить сейчас</string>
@@ -166,15 +166,15 @@
 
     <!-- General Settings -->
     <string name="toggle_expand_search_filters">Разверните все фильтры поиска по умолчанию</string>
-    <string name="auto_solve_captchas">Автоматического решения капчи</string>
-    <string name="auto_solve_captchas_summary">Использовать В ВЫСШЕЙ СТЕПЕНИ ЭКСПЕРИМЕНТАЛЬНЫЙ автомат ReCAPTCHA решатель. Если ваше устройство не поддерживается, оно будет выделено серым цветом.</string>
-    <string name="put_recommends_in_overflow">Рекомендации в переполнении</string>
-    <string name="put_recommends_in_overflow_summary">Поместите кнопку рекомендации в меню переполнения вместо страницы манги</string>
+    <string name="auto_solve_captchas">Автоматическое решение капчи</string>
+    <string name="auto_solve_captchas_summary">Использовать В ВЫСШЕЙ СТЕПЕНИ ЭКСПЕРИМЕНТАЛЬНОЕ автоматическое прохождение ReCAPTCHA. Если ваше устройство не поддерживается, оно будет выделено серым цветом.</string>
+    <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
+    <string name="put_recommends_in_overflow_summary">Поместить кнопку рекомендации в выпадающее меню вместо размещения на странице манги</string>
 
     <!-- Library settings -->
     <string name="pref_sorting_settings">Настройки Сортировки</string>
     <string name="pref_skip_pre_migration_summary">Используйте последние сохраненные настройки и источники перед миграцией для массовой миграции</string>
-    <string name="library_settings_sheet">Лист настроек библиотеки</string>
+    <string name="library_settings_sheet">Панель настроек библиотеки</string>
     <string name="library_settings_sheet_summary">Дополнительные настройки отображения библиотеки</string>
     <string name="library_group_updates">Динамическе обновление категорий библиотеки</string>
     <string name="library_group_updates_global">Всегда запускать глобальные обновления</string>
@@ -220,7 +220,7 @@
     <string name="download_threads">Потоки загрузки</string>
     <string name="download_threads_summary">Более высокие значения могут значительно ускорить загрузку изображений, но также могут вызвать запреты. Рекомендуемое значение-2 или 3. Текущее значение: %s</string>
     <string name="aggressively_load_pages">Агрессивная загрузка страниц</string>
-    <string name="aggressively_load_pages_summary">Медленно загружайте всю главу во время чтения, а не просто загружайте страницы, которые вы просматриваете.</string>
+    <string name="aggressively_load_pages_summary">Медленно загружайте всю главу во время чтения, а не просто загружать просматриваемые страницы.</string>
     <string name="skip_queue_on_retry">Пропустить очередь при повторной попытке</string>
     <string name="skip_queue_on_retry_summary">Обычно нажатие кнопки повтора при неудачной загрузке будет ждать, пока загрузчик закончит загрузку последней страницы, прежде чем начать повторную загрузку неудачной страницы. Включение этого режима заставит загрузчик начать повторную загрузку неудачной страницы, как только вы нажмете кнопку повтора.</string>
     <string name="reader_preload_amount">Объем предварительной загрузки страницы</string>
@@ -233,7 +233,7 @@
     <string name="reader_preload_amount_16_pages">16 Страниц</string>
     <string name="reader_preload_amount_18_pages">18 Страниц</string>
     <string name="reader_preload_amount_20_pages">20 Страниц</string>
-    <string name="reader_preload_amount_summary">Количество страниц для предварительной загрузки при чтении. Более высокие значения приведут к более плавному чтению, за счет более высокого использования кэша рекомендуется увеличить объем выделяемого кэша при использовании больших значений</string>
+    <string name="reader_preload_amount_summary">Количество страниц для предварительной загрузки при чтении. Более высокие значения приведут к более плавному чтению, за счет более высокого использования кэша. Рекомендуется увеличить объем выделяемого кэша при использовании больших значений</string>
     <string name="reader_cache_size">Размер кэша читалки</string>
     <string name="reader_cache_size_summary">Количество изображений, сохраняемых на устройстве во время чтения. Более высокие значения приведут к более плавному чтению за счет более высокого использования дискового пространства</string>
     <string name="preserve_reading_position">Сохранить позицию чтения при чтении манги</string>
@@ -391,7 +391,7 @@
     <!-- Library -->
     <!-- Library Sheet -->
     <string name="tracked">Отслеживается</string>
-    <string name="lewd">Развратный</string>
+    <string name="lewd">18+</string>
     <string name="started">Начато</string>
 
     <!-- Library Grouping -->
@@ -525,8 +525,8 @@
     <string name="artist">Художник</string>
     <string name="reader_id">Читатель id</string>
     <string name="series">Серии</string>
-    <string name="characters">Characters</string>
-    <string name="group">Персонажи</string>
+    <string name="characters">Персонажи</string>
+    <string name="group">Группировка</string>
     <string name="media_id">Медиа id</string>
     <string name="japanese_title">Японское название</string>
     <string name="english_title">Английское название</string>
@@ -534,7 +534,7 @@
     <string name="cover_image_file_type">Тип изображения обложки</string>
     <string name="thumbnail_image_file_type">Тип файла миниатюры изображения</string>
     <string name="scanlator">Сканлэйтор</string>
-    <string name="url">Url</string>
+    <string name="url">Ссылка</string>
     <string name="alt_titles">Альтернативные названия</string>
     <string name="uploader_capital">Загрузчик с заглавной буквы</string>
     <string name="uploader">Загрузчик</string>
@@ -596,20 +596,20 @@
     <string name="md_follows_unfollowed">Нарушенными</string>
     <string name="mangadex_specific_settings">MangaDex настройки</string>
     <string name="mangadex_sync_follows_to_library">Синхронизация Mangadex мангу в вашу библиотеку</string>
-    <string name="mangadex_sync_follows_to_library_summary">Тянет чтение/перечитывание манги из MangaDex в вашу библиотеку, если они еще не добавлены.</string>
+    <string name="mangadex_sync_follows_to_library_summary">Берёт чтение/перечитывание манги из MangaDex в вашу библиотеку, если они еще не добавлены.</string>
     <string name="mangadex_sync_follows_to_library_message">Выберите статус Манги, чтобы вытащить из Mangadex</string>
     <string name="mangadex_low_quality_covers">Используйте миниатюры низкого качества</string>
     <string name="mangadex_use_latest_cover">Использовать последние загруженные обложки</string>
-    <string name="mangadex_use_latest_cover_summary">Когда он включен, он использует последнюю загруженную обложку манги под /covers url iвместо того чтобы использовать обложку на MangaDex странице манги</string>
+    <string name="mangadex_use_latest_cover_summary">Когда включён, он использует последнюю загруженную обложку манги под /covers url вместо того чтобы использовать обложку на MangaDex странице манги</string>
     <string name="mangadex_preffered_source">Предпочтительный MangaDex источник</string>
     <string name="mangadex_preffered_source_summary">Установите выбранный вами источник MangaDex, он будет использоваться для следующих и еще нескольких функций вокруг приложения</string>
     <string name="two_factor">2FA Code</string>
     <string name="fields_cannot_be_blank">Поля не могут быть пустыми</string>
     <string name="mangadex_add_to_follows">Добавьте в MangaDex следующее</string>
     <string name="mangadex_follows">MangaDex последователи</string>
-    <string name="random">Random</string>
+    <string name="random">Рандом</string>
     <string name="mangadex_push_favorites_to_mangadex">Синхронизация библиотеки манги с MangaDex</string>
-    <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любые не MdList отслеживаемая манга MangaDex как чтение.</string>
+    <string name="mangadex_push_favorites_to_mangadex_summary">Синхронизирует любую не отслеживаемую MDList мангу с MangaDex помечая читаемой.</string>
     <string name="mangadex_push_favorites_to_mangadex_toast">Переместил %d мангу в MangaDex</string>
 
 
@@ -621,8 +621,8 @@
     <!-- Similar -->
     <string name="similar">Аналогично %1$s</string>
     <string name="similar_manga">Похожая Манга</string>
-    <string name="similar_loading_percent">Обновление похожая манга (%1$d / %2$d обновлена)</string>
-    <string name="similar_loading_complete">Обновлена похожая манга</string>
+    <string name="similar_loading_percent">Обновление похожей манги (%1$d / %2$d обновлена)</string>
+    <string name="similar_loading_complete">Похожая манга обновлена </string>
     <string name="similar_loading_complete_error">Ошибка при попытке загрузить/обработать похожую мангу</string>
     <string name="similar_loading_progress_start">Загрузка файла данных похожей манги…</string>
     <string name="similar_ask_to_enable_title">Включить Похожую Мангу?</string>
@@ -652,7 +652,7 @@
     <string name="similar_credit_message">
         Для получения дополнительной информации и просмотра исходного кода:\n%s
     </string>
-    <string name="similar_no_results">Подобной манги не найдено</string>
+    <string name="similar_no_results">Похожая манга не найдена</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">
