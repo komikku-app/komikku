@@ -892,7 +892,7 @@ class MangaPresenter(
      */
     fun getNextUnreadChapter(): ChapterItem? {
         return if (source.isEhBasedSource()) {
-            chapters.sortedWith(getChapterSort()).lastOrNull()?.takeUnless { it.read }
+            chapters.sortedWith(getChapterSort()).firstOrNull()?.takeUnless { it.read }
         } else {
             chapters.sortedWith(getChapterSort()).findLast { !it.read }
         }

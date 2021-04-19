@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.6.1" changeDate="Apr 19,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.11(from 0.10.10)[/b]</changelogtext>
+        <changelogtext>Add a debug function to address really old SY full backups reader mode bug</changelogtext>
+        <changelogtext>Block merged manga from migration</changelogtext>
+        <changelogtext>Remove useless source migration action from overflow</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.6.0" changeDate="Apr 11,2021">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.10(from 0.10.9)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.10(from 0.10.9)[/b]</changelogtext>
         <changelogtext>[b]New[/b] Edit manga status</changelogtext>
         <changelogtext>[b]New[/b] Backup custom manga info</changelogtext>
         <changelogtext>[b]New[/b] Logs now output to file, logging to file is now useful, and can be used to debug</changelogtext>
@@ -19,7 +25,7 @@
         <changelogtext>Fix crash when opening chapter from manual search in migration</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.5.0" changeDate="Feb 12,2021">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.9(from 0.10.7)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.9(from 0.10.7)[/b]</changelogtext>
         <changelogtext>[b]New[/b] Clicking the title now takes you to the manga page</changelogtext>
         <changelogtext>[b]New[/b] Enhanced Reader Bottom menu</changelogtext>
         <changelogtext>[b]New[/b] MDList now works for all manga, not just mangadex manga</changelogtext>
@@ -34,7 +40,7 @@
         <changelogtext>Fix Similar Manga notification</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.4.1" changeDate="Dec 14,2020">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.7(from 0.10.6)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.7(from 0.10.6)[/b]</changelogtext>
         <changelogtext>[b]New[/b] Add separate crop borders setting for Continues Vertical</changelogtext>
         <changelogtext>[b]New[/b] Add simple external repo support</changelogtext>
         <changelogtext>Fix crashes with Merge Settings</changelogtext>
@@ -43,7 +49,7 @@
         <changelogtext>Deeplink and Batch add will now only search enabled sources</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.4.0" changeDate="Dec 12,2020">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.6(from 0.10.5)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.6(from 0.10.5)[/b]</changelogtext>
         <changelogtext>[b]New[/b] NEW ICON! Thanks to Aytox who made it!</changelogtext>
         <changelogtext>[b]New[/b] Add french translation, thanks to Adam-sama</changelogtext>
         <changelogtext>[b]New[/b] Double clicking the updates bottom bar button will open downloads</changelogtext>
@@ -74,7 +80,7 @@
         <changelogtext>Fix backup for merged manga</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.3.0" changeDate="Sept 14,2020">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.5(from 0.10.4)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.5(from 0.10.4)[/b]</changelogtext>
         <changelogtext>[b]New[/b] Delegate MangaDex, add Mangadex Follows browse, import, push, and tracking, as well as a custom manga view!</changelogtext>
         <changelogtext>[b]New[/b] No title grid option</changelogtext>
         <changelogtext>[b]New[/b] Started filter</changelogtext>
@@ -89,7 +95,7 @@
         <changelogtext>Network logging to file fixes</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.2.0" changeDate="Aug 12,2020">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.4(from 0.10.2)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.4(from 0.10.2)[/b]</changelogtext>
         <changelogtext>[b]New[/b] cleanup orphaned downloads option (from J2k)</changelogtext>
         <changelogtext>[b]New[/b] delegate Hitomi, please download the extension to continue using your Hitomi manga</changelogtext>
         <changelogtext>[b]New[/b] delegate NHentai, please download the extension to continue using your NHentai manga</changelogtext>
@@ -111,11 +117,11 @@
         <changelogtext>Change the way releases are built, likely fixes problems with installing the app for some people</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.1.1" changeDate="Aug 2,2020">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.2(from 0.10.1)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.2(from 0.10.1)[/b]</changelogtext>
         <changelogtext>Delegated HBrowse, if you used that source please install the extension to continue using your manga</changelogtext>
     </changelogversion>
     <changelogversion versionName="1.1.0" changeDate="Aug 1,2020">
-        <changelogtext>[b]Based on Tachiyomi stable 0.10.1(from a 0.9.2 preview)[/b] </changelogtext>
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.1(from a 0.9.2 preview)[/b]</changelogtext>
         <changelogtext>Made the app translatable! Feel free to ask how to in the Tachiyomi discord or open a issue if you want to help with translations</changelogtext>
         <changelogtext>Move to the new 0.10.0 manga page</changelogtext>
         <changelogtext>[b]New[/b] Add move recommendations to overflow menu option</changelogtext>
