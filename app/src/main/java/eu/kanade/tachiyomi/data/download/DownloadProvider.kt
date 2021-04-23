@@ -76,7 +76,7 @@ class DownloadProvider(private val context: Context) {
      */
     fun findMangaDir(manga: Manga, source: Source): UniFile? {
         val sourceDir = findSourceDir(source)
-        return sourceDir?.findFile(getMangaDirName(manga))
+        return sourceDir?.findFile(getMangaDirName(manga), true)
     }
 
     /**
@@ -89,7 +89,7 @@ class DownloadProvider(private val context: Context) {
     fun findChapterDir(chapter: Chapter, manga: Manga, source: Source): UniFile? {
         val mangaDir = findMangaDir(manga, source)
         return getValidChapterDirNames(chapter).asSequence()
-            .mapNotNull { mangaDir?.findFile(it) ?: mangaDir?.findFile("$it.cbz") }
+            .mapNotNull { mangaDir?.findFile(it, true) ?: mangaDir?.findFile("$it.cbz", true) }
             .firstOrNull()
     }
 
@@ -176,6 +176,7 @@ class DownloadProvider(private val context: Context) {
         return listOf(
             getChapterDirName(chapter),
 
+            // TODO: remove this
             // Legacy chapter directory name used in v0.9.2 and before
             DiskUtil.buildValidFilename(chapter.name)
         )
