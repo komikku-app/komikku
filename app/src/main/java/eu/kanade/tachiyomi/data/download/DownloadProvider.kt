@@ -139,7 +139,7 @@ class DownloadProvider(private val context: Context) {
      * @param source the source to query.
      */
     fun getSourceDirName(source: Source): String {
-        return source.toString()
+        return DiskUtil.buildValidFilename(source.toString())
     }
 
     /**
