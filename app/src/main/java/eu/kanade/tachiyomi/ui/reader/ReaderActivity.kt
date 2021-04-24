@@ -473,8 +473,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             setTooltip(R.string.pref_rotation_type)
 
             setOnClickListener {
-                val newOrientation =
-                    OrientationType.getNextOrientation(preferences.rotation().get(), resources)
+                val newOrientation = OrientationType.getNextOrientation(preferences.rotation().get())
 
                 preferences.rotation().set(newOrientation.prefValue)
                 setOrientation(newOrientation.flag)
@@ -722,7 +721,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     // EXH <--
 
     /*private fun updateRotationShortcut(preference: Int) {
-        val orientation = OrientationType.fromPreference(preference, resources)
+        val orientation = OrientationType.fromPreference(preference)
         binding.actionRotation.setImageResource(orientation.iconRes)
     }*/
 
@@ -1182,7 +1181,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      * Forces the user preferred [orientation] on the activity.
      */
     private fun setOrientation(orientation: Int) {
-        val newOrientation = OrientationType.fromPreference(orientation, resources)
+        val newOrientation = OrientationType.fromPreference(orientation)
         if (newOrientation.flag != requestedOrientation) {
             requestedOrientation = newOrientation.flag
         }

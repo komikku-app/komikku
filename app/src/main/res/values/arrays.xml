@@ -66,7 +66,8 @@
 
     <string-array name="rotation_type">
         <item>@string/rotation_free</item>
-        <item>@string/rotation_lock</item>
+        <item>@string/rotation_portrait</item>
+        <item>@string/rotation_landscape</item>
         <item>@string/rotation_force_portrait</item>
         <item>@string/rotation_force_landscape</item>
     </string-array>
@@ -76,6 +77,7 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+        <item>5</item>
     </string-array>
 
     <string-array name="color_filter_modes">

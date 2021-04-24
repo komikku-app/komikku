@@ -225,6 +225,10 @@ object EXHMigrations {
                         }
                     }
                 }
+                if (oldVersion < 16) {
+                    // Reset rotation to Free after replacing Lock
+                    preferences.rotation().set(1)
+                }
 
                 // if (oldVersion < 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
