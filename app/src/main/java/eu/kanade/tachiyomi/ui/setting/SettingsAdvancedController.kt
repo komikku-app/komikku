@@ -49,12 +49,8 @@ import exh.log.EHLogLevel
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.launch
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -361,7 +357,7 @@ class SettingsAdvancedController : SettingsController() {
                     .toList()
 
                 mangaFolders.forEach mangaFolder@{ mangaFolder ->
-                    val manga = sourceManga.find { (_, folderName)-> folderName == mangaFolder.name }?.first
+                    val manga = sourceManga.find { (_, folderName) -> folderName == mangaFolder.name }?.first
                     if (manga == null) {
                         // download is orphaned delete it
                         foldersCleared += 1 + (mangaFolder.listFiles().orEmpty().size)
