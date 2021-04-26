@@ -263,7 +263,7 @@ class DownloadManager(private val context: Context) {
 
         if (removeNonFavorite && !manga.favorite) {
             val mangaFolder = provider.getMangaDir(manga, source)
-            cleaned += 1 + (mangaFolder.listFiles()?.size ?: 0)
+            cleaned += 1 + mangaFolder.listFiles().orEmpty().size
             mangaFolder.delete()
             cache.removeManga(manga)
             return cleaned
@@ -284,8 +284,7 @@ class DownloadManager(private val context: Context) {
 
         if (cache.getDownloadCount(manga) == 0) {
             val mangaFolder = provider.getMangaDir(manga, source)
-            val size = mangaFolder.listFiles()?.size ?: 0
-            if (size == 0) {
+            if (!mangaFolder.listFiles().isNullOrEmpty()) {
                 mangaFolder.delete()
                 cache.removeManga(manga)
             } else {

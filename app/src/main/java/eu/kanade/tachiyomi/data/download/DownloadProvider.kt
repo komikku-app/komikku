@@ -123,14 +123,12 @@ class DownloadProvider(private val context: Context) {
         source: Source
     ): List<UniFile> {
         val mangaDir = findMangaDir(manga, source) ?: return emptyList()
-        return mangaDir.listFiles()!!.asList().filter {
-            (
-                chapters.find { chp ->
-                    getValidChapterDirNames(chp).any { dir ->
-                        mangaDir.findFile(dir) ?: mangaDir.findFile("$dir.cbz") != null
-                    }
-                } == null
-                ) || it.name?.endsWith(Downloader.TMP_DIR_SUFFIX) == true
+        return mangaDir.listFiles().orEmpty().asList().filter {
+            chapters.find { chp ->
+                getValidChapterDirNames(chp).any { dir ->
+                    mangaDir.findFile(dir) ?: mangaDir.findFile("$dir.cbz") != null
+                }
+            } == null || it.name?.endsWith(Downloader.TMP_DIR_SUFFIX) == true
         }
     }
     // SY <--
