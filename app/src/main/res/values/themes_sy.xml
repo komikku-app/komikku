@@ -4,6 +4,14 @@
     <!--=============-->
     <!-- Dark Themes -->
     <!--=============-->
+    <style name="Theme.Tachiyomi.Dark.AmoledBlue" parent="Theme.Tachiyomi.Dark.Amoled">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorAccentOnPrimary">@color/textColorPrimaryDark</item>
+        <item name="colorPrimaryVariant">@color/colorPrimary</item>
+        <item name="background">@color/colorPrimary</item>
+        <item name="colorSurface">@color/dialogDark</item>
+    </style>
+
     <style name="Theme.Tachiyomi.Dark.Red" parent="Theme.Tachiyomi.Dark.Amoled">
         <item name="actionBarTheme">@style/Theme.Toolbar.Red</item>
         <item name="colorPrimary">@color/md_black_1000</item>

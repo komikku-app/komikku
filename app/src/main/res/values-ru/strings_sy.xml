@@ -699,6 +699,7 @@
     </plurals>
     <string name="humanize_fallback">мгновение назад</string>
     <!-- Themes -->
+    <string name="theme_dark_amoledblue">AMOLED синяя</string>
     <string name="theme_dark_red">Чёрное и Красное</string>
     <string name="theme_dark_midnightdusk">Полуночные Сумерки</string>
     <string name="theme_dark_hotpink">Горячий Розовый</string>

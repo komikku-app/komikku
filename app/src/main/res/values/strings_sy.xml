@@ -163,6 +163,7 @@
     <string name="log_extreme_desc">network inspection mode</string>
 
     <!-- General Settings -->
+    <string name="theme_dark_amoledblue">AMOLED blue</string>
     <string name="theme_dark_red">Black-Red</string>
     <string name="theme_dark_midnightdusk">Midnight Dusk</string>
     <string name="theme_dark_hotpink">Hot Pink</string>
