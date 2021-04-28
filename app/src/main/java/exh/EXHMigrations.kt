@@ -232,9 +232,9 @@ object EXHMigrations {
                     // Reset rotation to Free after replacing Lock
                     preferences.rotation().set(1)
                     // Disable update check for Android 5.x users
-                    //if (BuildConfig.INCLUDE_UPDATER && Build.VERSION.SDK_INT under Build.VERSION_CODES.M) {
-                     //   UpdaterJob.cancelTask(context)
-                    //}
+                    // if (BuildConfig.INCLUDE_UPDATER && Build.VERSION.SDK_INT under Build.VERSION_CODES.M) {
+                    //   UpdaterJob.cancelTask(context)
+                    // }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)

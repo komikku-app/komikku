@@ -10,16 +10,33 @@
     tools:layout_editor_absoluteX="0dp"
     tools:layout_editor_absoluteY="25dp">
 
-
-    <ImageView
-        android:id="@+id/thumbnail"
+    <FrameLayout
+        android:id="@+id/card"
         android:layout_width="100dp"
         android:layout_height="140dp"
-        android:layout_gravity="center_vertical"
+        android:background="@drawable/rounded_rectangle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:src="@mipmap/ic_launcher" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:scaleType="centerCrop"
+            tools:src="@mipmap/ic_launcher" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progress"
+            style="@style/Theme.Widget.CircularProgressIndicator.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:visibility="gone" />
+    </FrameLayout>
+
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/title"
@@ -31,7 +48,7 @@
         android:ellipsize="end"
         android:maxLines="2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/thumbnail"
+        app:layout_constraintStart_toEndOf="@+id/card"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Manga title for the life of me I cant think yes totally" />
 
@@ -43,7 +60,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/thumbnail"
+        app:layout_constraintStart_toEndOf="@+id/card"
         app:layout_constraintTop_toBottomOf="@+id/title"
         tools:text="Manga title for the life of me I cant think yes totally" />
 
@@ -55,7 +72,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/rounded_rectangle"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/thumbnail">
+        app:layout_constraintStart_toEndOf="@+id/card">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/genre"
@@ -81,7 +98,7 @@
         android:minHeight="20dp"
         android:numStars="5"
         app:layout_constraintBottom_toTopOf="@+id/cardView"
-        app:layout_constraintStart_toEndOf="@+id/thumbnail" />
+        app:layout_constraintStart_toEndOf="@+id/card" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/date_posted"

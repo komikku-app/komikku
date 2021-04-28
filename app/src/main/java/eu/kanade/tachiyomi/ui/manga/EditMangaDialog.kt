@@ -10,18 +10,17 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
 import androidx.core.view.isVisible
+import coil.loadAny
+import coil.transform.RoundedCornersTransformation
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.glide.GlideApp
-import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.SManga
@@ -77,13 +76,10 @@ class EditMangaDialog : DialogController {
     }
 
     fun onViewCreated() {
-        val mangaThumbnail = manga.toMangaThumbnail()
-
-        GlideApp.with(context)
-            .load(mangaThumbnail)
-            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-            .centerCrop()
-            .into(binding.mangaCover)
+        val radius = context.resources.getDimension(R.dimen.card_radius)
+        binding.mangaCover.loadAny(manga) {
+            transformations(RoundedCornersTransformation(radius))
+        }
 
         val isLocal = manga.source == LocalSource.ID
 
@@ -183,11 +179,10 @@ class EditMangaDialog : DialogController {
 
     fun updateCover(uri: Uri) {
         willResetCover = false
-        GlideApp.with(context)
-            .load(uri)
-            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-            .centerCrop()
-            .into(binding.mangaCover)
+        val radius = context.resources.getDimension(R.dimen.card_radius)
+        binding.mangaCover.loadAny(uri) {
+            transformations(RoundedCornersTransformation(radius))
+        }
         customCoverUri = uri
     }
 

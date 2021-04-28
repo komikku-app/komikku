@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.more
 
 import android.app.Dialog
-import android.os.Build
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.preference.PreferenceScreen
@@ -26,7 +25,6 @@ import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toast
 import exh.syDebugVersion
-import exh.util.under
 import timber.log.Timber
 import java.text.DateFormat
 import java.text.ParseException

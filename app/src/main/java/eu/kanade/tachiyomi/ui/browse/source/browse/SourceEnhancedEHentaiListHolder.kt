@@ -1,17 +1,18 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.view.View
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
+import coil.clear
+import coil.imageLoader
+import coil.request.CachePolicy
+import coil.request.ImageRequest
+import coil.transition.CrossfadeTransition
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.glide.GlideApp
-import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.databinding.SourceEnhancedEhentaiListItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.widget.StateImageViewTarget
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -91,18 +92,21 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
     }
 
     override fun setImage(manga: Manga) {
-        GlideApp.with(view.context).clear(binding.thumbnail)
+        // For rounded corners
+        binding.card.clipToOutline = true
 
+        binding.thumbnail.clear()
         if (!manga.thumbnail_url.isNullOrEmpty()) {
-            val radius = view.context.resources.getDimensionPixelSize(R.dimen.card_radius)
-            val requestOptions = RequestOptions().transform(CenterCrop(), RoundedCorners(radius))
-            GlideApp.with(view.context)
-                .load(manga.toMangaThumbnail())
-                .diskCacheStrategy(DiskCacheStrategy.DATA)
-                .apply(requestOptions)
-                .dontAnimate()
-                .placeholder(android.R.color.transparent)
-                .into(binding.thumbnail)
+            val crossfadeDuration = view.context.imageLoader.defaults.transition.let {
+                if (it is CrossfadeTransition) it.durationMillis else 0
+            }
+            val request = ImageRequest.Builder(view.context)
+                .data(manga)
+                .setParameter(MangaCoverFetcher.USE_CUSTOM_COVER, false)
+                .diskCachePolicy(CachePolicy.DISABLED)
+                .target(StateImageViewTarget(binding.thumbnail, binding.progress, crossfadeDuration))
+                .build()
+            itemView.context.imageLoader.enqueue(request)
         }
     }
 }

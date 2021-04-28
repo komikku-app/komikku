@@ -19,7 +19,8 @@
             android:layout_height="150dp"
             android:contentDescription="@string/description_cover"
             android:background="@drawable/rounded_rectangle"
-            android:src="@mipmap/ic_launcher"/>
+            android:src="@mipmap/ic_launcher"
+            android:scaleType="centerCrop"/>
     </FrameLayout>
 
     <LinearLayout

@@ -4,13 +4,12 @@ import android.view.View
 import android.widget.PopupMenu
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import coil.clear
+import coil.loadAny
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.glide.GlideApp
-import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.databinding.MigrationMangaCardBinding
 import eu.kanade.tachiyomi.databinding.MigrationProcessItemBinding
 import eu.kanade.tachiyomi.source.Source
@@ -128,6 +127,7 @@ class MigrationProcessHolder(
 
     private fun MigrationMangaCardBinding.resetManga() {
         loadingGroup.isVisible = true
+        thumbnail.clear()
         thumbnail.setImageDrawable(null)
         title.text = ""
         mangaSourceLabel.text = ""
@@ -138,12 +138,9 @@ class MigrationProcessHolder(
 
     private suspend fun MigrationMangaCardBinding.attachManga(manga: Manga, source: Source) {
         loadingGroup.isVisible = false
-        GlideApp.with(view.context.applicationContext)
-            .load(manga.toMangaThumbnail())
-            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-            .centerCrop()
-            .dontAnimate()
-            .into(thumbnail)
+        // For rounded corners
+        card.clipToOutline = true
+        thumbnail.loadAny(manga)
 
         title.text = if (manga.title.isBlank()) {
             view.context.getString(R.string.unknown)

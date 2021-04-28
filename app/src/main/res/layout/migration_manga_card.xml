@@ -6,12 +6,11 @@
     android:layout_height="wrap_content"
     android:background="@drawable/library_item_selector">
 
-    <androidx.cardview.widget.CardView
+    <FrameLayout
         android:id="@+id/card"
         android:layout_width="wrap_content"
         android:layout_height="220dp"
-        android:background="?attr/colorSurface"
-        app:cardCornerRadius="4dp"
+        android:background="@drawable/rounded_rectangle"
         app:layout_constraintDimensionRatio="0.75"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,8 +22,7 @@
             android:id="@+id/thumbnail"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?android:attr/colorBackground"
-            tools:background="?android:attr/colorBackground"
+            android:scaleType="centerCrop"
             tools:src="@mipmap/ic_launcher" />
 
         <View
@@ -94,7 +92,7 @@
             android:visibility="gone"
             android:indeterminate="true" />
 
-    </androidx.cardview.widget.CardView>
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/card_scroll_content"

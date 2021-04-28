@@ -1,11 +1,10 @@
 package eu.kanade.tachiyomi.ui.manga.merged
 
 import android.view.View
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import coil.loadAny
+import coil.transform.RoundedCornersTransformation
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.glide.GlideApp
-import eu.kanade.tachiyomi.data.glide.toMangaThumbnail
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsItemBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.system.getResourceColor
@@ -39,12 +38,11 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
 
     fun bind(item: EditMergedMangaItem) {
         reference = item.mergedMangaReference
-        item.mergedManga?.toMangaThumbnail()?.let {
-            GlideApp.with(itemView.context)
-                .load(it)
-                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                .centerCrop()
-                .into(binding.cover)
+        item.mergedManga?.let {
+            val radius = itemView.context.resources.getDimension(R.dimen.card_radius)
+            binding.cover.loadAny(it) {
+                transformations(RoundedCornersTransformation(radius))
+            }
         }
 
         binding.title.text = Injekt.get<SourceManager>().getOrStub(item.mergedMangaReference.mangaSourceId).toString()

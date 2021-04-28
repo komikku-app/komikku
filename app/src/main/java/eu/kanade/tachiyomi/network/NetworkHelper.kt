@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.network
 
 import android.content.Context
+import coil.util.CoilUtils
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import okhttp3.Cache
@@ -18,30 +19,34 @@ import java.util.concurrent.TimeUnit
 
     private val cacheSize = 5L * 1024 * 1024 // 5 MiB
 
-    /* SY --> */ open /* SY <-- */ val cookieManager = AndroidCookieJar()
+    /* SY --> */ open /* SY <-- */val cookieManager = AndroidCookieJar()
 
-    /* SY --> */ open /* SY <-- */ val client by lazy {
-        val builder = OkHttpClient.Builder()
-            .cookieJar(cookieManager)
-            .cache(Cache(cacheDir, cacheSize))
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(UserAgentInterceptor())
+    private val baseClientBuilder: OkHttpClient.Builder
+        get() {
+            val builder = OkHttpClient.Builder()
+                .cookieJar(cookieManager)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor(UserAgentInterceptor())
 
-        if (BuildConfig.DEBUG) {
-            val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.HEADERS
+            if (BuildConfig.DEBUG) {
+                val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.HEADERS
+                }
+                builder.addInterceptor(httpLoggingInterceptor)
             }
-            builder.addInterceptor(httpLoggingInterceptor)
+
+            when (preferences.dohProvider()) {
+                PREF_DOH_CLOUDFLARE -> builder.dohCloudflare()
+                PREF_DOH_GOOGLE -> builder.dohGoogle()
+            }
+
+            return builder
         }
 
-        when (preferences.dohProvider()) {
-            PREF_DOH_CLOUDFLARE -> builder.dohCloudflare()
-            PREF_DOH_GOOGLE -> builder.dohGoogle()
-        }
+    /* SY --> */ open /* SY <-- */val client by lazy { baseClientBuilder.cache(Cache(cacheDir, cacheSize)).build() }
 
-        builder.build()
-    }
+    val coilClient by lazy { baseClientBuilder.cache(CoilUtils.createDefaultCache(context)).build() }
 
     /* SY --> */ open /* SY <-- */val cloudflareClient by lazy {
         client.newBuilder()
