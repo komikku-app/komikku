@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.6.2" changeDate="Apr 28,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.10.12(from 0.10.11)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Add Dark Blue AMOLED theme (by E-SHL)</changelogtext>
+        <changelogtext>Fix bug with clean orphaned downloads deleting manga downloads it shouldn't have</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.6.1" changeDate="Apr 19,2021">
         <changelogtext>[b]Based on Tachiyomi stable 0.10.11(from 0.10.10)[/b]</changelogtext>
         <changelogtext>Add a debug function to address really old SY full backups reader mode bug</changelogtext>
