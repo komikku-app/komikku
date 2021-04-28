@@ -33,7 +33,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.data.preference.toggle
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.SourceManager
@@ -67,7 +66,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.defaultBar
 import eu.kanade.tachiyomi.util.view.hideBar
 import eu.kanade.tachiyomi.util.view.isDefaultBar
-import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.showBar
 import eu.kanade.tachiyomi.widget.SimpleAnimationListener
@@ -459,12 +457,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
             setOnClickListener {
                 popupMenu(
-                    items = ReadingModeType.values().map { it.prefValue to it.stringRes },
-                    selectedItemId = presenter.getMangaViewer(resolveDefault = false),
+                    items = ReadingModeType.values().map { it.flagValue to it.stringRes },
+                    selectedItemId = presenter.getMangaReadingMode(resolveDefault = false),
                 ) {
                     val newReadingMode = ReadingModeType.fromPreference(itemId)
 
-                    presenter.setMangaViewer(newReadingMode.prefValue)
+                    presenter.setMangaReadingMode(newReadingMode.flagValue)
 
                     menuToggleToast?.cancel()
                     if (!preferences.showReadingMode()) {
@@ -480,29 +478,28 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
             setOnClickListener {
                 popupMenu(
-                    items = OrientationType.values().map { it.prefValue to it.stringRes },
-                    selectedItemId = preferences.rotation().get(),
+                    items = OrientationType.values().map { it.flagValue to it.stringRes },
+                    selectedItemId = presenter.manga?.orientationType
+                        ?: preferences.defaultOrientationType(),
                 ) {
                     val newOrientation = OrientationType.fromPreference(itemId)
 
-                    preferences.rotation().set(newOrientation.prefValue)
-                    setOrientation(newOrientation.flag)
+                    presenter.setMangaOrientationType(newOrientation.flagValue)
+
+                    updateOrientationShortcut(newOrientation.flagValue)
 
                     menuToggleToast?.cancel()
                     menuToggleToast = toast(newOrientation.stringRes)
                 }
             }
-        }
-        preferences.rotation().asImmediateFlow { updateRotationShortcut(it) }
-            .launchIn(lifecycleScope)
-         */
+        }*/
 
         // Crop borders
         with(binding.actionCropBorders) {
             setTooltip(R.string.pref_crop_borders)
 
             setOnClickListener {
-                val mangaViewer = presenter.getMangaViewer()
+                val mangaViewer = presenter.getMangaReadingMode()
                 val isPagerType = ReadingModeType.isPagerType(mangaViewer)
                 if (isPagerType) {
                     preferences.cropBorders().toggle()
@@ -731,13 +728,13 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     }
     // EXH <--
 
-    /*private fun updateRotationShortcut(preference: Int) {
+    /*private fun updateOrientationShortcut(preference: Int) {
         val orientation = OrientationType.fromPreference(preference)
         binding.actionRotation.setImageResource(orientation.iconRes)
     }*/
 
     private fun updateCropBordersShortcut() {
-        val mangaViewer = presenter.getMangaViewer()
+        val mangaViewer = presenter.getMangaReadingMode()
         val isPagerType = ReadingModeType.isPagerType(mangaViewer)
         val enabled = if (isPagerType) {
             preferences.cropBorders().get()
@@ -879,16 +876,18 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     fun setManga(manga: Manga) {
         val prevViewer = viewer
 
-        /*val viewerMode = ReadingModeType.fromPreference(presenter.getMangaViewer(resolveDefault = false))
+        /*val viewerMode = ReadingModeType.fromPreference(presenter.getMangaReadingMode(resolveDefault = false))
         binding.actionReadingMode.setImageResource(viewerMode.iconRes)*/
 
-        val newViewer = when (presenter.getMangaViewer()) {
+        val newViewer = when (presenter.getMangaReadingMode()) {
             ReadingModeType.LEFT_TO_RIGHT.prefValue -> L2RPagerViewer(this)
             ReadingModeType.VERTICAL.prefValue -> VerticalPagerViewer(this)
             ReadingModeType.WEBTOON.prefValue -> WebtoonViewer(this)
             ReadingModeType.CONTINUOUS_VERTICAL.prefValue -> WebtoonViewer(this, isContinuous = false /* SY --> */, tapByPage = preferences.continuousVerticalTappingByPage().get() /* SY <-- */)
             else -> R2LPagerViewer(this)
         }
+
+        setOrientation(presenter.getMangaOrientationType())
 
         // Destroy previous viewer if there was one
         if (prevViewer != null) {
@@ -900,12 +899,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         // SY -->
         val defaultReaderType = manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
-        if (preferences.useAutoWebtoon().get() && manga.viewer == 0 && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
+        if (preferences.useAutoWebtoon().get() && manga.readingModeType == ReadingModeType.DEFAULT.flagValue && defaultReaderType != null && defaultReaderType == ReadingModeType.WEBTOON.prefValue) {
             readingModeToast?.cancel()
             readingModeToast = toast(resources.getString(R.string.eh_auto_webtoon_snack))
         } else if (preferences.showReadingMode()) {
             // SY <--
-            showReadingModeToast(presenter.getMangaViewer())
+            showReadingModeToast(presenter.getMangaReadingMode())
         }
 
         // SY -->
@@ -1191,7 +1190,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     /**
      * Forces the user preferred [orientation] on the activity.
      */
-    private fun setOrientation(orientation: Int) {
+    fun setOrientation(orientation: Int) {
         val newOrientation = OrientationType.fromPreference(orientation)
         if (newOrientation.flag != requestedOrientation) {
             requestedOrientation = newOrientation.flag
@@ -1207,14 +1206,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
          * Initializes the reader subscriptions.
          */
         init {
-            preferences.rotation().asImmediateFlow { setOrientation(it) }
-                .drop(1)
-                .onEach {
-                    delay(250)
-                    setOrientation(it)
-                }
-                .launchIn(lifecycleScope)
-
             preferences.readerTheme().asFlow()
                 .drop(1) // We only care about updates
                 .onEach { recreate() }

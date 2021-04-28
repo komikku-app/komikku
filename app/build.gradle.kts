@@ -34,7 +34,7 @@ android {
         minSdkVersion(AndroidConfig.minSdk)
         targetSdkVersion(AndroidConfig.targetSdk)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 16
+        versionCode = 17
         versionName = "1.6.2"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")

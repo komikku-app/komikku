@@ -48,7 +48,7 @@ class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: B
             val manga = item.manga
 
             chapterTitle.text = when (manga.displayMode) {
-                Manga.DISPLAY_NUMBER -> {
+                Manga.CHAPTER_DISPLAY_NUMBER -> {
                     val number = item.decimalFormat.format(item.chapter_number.toDouble())
                     itemView.context.getString(R.string.display_mode_chapter, number)
                 }

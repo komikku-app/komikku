@@ -145,8 +145,8 @@ class MigrationProcessAdapter(
         }
         // Update extras
         if (MigrationFlags.hasExtra(flags)) {
-            manga.viewer = prevManga.viewer
             manga.chapter_flags = prevManga.chapter_flags
+            manga.viewer_flags = prevManga.viewer_flags
         }
         // Update favorite status
         if (replace) {

@@ -30,6 +30,6 @@ class MangaMigrationPutResolver : PutResolver<Manga>() {
         MangaTable.COL_DATE_ADDED to manga.date_added,
         MangaTable.COL_TITLE to manga.title,
         MangaTable.COL_CHAPTER_FLAGS to manga.chapter_flags,
-        MangaTable.COL_VIEWER to manga.viewer
+        MangaTable.COL_VIEWER to manga.viewer_flags
     )
 }

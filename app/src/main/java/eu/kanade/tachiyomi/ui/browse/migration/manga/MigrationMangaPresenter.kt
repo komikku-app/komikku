@@ -104,7 +104,7 @@ class MigrationMangaPresenter(
             }
 
             if (migrateExtra) {
-                manga.viewer = prevManga.viewer
+                manga.viewer_flags = prevManga.viewer_flags
                 manga.chapter_flags = prevManga.chapter_flags
             }
 

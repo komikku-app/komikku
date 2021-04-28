@@ -18,7 +18,7 @@ object MangaTypeAdapter {
                 value(it.originalTitle)
                 // SY <--
                 value(it.source)
-                value(it.viewer)
+                value(it.viewer_flags)
                 value(it.chapter_flags)
                 endArray()
             }
@@ -29,7 +29,7 @@ object MangaTypeAdapter {
                 manga.url = nextString()
                 manga.title = nextString()
                 manga.source = nextLong()
-                manga.viewer = nextInt()
+                manga.viewer_flags = nextInt()
                 manga.chapter_flags = nextInt()
                 endArray()
                 manga

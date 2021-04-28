@@ -122,9 +122,9 @@ class ReaderChapterSheet(private val activity: ReaderActivity) : BaseBottomSheet
         launchUI {
             val chapters = with(presenter.getChapters(context)) {
                 when (activity.presenter.manga?.sorting) {
-                    Manga.SORTING_SOURCE -> sortedBy { it.source_order }
-                    Manga.SORTING_NUMBER -> sortedByDescending { it.chapter_number }
-                    Manga.SORTING_UPLOAD_DATE -> sortedBy { it.date_upload }
+                    Manga.CHAPTER_SORTING_SOURCE -> sortedBy { it.source_order }
+                    Manga.CHAPTER_SORTING_NUMBER -> sortedByDescending { it.chapter_number }
+                    Manga.CHAPTER_SORTING_UPLOAD_DATE -> sortedBy { it.date_upload }
                     else -> sortedBy { it.source_order }
                 }
             }

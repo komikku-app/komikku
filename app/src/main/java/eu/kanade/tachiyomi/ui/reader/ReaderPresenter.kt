@@ -25,6 +25,8 @@ import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
+import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -131,13 +133,13 @@ class ReaderPresenter(
                             return@filter false
                         } else if (preferences.skipFiltered()) {
                             if (
-                                (manga.readFilter == Manga.SHOW_READ && !it.read) ||
-                                (manga.readFilter == Manga.SHOW_UNREAD && it.read) ||
+                                (manga.readFilter == Manga.CHAPTER_SHOW_READ && !it.read) ||
+                                (manga.readFilter == Manga.CHAPTER_SHOW_UNREAD && it.read) ||
                                 (
-                                    manga.downloadedFilter == Manga.SHOW_DOWNLOADED &&
+                                    manga.downloadedFilter == Manga.CHAPTER_SHOW_DOWNLOADED &&
                                         !downloadManager.isChapterDownloaded(it, manga)
                                     ) ||
-                                (manga.bookmarkedFilter == Manga.SHOW_BOOKMARKED && !it.bookmark) ||
+                                (manga.bookmarkedFilter == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
                                 // SY -->
                                 (filteredScanlators != null && it.scanlatorList().none { group -> filteredScanlators.contains(group) })
                                 // SY <--
@@ -160,9 +162,9 @@ class ReaderPresenter(
             }
 
         when (manga.sorting) {
-            Manga.SORTING_SOURCE -> ChapterLoadBySource().get(chaptersForReader)
-            Manga.SORTING_NUMBER -> ChapterLoadByNumber().get(chaptersForReader, selectedChapter)
-            Manga.SORTING_UPLOAD_DATE -> ChapterLoadByUploadDate().get(chaptersForReader)
+            Manga.CHAPTER_SORTING_SOURCE -> ChapterLoadBySource().get(chaptersForReader)
+            Manga.CHAPTER_SORTING_NUMBER -> ChapterLoadByNumber().get(chaptersForReader, selectedChapter)
+            Manga.CHAPTER_SORTING_UPLOAD_DATE -> ChapterLoadByUploadDate().get(chaptersForReader)
             else -> error("Unknown sorting method")
         }.map(::ReaderChapter)
     }
@@ -594,15 +596,17 @@ class ReaderPresenter(
     /**
      * Returns the viewer position used by this manga or the default one.
      */
-    fun getMangaViewer(resolveDefault: Boolean = true): Int {
-        val manga = manga ?: return preferences.defaultViewer()
+    fun getMangaReadingMode(resolveDefault: Boolean = true): Int {
+        val manga = manga ?: return preferences.defaultReadingMode()
         // SY -->
-        return if (resolveDefault && manga.viewer == 0 && preferences.useAutoWebtoon().get()) {
-            manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name)) ?: if (manga.viewer == 0) preferences.defaultViewer() else manga.viewer
-        } else if (resolveDefault && manga.viewer == 0) {
-            preferences.defaultViewer()
-        } else {
-            manga.viewer
+        return when {
+            resolveDefault && manga.readingModeType == ReadingModeType.DEFAULT.flagValue && preferences.useAutoWebtoon().get() -> {
+                manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name)) ?: if (manga.readingModeType == ReadingModeType.DEFAULT.flagValue) preferences.defaultReadingMode() else manga.readingModeType
+            }
+            resolveDefault && manga.readingModeType == ReadingModeType.DEFAULT.flagValue -> {
+                preferences.defaultReadingMode()
+            }
+            else -> manga.readingModeType
         }
         // SY <--
     }
@@ -610,10 +614,10 @@ class ReaderPresenter(
     /**
      * Updates the viewer position for the open manga.
      */
-    fun setMangaViewer(viewer: Int) {
+    fun setMangaReadingMode(readingModeType: Int) {
         val manga = manga ?: return
-        manga.viewer = viewer
-        db.updateMangaViewer(manga).executeAsBlocking()
+        manga.readingModeType = readingModeType
+        db.updateViewerFlags(manga).executeAsBlocking()
 
         Observable.timer(250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
             .subscribeFirst({ view, _ ->
@@ -626,6 +630,36 @@ class ReaderPresenter(
                     // Emit manga and chapters to the new viewer
                     view.setManga(manga)
                     view.setChapters(currChapters)
+                }
+            })
+    }
+
+    /**
+     * Returns the orientation type used by this manga or the default one.
+     */
+    fun getMangaOrientationType(): Int {
+        val default = preferences.defaultOrientationType()
+        return when (manga?.orientationType) {
+            OrientationType.DEFAULT.flagValue -> default
+            else -> manga?.orientationType ?: default
+        }
+    }
+
+    /**
+     * Updates the orientation type for the open manga.
+     */
+    fun setMangaOrientationType(rotationType: Int) {
+        val manga = manga ?: return
+        manga.orientationType = rotationType
+        db.updateViewerFlags(manga).executeAsBlocking()
+
+        Timber.i("Manga orientation is ${manga.orientationType}")
+
+        Observable.timer(250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+            .subscribeFirst({ view, _ ->
+                val currChapters = viewerChaptersRelay.value
+                if (currChapters != null) {
+                    view.setOrientation(getMangaOrientationType())
                 }
             })
     }

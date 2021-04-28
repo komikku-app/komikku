@@ -26,7 +26,7 @@ data class BackupManga(
     // @ProtoNumber(11) val lastUpdate: Long = 0, 1.x value, not used in 0.x
     // @ProtoNumber(12) val lastInit: Long = 0, 1.x value, not used in 0.x
     @ProtoNumber(13) var dateAdded: Long = 0,
-    @ProtoNumber(14) var viewer: Int = 0,
+    @ProtoNumber(14) var viewer: Int = 0, // Replaced by viewer_flags
     // @ProtoNumber(15) val flags: Int = 0, 1.x value, not used in 0.x
     @ProtoNumber(16) var chapters: List<BackupChapter> = emptyList(),
     @ProtoNumber(17) var categories: List<Int> = emptyList(),
@@ -35,6 +35,8 @@ data class BackupManga(
     @ProtoNumber(100) var favorite: Boolean = true,
     @ProtoNumber(101) var chapterFlags: Int = 0,
     @ProtoNumber(102) var history: List<BackupHistory> = emptyList(),
+    @ProtoNumber(103) var viewer_flags: Int? = null,
+
     // SY specific values
     @ProtoNumber(600) var mergedMangaReferences: List<BackupMergedMangaReference> = emptyList(),
     @ProtoNumber(601) var flatMetadata: BackupFlatMetadata? = null,
@@ -60,7 +62,7 @@ data class BackupManga(
             favorite = this@BackupManga.favorite
             source = this@BackupManga.source
             date_added = this@BackupManga.dateAdded
-            viewer = this@BackupManga.viewer
+            viewer_flags = this@BackupManga.viewer_flags ?: this@BackupManga.viewer
             chapter_flags = this@BackupManga.chapterFlags
         }
     }
@@ -116,7 +118,8 @@ data class BackupManga(
                 favorite = manga.favorite,
                 source = manga.source,
                 dateAdded = manga.date_added,
-                viewer = manga.viewer,
+                viewer = manga.readingModeType,
+                viewer_flags = manga.viewer_flags,
                 chapterFlags = manga.chapter_flags
                 // SY -->
             ).also { backupManga ->
