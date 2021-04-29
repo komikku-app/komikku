@@ -58,6 +58,13 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
+# Manga Plus fixes
+-keep class kotlinx.serialization.**
+-keepclassmembers class kotlinx.serialization.** {
+    <methods>;
+}
+
+# Filter serializer
 -keep,includedescriptorclasses class xyz.nulldev.ts.api.http.serializer.**$$serializer { *; }
 -keepclassmembers class xyz.nulldev.ts.api.http.serializer.** {
     *** Companion;
