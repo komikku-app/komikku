@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterItem
 import eu.kanade.tachiyomi.ui.reader.loader.ChapterLoader
+import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
@@ -445,6 +446,11 @@ class ReaderPresenter(
         val currentChapters = viewerChaptersRelay.value ?: return
 
         val selectedChapter = page.chapter
+
+        // Insert page doesn't change page progress
+        if (page is InsertPage) {
+            return
+        }
 
         // Save last page read and mark as read if needed
         selectedChapter.chapter.last_page_read = page.index
