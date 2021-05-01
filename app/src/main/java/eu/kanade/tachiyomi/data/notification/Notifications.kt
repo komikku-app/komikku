@@ -68,6 +68,12 @@ object Notifications {
     const val CHANNEL_CRASH_LOGS = "crash_logs_channel"
     const val ID_CRASH_LOGS = -601
 
+    /**
+     * Notification channel used for Incognito Mode
+     */
+    const val CHANNEL_INCOGNITO_MODE = "incognito_mode_channel"
+    const val ID_INCOGNITO_MODE = -701
+
     // SY -->
     /**
      * Notification channel and ids used for backup and restore.
@@ -163,6 +169,11 @@ object Notifications {
                 CHANNEL_CRASH_LOGS,
                 context.getString(R.string.channel_crash_logs),
                 NotificationManager.IMPORTANCE_HIGH
+            ),
+            NotificationChannel(
+                CHANNEL_INCOGNITO_MODE,
+                context.getString(R.string.pref_incognito_mode),
+                NotificationManager.IMPORTANCE_LOW
             ),
             NotificationChannel(
                 CHANNEL_SIMILAR,

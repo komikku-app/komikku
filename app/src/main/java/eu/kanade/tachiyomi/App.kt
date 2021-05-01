@@ -2,16 +2,22 @@ package eu.kanade.tachiyomi
 
 import android.app.ActivityManager
 import android.app.Application
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Environment
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.multidex.MultiDex
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -39,6 +45,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.ui.security.SecureActivityDelegate
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import eu.kanade.tachiyomi.util.system.notification
 import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
@@ -49,6 +56,8 @@ import exh.log.xLogD
 import exh.log.xLogE
 import exh.syDebugVersion
 import io.realm.Realm
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.conscrypt.Conscrypt
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -66,6 +75,8 @@ import kotlin.time.days
 open class App : Application(), LifecycleObserver, ImageLoaderFactory {
 
     private val preferences: PreferencesHelper by injectLazy()
+
+    private val disableIncognitoReceiver = DisableIncognitoReceiver()
 
     override fun onCreate() {
         super.onCreate()
@@ -95,6 +106,34 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
 
         // Reset Incognito Mode on relaunch
         preferences.incognitoMode().set(false)
+
+        // Show notification to disable Incognito Mode when it's enabled
+        preferences.incognitoMode().asFlow()
+            .onEach { enabled ->
+                val notificationManager = NotificationManagerCompat.from(this)
+                if (enabled) {
+                    disableIncognitoReceiver.register()
+                    val notification = notification(Notifications.CHANNEL_INCOGNITO_MODE) {
+                        setContentTitle(getString(R.string.pref_incognito_mode))
+                        setContentText(getString(R.string.notification_incognito_text))
+                        setSmallIcon(R.drawable.ic_glasses_black_24dp)
+                        setOngoing(true)
+
+                        val pendingIntent = PendingIntent.getBroadcast(
+                            this@App,
+                            0,
+                            Intent(ACTION_DISABLE_INCOGNITO_MODE),
+                            PendingIntent.FLAG_ONE_SHOT
+                        )
+                        setContentIntent(pendingIntent)
+                    }
+                    notificationManager.notify(Notifications.ID_INCOGNITO_MODE, notification)
+                } else {
+                    disableIncognitoReceiver.unregister()
+                    notificationManager.cancel(Notifications.ID_INCOGNITO_MODE)
+                }
+            }
+            .launchIn(ProcessLifecycleOwner.get().lifecycleScope)
     }
 
     override fun attachBaseContext(base: Context) {
@@ -244,5 +283,31 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
             // Crashes if app is in background
             xLogE("Failed to initialize debug overlay, app in background?", e)
         }
+    }
+
+    private inner class DisableIncognitoReceiver : BroadcastReceiver() {
+        private var registered = false
+
+        override fun onReceive(context: Context, intent: Intent) {
+            preferences.incognitoMode().set(false)
+        }
+
+        fun register() {
+            if (!registered) {
+                registerReceiver(this, IntentFilter(ACTION_DISABLE_INCOGNITO_MODE))
+                registered = true
+            }
+        }
+
+        fun unregister() {
+            if (registered) {
+                unregisterReceiver(this)
+                registered = false
+            }
+        }
+    }
+
+    companion object {
+        private const val ACTION_DISABLE_INCOGNITO_MODE = "tachi.action.DISABLE_INCOGNITO_MODE"
     }
 }
