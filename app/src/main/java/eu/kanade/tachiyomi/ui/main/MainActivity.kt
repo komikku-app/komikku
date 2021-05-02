@@ -60,7 +60,9 @@ import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.uconfig.WarnConfigureDialogController
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 import java.util.Date
 import java.util.LinkedList
@@ -277,8 +279,9 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
             .asImmediateFlow { binding.downloadedOnly.isVisible = it }
             .launchIn(lifecycleScope)
 
-        preferences.incognitoMode()
-            .asImmediateFlow {
+        preferences.incognitoMode().asFlow()
+            .drop(1)
+            .onEach {
                 binding.incognitoMode.isVisible = it
 
                 // Close BrowseSourceController and its MangaController child when incognito mode is disabled
