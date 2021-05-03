@@ -57,8 +57,8 @@
         app:layout_constraintStart_toEndOf="@+id/migration_manga_card_to"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_more_vert_24dp"
-        android:visibility="invisible"/>
-
+        android:visibility="invisible"
+        app:tint="?attr/colorOnPrimary" />
 
     <ImageView
         android:id="@+id/skip_manga"
