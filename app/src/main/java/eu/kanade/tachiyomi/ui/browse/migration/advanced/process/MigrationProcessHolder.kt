@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
@@ -55,13 +54,11 @@ class MigrationProcessHolder(
 
             binding.migrationMenu.setVectorCompat(
                 R.drawable.ic_more_vert_24dp,
-                view.context.getResourceColor(R.attr.colorOnPrimary)
+                R.attr.colorOnPrimary
             )
             binding.skipManga.setVectorCompat(
                 R.drawable.ic_close_24dp,
-                view.context.getResourceColor(
-                    R.attr.colorOnPrimary
-                )
+                R.attr.colorOnPrimary
             )
             binding.migrationMenu.isInvisible = true
             binding.skipManga.isVisible = true
