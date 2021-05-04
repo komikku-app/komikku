@@ -42,9 +42,6 @@
 
         <item name="android:colorBackground">@color/backgroundDusk</item>
 
-        <!-- Some ROMs make black navbars white (e.g. OxygenOS) -->
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-
         <!-- Custom Attributes -->
         <item name="colorLibrarySelection">@color/selectorColorDark</item>
         <item name="colorLibrarySelectionActive">@color/selectorColorDark</item>
@@ -67,9 +64,6 @@
         <item name="android:colorBackground">@color/backgroundPink</item>
         <item name="android:windowBackground">@color/backgroundPink</item>
         <item name="android:statusBarColor">@color/dialogPink</item>
-
-        <!-- Some ROMs make black navbars white (e.g. OxygenOS) -->
-        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
 </resources>
