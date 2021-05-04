@@ -383,30 +383,9 @@ class SettingsReaderController : SettingsController() {
             }
         }
 
-        // EXH -->
         preferenceCategory {
-            titleRes = R.string.pref_category_fork
+            titleRes = R.string.page_downloading
 
-            intListPreference {
-                key = Keys.eh_readerThreads
-                titleRes = R.string.download_threads
-                entries = arrayOf("1", "2", "3", "4", "5")
-                entryValues = entries
-                defaultValue = "2"
-                summaryRes = R.string.download_threads_summary
-            }
-            switchPreference {
-                key = Keys.eh_aggressivePageLoading
-                titleRes = R.string.aggressively_load_pages
-                summaryRes = R.string.aggressively_load_pages_summary
-                defaultValue = false
-            }
-            switchPreference {
-                key = Keys.eh_readerInstantRetry
-                titleRes = R.string.skip_queue_on_retry
-                summaryRes = R.string.skip_queue_on_retry_summary
-                defaultValue = true
-            }
             intListPreference {
                 key = Keys.eh_preload_size
                 titleRes = R.string.reader_preload_amount
@@ -433,6 +412,16 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = "10"
                 summaryRes = R.string.reader_preload_amount_summary
             }
+
+            intListPreference {
+                key = Keys.eh_readerThreads
+                titleRes = R.string.download_threads
+                entries = arrayOf("1", "2", "3", "4", "5")
+                entryValues = entries
+                defaultValue = "2"
+                summaryRes = R.string.download_threads_summary
+            }
+
             listPreference {
                 key = Keys.eh_cacheSize
                 titleRes = R.string.reader_cache_size
@@ -475,6 +464,25 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = "75"
                 summaryRes = R.string.reader_cache_size_summary
             }
+            switchPreference {
+                key = Keys.eh_aggressivePageLoading
+                titleRes = R.string.aggressively_load_pages
+                summaryRes = R.string.aggressively_load_pages_summary
+                defaultValue = false
+            }
+        }
+
+        // EXH -->
+        preferenceCategory {
+            titleRes = R.string.pref_category_fork
+
+            switchPreference {
+                key = Keys.eh_readerInstantRetry
+                titleRes = R.string.skip_queue_on_retry
+                summaryRes = R.string.skip_queue_on_retry_summary
+                defaultValue = true
+            }
+
             switchPreference {
                 key = Keys.eh_preserveReadingPosition
                 titleRes = R.string.preserve_reading_position
