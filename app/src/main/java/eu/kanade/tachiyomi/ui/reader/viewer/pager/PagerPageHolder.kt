@@ -1,11 +1,8 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.BitmapFactory
 import android.graphics.PointF
 import android.graphics.drawable.Animatable
-import android.graphics.drawable.Drawable
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
@@ -24,26 +21,19 @@ import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.github.chrisbanes.photoview.PhotoView
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.InsertPage
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressBar
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig.ZoomType
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
-import exh.util.isInNightMode
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
@@ -103,12 +93,6 @@ class PagerPageHolder(
      * the appropiate image view depending if the image is animated (GIF).
      */
     private var readImageHeaderSubscription: Subscription? = null
-
-    // SY -->
-    private val readerTheme by lazy {
-        Injekt.get<PreferencesHelper>().readerTheme().get()
-    }
-    // SY <--
 
     init {
         addView(progressBar)
@@ -254,30 +238,12 @@ class PagerPageHolder(
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext { isAnimated ->
                 if (!isAnimated) {
-                    // SY -->
-                    if (readerTheme >= 3) {
-                        val imageView = initSubsamplingImageView()
-                        if (page.bg != null && page.bgType == getBGType(readerTheme, context)) {
-                            imageView.setImage(ImageSource.inputStream(openStream!!))
-                            imageView.background = page.bg
+                    initSubsamplingImageView().apply {
+                        if (viewer.config.automaticBackground) {
+                            background = ImageUtil.chooseBackground(context, openStream!!)
                         }
-                        // if the user switches to automatic when pages are already cached, the bg needs to be loaded
-                        else {
-                            val bytesArray = openStream!!.readBytes()
-                            val bytesStream = bytesArray.inputStream()
-                            imageView.setImage(ImageSource.inputStream(bytesStream))
-                            bytesStream.close()
-
-                            launchUI {
-                                imageView.background = setBG(bytesArray)
-                                page.bg = imageView.background
-                                page.bgType = getBGType(readerTheme, context)
-                            }
-                        }
-                    } else {
-                        initSubsamplingImageView().setImage(ImageSource.inputStream(openStream!!))
+                        setImage(ImageSource.inputStream(openStream!!))
                     }
-                    // SY <--
                 } else {
                     initImageView().setImage(openStream!!)
                 }
@@ -330,22 +296,6 @@ class PagerPageHolder(
         val newPage = InsertPage(page)
         viewer.onPageSplit(page, newPage)
     }
-
-    // SY -->
-    private suspend fun setBG(bytesArray: ByteArray): Drawable {
-        return withContext(Dispatchers.Default) {
-            ImageUtil.autoSetBackground(
-                BitmapFactory.decodeByteArray(
-                    bytesArray,
-                    0,
-                    bytesArray.size
-                ),
-                readerTheme == 3,
-                context
-            )
-        }
-    }
-    // SY <--
 
     /**
      * Called when the page has an error.
@@ -550,14 +500,4 @@ class PagerPageHolder(
             .build()
         context.imageLoader.enqueue(request)
     }
-
-    // SY -->
-    companion object {
-        fun getBGType(readerTheme: Int, context: Context): Int {
-            return if (readerTheme == 4) {
-                if (context.isInNightMode) 2 else 1
-            } else 0
-        }
-    }
-    // SY <--
 }

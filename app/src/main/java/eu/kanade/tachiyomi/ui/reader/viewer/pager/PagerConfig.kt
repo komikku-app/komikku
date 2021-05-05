@@ -23,6 +23,9 @@ class PagerConfig(
     preferences: PreferencesHelper = Injekt.get()
 ) : ViewerConfig(preferences, scope) {
 
+    var automaticBackground = false
+        private set
+
     var dualPageSplitChangedListener: ((Boolean) -> Unit)? = null
 
     var imageScaleType = 1
@@ -39,6 +42,9 @@ class PagerConfig(
     // SY <--
 
     init {
+        preferences.readerTheme()
+            .register({ automaticBackground = it == 3 }, { imagePropertyChangedListener?.invoke() })
+
         preferences.imageScaleType()
             .register({ imageScaleType = it }, { imagePropertyChangedListener?.invoke() })
 

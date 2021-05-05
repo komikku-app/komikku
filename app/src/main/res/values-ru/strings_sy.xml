@@ -240,8 +240,6 @@
     <string name="auto_webtoon_mode">Автоматический веб-комикс</string>
     <string name="auto_webtoon_mode_summary">Использовать автоматический режим для веб-комикса, в которых выявлены вероятно, использовать длинные полосы формате</string>
     <string name="enable_zoom_out">Включить зум</string>
-    <string name="smart_based_on_page">Умный (по странице)</string>
-    <string name="smart_based_on_page_and_theme">Умный (по странице и теме)</string>
     <string name="tap_scroll_page">Нажмите прокрутить по странице</string>
     <string name="tap_scroll_page_summary">Нажатие будет прокручиваться по странице, а не по размеру экрана, если эта опция включена</string>
 

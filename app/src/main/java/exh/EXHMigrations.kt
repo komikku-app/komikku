@@ -275,6 +275,15 @@ object EXHMigrations {
                             .build()
                     )
                 }
+                if (oldVersion under 18) {
+                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+                    val readerTheme = prefs.getInt("pref_reader_theme_key", 3)
+                    if (readerTheme == 4) {
+                        prefs.edit {
+                            putInt("pref_reader_theme_key", 3)
+                        }
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap

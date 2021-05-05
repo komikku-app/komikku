@@ -180,7 +180,6 @@
     <string name="library_group_updates_all">Lancer des mises à jour de catégorie tout le temps</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_tab_language_code">Afficher le code de langue à côté du nom</string>
     <string name="pref_latest_position">Dernière position de l\'onglet</string>
     <string name="pref_latest_position_summery">Voulez-vous que le dernier onglet soit le premier onglet de la navigation? Cela en fera l\'onglet par défaut lors de l\'ouverture de la navigation, non recommandé si vous êtes sur des données ou un réseau mesuré</string>
     <string name="pref_source_navigation">Remplacer le dernier bouton</string>
@@ -232,8 +231,6 @@
     <string name="auto_webtoon_mode">Mode Webtoon automatique</string>
     <string name="auto_webtoon_mode_summary">Utilisez le mode Webtoon automatique pour les mangas détectés comme susceptibles d\'utiliser le format de bande longue</string>
     <string name="enable_zoom_out">Activer le zoom arrière</string>
-    <string name="smart_based_on_page">Intelligent(basé sur la page)</string>
-    <string name="smart_based_on_page_and_theme">Intelligent(basé sur la page et le thème)</string>
     <string name="tap_scroll_page">Appuyez sur faire défiler par page</string>
 
 <!--    <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>-->

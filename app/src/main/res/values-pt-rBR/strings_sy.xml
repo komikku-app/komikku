@@ -209,8 +209,6 @@
     <string name="auto_webtoon_mode">Modo Auto Webtoon</string>
     <string name="auto_webtoon_mode_summary">Use o modo webtoon automático para mangás que são detectados provavelmente no formato longstrip</string>
     <string name="enable_zoom_out">Enable zoom out</string>
-    <string name="smart_based_on_page">Inteligente (Baseado na página)</string>
-    <string name="smart_based_on_page_and_theme">Inteligente (baseado na página e no tema)</string>
     <string name="tap_scroll_page">Tap scroll by page</string>
     <string name="tap_scroll_page_summary">Tapping will scroll by page instead of screen size when this option is enabled</string>
 
