@@ -1,22 +1,33 @@
 package eu.kanade.tachiyomi.ui.setting
 
+import android.app.Dialog
 import android.os.Build
+import android.os.Bundle
 import androidx.preference.PreferenceScreen
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.TappingInvertMode
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
+import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.listPreference
+import eu.kanade.tachiyomi.util.preference.onClick
+import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import kotlinx.coroutines.flow.launchIn
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsReaderController : SettingsController() {
@@ -494,7 +505,46 @@ class SettingsReaderController : SettingsController() {
                 summaryRes = R.string.auto_webtoon_mode_summary
                 defaultValue = true
             }
+
+            preference {
+                key = "reader_bottom_buttons_pref"
+                titleRes = R.string.reader_bottom_buttons
+                summaryRes = R.string.reader_bottom_buttons_summary
+
+                onClick {
+                    ReaderBottomButtonsDialog().showDialog(router)
+                }
+            }
         }
         // EXH <--
+    }
+
+    class ReaderBottomButtonsDialog : DialogController() {
+
+        private val preferences: PreferencesHelper = Injekt.get()
+
+        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+            val selected = preferences.readerBottomButtons().get()
+            val values = ReaderBottomButton.values()
+            val items = values.map { it.value }
+
+            val preselected = selected.mapNotNull { selection -> items.indexOf(selection).takeUnless { it == -1 } }
+                .toIntArray()
+
+            return MaterialDialog(activity!!)
+                .title(R.string.reader_bottom_buttons)
+                .listItemsMultiChoice(
+                    items = values.map { activity!!.getString(it.stringRes) },
+                    initialSelection = preselected
+                ) { _, selections: IntArray, _ ->
+                    val included = selections
+                        .map { values[it].value }
+                        .toSet()
+
+                    preferences.readerBottomButtons().set(included)
+                }
+                .positiveButton(android.R.string.ok)
+                .negativeButton(android.R.string.cancel)
+        }
     }
 }

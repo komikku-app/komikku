@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import kotlinx.coroutines.flow.Flow
@@ -488,4 +489,6 @@ class PreferencesHelper(val context: Context) {
     fun landscapeVerticalSeekbar() = flowPrefs.getBoolean(Keys.landscapeVerticalSeekbar, false)
 
     fun leftVerticalSeekbar() = flowPrefs.getBoolean(Keys.leftVerticalSeekbar, false)
+
+    fun readerBottomButtons() = flowPrefs.getStringSet(Keys.readerBottomButtons, ReaderBottomButton.BUTTONS_DEFAULTS)
 }
