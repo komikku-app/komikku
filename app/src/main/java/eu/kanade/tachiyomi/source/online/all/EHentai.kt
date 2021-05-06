@@ -16,7 +16,8 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toChapterInfo
+import eu.kanade.tachiyomi.source.model.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -24,7 +25,7 @@ import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
-import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.debug.DebugToggles
 import exh.eh.EHTags
 import exh.eh.EHentaiUpdateHelper
@@ -51,7 +52,6 @@ import exh.util.nullIfBlank
 import exh.util.trimAll
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -75,7 +75,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import rx.Observable
-import rx.Single
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
@@ -284,87 +283,82 @@ class EHentai(
 
     override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> = getChapterList(manga) {}
 
-    suspend fun getChapterList(manga: MangaInfo, throttleFunc: () -> Unit) = fetchChapterList(manga.toSManga(), throttleFunc).awaitSingle().map { it.toChapterInfo() }
+    suspend fun getChapterList(manga: MangaInfo, throttleFunc: () -> Unit): List<ChapterInfo> {
+        // Pull all the way to the root gallery
+        // We can't do this with RxJava or we run into stack overflows on shit like this:
+        //   https://exhentai.org/g/1073061/f9345f1c12/
+        var url = manga.key
+        var doc: Document
 
+        while (true) {
+            val gid = EHentaiSearchMetadata.galleryId(url).toInt()
+            val cachedParent = updateHelper.parentLookupTable.get(
+                gid
+            )
+            if (cachedParent == null) {
+                throttleFunc()
+                doc = client.newCall(exGet(baseUrl + url)).await().asJsoup()
+
+                val parentLink = doc.select("#gdd .gdt1").find { el ->
+                    el.text().toLowerCase() == "parent:"
+                }!!.nextElementSibling().selectFirst("a")?.attr("href")
+
+                if (parentLink != null) {
+                    updateHelper.parentLookupTable.put(
+                        gid,
+                        GalleryEntry(
+                            EHentaiSearchMetadata.galleryId(parentLink),
+                            EHentaiSearchMetadata.galleryToken(parentLink)
+                        )
+                    )
+                    url = EHentaiSearchMetadata.normalizeUrl(parentLink)
+                } else break
+            } else {
+                this@EHentai.xLogD("Parent cache hit: %s!", gid)
+                url = EHentaiSearchMetadata.idAndTokenToUrl(
+                    cachedParent.gId,
+                    cachedParent.gToken
+                )
+            }
+        }
+        val newDisplay = doc.select("#gnd a")
+        // Build chapter for root gallery
+        val self = ChapterInfo(
+            key = EHentaiSearchMetadata.normalizeUrl(doc.location()),
+            name = "v1: " + doc.selectFirst("#gn").text(),
+            number = 1f,
+            dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(
+                doc.select("#gdd .gdt1").find { el ->
+                    el.text().toLowerCase() == "posted:"
+                }!!.nextElementSibling().text()
+            )!!.time
+        )
+        // Build and append the rest of the galleries
+        return if (DebugToggles.INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS.enabled) {
+            listOf(self)
+        } else {
+            newDisplay.mapIndexed { index, newGallery ->
+                val link = newGallery.attr("href")
+                val name = newGallery.text()
+                val posted = (newGallery.nextSibling() as TextNode).text().removePrefix(", added ")
+                ChapterInfo(
+                    key = EHentaiSearchMetadata.normalizeUrl(link),
+                    name = "v${index + 2}: $name",
+                    number = index + 2f,
+                    dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time
+                )
+            }.reversed() + self
+        }
+    }
+
+    @Suppress("OverridingDeprecatedMember", "DEPRECATION")
     override fun fetchChapterList(manga: SManga) = fetchChapterList(manga) {}
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use getChapterList instead")
-    fun fetchChapterList(manga: SManga, throttleFunc: () -> Unit): Observable<List<SChapter>> {
-        return Single.fromCallable {
-            // Pull all the way to the root gallery
-            // We can't do this with RxJava or we run into stack overflows on shit like this:
-            //   https://exhentai.org/g/1073061/f9345f1c12/
-            var url: String = manga.url
-            var doc: Document? = null
-
-            runBlocking {
-                while (true) {
-                    val gid = EHentaiSearchMetadata.galleryId(url).toInt()
-                    val cachedParent = updateHelper.parentLookupTable.get(
-                        gid
-                    )
-                    if (cachedParent == null) {
-                        throttleFunc()
-
-                        val resp = client.newCall(exGet(baseUrl + url)).execute()
-                        if (!resp.isSuccessful) error("HTTP error (${resp.code})!")
-                        doc = resp.asJsoup()
-
-                        val parentLink = doc!!.select("#gdd .gdt1").find { el ->
-                            el.text().toLowerCase() == "parent:"
-                        }!!.nextElementSibling().selectFirst("a")?.attr("href")
-
-                        if (parentLink != null) {
-                            updateHelper.parentLookupTable.put(
-                                gid,
-                                GalleryEntry(
-                                    EHentaiSearchMetadata.galleryId(parentLink),
-                                    EHentaiSearchMetadata.galleryToken(parentLink)
-                                )
-                            )
-                            url = EHentaiSearchMetadata.normalizeUrl(parentLink)
-                        } else break
-                    } else {
-                        this@EHentai.xLogD("Parent cache hit: %s!", gid)
-                        url = EHentaiSearchMetadata.idAndTokenToUrl(
-                            cachedParent.gId,
-                            cachedParent.gToken
-                        )
-                    }
-                }
-            }
-
-            doc!!
-        }.map { d ->
-            val newDisplay = d.select("#gnd a")
-            // Build chapter for root gallery
-            val self = SChapter.create().apply {
-                url = EHentaiSearchMetadata.normalizeUrl(d.location())
-                name = "v1: " + d.selectFirst("#gn").text()
-                chapter_number = 1f
-                date_upload = MetadataUtil.EX_DATE_FORMAT.parse(
-                    d.select("#gdd .gdt1").find { el ->
-                        el.text().toLowerCase() == "posted:"
-                    }!!.nextElementSibling().text()
-                )!!.time
-            }
-            // Build and append the rest of the galleries
-            if (DebugToggles.INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS.enabled) listOf(self)
-            else {
-                newDisplay.mapIndexed { index, newGallery ->
-                    val link = newGallery.attr("href")
-                    val name = newGallery.text()
-                    val posted = (newGallery.nextSibling() as TextNode).text().removePrefix(", added ")
-                    SChapter.create().apply {
-                        this.url = EHentaiSearchMetadata.normalizeUrl(link)
-                        this.name = "v${index + 2}: $name"
-                        this.chapter_number = index + 2f
-                        this.date_upload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time
-                    }
-                }.reversed() + self
-            }
-        }.toObservable()
-    }
+    fun fetchChapterList(manga: SManga, throttleFunc: () -> Unit) = runAsObservable({
+        getChapterList(manga.toMangaInfo(), throttleFunc).map { it.toSChapter() }
+    })
 
     override fun fetchPageList(chapter: SChapter) = fetchChapterPage(chapter, baseUrl + chapter.url).map {
         it.mapIndexed { i, s ->
@@ -856,13 +850,12 @@ class EHentai(
     private fun combineQuery(filters: FilterList): String {
         val stringBuilder = StringBuilder()
         val advSearch = filters.filterIsInstance<Filter.AutoComplete>().flatMap { filter ->
-            val splitState = filter.state.trimAll().dropBlank()
-            splitState.mapNotNull { tag ->
+            filter.state.trimAll().dropBlank().mapNotNull { tag ->
                 val split = tag.split(":").filterNot { it.isBlank() }
                 if (split.size > 1) {
                     val namespace = split[0].removePrefix("-")
                     val exclude = split[0].startsWith("-")
-                    AdvSearchEntry(Pair(namespace, split[1]), exclude)
+                    AdvSearchEntry(namespace to split[1], exclude)
                 } else {
                     null
                 }
@@ -872,7 +865,7 @@ class EHentai(
         advSearch.forEach { entry ->
             if (entry.exclude) stringBuilder.append("-")
             if (entry.search.second.contains(" ")) {
-                stringBuilder.append(("${entry.search.first}:\"${entry.search.second}$\""))
+                stringBuilder.append(("""${entry.search.first}:"${entry.search.second}$""""))
             } else {
                 stringBuilder.append("${entry.search.first}:${entry.search.second}$")
             }
