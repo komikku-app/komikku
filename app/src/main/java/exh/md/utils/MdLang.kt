@@ -16,7 +16,7 @@ enum class MdLang(val lang: String, val prettyPrint: String, val extLang: String
     GREEK("gr", "Greek", "el"),
     BULGARIAN("bg", "BULGARIN"),
     SPANISH_ES("es", "Spanish (Es)"),
-    PORTUGUESE_BR("br", "Portuguese (Br)", "pt-br"),
+    PORTUGUESE_BR("br", "Portuguese (Br)", "pt-BR"),
     PORTUGUESE("pt", "Portuguese (Pt)"),
     SWEDISH("se", "Swedish", "sv"),
     ARABIC("sa", "Arabic", "ar"),

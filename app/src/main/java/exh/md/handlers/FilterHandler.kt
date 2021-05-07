@@ -115,7 +115,7 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
         Tag("c8cbe35b-1b2b-4a3f-9c37-db84c4514856", "Medical"),
         Tag("ac72833b-c4e9-4878-b9db-6c8a4a99444a", "Military"),
         Tag("dd1f77c5-dea9-4e2b-97ae-224af09caf99", "Monster Girls"),
-        Tag("t36fd93ea-e8b8-445e-b836-358f02b3d33d", "Monsters"),
+        Tag("36fd93ea-e8b8-445e-b836-358f02b3d33d", "Monsters"),
         Tag("f42fbf9e-188a-447b-9fdc-f19dc1e4d685", "Music"),
         Tag("ee968100-4191-4968-93d3-f82d72be7e46", "Mystery"),
         Tag("489dd859-9b61-4c37-af75-5b18e88daafc", "Ninja"),
