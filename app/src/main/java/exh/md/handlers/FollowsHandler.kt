@@ -206,13 +206,13 @@ class FollowsHandler(
 
     suspend fun fetchTrackingInfo(url: String): Track {
         return withIOContext {
+            val statusListResponse = client.newCall(statusListRequest()).await().parseAs<JsonObject>(MdUtil.jsonParser)
             val request = GET(
                 MdUtil.mangaUrl + "/" + MdUtil.getMangaId(url),
                 MdUtil.getAuthHeaders(headers, preferences, mdList),
                 CacheControl.FORCE_NETWORK
             )
             val response = client.newCall(request).await()
-            val statusListResponse = client.newCall(statusListRequest()).await().parseAs<JsonObject>(MdUtil.jsonParser)
             followStatusParse(response, statusListResponse)
         }
     }
