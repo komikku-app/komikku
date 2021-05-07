@@ -3,11 +3,8 @@ package eu.kanade.tachiyomi.source.online.english
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -22,7 +19,6 @@ import exh.ui.metadata.adapters.EightMusesDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import rx.Observable
 import tachiyomi.source.model.MangaInfo
 
 class EightMuses(delegate: HttpSource, val context: Context) :
@@ -34,18 +30,10 @@ class EightMuses(delegate: HttpSource, val context: Context) :
     override val lang = "en"
 
     // Support direct URL importing
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         urlImportFetchSearchManga(context, query) {
             super.fetchSearchManga(page, query, filters)
         }
-
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return client.newCall(mangaDetailsRequest(manga))
-            .asObservableSuccess()
-            .flatMap {
-                parseToManga(manga, it.asJsoup()).andThen(Observable.just(manga))
-            }
-    }
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
@@ -65,7 +53,7 @@ class EightMuses(delegate: HttpSource, val context: Context) :
         return SelfContents(selfAlbums, selfImages)
     }
 
-    override fun parseIntoMetadata(metadata: EightMusesSearchMetadata, input: Document) {
+    override suspend fun parseIntoMetadata(metadata: EightMusesSearchMetadata, input: Document) {
         with(metadata) {
             path = input.location().toUri().pathSegments
 

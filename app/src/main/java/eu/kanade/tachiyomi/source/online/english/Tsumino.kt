@@ -2,11 +2,9 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -51,20 +49,12 @@ class Tsumino(delegate: HttpSource, val context: Context) :
         return "https://tsumino.com/Book/Info/${uri.lastPathSegment}"
     }
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return client.newCall(mangaDetailsRequest(manga))
-            .asObservableSuccess()
-            .flatMap {
-                parseToManga(manga, it.asJsoup()).andThen(Observable.just(manga))
-            }
-    }
-
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
         return parseToManga(manga, response.asJsoup())
     }
 
-    override fun parseIntoMetadata(metadata: TsuminoSearchMetadata, input: Document) {
+    override suspend fun parseIntoMetadata(metadata: TsuminoSearchMetadata, input: Document) {
         with(metadata) {
             tmId = TsuminoSearchMetadata.tmIdFromUrl(input.location())!!.toInt()
             tags.clear()

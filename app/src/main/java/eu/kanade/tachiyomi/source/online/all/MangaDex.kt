@@ -162,7 +162,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return MangaDexDescriptionAdapter(controller)
     }
 
-    override fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
+    override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
         ApiMangaParser(baseHttpClient, mdLang.lang).parseIntoMetadata(metadata, input, emptyList())
     }
 

@@ -3,11 +3,8 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -22,7 +19,6 @@ import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.HitomiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
-import rx.Observable
 import tachiyomi.source.model.MangaInfo
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -36,25 +32,17 @@ class Hitomi(delegate: HttpSource, val context: Context) :
     override val lang = if (id == otherId) "all" else delegate.lang
 
     // Support direct URL importing
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         urlImportFetchSearchManga(context, query) {
             super.fetchSearchManga(page, query, filters)
         }
-
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return client.newCall(mangaDetailsRequest(manga))
-            .asObservableSuccess()
-            .flatMap {
-                parseToManga(manga, it.asJsoup()).andThen(Observable.just(manga))
-            }
-    }
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
         return parseToManga(manga, response.asJsoup())
     }
 
-    override fun parseIntoMetadata(metadata: HitomiSearchMetadata, input: Document) {
+    override suspend fun parseIntoMetadata(metadata: HitomiSearchMetadata, input: Document) {
         with(metadata) {
             url = input.location()
 

@@ -3,11 +3,8 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -26,7 +23,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.Response
-import rx.Observable
 import tachiyomi.source.model.MangaInfo
 
 class NHentai(delegate: HttpSource, val context: Context) :
@@ -48,31 +44,17 @@ class NHentai(delegate: HttpSource, val context: Context) :
         }
 
     // Support direct URL importing
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         urlImportFetchSearchManga(context, query) {
             super.fetchSearchManga(page, query, filters)
         }
-
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return client.newCall(mangaDetailsRequest(manga))
-            .asObservableSuccess()
-            .flatMap {
-                parseToManga(manga, it).andThen(
-                    Observable.just(
-                        manga.apply {
-                            initialized = true
-                        }
-                    )
-                )
-            }
-    }
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
         return parseToManga(manga, response)
     }
 
-    override fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
+    override suspend fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
         val json = GALLERY_JSON_REGEX.find(input.body!!.string())!!.groupValues[1].replace(
             UNICODE_ESCAPE_REGEX
         ) { it.groupValues[1].toInt(radix = 16).toChar().toString() }

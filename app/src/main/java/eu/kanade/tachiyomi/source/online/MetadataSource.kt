@@ -7,11 +7,13 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.lang.awaitSingle
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.metadata.metadata.base.insertFlatMetadataCompletable
 import exh.util.executeOnIO
 import rx.Completable
 import rx.Single
@@ -34,9 +36,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     /**
      * Parse the supplied input into the supplied metadata object
      */
-    fun parseIntoMetadata(metadata: M, input: I)
-
-    suspend fun parseInfoIntoMetadata(metadata: M, input: I) = parseIntoMetadata(metadata, input)
+    suspend fun parseIntoMetadata(metadata: M, input: I)
 
     /**
      * Use reflection to create a new instance of metadata
@@ -51,31 +51,11 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      *
      * Will also save the metadata to the DB if possible
      */
+    @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use the MangaInfo variant")
-    fun parseToManga(manga: SManga, input: I): Completable {
-        val mangaId = manga.id
-        val metaObservable = if (mangaId != null) {
-            // We have to use fromCallable because StorIO messes up the thread scheduling if we use their rx functions
-            Single.fromCallable {
-                db.getFlatMetadataForManga(mangaId).executeAsBlocking()
-            }.map {
-                it?.raise(metaClass) ?: newMetaInstance()
-            }
-        } else {
-            Single.just(newMetaInstance())
-        }
-
-        return metaObservable.map {
-            parseIntoMetadata(it, input)
-            it.copyTo(manga)
-            it
-        }.flatMapCompletable {
-            if (mangaId != null) {
-                it.mangaId = mangaId
-                db.insertFlatMetadataCompletable(it.flatten())
-            } else Completable.complete()
-        }
-    }
+    fun parseToManga(manga: SManga, input: I): Completable = runAsObservable({
+        parseToManga(manga.toMangaInfo(), input)
+    }).toCompletable()
 
     suspend fun parseToManga(manga: MangaInfo, input: I): MangaInfo {
         val mangaId = manga.id()
@@ -84,7 +64,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
-        parseInfoIntoMetadata(metadata, input)
+        parseIntoMetadata(metadata, input)
         if (mangaId != null) {
             metadata.mangaId = mangaId
             db.insertFlatMetadata(metadata.flatten())
@@ -100,31 +80,12 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      * If the metadata needs to be parsed from the input producer, the resulting parsed metadata will
      * also be saved to the DB.
      */
+    @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("use fetchOrLoadMetadata made for MangaInfo")
-    fun getOrLoadMetadata(mangaId: Long?, inputProducer: () -> Single<I>): Single<M> {
-        val metaObservable = if (mangaId != null) {
-            // We have to use fromCallable because StorIO messes up the thread scheduling if we use their rx functions
-            Single.fromCallable {
-                db.getFlatMetadataForManga(mangaId).executeAsBlocking()
-            }.map {
-                it?.raise(metaClass)
-            }
-        } else Single.just(null)
-
-        return metaObservable.flatMap { existingMeta ->
-            if (existingMeta == null) {
-                inputProducer().flatMap { input ->
-                    val newMeta = newMetaInstance()
-                    parseIntoMetadata(newMeta, input)
-                    val newMetaSingle = Single.just(newMeta)
-                    if (mangaId != null) {
-                        newMeta.mangaId = mangaId
-                        db.insertFlatMetadataCompletable(newMeta.flatten()).andThen(newMetaSingle)
-                    } else newMetaSingle
-                }
-            } else Single.just(existingMeta)
-        }
-    }
+    fun getOrLoadMetadata(mangaId: Long?, inputProducer: () -> Single<I>): Single<M> =
+        runAsObservable({
+            fetchOrLoadMetadata(mangaId) { inputProducer().toObservable().awaitSingle() }
+        }).toSingle()
 
     /**
      * Try to first get the metadata from the DB. If the metadata is not in the DB, calls the input
@@ -143,7 +104,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
 
         return meta ?: inputProducer().let { input ->
             val newMeta = newMetaInstance()
-            parseInfoIntoMetadata(newMeta, input)
+            parseIntoMetadata(newMeta, input)
             if (mangaId != null) {
                 newMeta.mangaId = mangaId
                 db.insertFlatMetadata(newMeta.flatten()).let { newMeta }

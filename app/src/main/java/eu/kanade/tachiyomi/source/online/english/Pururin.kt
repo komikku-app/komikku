@@ -3,11 +3,9 @@ package eu.kanade.tachiyomi.source.online.english
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -54,21 +52,12 @@ class Pururin(delegate: HttpSource, val context: Context) :
         }
     }
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return client.newCall(mangaDetailsRequest(manga))
-            .asObservableSuccess()
-            .flatMap {
-                parseToManga(manga, it.asJsoup())
-                    .andThen(Observable.just(manga))
-            }
-    }
-
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
         return parseToManga(manga, response.asJsoup())
     }
 
-    override fun parseIntoMetadata(metadata: PururinSearchMetadata, input: Document) {
+    override suspend fun parseIntoMetadata(metadata: PururinSearchMetadata, input: Document) {
         val selfLink = input.select("[itemprop=name]").last().parent()
         val parsedSelfLink = selfLink.attr("href").toUri().pathSegments
 

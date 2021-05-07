@@ -551,7 +551,7 @@ class EHentai(
      */
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun parseIntoMetadata(metadata: EHentaiSearchMetadata, input: Document) {
+    override suspend fun parseIntoMetadata(metadata: EHentaiSearchMetadata, input: Document) {
         with(metadata) {
             with(input) {
                 val url = location()
