@@ -4,50 +4,68 @@ import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.view.View
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
-import com.mikepenz.fastadapter.FastAdapter
-import com.mikepenz.fastadapter.items.AbstractItem
+import androidx.recyclerview.widget.RecyclerView
+import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
+import eu.davidea.flexibleadapter.items.IFlexible
+import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.databinding.ReaderChapterItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
 
-class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: Boolean, context: Context, val dateFormat: DateFormat, val decimalFormat: DecimalFormat) :
-    AbstractItem<ReaderChapterItem.ViewHolder>(),
+class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boolean, context: Context, val dateFormat: DateFormat, val decimalFormat: DecimalFormat) :
+    AbstractFlexibleItem<ReaderChapterItem.ViewHolder>(),
     Chapter by chapter {
 
     val readColor = context.getResourceColor(R.attr.colorOnSurface, 0.38f)
     val unreadColor = context.getResourceColor(R.attr.colorOnSurface)
     val bookmarkedColor = context.getResourceColor(R.attr.colorAccent)
 
-    /** defines the type defining this item. must be unique. preferably an id */
-    override val type: Int = R.id.reader_chapter_layout
-
-    /** defines the layout which will be used for this item in the list */
-    override val layoutRes: Int = R.layout.reader_chapter_item
-
-    override var identifier: Long = chapter.id!!
-
-    override fun getViewHolder(v: View): ViewHolder {
-        return ViewHolder(v)
+    override fun getLayoutRes(): Int {
+        return R.layout.reader_chapter_item
     }
 
-    class ViewHolder(view: View) : FastAdapter.ViewHolder<ReaderChapterItem>(view) {
-        private var chapterTitle: TextView = view.findViewById(R.id.chapter_title)
-        private var chapterSubtitle: TextView = view.findViewById(R.id.chapter_scanlator)
-        var bookmarkButton: FrameLayout = view.findViewById(R.id.bookmark_layout)
-        private var bookmarkImage: ImageView = view.findViewById(R.id.bookmark_image)
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): ViewHolder {
+        return ViewHolder(view, adapter as ReaderChapterAdapter)
+    }
 
-        override fun bindView(item: ReaderChapterItem, payloads: List<Any>) {
+    override fun bindViewHolder(
+        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
+        holder: ViewHolder,
+        position: Int,
+        payloads: List<Any?>?
+    ) {
+        holder.bind(this)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ReaderChapterItem
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+    inner class ViewHolder(view: View, private val adapter: ReaderChapterAdapter) : FlexibleViewHolder(view, adapter) {
+        val binding = ReaderChapterItemBinding.bind(itemView)
+
+        fun bind(item: ReaderChapterItem) {
             val manga = item.manga
 
-            chapterTitle.text = when (manga.displayMode) {
+            binding.chapterTitle.text = when (manga.displayMode) {
                 Manga.CHAPTER_DISPLAY_NUMBER -> {
                     val number = item.decimalFormat.format(item.chapter_number.toDouble())
                     itemView.context.getString(R.string.display_mode_chapter, number)
@@ -61,8 +79,8 @@ class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: B
                 item.bookmark -> item.bookmarkedColor
                 else -> item.unreadColor
             }
-            chapterTitle.setTextColor(chapterColor)
-            chapterSubtitle.setTextColor(chapterColor)
+            binding.chapterTitle.setTextColor(chapterColor)
+            binding.chapterScanlator.setTextColor(chapterColor)
 
             // bookmarkImage.isVisible = item.bookmark
 
@@ -76,29 +94,27 @@ class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: B
             }
 
             if (descriptions.isNotEmpty()) {
-                chapterSubtitle.text = descriptions.joinTo(SpannableStringBuilder(), " • ")
+                binding.chapterScanlator.text = descriptions.joinTo(SpannableStringBuilder(), " • ")
             } else {
-                chapterSubtitle.text = ""
+                binding.chapterScanlator.text = ""
             }
 
             if (item.bookmark) {
-                bookmarkImage.setVectorCompat(R.drawable.ic_bookmark_24dp, R.attr.colorAccent)
+                binding.bookmarkImage.setVectorCompat(R.drawable.ic_bookmark_24dp, R.attr.colorAccent)
             } else {
-                bookmarkImage.setVectorCompat(R.drawable.ic_bookmark_border_24dp, R.attr.colorOnSurface)
+                binding.bookmarkImage.setVectorCompat(R.drawable.ic_bookmark_border_24dp, R.attr.colorOnSurface)
             }
 
             if (item.isCurrent) {
-                chapterTitle.setTypeface(null, Typeface.BOLD_ITALIC)
-                chapterSubtitle.setTypeface(null, Typeface.BOLD_ITALIC)
+                binding.chapterTitle.setTypeface(null, Typeface.BOLD_ITALIC)
+                binding.chapterScanlator.setTypeface(null, Typeface.BOLD_ITALIC)
             } else {
-                chapterTitle.setTypeface(null, Typeface.NORMAL)
-                chapterSubtitle.setTypeface(null, Typeface.NORMAL)
+                binding.chapterTitle.setTypeface(null, Typeface.NORMAL)
+                binding.chapterScanlator.setTypeface(null, Typeface.NORMAL)
             }
-        }
-
-        override fun unbindView(item: ReaderChapterItem) {
-            chapterTitle.text = null
-            chapterSubtitle.text = null
+            binding.bookmarkLayout.setOnClickListener {
+                adapter.clickListener.bookmarkChapter(item)
+            }
         }
     }
 }

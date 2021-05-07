@@ -26,7 +26,14 @@ sealed class Filter<T>(val name: String, var state: T) {
     }
 
     // SY -->
-    abstract class AutoComplete(name: String, val hint: String, val values: List<String>, val skipAutoFillTags: List<String> = emptyList(), val excludePrefix: String? = null, state: List<String>) : Filter<List<String>>(name, state)
+    abstract class AutoComplete(
+        name: String,
+        val hint: String,
+        val values: List<String>,
+        val skipAutoFillTags: List<String> = emptyList(),
+        val excludePrefix: String? = null,
+        state: List<String>
+    ) : Filter<List<String>>(name, state)
     // SY <--
 
     override fun equals(other: Any?): Boolean {

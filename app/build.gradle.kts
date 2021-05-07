@@ -306,12 +306,10 @@ dependencies {
     testImplementation("com.ms-square:debugoverlay-no-op:$debugOverlayVersion")
 
     // RatingBar (SY)
-    implementation ("me.zhanghai.android.materialratingbar:library:1.4.0")
+    implementation("me.zhanghai.android.materialratingbar:library:1.4.0")
 
     // JsonReader for similar manga
     implementation("com.squareup.moshi:moshi:1.12.0")
-
-    implementation("com.mikepenz:fastadapter:5.4.1")
     // SY <--
 }
 

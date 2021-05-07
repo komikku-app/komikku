@@ -58,6 +58,6 @@
             android:layout_height="30dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_bookmark_border_24dp"
-            android:tint="?attr/colorOnSurface" />
+            app:tint="?attr/colorOnSurface" />
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

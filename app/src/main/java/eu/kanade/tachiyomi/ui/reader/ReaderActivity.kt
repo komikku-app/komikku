@@ -48,7 +48,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.AddToLibraryFirst
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Error
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.Success
-import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterSheet
+import eu.kanade.tachiyomi.ui.reader.chapter.ReaderChapterDialog
 import eu.kanade.tachiyomi.ui.reader.loader.HttpPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -144,8 +144,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     private val autoScrollFlow = MutableSharedFlow<Unit>()
     private var autoScrollJob: Job? = null
     private val sourceManager: SourceManager by injectLazy()
-
-    private lateinit var chapterBottomSheet: ReaderChapterSheet
     // SY <--
 
     /**
@@ -245,9 +243,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         super.onDestroy()
         viewer?.destroy()
         viewer = null
-        // SY -->
-        chapterBottomSheet.adapter = null
-        // SY <--
         config = null
         menuToggleToast?.cancel()
         readingModeToast?.cancel()
@@ -545,7 +540,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             setTooltip(R.string.chapters)
 
             setOnClickListener {
-                chapterBottomSheet.show()
+                ReaderChapterDialog(this@ReaderActivity)
             }
         }
 
@@ -705,8 +700,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
             }
             .launchIn(lifecycleScope)
-
-        chapterBottomSheet = ReaderChapterSheet(this)
 
         updateBottomButtons()
         // <-- EH
@@ -879,10 +872,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             presenter.manga!!.title
         )
         startActivity(intent)
-    }
-
-    fun refreshSheetChapters() {
-        chapterBottomSheet.refreshList()
     }
     // SY <--
 
@@ -1066,12 +1055,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     fun onPageSelected(page: ReaderPage) {
         val newChapter = presenter.onPageSelected(page)
         val pages = page.chapter.pages ?: return
-
-        // SY -->
-        if (chapterBottomSheet.selectedChapterId != page.chapter.chapter.id) {
-            chapterBottomSheet.refreshList()
-        }
-        // SY <--
 
         // Set bottom page number
         binding.pageNumber.text = "${page.number}/${pages.size}"

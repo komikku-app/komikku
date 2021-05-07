@@ -1,59 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="300dp"
-    android:layout_gravity="bottom"
+    android:layout_height="match_parent"
     android:orientation="vertical">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/topbar_layout"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorSurface"
-        android:clickable="true"
-        android:focusable="true">
-
-        <ImageButton
-            android:id="@+id/webview_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?selectableItemBackgroundBorderless"
-            android:contentDescription="@string/action_open_in_web_view"
-            android:padding="@dimen/material_layout_keylines_screen_edge_margin"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_public_24dp"
-            app:tint="?attr/colorOnBackground" />
-
-        <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
-            android:id="@+id/page_seekbar"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/page_text"
-            app:layout_constraintStart_toEndOf="@id/webview_button"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/page_text"
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:textColor="?attr/colorOnBackground"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="100 / 105" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chapter_recycler"
         android:layout_width="match_parent"
-        android:layout_height="244dp"
+        android:layout_height="match_parent"
         android:clipToPadding="false"
         tools:listitem="@layout/reader_chapter_item" />
 

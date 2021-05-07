@@ -477,11 +477,6 @@ class ReaderPresenter(
             Timber.d("Setting ${selectedChapter.chapter.url} as active")
             onChapterChanged(currentChapters.currChapter)
             loadNewChapter(selectedChapter)
-            // SY -->
-            Observable.just(selectedChapter).subscribeFirst({ view, _ ->
-                view.refreshSheetChapters()
-            })
-            // SY <--
         }
     }
 
