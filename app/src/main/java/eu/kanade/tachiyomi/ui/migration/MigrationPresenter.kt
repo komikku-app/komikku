@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.combineLatest
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import java.util.Locale
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
@@ -88,11 +89,11 @@ class MigrationPresenter(
         Observable.defer {
             runAsObservable({
                 source.getChapterList(manga.toMangaInfo())
-                    .map { it.toSChapter() }
+                        .map { it.toSChapter() }
             })
             }
             .onErrorReturn { emptyList() }
-            .doOnNext { migrateMangaInternal(source, it, prevManga, manga, replace) }
+            .doOnNext { it -> migrateMangaInternal(source, it, prevManga, manga, replace) }
             .onErrorReturn { emptyList() }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnUnsubscribe { state = state.copy(isReplacingManga = false) }.subscribe()
