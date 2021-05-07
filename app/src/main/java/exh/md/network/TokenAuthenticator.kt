@@ -2,6 +2,7 @@ package exh.md.network
 
 import exh.log.xLogD
 import exh.log.xLogI
+import exh.log.xLogW
 import exh.md.utils.MdUtil
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
@@ -14,15 +15,16 @@ class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authent
     override fun authenticate(route: Route?, response: Response): Request? {
         xLogI("Detected Auth error ${response.code} on ${response.request.url}")
         val token = refreshToken(loginHelper)
-        if (token.isEmpty()) {
-            return null
-            throw Exception("Unable to authenticate request, please re login")
+        return if (token != null) {
+            response.request.newBuilder().header("Authorization", token).build()
+        } else {
+            // throw Exception("Unable to authenticate request, please re login")
+            null
         }
-        return response.request.newBuilder().header("Authorization", token).build()
     }
 
     @Synchronized
-    fun refreshToken(loginHelper: MangaDexLoginHelper): String {
+    fun refreshToken(loginHelper: MangaDexLoginHelper): String? {
         var validated = false
 
         runBlocking {
@@ -35,25 +37,32 @@ class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authent
                     )
                 )
             } catch (e: NoSessionException) {
-                xLogD("Session token does not exist")
+                this@TokenAuthenticator.xLogD("Session token does not exist")
                 false
             }
 
             if (checkToken) {
-                xLogI("Token is valid, other thread must have refreshed it")
+                this@TokenAuthenticator.xLogI("Token is valid, other thread must have refreshed it")
                 validated = true
             }
             if (validated.not()) {
-                xLogI("Token is invalid trying to refresh")
-                validated = loginHelper.refreshToken(
-                    MdUtil.getAuthHeaders(
-                        Headers.Builder().build(), loginHelper.preferences, loginHelper.mdList
+                this@TokenAuthenticator.xLogI("Token is invalid trying to refresh")
+                val result = runCatching {
+                    validated = loginHelper.refreshToken(
+                        MdUtil.getAuthHeaders(
+                            Headers.Builder().build(), loginHelper.preferences, loginHelper.mdList
+                        )
                     )
-                )
+                }
+                if (result.isFailure) {
+                    result.exceptionOrNull()?.let {
+                        this@TokenAuthenticator.xLogW("Error refreshing token", it)
+                    }
+                }
             }
 
             if (validated.not()) {
-                xLogI("Did not refresh token, trying to login")
+                this@TokenAuthenticator.xLogI("Did not refresh token, trying to login")
                 val loginResult = loginHelper.login()
                 validated = if (loginResult is MangaDexLoginHelper.LoginResult.Success) {
                     MdUtil.updateLoginToken(
@@ -67,7 +76,7 @@ class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authent
         }
         return when {
             validated -> "bearer: ${MdUtil.sessionToken(loginHelper.preferences, loginHelper.mdList)!!}"
-            else -> ""
+            else -> null
         }
     }
 }
