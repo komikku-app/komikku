@@ -48,7 +48,6 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     override suspend fun add(track: Track): Track = update(track)
 
     override suspend fun update(track: Track): Track {
-        throw Exception("Mangadex api is read-only")
         return withIOContext {
             val mdex = mdex ?: throw MangaDexNotFoundException()
 
@@ -58,11 +57,12 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
             // this updates the follow status in the metadata
             // allow follow status to update
             if (remoteTrack.status != followStatus.int) {
-                mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)
-                remoteTrack.status = followStatus.int
+                if (mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)) {
+                    remoteTrack.status = followStatus.int
+                }
             }
 
-            if (track.score.toInt() > 0) {
+            /*if (track.score.toInt() > 0) {
                 mdex.updateRating(track)
             }
 
@@ -84,7 +84,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
             } else if (track.last_chapter_read != 0) {
                 // When followStatus has been changed to unfollowed 0 out read chapters since dex does
                 track.last_chapter_read = 0
-            }
+            }*/
             track
         }
     }
