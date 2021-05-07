@@ -47,7 +47,10 @@ data class BackupManga(
     @ProtoNumber(801) var customArtist: String? = null,
     @ProtoNumber(802) var customAuthor: String? = null,
     @ProtoNumber(803) var customDescription: String? = null,
-    @ProtoNumber(803) var customGenre: List<String>? = null
+    @ProtoNumber(803) var customGenre: List<String>? = null,
+
+    // Neko specific values
+    @ProtoNumber(901) var filtered_scanlators: String? = null,
 ) {
     fun getMangaImpl(): MangaImpl {
         return MangaImpl().apply {
@@ -64,6 +67,7 @@ data class BackupManga(
             date_added = this@BackupManga.dateAdded
             viewer_flags = this@BackupManga.viewer_flags ?: this@BackupManga.viewer
             chapter_flags = this@BackupManga.chapterFlags
+            filtered_scanlators = this@BackupManga.filtered_scanlators
         }
     }
 
@@ -120,7 +124,8 @@ data class BackupManga(
                 dateAdded = manga.date_added,
                 viewer = manga.readingModeType,
                 viewer_flags = manga.viewer_flags,
-                chapterFlags = manga.chapter_flags
+                chapterFlags = manga.chapter_flags,
+                filtered_scanlators = manga.filtered_scanlators
                 // SY -->
             ).also { backupManga ->
                 customMangaManager?.getManga(manga)?.let {
