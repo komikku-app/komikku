@@ -167,7 +167,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun fetchFollows(): MangasPage {
-        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchFollows()
+        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).fetchFollows()
     }
 
     override val requiresLogin: Boolean = false
@@ -213,22 +213,22 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun fetchAllFollows(): List<Pair<SManga, MangaDexSearchMetadata>> {
-        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchAllFollows()
+        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).fetchAllFollows()
     }
 
     suspend fun updateReadingProgress(track: Track): Boolean {
-        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).updateReadingProgress(track)
+        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).updateReadingProgress(track)
     }
 
     suspend fun updateRating(track: Track): Boolean {
-        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).updateRating(track)
+        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).updateRating(track)
     }
 
     override suspend fun fetchTrackingInfo(url: String): Track {
         if (!isLogged()) {
             throw Exception("Not Logged in")
         }
-        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchTrackingInfo(url)
+        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).fetchTrackingInfo(url)
     }
 
     suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
@@ -236,7 +236,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
-        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).updateFollowStatus(mangaID, followStatus)
+        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).updateFollowStatus(mangaID, followStatus)
     }
 
     override fun getFilterHeader(controller: BaseController<*>): MangaDexFabHeaderAdapter {
