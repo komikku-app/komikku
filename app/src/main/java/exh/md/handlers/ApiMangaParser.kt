@@ -3,6 +3,7 @@ package exh.md.handlers
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
@@ -61,11 +62,11 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
     /**
      * Parse the manga details json into metadata object
      */
-    fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, coverUrls: List<String>) {
+    suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, coverUrls: List<String>) {
         parseIntoMetadata(metadata, input.parseAs<MangaResponse>(MdUtil.jsonParser), coverUrls)
     }
 
-    fun parseIntoMetadata(metadata: MangaDexSearchMetadata, networkApiManga: MangaResponse, coverUrls: List<String>) {
+    suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, networkApiManga: MangaResponse, coverUrls: List<String>) {
         with(metadata) {
             try {
                 val networkManga = networkApiManga.data.attributes
@@ -80,16 +81,29 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                         // networkManga.mainCover
                     }
 
-                description = MdUtil.cleanDescription(networkManga.description["en"]!!)
+                description = MdUtil.cleanDescription(networkManga.description[lang] ?: networkManga.description["en"]!!)
 
-                val authorIds = networkApiManga.relationships.filter { it.type.equals("author", true) }.distinct()
+                // get authors ignore if they error, artists are labelled as authors currently
+                val authorIds = networkApiManga.relationships.filter { relationship ->
+                    relationship.type.equals("author", true)
+                }.map { relationship -> relationship.id }
+                    .distinct()
+                val artistIds = networkApiManga.relationships.filter { relationship ->
+                    relationship.type.equals("artist", true)
+                }.map { relationship -> relationship.id }
+                    .distinct()
 
-                authors = runCatching {
-                    val ids = authorIds.joinToString("&ids[]=", "?ids[]=")
-                    val response = client.newCall(GET("${MdUtil.authorUrl}$ids")).execute()
-                    val json = response.parseAs<AuthorResponseList>(MdUtil.jsonParser)
-                    json.results.map { MdUtil.cleanString(it.data.attributes.name) }.takeUnless { it.isEmpty() }
-                }.getOrNull()
+                val authorMap = runCatching {
+                    val ids = (authorIds + artistIds).distinct().joinToString("&ids[]=", "?ids[]=")
+                    val response = client.newCall(GET("${MdUtil.authorUrl}$ids")).await()
+                        .parseAs<AuthorResponseList>()
+                    response.results.map {
+                        it.data.id to MdUtil.cleanString(it.data.attributes.name)
+                    }.toMap()
+                }.getOrNull() ?: emptyMap()
+
+                authors = authorIds.mapNotNull { authorMap[it] }.takeUnless { it.isEmpty() }
+                artists = artistIds.mapNotNull { authorMap[it] }.takeUnless { it.isEmpty() }
 
                 langFlag = networkManga.originalLanguage
                 val lastChapter = networkManga.lastChapter.toFloatOrNull()

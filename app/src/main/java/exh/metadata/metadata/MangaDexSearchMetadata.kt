@@ -22,6 +22,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
     var description: String? = null
 
     var authors: List<String>? = null
+    var artists: List<String>? = null
 
     var langFlag: String? = null
 
@@ -52,6 +53,8 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
 
         val author = authors?.joinToString()?.let { MdUtil.cleanString(it) }
 
+        val artist = artists?.joinToString()?.let { MdUtil.cleanString(it) }
+
         val status = status
 
         val genres = tagsToGenreList()
@@ -63,6 +66,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
             title = title ?: manga.title,
             cover = cover ?: manga.cover,
             author = author ?: manga.author,
+            artist = artist ?: manga.artist,
             status = status ?: manga.status,
             genres = genres,
             description = description ?: manga.description
@@ -76,7 +80,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
         cover?.let { pairs += context.getString(R.string.thumbnail_url) to it }
         title?.let { pairs += context.getString(R.string.title) to it }
         authors?.let { pairs += context.getString(R.string.author) to it.joinToString() }
-        // artist?.let { pairs += context.getString(R.string.artist) to it }
+        artists?.let { pairs += context.getString(R.string.artist) to it.joinToString() }
         langFlag?.let { pairs += context.getString(R.string.language) to it }
         lastChapterNumber?.let { pairs += context.getString(R.string.last_chapter_number) to it.toString() }
         // rating?.let { pairs += context.getString(R.string.average_rating) to it }
