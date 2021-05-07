@@ -231,7 +231,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchTrackingInfo(url)
     }
 
-    suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata> {
+    suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
         return MangaHandler(baseHttpClient, headers, mdLang.lang).getTrackingInfo(track, useLowQualityThumbnail(), mdList)
     }
 

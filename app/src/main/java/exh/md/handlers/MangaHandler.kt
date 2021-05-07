@@ -158,7 +158,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
         }
     }
 
-    suspend fun getTrackingInfo(track: Track, useLowQualityCovers: Boolean, mdList: MdList): Pair<Track, MangaDexSearchMetadata> {
+    suspend fun getTrackingInfo(track: Track, useLowQualityCovers: Boolean, mdList: MdList): Pair<Track, MangaDexSearchMetadata?> {
         return withIOContext {
             val metadata = async {
                 val mangaUrl = "/manga/" + MdUtil.getMangaId(track.tracking_url)
@@ -178,7 +178,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
                     mdList
                 ).fetchTrackingInfo(track.tracking_url)
             }
-            remoteTrack.await() to metadata.await()
+            remoteTrack.await() to null
         }
     }
 
