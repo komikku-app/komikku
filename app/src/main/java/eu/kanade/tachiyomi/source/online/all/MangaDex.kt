@@ -170,7 +170,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchFollows()
     }
 
-    override val requiresLogin: Boolean = true
+    override val requiresLogin: Boolean = false
 
     override val twoFactorAuth = LoginSource.AuthSupport.NOT_SUPPORTED
 
