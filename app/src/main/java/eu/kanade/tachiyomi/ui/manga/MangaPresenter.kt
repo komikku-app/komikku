@@ -46,14 +46,13 @@ import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.Stat
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateHelper
 import exh.log.xLogD
+import exh.log.xLogE
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
-import exh.md.utils.scanlatorList
 import exh.merged.sql.models.MergedMangaReference
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
@@ -184,11 +183,6 @@ class MangaPresenter(
             .subscribeLatestCache({ view, (manga, flatMetadata) ->
                 flatMetadata?.let { metadata ->
                     view.onNextMetaInfo(metadata)
-                    meta?.let {
-                        it.filteredScanlators?.let {
-                            if (chapters.isNotEmpty()) chaptersRelay.call(chapters)
-                        }
-                    }
                 }
                 // SY <--
                 view.onNextMangaInfo(manga, source)
@@ -219,7 +213,7 @@ class MangaPresenter(
                     // Find downloaded chapters
                     setDownloadedChapters(chapters)
 
-                    allChapterScanlators = chapters.flatMap { it.chapter.scanlatorList() }.toSet()
+                    allChapterScanlators = chapters.flatMap { MdUtil.getScanlators(it.chapter.scanlator) }.toSet()
 
                     // Store the last emission
                     this.chapters = chapters
@@ -307,6 +301,7 @@ class MangaPresenter(
 
                 withUIContext { view?.onFetchMangaInfoDone() }
             } catch (e: Throwable) {
+                xLogE("Error getting manga details", e)
                 withUIContext { view?.onFetchMangaInfoError(e) }
             }
         }
@@ -840,11 +835,9 @@ class MangaPresenter(
         }
 
         // SY -->
-        meta?.let { metadata ->
-            metadata.filteredScanlators?.let { filteredScanlatorString ->
-                val filteredScanlators = MdUtil.getScanlators(filteredScanlatorString)
-                observable = observable.filter { it.scanlatorList().any { group -> filteredScanlators.contains(group) } }
-            }
+        manga.filtered_scanlators?.let { filteredScanlatorString ->
+            val filteredScanlators = MdUtil.getScanlators(filteredScanlatorString)
+            observable = observable.filter { MdUtil.getScanlators(it.scanlator).any { group -> filteredScanlators.contains(group) } }
         }
         // SY <--
 
@@ -1043,12 +1036,10 @@ class MangaPresenter(
     }
 
     // SY -->
-    suspend fun setScanlatorFilter(filteredScanlators: Set<String>) {
-        val meta = meta ?: return
-        meta.filteredScanlators = if (filteredScanlators.size == allChapterScanlators.size) null else MdUtil.getScanlatorString(filteredScanlators)
-        meta.flatten().let {
-            db.insertFlatMetadataAsync(it).await()
-        }
+    fun setScanlatorFilter(filteredScanlators: Set<String>) {
+        val manga = manga
+        manga.filtered_scanlators = if (filteredScanlators.size == allChapterScanlators.size) null else MdUtil.getScanlatorString(filteredScanlators)
+        db.updateMangaFilteredScanlators(manga).executeAsBlocking()
         refreshChapters()
     }
     // SY <--

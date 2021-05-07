@@ -18,7 +18,7 @@ class TrackManager(context: Context) {
         const val BANGUMI = 5
 
         // SY --> Mangadex from Neko
-        const val MDLIST = 6
+        const val MDLIST = 60
         // SY <--
 
         // SY -->

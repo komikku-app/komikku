@@ -1,17 +1,13 @@
 package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
-import android.content.SharedPreferences
-import android.net.Uri
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
-import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -21,14 +17,10 @@ import eu.kanade.tachiyomi.source.online.FollowsSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
-import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.lang.runAsObservable
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.GalleryAddEvent
-import exh.GalleryAdder
 import exh.md.MangaDexFabHeaderAdapter
 import exh.md.handlers.ApiChapterParser
 import exh.md.handlers.ApiMangaParser
@@ -36,25 +28,20 @@ import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
 import exh.md.handlers.MangaPlusHandler
 import exh.md.handlers.SimilarHandler
+import exh.md.network.MangaDexLoginHelper
+import exh.md.network.NoSessionException
+import exh.md.network.TokenAuthenticator
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdLang
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
-import exh.util.urlImportFetchSearchManga
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.int
 import okhttp3.CacheControl
-import okhttp3.FormBody
 import okhttp3.Headers
-import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.internal.closeQuietly
-import okio.EOFException
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
@@ -67,45 +54,53 @@ import kotlin.reflect.KClass
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     MetadataSource<MangaDexSearchMetadata, Response>,
-    UrlImportableSource,
+    // UrlImportableSource,
     FollowsSource,
     LoginSource,
     BrowseSourceFilterHeader,
-    RandomMangaSource {
+    RandomMangaSource,
+    NamespaceSource {
     override val lang: String = delegate.lang
 
-    override val headers: Headers = super.headers.newBuilder().apply {
-        add("X-Requested-With", "XMLHttpRequest")
-        add("Referer", MdUtil.baseUrl)
-    }.build()
-
     private val mdLang by lazy {
-        MdLang.values().find { it.lang == lang }?.dexLang ?: lang
+        MdLang.fromExt(lang) ?: MdLang.ENGLISH
     }
 
-    override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
+    // override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
 
     val preferences: PreferencesHelper by injectLazy()
-    val trackManager: TrackManager by injectLazy()
-
-    private val sourcePreferences: SharedPreferences by lazy {
-        context.getSharedPreferences("source_$id", 0x0000)
+    val mdList: MdList by lazy {
+        Injekt.get<TrackManager>().mdList
     }
 
-    private fun useLowQualityThumbnail() = sourcePreferences.getInt(SHOW_THUMBNAIL_PREF, 0) == LOW_QUALITY
+    /*private val sourcePreferences: SharedPreferences by lazy {
+        context.getSharedPreferences("source_$id", 0x0000)
+    }*/
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
+    private val loginHelper by lazy {
+        MangaDexLoginHelper(networkHttpClient, preferences, mdList)
+    }
+
+    override val baseHttpClient: OkHttpClient = super.client.newBuilder()
+        .authenticator(
+            TokenAuthenticator(loginHelper)
+        )
+        .build()
+
+    private fun useLowQualityThumbnail() = false // sourcePreferences.getInt(SHOW_THUMBNAIL_PREF, 0) == LOW_QUALITY
+
+    /*override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
             importIdToMdId(query) {
                 super.fetchSearchManga(page, query, filters)
             }
-        }
+        }*/
 
-    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
+    /*override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
 
         return if (lcFirstPathSegment == "title" || lcFirstPathSegment == "manga") {
-            MdUtil.mapMdIdToMangaUrl(uri.pathSegments[1].toInt())
+            "/manga/" + uri.pathSegments[1]
         } else {
             null
         }
@@ -119,44 +114,43 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override suspend fun mapChapterUrlToMangaUrl(uri: Uri): String? {
         val id = uri.pathSegments.getOrNull(2) ?: return null
-        val mangaId = MangaHandler(client, headers, mdLang).getMangaIdFromChapterId(id)
+        val mangaId = MangaHandler(baseHttpClient, headers, mdLang).getMangaIdFromChapterId(id)
         return MdUtil.mapMdIdToMangaUrl(mangaId)
-    }
+    }*/
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).fetchMangaDetailsObservable(manga)
+        return MangaHandler(baseHttpClient, headers, mdLang.lang, preferences.mangaDexForceLatestCovers().get()).fetchMangaDetailsObservable(manga, id)
     }
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).getMangaDetails(manga, id)
+        return MangaHandler(baseHttpClient, headers, mdLang.lang, preferences.mangaDexForceLatestCovers().get()).getMangaDetails(manga, id)
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
+        return MangaHandler(baseHttpClient, headers, mdLang.lang, preferences.mangaDexForceLatestCovers().get()).fetchChapterListObservable(manga)
     }
 
     override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
-        return MangaHandler(client, headers, mdLang, preferences.mangaDexForceLatestCovers().get()).getChapterList(manga)
+        return MangaHandler(baseHttpClient, headers, mdLang.lang, preferences.mangaDexForceLatestCovers().get()).getChapterList(manga)
     }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return if (chapter.scanlator == "MangaPlus") {
-            client.newCall(mangaPlusPageListRequest(chapter))
+            baseHttpClient.newCall(mangaPlusPageListRequest(chapter))
                 .asObservableSuccess()
                 .map { response ->
                     val chapterId = ApiChapterParser().externalParse(response)
-                    MangaPlusHandler(client).fetchPageList(chapterId)
+                    MangaPlusHandler(baseHttpClient).fetchPageList(chapterId)
                 }
         } else super.fetchPageList(chapter)
     }
 
     private fun mangaPlusPageListRequest(chapter: SChapter): Request {
-        val urlChapterId = MdUtil.getChapterId(chapter.url)
-        return GET(MdUtil.apiUrl + MdUtil.newApiChapter + urlChapterId + MdUtil.apiChapterSuffix, headers, CacheControl.FORCE_NETWORK)
+        return GET(MdUtil.chapterUrl + MdUtil.getChapterId(chapter.url), headers, CacheControl.FORCE_NETWORK)
     }
 
     override fun fetchImage(page: Page): Observable<Response> {
-        return if (page.imageUrl!!.contains("mangaplus", true)) {
+        return if (page.imageUrl?.contains("mangaplus", true) == true) {
             MangaPlusHandler(network.client).client.newCall(GET(page.imageUrl!!, headers))
                 .asObservableSuccess()
         } else super.fetchImage(page)
@@ -169,28 +163,27 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
-        ApiMangaParser(mdLang).parseIntoMetadata(metadata, input, emptyList())
+        ApiMangaParser(baseHttpClient, mdLang.lang).parseIntoMetadata(metadata, input, emptyList())
     }
 
     override suspend fun fetchFollows(): MangasPage {
-        return FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchFollows()
+        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchFollows()
     }
 
     override val requiresLogin: Boolean = true
 
-    override val twoFactorAuth = LoginSource.AuthSupport.SUPPORTED
+    override val twoFactorAuth = LoginSource.AuthSupport.NOT_SUPPORTED
 
     override fun isLogged(): Boolean {
-        val httpUrl = MdUtil.baseUrl.toHttpUrl()
-        return trackManager.mdList.isLogged && network.cookieManager.get(httpUrl).any { it.name == REMEMBER_ME }
+        return mdList.isLogged
     }
 
     override fun getUsername(): String {
-        return trackManager.mdList.getUsername()
+        return mdList.getUsername()
     }
 
     override fun getPassword(): String {
-        return trackManager.mdList.getPassword()
+        return mdList.getPassword()
     }
 
     override suspend fun login(
@@ -198,96 +191,52 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         password: String,
         twoFactorCode: String?
     ): Boolean {
-        return withIOContext {
-            val formBody = FormBody.Builder().apply {
-                add("login_username", username)
-                add("login_password", password)
-                add("no_js", "1")
-                add("remember_me", "1")
-                add("two_factor", twoFactorCode ?: "")
-            }
-
-            runCatching {
-                client.newCall(
-                    POST(
-                        "${MdUtil.baseUrl}/ajax/actions.ajax.php?function=login",
-                        headers,
-                        formBody.build()
-                    )
-                ).await().closeQuietly()
-            }
-
-            val response = client.newCall(GET(MdUtil.apiUrl + MdUtil.isLoggedInApi, headers)).await()
-
-            withIOContext { response.body?.string() }.let { jsonData ->
-                if (jsonData != null) {
-                    MdUtil.jsonParser.decodeFromString<JsonObject>(jsonData)["code"]?.let { it as? JsonPrimitive }?.int == 200
-                } else {
-                    throw Exception("Json data was null")
-                }
-            }.also {
-                preferences.setTrackCredentials(trackManager.mdList, username, password)
-            }
-        }
+        val result = loginHelper.login(username, password)
+        return if (result is MangaDexLoginHelper.LoginResult.Success) {
+            MdUtil.updateLoginToken(result.token, preferences, mdList)
+            mdList.saveCredentials(username, password)
+            true
+        } else false
     }
 
     override suspend fun logout(): Boolean {
-        return withIOContext {
-            // https://mangadex.org/ajax/actions.ajax.php?function=logout
-            val httpUrl = MdUtil.baseUrl.toHttpUrl()
-            val listOfDexCookies = network.cookieManager.get(httpUrl)
-            val cookie = listOfDexCookies.find { it.name == REMEMBER_ME }
-            val token = cookie?.value
-            if (token.isNullOrEmpty()) {
-                return@withIOContext true
-            }
-            try {
-                val result = client.newCall(
-                    POST("${MdUtil.baseUrl}/ajax/actions.ajax.php?function=logout", headers).newBuilder().addHeader(REMEMBER_ME, token).build()
-                ).await()
-                val resultStr = withIOContext { result.body?.string() }
-                if (resultStr?.contains("success", true) == true) {
-                    network.cookieManager.remove(httpUrl)
-                    trackManager.mdList.logout()
-                    return@withIOContext true
-                }
-            } catch (e: EOFException) {
-                network.cookieManager.remove(httpUrl)
-                trackManager.mdList.logout()
-                return@withIOContext true
-            }
-
-            false
+        val result = try {
+            loginHelper.logout(MdUtil.getAuthHeaders(Headers.Builder().build(), preferences, mdList))
+        } catch (e: NoSessionException) {
+            true
         }
+
+        return if (result) {
+            mdList.logout()
+            true
+        } else false
     }
 
-    override suspend fun fetchAllFollows(forceHd: Boolean): List<Pair<SManga, MangaDexSearchMetadata>> {
-        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchAllFollows(forceHd) }
+    override suspend fun fetchAllFollows(): List<Pair<SManga, MangaDexSearchMetadata>> {
+        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchAllFollows()
     }
 
     suspend fun updateReadingProgress(track: Track): Boolean {
-        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateReadingProgress(track) }
+        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).updateReadingProgress(track)
     }
 
     suspend fun updateRating(track: Track): Boolean {
-        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateRating(track) }
+        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).updateRating(track)
     }
 
     override suspend fun fetchTrackingInfo(url: String): Track {
-        return withIOContext {
-            if (!isLogged()) {
-                throw Exception("Not Logged in")
-            }
-            FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).fetchTrackingInfo(url)
+        if (!isLogged()) {
+            throw Exception("Not Logged in")
         }
+        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).fetchTrackingInfo(url)
     }
 
     suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata> {
-        return MangaHandler(client, headers, mdLang).getTrackingInfo(track, useLowQualityThumbnail())
+        return MangaHandler(baseHttpClient, headers, mdLang.lang).getTrackingInfo(track, useLowQualityThumbnail(), mdList)
     }
 
     override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
-        return withIOContext { FollowsHandler(client, headers, Injekt.get(), useLowQualityThumbnail()).updateFollowStatus(mangaID, followStatus) }
+        return FollowsHandler(baseHttpClient, headers, Injekt.get(), mdLang.lang, useLowQualityThumbnail(), mdList).updateFollowStatus(mangaID, followStatus)
     }
 
     override fun getFilterHeader(controller: BaseController<*>): MangaDexFabHeaderAdapter {
@@ -295,14 +244,14 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun fetchRandomMangaUrl(): String {
-        return withIOContext { MangaHandler(client, headers, mdLang).fetchRandomMangaId() }
+        return MangaHandler(baseHttpClient, headers, mdLang.lang).fetchRandomMangaId()
     }
 
-    fun fetchMangaSimilar(manga: Manga): Observable<MangasPage> {
+    suspend fun fetchMangaSimilar(manga: Manga): MangasPage {
         return SimilarHandler(preferences, useLowQualityThumbnail()).fetchSimilar(manga)
     }
 
-    private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
+    /*private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
         when {
             query.toIntOrNull() != null -> {
                 runAsObservable({
@@ -320,11 +269,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
                     }
             }
             else -> fail()
-        }
+        }*/
 
-    companion object {
+    /*companion object {
         private const val REMEMBER_ME = "mangadex_rememberme_token"
         private const val SHOW_THUMBNAIL_PREF = "showThumbnailDefault"
         private const val LOW_QUALITY = 1
-    }
+    }*/
 }

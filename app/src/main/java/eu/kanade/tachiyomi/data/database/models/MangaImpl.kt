@@ -62,6 +62,8 @@ open class MangaImpl : Manga {
 
     override var cover_last_modified: Long = 0
 
+    override var filtered_scanlators: String? = null
+
     // SY -->
     lateinit var ogTitle: String
         private set

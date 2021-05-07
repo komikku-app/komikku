@@ -1,20 +1,18 @@
 package exh.ui.metadata.adapters
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterMdBinding
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.metadata.MetadataUtil.getRatingString
 import exh.metadata.bindDrawable
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.ui.metadata.MetadataViewController
-import kotlin.math.round
 
 class MangaDexDescriptionAdapter(
     private val controller: MangaController
@@ -40,10 +38,13 @@ class MangaDexDescriptionAdapter(
             val meta = controller.presenter.meta
             if (meta == null || meta !is MangaDexSearchMetadata) return
 
-            val ratingFloat = meta.rating?.toFloatOrNull()
+            // todo
+            /*val ratingFloat = meta.rating?.toFloatOrNull()
             binding.ratingBar.rating = ratingFloat?.div(2F) ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((meta.rating?.toFloatOrNull() ?: 0F) * 100.0) / 100.0).toString() + " - " + getRatingString(itemView.context, ratingFloat)
+            binding.rating.text = (round((meta.rating?.toFloatOrNull() ?: 0F) * 100.0) / 100.0).toString() + " - " + getRatingString(itemView.context, ratingFloat)*/
+            binding.rating.isVisible = false
+            binding.ratingBar.isVisible = false
 
             binding.moreInfo.bindDrawable(itemView.context, R.drawable.ic_info_24dp)
 

@@ -56,7 +56,6 @@ data class TitleDetailView(
     @ProtoNumber(5) val nextTimeStamp: Int = 0,
     @ProtoNumber(6) val updateTiming: UpdateTiming? = UpdateTiming.DAY,
     @ProtoNumber(7) val viewingPeriodDescription: String = "",
-    @ProtoNumber(8) val nonAppearanceInfo: String = "",
     @ProtoNumber(9) val firstChapterList: List<Chapter> = emptyList(),
     @ProtoNumber(10) val lastChapterList: List<Chapter> = emptyList(),
     @ProtoNumber(14) val isSimulReleased: Boolean = true,

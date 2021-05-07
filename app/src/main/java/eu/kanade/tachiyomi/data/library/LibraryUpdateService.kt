@@ -561,9 +561,9 @@ class LibraryUpdateService(
         val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
 
         val size: Int
-        mangaDex.fetchAllFollows(true)
+        mangaDex.fetchAllFollows()
             .filter { (_, metadata) ->
-                syncFollowStatusInts.contains(metadata.follow_status)
+                syncFollowStatusInts.contains(metadata.followStatus)
             }
             .also { size = it.size }
             .forEach { (networkManga, metadata) ->

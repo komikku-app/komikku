@@ -38,7 +38,6 @@ import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
-import exh.md.utils.scanlatorList
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.MERGED_SOURCE_ID
@@ -116,7 +115,7 @@ class ReaderPresenter(
     private val chapterList by lazy {
         val manga = manga!!
         // SY -->
-        val filteredScanlators = meta?.filteredScanlators?.let { MdUtil.getScanlators(it) }
+        val filteredScanlators = manga.filtered_scanlators?.let { MdUtil.getScanlators(it) }
         // SY <--
         val dbChapters = /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
             (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
@@ -142,7 +141,7 @@ class ReaderPresenter(
                                     ) ||
                                 (manga.bookmarkedFilter == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
                                 // SY -->
-                                (filteredScanlators != null && it.scanlatorList().none { group -> filteredScanlators.contains(group) })
+                                (filteredScanlators != null && MdUtil.getScanlators(it.scanlator).none { group -> filteredScanlators.contains(group) })
                                 // SY <--
                             ) {
                                 return@filter false

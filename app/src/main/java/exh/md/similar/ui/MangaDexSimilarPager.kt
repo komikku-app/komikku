@@ -5,6 +5,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
@@ -15,7 +16,7 @@ import rx.schedulers.Schedulers
 class MangaDexSimilarPager(val manga: Manga, val source: MangaDex) : Pager() {
 
     override fun requestNext(): Observable<MangasPage> {
-        return source.fetchMangaSimilar(manga)
+        return runAsObservable({ source.fetchMangaSimilar(manga) })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext {

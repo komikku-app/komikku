@@ -15,7 +15,7 @@ interface FollowsSource : CatalogueSource {
      *
      * @param SManga all smanga found for user
      */
-    suspend fun fetchAllFollows(forceHd: Boolean = false): List<Pair<SManga, RaisedSearchMetadata>>
+    suspend fun fetchAllFollows(): List<Pair<SManga, RaisedSearchMetadata>>
 
     /**
      * updates the follow status for a manga

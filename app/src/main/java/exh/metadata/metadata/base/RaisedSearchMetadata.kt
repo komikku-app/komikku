@@ -48,8 +48,6 @@ abstract class RaisedSearchMetadata {
     @Transient
     val titles = mutableListOf<RaisedTitle>()
 
-    var filteredScanlators: String? = null
-
     fun getTitleOfType(type: Int): String? = titles.find { it.type == type }?.title
 
     fun replaceTitleOfType(type: Int, newTitle: String?) {

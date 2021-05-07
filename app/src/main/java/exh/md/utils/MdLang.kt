@@ -1,45 +1,58 @@
 package exh.md.utils
 
-enum class MdLang(val lang: String, val dexLang: String, val langId: Int) {
-    English("en", "gb", 1),
-    Japanese("ja", "jp", 2),
-    Polish("pl", "pl", 3),
-    SerboCroatian("sh", "rs", 4),
-    Dutch("nl", "nl", 5),
-    Italian("it", "it", 6),
-    Russian("ru", "ru", 7),
-    German("de", "de", 8),
-    Hungarian("hu", "hu", 9),
-    French("fr", "fr", 10),
-    Finnish("fi", "fi", 11),
-    Vietnamese("vi", "vn", 12),
-    Greek("el", "gr", 13),
-    Bulgarian("bg", "bg", 14),
-    Spanish("es", "es", 15),
-    PortugeseBrazilian("pt-BR", "br", 16),
-    Portuguese("pt", "pt", 17),
-    Swedish("sv", "se", 18),
-    Arabic("ar", "sa", 19),
-    Danish("da", "dk", 20),
-    ChineseSimplifed("zh-Hans", "cn", 21),
-    Bengali("bn", "bd", 22),
-    Romanian("ro", "ro", 23),
-    Czech("cs", "cz", 24),
-    Mongolian("mn", "mn", 25),
-    Turkish("tr", "tr", 26),
-    Indonesian("id", "id", 27),
-    Korean("ko", "kr", 28),
-    SpanishLTAM("es-419", "mx", 29),
-    Persian("fa", "ir", 30),
-    Malay("ms", "my", 31),
-    Thai("th", "th", 32),
-    Catalan("ca", "ct", 33),
-    Filipino("fil", "ph", 34),
-    ChineseTraditional("zh-Hant", "hk", 35),
-    Ukrainian("uk", "ua", 36),
-    Burmese("my", "mm", 37),
-    Lithuanian("lt", "il", 38),
-    Hebrew("he", "il", 39),
-    Hindi("hi", "in", 40),
-    Norwegian("no", "no", 42)
+enum class MdLang(val lang: String, val prettyPrint: String, val extLang: String = lang) {
+    ENGLISH("en", "English"),
+    JAPANESE("jp", "Japanese", "ja"),
+    POLISH("pl", "Polish"),
+    SERBO_CROATIAN("rs", "Serbo-Croatian", "sh"),
+    DUTCH("nl", "Dutch"),
+    ITALIAN("it", "IT"),
+    RUSSIAN("ru", "Russian"),
+    GERMAN("de", "German"),
+    HUNGARIAN("hu", "Hungarian"),
+    FRENCH("fr", "French"),
+    FINNISH("fi", "Finnish"),
+    VIETNAMESE("vn", "Vietnamese", "vi"),
+    GREEK("gr", "Greek", "el"),
+    BULGARIAN("bg", "BULGARIN"),
+    SPANISH_ES("es", "Spanish (Es)"),
+    PORTUGUESE_BR("br", "Portuguese (Br)", "pt-br"),
+    PORTUGUESE("pt", "Portuguese (Pt)"),
+    SWEDISH("se", "Swedish", "sv"),
+    ARABIC("sa", "Arabic", "ar"),
+    DANISH("dk", "Danish", "da"),
+    CHINESE_SIMPLIFIED("cn", "Chinese (Simp)", "zh"),
+    BENGALI("bd", "Bengali", "bn"),
+    ROMANIAN("ro", "Romanian"),
+    CZECH("cz", "Czech", "cs"),
+    MONGOLIAN("mn", "Mongolian"),
+    TURKISH("tr", "Turkish"),
+    INDONESIAN("id", "Indonesian"),
+    KOREAN("kr", "Korean", "ko"),
+    SPANISH_LATAM("mx", "Spanish (LATAM)", "es-la"),
+    PERSIAN("ir", "Persian", "fa"),
+    MALAY("my", "Malay", "ms"),
+    THAI("th", "Thai"),
+    CATALAN("ct", "Catalan", "ca"),
+    FILIPINO("ph", "Filipino", "fi"),
+    CHINESE_TRAD("hk", "Chinese (Trad)", "zh-hk"),
+    UKRAINIAN("ua", "Ukrainian", "uk"),
+    BURMESE("mm", "Burmese", "my"),
+    LINTHUANIAN("lt", "Lithuanian"),
+    HEBREW("il", "Hebrew", "he"),
+    HINDI("in", "Hindi", "hi"),
+    NORWEGIAN("no", "Norwegian")
+    ;
+
+    companion object {
+        fun fromIsoCode(isoCode: String): MdLang? =
+            values().firstOrNull {
+                it.lang == isoCode
+            }
+
+        fun fromExt(extLang: String): MdLang? =
+            values().firstOrNull {
+                it.extLang == extLang
+            }
+    }
 }

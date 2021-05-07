@@ -40,6 +40,8 @@ object MangaTable {
 
     // SY ->>
     const val COL_READ = "read"
+
+    const val COL_FILTERED_SCANLATORS = "filtered_scanlators"
     // SY <--
 
     const val COL_CATEGORY = "category"
@@ -65,7 +67,8 @@ object MangaTable {
             $COL_VIEWER INTEGER NOT NULL,
             $COL_CHAPTER_FLAGS INTEGER NOT NULL,
             $COL_COVER_LAST_MODIFIED LONG NOT NULL,
-            $COL_DATE_ADDED LONG NOT NULL
+            $COL_DATE_ADDED LONG NOT NULL,
+            $COL_FILTERED_SCANLATORS TEXT
             )"""
 
     val createUrlIndexQuery: String
@@ -90,4 +93,7 @@ object MangaTable {
             "FROM $TABLE INNER JOIN ${ChapterTable.TABLE} " +
             "ON $TABLE.$COL_ID = ${ChapterTable.TABLE}.${ChapterTable.COL_MANGA_ID} " +
             "GROUP BY $TABLE.$COL_ID)"
+
+    val addFilteredScanlators: String
+        get() = "ALTER TABLE $TABLE ADD COLUMN $COL_FILTERED_SCANLATORS TEXT"
 }

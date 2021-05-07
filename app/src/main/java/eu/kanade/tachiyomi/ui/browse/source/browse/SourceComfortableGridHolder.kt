@@ -51,7 +51,7 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
     // SY -->
     override fun onSetMetadataValues(manga: Manga, metadata: RaisedSearchMetadata) {
         if (metadata is MangaDexSearchMetadata) {
-            metadata.follow_status?.let {
+            metadata.followStatus?.let {
                 binding.localText.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
                 binding.localText.isVisible = true
             }

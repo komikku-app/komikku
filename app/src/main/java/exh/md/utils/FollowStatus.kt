@@ -1,5 +1,7 @@
 package exh.md.utils
 
+import java.util.Locale
+
 enum class FollowStatus(val int: Int) {
     UNFOLLOWED(0),
     READING(1),
@@ -10,6 +12,7 @@ enum class FollowStatus(val int: Int) {
     RE_READING(6);
 
     companion object {
-        fun fromInt(value: Int): FollowStatus = values().find { it.int == value } ?: UNFOLLOWED
+        fun fromDex(value: String?): FollowStatus = values().firstOrNull { it.name.toLowerCase(Locale.US) == value } ?: UNFOLLOWED
+        fun fromInt(value: Int): FollowStatus = values().firstOrNull { it.int == value } ?: UNFOLLOWED
     }
 }

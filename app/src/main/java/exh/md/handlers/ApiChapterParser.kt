@@ -2,7 +2,7 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
-import exh.md.handlers.serializers.ApiChapterSerializer
+import exh.md.handlers.serializers.ChapterResponse
 import exh.md.utils.MdUtil
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -10,18 +10,26 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 
 class ApiChapterParser {
-    // Only used in [PageHandler], which means its currently unused, kept for reference
-    fun pageListParse(response: Response): List<Page> {
-        val networkApiChapter = response.parseAs<ApiChapterSerializer>(MdUtil.jsonParser)
+    fun pageListParse(response: Response, host: String, dataSaver: Boolean): List<Page> {
+        val networkApiChapter = response.parseAs<ChapterResponse>(MdUtil.jsonParser)
 
-        val hash = networkApiChapter.data.hash
-        val pageArray = networkApiChapter.data.pages
-        val server = networkApiChapter.data.server
+        val pages = mutableListOf<Page>()
 
-        return pageArray.mapIndexed { index, page ->
-            val url = "$hash/$page"
-            Page(index, "$server,${response.request.url},${System.currentTimeMillis()}", url)
+        val atHomeRequestUrl = response.request.url.toUrl().toString()
+
+        val hash = networkApiChapter.data.attributes.hash
+        val pageArray = if (dataSaver) {
+            networkApiChapter.data.attributes.dataSaver.map { "/data-saver/$hash/$it" }
+        } else {
+            networkApiChapter.data.attributes.data.map { "/data/$hash/$it" }
         }
+        val now = System.currentTimeMillis()
+        pageArray.forEach { imgUrl ->
+            val mdAtHomeUrl = "$host,$atHomeRequestUrl,$now"
+            pages += Page(pages.size, mdAtHomeUrl, imgUrl)
+        }
+
+        return pages
     }
 
     fun externalParse(response: Response): String {

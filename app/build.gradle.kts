@@ -24,6 +24,14 @@ if (!gradle.startParameter.taskRequests.toString().contains("Debug")) {
 
 shortcutHelper.setFilePath("./shortcuts.xml")
 
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") {
+            useVersion("1.4.32")
+        }
+    }
+}
+
 android {
     compileSdkVersion(AndroidConfig.compileSdk)
     buildToolsVersion(AndroidConfig.buildTools)
@@ -170,7 +178,7 @@ dependencies {
     implementation("org.conscrypt:conscrypt-android:2.5.1")
 
     // JSON
-    val kotlinSerializationVersion = "1.2.0"
+    val kotlinSerializationVersion = "1.1.0"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$kotlinSerializationVersion")
     implementation("com.google.code.gson:gson:2.8.6")
@@ -303,7 +311,7 @@ dependencies {
     // JsonReader for similar manga
     implementation("com.squareup.moshi:moshi:1.12.0")
 
-    implementation("com.mikepenz:fastadapter:5.4.0")
+    implementation("com.mikepenz:fastadapter:5.4.1")
     // SY <--
 }
 

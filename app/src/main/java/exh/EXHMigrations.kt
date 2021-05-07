@@ -3,6 +3,7 @@ package exh
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
@@ -12,6 +13,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.resolvers.MangaUrlPutResolver
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
+import eu.kanade.tachiyomi.data.database.tables.TrackTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -242,7 +244,6 @@ object EXHMigrations {
                     //   UpdaterJob.cancelTask(context)
                     // }
                 }
-
                 if (oldVersion under 17) {
                     // Migrate Rotation and Viewer values to default values for viewer_flags
                     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -264,6 +265,15 @@ object EXHMigrations {
                         putInt("pref_default_reading_mode_key", newReadingMode)
                         remove("pref_default_viewer_key")
                     }
+
+                    // Delete old mangadex trackers
+                    db.db.lowLevel().delete(
+                        DeleteQuery.builder()
+                            .table(TrackTable.TABLE)
+                            .where("${TrackTable.COL_SYNC_ID} = ?")
+                            .whereArgs(6)
+                            .build()
+                    )
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
