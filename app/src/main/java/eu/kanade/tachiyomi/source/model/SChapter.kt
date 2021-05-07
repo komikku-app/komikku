@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.source.model
 
-import tachiyomi.source.model.ChapterInfo
 import java.io.Serializable
+import tachiyomi.source.model.ChapterInfo
 
 interface SChapter : Serializable {
 

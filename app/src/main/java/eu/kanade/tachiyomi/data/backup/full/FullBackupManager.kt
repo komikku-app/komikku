@@ -30,8 +30,8 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.online.LewdSource
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata

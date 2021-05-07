@@ -89,9 +89,9 @@ class MigrationPresenter(
         Observable.defer {
             runAsObservable({
                 source.getChapterList(manga.toMangaInfo())
-                        .map { it.toSChapter() }
+                    .map { it.toSChapter() }
             })
-            }
+        }
             .onErrorReturn { emptyList() }
             .doOnNext { it -> migrateMangaInternal(source, it, prevManga, manga, replace) }
             .onErrorReturn { emptyList() }.subscribeOn(Schedulers.io())

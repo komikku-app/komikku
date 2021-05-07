@@ -200,12 +200,12 @@ class ChaptersPresenter(
         hasRequested = true
 
         if (!fetchChaptersSubscription.isNullOrUnsubscribed()) return
-            fetchChaptersSubscription = Observable.defer {
-                runAsObservable({
-                    source.getChapterList(manga.toMangaInfo())
-                        .map { it.toSChapter() }
-                })
-            }
+        fetchChaptersSubscription = Observable.defer {
+            runAsObservable({
+                source.getChapterList(manga.toMangaInfo())
+                    .map { it.toSChapter() }
+            })
+        }
             .subscribeOn(Schedulers.io())
             .map { syncChaptersWithSource(db, it, manga, source) }
             .doOnNext {

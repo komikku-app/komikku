@@ -8,13 +8,13 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import exh.eh.EHentaiThrottleManager
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import exh.eh.EHentaiThrottleManager
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
@@ -50,7 +50,7 @@ abstract class AbstractBackupManager(protected val context: Context) {
             } else {
                 runAsObservable({
                     source.getChapterList(manga.toMangaInfo())
-                            .map { it.toSChapter() }
+                        .map { it.toSChapter() }
                 })
             }
             ).map {

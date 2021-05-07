@@ -2,6 +2,8 @@ package eu.kanade.tachiyomi.util.lang
 
 import com.pushtorefresh.storio.operations.PreparedOperation
 import com.pushtorefresh.storio.sqlite.operations.get.PreparedGetObject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
@@ -25,8 +27,6 @@ import rx.Single
 import rx.SingleSubscriber
 import rx.Subscriber
 import rx.Subscription
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 /*
  * Util functions for bridging RxJava and coroutines. Taken from TachiyomiEH/SY.
@@ -254,4 +254,3 @@ fun <T> runAsObservable(
         backpressureMode
     )
 }
-

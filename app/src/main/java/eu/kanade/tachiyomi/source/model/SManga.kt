@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.source.model
 
-import tachiyomi.source.model.MangaInfo
 import java.io.Serializable
+import tachiyomi.source.model.MangaInfo
 
 interface SManga : Serializable {
 

@@ -8,7 +8,6 @@ import androidx.core.text.buildSpannedString
 import androidx.core.view.isVisible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
-import kotlin.math.floor
 import kotlinx.android.synthetic.main.reader_transition_view.view.lower_text
 import kotlinx.android.synthetic.main.reader_transition_view.view.upper_text
 import kotlinx.android.synthetic.main.reader_transition_view.view.warning
