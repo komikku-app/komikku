@@ -389,16 +389,16 @@ class LibraryUpdateService(
                 val source = sourceManager.get(manga.source)
 
                 // Update manga details metadata in the background
-                runAsObservable({source?.getMangaDetails(manga.toMangaInfo())?.toSManga()})
+                runAsObservable({ source?.getMangaDetails(manga.toMangaInfo())?.toSManga() })
                     ?.map { updatedManga ->
                         // Avoid "losing" existing cover
-                        if (!updatedManga.thumbnail_url.isNullOrEmpty()) {
-                            manga.prepUpdateCover(coverCache, updatedManga, false)
+                        if (!updatedManga!!.thumbnail_url.isNullOrEmpty()) {
+                            manga.prepUpdateCover(coverCache, updatedManga!!, false)
                         } else {
-                            updatedManga.thumbnail_url = manga.thumbnail_url
+                            updatedManga!!.thumbnail_url = manga.thumbnail_url
                         }
 
-                        manga.copyFrom(updatedManga)
+                        manga.copyFrom(updatedManga!!)
                         db.insertManga(manga).executeAsBlocking()
                         manga
                     }

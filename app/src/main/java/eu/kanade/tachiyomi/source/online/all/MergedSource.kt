@@ -1,11 +1,5 @@
 package eu.kanade.tachiyomi.source.online.all
 
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
-import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
-import eu.kanade.tachiyomi.util.lang.runAsObservable
-
-
 import android.util.Log
 import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
@@ -13,13 +7,16 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.MERGED_SOURCE_ID
 import exh.util.await
 import hu.akarnokd.rxjava.interop.RxJavaInterop
@@ -74,7 +71,7 @@ class MergedSource : HttpSource() {
                 val loadedMangas = readMangaConfig(manga).load(db, sourceManager).buffer()
                 loadedMangas.map { loadedManga ->
                     async(Dispatchers.IO) {
-                        loadedManga.source.runAsObservable({source.getChapterList(loadedManga.manga.toMangaInfo()).map{it.toSchapter()}}).map { chapterList ->
+                        runAsObservable({ loadedManga.source.getChapterList(loadedManga.manga.toMangaInfo()).map { it.toSChapter() } }).map { chapterList ->
                             chapterList.map { chapter ->
                                 chapter.apply {
                                     url = writeUrlConfig(UrlConfig(loadedManga.source.id, url, loadedManga.manga.url))

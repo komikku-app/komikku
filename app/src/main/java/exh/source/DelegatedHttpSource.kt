@@ -1,16 +1,16 @@
 package exh.source
 
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
-import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
-import eu.kanade.tachiyomi.util.lang.runAsObservable
-
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -180,7 +180,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      */
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         ensureDelegateCompatible()
-        return runAsObservable({delegate.getMangaDetails(manga.toMangaInfo()).toSManga()})
+        return runAsObservable({ delegate.getMangaDetails(manga.toMangaInfo()).toSManga() })
     }
 
     /**
@@ -202,7 +202,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      */
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         ensureDelegateCompatible()
-        return runAsObservable({delegate.getChapterList(manga.toMangaInfo()).map{it.toSchapter()}})
+        return runAsObservable({ delegate.getChapterList(manga.toMangaInfo()).map { it.toSChapter() } })
     }
 
     /**
