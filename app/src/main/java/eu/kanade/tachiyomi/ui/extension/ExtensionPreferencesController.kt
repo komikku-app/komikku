@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.EmptyPreferenceDataStore
 import eu.kanade.tachiyomi.data.preference.SharedPreferencesDataStore
 import eu.kanade.tachiyomi.databinding.ExtensionPreferencesControllerBinding
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -71,7 +70,14 @@ class ExtensionPreferencesController(bundle: Bundle? = null) :
 
         val themedContext by lazy { getPreferenceThemeContext() }
         val manager = PreferenceManager(themedContext)
-        manager.preferenceDataStore = EmptyPreferenceDataStore()
+        // TODO
+        val dataStore = SharedPreferencesDataStore(/*if (source is HttpSource) {
+            source.preferences
+        } else {*/
+            context.getSharedPreferences("source_${source.id}", Context.MODE_PRIVATE)
+            /*}*/
+        )
+        manager.preferenceDataStore = dataStore
         manager.onDisplayPreferenceDialogListener = this
         val screen = manager.createPreferenceScreen(themedContext)
         preferenceScreen = screen
@@ -116,15 +122,6 @@ class ExtensionPreferencesController(bundle: Bundle? = null) :
 
     private fun addPreferencesForSource(screen: PreferenceScreen, source: Source, multiSource: Boolean) {
         val context = screen.context
-
-        // TODO
-        val dataStore = SharedPreferencesDataStore(/*if (source is HttpSource) {
-            source.preferences
-        } else {*/
-            context.getSharedPreferences("source_${source.id}", Context.MODE_PRIVATE)
-            /*}*/
-        )
-
         if (source is ConfigurableSource) {
             if (multiSource) {
                 screen.preferenceCategory {
@@ -139,7 +136,6 @@ class ExtensionPreferencesController(bundle: Bundle? = null) :
             while (newScreen.preferenceCount != 0) {
                 val pref = newScreen.getPreference(0)
                 pref.isIconSpaceReserved = false
-                pref.preferenceDataStore = dataStore
                 pref.order = Int.MAX_VALUE // reset to default order
 
                 newScreen.removePreference(pref)
