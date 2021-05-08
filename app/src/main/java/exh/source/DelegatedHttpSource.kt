@@ -1,5 +1,10 @@
 package exh.source
 
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -175,7 +180,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      */
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         ensureDelegateCompatible()
-        return delegate.fetchMangaDetails(manga)
+        return runAsObservable({delegate.getMangaDetails(manga.toMangaInfo()).toSManga()})
     }
 
     /**
@@ -197,7 +202,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      */
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         ensureDelegateCompatible()
-        return delegate.fetchChapterList(manga)
+        return runAsObservable({delegate.getChapterList(manga.toMangaInfo()).map{it.toSchapter()}})
     }
 
     /**

@@ -1,5 +1,10 @@
 package eu.kanade.tachiyomi.ui.migration.manga.process
 
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
@@ -187,7 +192,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                         source.id
                                                     )
                                                 val chapters =
-                                                    source.fetchChapterList(localManga).toSingle()
+                                                    runAsObservable({source.getChapterList(localManga.toMangaInfo()).map{it.toSchapter()}}).toSingle()
                                                         .await(
                                                             Schedulers.io()
                                                         )
@@ -236,7 +241,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                             source.id
                                         )
                                         val chapters = try {
-                                            source.fetchChapterList(localManga).toSingle()
+                                            runAsObservable({source.getChapterList(localManga.toMangaInfo()).map{it.toSchapter()}}).toSingle()
                                                 .await(Schedulers.io())
                                         } catch (e: java.lang.Exception) {
                                             Timber.e(e)
@@ -270,7 +275,7 @@ class MigrationListController(bundle: Bundle? = null) :
                 if (result != null && result.thumbnail_url == null) {
                     try {
                         val newManga =
-                            sourceManager.getOrStub(result.source).fetchMangaDetails(result)
+                            runAsObservable({sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo()).toSManga()})
                                 .toSingle().await()
                         result.copyFrom(newManga)
 
@@ -373,7 +378,7 @@ class MigrationListController(bundle: Bundle? = null) :
         launchUI {
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
                 val localManga = smartSearchEngine.networkToLocalManga(manga, source.id)
-                val chapters = source.fetchChapterList(localManga).toSingle().await(
+                val chapters = source.runAsObservable({source.getChapterList(localManga.toMangaInfo()).map{it.toSchapter()}}).toSingle().await(
                     Schedulers.io()
                 )
                 try {
@@ -387,7 +392,7 @@ class MigrationListController(bundle: Bundle? = null) :
             if (result != null) {
                 try {
                     val newManga =
-                        sourceManager.getOrStub(result.source).fetchMangaDetails(result).toSingle()
+                        runAsObservable({sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo()).toSManga()}).toSingle()
                             .await()
                     result.copyFrom(newManga)
 

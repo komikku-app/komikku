@@ -389,7 +389,7 @@ class LibraryUpdateService(
                 val source = sourceManager.get(manga.source)
 
                 // Update manga details metadata in the background
-                source?.fetchMangaDetails(manga)
+                runAsObservable({source?.getMangaDetails(manga.toMangaInfo())?.toSManga()})
                     ?.map { updatedManga ->
                         // Avoid "losing" existing cover
                         if (!updatedManga.thumbnail_url.isNullOrEmpty()) {

@@ -1,5 +1,10 @@
 package exh
 
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+
 import android.net.Uri
 import com.elvishew.xlog.XLog
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -90,7 +95,7 @@ class GalleryAdder {
             }
 
             // Fetch and copy details
-            val newManga = source.fetchMangaDetails(manga).toBlocking().first()
+            val newManga = runAsObservable({source.getMangaDetails(manga.toMangaInfo()).toSManga()}).toBlocking().first()
             manga.copyFrom(newManga)
             manga.initialized = true
 
@@ -106,7 +111,7 @@ class GalleryAdder {
                 val chapterListObs = if (source is EHentai) {
                     source.fetchChapterList(manga, throttleFunc)
                 } else {
-                    source.fetchChapterList(manga)
+                    runAsObservable({source.getChapterList(manga.toMangaInfo()).map{it.toSchapter()}})
                 }
                 chapterListObs.map {
                     syncChaptersWithSource(db, it, manga, source)

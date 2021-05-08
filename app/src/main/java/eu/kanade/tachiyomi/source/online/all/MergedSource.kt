@@ -1,5 +1,11 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+
+
 import android.util.Log
 import com.elvishew.xlog.XLog
 import com.github.salomonbrys.kotson.fromJson
@@ -68,7 +74,7 @@ class MergedSource : HttpSource() {
                 val loadedMangas = readMangaConfig(manga).load(db, sourceManager).buffer()
                 loadedMangas.map { loadedManga ->
                     async(Dispatchers.IO) {
-                        loadedManga.source.fetchChapterList(loadedManga.manga).map { chapterList ->
+                        loadedManga.source.runAsObservable({source.getChapterList(loadedManga.manga.toMangaInfo()).map{it.toSchapter()}}).map { chapterList ->
                             chapterList.map { chapter ->
                                 chapter.apply {
                                     url = writeUrlConfig(UrlConfig(loadedManga.source.id, url, loadedManga.manga.url))

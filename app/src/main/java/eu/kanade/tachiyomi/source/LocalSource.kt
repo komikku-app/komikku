@@ -1,5 +1,11 @@
 package eu.kanade.tachiyomi.source
 
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+
+
 import android.content.Context
 import com.google.gson.JsonParser
 import eu.kanade.tachiyomi.R
@@ -112,7 +118,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
                     }
                 }
 
-                val chapters = fetchChapterList(this).toBlocking().first()
+                val chapters = runAsObservable({source.getChapterList(this.toMangaInfo()).map{it.toSchapter()}}).toBlocking().first()
                 if (chapters.isNotEmpty()) {
                     val chapter = chapters.last()
                     val format = getFormat(chapter)

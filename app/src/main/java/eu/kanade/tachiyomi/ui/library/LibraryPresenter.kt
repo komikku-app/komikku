@@ -1,5 +1,10 @@
 package eu.kanade.tachiyomi.ui.library
 
+import eu.kanade.tachiyomi.data.database.models.toMangaInfo
+import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -460,7 +465,7 @@ class LibraryPresenter(
 
         // state = state.copy(isReplacingManga = true)
 
-        Observable.defer { source.fetchChapterList(manga) }
+        Observable.defer { runAsObservable({source.getChapterList(manga.toMangaInfo()).map{it.toSchapter()}}) }
             .onErrorReturn { emptyList() }
             .doOnNext { migrateMangaInternal(source, it, prevManga, manga, replace) }
             .onErrorReturn { emptyList() }
