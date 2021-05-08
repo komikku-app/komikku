@@ -49,7 +49,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
 
         val title = title
 
-        val cover = cover ?: manga.cover.nullIfBlank() ?: "https://i.imgur.com/6TrIues.jpg" // cover
+        val cover = cover
 
         val author = authors?.joinToString()?.let { MdUtil.cleanString(it) }
 

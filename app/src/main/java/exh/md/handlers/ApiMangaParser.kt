@@ -121,6 +121,11 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                     it["mu"]?.let { mangaUpdatesId = it }
                     it["ap"]?.let { animePlanetId = it }
                 }
+
+                cover = kitsuId?.let {
+                    "https://media.kitsu.io/manga/poster_images/$it/large.jpg"
+                } ?: "https://i.imgur.com/6TrIues.jpg"
+
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
 
                 val tempStatus = parseStatus(networkManga.status ?: "")
