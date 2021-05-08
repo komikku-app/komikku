@@ -348,7 +348,7 @@ class LibraryUpdateService(
         // Update manga details metadata in the background
         if (preferences.autoUpdateMetadata()) {
             runAsObservable({
-		try {
+                try {
                     val updatedManga = source.getMangaDetails(manga.toMangaInfo())
                     val sManga = updatedManga.toSManga()
                     // Avoid "losing" existing cover
