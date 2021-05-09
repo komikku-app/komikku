@@ -258,7 +258,6 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
         networkChapter: ChapterResponse,
         groups: Map<String, String>,
     ): ChapterInfo {
-        val chapter = SChapter.create()
         val attributes = networkChapter.data.attributes
         val key = MdUtil.chapterSuffix + networkChapter.data.id
         val chapterName = StringBuilder()
@@ -272,20 +271,16 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
         }
 
         if (attributes.chapter.isNullOrBlank().not()) {
-            if (chapterName.isNotEmpty()) {
-                chapterName.appends("-")
-            }
             val chp = "Ch.${attributes.chapter}"
             chapterName.appends(chp)
             // chapter.chapter_txt = chp
         }
 
-        if (attributes.title.isNullOrBlank().not()) {
+        if (!attributes.title.isNullOrBlank()) {
             if (chapterName.isNotEmpty()) {
                 chapterName.appends("-")
             }
-            chapterName.append(attributes.title!!)
-            chapter.name = MdUtil.cleanString(attributes.title)
+            chapterName.append(attributes.title)
         }
 
         // if volume, chapter and title is empty its a oneshot
