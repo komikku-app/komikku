@@ -27,7 +27,7 @@ data class NetworkChapter(
 @Serializable
 data class ChapterAttributes(
     val title: String?,
-    val volume: Int?,
+    val volume: String?,
     val chapter: String?,
     val translatedLanguage: String,
     val publishAt: String,

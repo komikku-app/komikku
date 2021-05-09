@@ -161,8 +161,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         ApiMangaParser(baseHttpClient, mdLang.lang).parseIntoMetadata(metadata, input, emptyList())
     }
 
-    override suspend fun fetchFollows(): MangasPage {
-        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).fetchFollows()
+    override suspend fun fetchFollows(page: Int): MangasPage {
+        return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).fetchFollows(page)
     }
 
     override val requiresLogin: Boolean = false

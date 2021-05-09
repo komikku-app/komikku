@@ -27,14 +27,13 @@ data class NetworkMangaAttributes(
     val description: Map<String, String>,
     val links: Map<String, String>?,
     val originalLanguage: String,
-    val lastVolume: Int?,
+    val lastVolume: String?,
     val lastChapter: String,
     val contentRating: String?,
     val publicationDemographic: String?,
     val status: String?,
     val year: Int?,
     val tags: List<TagsSerializer>
-    // val readingStatus: String? = null,
 )
 
 @Serializable
@@ -79,4 +78,14 @@ data class AuthorAttributes(
 @Serializable
 data class UpdateReadingStatus(
     val status: String?
+)
+
+@Serializable
+data class MangaStatusResponse(
+    val status: String?
+)
+
+@Serializable
+data class MangaStatusListResponse(
+    val statuses: Map<String, String?>
 )

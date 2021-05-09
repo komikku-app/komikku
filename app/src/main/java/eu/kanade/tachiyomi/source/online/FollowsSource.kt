@@ -8,7 +8,7 @@ import exh.md.utils.FollowStatus
 import exh.metadata.metadata.base.RaisedSearchMetadata
 
 interface FollowsSource : CatalogueSource {
-    suspend fun fetchFollows(): MangasPage
+    suspend fun fetchFollows(page: Int): MangasPage
 
     /**
      * Returns a list of all Follows retrieved by Coroutines

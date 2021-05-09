@@ -219,7 +219,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
     private fun parseStatus(status: String) = when (status) {
         "ongoing" -> SManga.ONGOING
         "complete" -> SManga.PUBLICATION_COMPLETE
-        "abandoned" -> SManga.CANCELLED
+        "cancelled" -> SManga.CANCELLED
         "hiatus" -> SManga.HIATUS
         else -> SManga.UNKNOWN
     }
