@@ -22,6 +22,10 @@ import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.supervisorScope
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
@@ -142,33 +146,44 @@ class MergedSource : HttpSource() {
         if (mangaReferences.isEmpty()) throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
 
         val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(db, preferences)
-        return mangaReferences.filter { it.mangaSourceId != MERGED_SOURCE_ID }.map {
-            it.load(db, sourceManager)
-        }.mapNotNull { loadedManga ->
-            withIOContext {
-                if (loadedManga.manga != null && loadedManga.reference.getChapterUpdates) {
-                    loadedManga.source.getChapterList(loadedManga.manga.toMangaInfo())
-                        .map { it.toSChapter() }
-                        .let { syncChaptersWithSource(db, it, loadedManga.manga, loadedManga.source) }
-                        .also {
-                            if (ifDownloadNewChapters && loadedManga.reference.downloadChapters) {
-                                downloadManager.downloadChapters(loadedManga.manga, it.first)
+        var exception: Exception? = null
+        return supervisorScope {
+            mangaReferences
+                .map {
+                    async {
+                        try {
+                            if (it.mangaSourceId == MERGED_SOURCE_ID) return@async null
+                            val (source, loadedManga, reference) =
+                                it.load(db, sourceManager)
+                            if (loadedManga != null && reference.getChapterUpdates) {
+                                val chapterList = source.getChapterList(loadedManga.toMangaInfo())
+                                    .map { it.toSChapter() }
+                                val results =
+                                    syncChaptersWithSource(db, chapterList, loadedManga, source)
+                                if (ifDownloadNewChapters && reference.downloadChapters) {
+                                    downloadManager.downloadChapters(
+                                        loadedManga,
+                                        results.first
+                                    )
+                                }
+                                results
+                            } else {
+                                null
                             }
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                            exception = e
+                            null
                         }
-                } else {
-                    null
+                    }
                 }
-            }
-        }.let { pairs ->
-            val firsts = mutableListOf<Chapter>()
-            val seconds = mutableListOf<Chapter>()
-
-            pairs.forEach {
-                firsts.addAll(it.first)
-                seconds.addAll(it.second)
-            }
-
-            firsts to seconds
+                .awaitAll()
+                .let { pairs ->
+                    if (exception != null) {
+                        throw exception!!
+                    }
+                    pairs.flatMap { it?.first.orEmpty() } to pairs.flatMap { it?.second.orEmpty() }
+                }
         }
     }
 
