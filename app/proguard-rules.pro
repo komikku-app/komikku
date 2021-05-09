@@ -58,12 +58,6 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Manga Plus fixes
--keep class kotlinx.serialization.**
--keepclassmembers class kotlinx.serialization.** {
-    <methods>;
-}
-
 # Filter serializer
 -keep,includedescriptorclasses class xyz.nulldev.ts.api.http.serializer.**$$serializer { *; }
 -keepclassmembers class xyz.nulldev.ts.api.http.serializer.** {
@@ -86,6 +80,18 @@
       final *;
       protected *;
       public *;
+}
+
+
+# Manga Plus fixes
+-keep class kotlinx.serialization.**
+-keepclassmembers class kotlinx.serialization.** {
+    <methods>;
+}
+
+# Genkan.io crash fix
+-keepclassmembers class rx.Observable {
+    rx.Observable concatWith(rx.Observable);
 }
 
 # RxJava 1.1.0
