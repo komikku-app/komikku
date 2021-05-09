@@ -50,7 +50,9 @@ class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authent
                 val result = runCatching {
                     validated = loginHelper.refreshToken(
                         MdUtil.getAuthHeaders(
-                            Headers.Builder().build(), loginHelper.preferences, loginHelper.mdList
+                            Headers.Builder().build(),
+                            loginHelper.preferences,
+                            loginHelper.mdList
                         )
                     )
                 }

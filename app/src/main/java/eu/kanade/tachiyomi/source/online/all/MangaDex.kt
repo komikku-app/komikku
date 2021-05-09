@@ -47,7 +47,6 @@ import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
 
 @Suppress("OverridingDeprecatedMember")
@@ -68,18 +67,14 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     // override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
 
-    val preferences: PreferencesHelper by injectLazy()
-    val mdList: MdList by lazy {
-        Injekt.get<TrackManager>().mdList
-    }
+    val preferences = Injekt.get<PreferencesHelper>()
+    val mdList: MdList = Injekt.get<TrackManager>().mdList
 
     /*private val sourcePreferences: SharedPreferences by lazy {
         context.getSharedPreferences("source_$id", 0x0000)
     }*/
 
-    private val loginHelper by lazy {
-        MangaDexLoginHelper(networkHttpClient, preferences, mdList)
-    }
+    private val loginHelper = MangaDexLoginHelper(networkHttpClient, preferences, mdList)
 
     override val baseHttpClient: OkHttpClient = super.client.newBuilder()
         .authenticator(

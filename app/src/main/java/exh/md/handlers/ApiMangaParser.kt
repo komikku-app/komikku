@@ -16,6 +16,7 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.util.dropEmpty
 import exh.util.executeOnIO
 import exh.util.floor
 import okhttp3.OkHttpClient
@@ -83,18 +84,18 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
 
                 description = MdUtil.cleanDescription(networkManga.description[lang] ?: networkManga.description["en"]!!)
 
-                // get authors ignore if they error, artists are labelled as authors currently
-                val authorIds = networkApiManga.relationships.filter { relationship ->
-                    relationship.type.equals("author", true)
-                }.map { relationship -> relationship.id }
-                    .distinct()
-                val artistIds = networkApiManga.relationships.filter { relationship ->
-                    relationship.type.equals("artist", true)
-                }.map { relationship -> relationship.id }
-                    .distinct()
+                val authorIds = networkApiManga.relationships
+                    .filter { it.type.equals("author", true) }
+                    .map { it.id }
+                    .toSet()
+                val artistIds = networkApiManga.relationships
+                    .filter { it.type.equals("artist", true) }
+                    .map { it.id }
+                    .toSet()
 
+                // get author/artist map ignore if they error
                 val authorMap = runCatching {
-                    val ids = (authorIds + artistIds).distinct().joinToString("&ids[]=", "?ids[]=")
+                    val ids = (authorIds + artistIds).joinToString("&ids[]=", "?ids[]=")
                     val response = client.newCall(GET("${MdUtil.authorUrl}$ids")).await()
                         .parseAs<AuthorResponseList>()
                     response.results.map {
@@ -102,8 +103,8 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                     }.toMap()
                 }.getOrNull() ?: emptyMap()
 
-                authors = authorIds.mapNotNull { authorMap[it] }.takeUnless { it.isEmpty() }
-                artists = artistIds.mapNotNull { authorMap[it] }.takeUnless { it.isEmpty() }
+                authors = authorIds.mapNotNull { authorMap[it] }.dropEmpty()
+                artists = artistIds.mapNotNull { authorMap[it] }.dropEmpty()
 
                 langFlag = networkManga.originalLanguage
                 val lastChapter = networkManga.lastChapter.toFloatOrNull()
@@ -114,12 +115,12 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                     manga.users = it.users
                 }*/
 
-                networkManga.links?.let {
-                    it["al"]?.let { anilistId = it }
-                    it["kt"]?.let { kitsuId = it }
-                    it["mal"]?.let { myAnimeListId = it }
-                    it["mu"]?.let { mangaUpdatesId = it }
-                    it["ap"]?.let { animePlanetId = it }
+                networkManga.links?.let { links ->
+                    links["al"]?.let { anilistId = it }
+                    links["kt"]?.let { kitsuId = it }
+                    links["mal"]?.let { myAnimeListId = it }
+                    links["mu"]?.let { mangaUpdatesId = it }
+                    links["ap"]?.let { animePlanetId = it }
                 }
 
                 if (kitsuId?.toIntOrNull() != null) {

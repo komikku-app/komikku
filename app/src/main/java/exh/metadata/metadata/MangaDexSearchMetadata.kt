@@ -4,7 +4,6 @@ import android.content.Context
 import eu.kanade.tachiyomi.R
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.util.nullIfBlank
 import kotlinx.serialization.Serializable
 import tachiyomi.source.model.MangaInfo
 
@@ -98,7 +97,6 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
 
     companion object {
         private const val TITLE_TYPE_MAIN = 0
-        private const val TITLE_TYPE_ALT_TITLE = 1
 
         const val TAG_TYPE_DEFAULT = 0
     }
