@@ -168,20 +168,6 @@
 ## From original config: "Attempt to fix: java.lang.NoClassDefFoundError: uy.kohesive.injekt.registry.default.DefaultRegistrar$NOKEY$1"
 -keep class uy.kohesive.injekt.** { *; }
 
-
-# === Glide
--keep public class * implements com.bumptech.glide.module.GlideModule
--keep public class * extends com.bumptech.glide.module.AppGlideModule
--keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
-  **[] $VALUES;
-  public *;
-}
-
--dontwarn com.bumptech.glide.load.resource.bitmap.VideoDecoder
-
-# === Glide-transformations: https://github.com/wasabeef/glide-transformations/blob/3aa8e53c6a51b8351d312f802ba1354c5b115168/transformations/proguard-rules.txt
--dontwarn jp.co.cyberagent.android.gpuimage.**
-
 # === Conductor
 # This isn't in the consumer proguard rules yet: https://github.com/bluelinelabs/Conductor/pull/550/files
 -keepclassmembers public class * extends com.bluelinelabs.conductor.ControllerChangeHandler {
