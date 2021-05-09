@@ -125,7 +125,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
         }
     }
 
-    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String {
         val newUri = "http://www.perveden.com/".toUri().buildUpon()
         uri.pathSegments.take(3).forEach {
             newUri.appendPath(it)

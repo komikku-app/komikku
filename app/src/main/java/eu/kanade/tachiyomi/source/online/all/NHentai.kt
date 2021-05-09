@@ -55,7 +55,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
-        val json = GALLERY_JSON_REGEX.find(input.body!!.string())!!.groupValues[1].replace(
+        val json = GALLERY_JSON_REGEX.find(input.body?.string().orEmpty())!!.groupValues[1].replace(
             UNICODE_ESCAPE_REGEX
         ) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
         val jsonResponse = jsonParser.decodeFromString<JsonResponse>(json)

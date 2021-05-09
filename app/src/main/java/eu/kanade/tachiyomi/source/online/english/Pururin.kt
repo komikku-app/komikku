@@ -62,7 +62,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
         val parsedSelfLink = selfLink.attr("href").toUri().pathSegments
 
         with(metadata) {
-            prId = parsedSelfLink[parsedSelfLink.lastIndex - 1].toIntOrNull()
+            prId = parsedSelfLink[parsedSelfLink.lastIndex - 1].toInt()
             prShortLink = parsedSelfLink.last()
 
             val contentWrapper = input.selectFirst(".content-wrapper")
@@ -112,7 +112,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String {
-        return "${PururinSearchMetadata.BASE_URL}/gallery/${uri.pathSegments[1]}/${uri.lastPathSegment}"
+        return "${PururinSearchMetadata.BASE_URL}/gallery/${uri.pathSegments.getOrNull(1)}/${uri.lastPathSegment}"
     }
 
     override fun getDescriptionAdapter(controller: MangaController): PururinDescriptionAdapter {

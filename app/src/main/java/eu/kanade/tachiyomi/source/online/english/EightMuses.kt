@@ -89,7 +89,7 @@ class EightMuses(delegate: HttpSource, val context: Context) :
         "8muses.com"
     )
 
-    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String {
         var path = uri.pathSegments.drop(2)
         if (uri.pathSegments[1].toLowerCase() == "picture") {
             path = path.dropLast(1)

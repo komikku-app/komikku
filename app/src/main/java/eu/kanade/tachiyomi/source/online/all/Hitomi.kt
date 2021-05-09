@@ -56,9 +56,9 @@ class Hitomi(delegate: HttpSource, val context: Context) :
             artists = galleryElement.select("h2 a").map { it.text() }
             tags += artists.map { RaisedTag("artist", it, RaisedSearchMetadata.TAG_TYPE_VIRTUAL) }
 
-            input.select(".gallery-info tr").forEach {
-                val content = it.child(1)
-                when (it.child(0).text().toLowerCase()) {
+            input.select(".gallery-info tr").forEach { galleryInfoElement ->
+                val content = galleryInfoElement.child(1)
+                when (galleryInfoElement.child(0).text().toLowerCase()) {
                     "group" -> {
                         group = content.text()
                         tags += RaisedTag("group", group!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
@@ -91,9 +91,11 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                     }
                     "tags" -> {
                         tags += content.select("a").map {
-                            val ns = if (it.attr("href").startsWith("/tag/male")) "male"
-                            else if (it.attr("href").startsWith("/tag/female")) "female"
-                            else "misc"
+                            val ns = when {
+                                it.attr("href").startsWith("/tag/male") -> "male"
+                                it.attr("href").startsWith("/tag/female") -> "female"
+                                else -> "misc"
+                            }
                             RaisedTag(
                                 ns,
                                 it.text().dropLast(if (ns == "misc") 0 else 2),
