@@ -122,9 +122,16 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                     it["ap"]?.let { animePlanetId = it }
                 }
 
-                cover = kitsuId?.let {
-                    "https://media.kitsu.io/manga/poster_images/$it/large.jpg"
-                } ?: "https://i.imgur.com/6TrIues.jpg"
+                if (kitsuId?.toIntOrNull() != null) {
+                    cover = "https://media.kitsu.io/manga/poster_images/$kitsuId/large.jpg"
+                }
+                if (cover == null && !myAnimeListId.isNullOrEmpty()) {
+                    cover = "https://coverapi.orell.dev/api/v1/mal/manga/$myAnimeListId/cover"
+                }
+                if (cover == null) {
+                    cover = "https://i.imgur.com/6TrIues.jpg"
+                }
+                
 
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
 
