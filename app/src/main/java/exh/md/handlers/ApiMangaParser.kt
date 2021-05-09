@@ -252,6 +252,8 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
         }
     }
 
+    fun StringBuilder.appends(string: String) = append("$string ")
+
     private fun mapChapter(
         networkChapter: ChapterResponse,
         groups: Map<String, String>,
@@ -259,36 +261,36 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
         val chapter = SChapter.create()
         val attributes = networkChapter.data.attributes
         val key = MdUtil.chapterSuffix + networkChapter.data.id
-        val chapterName = mutableListOf<String>()
+        val chapterName = StringBuilder()
         // Build chapter name
 
         if (attributes.volume != null) {
             val vol = "Vol." + attributes.volume
-            chapterName.add(vol)
+            chapterName.appends(vol)
             // todo
             // chapter.vol = vol
         }
 
         if (attributes.chapter.isNullOrBlank().not()) {
             if (chapterName.isNotEmpty()) {
-                chapterName.add("-")
+                chapterName.appends("-")
             }
             val chp = "Ch.${attributes.chapter}"
-            chapterName.add(chp)
+            chapterName.appends(chp)
             // chapter.chapter_txt = chp
         }
 
         if (attributes.title.isNullOrBlank().not()) {
             if (chapterName.isNotEmpty()) {
-                chapterName.add("-")
+                chapterName.appends("-")
             }
-            chapterName.add(attributes.title!!)
+            chapterName.append(attributes.title!!)
             chapter.name = MdUtil.cleanString(attributes.title)
         }
 
         // if volume, chapter and title is empty its a oneshot
         if (chapterName.isEmpty()) {
-            chapterName.add("Oneshot")
+            chapterName.append("Oneshot")
         }
         /*if ((status == 2 || status == 3)) {
             if (finalChapterNumber != null) {
@@ -300,7 +302,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
             }
         }*/
 
-        val name = MdUtil.cleanString(chapterName.joinToString(" "))
+        val name = MdUtil.cleanString(chapterName.toString())
         // Convert from unix time
         val dateUpload = MdUtil.parseDate(attributes.publishAt)
 
