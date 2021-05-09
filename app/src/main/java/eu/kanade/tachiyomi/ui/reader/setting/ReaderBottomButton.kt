@@ -9,7 +9,7 @@ enum class ReaderBottomButton(val value: String, @StringRes val stringRes: Int) 
     ReadingMode("rm", R.string.viewer),
     Rotation("rot", R.string.rotation_type),
     CropBordersPager("cbp", R.string.pref_crop_borders_pager),
-    CropBordersContinuesVertical("cbc", R.string.pref_crop_borders_continues_vertical),
+    CropBordersContinuesVertical("cbc", R.string.pref_crop_borders_continuous_vertical),
     CropBordersWebtoon("cbw", R.string.pref_crop_borders_webtoon),
     // PageLayout("pl", R.string.page_layout),
     // ShiftDoublePage("sdp", R.string.shift_double_pages)
