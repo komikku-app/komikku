@@ -60,11 +60,9 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
     }
 
     suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
-        return withIOContext {
-            val response = client.newCall(mangaRequest(manga)).await()
-            val covers = getCovers(manga, forceLatestCovers)
-            ApiMangaParser(client, lang).parseToManga(manga, response, covers, sourceId)
-        }
+        val response = withIOContext { client.newCall(mangaRequest(manga)).await() }
+        val covers = withIOContext { getCovers(manga, forceLatestCovers) }
+        return ApiMangaParser(client, lang).parseToManga(manga, response, covers, sourceId)
     }
 
     fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long): Observable<SManga> {
