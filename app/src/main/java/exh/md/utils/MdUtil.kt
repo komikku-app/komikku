@@ -61,6 +61,8 @@ class MdUtil {
                 addQueryParameter("limit", "500")
                 addQueryParameter("offset", offset.toString())
                 addQueryParameter("locales[]", language)
+                addQueryParameter("order[volume]", "desc")
+                addQueryParameter("order[chapter]", "desc")
             }.build().toString()
         }
 

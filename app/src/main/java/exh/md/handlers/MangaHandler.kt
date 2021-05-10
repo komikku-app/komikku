@@ -81,6 +81,10 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
         return client.newCall(mangaFeedRequest(manga.toMangaInfo(), 0, lang))
             .asObservableSuccess()
             .map { response ->
+                if (response.code == 204) {
+                    return@map emptyList()
+                }
+
                 val chapterListResponse = response.parseAs<ChapterListResponse>(MdUtil.jsonParser)
                 val results = chapterListResponse.results.toMutableList()
 
@@ -89,11 +93,16 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
 
                 while (hasMoreResults) {
                     val offset = lastOffset + chapterListResponse.limit
-                    val newChapterListResponse = client.newCall(mangaFeedRequest(manga.toMangaInfo(), offset, lang)).execute()
-                        .parseAs<ChapterListResponse>(MdUtil.jsonParser)
-                    results.addAll(newChapterListResponse.results)
-                    hasMoreResults = newChapterListResponse.limit + newChapterListResponse.offset under newChapterListResponse.total
-                    lastOffset = newChapterListResponse.offset
+                    val newResponse = client.newCall(mangaFeedRequest(manga.toMangaInfo(), offset, lang)).execute()
+                    if (newResponse.code != 204) {
+                        val newChapterListResponse = newResponse
+                            .parseAs<ChapterListResponse>(MdUtil.jsonParser)
+                        results.addAll(newChapterListResponse.results)
+                        hasMoreResults = newChapterListResponse.limit + newChapterListResponse.offset under newChapterListResponse.total
+                        lastOffset = newChapterListResponse.offset
+                    } else {
+                        hasMoreResults = false
+                    }
                 }
                 val groupIds =
                     results.asSequence()
@@ -105,11 +114,17 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
                         .toList()
 
                 val groupMap = runCatching {
-                    groupIds.chunked(100).mapIndexed { index, ids ->
-                        val groupList = client.newCall(groupIdRequest(ids, 100 * index)).execute()
-                            .parseAs<GroupListResponse>(MdUtil.jsonParser)
-                        groupList.results.map { group -> Pair(group.data.id, group.data.attributes.name) }
-                    }.flatten().toMap()
+                    groupIds.chunked(100).flatMapIndexed { index, ids ->
+                        val groupResponse = client.newCall(groupIdRequest(ids, 100 * index)).execute()
+                        if (groupResponse.code != 204) {
+                            groupResponse
+                                .parseAs<GroupListResponse>(MdUtil.jsonParser)
+                                .results
+                                .map { group -> Pair(group.data.id, group.data.attributes.name) }
+                        } else {
+                            emptyList()
+                        }
+                    }.toMap()
                 }.getOrNull() ?: emptyMap()
 
                 ApiMangaParser(client, lang).chapterListParse(results, groupMap).map { it.toSChapter() }
@@ -118,7 +133,13 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
 
     suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
         return withIOContext {
-            val chapterListResponse = client.newCall(mangaFeedRequest(manga, 0, lang)).await().parseAs<ChapterListResponse>(MdUtil.jsonParser)
+            val response = client.newCall(mangaFeedRequest(manga, 0, lang)).await()
+
+            if (response.code == 204) {
+                return@withIOContext emptyList()
+            }
+
+            val chapterListResponse = response.parseAs<ChapterListResponse>(MdUtil.jsonParser)
             val results = chapterListResponse.results
 
             var hasMoreResults = chapterListResponse.limit + chapterListResponse.offset under chapterListResponse.total
@@ -126,10 +147,15 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
 
             while (hasMoreResults) {
                 val offset = lastOffset + chapterListResponse.limit
-                val newChapterListResponse = client.newCall(mangaFeedRequest(manga, offset, lang)).await()
-                    .parseAs<ChapterListResponse>(MdUtil.jsonParser)
-                hasMoreResults = newChapterListResponse.limit + newChapterListResponse.offset under newChapterListResponse.total
-                lastOffset = newChapterListResponse.offset
+                val newResponse = client.newCall(mangaFeedRequest(manga, offset, lang)).await()
+                if (newResponse.code != 204) {
+                    val newChapterListResponse = newResponse
+                        .parseAs<ChapterListResponse>(MdUtil.jsonParser)
+                    hasMoreResults = newChapterListResponse.limit + newChapterListResponse.offset under newChapterListResponse.total
+                    lastOffset = newChapterListResponse.offset
+                } else {
+                    hasMoreResults = false
+                }
             }
 
             val groupMap = getGroupMap(results)
@@ -139,16 +165,26 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
     }
 
     private suspend fun getGroupMap(results: List<ChapterResponse>): Map<String, String> {
-        val groupIds = results.map { chapter -> chapter.relationships }.flatten().filter { it.type == "scanlation_group" }.map { it.id }.distinct()
-        val groupMap = runCatching {
-            groupIds.chunked(100).mapIndexed { index, ids ->
-                client.newCall(groupIdRequest(ids, 100 * index)).await()
-                    .parseAs<GroupListResponse>(MdUtil.jsonParser)
-                    .results.map { group -> Pair(group.data.id, group.data.attributes.name) }
-            }.flatten().toMap()
-        }.getOrNull() ?: emptyMap()
+        val groupIds = results.asSequence()
+            .map { chapter -> chapter.relationships }
+            .flatten()
+            .filter { it.type == "scanlation_group" }
+            .map { it.id }
+            .distinct()
+            .toList()
 
-        return groupMap
+        return runCatching {
+            groupIds.chunked(100).flatMapIndexed { index, ids ->
+                val response = client.newCall(groupIdRequest(ids, 100 * index)).await()
+                if (response.code != 204) {
+                    response
+                        .parseAs<GroupListResponse>(MdUtil.jsonParser)
+                        .results.map { group -> Pair(group.data.id, group.data.attributes.name) }
+                } else {
+                    emptyList()
+                }
+            }.toMap()
+        }.getOrNull() ?: emptyMap()
     }
 
     suspend fun fetchRandomMangaId(): String {

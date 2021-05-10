@@ -43,7 +43,7 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
         Filter.Group<Status>("Status", status)
 
     private fun getStatus() = listOf(
-        Status("Onging"),
+        Status("Ongoing"),
         Status("Completed"),
         Status("Hiatus"),
         Status("Abandoned"),
@@ -65,9 +65,9 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
         Filter.Group<OriginalLanguage>("Original language", originalLanguage)
 
     private fun getOriginalLanguage() = listOf(
-        OriginalLanguage("Japanese (Manga)", "jp"),
-        OriginalLanguage("Chinese (Manhua)", "cn"),
-        OriginalLanguage("Korean (Manhwa)", "kr"),
+        OriginalLanguage("Japanese (Manga)", "ja"),
+        OriginalLanguage("Chinese (Manhua)", "zh"),
+        OriginalLanguage("Korean (Manhwa)", "ko"),
     )
 
     internal class Tag(val id: String, name: String) : Filter.TriState(name)
@@ -178,6 +178,12 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
                                 addQueryParameter(
                                     "originalLanguage[]",
                                     lang.isoCode
+                                )
+                            }
+                            if (lang.isoCode == "zh") {
+                                addQueryParameter(
+                                    "originalLanguage[]",
+                                    "zh-hk"
                                 )
                             }
                         }

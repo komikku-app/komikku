@@ -47,6 +47,10 @@ class FollowsHandler(
     suspend fun fetchFollows(page: Int): MetadataMangasPage {
         return withIOContext {
             val response = client.newCall(followsListRequest(MdUtil.mangaLimit * page - 1)).await()
+            if (response.code == 204) {
+                return@withIOContext MetadataMangasPage(emptyList(), false, emptyList())
+            }
+
             val mangaListResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
 
             if (mangaListResponse.results.isEmpty()) {
@@ -195,6 +199,10 @@ class FollowsHandler(
         return withIOContext {
             val response = client.newCall(followsListRequest(0)).await()
 
+            if (response.code == 204) {
+                return@withIOContext emptyList()
+            }
+
             val mangaListResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
             val results = mangaListResponse.results.toMutableList()
 
@@ -207,11 +215,15 @@ class FollowsHandler(
 
             while (hasMoreResults) {
                 val offset = lastOffset + mangaListResponse.limit
-                val newMangaListResponse = client.newCall(followsListRequest(offset)).await()
-                    .parseAs<MangaListResponse>(MdUtil.jsonParser)
-                results.addAll(newMangaListResponse.results)
-                hasMoreResults = newMangaListResponse.limit + newMangaListResponse.offset under newMangaListResponse.total
-                lastOffset = newMangaListResponse.offset
+                val newResponse = client.newCall(followsListRequest(offset)).await()
+                if (newResponse.code != 204) {
+                    val newMangaListResponse = newResponse.parseAs<MangaListResponse>(MdUtil.jsonParser)
+                    results.addAll(newMangaListResponse.results)
+                    hasMoreResults = newMangaListResponse.limit + newMangaListResponse.offset under newMangaListResponse.total
+                    lastOffset = newMangaListResponse.offset
+                } else {
+                    hasMoreResults = false
+                }
             }
             val statusListResponse = client.newCall(mangaStatusListRequest(results)).await().parseAs<MangaStatusListResponse>()
             followsParseMangaPage(results, statusListResponse)

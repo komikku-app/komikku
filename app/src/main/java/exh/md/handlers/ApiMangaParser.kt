@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
-import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLogE
 import exh.md.handlers.serializers.AuthorResponseList
@@ -95,12 +94,21 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
 
                 // get author/artist map ignore if they error
                 val authorMap = runCatching {
-                    val ids = (authorIds + artistIds).joinToString("&ids[]=", "?ids[]=")
-                    val response = client.newCall(GET("${MdUtil.authorUrl}$ids")).await()
-                        .parseAs<AuthorResponseList>()
-                    response.results.map {
-                        it.data.id to MdUtil.cleanString(it.data.attributes.name)
-                    }.toMap()
+                    (authorIds + artistIds).chunked(10)
+                        .flatMap { idList ->
+                            val ids = idList.joinToString("&ids[]=", "?ids[]=")
+                            val response = client.newCall(GET("${MdUtil.authorUrl}$ids")).await()
+                            if (response.code != 204) {
+                                response
+                                    .parseAs<AuthorResponseList>()
+                                    .results.map {
+                                        it.data.id to MdUtil.cleanString(it.data.attributes.name)
+                                    }
+                            } else {
+                                emptyList()
+                            }
+                        }
+                        .toMap()
                 }.getOrNull() ?: emptyMap()
 
                 authors = authorIds.mapNotNull { authorMap[it] }.dropEmpty()
@@ -132,7 +140,6 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                 if (cover == null) {
                     cover = "https://i.imgur.com/6TrIues.jpg"
                 }
-                
 
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
 
