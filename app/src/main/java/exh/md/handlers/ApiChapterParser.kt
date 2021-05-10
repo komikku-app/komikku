@@ -4,9 +4,6 @@ import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.handlers.serializers.ChapterResponse
 import exh.md.utils.MdUtil
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 
 class ApiChapterParser {
@@ -33,8 +30,8 @@ class ApiChapterParser {
     }
 
     fun externalParse(response: Response): String {
-        val json = response.parseAs<JsonObject>()
-        val external = json["data"]!!.jsonObject["pages"]!!.jsonPrimitive.content
+        val chapterResponse = response.parseAs<ChapterResponse>()
+        val external = chapterResponse.data.attributes.data.first()
         return external.substringAfterLast("/")
     }
 }

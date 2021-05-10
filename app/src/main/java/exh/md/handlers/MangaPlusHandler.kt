@@ -82,11 +82,11 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
 
         val content = image
             .map { it.toInt() }
-            .toMutableList()
+            .toIntArray()
 
         val blockSizeInBytes = keyStream.size
 
-        for ((i, value) in content.iterator().withIndex()) {
+        content.forEachIndexed { i, value ->
             content[i] = value xor keyStream[i % blockSizeInBytes]
         }
 
