@@ -20,6 +20,10 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
         return result
     }
     // SY <--
+
+    fun copy(mangas: List<SManga> = this.mangas, hasNextPage: Boolean = this.hasNextPage): MangasPage {
+        return MangasPage(mangas, hasNextPage)
+    }
 }
 
 // SY -->
