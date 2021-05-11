@@ -19,13 +19,13 @@ fun ChipGroup.setChipsExtended(items: List<String>?, onClick: (item: String) -> 
     removeAllViews()
 
     items?.forEach { item ->
-        val chip = makeSearchChip(item, onClick, onLongClick, sourceId, context)
+        val chip = context.makeSearchChip(item, onClick, onLongClick, sourceId)
         addView(chip)
     }
 }
 
-fun makeSearchChip(item: String, onClick: (item: String) -> Unit = {}, onLongClick: (item: String) -> Unit = {}, sourceId: Long, context: Context, namespace: String? = null, type: Int? = null): Chip {
-    return Chip(context).apply {
+fun Context.makeSearchChip(item: String, onClick: (item: String) -> Unit = {}, onLongClick: (item: String) -> Unit = {}, sourceId: Long, namespace: String? = null, type: Int? = null): Chip {
+    return Chip(this).apply {
         text = item
         val search = if (namespace != null) {
             SourceTagsUtil.getWrappedTag(sourceId, namespace = namespace, tag = item)

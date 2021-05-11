@@ -14,11 +14,11 @@ import java.util.Locale
 object SourceTagsUtil {
     fun getWrappedTag(sourceId: Long, namespace: String? = null, tag: String? = null, fullTag: String? = null): String? {
         return if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId in nHentaiSourceIds || sourceId in hitomiSourceIds) {
-            val parsed = if (fullTag != null) {
-                parseTag(fullTag)
-            } else if (namespace != null && tag != null) {
-                RaisedTag(namespace, tag, TAG_TYPE_DEFAULT)
-            } else null
+            val parsed = when {
+                fullTag != null -> parseTag(fullTag)
+                namespace != null && tag != null -> RaisedTag(namespace, tag, TAG_TYPE_DEFAULT)
+                else -> null
+            }
             if (parsed?.namespace != null) {
                 when (sourceId) {
                     in hitomiSourceIds -> wrapTagHitomi(parsed.namespace, parsed.name.substringBefore('|').trim())

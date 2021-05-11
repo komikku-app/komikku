@@ -135,14 +135,35 @@ class MangaInfoItemAdapter(
                         var namespaceTags: List<NamespaceTagsItem> = emptyList()
                         if (source.isEhBasedSource() && metaTags != null && metaTags.all { it.key != null }) {
                             namespaceTags = metaTags
-                                .mapValues { values -> values.value.map { makeSearchChip(it.name, controller::performSearch, controller::performGlobalSearch, source.id, itemView.context, it.namespace, it.type) } }
+                                .mapValues { values ->
+                                    values.value.map {
+                                        itemView.context.makeSearchChip(
+                                            it.name,
+                                            controller::performSearch,
+                                            controller::performGlobalSearch,
+                                            source.id,
+                                            it.namespace,
+                                            it.type
+                                        )
+                                    }
+                                }
                                 .map { NamespaceTagsItem(it.key!!, it.value) }
                         } else {
                             val genre = manga.getRaisedTags()
                             if (!genre.isNullOrEmpty()) {
                                 namespaceTags = genre
                                     .groupBy { it.namespace }
-                                    .mapValues { values -> values.value.map { makeSearchChip(it.name, controller::performSearch, controller::performGlobalSearch, source.id, itemView.context, it.namespace) } }
+                                    .mapValues { values ->
+                                        values.value.map {
+                                            itemView.context.makeSearchChip(
+                                                it.name,
+                                                controller::performSearch,
+                                                controller::performGlobalSearch,
+                                                source.id,
+                                                it.namespace
+                                            )
+                                        }
+                                    }
                                     .map { NamespaceTagsItem(it.key, it.value) }
                             }
                         }
