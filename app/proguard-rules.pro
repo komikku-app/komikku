@@ -94,6 +94,11 @@
     rx.Observable concatWith(rx.Observable);
 }
 
+# Guya
+-keepclassmembers class rx.observables.BlockingObservable {
+    *** subscribe(rx.functions.Action1);
+}
+
 # RxJava 1.1.0
 -dontwarn sun.misc.**
 
