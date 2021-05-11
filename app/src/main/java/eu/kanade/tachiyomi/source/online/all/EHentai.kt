@@ -46,6 +46,7 @@ import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
+import exh.util.awaitResponse
 import exh.util.dropBlank
 import exh.util.ignore
 import exh.util.nullIfBlank
@@ -360,11 +361,17 @@ class EHentai(
         getChapterList(manga.toMangaInfo(), throttleFunc).map { it.toSChapter() }
     })
 
-    override fun fetchPageList(chapter: SChapter) = fetchChapterPage(chapter, baseUrl + chapter.url).map {
-        it.mapIndexed { i, s ->
-            Page(i, s)
+    override fun fetchPageList(chapter: SChapter) = fetchChapterPage(chapter, baseUrl + chapter.url)
+        .map {
+            it.mapIndexed { i, s ->
+                Page(i, s)
+            }
+        }!!
+        .doOnNext { pages ->
+            if (pages.any { it.url == "https://$domain/img/509.gif" }) throw Exception(
+                "Hit page limit"
+            )
         }
-    }!!.doOnNext { pages -> if (pages.any { it.url == "https://$domain/img/509.gif" }) throw Exception("Hit page limit") }
 
     private fun fetchChapterPage(
         chapter: SChapter,
@@ -459,23 +466,23 @@ class EHentai(
 
     private fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cache: Boolean = true): Request {
         return GET(
-            page?.let {
+            if (page != null) {
                 addParam(url, "page", (page - 1).toString())
-            } ?: url,
-            additionalHeaders?.let { additionalHeadersNotNull ->
+            } else url,
+            if (additionalHeaders != null) {
                 val headers = headers.newBuilder()
-                additionalHeadersNotNull.toMultimap().forEach { (t, u) ->
+                additionalHeaders.toMultimap().forEach { (t, u) ->
                     u.forEach {
                         headers.add(t, it)
                     }
                 }
                 headers.build()
-            } ?: headers
+            } else headers
         ).let {
-            if (!cache) {
-                it.newBuilder().cacheControl(CacheControl.FORCE_NETWORK).build()
-            } else {
+            if (cache) {
                 it
+            } else {
+                it.newBuilder().cacheControl(CacheControl.FORCE_NETWORK).build()
             }
         }
     }
@@ -523,7 +530,7 @@ class EHentai(
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         val exception = Exception("Async stacktrace")
-        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).awaitResponse()
         if (response.isSuccessful) {
             // Pull to most recent
             val doc = response.asJsoup()
