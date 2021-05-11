@@ -29,7 +29,9 @@ private fun isHentaiTag(tag: String): Boolean {
         tag.contains("adult", true) ||
         tag.contains("smut", true) ||
         tag.contains("lewd", true) ||
-        tag.contains("nsfw", true)
+        tag.contains("nsfw", true) ||
+        tag.contains("erotica", true) ||
+        tag.contains("pornographic", true)
 }
 
 private fun isHentaiSource(source: String): Boolean {
