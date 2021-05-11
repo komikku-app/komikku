@@ -60,31 +60,34 @@ class MangaDexLoginHelper(val client: OkHttpClient, val preferences: Preferences
 
             val jsonString = MdUtil.jsonParser.encodeToString(loginRequest)
 
-            val postResult = client.newCall(
-                POST(
-                    MdUtil.loginUrl,
-                    Headers.Builder().build(),
-                    jsonString.toRequestBody("application/json".toMediaType())
-                )
-            ).await()
+            val postResult = runCatching {
+                client.newCall(
+                    POST(
+                        MdUtil.loginUrl,
+                        Headers.Builder().build(),
+                        jsonString.toRequestBody("application/json".toMediaType())
+                    )
+                ).await()
+            }
 
+            val response = postResult.getOrNull() ?: return@withIOContext LoginResult.Failure(postResult.exceptionOrNull())
             // if it fails to parse then login failed
             val loginResponse = try {
-                postResult.parseAs<LoginResponse>(MdUtil.jsonParser)
+                response.parseAs<LoginResponse>(MdUtil.jsonParser)
             } catch (e: SerializationException) {
                 null
             }
 
-            if (postResult.code == 200 && loginResponse != null) {
+            if (response.code == 200 && loginResponse != null) {
                 LoginResult.Success(loginResponse.token)
             } else {
-                LoginResult.Failure
+                LoginResult.Failure()
             }
         }
     }
 
     sealed class LoginResult {
-        object Failure : LoginResult()
+        data class Failure(val e: Throwable? = null) : LoginResult()
         data class Success(val token: LoginBodyToken) : LoginResult()
     }
 
@@ -93,7 +96,7 @@ class MangaDexLoginHelper(val client: OkHttpClient, val preferences: Preferences
         val password = preferences.trackPassword(mdList)
         if (username.isNullOrBlank() || password.isNullOrBlank()) {
             xLogI("No username or password stored, can't login")
-            return LoginResult.Failure
+            return LoginResult.Failure()
         }
         return login(username, password)
     }

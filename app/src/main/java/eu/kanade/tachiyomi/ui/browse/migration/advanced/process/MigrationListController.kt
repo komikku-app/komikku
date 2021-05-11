@@ -272,7 +272,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     override fun updateCount() {
         launchUI {
-            if (router.backstack.last().controller() == this@MigrationListController) {
+            if (router.backstack.lastOrNull()?.controller() == this@MigrationListController) {
                 setTitle()
             }
         }

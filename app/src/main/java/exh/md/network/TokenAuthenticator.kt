@@ -18,7 +18,6 @@ class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authent
         return if (token != null) {
             response.request.newBuilder().header("Authorization", token).build()
         } else {
-            // throw Exception("Unable to authenticate request, please re login")
             null
         }
     }
@@ -28,7 +27,7 @@ class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authent
         var validated = false
 
         runBlocking {
-            val checkToken = try {
+            val checkTokenResult = runCatching {
                 loginHelper.isAuthenticated(
                     MdUtil.getAuthHeaders(
                         Headers.Builder().build(),
@@ -36,8 +35,14 @@ class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authent
                         loginHelper.mdList
                     )
                 )
-            } catch (e: NoSessionException) {
-                this@TokenAuthenticator.xLogD("Session token does not exist")
+            }
+            val checkToken = if (checkTokenResult.isSuccess) {
+                checkTokenResult.getOrNull() ?: false
+            } else {
+                val e = checkTokenResult.exceptionOrNull()
+                if (e is NoSessionException) {
+                    this@TokenAuthenticator.xLogD("Session token does not exist")
+                }
                 false
             }
 
