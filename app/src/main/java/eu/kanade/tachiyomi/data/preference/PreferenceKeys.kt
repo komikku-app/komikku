@@ -374,4 +374,6 @@ object PreferenceKeys {
     const val forceHorizontalSeekbar = "pref_force_horz_seekbar"
 
     const val readerBottomButtons = "reader_bottom_buttons"
+
+    const val bottomBarLabels = "pref_show_bottom_bar_labels"
 }
