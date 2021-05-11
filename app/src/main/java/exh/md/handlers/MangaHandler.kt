@@ -95,7 +95,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
                     if (newResponse.code != 204) {
                         val newChapterListResponse = newResponse
                             .parseAs<ChapterListResponse>(MdUtil.jsonParser)
-                        results.addAll(newChapterListResponse.results)
+                        results += newChapterListResponse.results
                         hasMoreResults = newChapterListResponse.limit + newChapterListResponse.offset under newChapterListResponse.total
                         lastOffset = newChapterListResponse.offset
                     } else {
@@ -138,7 +138,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
             }
 
             val chapterListResponse = response.parseAs<ChapterListResponse>(MdUtil.jsonParser)
-            val results = chapterListResponse.results
+            val results = chapterListResponse.results.toMutableList()
 
             var hasMoreResults = chapterListResponse.limit + chapterListResponse.offset under chapterListResponse.total
             var lastOffset = chapterListResponse.offset
@@ -149,6 +149,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
                 if (newResponse.code != 204) {
                     val newChapterListResponse = newResponse
                         .parseAs<ChapterListResponse>(MdUtil.jsonParser)
+                    results += newChapterListResponse.results
                     hasMoreResults = newChapterListResponse.limit + newChapterListResponse.offset under newChapterListResponse.total
                     lastOffset = newChapterListResponse.offset
                 } else {
