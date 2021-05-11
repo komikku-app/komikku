@@ -19,6 +19,7 @@ import exh.md.handlers.serializers.MangaStatusResponse
 import exh.md.handlers.serializers.UpdateReadingStatus
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import exh.md.utils.mdListCall
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.util.under
 import kotlinx.serialization.encodeToString
@@ -197,34 +198,10 @@ class FollowsHandler(
      */
     suspend fun fetchAllFollows(): List<Pair<SManga, MangaDexSearchMetadata>> {
         return withIOContext {
-            val response = client.newCall(followsListRequest(0)).await()
-
-            if (response.code == 204) {
-                return@withIOContext emptyList()
+            val results = client.mdListCall<MangaResponse> {
+                followsListRequest(it)
             }
 
-            val mangaListResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
-            val results = mangaListResponse.results.toMutableList()
-
-            if (results.isEmpty()) {
-                return@withIOContext emptyList()
-            }
-
-            var hasMoreResults = mangaListResponse.limit + mangaListResponse.offset under mangaListResponse.total
-            var lastOffset = mangaListResponse.offset
-
-            while (hasMoreResults) {
-                val offset = lastOffset + mangaListResponse.limit
-                val newResponse = client.newCall(followsListRequest(offset)).await()
-                if (newResponse.code != 204) {
-                    val newMangaListResponse = newResponse.parseAs<MangaListResponse>(MdUtil.jsonParser)
-                    results += newMangaListResponse.results
-                    hasMoreResults = newMangaListResponse.limit + newMangaListResponse.offset under newMangaListResponse.total
-                    lastOffset = newMangaListResponse.offset
-                } else {
-                    hasMoreResults = false
-                }
-            }
             val statuses = results.chunked(100)
                 .map {
                     client.newCall(mangaStatusListRequest(results)).await().parseAs<MangaStatusListResponse>().statuses

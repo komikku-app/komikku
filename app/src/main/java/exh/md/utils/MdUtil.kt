@@ -3,6 +3,7 @@ package exh.md.utils
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -10,6 +11,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.log.xLogD
 import exh.md.handlers.serializers.AtHomeResponse
+import exh.md.handlers.serializers.ListCallResponse
 import exh.md.handlers.serializers.LoginBodyToken
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.network.NoSessionException
@@ -17,6 +19,7 @@ import exh.source.getMainSource
 import exh.util.floor
 import exh.util.nullIfBlank
 import exh.util.nullIfZero
+import exh.util.under
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -24,6 +27,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.jsoup.parser.Parser
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
@@ -350,4 +354,21 @@ class MdUtil {
                 .filterNot { it.id.toString() in disabledSourceIds }
         }
     }
+}
+
+suspend inline fun <reified T> OkHttpClient.mdListCall(request: (offset: Int) -> Request): List<T> {
+    val results = mutableListOf<T>()
+    var offset = 0
+
+    do {
+        val response = newCall(request(offset)).await()
+        if (response.code == 204) {
+            break
+        }
+        val mangaListResponse = response.parseAs<ListCallResponse<T>>(MdUtil.jsonParser)
+        results += mangaListResponse.results
+        offset += mangaListResponse.limit
+    } while (offset under mangaListResponse.total)
+
+    return results
 }
