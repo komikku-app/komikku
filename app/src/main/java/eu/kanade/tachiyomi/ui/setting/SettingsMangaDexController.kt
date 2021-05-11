@@ -65,12 +65,12 @@ class SettingsMangaDexController :
             entryValues = mangaDexs.map { it.id.toString() }.toTypedArray()
         }
 
-        switchPreference {
+        /*switchPreference {
             key = PreferenceKeys.mangaDexForceLatestCovers
             titleRes = R.string.mangadex_use_latest_cover
             summaryRes = R.string.mangadex_use_latest_cover_summary
             defaultValue = false
-        }
+        }*/
 
         preference {
             key = "pref_sync_mangadex_into_this"
