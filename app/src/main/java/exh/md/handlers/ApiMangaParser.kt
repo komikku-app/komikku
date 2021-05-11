@@ -138,7 +138,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                     cover = "https://coverapi.orell.dev/api/v1/mal/manga/$myAnimeListId/cover"
                 }
                 if (cover == null) {
-                    cover = "https://i.imgur.com/6TrIues.jpg"
+                    cover = "https://coverapi.orell.dev/api/v1/mdaltimage/manga/$mdUuid/cover"
                 }
 
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
