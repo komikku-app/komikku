@@ -59,7 +59,7 @@ class FollowsHandler(
 
             val hasMoreResults = mangaListResponse.limit + mangaListResponse.offset under mangaListResponse.total
             val statusListResponse = client.newCall(mangaStatusListRequest(mangaListResponse.results)).await().parseAs<MangaStatusListResponse>()
-            val results = followsParseMangaPage(mangaListResponse.results, statusListResponse)
+            val results = followsParseMangaPage(mangaListResponse.results, statusListResponse.statuses)
 
             MetadataMangasPage(results.map { it.first }, hasMoreResults, results.map { it.second })
         }
@@ -69,7 +69,7 @@ class FollowsHandler(
      * Parse follows api to manga page
      * used when multiple follows
      */
-    private fun followsParseMangaPage(response: List<MangaResponse>, statusListResponse: MangaStatusListResponse): List<Pair<SManga, MangaDexSearchMetadata>> {
+    private fun followsParseMangaPage(response: List<MangaResponse>, statuses: Map<String, String?>): List<Pair<SManga, MangaDexSearchMetadata>> {
         val comparator = compareBy<Pair<SManga, MangaDexSearchMetadata>> { it.second.followStatus }
             .thenBy { it.first.title }
 
@@ -79,7 +79,7 @@ class FollowsHandler(
                 lang,
                 useLowQualityCovers
             ).toSManga() to MangaDexSearchMetadata().apply {
-                followStatus = FollowStatus.fromDex(statusListResponse.statuses[it.data.id]).int
+                followStatus = FollowStatus.fromDex(statuses[it.data.id]).int
             }
         }.sortedWith(comparator)
     }
@@ -218,15 +218,22 @@ class FollowsHandler(
                 val newResponse = client.newCall(followsListRequest(offset)).await()
                 if (newResponse.code != 204) {
                     val newMangaListResponse = newResponse.parseAs<MangaListResponse>(MdUtil.jsonParser)
-                    results.addAll(newMangaListResponse.results)
+                    results += newMangaListResponse.results
                     hasMoreResults = newMangaListResponse.limit + newMangaListResponse.offset under newMangaListResponse.total
                     lastOffset = newMangaListResponse.offset
                 } else {
                     hasMoreResults = false
                 }
             }
-            val statusListResponse = client.newCall(mangaStatusListRequest(results)).await().parseAs<MangaStatusListResponse>()
-            followsParseMangaPage(results, statusListResponse)
+            val statuses = results.chunked(100)
+                .map {
+                    client.newCall(mangaStatusListRequest(results)).await().parseAs<MangaStatusListResponse>().statuses
+                }.fold(mutableMapOf<String, String?>()) { acc, curr ->
+                    acc.putAll(curr)
+                    acc
+                }
+
+            followsParseMangaPage(results, statuses)
         }
     }
 
