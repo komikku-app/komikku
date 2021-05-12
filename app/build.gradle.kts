@@ -24,14 +24,6 @@ if (!gradle.startParameter.taskRequests.toString().contains("Debug")) {
 
 shortcutHelper.setFilePath("./shortcuts.xml")
 
-configurations.all {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "org.jetbrains.kotlin") {
-            useVersion("1.4.32")
-        }
-    }
-}
-
 android {
     compileSdkVersion(AndroidConfig.compileSdk)
     buildToolsVersion(AndroidConfig.buildTools)
