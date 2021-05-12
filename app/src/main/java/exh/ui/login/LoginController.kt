@@ -1,5 +1,6 @@
 package exh.ui.login
 
+import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -7,13 +8,8 @@ import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
-import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
-import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
-import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
@@ -35,6 +31,8 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
     val preferenceManager: PreferencesHelper by injectLazy()
 
     val sourceManager: SourceManager by injectLazy()
+
+    private var igneous: String? = null
 
     override fun getTitle() = "ExHentai login"
 
@@ -78,12 +76,11 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
             }
 
             binding.btnIgneousCookie.setOnClickListener {
-                hideAdvancedOptions()
+                hideAdvancedOptions(this)
                 openIgneousDialog()
             }
 
-        CookieManager.getInstance().removeAllCookies {
-            launchUI {
+            CookieManager.getInstance().removeAllCookies {
                 launchUI {
                     startWebview(view)
                 }
@@ -93,7 +90,7 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
 
     fun openIgneousDialog() {
         var igneous: CharSequence? = null
-        MaterialDialog(this)
+        MaterialDialog(activity!!)
             .title(R.string.custom_igneous_cookie)
             .message(R.string.custom_igneous_cookie_message)
             .input { _, charSequence ->
