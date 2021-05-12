@@ -59,7 +59,8 @@ class FollowsHandler(
             }
 
             val hasMoreResults = mangaListResponse.limit + mangaListResponse.offset under mangaListResponse.total
-            val statusListResponse = client.newCall(mangaStatusListRequest(mangaListResponse.results)).await().parseAs<MangaStatusListResponse>()
+            val statusListResponse = client.newCall(mangaStatusListRequest()).await()
+                .parseAs<MangaStatusListResponse>()
             val results = followsParseMangaPage(mangaListResponse.results, statusListResponse.statuses)
 
             MetadataMangasPage(results.map { it.first }, hasMoreResults, results.map { it.second })
@@ -202,13 +203,8 @@ class FollowsHandler(
                 followsListRequest(it)
             }
 
-            val statuses = results.chunked(100)
-                .map {
-                    client.newCall(mangaStatusListRequest(results)).await().parseAs<MangaStatusListResponse>().statuses
-                }.fold(mutableMapOf<String, String?>()) { acc, curr ->
-                    acc.putAll(curr)
-                    acc
-                }
+            val statuses = client.newCall(mangaStatusListRequest()).await()
+                .parseAs<MangaStatusListResponse>().statuses
 
             followsParseMangaPage(results, statuses)
         }
@@ -233,7 +229,13 @@ class FollowsHandler(
         }
     }
 
-    private fun mangaStatusListRequest(mangaListResponse: List<MangaResponse>): Request {
-        return GET(MdUtil.mangaStatus + "/" + mangaListResponse.joinToString("&ids[]=", "?ids[]=") { it.data.id }, MdUtil.getAuthHeaders(headers, preferences, mdList), CacheControl.FORCE_NETWORK)
+    private fun mangaStatusListRequest(status: FollowStatus? = null): Request {
+        val mangaStatusUrl = MdUtil.mangaStatus.toHttpUrl().newBuilder()
+
+        if (status != null) {
+            mangaStatusUrl.addQueryParameter("status", status.name.toLowerCase(Locale.US))
+        }
+
+        return GET(mangaStatusUrl.build().toString(), MdUtil.getAuthHeaders(headers, preferences, mdList), CacheControl.FORCE_NETWORK)
     }
 }
