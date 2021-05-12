@@ -66,28 +66,35 @@
                             style="@style/Widget.AppCompat.Button.Borderless"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Recheck login status" />
+                            android:text="@string/recheck_login_status" />
 
                         <Button
                             android:id="@+id/btn_alt_login"
                             style="@style/Widget.AppCompat.Button.Borderless"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Alternative login page" />
+                            android:text="@string/alternative_login_page" />
 
                         <Button
                             android:id="@+id/btn_skip_restyle"
                             style="@style/Widget.AppCompat.Button.Borderless"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Skip page restyling" />
+                            android:text="@string/skip_page_restyling" />
+
+                        <Button
+                            android:id="@+id/btn_igneous_cookie"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/custom_igneous_cookie" />
 
                         <Button
                             android:id="@+id/btn_close"
                             style="@style/Widget.AppCompat.Button.Borderless"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Close" />
+                            android:text="@android:string/cancel" />
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -131,7 +138,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Advanced" />
+                    android:text="@string/pref_category_advanced" />
 
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>

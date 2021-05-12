@@ -116,6 +116,13 @@
     <string name="eh_settings_uploading_to_server_message">Please wait, this may take some time…</string>
     <string name="eh_settings_out_of_slots_error">You are out of profile slots on %1$s, please delete a profile!</string>
 
+    <!-- EH Settings Login Activity -->
+    <string name="recheck_login_status">Recheck login status</string>
+    <string name="alternative_login_page">Alternative login page</string>
+    <string name="skip_page_restyling">Skip page restyling</string>
+    <string name="custom_igneous_cookie">Custom igneous cookie</string>
+    <string name="custom_igneous_cookie_message">Some users cannot access ExHentai the normal way, and have to pass in a specific igneous cookie value, this option is for those users.</string>
+
     <!-- Advanced Settings -->
     <string name="developer_tools">Developer tools</string>
     <string name="toggle_hentai_features">Enable integrated hentai features</string>
