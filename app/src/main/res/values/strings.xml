@@ -817,6 +817,13 @@ z
     <string name="invalid_repo_name">Invalid category name</string>
     <string name="repo_source">Repo source</string>
 
+    <!-- EH Settings Login Activity -->
+    <string name="recheck_login_status">Recheck login status</string>
+    <string name="alternative_login_page">Alternative login page</string>
+    <string name="skip_page_restyling">Skip page restyling</string>
+    <string name="custom_igneous_cookie">Custom igneous cookie</string>
+    <string name="custom_igneous_cookie_message">Some users cannot access ExHentai the normal way, and have to pass in a specific igneous cookie value, this option is for those users.</string>
+
     <!-- Anime -->
     <string name="resolution_selection_title">Quality</string>
     <string name="episodes_tab_title">Episodes</string>

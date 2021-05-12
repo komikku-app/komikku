@@ -7,6 +7,14 @@ import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.input.input
+import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
 import eu.kanade.tachiyomi.source.SourceManager
@@ -69,12 +77,35 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
                 binding.webview.loadUrl("https://forums.e-hentai.org/index.php?act=Login&$PARAM_SKIP_INJECT=true")
             }
 
-            CookieManager.getInstance().removeAllCookies {
+            binding.btnIgneousCookie.setOnClickListener {
+                hideAdvancedOptions()
+                openIgneousDialog()
+            }
+
+        CookieManager.getInstance().removeAllCookies {
+            launchUI {
                 launchUI {
                     startWebview(view)
                 }
             }
         }
+    }
+
+    fun openIgneousDialog() {
+        var igneous: CharSequence? = null
+        MaterialDialog(this)
+            .title(R.string.custom_igneous_cookie)
+            .message(R.string.custom_igneous_cookie_message)
+            .input { _, charSequence ->
+                igneous = charSequence
+            }
+            .positiveButton(android.R.string.ok) {
+                if (!igneous.isNullOrBlank()) {
+                    this.igneous = igneous?.toString()?.trim()
+                }
+            }
+            .negativeButton(android.R.string.cancel)
+            .show()
     }
 
     private fun hideAdvancedOptions(view: View) {
@@ -153,7 +184,7 @@ class LoginController : NucleusController<EhActivityLoginBinding, LoginPresenter
                 when (it.name.toLowerCase()) {
                     MEMBER_ID_COOKIE -> memberId = it.value
                     PASS_HASH_COOKIE -> passHash = it.value
-                    IGNEOUS_COOKIE -> igneous = it.value
+                    IGNEOUS_COOKIE -> igneous = this.igneous ?: it.value
                 }
             }
 
