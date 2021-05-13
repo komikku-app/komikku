@@ -102,7 +102,7 @@ import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import exh.log.xLogD
-import exh.md.similar.ui.MangaDexSimilarController
+import exh.md.similar.MangaDexSimilarController
 import exh.metadata.metadata.base.FlatMetadata
 import exh.recs.RecommendsController
 import exh.source.MERGED_SOURCE_ID
@@ -767,7 +767,7 @@ class MangaController :
     // AZ -->
     fun openRecommends() {
         val source = presenter.source.getMainSource()
-        if (source is MangaDex && preferences.mangadexSimilarEnabled().get()) {
+        if (source is MangaDex) {
             MaterialDialog(activity!!)
                 .title(R.string.az_recommends)
                 .listItemsSingleChoice(

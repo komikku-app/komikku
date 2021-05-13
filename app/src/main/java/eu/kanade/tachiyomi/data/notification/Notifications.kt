@@ -74,15 +74,6 @@ object Notifications {
     const val CHANNEL_INCOGNITO_MODE = "incognito_mode_channel"
     const val ID_INCOGNITO_MODE = -701
 
-    // SY -->
-    /**
-     * Notification channel and ids used for backup and restore.
-     */
-    const val CHANNEL_SIMILAR = "similar_channel"
-    const val ID_SIMILAR_PROGRESS = -901
-    const val ID_SIMILAR_COMPLETE = -902
-    // SY <--
-
     private val deprecatedChannels = listOf(
         "downloader_channel",
         "backup_restore_complete_channel"
@@ -174,14 +165,7 @@ object Notifications {
                 CHANNEL_INCOGNITO_MODE,
                 context.getString(R.string.pref_incognito_mode),
                 NotificationManager.IMPORTANCE_LOW
-            ),
-            NotificationChannel(
-                CHANNEL_SIMILAR,
-                context.getString(R.string.similar_manga),
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                setShowBadge(false)
-            }
+            )
         ).forEach(context.notificationManager::createNotificationChannel)
 
         // Delete old notification channels

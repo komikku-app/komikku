@@ -26,7 +26,6 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.notificationManager
 import eu.kanade.tachiyomi.util.system.toast
-import exh.md.similar.SimilarUpdateService
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -111,9 +110,6 @@ class NotificationReceiver : BroadcastReceiver() {
                     "text/plain",
                     intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
                 )
-            // SY -->
-            ACTION_CANCEL_SIMILAR_UPDATE -> cancelSimilarUpdate(context)
-            // SY <--
         }
     }
 
@@ -255,18 +251,6 @@ class NotificationReceiver : BroadcastReceiver() {
         }
     }
 
-    // SY -->
-    /**
-     * Method called when user wants to stop a similar manga update
-     *
-     * @param context context of application
-     */
-    private fun cancelSimilarUpdate(context: Context) {
-        SimilarUpdateService.stop(context)
-        Handler().post { dismissNotification(context, Notifications.ID_SIMILAR_PROGRESS) }
-    }
-    // SY <--
-
     companion object {
         private const val NAME = "NotificationReceiver"
 
@@ -298,11 +282,6 @@ class NotificationReceiver : BroadcastReceiver() {
         private const val EXTRA_CHAPTER_ID = "$ID.$NAME.EXTRA_CHAPTER_ID"
         private const val EXTRA_CHAPTER_URL = "$ID.$NAME.EXTRA_CHAPTER_URL"
         private const val EXTRA_IS_LEGACY_BACKUP = "$ID.$NAME.EXTRA_IS_LEGACY_BACKUP"
-
-        // Sy -->
-        // Called to cancel similar manga update.
-        private const val ACTION_CANCEL_SIMILAR_UPDATE = "$ID.$NAME.CANCEL_SIMILAR_UPDATE"
-        // SY <--
 
         /**
          * Returns a [PendingIntent] that resumes the download of a chapter
@@ -572,20 +551,5 @@ class NotificationReceiver : BroadcastReceiver() {
             }
             return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
-
-        // SY -->
-        /**
-         * Returns [PendingIntent] that starts a service which stops the similar update
-         *
-         * @param context context of application
-         * @return [PendingIntent]
-         */
-        internal fun cancelSimilarUpdatePendingBroadcast(context: Context): PendingIntent {
-            val intent = Intent(context, NotificationReceiver::class.java).apply {
-                action = ACTION_CANCEL_SIMILAR_UPDATE
-            }
-            return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        }
-        // SY <--
     }
 }

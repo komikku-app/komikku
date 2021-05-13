@@ -327,12 +327,6 @@ object PreferenceKeys {
 
     const val mangaDexForceLatestCovers = "manga_dex_force_latest_covers"
 
-    const val mangadexSimilarEnabled = "pref_related_show_tab_key"
-
-    const val mangadexSimilarUpdateInterval = "related_update_interval"
-
-    const val mangadexSimilarOnlyOverWifi = "pref_simular_only_over_wifi_key"
-
     const val mangadexSyncToLibraryIndexes = "pref_mangadex_sync_to_library_indexes"
 
     const val preferredMangaDexId = "preferred_mangaDex_id"

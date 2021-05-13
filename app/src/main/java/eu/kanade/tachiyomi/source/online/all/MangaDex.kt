@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -242,8 +241,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return MangaHandler(baseHttpClient, headers, mdLang.lang).fetchRandomMangaId()
     }
 
-    suspend fun fetchMangaSimilar(manga: Manga): MangasPage {
-        return SimilarHandler(preferences, useLowQualityThumbnail()).fetchSimilar(manga)
+    suspend fun getMangaSimilar(manga: MangaInfo): MangasPage {
+        return SimilarHandler(baseHttpClient, mdLang.lang, preferences, useLowQualityThumbnail()).getSimilar(manga)
     }
 
     /*private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =

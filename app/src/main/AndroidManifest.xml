@@ -190,10 +190,6 @@
 
         <!-- EH -->
         <service
-            android:name="exh.md.similar.SimilarUpdateService"
-            android:exported="false" />
-
-        <service
             android:name="exh.eh.EHentaiUpdateWorker"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true" />

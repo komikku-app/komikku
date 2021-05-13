@@ -42,8 +42,6 @@ class MdUtil {
         const val cdnUrl = "https://mangadex.org" // "https://s0.mangadex.org"
         const val baseUrl = "https://mangadex.org"
         const val apiUrl = "https://api.mangadex.org"
-        const val apiUrlCdnCache = "https://cdn.statically.io/gh/goldbattle/MangadexRecomendations/master/output/api/"
-        const val apiUrlCache = "https://raw.githubusercontent.com/goldbattle/MangadexRecomendations/master/output/api/"
         const val imageUrlCacheNotFound = "https://cdn.statically.io/img/raw.githubusercontent.com/CarlosEsco/Neko/master/.github/manga_cover_not_found.png"
         const val atHomeUrl = "$apiUrl/at-home/server"
         const val chapterUrl = "$apiUrl/chapter/"
@@ -69,6 +67,10 @@ class MdUtil {
                 addQueryParameter("order[chapter]", "desc")
             }.build().toString()
         }
+
+        const val similarCache = "https://raw.githubusercontent.com/goldbattle/MangadexRecomendations/master/output/api/"
+        const val similarCacheCdn = "https://cdn.statically.io/gh/goldbattle/MangadexRecomendations/master/output/api/"
+        const val similarBaseApi = "https://api.similarmanga.com/similar/"
 
         const val groupSearchUrl = "$baseUrl/groups/0/1/"
         const val apiCovers = "/covers"

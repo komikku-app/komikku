@@ -1,4 +1,4 @@
-package exh.md.similar.ui
+package exh.md.similar
 
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga

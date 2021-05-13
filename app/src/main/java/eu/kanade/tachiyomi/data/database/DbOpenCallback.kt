@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.data.database.tables.HistoryTable
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.database.tables.TrackTable
-import exh.md.similar.sql.tables.SimilarTable
 import exh.merged.sql.tables.MergedTable
 import exh.metadata.sql.tables.SearchMetadataTable
 import exh.metadata.sql.tables.SearchTagTable
@@ -25,7 +24,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = /* SY --> */ 6 /* SY <-- */
+        const val DATABASE_VERSION = /* SY --> */ 7 /* SY <-- */
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -40,7 +39,6 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         execSQL(SearchTagTable.createTableQuery)
         execSQL(SearchTitleTable.createTableQuery)
         execSQL(MergedTable.createTableQuery)
-        execSQL(SimilarTable.createTableQuery)
         // SY <--
 
         // DB indexes
@@ -57,7 +55,6 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         execSQL(SearchTitleTable.createMangaIdIndexQuery)
         execSQL(SearchTitleTable.createTitleIndexQuery)
         execSQL(MergedTable.createIndexQuery)
-        execSQL(SimilarTable.createMangaIdIndexQuery)
         // SY <--
     }
 
@@ -74,12 +71,15 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
             db.execSQL(MergedTable.createTableQuery)
             db.execSQL(MergedTable.createIndexQuery)
         }
-        if (oldVersion < 5) {
+        /*if (oldVersion < 5) {
             db.execSQL(SimilarTable.createTableQuery)
             db.execSQL(SimilarTable.createMangaIdIndexQuery)
-        }
+        }*/
         if (oldVersion < 6) {
             db.execSQL(MangaTable.addFilteredScanlators)
+        }
+        if (oldVersion < 7) {
+            db.execSQL("DROP TABLE IF EXISTS manga_related")
         }
     }
 

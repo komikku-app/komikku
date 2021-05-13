@@ -1,4 +1,4 @@
-package exh.md.similar.ui
+package exh.md.similar
 
 import android.os.Bundle
 import android.view.Menu
