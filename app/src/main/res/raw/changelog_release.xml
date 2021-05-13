@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.6.4-AZ" changeDate="">
+        <changelogtext>Fixed library update stopping halfway when an error is thrown fetching chapters</changelogtext>
+        <changelogtext>Added 1.x extension support</changelogtext>
+        <changelogtext>Added "Download all unread" and similar options when long pressing manga in library</changelogtext>
+        <changelogtext>Added smoothie theme (you really dont want to use it though, it's pink and yellow)</changelogtext>
+        <changelogtext>Fixed some bug with mangaplus</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.6.3-AZ" changeDate="">
         <changelogtext>Whoops, this is a hotfix patch</changelogtext>
         <changelogtext>Fixed crash when creating saved searches</changelogtext>

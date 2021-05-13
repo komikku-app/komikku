@@ -1,6 +1,5 @@
 package exh.ui.login
 
-import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
