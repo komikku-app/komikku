@@ -43,7 +43,8 @@ class SourceFilterSheet(
         // SY -->
         searches = searches,
         source = source,
-        controller = controller
+        controller = controller,
+        dismissSheet = ::dismiss
         // SY <--
     )
     private val sheetBehavior: BottomSheetBehavior<*>
@@ -93,7 +94,8 @@ class SourceFilterSheet(
         // SY -->
         searches: List<EXHSavedSearch> = emptyList(),
         source: CatalogueSource? = null,
-        controller: BaseController<*>? = null
+        controller: BaseController<*>? = null,
+        dismissSheet: (() -> Unit)? = null
         // SY <--
     ) :
         SimpleNavigationView(context, attrs) {
@@ -126,7 +128,7 @@ class SourceFilterSheet(
             // SY -->
             val mainSource = source?.getMainSource()
             if (mainSource is BrowseSourceFilterHeader && controller != null) {
-                adapters += mainSource.getFilterHeader(controller)
+                adapters += mainSource.getFilterHeader(controller) { dismissSheet?.invoke() }
             }
             adapters += savedSearchesAdapter
             adapters += adapter

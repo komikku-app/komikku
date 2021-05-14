@@ -234,8 +234,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, useLowQualityThumbnail(), mdList).updateFollowStatus(mangaID, followStatus)
     }
 
-    override fun getFilterHeader(controller: BaseController<*>): MangaDexFabHeaderAdapter {
-        return MangaDexFabHeaderAdapter(controller, this)
+    override fun getFilterHeader(controller: BaseController<*>, onClick: () -> Unit): MangaDexFabHeaderAdapter {
+        return MangaDexFabHeaderAdapter(controller, this, onClick)
     }
 
     override suspend fun fetchRandomMangaUrl(): String {
@@ -246,7 +246,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return SimilarHandler(baseHttpClient, mdLang.lang, preferences, useLowQualityThumbnail()).getSimilar(manga)
     }
 
-    //todo remove when mangadex gets it cover api
+    // todo remove when mangadex gets it cover api
     override fun fetchSearchManga(
         page: Int,
         query: String,

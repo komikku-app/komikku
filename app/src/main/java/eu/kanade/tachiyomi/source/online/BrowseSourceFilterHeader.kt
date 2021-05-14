@@ -5,5 +5,5 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 
 interface BrowseSourceFilterHeader : CatalogueSource {
-    fun getFilterHeader(controller: BaseController<*>): RecyclerView.Adapter<*>
+    fun getFilterHeader(controller: BaseController<*>, onClick: () -> Unit): RecyclerView.Adapter<*>
 }

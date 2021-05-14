@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 
-class MangaDexFabHeaderAdapter(val controller: BaseController<*>, val source: CatalogueSource) :
+class MangaDexFabHeaderAdapter(val controller: BaseController<*>, val source: CatalogueSource, val onClick: () -> Unit) :
     RecyclerView.Adapter<MangaDexFabHeaderAdapter.SavedSearchesViewHolder>() {
 
     private lateinit var binding: SourceFilterMangadexHeaderBinding
@@ -36,6 +36,7 @@ class MangaDexFabHeaderAdapter(val controller: BaseController<*>, val source: Ca
         fun bind() {
             binding.mangadexFollows.setOnClickListener {
                 controller.router.replaceTopController(MangaDexFollowsController(source).withFadeTransaction())
+                onClick()
             }
             binding.mangadexRandom.clicks()
                 .onEach {
@@ -43,6 +44,7 @@ class MangaDexFabHeaderAdapter(val controller: BaseController<*>, val source: Ca
                         (source as? RandomMangaSource)?.fetchRandomMangaUrl()
                     }
                     controller.router.replaceTopController(BrowseSourceController(source, randomMangaUrl).withFadeTransaction())
+                    onClick()
                 }.launchIn(controller.viewScope)
         }
     }
