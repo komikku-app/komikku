@@ -25,12 +25,10 @@ import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
-import com.google.android.material.bottomnavigation.LabelVisibilityMode.LABEL_VISIBILITY_LABELED
-import com.google.android.material.bottomnavigation.LabelVisibilityMode.LABEL_VISIBILITY_SELECTED
+import com.google.android.material.navigation.NavigationBarView
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys.bottomBarLabels
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
@@ -85,7 +83,7 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
     }
 
     lateinit var tabAnimator: ViewHeightAnimator
-    private lateinit var bottomNavAnimator: ViewHeightAnimator
+    private var bottomNavAnimator: ViewHeightAnimator? = null
 
     private var isConfirmingExit: Boolean = false
     private var isHandlingShortcut: Boolean = false
@@ -137,7 +135,7 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
                 margin()
             }
         }
-        binding.bottomNav.applyInsetter {
+        binding.bottomNav?.applyInsetter {
             type(navigationBars = true) {
                 padding()
             }
@@ -159,23 +157,26 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         }
 
         tabAnimator = ViewHeightAnimator(binding.tabs, 0L)
-        bottomNavAnimator = ViewHeightAnimator(binding.bottomNav)
 
-        // If bottom nav is hidden, make it visible again when the app bar is expanded
-        binding.appbar.addOnOffsetChangedListener(
-            AppBarLayout.OnOffsetChangedListener { _, verticalOffset ->
-                if (verticalOffset == 0) {
-                    showBottomNav(true)
+        if (binding.bottomNav != null) {
+            bottomNavAnimator = ViewHeightAnimator(binding.bottomNav!!)
+
+            // If bottom nav is hidden, make it visible again when the app bar is expanded
+            binding.appbar.addOnOffsetChangedListener(
+                AppBarLayout.OnOffsetChangedListener { _, verticalOffset ->
+                    if (verticalOffset == 0) {
+                        showNav(true)
+                    }
                 }
-            }
-        )
+            )
 
-        // Set behavior of bottom nav
-        preferences.hideBottomBar()
-            .asImmediateFlow { setBottomNavBehaviorOnScroll() }
-            .launchIn(lifecycleScope)
+            // Set behavior of bottom nav
+            preferences.hideBottomBar()
+                .asImmediateFlow { setBottomNavBehaviorOnScroll() }
+                .launchIn(lifecycleScope)
+        }
 
-        binding.bottomNav.setOnNavigationItemSelectedListener { item ->
+        nav.setOnItemSelectedListener { item ->
             val id = item.itemId
 
             val currentRoot = router.backstack.firstOrNull()
@@ -318,9 +319,9 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
     private fun setExtensionsBadge() {
         val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
-            binding.bottomNav.getOrCreateBadge(R.id.nav_browse).number = updates
+            nav.getOrCreateBadge(R.id.nav_browse).number = updates
         } else {
-            binding.bottomNav.removeBadge(R.id.nav_browse)
+            nav.removeBadge(R.id.nav_browse)
         }
     }
 
@@ -412,7 +413,7 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         super.onDestroy()
 
         // Binding sometimes isn't actually instantiated yet somehow
-        binding?.bottomNav.setOnNavigationItemSelectedListener(null)
+        nav.setOnItemSelectedListener(null)
         binding?.toolbar.setNavigationOnClickListener(null)
     }
 
@@ -447,7 +448,7 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
 
     fun setSelectedNavItem(itemId: Int) {
         if (!isFinishing) {
-            binding.bottomNav.selectedItemId = itemId
+            nav.selectedItemId = itemId
         }
     }
 
@@ -469,11 +470,11 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         binding.appbar.setExpanded(true)
 
         if ((from == null || from is RootController) && to !is RootController) {
-            showBottomNav(visible = false, collapse = true)
+            showNav(visible = false, collapse = true)
         }
         if (to is RootController) {
             // Always show bottom nav again when returning to a RootController
-            showBottomNav(visible = true, collapse = from !is RootController)
+            showNav(visible = true, collapse = from !is RootController)
         }
 
         if (from is TabbedController) {
@@ -509,25 +510,32 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         }
     }
 
-    fun showBottomNav(visible: Boolean, collapse: Boolean = false) {
-        val layoutParams = binding.bottomNav.layoutParams as CoordinatorLayout.LayoutParams
-        val bottomViewNavigationBehavior = layoutParams.behavior as? HideBottomViewOnScrollBehavior
-        if (visible) {
-            if (collapse) {
-                bottomNavAnimator.expand()
-                val navUpdates = binding.bottomNav.menu.findItem(R.id.nav_updates)
-                navUpdates.isVisible = !preferences.hideUpdatesButton().get()
-                val navHistory = binding.bottomNav.menu.findItem(R.id.nav_history)
-                navHistory.isVisible = !preferences.hideHistoryButton().get()
-            }
+    fun showNav(visible: Boolean, collapse: Boolean = false) {
+        binding.bottomNav?.let {
+            val layoutParams = it.layoutParams as CoordinatorLayout.LayoutParams
+            val bottomViewNavigationBehavior =
+                layoutParams.behavior as? HideBottomViewOnScrollBehavior
+            if (visible) {
+                if (collapse) {
+                    bottomNavAnimator?.expand()
+                    val navUpdates = it.menu.findItem(R.id.nav_updates)
+                    navUpdates.isVisible = !preferences.hideUpdatesButton().get()
+                    val navHistory = it.menu.findItem(R.id.nav_history)
+                    navHistory.isVisible = !preferences.hideHistoryButton().get()
+                }
 
-            bottomViewNavigationBehavior?.slideUp(binding.bottomNav)
-        } else {
-            if (collapse) {
-                bottomNavAnimator.collapse()
-            }
+                bottomViewNavigationBehavior?.slideUp(it)
+            } else {
+                if (collapse) {
+                    bottomNavAnimator?.collapse()
+                }
 
-            bottomViewNavigationBehavior?.slideDown(binding.bottomNav)
+                bottomViewNavigationBehavior?.slideDown(it)
+            }
+        }
+
+        binding.sideNav?.let {
+            it.isVisible = visible
         }
     }
 
@@ -550,9 +558,9 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
     }
 
     private fun setBottomNavBehaviorOnScroll() {
-        showBottomNav(visible = true)
+        showNav(visible = true)
 
-        binding.bottomNav.updateLayoutParams<CoordinatorLayout.LayoutParams> {
+        binding.bottomNav?.updateLayoutParams<CoordinatorLayout.LayoutParams> {
             behavior = when {
                 preferences.hideBottomBar().get() -> HideBottomViewOnScrollBehavior<View>()
                 else -> null
@@ -560,11 +568,16 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         }
     }
 
+    private val nav: NavigationBarView
+        get() = binding.bottomNav ?: binding.sideNav!!
+
     private fun setBottomNavLabelVisibility() {
-        if (preferences.bottomBarLabels().get()) {
-            binding.bottomNav.labelVisibilityMode = LABEL_VISIBILITY_LABELED
-        } else {
-            binding.bottomNav.labelVisibilityMode = LABEL_VISIBILITY_SELECTED
+        binding.bottomNav?.let {
+            if (preferences.bottomBarLabels().get()) {
+                it.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED
+            } else {
+                it.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_SELECTED
+            }
         }
     }
 
