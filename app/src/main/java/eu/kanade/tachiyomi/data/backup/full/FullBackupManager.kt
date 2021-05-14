@@ -12,6 +12,8 @@ import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CUST
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_CUSTOM_INFO_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_HISTORY
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_HISTORY_MASK
+import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_READ_MANGA
+import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_READ_MANGA_MASK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_TRACK
 import eu.kanade.tachiyomi.data.backup.BackupCreateService.Companion.BACKUP_TRACK_MASK
 import eu.kanade.tachiyomi.data.backup.full.models.Backup
@@ -64,7 +66,11 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         var backup: Backup? = null
 
         databaseHelper.inTransaction {
-            val databaseManga = getFavoriteManga() /* SY --> */ + getReadManga() + getMergedManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY <-- */
+            val databaseManga = getFavoriteManga() /* SY --> */ + if (flags and BACKUP_READ_MANGA_MASK == BACKUP_READ_MANGA) {
+                getReadManga()
+            } else {
+                emptyList()
+            } + getMergedManga() /* SY <-- */
 
             backup = Backup(
                 backupManga(databaseManga, flags),

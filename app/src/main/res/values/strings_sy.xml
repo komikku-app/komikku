@@ -202,6 +202,7 @@
 
     <!-- Backup settings -->
     <string name="custom_manga_info">Custom manga info</string>
+    <string name="all_read_manga">All read manga</string>
 
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Save Chapters as CBZ</string>

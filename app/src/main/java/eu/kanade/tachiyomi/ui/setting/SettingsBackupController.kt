@@ -278,7 +278,8 @@ class SettingsBackupController : SettingsController() {
                 R.string.track,
                 R.string.history,
                 // SY -->
-                R.string.custom_manga_info
+                R.string.custom_manga_info,
+                R.string.all_read_manga
                 // SY <--
             )
                 .map { activity.getString(it) }
@@ -289,7 +290,7 @@ class SettingsBackupController : SettingsController() {
                 .listItemsMultiChoice(
                     items = options,
                     disabledIndices = intArrayOf(0),
-                    initialSelection = intArrayOf(0, 1, 2, 3, 4 /* SY --> */, 5 /* SY <-- */)
+                    initialSelection = intArrayOf(0, 1, 2, 3, 4 /* SY --> */, 5, 6 /* SY <-- */)
                 ) { _, positions, _ ->
                     var flags = 0
                     for (i in 1 until positions.size) {
@@ -300,6 +301,7 @@ class SettingsBackupController : SettingsController() {
                             4 -> flags = flags or BackupCreateService.BACKUP_HISTORY
                             // SY -->
                             5 -> flags = flags or BackupCreateService.BACKUP_CUSTOM_INFO
+                            6 -> flags = flags or BackupCreateService.BACKUP_READ_MANGA
                             // SY <--
                         }
                     }

@@ -115,7 +115,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
         // SY <--
 
         databaseHelper.inTransaction {
-            val mangas = getFavoriteManga()/* SY --> */.filterNot { it.source == MERGED_SOURCE_ID } + getMergedManga().filterNot { it.source == MERGED_SOURCE_ID } /* SY <-- */
+            val mangas = getFavoriteManga()/* SY --> */.filterNot { it.source == MERGED_SOURCE_ID } + getMergedManga() /* SY <-- */
 
             val extensions: MutableSet<String> = mutableSetOf()
 
