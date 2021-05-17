@@ -24,7 +24,7 @@ data class LoginBodyToken(val session: String, val refresh: String)
  * Response after logout
  */
 @Serializable
-data class LogoutResponse(val result: String)
+data class ResultResponse(val result: String)
 
 /**
  * Check if session token is valid

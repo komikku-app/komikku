@@ -44,7 +44,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
     // var maxChapterNumber: Int? = null
 
     override fun createMangaInfo(manga: MangaInfo): MangaInfo {
-        val key = mdUuid?.let { "/manga/$it" }
+        val key = mdUuid?.let { MdUtil.buildMangaUrl(it) }
 
         val title = title
 

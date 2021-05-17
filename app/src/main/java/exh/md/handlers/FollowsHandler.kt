@@ -16,6 +16,7 @@ import exh.md.handlers.serializers.MangaListResponse
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.handlers.serializers.MangaStatusListResponse
 import exh.md.handlers.serializers.MangaStatusResponse
+import exh.md.handlers.serializers.ResultResponse
 import exh.md.handlers.serializers.UpdateReadingStatus
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
@@ -38,7 +39,6 @@ class FollowsHandler(
     val headers: Headers,
     val preferences: PreferencesHelper,
     private val lang: String,
-    private val useLowQualityCovers: Boolean,
     private val mdList: MdList
 ) {
 
@@ -78,8 +78,7 @@ class FollowsHandler(
         return response.map {
             MdUtil.createMangaEntry(
                 it,
-                lang,
-                useLowQualityCovers
+                lang
             ).toSManga() to MangaDexSearchMetadata().apply {
                 followStatus = FollowStatus.fromDex(statuses[it.data.id]).int
             }
@@ -135,7 +134,9 @@ class FollowsHandler(
                     jsonString.toRequestBody("application/json".toMediaType())
                 )
             ).await()
-            postResult.isSuccessful
+
+            val body = postResult.parseAs<ResultResponse>(MdUtil.jsonParser)
+            body.result == "ok"
         }
     }
 

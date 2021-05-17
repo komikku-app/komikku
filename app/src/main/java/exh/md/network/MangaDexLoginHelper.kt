@@ -12,8 +12,8 @@ import exh.md.handlers.serializers.CheckTokenResponse
 import exh.md.handlers.serializers.LoginBodyToken
 import exh.md.handlers.serializers.LoginRequest
 import exh.md.handlers.serializers.LoginResponse
-import exh.md.handlers.serializers.LogoutResponse
 import exh.md.handlers.serializers.RefreshTokenRequest
+import exh.md.handlers.serializers.ResultResponse
 import exh.md.utils.MdUtil
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
@@ -78,7 +78,7 @@ class MangaDexLoginHelper(val client: OkHttpClient, val preferences: Preferences
                 null
             }
 
-            if (response.code == 200 && loginResponse != null) {
+            if (response.code == 200 && loginResponse != null && loginResponse.result == "ok") {
                 LoginResult.Success(loginResponse.token)
             } else {
                 LoginResult.Failure()
@@ -103,7 +103,7 @@ class MangaDexLoginHelper(val client: OkHttpClient, val preferences: Preferences
 
     suspend fun logout(authHeaders: Headers): Boolean {
         val response = client.newCall(GET(MdUtil.logoutUrl, authHeaders, CacheControl.FORCE_NETWORK)).await()
-        val body = response.parseAs<LogoutResponse>(MdUtil.jsonParser)
+        val body = response.parseAs<ResultResponse>(MdUtil.jsonParser)
         return body.result == "ok"
     }
 }

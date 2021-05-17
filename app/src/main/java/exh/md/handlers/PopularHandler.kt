@@ -18,7 +18,7 @@ import rx.Observable
 /**
  * Returns the latest manga from the updates url since it actually respects the users settings
  */
-class PopularHandler(val client: OkHttpClient, private val headers: Headers, private val lang: String, private val useLowQualityCovers: Boolean) {
+class PopularHandler(val client: OkHttpClient, private val headers: Headers, private val lang: String) {
 
     fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return client.newCall(popularMangaRequest(page))
@@ -42,7 +42,7 @@ class PopularHandler(val client: OkHttpClient, private val headers: Headers, pri
     private fun popularMangaParse(response: Response): MangasPage {
         val mlResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
         val hasMoreResults = mlResponse.limit + mlResponse.offset < mlResponse.total
-        val mangaList = mlResponse.results.map { MdUtil.createMangaEntry(it, lang, useLowQualityCovers).toSManga() }
+        val mangaList = mlResponse.results.map { MdUtil.createMangaEntry(it, lang).toSManga() }
         return MangasPage(mangaList, hasMoreResults)
     }
 }

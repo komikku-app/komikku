@@ -114,7 +114,11 @@ class ChaptersSettingsSheet(
                 if (item is Item.DrawableSelection) {
                     val scanlators = presenter.allChapterScanlators.toList()
                     val filteredScanlators = presenter.manga.filtered_scanlators?.let { MdUtil.getScanlators(it) }
-                    val preselected = if (filteredScanlators.isNullOrEmpty()) scanlators.mapIndexed { index, _ -> index }.toIntArray() else filteredScanlators.map { scanlators.indexOf(it) }.toIntArray()
+                    val preselected = if (filteredScanlators.isNullOrEmpty()) {
+                        scanlators.mapIndexed { index, _ -> index }
+                    } else {
+                        filteredScanlators.map { scanlators.indexOf(it) }
+                    }.toIntArray()
 
                     MaterialDialog(context)
                         .title(R.string.select_scanlators)

@@ -23,7 +23,6 @@ import okhttp3.Response
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
-import java.util.Date
 import java.util.Locale
 
 class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
@@ -138,7 +137,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                     cover = "https://coverapi.orell.dev/api/v1/mal/manga/$myAnimeListId/cover"
                 }
                 if (cover == null) {
-                    cover = "https://coverapi.orell.dev/api/v1/mdaltimage/manga/$mdUuid/cover"
+                    cover = MdUtil.formThumbUrl(mdUuid.toString())
                 }
 
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
@@ -155,8 +154,11 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
 
                 // things that will go with the genre tags but aren't actually genre
                 val nonGenres = listOfNotNull(
-                    networkManga.publicationDemographic?.let { RaisedTag("Demographic", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT) },
-                    networkManga.contentRating?.let { RaisedTag("Content Rating", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT) },
+                    networkManga.publicationDemographic
+                        ?.let { RaisedTag("Demographic", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT) },
+                    networkManga.contentRating
+                        ?.takeUnless { it == "safe" }
+                        ?.let { RaisedTag("Content Rating", it.capitalize(Locale.US), MangaDexSearchMetadata.TAG_TYPE_DEFAULT) },
                 )
 
                 val genres = nonGenres + networkManga.tags
@@ -239,7 +241,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
     }
 
     fun chapterListParse(chapterListResponse: List<ChapterResponse>, groupMap: Map<String, String>): List<ChapterInfo> {
-        val now = Date().time
+        val now = System.currentTimeMillis()
 
         return chapterListResponse.asSequence()
             .map {

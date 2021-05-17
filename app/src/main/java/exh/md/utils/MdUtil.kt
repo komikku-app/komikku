@@ -202,13 +202,12 @@ class MdUtil {
             "(zh-Hant)",
         )
 
-        // guess the thumbnail url is .jpg  this has a ~80% success rate
-        fun formThumbUrl(mangaUrl: String, lowQuality: Boolean): String {
-            var ext = ".jpg"
-            if (lowQuality) {
-                ext = ".thumb$ext"
-            }
-            return cdnUrl + "/images/manga/" + getMangaId(mangaUrl) + ext
+        fun buildMangaUrl(mangaUuid: String): String {
+            return "/manga/$mangaUuid"
+        }
+
+        fun formThumbUrl(mangaUrl: String): String {
+            return "https://coverapi.orell.dev/api/v1/mdaltimage/manga/${getMangaId(mangaUrl)}/cover"
         }
 
         // Get the ID from the manga url
@@ -255,9 +254,9 @@ class MdUtil {
             return baseUrl + attr
         }
 
-        fun getScanlators(scanlators: String?): List<String> {
-            if (scanlators.isNullOrBlank()) return emptyList()
-            return scanlators.split(scanlatorSeparator).distinct()
+        fun getScanlators(scanlators: String?): Set<String> {
+            if (scanlators.isNullOrBlank()) return emptySet()
+            return scanlators.split(scanlatorSeparator).toSet()
         }
 
         fun getScanlatorString(scanlators: Set<String>): String {
@@ -301,32 +300,27 @@ class MdUtil {
         fun parseDate(dateAsString: String): Long =
             dateFormatter.parse(dateAsString)?.time ?: 0
 
-        fun createMangaEntry(json: MangaResponse, lang: String, lowQualityCovers: Boolean): MangaInfo {
-            val key = "/manga/" + json.data.id
+        fun createMangaEntry(json: MangaResponse, lang: String): MangaInfo {
+            val key = buildMangaUrl(json.data.id)
             return MangaInfo(
                 key = key,
                 title = cleanString(json.data.attributes.title[lang] ?: json.data.attributes.title["en"]!!),
-                cover = formThumbUrl(key, lowQualityCovers)
+                cover = formThumbUrl(key)
             )
         }
 
-        fun sessionToken(preferences: PreferencesHelper, mdList: MdList) = preferences.trackToken(mdList).get().nullIfBlank()?.let {
+        fun getLoginBody(preferences: PreferencesHelper, mdList: MdList) = preferences.trackToken(mdList).get().nullIfBlank()?.let {
             try {
                 jsonParser.decodeFromString<LoginBodyToken>(it)
             } catch (e: SerializationException) {
-                xLogD("Unable to load session token")
+                xLogD("Unable to load login body")
                 null
             }
-        }?.session
+        }
 
-        fun refreshToken(preferences: PreferencesHelper, mdList: MdList) = preferences.trackToken(mdList).get().nullIfBlank()?.let {
-            try {
-                jsonParser.decodeFromString<LoginBodyToken>(it)
-            } catch (e: SerializationException) {
-                xLogD("Unable to load session token")
-                null
-            }
-        }?.refresh
+        fun sessionToken(preferences: PreferencesHelper, mdList: MdList) = getLoginBody(preferences, mdList)?.session
+
+        fun refreshToken(preferences: PreferencesHelper, mdList: MdList) = getLoginBody(preferences, mdList)?.refresh
 
         fun updateLoginToken(token: LoginBodyToken, preferences: PreferencesHelper, mdList: MdList) {
             preferences.trackToken(mdList).set(jsonParser.encodeToString(token))

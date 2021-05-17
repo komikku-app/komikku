@@ -146,11 +146,11 @@ abstract class RaisedSearchMetadata {
         const val TAG_TYPE_VIRTUAL = -2
 
         fun MutableList<RaisedTag>.toGenreString() =
-            (this).filter { it.type != TAG_TYPE_VIRTUAL }
+            this.filter { it.type != TAG_TYPE_VIRTUAL }
                 .joinToString { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
 
         fun MutableList<RaisedTag>.toGenreList() =
-            (this).filter { it.type != TAG_TYPE_VIRTUAL }
+            this.filter { it.type != TAG_TYPE_VIRTUAL }
                 .map { (if (it.namespace != null) "${it.namespace}: " else "") + it.name }
 
         private val module = SerializersModule {

@@ -18,7 +18,7 @@ import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 
-class SearchHandler(val client: OkHttpClient, private val headers: Headers, val lang: String, val filterHandler: FilterHandler, private val useLowQualityCovers: Boolean) {
+class SearchHandler(val client: OkHttpClient, private val headers: Headers, val lang: String, val filterHandler: FilterHandler, private val apiMangaParser: ApiMangaParser) {
 
     fun fetchSearchManga(page: Int, query: String, filters: FilterList, sourceId: Long): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
@@ -28,8 +28,8 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                 .flatMap { response ->
                     runAsObservable({
                         val mangaResponse = response.parseAs<MangaResponse>(MdUtil.jsonParser)
-                        val details = ApiMangaParser(client, lang)
-                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang, useLowQualityCovers), response, emptyList(), sourceId).toSManga()
+                        val details = apiMangaParser
+                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang), response, emptyList(), sourceId).toSManga()
                         MangasPage(listOf(details), false)
                     })
                 }
@@ -45,7 +45,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
     private fun searchMangaParse(response: Response): MangasPage {
         val mlResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
         val hasMoreResults = mlResponse.limit + mlResponse.offset < mlResponse.total
-        val mangaList = mlResponse.results.map { MdUtil.createMangaEntry(it, lang, useLowQualityCovers).toSManga() }
+        val mangaList = mlResponse.results.map { MdUtil.createMangaEntry(it, lang).toSManga() }
         return MangasPage(mangaList, hasMoreResults)
     }
 

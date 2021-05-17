@@ -59,6 +59,8 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
             if (remoteTrack.status != followStatus.int) {
                 if (mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), followStatus)) {
                     remoteTrack.status = followStatus.int
+                } else {
+                    track.status = remoteTrack.status
                 }
             }
 

@@ -1,6 +1,5 @@
 package exh.md.handlers
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
@@ -15,7 +14,7 @@ import okhttp3.Request
 import okhttp3.Response
 import tachiyomi.source.model.MangaInfo
 
-class SimilarHandler(val client: OkHttpClient, val lang: String, val preferences: PreferencesHelper, private val useLowQualityCovers: Boolean) {
+class SimilarHandler(val client: OkHttpClient, val lang: String) {
 
     suspend fun getSimilar(manga: MangaInfo): MangasPage {
         val response = client.newCall(similarMangaRequest(manga)).await()
@@ -30,9 +29,9 @@ class SimilarHandler(val client: OkHttpClient, val lang: String, val preferences
     private fun similarMangaParse(response: Response): MangasPage {
         val mangaList = response.parseAs<SimilarMangaResponse>().matches.map {
             SManga.create().apply {
-                url = "/manga/" + it.id
+                url = MdUtil.buildMangaUrl(it.id)
                 title = MdUtil.cleanString(it.title[lang] ?: it.title["en"]!!)
-                thumbnail_url = "https://coverapi.orell.dev/api/v1/mdaltimage/manga/${it.id}/cover"
+                thumbnail_url = MdUtil.formThumbUrl(url)
             }
         }
         return MangasPage(mangaList, false)

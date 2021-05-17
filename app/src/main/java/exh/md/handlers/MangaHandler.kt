@@ -25,18 +25,22 @@ import okhttp3.Request
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MangaHandler(val client: OkHttpClient, val headers: Headers, private val lang: String, private val forceLatestCovers: Boolean = false) {
+class MangaHandler(
+    val client: OkHttpClient,
+    val headers: Headers,
+    private val lang: String,
+    private val apiMangaParser: ApiMangaParser,
+    private val followsHandler: FollowsHandler
+) {
 
-    suspend fun fetchMangaAndChapterDetails(manga: MangaInfo, sourceId: Long): Pair<MangaInfo, List<ChapterInfo>> {
+    suspend fun fetchMangaAndChapterDetails(manga: MangaInfo, sourceId: Long, forceLatestCovers: Boolean): Pair<MangaInfo, List<ChapterInfo>> {
         return withIOContext {
             val response = client.newCall(mangaRequest(manga)).await()
             val covers = getCovers(manga, forceLatestCovers)
-            val parser = ApiMangaParser(client, lang)
 
-            parser.parseToManga(manga, response, covers, sourceId) to getChapterList(manga)
+            apiMangaParser.parseToManga(manga, response, covers, sourceId) to getChapterList(manga)
         }
     }
 
@@ -45,7 +49,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
               val covers = client.newCall(coverRequest(manga)).await().parseAs<ApiCovers>(MdUtil.jsonParser)
               return covers.data.map { it.url }
           } else {*/
-        return emptyList<String>()
+        return emptyList()
         //  }
     }
 
@@ -53,19 +57,19 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
         return withIOContext {
             val request = GET(MdUtil.chapterUrl + urlChapterId)
             val response = client.newCall(request).await()
-            ApiMangaParser(client, lang).chapterParseForMangaId(response)
+            apiMangaParser.chapterParseForMangaId(response)
         }
     }
 
-    suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
+    suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long, forceLatestCovers: Boolean): MangaInfo {
         val response = withIOContext { client.newCall(mangaRequest(manga)).await() }
         val covers = withIOContext { getCovers(manga, forceLatestCovers) }
-        return ApiMangaParser(client, lang).parseToManga(manga, response, covers, sourceId)
+        return apiMangaParser.parseToManga(manga, response, covers, sourceId)
     }
 
-    fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long): Observable<SManga> {
+    fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long, forceLatestCovers: Boolean): Observable<SManga> {
         return runAsObservable({
-            getMangaDetails(manga.toMangaInfo(), sourceId).toSManga()
+            getMangaDetails(manga.toMangaInfo(), sourceId, forceLatestCovers).toSManga()
         })
     }
 
@@ -81,7 +85,7 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
 
             val groupMap = getGroupMap(results)
 
-            ApiMangaParser(client, lang).chapterListParse(results, groupMap)
+            apiMangaParser.chapterListParse(results, groupMap)
         }
     }
 
@@ -109,29 +113,22 @@ class MangaHandler(val client: OkHttpClient, val headers: Headers, private val l
     suspend fun fetchRandomMangaId(): String {
         return withIOContext {
             val response = client.newCall(randomMangaRequest()).await()
-            ApiMangaParser(client, lang).randomMangaIdParse(response)
+            apiMangaParser.randomMangaIdParse(response)
         }
     }
 
-    suspend fun getTrackingInfo(track: Track, useLowQualityCovers: Boolean, mdList: MdList): Pair<Track, MangaDexSearchMetadata?> {
+    suspend fun getTrackingInfo(track: Track, mdList: MdList): Pair<Track, MangaDexSearchMetadata?> {
         return withIOContext {
             val metadata = async {
-                val mangaUrl = "/manga/" + MdUtil.getMangaId(track.tracking_url)
+                val mangaUrl = MdUtil.buildMangaUrl(MdUtil.getMangaId(track.tracking_url))
                 val manga = MangaInfo(mangaUrl, track.title)
                 val response = client.newCall(mangaRequest(manga)).await()
                 val metadata = MangaDexSearchMetadata()
-                ApiMangaParser(client, lang).parseIntoMetadata(metadata, response, emptyList())
+                apiMangaParser.parseIntoMetadata(metadata, response, emptyList())
                 metadata
             }
             val remoteTrack = async {
-                FollowsHandler(
-                    client,
-                    headers,
-                    Injekt.get(),
-                    lang,
-                    useLowQualityCovers,
-                    mdList
-                ).fetchTrackingInfo(track.tracking_url)
+                followsHandler.fetchTrackingInfo(track.tracking_url)
             }
             remoteTrack.await() to null
         }

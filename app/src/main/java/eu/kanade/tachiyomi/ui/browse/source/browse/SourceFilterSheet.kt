@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
@@ -21,6 +20,7 @@ import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
+import exh.util.under
 
 class SourceFilterSheet(
     activity: Activity,
@@ -155,22 +155,20 @@ class SourceFilterSheet(
 
         private fun getSavedSearchesChips(searches: List<EXHSavedSearch>): List<Chip> {
             recycler.post {
-                binding.saveSearchBtn.visibility = if (searches.size < MAX_SAVED_SEARCHES) View.VISIBLE else View.GONE
+                binding.saveSearchBtn.isVisible = searches.size under MAX_SAVED_SEARCHES
             }
-            val chips: MutableList<Chip> = mutableListOf()
-
-            searches.withIndex().sortedBy { it.value.name }.forEach { (index, search) ->
-                val chip = Chip(context).apply {
-                    text = search.name
-                    setOnClickListener { onSavedSearchClicked(index) }
-                    setOnLongClickListener {
-                        onSavedSearchDeleteClicked(index, search.name); true
+            return searches.withIndex()
+                .sortedBy { it.value.name }
+                .map { (index, search) ->
+                    Chip(context).apply {
+                        text = search.name
+                        setOnClickListener { onSavedSearchClicked(index) }
+                        setOnLongClickListener {
+                            onSavedSearchDeleteClicked(index, search.name); true
+                        }
                     }
                 }
-
-                chips += chip
-            }
-            return chips.sortedBy { it.text.toString().toLowerCase() }
+                .sortedBy { it.text.toString().toLowerCase() }
         }
 
         fun hideFilterButton() {
