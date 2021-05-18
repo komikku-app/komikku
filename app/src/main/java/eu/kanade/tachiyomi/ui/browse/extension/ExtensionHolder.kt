@@ -39,8 +39,8 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
         binding.lang.text = LocaleHelper.getSourceDisplayName(extension.lang, itemView.context)
         binding.warning.text = when {
             extension is Extension.Untrusted -> itemView.context.getString(R.string.ext_untrusted)
-            extension is Extension.Installed && extension.isObsolete -> itemView.context.getString(R.string.ext_obsolete)
             extension is Extension.Installed && extension.isUnofficial -> itemView.context.getString(R.string.ext_unofficial)
+            extension is Extension.Installed && extension.isObsolete -> itemView.context.getString(R.string.ext_obsolete)
             // SY -->
             extension is Extension.Installed && extension.isRedundant -> itemView.context.getString(R.string.ext_redundant)
             extension.isNsfw && shouldLabelNsfw -> itemView.context.getString(R.string.ext_nsfw_short).plusRepo(extension)
