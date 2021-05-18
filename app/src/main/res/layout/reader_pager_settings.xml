@@ -78,8 +78,8 @@
         android:layout_height="wrap_content"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/pref_page_transitions"
-        app:layout_constraintTop_toBottomOf="@+id/dual_page_invert" />
+        android:textColor="?android:attr/textColorSecondary"
+        android:text="@string/pref_page_transitions" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/tapping_prefs_group"

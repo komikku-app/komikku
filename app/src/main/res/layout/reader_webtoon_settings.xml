@@ -49,17 +49,19 @@
         android:id="@+id/page_transitions_webtoon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/pref_page_transitions"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp" />
+        android:paddingEnd="16dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:text="@string/pref_page_transitions"/>
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/zoom_out_webtoon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/enable_zoom_out"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp" />
+        android:paddingEnd="16dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:text="@string/enable_zoom_out"/>
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/dual_page_split"
@@ -97,6 +99,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:textColor="?android:attr/textColorSecondary"
         android:text="@string/pref_crop_borders" />
 
     <androidx.constraintlayout.widget.Group
