@@ -384,7 +384,7 @@ class MangaController :
             else -> min(binding.recycler.computeVerticalScrollOffset(), 255)
         }
 
-        (activity as? MainActivity)?.binding?.toolbarLayout?.toolbar?.setTitleTextColor(
+        (activity as? MainActivity)?.binding?.toolbar?.setTitleTextColor(
             Color.argb(
                 calculatedAlpha,
                 toolbarTextColor.red,
