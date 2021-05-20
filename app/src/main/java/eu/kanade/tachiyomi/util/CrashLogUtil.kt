@@ -38,7 +38,7 @@ class CrashLogUtil(private val context: Context) {
 
     fun getDebugInfo(): String {
         return """
-            App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE})
+            App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}, ${BuildConfig.COMMIT_SHA}, ${BuildConfig.VERSION_CODE}, ${BuildConfig.BUILD_TIME})
             Preview build: $syDebugVersion
             Android version: ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})
             Android build ID: ${Build.DISPLAY}

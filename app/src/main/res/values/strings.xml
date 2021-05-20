@@ -454,7 +454,6 @@
       <!-- About section -->
     <string name="website">Website</string>
     <string name="version">Version</string>
-    <string name="build_time">Build time</string>
     <string name="whats_new">What\'s new</string>
     <string name="notices">Preview build notices</string>
     <string name="licenses">Open source licenses</string>
