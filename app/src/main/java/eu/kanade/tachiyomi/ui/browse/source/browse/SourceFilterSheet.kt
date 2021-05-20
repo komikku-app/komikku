@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
@@ -29,10 +30,10 @@ class SourceFilterSheet(
     source: CatalogueSource,
     searches: List<EXHSavedSearch> = emptyList(),
     // SY <--
-    onFilterClicked: () -> Unit,
-    onResetClicked: () -> Unit,
+    private val onFilterClicked: () -> Unit,
+    private val onResetClicked: () -> Unit,
     // EXH -->
-    onSaveClicked: () -> Unit,
+    private val onSaveClicked: () -> Unit,
     var onSavedSearchClicked: (Int) -> Unit = {},
     var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
     // EXH <--
@@ -47,9 +48,8 @@ class SourceFilterSheet(
         dismissSheet = ::dismiss
         // SY <--
     )
-    private val sheetBehavior: BottomSheetBehavior<*>
 
-    init {
+    override fun createView(inflater: LayoutInflater): View {
         filterNavView.onFilterClicked = {
             onFilterClicked()
             this.dismiss()
@@ -64,9 +64,7 @@ class SourceFilterSheet(
         filterNavView.onSavedSearchDeleteClicked = onSavedSearchDeleteClicked
         // EXH <--
 
-        setContentView(filterNavView)
-
-        sheetBehavior = BottomSheetBehavior.from(filterNavView.parent as ViewGroup)
+        return filterNavView
     }
 
     override fun show() {

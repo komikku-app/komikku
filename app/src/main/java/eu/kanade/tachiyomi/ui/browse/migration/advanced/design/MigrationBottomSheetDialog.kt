@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.app.Activity
-import android.content.res.Configuration
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.CompoundButton
-import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
@@ -22,14 +22,11 @@ import uy.kohesive.injekt.injectLazy
 class MigrationBottomSheetDialog(activity: Activity, private val listener: StartMigrationListener) : BaseBottomSheetDialog(activity) {
     private val preferences: PreferencesHelper by injectLazy()
 
-    private val binding: MigrationBottomSheetBinding = MigrationBottomSheetBinding.inflate(activity.layoutInflater)
+    lateinit var binding: MigrationBottomSheetBinding
 
-    init {
-        setContentView(binding.root)
-        if (activity.resources.configuration?.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            binding.sourceGroup.orientation = LinearLayout.HORIZONTAL
-        }
-        window?.setBackgroundDrawable(null)
+    override fun createView(inflater: LayoutInflater): View {
+        binding = MigrationBottomSheetBinding.inflate(inflater)
+        return binding.root
     }
 
     /**
