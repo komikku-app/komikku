@@ -18,11 +18,14 @@ import eu.kanade.tachiyomi.ui.setting.SettingsController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
+import eu.kanade.tachiyomi.util.preference.iconRes
+import eu.kanade.tachiyomi.util.preference.iconTint
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toast
 import exh.syDebugVersion
 import timber.log.Timber
@@ -42,6 +45,8 @@ class AboutController : SettingsController() {
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_about
+
+        val tintColor = context.getResourceColor(R.attr.colorAccent)
 
         preference {
             key = "pref_about_version"
@@ -82,23 +87,9 @@ class AboutController : SettingsController() {
             preference {
                 key = "pref_about_website"
                 titleRes = R.string.website
+                iconRes = R.drawable.ic_earth_24dp
+                iconTint = tintColor
                 "https://tachiyomi.org".also {
-                    summary = it
-                    onClick { openInBrowser(it) }
-                }
-            }
-            preference {
-                key = "pref_about_facebook"
-                title = "Facebook"
-                "https://facebook.com/tachiyomiorg".also {
-                    summary = it
-                    onClick { openInBrowser(it) }
-                }
-            }
-            preference {
-                key = "pref_about_twitter"
-                title = "Twitter"
-                "https://twitter.com/tachiyomiorg".also {
                     summary = it
                     onClick { openInBrowser(it) }
                 }
@@ -106,35 +97,49 @@ class AboutController : SettingsController() {
             preference {
                 key = "pref_about_discord"
                 title = "Discord"
+                iconRes = R.drawable.ic_discord_24dp
+                iconTint = tintColor
                 "https://discord.gg/tachiyomi".also {
                     summary = it
                     onClick { openInBrowser(it) }
                 }
             }
             preference {
-                key = "pref_about_github"
+                key = "pref_about_twitter"
+                title = "Twitter"
+                iconRes = R.drawable.ic_twitter_24dp
+                iconTint = tintColor
+                "https://twitter.com/tachiyomiorg".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
+                }
+            }
+            preference {
+                key = "pref_about_facebook"
+                title = "Facebook"
+                iconRes = R.drawable.ic_facebook_24dp
+                iconTint = tintColor
+                "https://facebook.com/tachiyomiorg".also {
+                    summary = it
+                    onClick { openInBrowser(it) }
+                }
+            }
+            preference {
+                key = "pref_about_github_sy"
                 title = "GitHub"
-                // SY -->
+                iconRes = R.drawable.ic_github_24dp
+                iconTint = tintColor
                 "https://github.com/jobobby04/TachiyomiSY".also {
                     summary = it
                     onClick { openInBrowser(it) }
                 }
-                // SY <--
             }
-            // SY -->
             preference {
-                key = "pref_about_label_original_tachiyomi_github"
-                title = "Original Tachiyomi GitHub "
+                key = "pref_about_github"
+                title = "Tachiyomi GitHub"
+                iconRes = R.drawable.ic_github_24dp
+                iconTint = tintColor
                 "https://github.com/tachiyomiorg".also {
-                    summary = it
-                    onClick { openInBrowser(it) }
-                }
-            }
-            // SY <--
-            preference {
-                key = "pref_about_label_extensions"
-                titleRes = R.string.label_extensions
-                "https://github.com/tachiyomiorg/tachiyomi-extensions".also {
                     summary = it
                     onClick { openInBrowser(it) }
                 }
