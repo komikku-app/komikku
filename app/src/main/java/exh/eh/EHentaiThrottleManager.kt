@@ -1,5 +1,7 @@
 package exh.eh
 
+import kotlinx.coroutines.delay
+
 class EHentaiThrottleManager(
     private val max: Int = THROTTLE_MAX,
     private val inc: Int = THROTTLE_INC
@@ -8,12 +10,12 @@ class EHentaiThrottleManager(
     var throttleTime: Long = 0
         private set
 
-    fun throttle() {
+    suspend fun throttle() {
         // Throttle requests if necessary
         val now = System.currentTimeMillis()
         val timeDiff = now - lastThrottleTime
         if (timeDiff < throttleTime) {
-            Thread.sleep(throttleTime - timeDiff)
+            delay(throttleTime - timeDiff)
         }
 
         if (throttleTime < max) {

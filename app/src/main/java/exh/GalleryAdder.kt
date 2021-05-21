@@ -53,7 +53,7 @@ class GalleryAdder {
         url: String,
         fav: Boolean = false,
         forceSource: UrlImportableSource? = null,
-        throttleFunc: () -> Unit = {}
+        throttleFunc: suspend () -> Unit = {}
     ): GalleryAddEvent {
         logger.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
         try {

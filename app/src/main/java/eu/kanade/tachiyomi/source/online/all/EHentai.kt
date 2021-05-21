@@ -284,7 +284,7 @@ class EHentai(
 
     override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> = getChapterList(manga) {}
 
-    suspend fun getChapterList(manga: MangaInfo, throttleFunc: () -> Unit): List<ChapterInfo> {
+    suspend fun getChapterList(manga: MangaInfo, throttleFunc: suspend () -> Unit): List<ChapterInfo> {
         // Pull all the way to the root gallery
         // We can't do this with RxJava or we run into stack overflows on shit like this:
         //   https://exhentai.org/g/1073061/f9345f1c12/
@@ -357,7 +357,7 @@ class EHentai(
 
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use getChapterList instead")
-    fun fetchChapterList(manga: SManga, throttleFunc: () -> Unit) = runAsObservable({
+    fun fetchChapterList(manga: SManga, throttleFunc: suspend () -> Unit) = runAsObservable({
         getChapterList(manga.toMangaInfo(), throttleFunc).map { it.toSChapter() }
     })
 
