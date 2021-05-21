@@ -116,11 +116,20 @@ class EHentai(
     data class ParsedManga(val fav: Int, val manga: Manga, val metadata: EHentaiSearchMetadata)
 
     private fun extendedGenericMangaParse(doc: Document) = with(doc) {
+        val trim = TRIM_REGEX.find(selectFirst("p.ip")?.text().orEmpty())
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.replace(",", "")
+            ?.toIntOrNull()
+            // So browse doesn't say it cant load any manga, always have at least 1
+            ?.coerceAtMost(24)
+            ?: 0
+
         // Parse mangas (supports compact + extended layout)
         val parsedMangas = select(".itg > tbody > tr").filter {
             // Do not parse header and ads
             it.selectFirst("th") == null && it.selectFirst(".itd") == null
-        }.map { body ->
+        }.dropLast(trim).map { body ->
             val thumbnailElement = body.selectFirst(".gl1e img, .gl2c .glthumb img")
             val column2 = body.selectFirst(".gl3e, .gl2c")
             val linkElement = body.selectFirst(".gl3c > a, .gl2e > div > a")
@@ -1016,6 +1025,7 @@ class EHentai(
         private const val REVERSE_PARAM = "TEH_REVERSE"
         private val PAGE_COUNT_REGEX = "[0-9]*".toRegex()
         private val RATING_REGEX = "([0-9]*)px".toRegex()
+        private val TRIM_REGEX = "^\\D*[\\d,]*\\D*([\\d,]*)\\D*\$".toRegex()
 
         private const val EH_API_BASE = "https://api.e-hentai.org/api.php"
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()!!
