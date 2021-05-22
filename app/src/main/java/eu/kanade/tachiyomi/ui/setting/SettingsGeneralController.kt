@@ -52,6 +52,16 @@ class SettingsGeneralController : SettingsController() {
             defaultValue = true
         }
         switchPreference {
+            key = Keys.hideUpdatesButton
+            titleRes = R.string.pref_hide_updates_button
+            defaultValue = false
+        }
+        switchPreference {
+            key = Keys.hideHistoryButton
+            titleRes = R.string.pref_hide_history_button
+            defaultValue = false
+        }
+        switchPreference {
             key = Keys.bottomBarLabels
             titleRes = R.string.pref_show_bottom_bar_labels
             defaultValue = true

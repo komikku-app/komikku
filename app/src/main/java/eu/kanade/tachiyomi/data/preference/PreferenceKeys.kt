@@ -15,6 +15,10 @@ object PreferenceKeys {
 
     const val hideBottomBar = "pref_hide_bottom_bar_on_scroll"
 
+    const val hideUpdatesButton = "pref_hide_updates_button"
+
+    const val hideHistoryButton = "pref_hide_history_button"
+
     const val enableTransitionsPager = "pref_enable_transitions_pager_key"
 
     const val enableTransitionsWebtoon = "pref_enable_transitions_webtoon_key"

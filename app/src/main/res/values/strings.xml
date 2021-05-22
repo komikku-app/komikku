@@ -165,6 +165,8 @@
     <string name="pref_date_format">Date format</string>
     <string name="pref_confirm_exit">Confirm exit</string>
     <string name="pref_hide_bottom_bar_on_scroll">Hide bottom bar on scroll</string>
+    <string name="pref_hide_updates_button">Move Update button to the More tab</string>
+    <string name="pref_hide_history_button">Move History button to the More tab</string>
     <string name="pref_show_bottom_bar_labels">Always show bottom bar labels</string>
     <string name="pref_manage_notifications">Manage notifications</string>
 
