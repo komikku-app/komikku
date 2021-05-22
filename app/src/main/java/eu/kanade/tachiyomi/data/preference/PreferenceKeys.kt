@@ -15,10 +15,6 @@ object PreferenceKeys {
 
     const val hideBottomBar = "pref_hide_bottom_bar_on_scroll"
 
-    const val hideUpdatesButton = "pref_hide_updates_button"
-
-    const val hideHistoryButton = "pref_hide_history_button"
-
     const val enableTransitionsPager = "pref_enable_transitions_pager_key"
 
     const val enableTransitionsWebtoon = "pref_enable_transitions_webtoon_key"
@@ -164,7 +160,7 @@ object PreferenceKeys {
 
     const val startScreen = "start_screen"
 
-    const val useBiometricLock = "use_biometric_lock"
+    const val useAuthenticator = "use_biometric_lock"
 
     const val lockAppAfter = "lock_app_after"
 
@@ -355,7 +351,7 @@ object PreferenceKeys {
 
     const val allowLocalSourceHiddenFolders = "allow_local_source_hidden_folders"
 
-    const val biometricTimeRanges = "biometric_time_ranges"
+    const val authenticatorTimeRanges = "biometric_time_ranges"
 
     const val sortTagsForLibrary = "sort_tags_for_library"
 
@@ -374,4 +370,8 @@ object PreferenceKeys {
     const val readerBottomButtons = "reader_bottom_buttons"
 
     const val bottomBarLabels = "pref_show_bottom_bar_labels"
+
+    const val hideUpdatesButton = "pref_hide_updates_button"
+
+    const val hideHistoryButton = "pref_hide_history_button"
 }

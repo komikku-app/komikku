@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
-import eu.kanade.tachiyomi.util.system.BiometricUtil
+import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.injectLazy
@@ -36,14 +36,14 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
     }
 
     fun onResume() {
-        if (preferences.useBiometricLock().get()) {
-            if (BiometricUtil.isSupported(activity)) {
+        if (preferences.useAuthenticator().get()) {
+            if (AuthenticatorUtil.isSupported(activity)) {
                 if (isAppLocked()) {
-                    activity.startActivity(Intent(activity, BiometricUnlockActivity::class.java))
+                    activity.startActivity(Intent(activity, UnlockActivity::class.java))
                     activity.overridePendingTransition(0, 0)
                 }
             } else {
-                preferences.useBiometricLock().set(false)
+                preferences.useAuthenticator().set(false)
             }
         }
     }
@@ -56,7 +56,7 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
 
         return preferences.lockAppAfter().get() <= 0 ||
             Date().time >= preferences.lastAppUnlock().get() + 60 * 1000 * preferences.lockAppAfter().get() &&
-            preferences.biometricTimeRanges().get().mapNotNull { TimeRange.fromPreferenceString(it) }.let { timeRanges ->
+            preferences.authenticatorTimeRanges().get().mapNotNull { TimeRange.fromPreferenceString(it) }.let { timeRanges ->
                 if (timeRanges.isNotEmpty()) {
                     val today: Calendar = Calendar.getInstance()
                     val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes

@@ -34,7 +34,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        preferences.biometricTimeRanges().asFlow().onEach { prefTimeRanges ->
+        preferences.authenticatorTimeRanges().asFlow().onEach { prefTimeRanges ->
             timeRanges = prefTimeRanges.toList()
                 .mapNotNull { TimeRange.fromPreferenceString(it) }.onEach { xLogD(it) }
 
@@ -59,7 +59,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
 
         xLogD(timeRange)
 
-        preferences.biometricTimeRanges() += timeRange.toPreferenceString()
+        preferences.authenticatorTimeRanges() += timeRange.toPreferenceString()
     }
 
     /**
@@ -68,7 +68,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
      * @param timeRanges The list of categories to delete.
      */
     fun deleteTimeRanges(timeRanges: List<TimeRange>) {
-        preferences.biometricTimeRanges().set(
+        preferences.authenticatorTimeRanges().set(
             this.timeRanges.filterNot { it in timeRanges }.map { it.toPreferenceString() }.toSet()
         )
     }

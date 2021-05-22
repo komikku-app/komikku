@@ -12,7 +12,7 @@ import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
-import eu.kanade.tachiyomi.util.system.BiometricUtil
+import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import kotlinx.coroutines.flow.launchIn
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
@@ -21,9 +21,9 @@ class SettingsSecurityController : SettingsController() {
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_security
 
-        if (BiometricUtil.isSupported(context)) {
+        if (AuthenticatorUtil.isSupported(context)) {
             switchPreference {
-                key = Keys.useBiometricLock
+                key = Keys.useAuthenticator
                 titleRes = R.string.lock_with_biometrics
                 defaultValue = false
             }
@@ -42,7 +42,7 @@ class SettingsSecurityController : SettingsController() {
                 defaultValue = "0"
                 summary = "%s"
 
-                preferences.useBiometricLock().asImmediateFlow { isVisible = it }
+                preferences.useAuthenticator().asImmediateFlow { isVisible = it }
                     .launchIn(viewScope)
             }
         }
@@ -62,10 +62,10 @@ class SettingsSecurityController : SettingsController() {
             key = "pref_edit_lock_times"
             titleRes = R.string.action_edit_biometric_lock_times
 
-            val timeRanges = preferences.biometricTimeRanges().get().count()
+            val timeRanges = preferences.authenticatorTimeRanges().get().count()
             summary = context.resources.getQuantityString(R.plurals.num_lock_times, timeRanges, timeRanges)
 
-            preferences.useBiometricLock().asImmediateFlow { isVisible = it }
+            preferences.useAuthenticator().asImmediateFlow { isVisible = it }
                 .launchIn(viewScope)
 
             onClick {
