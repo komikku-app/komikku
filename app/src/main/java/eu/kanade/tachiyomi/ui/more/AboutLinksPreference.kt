@@ -22,6 +22,6 @@ class AboutLinksPreference @JvmOverloads constructor(context: Context, attrs: At
         holder.findViewById(R.id.btn_discord).setOnClickListener { context.openInBrowser("https://discord.gg/tachiyomi") }
         holder.findViewById(R.id.btn_twitter).setOnClickListener { context.openInBrowser("https://twitter.com/tachiyomiorg") }
         holder.findViewById(R.id.btn_facebook).setOnClickListener { context.openInBrowser("https://facebook.com/tachiyomiorg") }
-        holder.findViewById(R.id.btn_github).setOnClickListener { context.openInBrowser("https://github.com/tachiyomiorg") }
+        holder.findViewById(R.id.btn_github).setOnClickListener { context.openInBrowser("https://github.com/jobobby04/tachiyomisy") }
     }
 }
