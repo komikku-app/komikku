@@ -276,12 +276,14 @@ object EXHMigrations {
                     )
                 }
                 if (oldVersion under 18) {
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-                    val readerTheme = prefs.getInt("pref_reader_theme_key", 3)
+                    val readerTheme = preferences.readerTheme().get()
                     if (readerTheme == 4) {
-                        prefs.edit {
-                            putInt("pref_reader_theme_key", 3)
-                        }
+                        preferences.readerTheme().set(3)
+                    }
+                    val updateInterval = preferences.libraryUpdateInterval().get()
+                    if (updateInterval == 1 || updateInterval == 2) {
+                        preferences.libraryUpdateInterval().set(3)
+                        LibraryUpdateJob.setupTask(context, 3)
                     }
                 }
 
