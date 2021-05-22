@@ -4,6 +4,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
+import okhttp3.internal.closeQuietly
 import rx.Observable
 import rx.Producer
 import rx.Subscription
@@ -66,7 +67,9 @@ suspend fun Call.awaitResponse(): Response {
         enqueue(
             object : Callback {
                 override fun onResponse(call: Call, response: Response) {
-                    continuation.resume(response)
+                    continuation.resume(response) {
+                        response.closeQuietly()
+                    }
                 }
 
                 override fun onFailure(call: Call, e: IOException) {
