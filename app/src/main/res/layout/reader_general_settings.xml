@@ -23,8 +23,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_show_page_number" />
+            android:text="@string/pref_show_page_number"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/force_horz_seekbar"
@@ -32,8 +32,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_force_horz_seekbar" />
+            android:text="@string/pref_force_horz_seekbar"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/landscape_vertical_seekbar"
@@ -41,8 +41,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_show_vert_seekbar_landscape" />
+            android:text="@string/pref_show_vert_seekbar_landscape"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/left_vertical_seekbar"
@@ -50,8 +50,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_left_handed_vertical_seekbar" />
+            android:text="@string/pref_left_handed_vertical_seekbar"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/fullscreen"
@@ -59,8 +59,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_fullscreen" />
+            android:text="@string/pref_fullscreen"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/cutout_short"
@@ -68,8 +68,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
             android:text="@string/pref_cutout_short"
+            android:textColor="?android:attr/textColorSecondary"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -79,8 +79,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_keep_screen_on" />
+            android:text="@string/pref_keep_screen_on"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/long_tap"
@@ -88,8 +88,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_read_with_long_tap" />
+            android:text="@string/pref_read_with_long_tap"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/always_show_chapter_transition"
@@ -97,8 +97,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/pref_always_show_chapter_transition" />
+            android:text="@string/pref_always_show_chapter_transition"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/auto_webtoon_mode"
@@ -106,8 +106,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:text="@string/auto_webtoon_mode" />
+            android:text="@string/auto_webtoon_mode"
+            android:textColor="?android:attr/textColorSecondary" />
 
     </LinearLayout>
 
