@@ -89,3 +89,23 @@ data class MangaStatusResponse(
 data class MangaStatusListResponse(
     val statuses: Map<String, String?>
 )
+
+@Serializable
+data class CoverListResponse(
+    val results: List<CoverResponse>,
+)
+
+@Serializable
+data class CoverResponse(
+    val data: Cover,
+)
+
+@Serializable
+data class Cover(
+    val attributes: CoverAttributes,
+)
+
+@Serializable
+data class CoverAttributes(
+    val fileName: String,
+)

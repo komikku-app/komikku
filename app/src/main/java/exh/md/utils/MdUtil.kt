@@ -62,18 +62,19 @@ class MdUtil {
             return "$mangaUrl/$id/feed".toHttpUrl().newBuilder().apply {
                 addQueryParameter("limit", "500")
                 addQueryParameter("offset", offset.toString())
-                addQueryParameter("locales[]", language)
+                addQueryParameter("translatedLanguage[]", language)
                 addQueryParameter("order[volume]", "desc")
                 addQueryParameter("order[chapter]", "desc")
             }.build().toString()
         }
+
+        fun coverUrl(mangaId: String, coverId: String) = "$apiUrl/cover/?manga[]=$mangaId&ids[]=$coverId"
 
         const val similarCache = "https://raw.githubusercontent.com/goldbattle/MangadexRecomendations/master/output/api/"
         const val similarCacheCdn = "https://cdn.statically.io/gh/goldbattle/MangadexRecomendations/master/output/api/"
         const val similarBaseApi = "https://api.similarmanga.com/similar/"
 
         const val groupSearchUrl = "$baseUrl/groups/0/1/"
-        const val apiCovers = "/covers"
         const val reportUrl = "https://api.mangadex.network/report"
 
         const val mdAtHomeTokenLifespan = 10 * 60 * 1000
@@ -300,12 +301,12 @@ class MdUtil {
         fun parseDate(dateAsString: String): Long =
             dateFormatter.parse(dateAsString)?.time ?: 0
 
-        fun createMangaEntry(json: MangaResponse, lang: String): MangaInfo {
+        fun createMangaEntry(json: MangaResponse, lang: String, coverUrl: String): MangaInfo {
             val key = buildMangaUrl(json.data.id)
             return MangaInfo(
                 key = key,
                 title = cleanString(json.data.attributes.title[lang] ?: json.data.attributes.title["en"]!!),
-                cover = formThumbUrl(key)
+                cover = coverUrl
             )
         }
 

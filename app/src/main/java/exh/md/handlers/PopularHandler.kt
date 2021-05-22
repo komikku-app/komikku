@@ -2,9 +2,12 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.runAsObservable
+import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaListResponse
 import exh.md.utils.MdUtil
 import okhttp3.CacheControl
@@ -23,8 +26,10 @@ class PopularHandler(val client: OkHttpClient, private val headers: Headers, pri
     fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return client.newCall(popularMangaRequest(page))
             .asObservableSuccess()
-            .map { response ->
-                popularMangaParse(response)
+            .flatMap { response ->
+                runAsObservable({
+                    popularMangaParse(response)
+                })
             }
     }
 
@@ -39,10 +44,24 @@ class PopularHandler(val client: OkHttpClient, private val headers: Headers, pri
         return GET(tempUrl.build().toString(), headers, CacheControl.FORCE_NETWORK)
     }
 
-    private fun popularMangaParse(response: Response): MangasPage {
+    private suspend fun popularMangaParse(response: Response): MangasPage {
         val mlResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
         val hasMoreResults = mlResponse.limit + mlResponse.offset < mlResponse.total
-        val mangaList = mlResponse.results.map { MdUtil.createMangaEntry(it, lang).toSManga() }
+
+        val mangaList = mlResponse.results.map {
+            var coverUrl = MdUtil.formThumbUrl(it.data.id)
+            val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
+            if (coverUrlId != null) {
+                runCatching {
+                    val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
+                        .parseAs<CoverListResponse>()
+                    covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
+                        coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
+                    }
+                }
+            }
+            MdUtil.createMangaEntry(it, lang, coverUrl).toSManga()
+        }
         return MangasPage(mangaList, hasMoreResults)
     }
 }

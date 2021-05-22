@@ -7,7 +7,6 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
-import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -265,29 +264,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     suspend fun getMangaSimilar(manga: MangaInfo): MangasPage {
         return similarHandler.getSimilar(manga)
-    }
-
-    // todo remove when mangadex gets it cover api
-    override fun fetchSearchManga(
-        page: Int,
-        query: String,
-        filters: FilterList
-    ): Observable<MangasPage> {
-        return super.fetchSearchManga(page, query, filters).doOnNext { mangaPage ->
-            mangaPage.mangas.forEach {
-                it.thumbnail_url = "https://coverapi.orell.dev/api/v1/mdaltimage/manga/${MdUtil.getMangaId(it.url)}/cover"
-            }
-        }
-    }
-
-    override fun fetchPopularManga(
-        page: Int
-    ): Observable<MangasPage> {
-        return super.fetchPopularManga(page).doOnNext { mangaPage ->
-            mangaPage.mangas.forEach {
-                it.thumbnail_url = "https://coverapi.orell.dev/api/v1/mdaltimage/manga/${MdUtil.getMangaId(it.url)}/cover"
-            }
-        }
     }
 
     /*private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =

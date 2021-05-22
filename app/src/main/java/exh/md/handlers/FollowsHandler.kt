@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaListResponse
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.handlers.serializers.MangaStatusListResponse
@@ -71,14 +72,27 @@ class FollowsHandler(
      * Parse follows api to manga page
      * used when multiple follows
      */
-    private fun followsParseMangaPage(response: List<MangaResponse>, statuses: Map<String, String?>): List<Pair<SManga, MangaDexSearchMetadata>> {
+    private suspend fun followsParseMangaPage(response: List<MangaResponse>, statuses: Map<String, String?>): List<Pair<SManga, MangaDexSearchMetadata>> {
         val comparator = compareBy<Pair<SManga, MangaDexSearchMetadata>> { it.second.followStatus }
             .thenBy { it.first.title }
 
         return response.map {
+            var coverUrl = MdUtil.formThumbUrl(it.data.id)
+            val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
+            if (coverUrlId != null) {
+                runCatching {
+                    val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
+                        .parseAs<CoverListResponse>()
+                    covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
+                        coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
+                    }
+                }
+            }
+
             MdUtil.createMangaEntry(
                 it,
-                lang
+                lang,
+                coverUrl
             ).toSManga() to MangaDexSearchMetadata().apply {
                 followStatus = FollowStatus.fromDex(statuses[it.data.id]).int
             }

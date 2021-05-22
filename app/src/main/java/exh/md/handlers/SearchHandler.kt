@@ -2,11 +2,13 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaListResponse
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.utils.MdUtil
@@ -28,24 +30,52 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                 .flatMap { response ->
                     runAsObservable({
                         val mangaResponse = response.parseAs<MangaResponse>(MdUtil.jsonParser)
+
+                        var coverUrl = MdUtil.formThumbUrl(mangaResponse.data.id)
+                        val coverUrlId = mangaResponse.relationships.firstOrNull { it.type == "cover_art" }?.id
+                        if (coverUrlId != null) {
+                            runCatching {
+                                val covers = client.newCall(GET(MdUtil.coverUrl(mangaResponse.data.id, coverUrlId))).await()
+                                    .parseAs<CoverListResponse>()
+                                covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
+                                    coverUrl = "${MdUtil.cdnUrl}/covers/${mangaResponse.data.id}/$fileName"
+                                }
+                            }
+                        }
+
                         val details = apiMangaParser
-                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang), response, emptyList(), sourceId).toSManga()
+                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang, coverUrl), response, emptyList(), sourceId).toSManga()
                         MangasPage(listOf(details), false)
                     })
                 }
         } else {
             client.newCall(searchMangaRequest(page, query, filters))
                 .asObservableSuccess()
-                .map { response ->
-                    searchMangaParse(response)
+                .flatMap { response ->
+                    runAsObservable({
+                        searchMangaParse(response)
+                    })
                 }
         }
     }
 
-    private fun searchMangaParse(response: Response): MangasPage {
+    private suspend fun searchMangaParse(response: Response): MangasPage {
         val mlResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
         val hasMoreResults = mlResponse.limit + mlResponse.offset < mlResponse.total
-        val mangaList = mlResponse.results.map { MdUtil.createMangaEntry(it, lang).toSManga() }
+        val mangaList = mlResponse.results.map {
+            var coverUrl = MdUtil.formThumbUrl(it.data.id)
+            val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
+            if (coverUrlId != null) {
+                runCatching {
+                    val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
+                        .parseAs<CoverListResponse>()
+                    covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
+                        coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
+                    }
+                }
+            }
+            MdUtil.createMangaEntry(it, lang, coverUrl).toSManga()
+        }
         return MangasPage(mangaList, hasMoreResults)
     }
 

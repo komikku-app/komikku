@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLogE
 import exh.md.handlers.serializers.AuthorResponseList
 import exh.md.handlers.serializers.ChapterResponse
+import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
@@ -72,13 +73,19 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                 mdUuid = networkApiManga.data.id
                 title = MdUtil.cleanString(networkManga.title[lang] ?: networkManga.title["en"]!!)
                 altTitles = networkManga.altTitles.mapNotNull { it[lang] }
-                cover =
-                    if (coverUrls.isNotEmpty()) {
-                        coverUrls.last()
-                    } else {
-                        null
-                        // networkManga.mainCover
+
+                var coverUrl = MdUtil.formThumbUrl(networkApiManga.data.id)
+                val coverUrlId = networkApiManga.relationships.firstOrNull { it.type == "cover_art" }?.id
+                if (coverUrlId != null) {
+                    runCatching {
+                        val json = client.newCall(GET(MdUtil.coverUrl(networkApiManga.data.id, coverUrlId))).await()
+                            .parseAs<CoverListResponse>(MdUtil.jsonParser)
+                        json.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
+                            coverUrl = "${MdUtil.cdnUrl}/covers/${networkApiManga.data.id}/$fileName"
+                        }
                     }
+                }
+                cover = coverUrl
 
                 description = MdUtil.cleanDescription(networkManga.description[lang] ?: networkManga.description["en"]!!)
 
@@ -128,16 +135,6 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                     links["mal"]?.let { myAnimeListId = it }
                     links["mu"]?.let { mangaUpdatesId = it }
                     links["ap"]?.let { animePlanetId = it }
-                }
-
-                if (kitsuId?.toIntOrNull() != null) {
-                    cover = "https://media.kitsu.io/manga/poster_images/$kitsuId/large.jpg"
-                }
-                if (cover == null && !myAnimeListId.isNullOrEmpty()) {
-                    cover = "https://coverapi.orell.dev/api/v1/mal/manga/$myAnimeListId/cover"
-                }
-                if (cover == null) {
-                    cover = MdUtil.formThumbUrl(mdUuid.toString())
                 }
 
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
