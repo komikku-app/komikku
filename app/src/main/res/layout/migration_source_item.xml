@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/material_component_lists_single_line_with_avatar_height"
+    android:layout_height="56dp"
     android:background="@drawable/list_item_selector_background">
 
     <ImageView
         android:id="@+id/image"
-        android:layout_width="@dimen/material_component_lists_single_line_with_avatar_height"
-        android:layout_height="@dimen/material_component_lists_single_line_with_avatar_height"
-        android:paddingStart="@dimen/material_component_lists_icon_left_padding"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:paddingStart="16dp"
         android:paddingEnd="0dp"
         tools:src="@mipmap/ic_launcher_round"/>
 
@@ -19,8 +19,8 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/material_component_lists_text_left_padding"
-        android:layout_marginEnd="@dimen/material_component_lists_single_line_with_avatar_height"
+        android:layout_marginStart="72dp"
+        android:layout_marginEnd="56dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:layout_gravity="center_vertical"
@@ -29,11 +29,11 @@
 
     <ImageView
         android:id="@+id/reorder"
-        android:layout_width="@dimen/material_component_lists_single_line_with_avatar_height"
-        android:layout_height="@dimen/material_component_lists_single_line_with_avatar_height"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:scaleType="center"
         android:layout_gravity="end"
         app:srcCompat="@drawable/ic_drag_handle_24dp"
-        android:tint="?android:attr/textColorPrimary"/>
+        app:tint="?android:attr/textColorPrimary" />
 
 </FrameLayout>
