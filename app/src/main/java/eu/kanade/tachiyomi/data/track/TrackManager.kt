@@ -4,6 +4,7 @@ import android.content.Context
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
+import eu.kanade.tachiyomi.data.track.komga.Komga
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
@@ -16,6 +17,7 @@ class TrackManager(context: Context) {
         const val KITSU = 3
         const val SHIKIMORI = 4
         const val BANGUMI = 5
+        const val KOMGA = 6
 
         // SY --> Mangadex from Neko
         const val MDLIST = 60
@@ -44,7 +46,9 @@ class TrackManager(context: Context) {
 
     val bangumi = Bangumi(context, BANGUMI)
 
-    val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi)
+    val komga = Komga(context, KOMGA)
+
+    val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga)
 
     fun getService(id: Int) = services.find { it.id == id }
 
