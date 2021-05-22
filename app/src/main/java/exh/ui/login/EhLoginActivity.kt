@@ -94,7 +94,7 @@ class EhLoginActivity : BaseViewBindingActivity<EhActivityLoginBinding>() {
                 }
             }
         } else {
-            binding.webview.restoreState(bundle)
+            binding.webview.restoreState(bundle!!)
         }
 
         if (bundle == null) {
