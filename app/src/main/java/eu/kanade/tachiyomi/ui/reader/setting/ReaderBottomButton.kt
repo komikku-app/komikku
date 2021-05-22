@@ -11,8 +11,7 @@ enum class ReaderBottomButton(val value: String, @StringRes val stringRes: Int) 
     CropBordersPager("cbp", R.string.pref_crop_borders_pager),
     CropBordersContinuesVertical("cbc", R.string.pref_crop_borders_continuous_vertical),
     CropBordersWebtoon("cbw", R.string.pref_crop_borders_webtoon),
-    // PageLayout("pl", R.string.page_layout),
-    // ShiftDoublePage("sdp", R.string.shift_double_pages)
+    PageLayout("pl", R.string.page_layout),
     ;
 
     fun isIn(buttons: Collection<String>) = value in buttons
@@ -22,7 +21,8 @@ enum class ReaderBottomButton(val value: String, @StringRes val stringRes: Int) 
             ViewChapters,
             WebView,
             CropBordersPager,
-            CropBordersContinuesVertical
+            CropBordersContinuesVertical,
+            PageLayout
         ).map { it.value }.toSet()
     }
 }

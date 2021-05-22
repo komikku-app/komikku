@@ -374,4 +374,8 @@ object PreferenceKeys {
     const val hideUpdatesButton = "pref_hide_updates_button"
 
     const val hideHistoryButton = "pref_hide_history_button"
+
+    const val pageLayout = "page_layout"
+
+    const val invertDoublePages = "invert_double_pages"
 }

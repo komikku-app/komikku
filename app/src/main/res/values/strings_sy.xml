@@ -279,6 +279,15 @@
     <!-- Auto Webtoon Mode -->
     <string name="eh_auto_webtoon_snack">Reading webtoon style</string>
 
+    <!-- Double page spread -->
+    <string name="page_layout">Page layout</string>
+    <string name="shift_double_pages">Shift one page over</string>
+    <string name="double_pages">Double pages</string>
+    <string name="single_page">Single page</string>
+    <string name="automatic_orientation">Automatic (based on orientation)</string>
+    <string name="automatic_can_still_switch">While using automatic page layout, you can still switch between layouts while reading without overriding this setting</string>
+    <string name="invert_double_pages">Invert double pages</string>
+
     <!-- Manga Page -->
     <!-- Manga Info -->
     <string name="az_recommends">See Recommendations</string>

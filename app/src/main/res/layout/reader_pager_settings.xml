@@ -43,6 +43,13 @@
         android:entries="@array/zoom_start"
         app:title="@string/pref_zoom_start" />
 
+    <eu.kanade.tachiyomi.widget.MaterialSpinnerView
+        android:id="@+id/page_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/page_layouts"
+        app:title="@string/page_layout" />
+
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/crop_borders"
         android:layout_width="match_parent"

@@ -15,4 +15,10 @@
         <item>@string/dropped</item>
         <item>@string/repeating</item>
     </string-array>
+
+    <string-array name="page_layouts">
+        <item>@string/single_page</item>
+        <item>@string/double_pages</item>
+        <item>@string/automatic_orientation</item>
+    </string-array>
 </resources>

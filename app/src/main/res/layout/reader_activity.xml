@@ -440,11 +440,39 @@
                     android:background="@drawable/ripple_regular"
                     android:contentDescription="@string/pref_rotation_type"
                     android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/action_settings"
+                    app:layout_constraintEnd_toStartOf="@id/double_page"
                     app:layout_constraintStart_toEndOf="@+id/action_crop_borders"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_screen_rotation_24dp"
+                    app:tint="?attr/colorOnPrimary" />
+
+                <ImageButton
+                    android:id="@+id/double_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/ripple_regular"
+                    android:contentDescription="@string/page_layout"
+                    android:padding="@dimen/screen_edge_margin"
+                    app:layout_constraintEnd_toStartOf="@id/shift_page_button"
+                    app:layout_constraintStart_toEndOf="@+id/action_rotation"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintHorizontal_chainStyle="spread"
+                    app:srcCompat="@drawable/ic_book_open_variant_24dp"
+                    app:tint="?attr/colorOnPrimary" />
+
+                <ImageButton
+                    android:id="@+id/shift_page_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/ripple_regular"
+                    android:contentDescription="@string/shift_double_pages"
+                    android:padding="@dimen/screen_edge_margin"
+                    app:layout_constraintEnd_toStartOf="@id/action_settings"
+                    app:layout_constraintStart_toEndOf="@+id/double_page"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintHorizontal_chainStyle="spread"
+                    app:srcCompat="@drawable/ic_page_next_outline_24dp"
                     app:tint="?attr/colorOnPrimary" />
 
                 <ImageButton
@@ -455,7 +483,7 @@
                     android:contentDescription="@string/action_settings"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/action_rotation"
+                    app:layout_constraintStart_toEndOf="@id/shift_page_button"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_settings_24dp"

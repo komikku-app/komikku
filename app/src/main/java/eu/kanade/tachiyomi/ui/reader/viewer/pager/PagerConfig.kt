@@ -1,5 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
+import android.graphics.Color
+import androidx.annotation.ColorInt
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerConfig
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
@@ -28,6 +30,8 @@ class PagerConfig(
 
     var dualPageSplitChangedListener: ((Boolean) -> Unit)? = null
 
+    var reloadChapterListener: ((Boolean) -> Unit)? = null
+
     var imageScaleType = 1
         private set
 
@@ -39,6 +43,23 @@ class PagerConfig(
 
     // SY -->
     var usePageTransitions = false
+
+    var shiftDoublePage = false
+
+    var doublePages = preferences.pageLayout().get() == PageLayout.DOUBLE_PAGES && !preferences.dualPageSplitPaged().get()
+        set(value) {
+            field = value
+            if (!value) {
+                shiftDoublePage = false
+            }
+        }
+
+    var invertDoublePages = false
+
+    var autoDoublePages = preferences.pageLayout().get() == PageLayout.AUTOMATIC
+
+    @ColorInt
+    var pageCanvasColor = Color.WHITE
     // SY <--
 
     init {
@@ -79,6 +100,33 @@ class PagerConfig(
         // SY -->
         preferences.pageTransitionsPager()
             .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })
+        preferences.readerTheme()
+            .register(
+                {
+                    themeToColor(it)
+                },
+                {
+                    themeToColor(it)
+                    reloadChapterListener?.invoke(doublePages)
+                }
+            )
+        preferences.pageLayout()
+            .register(
+                {
+                    autoDoublePages = it == PageLayout.AUTOMATIC
+                    if (!autoDoublePages) {
+                        doublePages = it == PageLayout.DOUBLE_PAGES && dualPageSplit == false
+                    }
+                },
+                {
+                    autoDoublePages = it == PageLayout.AUTOMATIC
+                    if (!autoDoublePages) {
+                        doublePages = it == PageLayout.DOUBLE_PAGES && dualPageSplit == false
+                    }
+                    reloadChapterListener?.invoke(doublePages)
+                }
+            )
+
         // SY <--
     }
 
@@ -125,5 +173,19 @@ class PagerConfig(
 
     enum class ZoomType {
         Left, Center, Right
+    }
+
+    object PageLayout {
+        const val SINGLE_PAGE = 0
+        const val DOUBLE_PAGES = 1
+        const val AUTOMATIC = 2
+    }
+
+    fun themeToColor(theme: Int) {
+        pageCanvasColor = when (theme) {
+            1 -> Color.BLACK
+            2 -> 0x202125
+            else -> Color.WHITE
+        }
     }
 }
