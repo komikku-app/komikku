@@ -26,7 +26,6 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
-import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
@@ -45,6 +44,7 @@ import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.source.isMdBasedSource
 import exh.source.mangaDexSourceIds
 import exh.util.executeOnIO
 import exh.util.nullIfBlank
@@ -460,7 +460,7 @@ class LibraryUpdateService(
             Timber.e(exception)
         }
         ioScope.launch(handler) {
-            if (source is MangaDex && trackManager.mdList.isLogged) {
+            if (source.isMdBasedSource() && trackManager.mdList.isLogged) {
                 val tracks = db.getTracks(manga).executeOnIO()
                 if (tracks.isEmpty() || tracks.none { it.sync_id == TrackManager.MDLIST }) {
                     var track = trackManager.mdList.createInitialTracker(manga)

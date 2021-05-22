@@ -99,6 +99,8 @@ fun isMetadataSource(source: Long) = source in 6900..6999 ||
 
 fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
 
+fun Source.isMdBasedSource() = id in mangaDexSourceIds
+
 fun Manga.isEhBasedManga() = source == EH_SOURCE_ID || source == EXH_SOURCE_ID
 
 fun Source.getMainSource(): Source = if (this is EnhancedHttpSource) {

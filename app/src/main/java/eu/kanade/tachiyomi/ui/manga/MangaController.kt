@@ -57,7 +57,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.ToolbarLiftOnScrollController
@@ -108,6 +107,7 @@ import exh.recs.RecommendsController
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
+import exh.source.isMdBasedSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -548,7 +548,7 @@ class MangaController :
                         clipData = ClipData.newRawUri(null, stream)
                         type = "image/*"
                     }
-                    startActivity(Intent.createChooser(intent, activity?.getString(R.string.action_share)))
+                    startActivity(Intent.createChooser(intent, activity.getString(R.string.action_share)))
                 } catch (e: Exception) {
                     e.message?.let { activity?.toast(it) } ?: activity?.toast(R.string.error_sharing_cover)
                 }
@@ -767,7 +767,7 @@ class MangaController :
     // AZ -->
     fun openRecommends() {
         val source = presenter.source.getMainSource()
-        if (source is MangaDex) {
+        if (source.isMdBasedSource()) {
             MaterialDialog(activity!!)
                 .title(R.string.az_recommends)
                 .listItemsSingleChoice(
@@ -777,8 +777,8 @@ class MangaController :
                     )
                 ) { _, index, _ ->
                     when (index) {
-                        0 -> router.pushController(MangaDexSimilarController(presenter.manga, source).withFadeTransaction())
-                        1 -> router.pushController(RecommendsController(presenter.manga, source).withFadeTransaction())
+                        0 -> router.pushController(MangaDexSimilarController(presenter.manga, source as CatalogueSource).withFadeTransaction())
+                        1 -> router.pushController(RecommendsController(presenter.manga, source as CatalogueSource).withFadeTransaction())
                     }
                 }
                 .show()
