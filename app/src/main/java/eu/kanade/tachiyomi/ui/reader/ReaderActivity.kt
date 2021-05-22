@@ -58,7 +58,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsSheet
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.L2RPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
@@ -890,16 +889,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     fun setManga(manga: Manga) {
         val prevViewer = viewer
 
-        /*val viewerMode = ReadingModeType.fromPreference(presenter.getMangaReadingMode(resolveDefault = false))
-        binding.actionReadingMode.setImageResource(viewerMode.iconRes)*/
+        val viewerMode = ReadingModeType.fromPreference(presenter.getMangaReadingMode(resolveDefault = false))
+        binding.actionReadingMode.setImageResource(viewerMode.iconRes)
 
-        val newViewer = when (presenter.getMangaReadingMode()) {
-            ReadingModeType.LEFT_TO_RIGHT.prefValue -> L2RPagerViewer(this)
-            ReadingModeType.VERTICAL.prefValue -> VerticalPagerViewer(this)
-            ReadingModeType.WEBTOON.prefValue -> WebtoonViewer(this)
-            ReadingModeType.CONTINUOUS_VERTICAL.prefValue -> WebtoonViewer(this, isContinuous = false /* SY --> */, tapByPage = preferences.continuousVerticalTappingByPage().get() /* SY <-- */)
-            else -> R2LPagerViewer(this)
-        }
+        val newViewer = ReadingModeType.toViewer(presenter.getMangaReadingMode(), this)
 
         setOrientation(presenter.getMangaOrientationType())
 

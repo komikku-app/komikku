@@ -599,15 +599,19 @@ class ReaderPresenter(
      * Returns the viewer position used by this manga or the default one.
      */
     fun getMangaReadingMode(resolveDefault: Boolean = true): Int {
-        val manga = manga ?: return preferences.defaultReadingMode()
+        val default = preferences.defaultReadingMode()
+        val manga = manga ?: return default
+        val readingMode = ReadingModeType.fromPreference(manga.readingModeType)
         // SY -->
         return when {
-            resolveDefault && manga.readingModeType == ReadingModeType.DEFAULT.flagValue && preferences.useAutoWebtoon().get() -> {
-                manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name)) ?: if (manga.readingModeType == ReadingModeType.DEFAULT.flagValue) preferences.defaultReadingMode() else manga.readingModeType
+            resolveDefault && readingMode == ReadingModeType.DEFAULT && preferences.useAutoWebtoon().get() -> {
+                manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name)) ?: if (manga.readingModeType == ReadingModeType.DEFAULT.flagValue) {
+                    default
+                } else {
+                    readingMode.prefValue
+                }
             }
-            resolveDefault && manga.readingModeType == ReadingModeType.DEFAULT.flagValue -> {
-                preferences.defaultReadingMode()
-            }
+            resolveDefault && readingMode == ReadingModeType.DEFAULT -> default
             else -> manga.readingModeType
         }
         // SY <--
