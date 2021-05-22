@@ -67,53 +67,21 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Madokami extension username and password crash fix
--keepclassmembers class androidx.preference.EditTextPreference {
-      *** mOnBindEditTextListener;
-      *** mText;
-      public *;
-}
-
-# Hitomi extension crash fix
--keepclassmembers class rx.Single {
-      *** onSubscribe;
-      final *;
-      protected *;
-      public *;
-}
-
-
-# Manga Plus fixes
--keep class kotlinx.serialization.**
--keepclassmembers class kotlinx.serialization.** {
-    <methods>;
-}
-
-# Genkan.io crash fix
--keepclassmembers class rx.Observable {
-    rx.Observable concatWith(rx.Observable);
-}
-
-# Guya
--keepclassmembers class rx.observables.BlockingObservable {
-    *** subscribe(rx.functions.Action1);
-}
+# Keep extension's common dependencies
+-keep,allowoptimization class eu.kanade.tachiyomi.** { public protected *; }
+-keep,allowoptimization class kotlin.** { public protected *; }
+-keep,allowoptimization class okhttp3.** { public protected *; }
+-keep,allowoptimization class rx.** { public protected *; }
+-keep,allowoptimization class org.jsoup.** { public protected *; }
+-keep,allowoptimization class com.google.gson.** { public protected *; }
+-keep,allowoptimization class com.github.salomonbrys.kotson.** { public protected *; }
+-keep,allowoptimization class com.squareup.duktape.** { public protected *; }
+-keep,allowoptimization class androidx.preference.** { *; }
+-keep,allowoptimization class okio.** { *; }
+-keep,allowoptimization class kotlinx.serialization.** { *; }
 
 # RxJava 1.1.0
 -dontwarn sun.misc.**
-
--keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
-   long producerIndex;
-   long consumerIndex;
-}
-
--keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueProducerNodeRef {
-    rx.internal.util.atomic.LinkedQueueNode producerNode;
-}
-
--keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueConsumerNodeRef {
-    rx.internal.util.atomic.LinkedQueueNode consumerNode;
-}
 
 -dontnote rx.internal.util.PlatformDependent
 
@@ -151,8 +119,9 @@
 # Application classes that will be serialized/deserialized over Gson
 -keep class com.google.gson.examples.android.model.** { <fields>; }
 
-# Prevent proguard from stripping interface information from TypeAdapterFactory,
+# Prevent proguard from stripping interface information from TypeAdapterFactory, TypeAdapter,
 # JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
+-keep class * extends com.google.gson.TypeAdapter
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
