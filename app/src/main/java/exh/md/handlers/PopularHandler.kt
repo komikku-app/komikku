@@ -49,8 +49,8 @@ class PopularHandler(val client: OkHttpClient, private val headers: Headers, pri
         val hasMoreResults = mlResponse.limit + mlResponse.offset < mlResponse.total
 
         val mangaList = mlResponse.results.map {
-            var coverUrl = MdUtil.formThumbUrl(it.data.id)
-            val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
+            val coverUrl = MdUtil.formThumbUrl(it.data.id)
+            /*val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
             if (coverUrlId != null) {
                 runCatching {
                     val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
@@ -59,7 +59,7 @@ class PopularHandler(val client: OkHttpClient, private val headers: Headers, pri
                         coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
                     }
                 }
-            }
+            }*/
             MdUtil.createMangaEntry(it, lang, coverUrl).toSManga()
         }
         return MangasPage(mangaList, hasMoreResults)

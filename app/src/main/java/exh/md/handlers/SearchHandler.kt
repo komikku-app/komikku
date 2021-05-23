@@ -31,8 +31,8 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                     runAsObservable({
                         val mangaResponse = response.parseAs<MangaResponse>(MdUtil.jsonParser)
 
-                        var coverUrl = MdUtil.formThumbUrl(mangaResponse.data.id)
-                        val coverUrlId = mangaResponse.relationships.firstOrNull { it.type == "cover_art" }?.id
+                        val coverUrl = MdUtil.formThumbUrl(mangaResponse.data.id)
+                        /*val coverUrlId = mangaResponse.relationships.firstOrNull { it.type == "cover_art" }?.id
                         if (coverUrlId != null) {
                             runCatching {
                                 val covers = client.newCall(GET(MdUtil.coverUrl(mangaResponse.data.id, coverUrlId))).await()
@@ -41,7 +41,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                                     coverUrl = "${MdUtil.cdnUrl}/covers/${mangaResponse.data.id}/$fileName"
                                 }
                             }
-                        }
+                        }*/
 
                         val details = apiMangaParser
                             .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang, coverUrl), response, emptyList(), sourceId).toSManga()

@@ -74,8 +74,8 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                 title = MdUtil.cleanString(networkManga.title[lang] ?: networkManga.title["en"]!!)
                 altTitles = networkManga.altTitles.mapNotNull { it[lang] }
 
-                var coverUrl = MdUtil.formThumbUrl(networkApiManga.data.id)
-                val coverUrlId = networkApiManga.relationships.firstOrNull { it.type == "cover_art" }?.id
+                val coverUrl = MdUtil.formThumbUrl(networkApiManga.data.id)
+                /*val coverUrlId = networkApiManga.relationships.firstOrNull { it.type == "cover_art" }?.id
                 if (coverUrlId != null) {
                     runCatching {
                         val json = client.newCall(GET(MdUtil.coverUrl(networkApiManga.data.id, coverUrlId))).await()
@@ -84,7 +84,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                             coverUrl = "${MdUtil.cdnUrl}/covers/${networkApiManga.data.id}/$fileName"
                         }
                     }
-                }
+                }*/
                 cover = coverUrl
 
                 description = MdUtil.cleanDescription(networkManga.description[lang] ?: networkManga.description["en"]!!)

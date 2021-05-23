@@ -77,8 +77,8 @@ class FollowsHandler(
             .thenBy { it.first.title }
 
         return response.map {
-            var coverUrl = MdUtil.formThumbUrl(it.data.id)
-            val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
+            val coverUrl = MdUtil.formThumbUrl(it.data.id)
+            /*val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
             if (coverUrlId != null) {
                 runCatching {
                     val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
@@ -87,7 +87,7 @@ class FollowsHandler(
                         coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
                     }
                 }
-            }
+            }*/
 
             MdUtil.createMangaEntry(
                 it,
