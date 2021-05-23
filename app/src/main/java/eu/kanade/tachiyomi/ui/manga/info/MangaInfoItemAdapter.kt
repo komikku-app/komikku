@@ -33,7 +33,8 @@ import reactivecircus.flowbinding.android.view.longClicks
 
 class MangaInfoItemAdapter(
     private val controller: MangaController,
-    private val fromSource: Boolean
+    private val fromSource: Boolean,
+    private val isTablet: Boolean
 ) :
     RecyclerView.Adapter<MangaInfoItemAdapter.HeaderViewHolder>() {
 
@@ -191,7 +192,7 @@ class MangaInfoItemAdapter(
                     .launchIn(controller.viewScope)
 
                 // Expand manga info if navigated from source listing
-                if (initialLoad && fromSource) {
+                if (initialLoad && (fromSource || isTablet)) {
                     toggleMangaInfo()
                     initialLoad = false
                 }
