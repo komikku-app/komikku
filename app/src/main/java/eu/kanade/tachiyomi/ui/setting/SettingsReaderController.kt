@@ -526,7 +526,7 @@ class SettingsReaderController : SettingsController() {
                     R.string.automatic_orientation
                 )
                 entryValues = arrayOf("0", "1", "2")
-                defaultValue = 2
+                defaultValue = "2"
             }
             switchPreference {
                 key = Keys.invertDoublePages
