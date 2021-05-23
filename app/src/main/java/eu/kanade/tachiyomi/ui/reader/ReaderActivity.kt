@@ -24,6 +24,7 @@ import android.view.animation.AnimationUtils
 import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.annotation.ColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -1201,15 +1202,20 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      * actions to perform is shown.
      */
     fun onPageLongTap(page: ReaderPage, extraPage: ReaderPage? = null) {
-        // EXH -->
+        // SY -->
         try {
-            // EXH <--
-            ReaderPageSheet(this, page, extraPage).show()
-            // EXH -->
+            val viewer = viewer as? PagerViewer
+            ReaderPageSheet(
+                this,
+                page,
+                extraPage,
+                (viewer !is R2LPagerViewer) xor (viewer?.config?.invertDoublePages ?: false),
+                viewer?.config?.pageCanvasColor
+            ).show()
         } catch (e: WindowManager.BadTokenException) {
             xLogE("Caught and ignoring reader page sheet launch exception!", e)
         }
-        // EXH <--
+        // SY <--
     }
 
     /**
@@ -1245,17 +1251,31 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         presenter.shareImage(page)
     }
 
+    // SY -->
+    fun shareImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
+        presenter.shareImages(firstPage, secondPage, isLTR, bg)
+    }
+    // SY <--
+
     /**
      * Called from the presenter when a page is ready to be shared. It shows Android's default
      * sharing tool.
      */
-    fun onShareImageResult(file: File, page: ReaderPage) {
+    fun onShareImageResult(file: File, page: ReaderPage /* SY --> */, secondPage: ReaderPage? = null /* SY <-- */) {
         val manga = presenter.manga ?: return
         val chapter = page.chapter.chapter
 
+        // SY -->
+        val text = if (secondPage != null) {
+            getString(R.string.share_pages_info, manga.title, chapter.name, if (resources.isLTR) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}")
+        } else {
+            getString(R.string.share_page_info, manga.title, chapter.name, page.number)
+        }
+        // SY <--
+
         val uri = file.getUriCompat(this)
         val intent = Intent(Intent.ACTION_SEND).apply {
-            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_page_info, manga.title, chapter.name, page.number))
+            putExtra(Intent.EXTRA_TEXT, /* SY --> */ text /* SY <-- */)
             putExtra(Intent.EXTRA_STREAM, uri)
             clipData = ClipData.newRawUri(null, uri)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -1271,6 +1291,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     fun saveImage(page: ReaderPage) {
         presenter.saveImage(page)
     }
+
+    // SY -->
+    fun saveImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
+        presenter.saveImages(firstPage, secondPage, isLTR, bg)
+    }
+    // SY <--
 
     /**
      * Called from the presenter when a page is saved or fails. It shows a message or logs the

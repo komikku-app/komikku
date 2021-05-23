@@ -2,8 +2,10 @@ package eu.kanade.tachiyomi.ui.reader
 
 import android.app.Application
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
+import androidx.annotation.ColorInt
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -724,6 +726,70 @@ class ReaderPresenter(
             )
     }
 
+    // SY -->
+    fun saveImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
+        if (firstPage.status != Page.READY) return
+        if (secondPage.status != Page.READY) return
+        val manga = manga ?: return
+        val context = Injekt.get<Application>()
+
+        val notifier = SaveImageNotifier(context)
+        notifier.onClear()
+
+        // Pictures directory.
+        val destDir = File(
+            Environment.getExternalStorageDirectory().absolutePath +
+                File.separator + Environment.DIRECTORY_PICTURES +
+                File.separator + context.getString(R.string.app_name)
+        )
+
+        // Copy file in background.
+        Observable.fromCallable { saveImages(firstPage, secondPage, isLTR, bg, destDir, manga) }
+            .doOnNext { file ->
+                DiskUtil.scanMedia(context, file)
+                notifier.onComplete(file)
+            }
+            .doOnError { notifier.onError(it.message) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeFirst(
+                { view, file -> view.onSaveImageResult(SaveImageResult.Success(file)) },
+                { view, error -> view.onSaveImageResult(SaveImageResult.Error(error)) }
+            )
+    }
+
+    private fun saveImages(page1: ReaderPage, page2: ReaderPage, isLTR: Boolean, @ColorInt bg: Int, directory: File, manga: Manga): File {
+        val stream1 = page1.stream!!
+        ImageUtil.findImageType(stream1) ?: throw Exception("Not an image")
+        val stream2 = page2.stream!!
+        ImageUtil.findImageType(stream2) ?: throw Exception("Not an image")
+        val imageBytes = stream1().readBytes()
+        val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+
+        val imageBytes2 = stream2().readBytes()
+        val imageBitmap2 = BitmapFactory.decodeByteArray(imageBytes2, 0, imageBytes2.size)
+
+        val stream = ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, bg)
+        directory.mkdirs()
+
+        val chapter = page1.chapter.chapter
+
+        // Build destination file.
+        val filenameSuffix = " - ${page1.number}-${page2.number}.jpg"
+        val filename = DiskUtil.buildValidFilename(
+            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize())
+        ) + filenameSuffix
+
+        val destFile = File(directory, filename)
+        stream.use { input ->
+            destFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        return destFile
+    }
+    // SY <--
+
     /**
      * Shares the image of this [page] and notifies the UI with the path of the file to share.
      * The image must be first copied to the internal partition because there are many possible
@@ -747,6 +813,26 @@ class ReaderPresenter(
                 { _, _ -> /* Empty */ }
             )
     }
+
+    // SY -->
+    fun shareImages(firstPage: ReaderPage, secondPage: ReaderPage, isLTR: Boolean, @ColorInt bg: Int) {
+        if (firstPage.status != Page.READY) return
+        if (secondPage.status != Page.READY) return
+        val manga = manga ?: return
+        val context = Injekt.get<Application>()
+
+        val destDir = File(context.cacheDir, "shared_image")
+
+        Observable.fromCallable { destDir.deleteRecursively() } // Keep only the last shared file
+            .map { saveImages(firstPage, secondPage, isLTR, bg, destDir, manga) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeFirst(
+                { view, file -> view.onShareImageResult(file, firstPage, secondPage) },
+                { _, _ -> /* Empty */ }
+            )
+    }
+    // SY <--
 
     /**
      * Sets the image of this [page] as cover and notifies the UI of the result.
