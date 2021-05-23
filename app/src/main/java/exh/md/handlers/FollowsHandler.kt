@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaListResponse
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.handlers.serializers.MangaStatusListResponse

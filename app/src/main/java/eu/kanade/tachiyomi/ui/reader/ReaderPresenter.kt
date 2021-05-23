@@ -139,10 +139,7 @@ class ReaderPresenter(
                                 (manga.bookmarkedFilter == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
                                 // SY -->
                                 (filteredScanlators != null && MdUtil.getScanlators(it.scanlator).none { group -> filteredScanlators.contains(group) })
-                                // SY <--
-                            ) {
-                                return@filter false
-                            }
+                            // SY <--
                         }
                         else -> false
                     }

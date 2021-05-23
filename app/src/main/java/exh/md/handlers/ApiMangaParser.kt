@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLogE
 import exh.md.handlers.serializers.AuthorResponseList
 import exh.md.handlers.serializers.ChapterResponse
-import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata

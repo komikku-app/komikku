@@ -2,12 +2,10 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
-import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.runAsObservable
-import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaListResponse
 import exh.md.utils.MdUtil
 import okhttp3.CacheControl
