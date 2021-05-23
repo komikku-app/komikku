@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import eu.kanade.tachiyomi.util.system.isTablet
 import kotlinx.coroutines.flow.launchIn
 import java.util.Date
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
@@ -46,10 +47,12 @@ class SettingsGeneralController : SettingsController() {
             titleRes = R.string.pref_confirm_exit
             defaultValue = false
         }
-        switchPreference {
-            key = Keys.hideBottomBar
-            titleRes = R.string.pref_hide_bottom_bar_on_scroll
-            defaultValue = true
+        if (!context.isTablet()) {
+            switchPreference {
+                key = Keys.hideBottomBar
+                titleRes = R.string.pref_hide_bottom_bar_on_scroll
+                defaultValue = true
+            }
         }
         switchPreference {
             key = Keys.hideUpdatesButton
