@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.chapter.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
+import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
 import eu.kanade.tachiyomi.util.isLocal
@@ -843,25 +844,7 @@ class MangaPresenter(
         }
         // SY <--
 
-        return observable.toSortedList(getChapterSort())
-    }
-
-    fun getChapterSort(): (Chapter, Chapter) -> Int {
-        return when (manga.sorting) {
-            Manga.CHAPTER_SORTING_SOURCE -> when (sortDescending()) {
-                true -> { c1, c2 -> c1.source_order.compareTo(c2.source_order) }
-                false -> { c1, c2 -> c2.source_order.compareTo(c1.source_order) }
-            }
-            Manga.CHAPTER_SORTING_NUMBER -> when (sortDescending()) {
-                true -> { c1, c2 -> c2.chapter_number.compareTo(c1.chapter_number) }
-                false -> { c1, c2 -> c1.chapter_number.compareTo(c2.chapter_number) }
-            }
-            Manga.CHAPTER_SORTING_UPLOAD_DATE -> when (sortDescending()) {
-                true -> { c1, c2 -> c2.date_upload.compareTo(c1.date_upload) }
-                false -> { c1, c2 -> c1.date_upload.compareTo(c2.date_upload) }
-            }
-            else -> throw NotImplementedError("Unimplemented sorting method")
-        }
+        return observable.toSortedList(getChapterSort(manga))
     }
 
     /**
@@ -888,7 +871,7 @@ class MangaPresenter(
      * Returns the next unread chapter or null if everything is read.
      */
     fun getNextUnreadChapter(): ChapterItem? {
-        val chapters = chapters.sortedWith(getChapterSort())
+        val chapters = chapters.sortedWith(getChapterSort(manga))
         return if (source.isEhBasedSource()) {
             if (sortDescending()) {
                 chapters.firstOrNull()?.takeUnless { it.read }
@@ -901,6 +884,27 @@ class MangaPresenter(
             } else {
                 chapters.find { !it.read }
             }
+        }
+    }
+
+    fun getUnreadChaptersSorted(): List<ChapterItem> {
+        val chapters = chapters
+            .sortedWith(getChapterSort(manga))
+            .filter { !it.read && it.status == Download.State.NOT_DOWNLOADED }
+            .distinctBy { it.name }
+            // SY -->
+            .let {
+                if (source.isEhBasedSource()) {
+                    it.reversed()
+                } else {
+                    it
+                }
+            }
+        // SY <--
+        return if (sortDescending()) {
+            chapters.reversed()
+        } else {
+            chapters
         }
     }
 
