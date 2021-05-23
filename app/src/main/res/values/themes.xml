@@ -213,6 +213,8 @@
         <item name="colorPrimary">@color/colorAmoledPrimary</item>
         <item name="colorPrimaryVariant">@color/colorAmoledPrimary</item>
         <item name="colorSurface">@color/colorAmoledPrimary</item>
+        <item name="rippleColor">@color/md_white_1000_8</item>
+        <item name="rippleToolbarColor">@color/md_white_1000_8</item>
         <item name="background">@color/colorAmoledPrimary</item>
 
         <item name="android:colorBackground">@color/colorAmoledPrimary</item>

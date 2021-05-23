@@ -10,6 +10,8 @@
         <item name="colorPrimaryVariant">@color/colorPrimary</item>
         <item name="background">@color/colorPrimary</item>
         <item name="colorSurface">@color/dialogDark</item>
+        <item name="rippleSecondaryColor">@color/md_black_1000_6</item>
+        <item name="rippleToolbarColor">@color/md_black_1000_12</item>
     </style>
 
     <style name="Theme.Tachiyomi.Dark.Red" parent="Theme.Tachiyomi.Dark.Amoled">
@@ -20,6 +22,7 @@
         <item name="colorOnSurface">@color/red</item>
         <item name="colorAccent">@color/dark_red</item>
         <item name="colorOnPrimary">@color/red</item>
+        <item name="rippleSecondaryColor">@color/dark_red_6</item>
         <item name="android:textColor">@color/red</item>
         <item name="android:textColorPrimary">@color/red</item>
         <item name="android:textColorSecondary">@color/dark_red</item>
@@ -38,6 +41,7 @@
         <item name="colorOnSurface">@color/textColorPrimaryDusk</item>
         <item name="colorOnBackground">@color/textColorPrimaryDusk</item>
         <item name="colorAccent">@color/colorAccentDusk</item>
+        <item name="rippleSecondaryColor">@color/rippleColorDusk</item>
         <item name="background">@color/backgroundDusk</item>
 
         <item name="android:colorBackground">@color/backgroundDusk</item>
@@ -59,6 +63,9 @@
         <item name="colorOnSurface">@color/textColorPrimaryPink</item>
         <item name="colorOnBackground">@color/textColorPrimaryPink</item>
         <item name="colorAccent">@color/colorAccentPink</item>
+        <item name="rippleColor">@color/md_white_1000_8</item>
+        <item name="rippleSecondaryColor">@color/rippleColorPink</item>
+        <item name="rippleToolbarColor">@color/md_white_1000_8</item>
         <item name="background">@color/backgroundPink</item>
 
         <item name="android:colorBackground">@color/backgroundPink</item>
