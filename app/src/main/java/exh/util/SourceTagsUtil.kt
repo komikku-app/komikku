@@ -45,9 +45,9 @@ object SourceTagsUtil {
 
     private fun wrapTagNHentai(namespace: String, tag: String) = if (tag.contains(' ')) {
         if (namespace == "tag") {
-            "\"$tag\""
+            """"$tag""""
         } else {
-            "$namespace:\"$tag\""
+            """$namespace:"$tag""""
         }
     } else {
         "$namespace:$tag"

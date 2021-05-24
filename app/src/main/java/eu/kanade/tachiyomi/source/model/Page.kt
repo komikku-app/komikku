@@ -17,9 +17,7 @@ open class Page(
 
     // SY -->
     var imageUrl = imageUrl
-        get() {
-            return field?.let { DataSaver.compress(it) }
-        }
+        get() = field?.let { DataSaver.compress(it) }
     // SY <--
 
     val number: Int

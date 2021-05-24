@@ -145,7 +145,7 @@ class EhLoginActivity : BaseViewBindingActivity<EhActivityLoginBinding>() {
         }
     }
 
-    fun openIgneousDialog() {
+    private fun openIgneousDialog() {
         var igneous: CharSequence? = null
         MaterialDialog(this)
             .title(R.string.custom_igneous_cookie)
