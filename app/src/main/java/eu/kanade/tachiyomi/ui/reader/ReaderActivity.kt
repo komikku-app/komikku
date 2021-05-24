@@ -76,8 +76,8 @@ import eu.kanade.tachiyomi.util.view.isDefaultBar
 import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.util.view.showBar
-import eu.kanade.tachiyomi.widget.SimpleAnimationListener
-import eu.kanade.tachiyomi.widget.SimpleSeekBarListener
+import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
+import eu.kanade.tachiyomi.widget.listener.SimpleSeekBarListener
 import exh.log.xLogE
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
