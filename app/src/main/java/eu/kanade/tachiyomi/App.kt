@@ -104,9 +104,6 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
-        // Reset Incognito Mode on relaunch
-        preferences.incognitoMode().set(false)
-
         // Show notification to disable Incognito Mode when it's enabled
         preferences.incognitoMode().asFlow()
             .onEach { enabled ->
