@@ -35,6 +35,7 @@ abstract class BaseThemedActivity : AppCompatActivity() {
             when (preferences.themeLight().get()) {
                 LightThemeVariant.default -> R.style.Theme_Tachiyomi_Light
                 LightThemeVariant.blue -> R.style.Theme_Tachiyomi_Light_Blue
+                LightThemeVariant.strawberrydaiquiri -> R.style.Theme_Tachiyomi_Light_StrawberryDaiquiri
             }
         }
         setTheme(themeId)
