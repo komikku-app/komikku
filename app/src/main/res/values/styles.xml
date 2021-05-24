@@ -6,28 +6,20 @@
     <!--========-->
     <style name="Theme.Toolbar" parent="@style/ThemeOverlay.MaterialComponents.ActionBar" />
 
-    <style name="Theme.Toolbar.Red" parent="Theme.Toolbar.Custom">
-        <item name="android:textColorPrimary">@color/red</item>
-    </style>
-
-    <style name="Theme.Toolbar.MidnightDusk" parent="Theme.Toolbar.Custom">
-        <item name="android:textColorPrimary">@color/md_white_1000</item>
-    </style>
-
-    <style name="Theme.Toolbar.HotPink" parent="Theme.Toolbar.Custom">
-        <item name="android:textColorPrimary">@color/md_white_1000</item>
-    </style>
-
-    <style name="Theme.Toolbar.Light" parent="Theme.Toolbar.Custom.Dark">
-        <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
-    </style>
-
-    <style name="Theme.Toolbar.Custom" parent="@style/ThemeOverlay.MaterialComponents.ActionBar">
+    <style name="Theme.Toolbar.Custom.Light" parent="@style/ThemeOverlay.MaterialComponents.ActionBar">
         <item name="android:colorControlHighlight">?attr/rippleToolbarColor</item>
     </style>
 
     <style name="Theme.Toolbar.Custom.Dark" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
         <item name="android:colorControlHighlight">?attr/rippleToolbarColor</item>
+    </style>
+
+    <style name="Theme.Toolbar.Custom.Amoled" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        <item name="android:colorControlHighlight">?attr/rippleToolbarColor</item>
+    </style>
+
+    <style name="Theme.Toolbar.Custom.PopupTheme" parent="Theme.Toolbar.Custom.Dark">
+        <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
     </style>
 
     <style name="Theme.Toolbar.Navigation" parent="Widget.AppCompat.Toolbar.Button.Navigation">
@@ -78,6 +70,10 @@
 
     <style name="Theme.AlertDialog.Dark" parent="Theme.AlertDialog">
         <item name="colorAccent">@color/colorAccentDark</item>
+    </style>
+
+    <style name="Theme.AlertDialog.Amoled" parent="Theme.AlertDialog">
+        <item name="colorAccent">@color/colorAccentAmoled</item>
     </style>
 
 
@@ -392,19 +388,5 @@
         <item name="android:selectableItemBackground">@drawable/ripple_background</item>
     </style>
 
-
-    <!--==-->
-    <!--SY-->
-    <!--==-->
-    <style name="SheetDialog" parent="Theme.Design.Light.BottomSheetDialog">
-        <!--<item name="android:windowCloseOnTouchOutside">false</item>-->
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:colorBackground">     @android:color/transparent</item>
-        <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.3</item>
-        <item name="android:windowFrame">@null</item>
-        <item name="android:windowIsFloating">true</item>
-    </style>
 
 </resources>

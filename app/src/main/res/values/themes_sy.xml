@@ -4,7 +4,7 @@
     <!--=============-->
     <!-- Dark Themes -->
     <!--=============-->
-    <style name="Theme.Tachiyomi.Dark.AmoledBlue" parent="Theme.Tachiyomi.Dark.Amoled">
+    <style name="Theme.Tachiyomi.Amoled.Blue" parent="Theme.Tachiyomi.Amoled">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorAccentOnPrimary">@color/textColorPrimaryDark</item>
         <item name="colorPrimaryVariant">@color/colorPrimary</item>
@@ -14,8 +14,8 @@
         <item name="rippleToolbarColor">@color/md_black_1000_12</item>
     </style>
 
-    <style name="Theme.Tachiyomi.Dark.Red" parent="Theme.Tachiyomi.Dark.Amoled">
-        <item name="actionBarTheme">@style/Theme.Toolbar.Red</item>
+    <style name="Theme.Tachiyomi.Dark.Red" parent="Theme.Tachiyomi.Amoled">
+        <item name="actionBarTheme">@style/Theme.Toolbar.Custom.Amoled.Red</item>
         <item name="colorPrimary">@color/md_black_1000</item>
         <item name="colorPrimaryVariant">@color/red</item>
         <item name="colorSecondary">@color/dark_red</item>
@@ -28,49 +28,6 @@
         <item name="android:textColorSecondary">@color/dark_red</item>
         <item name="android:textColorHint">@color/dark_red</item>
         <item name="md_color_title">@color/red</item>
-    </style>
-
-    <style name="Theme.Tachiyomi.Dark.MidnightDusk" parent="Theme.Base.Dark">
-        <item name="colorPrimary">@color/dialogDusk</item>
-        <item name="colorOnPrimary">@color/textColorPrimaryDusk</item>
-        <item name="colorAccentOnPrimary">@color/colorAccentDusk</item>
-        <item name="colorPrimaryVariant">@color/dialogDusk</item>
-        <item name="colorSecondary">@color/colorAccentDusk</item>
-        <item name="colorOnSecondary">@color/textColorPrimaryDusk</item>
-        <item name="colorSurface">@color/dialogDusk</item>
-        <item name="colorOnSurface">@color/textColorPrimaryDusk</item>
-        <item name="colorOnBackground">@color/textColorPrimaryDusk</item>
-        <item name="colorAccent">@color/colorAccentDusk</item>
-        <item name="rippleSecondaryColor">@color/rippleColorDusk</item>
-        <item name="background">@color/backgroundDusk</item>
-
-        <item name="android:colorBackground">@color/backgroundDusk</item>
-
-        <!-- Custom Attributes -->
-        <item name="colorLibrarySelection">@color/selectorColorDark</item>
-        <item name="colorLibrarySelectionActive">@color/selectorColorDark</item>
-    </style>
-
-    <style name="Theme.Tachiyomi.Dark.HotPink" parent="Theme.Base.Dark">
-        <item name="colorPrimary">@color/dialogPink</item>
-        <item name="colorPrimaryDark">@color/dialogPink</item>
-        <item name="colorOnPrimary">@color/textColorPrimaryPink</item>
-        <item name="colorAccentOnPrimary">@color/colorAccentPink</item>
-        <item name="colorPrimaryVariant">@color/dialogPink</item>
-        <item name="colorSecondary">@color/colorAccentPink</item>
-        <item name="colorOnSecondary">@color/textColorPrimaryPink</item>
-        <item name="colorSurface">@color/dialogPink</item>
-        <item name="colorOnSurface">@color/textColorPrimaryPink</item>
-        <item name="colorOnBackground">@color/textColorPrimaryPink</item>
-        <item name="colorAccent">@color/colorAccentPink</item>
-        <item name="rippleColor">@color/md_white_1000_8</item>
-        <item name="rippleSecondaryColor">@color/rippleColorPink</item>
-        <item name="rippleToolbarColor">@color/md_white_1000_8</item>
-        <item name="background">@color/backgroundPink</item>
-
-        <item name="android:colorBackground">@color/backgroundPink</item>
-        <item name="android:windowBackground">@color/backgroundPink</item>
-        <item name="android:statusBarColor">@color/dialogPink</item>
     </style>
 
 </resources>

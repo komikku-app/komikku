@@ -24,11 +24,11 @@ object PreferenceValues {
     enum class DarkThemeVariant {
         default,
         blue,
-        amoledblue,
-        amoled,
-        red,
         midnightdusk,
+        amoled,
         hotpink,
+        amoledblue,
+        red,
     }
 
     /* ktlint-enable experimental:enum-entry-name-case */
