@@ -64,21 +64,21 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
-        val pairs = mutableListOf<Pair<String, String>>()
-        pvId?.let { pairs += context.getString(R.string.id) to it }
-        url?.let { pairs += context.getString(R.string.url) to it }
-        thumbnailUrl?.let { pairs += context.getString(R.string.thumbnail_url) to it }
-        title?.let { pairs += context.getString(R.string.title) to it }
-        val altTitles = altTitles.joinToString()
-        if (altTitles.isNotBlank()) {
-            pairs += context.getString(R.string.alt_titles) to altTitles
+        return with(context) {
+            listOfNotNull(
+                pvId?.let { getString(R.string.id) to it },
+                url?.let { getString(R.string.url) to it },
+                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
+                title?.let { getString(R.string.title) to it },
+                altTitles.takeUnless { it.isEmpty() }?.joinToString()
+                    ?.let { getString(R.string.alt_titles) to it },
+                artist?.let { getString(R.string.artist) to it },
+                genre?.let { getString(R.string.genre) to it },
+                rating?.let { getString(R.string.average_rating) to it.toString() },
+                status?.let { getString(R.string.status) to it },
+                lang?.let { getString(R.string.language) to it },
+            )
         }
-        artist?.let { pairs += context.getString(R.string.artist) to it }
-        genre?.let { pairs += context.getString(R.string.genre) to it }
-        rating?.let { pairs += context.getString(R.string.average_rating) to it.toString() }
-        status?.let { pairs += context.getString(R.string.status) to it }
-        lang?.let { pairs += context.getString(R.string.language) to it }
-        return pairs
     }
 
     companion object {
@@ -88,9 +88,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
         const val TAG_TYPE_DEFAULT = 0
 
         private fun splitGalleryUrl(url: String) =
-            url.let {
-                it.toUri().pathSegments.filterNot(String::isNullOrBlank)
-            }
+            url.toUri().pathSegments.filterNot(String::isNullOrBlank)
 
         fun pvIdFromUrl(url: String): String = splitGalleryUrl(url).last()
     }

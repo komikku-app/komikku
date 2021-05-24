@@ -58,7 +58,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
         }
 
         // Set artist (if we can find one)
-        val artist = tags.filter { it.namespace == EH_ARTIST_NAMESPACE }.let { tags ->
+        val artist = tags.ofNamespace(EH_ARTIST_NAMESPACE).let { tags ->
             if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
         }
 
@@ -90,29 +90,29 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
-        val pairs = mutableListOf<Pair<String, String>>()
-
-        gId?.let { pairs += context.getString(R.string.id) to it }
-        gToken?.let { pairs += context.getString(R.string.token) to it }
-        exh?.let { pairs += context.getString(R.string.is_exhentai_gallery) to context.getString(if (it) android.R.string.yes else android.R.string.no) }
-        thumbnailUrl?.let { pairs += context.getString(R.string.thumbnail_url) to it }
-        title?.let { pairs += context.getString(R.string.title) to it }
-        altTitle?.let { pairs += context.getString(R.string.alt_title) to it }
-        genre?.let { pairs += context.getString(R.string.genre) to it }
-        datePosted?.let { pairs += context.getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
-        parent?.let { pairs += context.getString(R.string.parent) to it }
-        visible?.let { pairs += context.getString(R.string.visible) to it }
-        language?.let { pairs += context.getString(R.string.language) to it }
-        translated?.let { pairs += "Translated" to context.getString(if (it) android.R.string.yes else android.R.string.no) }
-        size?.let { pairs += context.getString(R.string.gallery_size) to MetadataUtil.humanReadableByteCount(it, true) }
-        length?.let { pairs += context.getString(R.string.page_count) to it.toString() }
-        favorites?.let { pairs += context.getString(R.string.total_favorites) to it.toString() }
-        ratingCount?.let { pairs += context.getString(R.string.total_ratings) to it.toString() }
-        averageRating?.let { pairs += context.getString(R.string.average_rating) to it.toString() }
-        aged.let { pairs += context.getString(R.string.aged) to context.getString(if (it) android.R.string.yes else android.R.string.no) }
-        lastUpdateCheck.let { pairs += context.getString(R.string.last_update_check) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
-
-        return pairs
+        return with(context) {
+            listOfNotNull(
+                gId?.let { getString(R.string.id) to it },
+                gToken?.let { getString(R.string.token) to it },
+                exh?.let { getString(R.string.is_exhentai_gallery) to it.toString() },
+                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
+                title?.let { getString(R.string.title) to it },
+                altTitle?.let { getString(R.string.alt_title) to it },
+                genre?.let { getString(R.string.genre) to it },
+                datePosted?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
+                parent?.let { getString(R.string.parent) to it },
+                visible?.let { getString(R.string.visible) to it },
+                language?.let { getString(R.string.language) to it },
+                translated?.let { getString(R.string.translated) to it.toString() },
+                size?.let { getString(R.string.gallery_size) to MetadataUtil.humanReadableByteCount(it, true) },
+                length?.let { getString(R.string.page_count) to it.toString() },
+                favorites?.let { getString(R.string.total_favorites) to it.toString() },
+                ratingCount?.let { getString(R.string.total_ratings) to it.toString() },
+                averageRating?.let { getString(R.string.average_rating) to it.toString() },
+                aged.let { getString(R.string.aged) to it.toString() },
+                lastUpdateCheck.let { getString(R.string.last_update_check) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
+            )
+        }
     }
 
     companion object {

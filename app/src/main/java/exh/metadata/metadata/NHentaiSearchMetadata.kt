@@ -54,7 +54,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         }
 
         // Set artist (if we can find one)
-        val artist = tags.filter { it.namespace == NHENTAI_ARTIST_NAMESPACE }.let { tags ->
+        val artist = tags.ofNamespace(NHENTAI_ARTIST_NAMESPACE).let { tags ->
             if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
         }
 
@@ -86,19 +86,21 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
-        val pairs = mutableListOf<Pair<String, String>>()
-        nhId?.let { pairs += context.getString(R.string.id) to it.toString() }
-        uploadDate?.let { pairs += context.getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) }
-        favoritesCount?.let { pairs += context.getString(R.string.total_favorites) to it.toString() }
-        mediaId?.let { pairs += context.getString(R.string.media_id) to it }
-        japaneseTitle?.let { pairs += context.getString(R.string.japanese_title) to it }
-        englishTitle?.let { pairs += context.getString(R.string.english_title) to it }
-        shortTitle?.let { pairs += context.getString(R.string.short_title) to it }
-        coverImageType?.let { pairs += context.getString(R.string.cover_image_file_type) to it }
-        pageImageTypes.size.let { pairs += context.getString(R.string.page_count) to it.toString() }
-        thumbnailImageType?.let { pairs += context.getString(R.string.thumbnail_image_file_type) to it }
-        scanlator?.let { pairs += context.getString(R.string.scanlator) to it }
-        return pairs
+        return with(context) {
+            listOfNotNull(
+                nhId?.let { getString(R.string.id) to it.toString() },
+                uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) },
+                favoritesCount?.let { getString(R.string.total_favorites) to it.toString() },
+                mediaId?.let { getString(R.string.media_id) to it },
+                japaneseTitle?.let { getString(R.string.japanese_title) to it },
+                englishTitle?.let { getString(R.string.english_title) to it },
+                shortTitle?.let { getString(R.string.short_title) to it },
+                coverImageType?.let { getString(R.string.cover_image_file_type) to it },
+                pageImageTypes.size.let { getString(R.string.page_count) to it.toString() },
+                thumbnailImageType?.let { getString(R.string.thumbnail_image_file_type) to it },
+                scanlator?.let { getString(R.string.scanlator) to it },
+            )
+        }
     }
 
     companion object {

@@ -66,28 +66,24 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
-        val pairs = mutableListOf<Pair<String, String>>()
-        tmId?.let { pairs += context.getString(R.string.id) to it.toString() }
-        title?.let { pairs += context.getString(R.string.title) to it }
-        uploader?.let { pairs += context.getString(R.string.uploader) to it }
-        uploadDate?.let { pairs += context.getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
-        length?.let { pairs += context.getString(R.string.page_count) to it.toString() }
-        ratingString?.let { pairs += context.getString(R.string.rating_string) to it }
-        averageRating?.let { pairs += context.getString(R.string.average_rating) to it.toString() }
-        userRatings?.let { pairs += context.getString(R.string.total_ratings) to it.toString() }
-        favorites?.let { pairs += context.getString(R.string.total_favorites) to it.toString() }
-        category?.let { pairs += context.getString(R.string.genre) to it }
-        collection?.let { pairs += context.getString(R.string.collection) to it }
-        group?.let { pairs += context.getString(R.string.group) to it }
-        val parodiesString = parody.joinToString()
-        if (parodiesString.isNotEmpty()) {
-            pairs += context.getString(R.string.parodies) to parodiesString
+        return with(context) {
+            listOfNotNull(
+                tmId?.let { getString(R.string.id) to it.toString() },
+                title?.let { getString(R.string.title) to it },
+                uploader?.let { getString(R.string.uploader) to it },
+                uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
+                length?.let { getString(R.string.page_count) to it.toString() },
+                ratingString?.let { getString(R.string.rating_string) to it },
+                averageRating?.let { getString(R.string.average_rating) to it.toString() },
+                userRatings?.let { getString(R.string.total_ratings) to it.toString() },
+                favorites?.let { getString(R.string.total_favorites) to it.toString() },
+                category?.let { getString(R.string.genre) to it },
+                collection?.let { getString(R.string.collection) to it },
+                group?.let { getString(R.string.group) to it },
+                parody.takeUnless { it.isEmpty() }?.joinToString()?.let { getString(R.string.parodies) to it },
+                character.takeUnless { it.isEmpty() }?.joinToString()?.let { getString(R.string.characters) to it },
+            )
         }
-        val charactersString = character.joinToString()
-        if (charactersString.isNotEmpty()) {
-            pairs += context.getString(R.string.characters) to charactersString
-        }
-        return pairs
     }
 
     companion object {

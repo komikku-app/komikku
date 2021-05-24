@@ -54,18 +54,20 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
-        val pairs = mutableListOf<Pair<String, String>>()
-        prId?.let { pairs += context.getString(R.string.id) to it.toString() }
-        title?.let { pairs += context.getString(R.string.title) to it }
-        altTitle?.let { pairs += context.getString(R.string.alt_title) to it }
-        thumbnailUrl?.let { pairs += context.getString(R.string.thumbnail_url) to it }
-        uploaderDisp?.let { pairs += context.getString(R.string.uploader_capital) to it }
-        uploader?.let { pairs += context.getString(R.string.uploader) to it }
-        pages?.let { pairs += context.getString(R.string.page_count) to it.toString() }
-        fileSize?.let { pairs += context.getString(R.string.gallery_size) to it }
-        ratingCount?.let { pairs += context.getString(R.string.total_ratings) to it.toString() }
-        averageRating?.let { pairs += context.getString(R.string.average_rating) to it.toString() }
-        return pairs
+        return with(context) {
+            listOfNotNull(
+                prId?.let { getString(R.string.id) to it.toString() },
+                title?.let { getString(R.string.title) to it },
+                altTitle?.let { getString(R.string.alt_title) to it },
+                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
+                uploaderDisp?.let { getString(R.string.uploader_capital) to it },
+                uploader?.let { getString(R.string.uploader) to it },
+                pages?.let { getString(R.string.page_count) to it.toString() },
+                fileSize?.let { getString(R.string.gallery_size) to it },
+                ratingCount?.let { getString(R.string.total_ratings) to it.toString() },
+                averageRating?.let { getString(R.string.average_rating) to it.toString() },
+            )
+        }
     }
 
     companion object {

@@ -38,14 +38,14 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
-        val pairs = mutableListOf<Pair<String, String>>()
-        title?.let { pairs += context.getString(R.string.title) to it }
-        val path = path.joinToString("/", prefix = "/")
-        if (path.isNotBlank()) {
-            pairs += context.getString(R.string.path) to path
+        return with(context) {
+            listOfNotNull(
+                title?.let { getString(R.string.title) to it },
+                path.takeUnless { it.isEmpty() }?.joinToString("/", prefix = "/")
+                    ?.let { getString(R.string.path) to it },
+                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it }
+            )
         }
-        thumbnailUrl?.let { pairs += context.getString(R.string.thumbnail_url) to it }
-        return pairs
     }
 
     companion object {

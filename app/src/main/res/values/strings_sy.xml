@@ -584,6 +584,7 @@
     <string name="mal_id">Mal id</string>
     <string name="manga_updates_id">Manga updates id</string>
     <string name="anime_planet_id">Anime planet id</string>
+    <string name="translated">Translated</string>
 
     <!-- Extra gallery info -->
     <plurals name="num_pages">

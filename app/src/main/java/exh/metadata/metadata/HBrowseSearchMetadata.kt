@@ -46,13 +46,15 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
     }
 
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
-        val pairs = mutableListOf<Pair<String, String>>()
-        hbId?.let { pairs += context.getString(R.string.id) to it.toString() }
-        hbUrl?.let { pairs += context.getString(R.string.url) to it }
-        thumbnail?.let { pairs += context.getString(R.string.thumbnail_url) to it }
-        title?.let { pairs += context.getString(R.string.title) to it }
-        length?.let { pairs += context.getString(R.string.page_count) to it.toString() }
-        return pairs
+        return with(context) {
+            listOfNotNull(
+                hbId?.let { getString(R.string.id) to it.toString() },
+                hbUrl?.let { getString(R.string.url) to it },
+                thumbnail?.let { getString(R.string.thumbnail_url) to it },
+                title?.let { getString(R.string.title) to it },
+                length?.let { getString(R.string.page_count) to it.toString() }
+            )
+        }
     }
 
     companion object {
