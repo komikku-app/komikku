@@ -45,8 +45,6 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun displayScore(track: Track) = track.score.toInt().toString()
 
-    override suspend fun add(track: Track): Track = update(track)
-
     override suspend fun update(track: Track): Track {
         return withIOContext {
             val mdex = mdex ?: throw MangaDexNotFoundException()
