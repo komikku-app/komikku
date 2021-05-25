@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.UnattendedTrackService
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
@@ -355,6 +356,7 @@ class LibraryUpdateService(
         val newUpdates = mutableListOf<Pair<LibraryManga, Array<Chapter>>>()
         val failedUpdates = mutableListOf<Pair<Manga, String?>>()
         var hasDownloads = false
+        val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
         withIOContext {
             mangaToUpdate.groupBy { it.source }
@@ -392,6 +394,10 @@ class LibraryUpdateService(
                                             e.message
                                         }
                                         failedUpdates.add(manga to errorMessage)
+                                    }
+
+                                    if (preferences.autoUpdateTrackers()) {
+                                        updateTrackings(manga, loggedServices)
                                     }
                                 }
                         }
@@ -530,31 +536,35 @@ class LibraryUpdateService(
             notifier.showProgressNotification(manga, progressCount++, mangaToUpdate.size)
 
             // Update the tracking details.
-            db.getTracks(manga).executeAsBlocking()
-                .map { track ->
-                    supervisorScope {
-                        async {
-                            val service = trackManager.getService(track.sync_id)
-                            if (service != null && service in loggedServices) {
-                                try {
-                                    val updatedTrack = service.refresh(track)
-                                    db.insertTrack(updatedTrack).executeAsBlocking()
+            updateTrackings(manga, loggedServices)
+        }
 
-                                    if (service is UnattendedTrackService) {
-                                        syncChaptersWithTrackServiceTwoWay(db, db.getChapters(manga).executeAsBlocking(), track, service)
-                                    }
-                                } catch (e: Throwable) {
-                                    // Ignore errors and continue
-                                    Timber.e(e)
+        notifier.cancelProgressNotification()
+    }
+
+    private suspend fun updateTrackings(manga: LibraryManga, loggedServices: List<TrackService>) {
+        db.getTracks(manga).executeAsBlocking()
+            .map { track ->
+                supervisorScope {
+                    async {
+                        val service = trackManager.getService(track.sync_id)
+                        if (service != null && service in loggedServices) {
+                            try {
+                                val updatedTrack = service.refresh(track)
+                                db.insertTrack(updatedTrack).executeAsBlocking()
+
+                                if (service is UnattendedTrackService) {
+                                    syncChaptersWithTrackServiceTwoWay(db, db.getChapters(manga).executeAsBlocking(), track, service)
                                 }
+                            } catch (e: Throwable) {
+                                // Ignore errors and continue
+                                Timber.e(e)
                             }
                         }
                     }
                 }
-                .awaitAll()
-        }
-
-        notifier.cancelProgressNotification()
+            }
+            .awaitAll()
     }
 
     // SY -->
