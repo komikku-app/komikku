@@ -331,7 +331,7 @@ class PagerPageHolder(
                 }
                 // SY <--
 
-                ImageUtil.findImageType(stream) == ImageUtil.ImageType.GIF
+                ImageUtil.isAnimatedAndSupported(stream)
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
