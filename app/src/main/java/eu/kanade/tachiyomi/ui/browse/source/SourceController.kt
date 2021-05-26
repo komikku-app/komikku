@@ -78,7 +78,7 @@ class SourceController(bundle: Bundle? = null) :
         // SY -->
         return when (mode) {
             Mode.CATALOGUE -> applicationContext?.getString(R.string.label_sources)
-            Mode.SMART_SEARCH -> "Find in another source"
+            Mode.SMART_SEARCH -> applicationContext?.getString(R.string.find_in_another_source)
         }
         // SY <--
     }
@@ -143,7 +143,9 @@ class SourceController(bundle: Bundle? = null) :
             Mode.CATALOGUE -> {
                 // Open the catalogue view.
                 // SY -->
-                if (source.supportsLatest && preferences.useNewSourceNavigation().get()) openIndexSource(source) else openSource(source, BrowseSourceController(source))
+                if (source.supportsLatest && preferences.useNewSourceNavigation().get()) {
+                    openIndexSource(source)
+                } else openSource(source, BrowseSourceController(source))
                 // SY <--
             }
             Mode.SMART_SEARCH -> router.pushController(
