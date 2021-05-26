@@ -75,7 +75,7 @@ class LibraryComfortableGridHolder(
             text = item.downloadCount.toString()
         }
         // set local visibility if its local manga
-        binding.localText.isVisible = item.manga.isLocal()
+        binding.localText.isVisible = item.isLocal
 
         // SY -->
         binding.playLayout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
