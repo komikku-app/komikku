@@ -14,7 +14,7 @@ fun Manga.shouldDeleteChapters(db: DatabaseHelper, prefs: PreferencesHelper): Bo
     val categoriesForManga =
         db.getCategoriesForManga(this).executeAsBlocking()
             .mapNotNull { it.id }
-            .takeUnless { it.isEmpty() } ?: listOf(0)
+            .ifEmpty { listOf(0) }
 
     // We want to return false if there is intersects
     // so we use isEmpty to return true if its empty

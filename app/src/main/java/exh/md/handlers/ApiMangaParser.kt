@@ -18,6 +18,7 @@ import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.dropEmpty
 import exh.util.executeOnIO
 import exh.util.floor
+import exh.util.nullIfEmpty
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import tachiyomi.source.model.ChapterInfo
@@ -71,7 +72,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                 val networkManga = networkApiManga.data.attributes
                 mdUuid = networkApiManga.data.id
                 title = MdUtil.cleanString(networkManga.title[lang] ?: networkManga.title["en"]!!)
-                altTitles = networkManga.altTitles.mapNotNull { it[lang] }
+                altTitles = networkManga.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
                 val coverUrl = MdUtil.formThumbUrl(networkApiManga.data.id)
                 /*val coverUrlId = networkApiManga.relationships.firstOrNull { it.type == "cover_art" }?.id

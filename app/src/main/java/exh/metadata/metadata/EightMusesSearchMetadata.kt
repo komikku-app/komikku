@@ -3,6 +3,7 @@ package exh.metadata.metadata
 import android.content.Context
 import eu.kanade.tachiyomi.R
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
 import tachiyomi.source.model.MangaInfo
 
@@ -41,7 +42,7 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
         return with(context) {
             listOfNotNull(
                 title?.let { getString(R.string.title) to it },
-                path.takeUnless { it.isEmpty() }?.joinToString("/", prefix = "/")
+                path.nullIfEmpty()?.joinToString("/", prefix = "/")
                     ?.let { getString(R.string.path) to it },
                 thumbnailUrl?.let { getString(R.string.thumbnail_url) to it }
             )

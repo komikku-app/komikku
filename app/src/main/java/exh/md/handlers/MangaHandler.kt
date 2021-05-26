@@ -117,7 +117,7 @@ class MangaHandler(
         }
     }
 
-    suspend fun getTrackingInfo(track: Track, mdList: MdList): Pair<Track, MangaDexSearchMetadata?> {
+    suspend fun getTrackingInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
         return withIOContext {
             val metadata = async {
                 val mangaUrl = MdUtil.buildMangaUrl(MdUtil.getMangaId(track.tracking_url))

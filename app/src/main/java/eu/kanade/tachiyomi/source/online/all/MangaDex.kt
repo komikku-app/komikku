@@ -247,7 +247,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
-        return mangaHandler.getTrackingInfo(track, mdList)
+        return mangaHandler.getTrackingInfo(track)
     }
 
     override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {

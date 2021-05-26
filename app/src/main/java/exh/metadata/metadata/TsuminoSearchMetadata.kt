@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
 import tachiyomi.source.model.MangaInfo
 import java.text.SimpleDateFormat
@@ -80,8 +81,8 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
                 category?.let { getString(R.string.genre) to it },
                 collection?.let { getString(R.string.collection) to it },
                 group?.let { getString(R.string.group) to it },
-                parody.takeUnless { it.isEmpty() }?.joinToString()?.let { getString(R.string.parodies) to it },
-                character.takeUnless { it.isEmpty() }?.joinToString()?.let { getString(R.string.characters) to it },
+                parody.nullIfEmpty()?.joinToString()?.let { getString(R.string.parodies) to it },
+                character.nullIfEmpty()?.joinToString()?.let { getString(R.string.characters) to it },
             )
         }
     }

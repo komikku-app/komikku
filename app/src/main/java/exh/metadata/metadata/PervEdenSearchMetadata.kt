@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import eu.kanade.tachiyomi.R
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTitle
+import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
 import tachiyomi.source.model.MangaInfo
 
@@ -70,7 +71,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
                 url?.let { getString(R.string.url) to it },
                 thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
                 title?.let { getString(R.string.title) to it },
-                altTitles.takeUnless { it.isEmpty() }?.joinToString()
+                altTitles.nullIfEmpty()?.joinToString()
                     ?.let { getString(R.string.alt_titles) to it },
                 artist?.let { getString(R.string.artist) to it },
                 genre?.let { getString(R.string.genre) to it },
