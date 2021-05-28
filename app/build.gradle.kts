@@ -266,7 +266,7 @@ dependencies {
 
     implementation(kotlin("reflect", version = BuildPluginsVersion.KOTLIN))
 
-    val coroutinesVersion = "1.4.3"
+    val coroutinesVersion = "1.5.0"
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
 
@@ -299,10 +299,6 @@ dependencies {
 
     // RatingBar (SY)
     implementation("me.zhanghai.android.materialratingbar:library:1.4.0")
-
-    // JsonReader for similar manga
-    implementation("com.squareup.moshi:moshi:1.12.0")
-    // SY <--
 }
 
 tasks {

@@ -17,7 +17,9 @@ import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.preference.CHARGING
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
+import eu.kanade.tachiyomi.data.preference.UNMETERED_NETWORK
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.EhDialogCategoriesBinding
 import eu.kanade.tachiyomi.databinding.EhDialogLanguagesBinding
@@ -601,8 +603,26 @@ class SettingsEhController : SettingsController() {
                 key = PreferenceKeys.eh_autoUpdateRestrictions
                 titleRes = R.string.auto_update_restrictions
                 entriesRes = arrayOf(R.string.network_unmetered, R.string.charging)
-                entryValues = arrayOf("wifi", "ac")
-                summaryRes = R.string.pref_library_update_restriction_summary
+                entryValues = arrayOf(UNMETERED_NETWORK, CHARGING)
+
+                fun updateSummary() {
+                    val restrictions = preferences.exhAutoUpdateRequirements().get()
+                        .sorted()
+                        .map {
+                            when (it) {
+                                UNMETERED_NETWORK -> context.getString(R.string.network_unmetered)
+                                CHARGING -> context.getString(R.string.charging)
+                                else -> it
+                            }
+                        }
+                    val restrictionsText = if (restrictions.isEmpty()) {
+                        context.getString(R.string.none)
+                    } else {
+                        restrictions.joinToString()
+                    }
+
+                    summary = context.getString(R.string.restrictions, restrictionsText)
+                }
 
                 preferences.exhAutoUpdateFrequency().asFlow()
                     .onEach { isVisible = it > 0 }
@@ -613,6 +633,10 @@ class SettingsEhController : SettingsController() {
                     Handler().post { EHentaiUpdateWorker.scheduleBackground(context) }
                     true
                 }
+
+                preferences.exhAutoUpdateRequirements().asFlow()
+                    .onEach { updateSummary() }
+                    .launchIn(viewScope)
             }
 
             preference {
