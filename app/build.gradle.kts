@@ -8,11 +8,11 @@ plugins {
     id("com.android.application")
     id("com.mikepenz.aboutlibraries.plugin")
     kotlin("android")
-    kotlin("kapt")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
     id("com.github.zellius.shortcut-helper")
     // Realm (EH)
+    kotlin("kapt")
     id("realm-android")
 }
 
