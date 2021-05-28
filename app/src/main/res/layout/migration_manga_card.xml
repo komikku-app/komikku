@@ -54,13 +54,13 @@
                 style="@style/TextAppearance.Regular.Caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/colorAccentDark"
+                android:background="?attr/colorSecondary"
                 android:paddingStart="3dp"
                 android:paddingTop="1dp"
                 android:paddingEnd="3dp"
                 android:paddingBottom="1dp"
                 android:text="101"
-                android:textColor="@color/md_white_1000"
+                android:textColor="?attr/colorOnSecondary"
                 android:visibility="gone"
                 tools:visibility="visible" />
         </LinearLayout>

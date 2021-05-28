@@ -9,6 +9,14 @@
     </style>
 
 
+    <!--===========-->
+    <!--AlertDialog-->
+    <!--===========-->
+    <style name="Theme.AlertDialog.Amoled.Red" parent="Theme.AlertDialog">
+        <item name="colorAccent">@color/red</item>
+    </style>
+
+
     <!--=====-->
     <!--Sheet-->
     <!--=====-->
