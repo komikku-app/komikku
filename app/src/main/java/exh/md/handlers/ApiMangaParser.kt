@@ -121,7 +121,7 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                 artists = artistIds.mapNotNull { authorMap[it] }.dropEmpty()
 
                 langFlag = networkManga.originalLanguage
-                val lastChapter = networkManga.lastChapter.toFloatOrNull()
+                val lastChapter = networkManga.lastChapter?.toFloatOrNull()
                 lastChapterNumber = lastChapter?.floor()
 
                 /*networkManga.rating?.let {

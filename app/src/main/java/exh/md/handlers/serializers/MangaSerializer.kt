@@ -28,7 +28,7 @@ data class NetworkMangaAttributes(
     val links: Map<String, String>?,
     val originalLanguage: String,
     val lastVolume: String?,
-    val lastChapter: String,
+    val lastChapter: String?,
     val contentRating: String?,
     val publicationDemographic: String?,
     val status: String?,
