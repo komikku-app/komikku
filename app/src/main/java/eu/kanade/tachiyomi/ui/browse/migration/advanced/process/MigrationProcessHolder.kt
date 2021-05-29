@@ -52,7 +52,7 @@ class MigrationProcessHolder(
             val source = item.manga.mangaSource()
 
             binding.migrationMenu.setVectorCompat(
-                R.drawable.ic_more_vert_24dp,
+                R.drawable.ic_more_24dp,
                 R.attr.colorOnPrimary
             )
             binding.skipManga.setVectorCompat(

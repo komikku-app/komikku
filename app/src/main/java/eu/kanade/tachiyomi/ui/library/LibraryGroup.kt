@@ -24,7 +24,7 @@ object LibraryGroup {
         return when (type) {
             BY_STATUS -> R.drawable.ic_progress_clock_24dp
             BY_TRACK_STATUS -> R.drawable.ic_sync_24dp
-            BY_SOURCE -> R.drawable.ic_explore_24dp
+            BY_SOURCE -> R.drawable.ic_browse_filled_24dp
             UNGROUPED -> R.drawable.ic_ungroup_24dp
             else -> R.drawable.ic_label_24dp
         }

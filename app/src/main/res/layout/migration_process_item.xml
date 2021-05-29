@@ -56,7 +56,7 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/migration_manga_card_to"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_more_vert_24dp"
+        app:srcCompat="@drawable/ic_more_24dp"
         android:visibility="invisible"
         app:tint="?attr/colorOnPrimary" />
 

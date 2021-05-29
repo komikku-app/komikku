@@ -16,7 +16,7 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_match_enabled"
-        android:icon="@drawable/ic_explore_24dp"
+        android:icon="@drawable/ic_browse_filled_24dp"
         android:title="@string/match_enabled_sources"
         app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />

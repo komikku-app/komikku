@@ -79,7 +79,7 @@ class MoreController :
             if (preferences.hideUpdatesButton().get()) {
                 preference {
                     titleRes = R.string.label_recent_updates
-                    iconRes = R.drawable.ic_new_releases_state
+                    iconRes = R.drawable.ic_updates_outline_24dp
                     iconTint = tintColor
                     onClick {
                         router.pushController(UpdatesController().withFadeTransaction())
