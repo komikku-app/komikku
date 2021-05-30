@@ -390,7 +390,7 @@ class SourceController(bundle: Bundle? = null) :
             createOptionsMenu(
                 menu,
                 inflater,
-                R.menu.source_main,
+                R.menu.browse_sources,
                 R.id.action_search,
                 R.string.action_global_search_hint,
                 false // GlobalSearch handles the searching here
