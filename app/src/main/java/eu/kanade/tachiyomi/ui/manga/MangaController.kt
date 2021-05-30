@@ -348,9 +348,9 @@ class MangaController :
             it.adapter = ConcatAdapter(
                 listOfNotNull(
                     mangaInfoAdapter,
+                    mangaInfoButtonsAdapter,
                     mangaMetaInfoAdapter,
-                    mangaInfoItemAdapter,
-                    mangaInfoButtonsAdapter
+                    mangaInfoItemAdapter
                 )
             )
 
