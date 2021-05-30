@@ -207,6 +207,7 @@ class LibraryController(
         adapter = LibraryAdapter(this)
         binding.libraryPager.adapter = adapter
         binding.libraryPager.pageSelections()
+            .drop(1)
             .onEach {
                 preferences.lastUsedCategory().set(it)
                 activeCategory = it
