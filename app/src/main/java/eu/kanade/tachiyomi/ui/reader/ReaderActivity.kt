@@ -490,6 +490,45 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         }
 
+        // Crop borders
+        with(binding.actionCropBorders) {
+            setTooltip(R.string.pref_crop_borders)
+
+            setOnClickListener {
+                // SY -->
+                val mangaViewer = presenter.getMangaReadingMode()
+                // SY <--
+                val isPagerType = ReadingModeType.isPagerType(mangaViewer)
+                val enabled = if (isPagerType) {
+                    preferences.cropBorders().toggle()
+                } else {
+                    // SY -->
+                    if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
+                        preferences.cropBordersContinuousVertical().toggle()
+                    } else {
+                        preferences.cropBordersWebtoon().toggle()
+                    }
+                    // SY <--
+                }
+
+                menuToggleToast?.cancel()
+                menuToggleToast = toast(
+                    if (enabled) {
+                        R.string.on
+                    } else {
+                        R.string.off
+                    }
+                )
+            }
+        }
+        updateCropBordersShortcut()
+        listOf(preferences.cropBorders(), preferences.cropBordersWebtoon() /* SY --> */, preferences.cropBordersContinuousVertical()/* SY <-- */)
+            .forEach { pref ->
+                pref.asFlow()
+                    .onEach { updateCropBordersShortcut() }
+                    .launchIn(lifecycleScope)
+            }
+
         // Rotation
         with(binding.actionRotation) {
             setTooltip(R.string.rotation_type)
@@ -511,34 +550,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
             }
         }
-
-        // Crop borders
-        with(binding.actionCropBorders) {
-            setTooltip(R.string.pref_crop_borders)
-
-            setOnClickListener {
-                val mangaViewer = presenter.getMangaReadingMode()
-                val isPagerType = ReadingModeType.isPagerType(mangaViewer)
-                if (isPagerType) {
-                    preferences.cropBorders().toggle()
-                } else {
-                    // SY -->
-                    if (ReadingModeType.fromPreference(mangaViewer) == ReadingModeType.CONTINUOUS_VERTICAL) {
-                        preferences.cropBordersContinuousVertical().toggle()
-                    } else {
-                        preferences.cropBordersWebtoon().toggle()
-                    }
-                    // SY <--
-                }
-            }
-        }
-        updateCropBordersShortcut()
-        listOf(preferences.cropBorders(), preferences.cropBordersWebtoon() /* SY --> */, preferences.cropBordersContinuousVertical()/* SY <-- */)
-            .forEach { pref ->
-                pref.asFlow()
-                    .onEach { updateCropBordersShortcut() }
-                    .launchIn(lifecycleScope)
-            }
 
         // Settings sheet
         with(binding.actionSettings) {
