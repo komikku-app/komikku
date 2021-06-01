@@ -115,7 +115,7 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
             val sources = galleryAdder.pickSource(gallery)
             if (sources.size > 1) {
                 MaterialDialog(this)
-                    .title(R.string.select_source)
+                    .title(R.string.label_sources)
                     .listItemsSingleChoice(items = sources.map { it.toString() }) { _, index, _ ->
                         loadGalleryEnd(gallery, sources[index])
                     }

@@ -81,7 +81,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/options"
+            android:text="@string/action_settings"
             android:textAppearance="@style/TextAppearance.Medium.Body2"
             app:layout_constraintStart_toStartOf="@+id/mig_chapters"
             app:layout_constraintTop_toBottomOf="@+id/mig_chapters" />
