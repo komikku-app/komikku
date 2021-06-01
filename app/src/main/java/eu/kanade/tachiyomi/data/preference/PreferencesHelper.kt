@@ -496,7 +496,7 @@ class PreferencesHelper(val context: Context) {
 
     fun hideHistoryButton() = flowPrefs.getBoolean(Keys.hideHistoryButton, false)
 
-    fun pageLayout() = flowPrefs.getInt(Keys.pageLayout, PagerConfig.PageLayout.AUTOMATIC)
+    fun pageLayout() = flowPrefs.getInt(Keys.pageLayout, PagerConfig.PageLayout.SINGLE_PAGE)
 
     fun invertDoublePages() = flowPrefs.getBoolean(Keys.invertDoublePages, false)
 }
