@@ -46,7 +46,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             extension.isNsfw && shouldLabelNsfw -> itemView.context.getString(R.string.ext_nsfw_short).plusRepo(extension)
             else -> "".plusRepo(extension)
             // SY <--
-        }.toUpperCase()
+        }.uppercase()
 
         binding.image.clear()
         if (extension is Extension.Available) {

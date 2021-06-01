@@ -181,7 +181,7 @@ class SourcePresenter(
         return sourceManager.getVisibleCatalogueSources()
             .filter { it.lang in languages }
             .filterNot { it.id.toString() in disabledSourceIds }
-            .sortedBy { "(${it.lang}) ${it.name.toLowerCase()}" } +
+            .sortedBy { "(${it.lang}) ${it.name.lowercase()}" } +
             sourceManager.get(LocalSource.ID) as LocalSource
     }
 
