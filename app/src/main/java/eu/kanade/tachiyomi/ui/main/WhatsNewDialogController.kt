@@ -20,7 +20,7 @@ class WhatsNewDialogController : DialogController() {
         return MaterialDialog(activity)
             .title(res = if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY <-- */) R.string.notices else R.string.whats_new)
             .customView(view = view)
-            .positiveButton(R.string.action_close)
+            .positiveButton(android.R.string.cancel)
     }
 
     class WhatsNewRecyclerView(context: Context) : ChangeLogRecyclerView(context) {
