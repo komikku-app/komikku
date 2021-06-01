@@ -8,9 +8,9 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.mikepenz.aboutlibraries.LibsBuilder
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.updater.UpdateResult
+import eu.kanade.tachiyomi.data.updater.GithubUpdateChecker
+import eu.kanade.tachiyomi.data.updater.GithubUpdateResult
 import eu.kanade.tachiyomi.data.updater.UpdaterService
-import eu.kanade.tachiyomi.data.updater.github.GithubUpdateChecker
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.NoToolbarElevationController
 import eu.kanade.tachiyomi.ui.main.WhatsNewDialogController
@@ -107,14 +107,14 @@ class AboutController : SettingsController(), NoToolbarElevationController {
         launchNow {
             try {
                 when (val result = updateChecker.checkForUpdate()) {
-                    is UpdateResult.NewUpdate<*> -> {
+                    is GithubUpdateResult.NewUpdate -> {
                         val body = result.release.info
                         val url = result.release.downloadLink
 
                         // Create confirmation window
                         NewUpdateDialogController(body, url).showDialog(router)
                     }
-                    is UpdateResult.NoNewUpdate -> {
+                    is GithubUpdateResult.NoNewUpdate -> {
                         activity?.toast(R.string.update_check_no_new_updates)
                     }
                 }
