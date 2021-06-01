@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.UNMETERED_NETWORK
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.CategoryController
@@ -43,11 +44,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsLibraryController : SettingsController() {
 
     private val db: DatabaseHelper = Injekt.get()
+    private val trackManager: TrackManager by injectLazy()
 
     /**
      * Sheet containing filter/sort/display items.
@@ -307,11 +310,13 @@ class SettingsLibraryController : SettingsController() {
                 summaryRes = R.string.pref_library_update_refresh_metadata_summary
                 defaultValue = false
             }
-            switchPreference {
-                key = Keys.autoUpdateTrackers
-                titleRes = R.string.pref_library_update_refresh_trackers
-                summaryRes = R.string.pref_library_update_refresh_trackers_summary
-                defaultValue = false
+            if (trackManager.hasLoggedServices()) {
+                switchPreference {
+                    key = Keys.autoUpdateTrackers
+                    titleRes = R.string.pref_library_update_refresh_trackers
+                    summaryRes = R.string.pref_library_update_refresh_trackers_summary
+                    defaultValue = false
+                }
             }
             switchPreference {
                 key = Keys.showLibraryUpdateErrors
