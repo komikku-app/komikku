@@ -116,6 +116,13 @@
     <string name="eh_settings_uploading_to_server_message">Пожалуйста, подождите, это может занять некоторое время…</string>
     <string name="eh_settings_out_of_slots_error">Вы находитесь вне профильных слотов на %1$s, пожалуйста, удалите профиль!</string>
 
+    <!-- EH Settings Login Activity -->
+    <string name="recheck_login_status">Перепроверить статус авторизации</string>
+    <string name="alternative_login_page">Альтернативная страница авторизации</string>
+    <string name="skip_page_restyling">Пропустить рестайлинг страницы</string>
+    <string name="custom_igneous_cookie">Кастомные igneous cookie</string>
+    <string name="custom_igneous_cookie_message">Некоторые пользователи не могут получить доступ к ExHentai обычным способом и должны передать определенное значение igneous cookie, эта опция предназначена для этих пользователей.</string>
+
     <!-- Advanced Settings -->
     <string name="developer_tools">Инструменты разработчика</string>
     <string name="toggle_hentai_features">Включить интегрированные функции для хентая</string>
@@ -170,7 +177,8 @@
     <string name="auto_solve_captchas_summary">Использовать В ВЫСШЕЙ СТЕПЕНИ ЭКСПЕРИМЕНТАЛЬНОЕ автоматическое прохождение ReCAPTCHA. Если ваше устройство не поддерживается, оно будет выделено серым цветом.</string>
     <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
     <string name="put_recommends_in_overflow_summary">Поместить кнопку рекомендации в выпадающее меню вместо размещения на странице манги</string>
-
+    <string name="pref_hide_updates_button">Переместить кнопку Обновления на вкладку Ещё</string>
+    <string name="pref_hide_history_button">Переместить кнопку История на вкладку Ещё</string>
     <!-- Library settings -->
     <string name="pref_sorting_settings">Настройки Сортировки</string>
     <string name="pref_skip_pre_migration_summary">Используйте последние сохраненные настройки и источники перед миграцией для массовой миграции</string>
@@ -193,6 +201,7 @@
 
     <!-- Backup settings -->
     <string name="custom_manga_info">Кастомная информация о манге</string>
+    <string name="all_read_manga">Вся прочитанная манга</string>
 
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Сохранить главы как CBZ</string>
@@ -217,6 +226,7 @@
     <string name="biometric_lock_invalid_time_selected">Выбрано неверное время</string>
 
     <!-- Reader Settings -->
+    <string name="page_downloading">Страница Загружается</string>
     <string name="download_threads">Потоки загрузки</string>
     <string name="download_threads_summary">Более высокие значения могут значительно ускорить загрузку изображений, но также могут вызвать запреты. Рекомендуемое значение-2 или 3. Текущее значение: %s</string>
     <string name="aggressively_load_pages">Агрессивная загрузка страниц</string>
@@ -238,31 +248,56 @@
     <string name="reader_cache_size_summary">Количество изображений, сохраняемых на устройстве во время чтения. Более высокие значения приведут к более плавному чтению за счет более высокого использования дискового пространства</string>
     <string name="preserve_reading_position">Сохранить позицию чтения при чтении манги</string>
     <string name="auto_webtoon_mode">Автоматический веб-комикс</string>
-    <string name="auto_webtoon_mode_summary">Использовать автоматический режим для веб-комикса, в которых выявлены вероятно, использовать длинные полосы формате</string>
+    <string name="auto_webtoon_mode_summary">Использовать автоматический режим для веб-комикса, которые вероятно имеют формат длинной полосы</string>
     <string name="enable_zoom_out">Включить зум</string>
-    <string name="tap_scroll_page">Нажмите прокрутить по странице</string>
-    <string name="tap_scroll_page_summary">Нажатие будет прокручиваться по странице, а не по размеру экрана, если эта опция включена</string>
+    <string name="tap_scroll_page">Нажатия листают постранично</string>
+    <string name="tap_scroll_page_summary">Нажатие будет прокручивать целую страницу, а не по размеру экрана, если эта опция включена</string>
+    <string name="reader_bottom_buttons">Нижние Кнопки Читалки</string>
+    <string name="reader_bottom_buttons_summary">Настроить, какие кнопки отображаются в нижней части читалки</string>
 
-    <string name="pref_show_vert_seekbar_landscape">Показать вертикальную панель поиска в альбомной ориентации</string>
-    <string name="pref_show_vert_seekbar_landscape_summary">Включает вертикальную панель поиска в ландшафтном режиме</string>
-    <string name="pref_left_handed_vertical_seekbar">Левая вертикальная панель поиска</string>
-    <string name="pref_left_handed_vertical_seekbar_summary">Переключает, на какой стороне находится панель поиска</string>
-    <string name="pref_force_horz_seekbar">Принудительная горизонтальная панель поиска</string>
-    <string name="pref_force_horz_seekbar_summary">Убирает вертикальную панель поиска полностью в пользу горизонтальной</string>
+    <string name="pref_show_vert_seekbar_landscape">Показать вертикальную полосу прокрутки в альбомной ориентации</string>
+    <string name="pref_show_vert_seekbar_landscape_summary">Включает вертикальную полосу прокрутки в альбомном режиме</string>
+    <string name="pref_left_handed_vertical_seekbar">Левая вертикальная полоса прокрутки</string>
+    <string name="pref_left_handed_vertical_seekbar_summary">Переключает положение, на какой стороне находится полоса прокрутки</string>
+    <string name="pref_force_horz_seekbar">Принудительно горизонтальная полоса прокрутки</string>
+    <string name="pref_force_horz_seekbar_summary">Полностью убирает вертикальную полосу прокрутки  в пользу горизонтальной</string>
     <!-- Reader -->
     <!-- Reader Actions -->
     <string name="eh_autoscroll">Автопрокрутка</string>
-    <string name="eh_retry_all">Повторите все</string>
+    <string name="eh_retry_all">Повторить все</string>
     <string name="eh_boost_page">Буст страницы</string>
-    <string name="eh_autoscroll_help">Автопрокрутка помощь</string>
-    <string name="eh_autoscroll_help_message">Автоматически переходите к следующей странице через указанный интервал. Интервал указывается в секундах.</string>
-    <string name="eh_retry_all_help">Повторите все помощь</string>
+    <string name="eh_autoscroll_help">Автопрокрутка (подсказка)</string>
+    <string name="eh_autoscroll_help_message">Автоматически переходит к следующей странице через указанный интервал. Интервал указывается в секундах.</string>
+    <string name="eh_retry_all_help">Повторить все (подсказка)</string>
     <string name="eh_retry_all_help_message">Повторно добавьте все неудачные страницы в очередь загрузки.</string>
-    <string name="eh_boost_page_help">Буст страницы помощь</string>
+    <string name="eh_boost_page_help">Буст страницы (подсказка)</string>
     <string name="eh_boost_page_help_message">Обычно загрузчик может одновременно загружать только определенное количество страниц. Это означает, что вы можете ждать загрузки страницы, но загрузчик не начнет загрузку страницы до тех пор, пока у него не будет свободного слота для загрузки. Нажатие \'Буст страницы\' заставит загрузчик начать загрузку текущей страницы, независимо от того, есть ли свободный слот или нет.</string>
+    <string name="pref_crop_borders_pager">Обрезать поля (Постранично)</string>
+    <string name="pref_crop_borders_continuous_vertical">Обрезать поля (Непрерывно вертикальный)</string>
+    <string name="pref_crop_borders_webtoon">Обрезать поля (Вебкомикс)</string>
+    <string name="action_set_first_page_cover">Установить первую страницу как обложку</string>
+    <string name="action_set_second_page_cover">Установить вторую страницу как обложку</string>
+    <string name="action_save_first_page">Сохранить первую страницу</string>
+    <string name="action_save_second_page">Сохранить вторую страницу</string>
+    <string name="action_share_first_page">Поделиться первой страницей</string>
+    <string name="action_share_second_page">Поделиться второй страницей</string>
+    <string name="action_save_combined_page">Сохранить объединённые страницы</string>
+    <string name="action_share_combined_page">Поделиться объединёнными страницами</string>
+
+    <!-- Reader Sharing -->
+    <string name="share_pages_info">%1$s: %2$s, страницы %3$s</string>
 
     <!-- Auto Webtoon Mode -->
     <string name="eh_auto_webtoon_snack">Стиль чтения веб-комикс</string>
+
+    <!-- Double page spread -->
+    <string name="page_layout">Разметка страниц</string>
+    <string name="shift_double_pages">Сдвинуть на одну страницу</string>
+    <string name="double_pages">Двойные страницы</string>
+    <string name="single_page">Одна страница</string>
+    <string name="automatic_orientation">Автоматически (на основе ориентации)</string>
+    <string name="automatic_can_still_switch">При использовании автоматической разметки страниц, вы всё ещё можете переключиться между разметками, когда читаете, без переопределения этой настройки</string>
+    <string name="invert_double_pages">Двойные страницы наоборот</string>
 
     <!-- Manga Page -->
     <!-- Manga Info -->
@@ -286,6 +321,9 @@
     <string name="cover_reset_toast">Обложка будет обновлена, когда вы выйдете из редактора манги. </string>
 
     <!-- Browse -->
+    <!-- Sources Tab -->
+    <string name="find_in_another_source">Найти в другом источнике</string>
+
     <!-- Smart Search -->
     <string name="searching_source">Поиск источника…</string>
 
@@ -387,6 +425,10 @@
     </plurals>
 
     <!-- Library -->
+    <!-- Library Actions -->
+    <string name="no_valid_manga">Не выбрана допустимая манга</string>
+
+
     <!-- Library Sheet -->
     <string name="tracked">Отслеживается</string>
     <string name="lewd">18+</string>
@@ -487,25 +529,12 @@
     <string name="no_rating">Нет рейтинга</string>
 
 
-    <!-- Gallery types -->
-    <string name="doujinshi">Додзинси</string>
-    <string name="artist_cg">Художник CG</string>
-    <string name="game_cg">Игра CG</string>
-    <string name="western">Западный</string>
-    <string name="non_h">Non-H</string>
-    <string name="image_set">Набор изображений</string>
-    <string name="cosplay">Косплей</string>
-    <string name="asian_porn">Азиатское Порно</string>
-    <string name="misc">Разное</string>
-    <string name="artbook">Артбук</string>
-    <string name="video">Видео</string>
-
     <!-- More Info Menu -->
-    <string name="more_info">Дополнительная информация</string>
+    <string name="more_info">Информация</string>
     <string name="alt_title">Названия</string>
     <string name="id">Id</string>
-    <string name="token">Token</string>
-    <string name="is_exhentai_gallery">это Exhentai галерея</string>
+    <string name="token">Токен</string>
+    <string name="is_exhentai_gallery">это ExHentai галерея</string>
     <string name="thumbnail_url">URL-адрес миниатюры</string>
     <string name="genre">Жанр</string>
     <string name="date_posted">Дата публикации</string>
@@ -524,7 +553,7 @@
     <string name="reader_id">Читатель id</string>
     <string name="series">Серии</string>
     <string name="characters">Персонажи</string>
-    <string name="group">Группировка</string>
+    <string name="group">Группировать</string>
     <string name="media_id">Медиа id</string>
     <string name="japanese_title">Японское название</string>
     <string name="english_title">Английское название</string>
