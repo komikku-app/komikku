@@ -38,13 +38,25 @@
     </item>
 
     <item
-        android:id="@+id/action_edit_categories"
-        android:title="@string/action_edit_categories"
-        app:showAsAction="never" />
+        android:id="@+id/cover_group"
+        android:title="@string/manga_cover"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_share_cover"
+                android:title="@string/action_share" />
+            <item
+                android:id="@+id/action_save_cover"
+                android:title="@string/action_save" />
+            <item
+                android:id="@+id/action_edit_cover"
+                android:title="@string/action_edit" />
+        </menu>
+    </item>
 
     <item
-        android:id="@+id/action_edit_cover"
-        android:title="@string/action_edit_cover"
+        android:id="@+id/action_edit_categories"
+        android:title="@string/action_edit_categories"
         app:showAsAction="never" />
 
     <item
@@ -80,20 +92,4 @@
         android:title="@string/toggle_dedupe"
         android:visible="false"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_save"
-        android:icon="@drawable/ic_save_black_24dp"
-        android:title="@string/action_save"
-        android:visible="false"
-        app:iconTint="?attr/colorOnPrimary"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_share_cover"
-        android:icon="@drawable/ic_share_24dp"
-        android:title="@string/share_cover"
-        android:visible="false"
-        app:iconTint="?attr/colorOnPrimary"
-        app:showAsAction="ifRoom" />
 </menu>

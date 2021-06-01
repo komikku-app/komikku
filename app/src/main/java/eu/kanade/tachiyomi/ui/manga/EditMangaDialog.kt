@@ -9,7 +9,6 @@ import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
-import androidx.core.view.isVisible
 import coil.loadAny
 import coil.transform.RoundedCornersTransformation
 import com.afollestad.materialdialogs.MaterialDialog
@@ -27,7 +26,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import eu.kanade.tachiyomi.util.system.toast
 import exh.util.dropBlank
 import exh.util.trimOrNull
 import kotlinx.coroutines.flow.launchIn
@@ -76,10 +74,7 @@ class EditMangaDialog : DialogController {
     }
 
     fun onViewCreated() {
-        val radius = context.resources.getDimension(R.dimen.card_radius)
-        binding.mangaCover.loadAny(manga) {
-            transformations(RoundedCornersTransformation(radius))
-        }
+        loadCover()
 
         val isLocal = manga.source == LocalSource.ID
 
@@ -159,14 +154,6 @@ class EditMangaDialog : DialogController {
         binding.resetTags.clicks()
             .onEach { resetTags() }
             .launchIn(infoController.viewScope)
-        binding.resetCover.isVisible = !isLocal
-        binding.resetCover.clicks()
-            .onEach {
-                context.toast(R.string.cover_reset_toast)
-                customCoverUri = null
-                willResetCover = true
-            }
-            .launchIn(infoController.viewScope)
     }
 
     private fun resetTags() {
@@ -174,6 +161,13 @@ class EditMangaDialog : DialogController {
             binding.mangaGenresTags.setChips(emptyList())
         } else {
             binding.mangaGenresTags.setChips(manga.getOriginalGenres().orEmpty())
+        }
+    }
+
+    fun loadCover() {
+        val radius = context.resources.getDimension(R.dimen.card_radius)
+        binding.mangaCover.loadAny(manga) {
+            transformations(RoundedCornersTransformation(radius))
         }
     }
 

@@ -315,10 +315,6 @@
     <string name="az_recommends">See Recommendations</string>
     <string name="merge">Merge</string>
     <string name="merge_with_another_source">Merge With Another</string>
-    <string name="cover_saved">Cover saved</string>
-    <string name="share_cover">Share cover</string>
-    <string name="error_saving_cover">Error saving cover</string>
-    <string name="error_sharing_cover">Error sharing cover</string>
 
     <!-- Manga info fragment -->
     <string name="hiatus">Hiatus</string>

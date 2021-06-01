@@ -3,9 +3,7 @@ package eu.kanade.tachiyomi.ui.manga
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import com.jakewharton.rxrelay.PublishRelay
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -42,6 +40,8 @@ import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.storage.DiskUtil
+import eu.kanade.tachiyomi.util.storage.getPicturesDir
+import eu.kanade.tachiyomi.util.storage.getTempShareDir
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.updateCoverLastModified
@@ -357,7 +357,7 @@ class MangaPresenter(
         }
 
         if (uri != null) {
-            editCoverWithStream(context, uri)
+            editCover(manga, context, uri)
         } else if (resetCover) {
             coverCache.deleteCustomCover(manga)
             manga.updateCoverLastModified(db)
@@ -383,25 +383,6 @@ class MangaPresenter(
                     }
                 )
         }
-    }
-
-    fun editCoverWithStream(context: Context, uri: Uri): Boolean {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: return false
-        if (manga.source == LocalSource.ID) {
-            val cover = LocalSource.updateCover(context, manga, inputStream)
-            if (manga.thumbnail_url.isNullOrBlank() && cover != null) {
-                manga.thumbnail_url = cover.absolutePath
-                db.updateMangaThumbnail(manga).executeAsBlocking()
-            }
-            return true
-        }
-
-        if (manga.favorite) {
-            coverCache.setCustomCoverToCache(manga, inputStream)
-            manga.updateCoverLastModified(db)
-            return true
-        }
-        return false
     }
 
     suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
@@ -545,41 +526,6 @@ class MangaPresenter(
     fun toggleDedupe() {
         // I cant find any way to call the chapter list subscription to get the chapters again
     }
-
-    fun shareCover(context: Context): File {
-        val destDir = File(context.cacheDir, "shared_image")
-        return saveCover(destDir)
-    }
-
-    fun saveCover(context: Context) {
-        val directory = File(
-            Environment.getExternalStorageDirectory().absolutePath +
-                File.separator + Environment.DIRECTORY_PICTURES +
-                File.separator + context.getString(R.string.app_name)
-        )
-        saveCover(directory)
-    }
-
-    private fun saveCover(directory: File): File {
-        val cover = coverCache.getCoverFile(manga) ?: throw Exception("Cover url was null")
-        if (!cover.exists()) throw Exception("Cover not in cache")
-        val type = ImageUtil.findImageType(cover.inputStream())
-            ?: throw Exception("Not an image")
-
-        directory.mkdirs()
-
-        // Build destination file.
-        val filename = DiskUtil.buildValidFilename("${manga.title}.${type.extension}")
-
-        val destFile = File(directory, filename)
-        cover.inputStream().use { input ->
-            destFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-        return destFile
-    }
-
     // SY <--
 
     /**
@@ -659,6 +605,33 @@ class MangaPresenter(
      */
     fun moveMangaToCategory(manga: Manga, category: Category?) {
         moveMangaToCategories(manga, listOfNotNull(category))
+    }
+
+    fun shareCover(context: Context): File {
+        return saveCover(getTempShareDir(context))
+    }
+
+    fun saveCover(context: Context) {
+        saveCover(getPicturesDir(context))
+    }
+
+    private fun saveCover(directory: File): File {
+        val cover = coverCache.getCoverFile(manga) ?: throw Exception("Cover url was null")
+        if (!cover.exists()) throw Exception("Cover not in cache")
+        val type = ImageUtil.findImageType(cover.inputStream())
+            ?: throw Exception("Not an image")
+
+        directory.mkdirs()
+
+        val filename = DiskUtil.buildValidFilename("${manga.title}.${type.extension}")
+
+        val destFile = File(directory, filename)
+        cover.inputStream().use { input ->
+            destFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        return destFile
     }
 
     /**

@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Activity
-import android.content.ClipData
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Point
@@ -99,6 +98,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
@@ -123,7 +123,6 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import java.io.IOException
 import java.util.ArrayDeque
 import kotlin.math.min
 
@@ -239,8 +238,6 @@ class MangaController :
     private var editMergedSettingsDialog: EditMergedSettingsDialog? = null
 
     private var currentAnimator: Animator? = null
-
-    private var isExpanded: Boolean = false
     // EXH <--
 
     init {
@@ -510,16 +507,6 @@ class MangaController :
         menu.findItem(R.id.action_recommend).isVisible = preferences.recommendsInOverflow().get()
         menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
         menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
-        val shareCoverItem = menu.findItem(R.id.action_share_cover)
-        val saveCoverItem = menu.findItem(R.id.action_save)
-        if (isExpanded) {
-            menu.forEach {
-                it.isVisible = it == shareCoverItem || it == saveCoverItem
-            }
-        } else {
-            shareCoverItem.isVisible = false
-            saveCoverItem.isVisible = false
-        }
         // SY <--
     }
 
@@ -529,6 +516,10 @@ class MangaController :
             R.id.download_next, R.id.download_next_5, R.id.download_next_10,
             R.id.download_custom, R.id.download_unread, R.id.download_all
             -> downloadChapters(item.itemId)
+
+            R.id.action_share_cover -> shareCover()
+            R.id.action_save_cover -> saveCover()
+            // SY --> R.id.action_edit_cover -> changeCover() // SY <--
 
             // SY -->
             R.id.action_edit -> {
@@ -556,34 +547,7 @@ class MangaController :
             // SY <--
 
             R.id.action_edit_categories -> onCategoriesClick()
-            // SY --> R.id.action_edit_cover -> handleChangeCover() // SY <--
             R.id.action_migrate -> migrateManga()
-            // SY -->
-            R.id.action_save -> {
-                try {
-                    presenter.saveCover(activity!!)
-                    activity?.toast(R.string.cover_saved)
-                } catch (e: Exception) {
-                    e.message?.let { activity?.toast(it) } ?: activity?.toast(R.string.error_saving_cover)
-                }
-            }
-            R.id.action_share_cover -> {
-                try {
-                    val activity = activity!!
-                    val cover = presenter.shareCover(activity)
-                    val stream = cover.getUriCompat(activity)
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        putExtra(Intent.EXTRA_STREAM, stream)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        clipData = ClipData.newRawUri(null, stream)
-                        type = "image/*"
-                    }
-                    startActivity(Intent.createChooser(intent, activity.getString(R.string.action_share)))
-                } catch (e: Exception) {
-                    e.message?.let { activity?.toast(it) } ?: activity?.toast(R.string.error_sharing_cover)
-                }
-            }
-            // SY <--
         }
         return super.onOptionsItemSelected(item)
     }
@@ -769,22 +733,6 @@ class MangaController :
     }
 
     // SY -->
-    fun changeCover() {
-        if (manga?.favorite == true || source?.id == LocalSource.ID) {
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.type = "image/*"
-            startActivityForResult(
-                Intent.createChooser(
-                    intent,
-                    resources?.getString(R.string.action_edit_cover)
-                ),
-                REQUEST_EDIT_MANGA_COVER
-            )
-        } else {
-            activity?.toast(R.string.notification_first_add_to_library)
-        }
-    }
-
     fun setRefreshing() {
         isRefreshingInfo = true
         updateRefreshing()
@@ -931,8 +879,6 @@ class MangaController :
 
         binding.expandedImage.pivotX = 0f
         binding.expandedImage.pivotY = 0f
-        isExpanded = true
-        activity?.invalidateOptionsMenu()
 
         currentAnimator = AnimatorSet().apply {
             play(
@@ -965,8 +911,6 @@ class MangaController :
 
         binding.expandedImage.clicks()
             .onEach {
-                isExpanded = false
-                activity?.invalidateOptionsMenu()
                 currentAnimator?.cancel()
 
                 currentAnimator = AnimatorSet().apply {
@@ -1051,20 +995,35 @@ class MangaController :
         }
     }
 
-    private fun handleChangeCover() {
-        val manga = manga ?: return
-        if (manga.hasCustomCover(coverCache)) {
-            showEditCoverDialog(manga)
-        } else {
-            openMangaCoverPicker(manga)
+    private fun shareCover() {
+        try {
+            val activity = activity!!
+            val cover = presenter.shareCover(activity)
+            val uri = cover.getUriCompat(activity)
+            startActivity(Intent.createChooser(uri.toShareIntent(), activity.getString(R.string.action_share)))
+        } catch (e: Exception) {
+            Timber.e(e)
+            activity?.toast(R.string.error_sharing_cover)
         }
     }
 
-    /**
-     * Edit custom cover for selected manga.
-     */
-    private fun showEditCoverDialog(manga: Manga) {
-        ChangeMangaCoverDialog(this, manga).showDialog(router)
+    private fun saveCover() {
+        try {
+            presenter.saveCover(activity!!)
+            activity?.toast(R.string.cover_saved)
+        } catch (e: Exception) {
+            Timber.e(e)
+            activity?.toast(R.string.error_saving_cover)
+        }
+    }
+
+    fun changeCover() {
+        val manga = manga ?: return
+        if (manga.hasCustomCover(coverCache)) {
+            ChangeMangaCoverDialog(this, manga).showDialog(router)
+        } else {
+            openMangaCoverPicker(manga)
+        }
     }
 
     override fun openMangaCoverPicker(manga: Manga) {
@@ -1097,27 +1056,16 @@ class MangaController :
             val dataUri = data?.data
             if (dataUri == null || resultCode != Activity.RESULT_OK) return
             val activity = activity ?: return
-            presenter.editCover(manga!!, activity, dataUri)
+            // SY -->
+            if (editMangaDialog != null) {
+                editMangaDialog?.updateCover(dataUri)
+            } else presenter.editCover(manga!!, activity, dataUri)
+            // SY <--
         }
-        // SY -->
-        if (requestCode == REQUEST_EDIT_MANGA_COVER) {
-            if (data == null || resultCode != Activity.RESULT_OK) return
-            val activity = activity ?: return
-            try {
-                val uri = data.data ?: return
-                if (editMangaDialog != null) editMangaDialog?.updateCover(uri)
-                else {
-                    presenter.editCoverWithStream(activity, uri)
-                }
-            } catch (error: IOException) {
-                activity.toast(R.string.notification_cover_update_failed)
-                Timber.e(error)
-            }
-        }
-        // SY <--
     }
 
     fun onSetCoverSuccess() {
+        editMangaDialog?.loadCover()
         mangaInfoAdapter?.notifyDataSetChanged()
         activity?.toast(R.string.cover_updated)
     }

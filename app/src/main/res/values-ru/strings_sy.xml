@@ -304,10 +304,6 @@
     <string name="az_recommends">Смотреть Рекомендации</string>
     <string name="merge">Миграция</string>
     <string name="merge_with_another_source">Слиться С Другим</string>
-    <string name="cover_saved">Обложка сохранена </string>
-    <string name="share_cover">Поделиться обложкой </string>
-    <string name="error_saving_cover">Ошибка при сохранении обложки</string>
-    <string name="error_sharing_cover">Ошибка при публикации обложки</string>
 
     <!-- Manga info fragment -->
     <string name="hiatus">Перерыв</string>

@@ -255,10 +255,6 @@
     <string name="az_recommends">Voir les recommandations</string>
     <string name="merge">Fusionner</string>
     <string name="merge_with_another_source">Fusionner avec une autre</string>
-    <string name="cover_saved">Couverture sauvegardée</string>
-    <string name="share_cover">Partage de la couverture</string>
-    <string name="error_saving_cover">Erreurs sauvegarde de la couverture</string>
-    <string name="error_sharing_cover">Erreurs du partage de la couverture</string>
 
     <!-- Manga info fragment -->
     <string name="hiatus">Hiatus</string>
