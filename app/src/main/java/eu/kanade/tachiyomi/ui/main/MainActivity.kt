@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Looper
 import android.view.Gravity
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -525,10 +526,9 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
             if (visible) {
                 if (collapse) {
                     bottomNavAnimator?.expand()
-                    val navUpdates = it.menu.findItem(R.id.nav_updates)
-                    navUpdates.isVisible = !preferences.hideUpdatesButton().get()
-                    val navHistory = it.menu.findItem(R.id.nav_history)
-                    navHistory.isVisible = !preferences.hideHistoryButton().get()
+                    // SY -->
+                    updateNavMenu(it.menu)
+                    // SY <--
                 }
 
                 bottomViewNavigationBehavior?.slideUp(it)
@@ -545,8 +545,18 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
     private fun showSideNav(visible: Boolean) {
         binding.sideNav?.let {
             it.isVisible = visible
+            // SY -->
+            updateNavMenu(it.menu)
+            // SY <--
         }
     }
+
+    // SY -->
+    private fun updateNavMenu(menu: Menu) {
+        menu.findItem(R.id.nav_updates).isVisible = preferences.showNavUpdates().get()
+        menu.findItem(R.id.nav_history).isVisible = preferences.showNavHistory().get()
+    }
+    // SY <--
 
     /**
      * Used to manually offset a view within the activity's child views that might be cut off due to

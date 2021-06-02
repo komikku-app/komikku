@@ -223,7 +223,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                             } else {
                                                 source.getChapterList(localManga.toMangaInfo())
                                             }.map { it.toSChapter() }
-                                        } catch (e: java.lang.Exception) {
+                                        } catch (e: Exception) {
                                             Timber.e(e)
                                             emptyList()
                                         }

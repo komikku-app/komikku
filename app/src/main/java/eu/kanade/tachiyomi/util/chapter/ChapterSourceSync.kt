@@ -136,10 +136,10 @@ fun syncChaptersWithSource(
             if (manga.isEhBasedManga()) {
                 val finalAdded = toAdd.subtract(readded)
                 if (finalAdded.isNotEmpty()) {
-                    val max = dbChapters.maxByOrNull { it.last_page_read }
-                    if (max != null && max.last_page_read > 0) {
-                        for (chapter in finalAdded) {
-                            chapter.last_page_read = max.last_page_read
+                    val max = dbChapters.maxOfOrNull { it.last_page_read }
+                    if (max != null && max > 0) {
+                        finalAdded.forEach { chapter ->
+                            chapter.last_page_read = max
                         }
                     }
                 }

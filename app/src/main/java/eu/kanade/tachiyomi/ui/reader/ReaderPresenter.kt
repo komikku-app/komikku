@@ -451,7 +451,7 @@ class ReaderPresenter(
         val shouldTrack = !incognitoMode || hasTrackers
         if (
             (selectedChapter.pages?.lastIndex == page.index && shouldTrack) ||
-                (hasExtraPage && selectedChapter.pages?.lastIndex?.minus(1) == page.index && shouldTrack)
+            (hasExtraPage && selectedChapter.pages?.lastIndex?.minus(1) == page.index && shouldTrack)
         ) {
             selectedChapter.chapter.read = true
             // SY -->

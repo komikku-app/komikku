@@ -61,12 +61,12 @@ class SettingsGeneralController : SettingsController() {
             }
         }
         switchPreference {
-            key = Keys.hideUpdatesButton
+            key = Keys.showNavUpdates
             titleRes = R.string.pref_hide_updates_button
             defaultValue = false
         }
         switchPreference {
-            key = Keys.hideHistoryButton
+            key = Keys.showNavHistory
             titleRes = R.string.pref_hide_history_button
             defaultValue = false
         }

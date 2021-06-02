@@ -118,14 +118,14 @@ class MangaHandler(
 
     suspend fun getTrackingInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
         return withIOContext {
-            val metadata = async {
+            /*val metadata = async {
                 val mangaUrl = MdUtil.buildMangaUrl(MdUtil.getMangaId(track.tracking_url))
                 val manga = MangaInfo(mangaUrl, track.title)
                 val response = client.newCall(mangaRequest(manga)).await()
                 val metadata = MangaDexSearchMetadata()
                 apiMangaParser.parseIntoMetadata(metadata, response, emptyList())
                 metadata
-            }
+            }*/
             val remoteTrack = async {
                 followsHandler.fetchTrackingInfo(track.tracking_url)
             }

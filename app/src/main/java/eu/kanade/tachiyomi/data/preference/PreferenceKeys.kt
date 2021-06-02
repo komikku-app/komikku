@@ -379,9 +379,9 @@ object PreferenceKeys {
 
     const val bottomBarLabels = "pref_show_bottom_bar_labels"
 
-    const val hideUpdatesButton = "pref_hide_updates_button"
+    const val showNavUpdates = "pref_show_updates_button"
 
-    const val hideHistoryButton = "pref_hide_history_button"
+    const val showNavHistory = "pref_show_history_button"
 
     const val pageLayout = "page_layout"
 

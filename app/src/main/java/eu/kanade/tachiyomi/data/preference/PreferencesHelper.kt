@@ -494,9 +494,9 @@ class PreferencesHelper(val context: Context) {
 
     fun bottomBarLabels() = flowPrefs.getBoolean(Keys.bottomBarLabels, true)
 
-    fun hideUpdatesButton() = flowPrefs.getBoolean(Keys.hideUpdatesButton, false)
+    fun showNavUpdates() = flowPrefs.getBoolean(Keys.showNavUpdates, true)
 
-    fun hideHistoryButton() = flowPrefs.getBoolean(Keys.hideHistoryButton, false)
+    fun showNavHistory() = flowPrefs.getBoolean(Keys.showNavHistory, true)
 
     fun pageLayout() = flowPrefs.getInt(Keys.pageLayout, PagerConfig.PageLayout.AUTOMATIC)
 

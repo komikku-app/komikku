@@ -76,7 +76,7 @@ class MoreController :
         }
 
         preferenceCategory {
-            if (preferences.hideUpdatesButton().get()) {
+            if (!preferences.showNavUpdates().get()) {
                 preference {
                     titleRes = R.string.label_recent_updates
                     iconRes = R.drawable.ic_updates_outline_24dp
@@ -86,7 +86,7 @@ class MoreController :
                     }
                 }
             }
-            if (preferences.hideHistoryButton().get()) {
+            if (!preferences.showNavHistory().get()) {
                 preference {
                     titleRes = R.string.label_recent_manga
                     iconRes = R.drawable.ic_history_24dp
