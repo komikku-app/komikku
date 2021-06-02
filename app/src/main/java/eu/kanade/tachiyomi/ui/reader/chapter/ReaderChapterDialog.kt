@@ -25,6 +25,7 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
         dialog = MaterialDialog(activity)
             .title(R.string.chapters)
             .customView(view = binding.root)
+            .negativeButton(android.R.string.cancel)
             .show {
                 adapter = ReaderChapterAdapter(this@ReaderChapterDialog)
                 binding.chapterRecycler.adapter = adapter
