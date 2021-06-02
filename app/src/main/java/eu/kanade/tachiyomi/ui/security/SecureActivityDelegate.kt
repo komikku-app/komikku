@@ -52,18 +52,48 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
             return false
         }
 
-        return preferences.lockAppAfter().get() <= 0 ||
-            Date().time >= preferences.lastAppUnlock().get() + 60 * 1000 * preferences.lockAppAfter().get() &&
-            preferences.authenticatorTimeRanges().get().mapNotNull { TimeRange.fromPreferenceString(it) }.let { timeRanges ->
-                if (timeRanges.isNotEmpty()) {
-                    val today: Calendar = Calendar.getInstance()
-                    val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes
-                    timeRanges.any { now in it.startTime..it.endTime }
-                } else true
+        // SY -->
+        val today: Calendar = Calendar.getInstance()
+        val timeRanges = preferences.authenticatorTimeRanges().get().mapNotNull { TimeRange.fromPreferenceString(it) }
+        if (timeRanges.isNotEmpty()) {
+            val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes
+            val locked = timeRanges.any { now in it }
+            if (!locked) {
+                return false
             }
+        }
+
+        val lockedDays = preferences.authenticatorDays().get()
+        val locked = lockedDays == LOCK_ALL_DAYS || when (today.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> (lockedDays and LOCK_SUNDAY) == LOCK_SUNDAY
+            Calendar.MONDAY -> (lockedDays and LOCK_MONDAY) == LOCK_MONDAY
+            Calendar.TUESDAY -> (lockedDays and LOCK_TUESDAY) == LOCK_TUESDAY
+            Calendar.WEDNESDAY -> (lockedDays and LOCK_WEDNESDAY) == LOCK_WEDNESDAY
+            Calendar.THURSDAY -> (lockedDays and LOCK_THURSDAY) == LOCK_THURSDAY
+            Calendar.FRIDAY -> (lockedDays and LOCK_FRIDAY) == LOCK_FRIDAY
+            Calendar.SATURDAY -> (lockedDays and LOCK_SATURDAY) == LOCK_SATURDAY
+            else -> false
+        }
+
+        if (!locked) {
+            return false
+        }
+        // SY <--
+
+        return preferences.lockAppAfter().get() <= 0 ||
+            Date().time >= preferences.lastAppUnlock().get() + 60 * 1000 * preferences.lockAppAfter().get()
     }
 
     companion object {
         var locked: Boolean = true
+
+        const val LOCK_SUNDAY = 0x40
+        const val LOCK_MONDAY = 0x20
+        const val LOCK_TUESDAY = 0x10
+        const val LOCK_WEDNESDAY = 0x8
+        const val LOCK_THURSDAY = 0x4
+        const val LOCK_FRIDAY = 0x2
+        const val LOCK_SATURDAY = 0x1
+        const val LOCK_ALL_DAYS = 0x7F
     }
 }

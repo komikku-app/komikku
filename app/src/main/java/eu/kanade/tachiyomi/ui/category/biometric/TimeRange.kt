@@ -8,7 +8,7 @@ import java.util.Date
 import java.util.SimpleTimeZone
 import kotlin.time.Duration
 
-data class TimeRange(val startTime: Duration, val endTime: Duration) {
+data class TimeRange(private val startTime: Duration, private val endTime: Duration) {
     override fun toString(): String {
         val startHour = startTime.inWholeHours
         val startMinute = (startTime - startHour.hours).inWholeMinutes
@@ -32,6 +32,10 @@ data class TimeRange(val startTime: Duration, val endTime: Duration) {
 
     fun conflictsWith(other: TimeRange): Boolean {
         return startTime in other.startTime..other.endTime || endTime in other.startTime..other.endTime
+    }
+
+    operator fun contains(other: Duration): Boolean {
+        return other in startTime..endTime
     }
 
     companion object {

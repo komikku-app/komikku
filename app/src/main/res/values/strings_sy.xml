@@ -224,6 +224,16 @@
     <string name="biometric_lock_end_time">Enter end time</string>
     <string name="biometric_lock_time_deleted_snack">Biometric lock time completed</string>
     <string name="biometric_lock_invalid_time_selected">Invalid time selected</string>
+    <string name="biometric_lock_days">Biometric lock days</string>
+    <string name="biometric_lock_days_summary">Days to have the app locked</string>
+
+    <string name="sunday">Sunday</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
 
     <!-- Reader Settings -->
     <string name="page_downloading">Page Downloading</string>

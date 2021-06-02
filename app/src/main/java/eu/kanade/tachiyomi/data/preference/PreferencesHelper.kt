@@ -474,6 +474,8 @@ class PreferencesHelper(val context: Context) {
 
     fun authenticatorTimeRanges() = flowPrefs.getStringSet(Keys.authenticatorTimeRanges, mutableSetOf())
 
+    fun authenticatorDays() = flowPrefs.getInt(Keys.authenticatorDays, 0x7F)
+
     fun sortTagsForLibrary() = flowPrefs.getStringSet(Keys.sortTagsForLibrary, mutableSetOf())
 
     fun dontDeleteFromCategories() = flowPrefs.getStringSet(Keys.dontDeleteFromCategories, emptySet())

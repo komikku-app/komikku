@@ -359,6 +359,8 @@ object PreferenceKeys {
 
     const val authenticatorTimeRanges = "biometric_time_ranges"
 
+    const val authenticatorDays = "biometric_days"
+
     const val sortTagsForLibrary = "sort_tags_for_library"
 
     const val dontDeleteFromCategories = "dont_delete_from_categories"
