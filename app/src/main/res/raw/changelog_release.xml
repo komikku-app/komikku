@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.7.0" changeDate="Jun 1,2021">
+        <changelogtext>[b]Based on Tachiyomi stable 0.11.1(from 0.10.12)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Add reader bottom button customization (by E-SHL)</changelogtext>
+        <changelogtext>Add more lewd tag checks (Jobobby04, E-SHL)</changelogtext>
+        <changelogtext>Convert chapter bottom sheet to a dialog</changelogtext>
+        <changelogtext>Exh login menu now supports a custom igneous cookie</changelogtext>
+        <changelogtext>Exh sync fixes, now doesn't stop on missing galleries</changelogtext>
+        <changelogtext>Browse source from migration now properly adds it as a result</changelogtext>
+        <changelogtext>Drop support for Android 5</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.6.2" changeDate="Apr 28,2021">
         <changelogtext>[b]Based on Tachiyomi stable 0.10.12(from 0.10.11)[/b]</changelogtext>
         <changelogtext>[b]New[/b] Add Dark Blue AMOLED theme (by E-SHL)</changelogtext>
