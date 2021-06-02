@@ -1169,7 +1169,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      */
     @SuppressLint("SetTextI18n")
     fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean = false) {
-        val newChapter = presenter.onPageSelected(page)
+        val newChapter = presenter.onPageSelected(page, hasExtraPage)
         val pages = page.chapter.pages ?: return
 
         val currentPage = if (hasExtraPage) {

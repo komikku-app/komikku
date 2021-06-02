@@ -436,7 +436,7 @@ class ReaderPresenter(
      * read, update tracking services, enqueue downloaded chapter deletion, and updating the active chapter if this
      * [page]'s chapter is different from the currently active.
      */
-    fun onPageSelected(page: ReaderPage) {
+    fun onPageSelected(page: ReaderPage, hasExtraPage: Boolean) {
         val currentChapters = viewerChaptersRelay.value ?: return
 
         val selectedChapter = page.chapter
@@ -449,7 +449,10 @@ class ReaderPresenter(
         // Save last page read and mark as read if needed
         selectedChapter.chapter.last_page_read = page.index
         val shouldTrack = !incognitoMode || hasTrackers
-        if (selectedChapter.pages?.lastIndex == page.index && shouldTrack) {
+        if (
+            (selectedChapter.pages?.lastIndex == page.index && shouldTrack) ||
+                (hasExtraPage && selectedChapter.pages?.lastIndex?.minus(1) == page.index && shouldTrack)
+        ) {
             selectedChapter.chapter.read = true
             // SY -->
             if (manga?.isEhBasedManga() == true) {
