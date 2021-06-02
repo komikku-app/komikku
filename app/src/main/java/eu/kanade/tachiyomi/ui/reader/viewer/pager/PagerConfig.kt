@@ -46,7 +46,7 @@ class PagerConfig(
 
     var shiftDoublePage = false
 
-    var doublePages = false // preferences.pageLayout().get() == PageLayout.DOUBLE_PAGES && !preferences.dualPageSplitPaged().get()
+    var doublePages = preferences.pageLayout().get() == PageLayout.DOUBLE_PAGES && !preferences.dualPageSplitPaged().get()
         set(value) {
             field = value
             if (!value) {
@@ -100,7 +100,7 @@ class PagerConfig(
         // SY -->
         preferences.pageTransitionsPager()
             .register({ usePageTransitions = it }, { imagePropertyChangedListener?.invoke() })
-        /*preferences.readerTheme()
+        preferences.readerTheme()
             .register(
                 {
                     themeToColor(it)
@@ -125,7 +125,7 @@ class PagerConfig(
                     }
                     reloadChapterListener?.invoke(doublePages)
                 }
-            )*/
+            )
 
         // SY <--
     }

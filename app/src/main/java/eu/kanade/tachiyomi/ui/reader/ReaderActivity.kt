@@ -786,7 +786,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             actionReadingMode.isVisible = ReaderBottomButton.ReadingMode.isIn(enabledButtons)
             actionRotation.isVisible =
                 ReaderBottomButton.Rotation.isIn(enabledButtons)
-            doublePage.isVisible = false // && viewer is PagerViewer && ReaderBottomButton.PageLayout.isIn(enabledButtons) && !preferences.dualPageSplitPaged().get()
+            doublePage.isVisible =
+                viewer is PagerViewer && ReaderBottomButton.PageLayout.isIn(enabledButtons) && !preferences.dualPageSplitPaged().get()
             actionCropBorders.isVisible =
                 if (viewer is PagerViewer) {
                     ReaderBottomButton.CropBordersPager.isIn(enabledButtons)
@@ -802,7 +803,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 ReaderBottomButton.WebView.isIn(enabledButtons)
             actionChapterList.isVisible =
                 ReaderBottomButton.ViewChapters.isIn(enabledButtons)
-            shiftPageButton.isVisible = false // (viewer as? PagerViewer)?.config?.doublePages ?: false
+            shiftPageButton.isVisible = (viewer as? PagerViewer)?.config?.doublePages ?: false
         }
     }
 
