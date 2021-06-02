@@ -419,6 +419,20 @@ class EHentai(
         exGet("$baseUrl/toplist.php?tl=15&p=${page - 1}", null) // Custom page logic for toplists
     }
 
+    private fun <T : MangasPage> Observable<T>.checkValid(): Observable<MangasPage> = map {
+        if (exh && it.mangas.isEmpty() && preferences.igneousVal().get().equals("mystery", true)) {
+            throw Exception("Invalid igneous cookie, try re-logging or finding a correct one to input in the login menu")
+        } else it
+    }
+
+    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
+        return super.fetchLatestUpdates(page).checkValid()
+    }
+
+    override fun fetchPopularManga(page: Int): Observable<MangasPage> {
+        return super.fetchPopularManga(page).checkValid()
+    }
+
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
         urlImportFetchSearchManga(context, query) {
@@ -426,7 +440,7 @@ class EHentai(
                 client.newCall(it).asObservableSuccess()
             }.map { response ->
                 searchMangaParse(response)
-            }
+            }.checkValid()
         }
 
     private fun searchMangaRequestObservable(page: Int, query: String, filters: FilterList): Observable<Request> {
