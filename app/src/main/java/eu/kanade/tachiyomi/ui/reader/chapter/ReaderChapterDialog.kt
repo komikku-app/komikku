@@ -7,10 +7,10 @@ import com.afollestad.materialdialogs.customview.customView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.ReaderChaptersDialogBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
+import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.dpToPx
 
@@ -49,14 +49,8 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
 
     private fun refreshList() {
         launchUI {
-            val chapters = with(presenter.getChapters(activity)) {
-                when (activity.presenter.manga?.sorting) {
-                    Manga.CHAPTER_SORTING_SOURCE -> sortedBy { it.source_order }
-                    Manga.CHAPTER_SORTING_NUMBER -> sortedByDescending { it.chapter_number }
-                    Manga.CHAPTER_SORTING_UPLOAD_DATE -> sortedBy { it.date_upload }
-                    else -> sortedBy { it.source_order }
-                }
-            }
+            val chapters = presenter.getChapters(activity)
+                .sortedWith(getChapterSort(presenter.manga!!))
 
             adapter?.clear()
             adapter?.updateDataSet(chapters)
