@@ -136,7 +136,11 @@ class MangaInfoHeaderAdapter(
             if (controller.presenter.source is HttpSource) {
                 binding.btnWebview.isVisible = true
                 binding.btnWebview.clicks()
-                    .onEach { controller.openMangaInWebView() }
+                    .onEach {
+                        if (controller.presenter.source.id == MERGED_SOURCE_ID) {
+                            controller.openMergedMangaWebview()
+                        } else controller.openMangaInWebView()
+                    }
                     .launchIn(controller.viewScope)
             }
 

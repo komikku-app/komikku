@@ -652,17 +652,34 @@ class MangaController :
         mangaInfoAdapter?.setTrackingCount(trackCount)
     }
 
-    fun openMangaInWebView() {
-        val source = presenter.source as? HttpSource ?: return
+    // SY -->
+    fun openMergedMangaWebview() {
+        val sourceManager: SourceManager = Injekt.get()
+        val mergedManga = presenter.mergedManga.filterNot { it.source == MERGED_SOURCE_ID }
+        val sources = mergedManga.map { sourceManager.getOrStub(it.source) }
+        MaterialDialog(activity!!)
+            .title(R.string.action_open_in_web_view)
+            .listItemsSingleChoice(
+                items = mergedManga.mapIndexed { index, _ -> sources[index].toString() }
+            ) { _, index, _ ->
+                openMangaInWebView(mergedManga[index], sources[index] as? HttpSource)
+            }
+            .negativeButton(android.R.string.cancel)
+            .show()
+    }
+    // SY <--
+
+    fun openMangaInWebView(manga: Manga = presenter.manga, source: HttpSource? = presenter.source as? HttpSource) {
+        source ?: return
 
         val url = try {
-            source.mangaDetailsRequest(presenter.manga).url.toString()
+            source.mangaDetailsRequest(manga).url.toString()
         } catch (e: Exception) {
             return
         }
 
         val activity = activity ?: return
-        val intent = WebViewActivity.newIntent(activity, url, source.id, presenter.manga.title)
+        val intent = WebViewActivity.newIntent(activity, url, source.id, manga.title)
         startActivity(intent)
     }
 

@@ -148,7 +148,8 @@ class MangaPresenter(
 
     var meta: RaisedSearchMetadata? = null
 
-    private var mergedManga = emptyList<Manga>()
+    var mergedManga = emptyList<Manga>()
+        private set
 
     var dedupe: Boolean = true
 
