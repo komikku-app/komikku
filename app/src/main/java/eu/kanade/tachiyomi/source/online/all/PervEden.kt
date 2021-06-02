@@ -58,14 +58,14 @@ class PervEden(delegate: HttpSource, val context: Context) :
             tags.clear()
             var inStatus: String? = null
             rightBoxElement.childNodes().forEach {
-                if (it is Element && it.tagName().toLowerCase() == "h4") {
+                if (it is Element && it.tagName().lowercase() == "h4") {
                     inStatus = it.text().trim()
                 } else {
                     when (inStatus) {
                         "Alternative name(s)" -> {
                             if (it is TextNode) {
                                 val text = it.text().trim()
-                                if (!text.isBlank()) {
+                                if (text.isNotBlank()) {
                                     newAltTitles += text
                                 }
                             }
@@ -75,7 +75,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
                                 artist = it.text()
                                 tags += RaisedTag(
                                     "artist",
-                                    it.text().toLowerCase(),
+                                    it.text().lowercase(),
                                     RaisedSearchMetadata.TAG_TYPE_VIRTUAL
                                 )
                             }
@@ -84,7 +84,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
                             if (it is Element && it.tagName() == "a") {
                                 tags += RaisedTag(
                                     null,
-                                    it.text().toLowerCase(),
+                                    it.text().lowercase(),
                                     PervEdenSearchMetadata.TAG_TYPE_DEFAULT
                                 )
                             }
@@ -92,7 +92,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
                         "Type" -> {
                             if (it is TextNode) {
                                 val text = it.text().trim()
-                                if (!text.isBlank()) {
+                                if (text.isNotBlank()) {
                                     genre = text
                                 }
                             }
@@ -100,7 +100,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
                         "Status" -> {
                             if (it is TextNode) {
                                 val text = it.text().trim()
-                                if (!text.isBlank()) {
+                                if (text.isNotBlank()) {
                                     status = text
                                 }
                             }
@@ -118,7 +118,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
     override val matchingHosts = listOf("www.perveden.com")
 
     override fun matchesUri(uri: Uri): Boolean {
-        return super.matchesUri(uri) && uri.pathSegments.firstOrNull()?.toLowerCase() == when (lang) {
+        return super.matchesUri(uri) && uri.pathSegments.firstOrNull()?.lowercase() == when (lang) {
             "en" -> "en-manga"
             "it" -> "it-manga"
             else -> false

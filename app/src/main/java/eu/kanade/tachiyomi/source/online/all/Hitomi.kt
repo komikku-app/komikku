@@ -58,7 +58,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
 
             input.select(".gallery-info tr").forEach { galleryInfoElement ->
                 val content = galleryInfoElement.child(1)
-                when (galleryInfoElement.child(0).text().toLowerCase()) {
+                when (galleryInfoElement.child(0).text().lowercase()) {
                     "group" -> {
                         group = content.text()
                         tags += RaisedTag("group", group!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
@@ -114,7 +114,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
         }
     }
 
-    override fun toString() = "$name (${lang.toUpperCase()})"
+    override fun toString() = "$name (${lang.uppercase()})"
 
     override fun ensureDelegateCompatible() {
         if (versionId != delegate.versionId) {
@@ -127,7 +127,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
-        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
+        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.lowercase() ?: return null
 
         if (lcFirstPathSegment != "manga" && lcFirstPathSegment != "reader") {
             return null

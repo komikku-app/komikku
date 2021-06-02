@@ -41,6 +41,6 @@ class MigrationMangaDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
                     (targetController as? MigrationListController)?.migrateMangas()
                 }
             }
-            .negativeButton(android.R.string.no)
+            .negativeButton(android.R.string.cancel)
     }
 }

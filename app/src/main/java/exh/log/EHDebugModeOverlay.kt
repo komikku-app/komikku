@@ -62,7 +62,7 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
         <b>Debug mode:</b> ${BuildConfig.DEBUG.asEnabledString()}<br>
         <b>Version code:</b> ${BuildConfig.VERSION_CODE}<br>
         <b>Commit SHA:</b> ${BuildConfig.COMMIT_SHA}<br>
-        <b>Log level:</b> ${EHLogLevel.currentLogLevel.name.toLowerCase(Locale.getDefault())}<br>
+        <b>Log level:</b> ${EHLogLevel.currentLogLevel.name.lowercase(Locale.getDefault())}<br>
         <b>Source blacklist:</b> ${preferences.enableSourceBlacklist().get().asEnabledString()}
         """.trimIndent()
 

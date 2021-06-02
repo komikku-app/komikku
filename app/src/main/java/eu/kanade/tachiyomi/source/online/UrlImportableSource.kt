@@ -9,7 +9,7 @@ interface UrlImportableSource : Source {
     val matchingHosts: List<String>
 
     fun matchesUri(uri: Uri): Boolean {
-        return uri.host.orEmpty().toLowerCase() in matchingHosts
+        return uri.host.orEmpty().lowercase() in matchingHosts
     }
 
     fun mapUrlToChapterUrl(uri: Uri): String? = null

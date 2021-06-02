@@ -166,7 +166,7 @@ class SourceFilterSheet(
                         }
                     }
                 }
-                .sortedBy { it.text.toString().toLowerCase() }
+                .sortedBy { it.text.toString().lowercase() }
         }
 
         fun hideFilterButton() {

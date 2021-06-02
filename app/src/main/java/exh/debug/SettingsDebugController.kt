@@ -31,7 +31,7 @@ class SettingsDebugController : SettingsController() {
                 it.visibility == KVisibility.PUBLIC
             }.forEach {
                 preference {
-                    title = it.name.replace("(.)(\\p{Upper})".toRegex(), "$1 $2").toLowerCase(Locale.getDefault()).capitalize(Locale.getDefault())
+                    title = it.name.replace("(.)(\\p{Upper})".toRegex(), "$1 $2").lowercase(Locale.getDefault()).capitalize(Locale.getDefault())
                     isPersistent = false
 
                     onClick {
@@ -62,7 +62,7 @@ class SettingsDebugController : SettingsController() {
 
             DebugToggles.values().forEach {
                 switchPreference {
-                    title = it.name.replace('_', ' ').toLowerCase(Locale.getDefault()).capitalize(Locale.getDefault())
+                    title = it.name.replace('_', ' ').lowercase(Locale.getDefault()).capitalize(Locale.getDefault())
                     key = it.prefKey
                     defaultValue = it.default
                     summaryOn = if (it.default) "" else MODIFIED_TEXT

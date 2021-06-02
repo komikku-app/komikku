@@ -170,22 +170,22 @@ object DebugFunctions {
     fun clearSavedSearches() = prefs.savedSearches().set(emptySet())
 
     fun listAllSources() = sourceManager.getCatalogueSources().joinToString("\n") {
-        "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
+        "${it.id}: ${it.name} (${it.lang.uppercase()})"
     }
 
     fun listAllSourcesClassName() = sourceManager.getCatalogueSources().joinToString("\n") {
-        "${it::class.qualifiedName}: ${it.name} (${it.lang.toUpperCase()})"
+        "${it::class.qualifiedName}: ${it.name} (${it.lang.uppercase()})"
     }
 
     fun listVisibleSources() = sourceManager.getVisibleCatalogueSources().joinToString("\n") {
-        "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
+        "${it.id}: ${it.name} (${it.lang.uppercase()})"
     }
 
     fun listAllHttpSources() = sourceManager.getOnlineSources().joinToString("\n") {
-        "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
+        "${it.id}: ${it.name} (${it.lang.uppercase()})"
     }
     fun listVisibleHttpSources() = sourceManager.getVisibleOnlineSources().joinToString("\n") {
-        "${it.id}: ${it.name} (${it.lang.toUpperCase()})"
+        "${it.id}: ${it.name} (${it.lang.uppercase()})"
     }
 
     fun convertAllEhentaiGalleriesToExhentai() = convertSources(EH_SOURCE_ID, EXH_SOURCE_ID)

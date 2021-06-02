@@ -278,7 +278,7 @@ open class BrowseSourceController(bundle: Bundle) :
                         .title(R.string.save_search_delete)
                         .message(text = it.getString(R.string.save_search_delete_message, search.name))
                         .positiveButton(R.string.action_cancel)
-                        .negativeButton(android.R.string.yes) {
+                        .negativeButton(android.R.string.ok) {
                             val newSearches = savedSearches.filterIndexed { index, _ ->
                                 index != indexToDelete
                             }

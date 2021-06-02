@@ -135,7 +135,7 @@ class FollowsHandler(
         return withIOContext {
             val status = when (followStatus == FollowStatus.UNFOLLOWED) {
                 true -> null
-                false -> followStatus.name.toLowerCase(Locale.US)
+                false -> followStatus.name.lowercase(Locale.US)
             }
 
             val jsonString = MdUtil.jsonParser.encodeToString(UpdateReadingStatus(status))
@@ -247,7 +247,7 @@ class FollowsHandler(
         val mangaStatusUrl = MdUtil.mangaStatus.toHttpUrl().newBuilder()
 
         if (status != null) {
-            mangaStatusUrl.addQueryParameter("status", status.name.toLowerCase(Locale.US))
+            mangaStatusUrl.addQueryParameter("status", status.name.lowercase(Locale.US))
         }
 
         return GET(mangaStatusUrl.build().toString(), MdUtil.getAuthHeaders(headers, preferences, mdList), CacheControl.FORCE_NETWORK)

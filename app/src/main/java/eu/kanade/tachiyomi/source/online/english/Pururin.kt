@@ -73,7 +73,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
 
             tags.clear()
             contentWrapper.select(".table-gallery-info > tbody > tr").forEach { ele ->
-                val key = ele.child(0).text().toLowerCase()
+                val key = ele.child(0).text().lowercase()
                 val value = ele.child(1)
                 when (key) {
                     "pages" -> {

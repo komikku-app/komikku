@@ -545,7 +545,7 @@ class SettingsEhController : SettingsController() {
                         MaterialDialog(activity)
                             .title(R.string.favorites_sync_reset)
                             .message(R.string.favorites_sync_reset_message)
-                            .positiveButton(android.R.string.yes) {
+                            .positiveButton(android.R.string.ok) {
                                 LocalFavoritesStorage().apply {
                                     getRealm().use {
                                         it.trans {
@@ -555,7 +555,7 @@ class SettingsEhController : SettingsController() {
                                 }
                                 activity.toast(context.getString(R.string.sync_state_reset), Toast.LENGTH_LONG)
                             }
-                            .negativeButton(android.R.string.no)
+                            .negativeButton(android.R.string.cancel)
                             .cancelable(false)
                             .show()
                     }

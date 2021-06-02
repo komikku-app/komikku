@@ -193,7 +193,7 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
                             if (rating.state) {
                                 addQueryParameter(
                                     "contentRating[]",
-                                    rating.name.toLowerCase(Locale.US)
+                                    rating.name.lowercase(Locale.US)
                                 )
                             }
                         }
@@ -203,7 +203,7 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
                             if (demographic.state) {
                                 addQueryParameter(
                                     "publicationDemographic[]",
-                                    demographic.name.toLowerCase(
+                                    demographic.name.lowercase(
                                         Locale.US
                                     )
                                 )
@@ -215,7 +215,7 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
                             if (status.state) {
                                 addQueryParameter(
                                     "status[]",
-                                    status.name.toLowerCase(
+                                    status.name.lowercase(
                                         Locale.US
                                     )
                                 )
@@ -246,13 +246,13 @@ class FilterHandler(private val preferencesHelper: PreferencesHelper) {
                     is TagInclusionMode -> {
                         addQueryParameter(
                             "includedTagsMode",
-                            filter.values[filter.state].toUpperCase(Locale.US)
+                            filter.values[filter.state].uppercase(Locale.US)
                         )
                     }
                     is TagExclusionMode -> {
                         addQueryParameter(
                             "excludedTagsMode",
-                            filter.values[filter.state].toUpperCase(Locale.US)
+                            filter.values[filter.state].uppercase(Locale.US)
                         )
                     }
                 }

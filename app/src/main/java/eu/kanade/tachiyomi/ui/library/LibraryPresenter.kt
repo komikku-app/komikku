@@ -809,7 +809,7 @@ class LibraryPresenter(
 
         val categories = (
             when (groupType) {
-                LibraryGroup.BY_SOURCE -> grouping.sortedBy { it.third.toLowerCase() }
+                LibraryGroup.BY_SOURCE -> grouping.sortedBy { it.third.lowercase() }
                 LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.filter { it.second in map.keys }
                 else -> grouping
             }

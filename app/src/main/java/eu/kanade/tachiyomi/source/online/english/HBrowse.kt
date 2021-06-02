@@ -48,7 +48,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
 
             tags.clear()
             ((tables[""] ?: error("")) + (tables["categories"] ?: error(""))).forEach { (k, v) ->
-                when (val lowercaseNs = k.toLowerCase()) {
+                when (val lowercaseNs = k.lowercase()) {
                     "title" -> title = v.text()
                     "length" -> length = v.text().substringBefore(" ").toInt()
                     else -> {
@@ -67,7 +67,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
 
     private fun parseIntoTables(doc: Document): Map<String, Map<String, Element>> {
         return doc.select("#main > .listTable").map { ele ->
-            val tableName = ele.previousElementSibling()?.text()?.toLowerCase().orEmpty()
+            val tableName = ele.previousElementSibling()?.text()?.lowercase().orEmpty()
             tableName to ele.select("tr").map {
                 it.child(0).text() to it.child(1)
             }.toMap()

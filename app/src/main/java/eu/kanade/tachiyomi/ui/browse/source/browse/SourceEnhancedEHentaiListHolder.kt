@@ -85,10 +85,10 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
         val pageCount = metadata.length
 
         binding.language.text = if (locale != null && pageCount != null) {
-            view.resources.getQuantityString(R.plurals.browse_language_and_pages, pageCount, pageCount, locale.toLanguageTag().toUpperCase())
+            view.resources.getQuantityString(R.plurals.browse_language_and_pages, pageCount, pageCount, locale.toLanguageTag().uppercase())
         } else if (pageCount != null) {
             view.resources.getQuantityString(R.plurals.num_pages, pageCount, pageCount)
-        } else locale?.toLanguageTag()?.toUpperCase()
+        } else locale?.toLanguageTag()?.uppercase()
     }
 
     override fun setImage(manga: Manga) {

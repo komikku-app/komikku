@@ -163,7 +163,7 @@ class SearchEngine {
             }
         }
 
-        query.toLowerCase(Locale.getDefault()).forEach { char ->
+        query.lowercase(Locale.getDefault()).forEach { char ->
             if (char == '"') {
                 inQuotes = !inQuotes
             } else if (enableWildcard && (char == '?' || char == '_')) {

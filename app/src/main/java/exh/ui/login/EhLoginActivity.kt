@@ -233,7 +233,7 @@ class EhLoginActivity : BaseViewBindingActivity<EhActivityLoginBinding>() {
             var igneous: String? = null
 
             parsed.forEach {
-                when (it.name.toLowerCase(Locale.getDefault())) {
+                when (it.name.lowercase(Locale.getDefault())) {
                     MEMBER_ID_COOKIE -> memberId = it.value
                     PASS_HASH_COOKIE -> passHash = it.value
                     IGNEOUS_COOKIE -> igneous = this.igneous ?: it.value

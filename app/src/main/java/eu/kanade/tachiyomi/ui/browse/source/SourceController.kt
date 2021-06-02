@@ -235,7 +235,7 @@ class SourceController(bundle: Bundle? = null) :
     }
 
     private fun addToCategories(source: Source) {
-        val categories = preferences.sourcesTabCategories().get().toList().sortedBy { it.toLowerCase() }
+        val categories = preferences.sourcesTabCategories().get().toList().sortedBy { it.lowercase() }
 
         if (categories.isEmpty()) {
             applicationContext?.toast(R.string.no_source_categories)

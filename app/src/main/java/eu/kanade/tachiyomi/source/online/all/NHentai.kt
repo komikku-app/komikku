@@ -148,7 +148,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
         val count: Long? = null
     )
 
-    override fun toString() = "$name (${lang.toUpperCase()})"
+    override fun toString() = "$name (${lang.uppercase()})"
 
     override fun ensureDelegateCompatible() {
         if (versionId != delegate.versionId) {
@@ -161,7 +161,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
-        if (uri.pathSegments.firstOrNull()?.toLowerCase() != "g") {
+        if (uri.pathSegments.firstOrNull()?.lowercase() != "g") {
             return null
         }
 

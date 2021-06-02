@@ -14,7 +14,7 @@ class EhUConfigBuilder {
         configItems += when (
             preferences.imageQuality()
                 .get()
-                .toLowerCase(Locale.getDefault())
+                .lowercase(Locale.getDefault())
         ) {
             "ovrs_2400" -> Entry.ImageSize.`2400`
             "ovrs_1600" -> Entry.ImageSize.`1600`
