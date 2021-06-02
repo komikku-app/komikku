@@ -84,6 +84,8 @@ class ReaderPresenter(
     // SY -->
     var meta: RaisedSearchMetadata? = null
         private set
+    var mergedManga: List<Manga>? = null
+        private set
     // SY <--
 
     /**
@@ -282,8 +284,8 @@ class ReaderPresenter(
         val context = Injekt.get<Application>()
         val source = sourceManager.getOrStub(manga.source)
         val mergedReferences = if (source is MergedSource) db.getMergedMangaReferences(manga.id!!).executeAsBlocking() else emptyList()
-        val mergedManga = if (source is MergedSource) db.getMergedMangas(manga.id!!).executeAsBlocking() else emptyList()
-        loader = ChapterLoader(context, downloadManager, manga, source, sourceManager, mergedReferences, mergedManga)
+        mergedManga = if (source is MergedSource) db.getMergedMangas(manga.id!!).executeAsBlocking() else emptyList()
+        loader = ChapterLoader(context, downloadManager, manga, source, sourceManager, mergedReferences, mergedManga ?: emptyList())
 
         Observable.just(manga).subscribeLatestCache(ReaderActivity::setManga)
         viewerChaptersRelay.subscribeLatestCache(ReaderActivity::setChapters)
@@ -930,7 +932,13 @@ class ReaderPresenter(
      */
     private fun enqueueDeleteReadChapters(chapter: ReaderChapter) {
         if (!chapter.chapter.read) return
-        val manga = manga ?: return
+        // SY -->
+        val manga = if (mergedManga.isNullOrEmpty()) {
+            manga
+        } else {
+            mergedManga?.find { it.id == chapter.chapter.manga_id }
+        } ?: return
+        // SY <--
 
         launchIO {
             downloadManager.enqueueDeleteChapters(listOf(chapter.chapter), manga)
