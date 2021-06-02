@@ -2,28 +2,24 @@ package eu.kanade.tachiyomi.ui.category.biometric
 
 import android.content.Context
 import android.text.format.DateFormat
+import exh.util.hours
+import exh.util.minutes
 import java.util.Date
 import java.util.SimpleTimeZone
-import kotlin.math.floor
-import kotlin.math.roundToInt
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
-import kotlin.time.hours
-import kotlin.time.minutes
 
-@ExperimentalTime
 data class TimeRange(val startTime: Duration, val endTime: Duration) {
     override fun toString(): String {
-        val startHour = floor(startTime.inHours).roundToInt()
-        val startMinute = (startTime - floor(startTime.inHours).hours).inMinutes.roundToInt()
-        val endHour = floor(endTime.inHours).roundToInt()
-        val endMinute = (endTime - floor(endTime.inHours).hours).inMinutes.roundToInt()
+        val startHour = startTime.inWholeHours
+        val startMinute = (startTime - startHour.hours).inWholeMinutes
+        val endHour = endTime.inWholeHours
+        val endMinute = (endTime - endHour.hours).inWholeMinutes
         return String.format("%02d:%02d - %02d:%02d", startHour, startMinute, endHour, endMinute)
     }
 
     fun getFormattedString(context: Context): String {
-        val startDate = Date(startTime.toLongMilliseconds())
-        val endDate = Date(endTime.toLongMilliseconds())
+        val startDate = Date(startTime.inWholeMilliseconds)
+        val endDate = Date(endTime.inWholeMilliseconds)
         val format = DateFormat.getTimeFormat(context)
         format.timeZone = SimpleTimeZone(0, "UTC")
 
@@ -31,7 +27,7 @@ data class TimeRange(val startTime: Duration, val endTime: Duration) {
     }
 
     fun toPreferenceString(): String {
-        return "${startTime.inMinutes},${endTime.inMinutes}"
+        return "${startTime.inWholeMinutes},${endTime.inWholeMinutes}"
     }
 
     fun conflictsWith(other: TimeRange): Boolean {

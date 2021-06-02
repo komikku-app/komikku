@@ -12,6 +12,7 @@ import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 
+@Suppress("OverridingDeprecatedMember", "DEPRECATION")
 class EnhancedHttpSource(
     val originalSource: HttpSource,
     val enhancedSource: HttpSource

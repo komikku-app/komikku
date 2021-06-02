@@ -313,6 +313,7 @@ tasks {
             "-Xuse-experimental=kotlinx.coroutines.InternalCoroutinesApi",
             "-Xuse-experimental=kotlinx.serialization.ExperimentalSerializationApi",
             "-Xuse-experimental=coil.annotation.ExperimentalCoilApi",
+            "-Xuse-experimental=kotlin.time.ExperimentalTime",
         )
     }
 

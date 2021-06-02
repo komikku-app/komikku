@@ -7,14 +7,13 @@ import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
+import exh.util.hours
+import exh.util.minutes
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
 import java.util.Date
-import kotlin.time.ExperimentalTime
-import kotlin.time.hours
-import kotlin.time.minutes
 
 class SecureActivityDelegate(private val activity: FragmentActivity) {
 
@@ -48,7 +47,6 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun isAppLocked(): Boolean {
         if (!locked) {
             return false

@@ -13,6 +13,7 @@ import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 
+@Suppress("OverridingDeprecatedMember", "DEPRECATION")
 abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     /**
      * Returns the request for the popular manga given the page.

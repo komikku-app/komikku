@@ -8,16 +8,14 @@ import com.bluelinelabs.conductor.Controller
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import exh.log.xLogD
+import exh.util.hours
+import exh.util.minutes
 import java.util.Calendar
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
-import kotlin.time.hours
-import kotlin.time.minutes
 
 /**
  * Dialog to create a new category for the library.
  */
-@OptIn(ExperimentalTime::class)
 class BiometricTimesCreateDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
         where T : Controller, T : BiometricTimesCreateDialog.Listener {
 

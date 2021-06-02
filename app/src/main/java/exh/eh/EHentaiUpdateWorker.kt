@@ -28,7 +28,9 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.source.isEhBasedManga
 import exh.util.cancellable
+import exh.util.days
 import exh.util.executeOnIO
+import exh.util.hours
 import exh.util.jobScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,9 +48,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.ArrayList
-import kotlin.time.ExperimentalTime
-import kotlin.time.days
-import kotlin.time.hours
 
 class EHentaiUpdateWorker : JobService() {
     private val scope = CoroutineScope(Dispatchers.Default + Job())
@@ -289,8 +288,7 @@ class EHentaiUpdateWorker : JobService() {
     companion object {
         private const val MAX_UPDATE_FAILURES = 5
 
-        @OptIn(ExperimentalTime::class)
-        private val MIN_BACKGROUND_UPDATE_FREQ = 1.days.toLongMilliseconds()
+        private val MIN_BACKGROUND_UPDATE_FREQ = 1.days.inWholeMilliseconds
 
         private const val JOB_ID_UPDATE_BACKGROUND = 700000
         private const val JOB_ID_UPDATE_BACKGROUND_TEST = 700001
@@ -356,9 +354,8 @@ class EHentaiUpdateWorker : JobService() {
                 val acRestriction = "ac" in restrictions
                 val wifiRestriction = "wifi" in restrictions
 
-                @OptIn(ExperimentalTime::class)
                 val jobInfo = context.periodicBackgroundJobInfo(
-                    duration.hours.toLongMilliseconds(),
+                    duration.hours.inWholeMilliseconds,
                     acRestriction,
                     wifiRestriction
                 )
@@ -382,6 +379,5 @@ data class UpdateEntry(val manga: Manga, val meta: EHentaiSearchMetadata, val ro
 object EHentaiUpdateWorkerConstants {
     const val UPDATES_PER_ITERATION = 50
 
-    @OptIn(ExperimentalTime::class)
-    val GALLERY_AGE_TIME = 365.days.toLongMilliseconds()
+    val GALLERY_AGE_TIME = 365.days.inWholeMilliseconds
 }

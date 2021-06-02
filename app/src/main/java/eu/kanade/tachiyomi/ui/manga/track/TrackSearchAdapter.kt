@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.databinding.TrackSearchItemBinding
 import eu.kanade.tachiyomi.util.view.inflate
+import exh.util.capitalize
 
 class TrackSearchAdapter(context: Context) :
     ArrayAdapter<TrackSearch>(context, R.layout.track_search_item, mutableListOf<TrackSearch>()) {

@@ -60,7 +60,7 @@ class SourcePresenter(
         // SY -->
         val categories = mutableListOf<SourceCategory>()
 
-        preferences.sourcesTabCategories().get().sortedByDescending { it.toLowerCase() }.forEach {
+        preferences.sourcesTabCategories().get().sortedByDescending { it.lowercase() }.forEach {
             categories.add(SourceCategory(it))
         }
 
@@ -126,7 +126,7 @@ class SourcePresenter(
 
         // SY -->
         categories.forEach {
-            sourceItems = it.sources.sortedBy { sourceItem -> sourceItem.source.name.toLowerCase() } + sourceItems
+            sourceItems = it.sources.sortedBy { sourceItem -> sourceItem.source.name.lowercase() } + sourceItems
         }
         // SY <--
 

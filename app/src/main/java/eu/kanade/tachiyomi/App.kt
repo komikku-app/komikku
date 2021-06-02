@@ -56,6 +56,7 @@ import exh.log.XLogTree
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.syDebugVersion
+import exh.util.days
 import io.realm.Realm
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -70,8 +71,6 @@ import java.security.Security
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.net.ssl.SSLContext
-import kotlin.time.ExperimentalTime
-import kotlin.time.days
 
 open class App : Application(), LifecycleObserver, ImageLoaderFactory {
 
@@ -231,7 +230,6 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
-        @OptIn(ExperimentalTime::class)
         printers += EnhancedFilePrinter
             .Builder(logFolder.absolutePath) {
                 fileNameGenerator = object : DateFileNameGenerator() {
@@ -245,7 +243,7 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
                 flattener { timeMillis, level, tag, message ->
                     "${dateFormat.format(timeMillis)} ${LogLevel.getShortLevelName(level)}/$tag: $message"
                 }
-                cleanStrategy = FileLastModifiedCleanStrategy(7.days.toLongMilliseconds())
+                cleanStrategy = FileLastModifiedCleanStrategy(7.days.inWholeMilliseconds)
                 backupStrategy = NeverBackupStrategy()
             }
 

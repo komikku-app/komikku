@@ -15,6 +15,7 @@ import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
+import exh.util.capitalize
 import exh.util.dropEmpty
 import exh.util.executeOnIO
 import exh.util.floor

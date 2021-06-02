@@ -82,6 +82,7 @@ import exh.log.xLogE
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.mangaType
+import exh.util.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -99,9 +100,6 @@ import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import kotlin.math.abs
-import kotlin.time.ExperimentalTime
-import kotlin.time.seconds
-
 /**
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the
  * viewers, to which calls from the presenter or UI events are delegated.
@@ -236,7 +234,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun setupAutoscroll(interval: Double) {
         autoScrollJob?.cancel()
         if (interval == -1.0) return
