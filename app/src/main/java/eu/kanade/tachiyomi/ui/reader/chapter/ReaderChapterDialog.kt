@@ -8,14 +8,14 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.ReaderChaptersSheetBinding
+import eu.kanade.tachiyomi.databinding.ReaderChaptersDialogBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.dpToPx
 
 class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterAdapter.OnBookmarkClickListener {
-    private val binding = ReaderChaptersSheetBinding.inflate(activity.layoutInflater, null, false)
+    private val binding = ReaderChaptersDialogBinding.inflate(activity.layoutInflater, null, false)
 
     var presenter: ReaderPresenter = activity.presenter
     var adapter: FlexibleAdapter<ReaderChapterItem>? = null
