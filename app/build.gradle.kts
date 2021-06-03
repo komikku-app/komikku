@@ -274,9 +274,6 @@ dependencies {
     // debugImplementation("com.squareup.leakcanary:leakcanary-android:2.7")
 
     // SY -->
-    // [EXH] Android 7 SSL Workaround
-    implementation("com.google.android.gms:play-services-safetynet:17.0.0")
-
     // Changelog
     implementation("com.github.gabrielemariotti.changeloglib:changelog:2.1.0")
 
