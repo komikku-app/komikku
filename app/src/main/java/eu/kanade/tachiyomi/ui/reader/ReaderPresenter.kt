@@ -35,7 +35,6 @@ import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.takeBytes
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.updateCoverLastModified
@@ -307,25 +306,23 @@ class ReaderPresenter(
     }
 
     // SY -->
-    suspend fun getChapters(context: Context): List<ReaderChapterItem> {
-        return withIOContext {
-            val currentChapter = getCurrentChapter()
-            val decimalFormat = DecimalFormat(
-                "#.###",
-                DecimalFormatSymbols()
-                    .apply { decimalSeparator = '.' }
-            )
+    fun getChapters(context: Context): List<ReaderChapterItem> {
+        val currentChapter = getCurrentChapter()
+        val decimalFormat = DecimalFormat(
+            "#.###",
+            DecimalFormatSymbols()
+                .apply { decimalSeparator = '.' }
+        )
 
-            chapterList.map {
-                ReaderChapterItem(
-                    it.chapter,
-                    manga!!,
-                    it.chapter == currentChapter?.chapter,
-                    context,
-                    preferences.dateFormat(),
-                    decimalFormat
-                )
-            }
+        return chapterList.map {
+            ReaderChapterItem(
+                it.chapter,
+                manga!!,
+                it.chapter == currentChapter?.chapter,
+                context,
+                preferences.dateFormat(),
+                decimalFormat
+            )
         }
     }
     // SY <--

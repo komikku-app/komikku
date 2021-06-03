@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.databinding.ReaderChaptersDialogBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.dpToPx
 
 class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterAdapter.OnBookmarkClickListener {
@@ -26,6 +25,7 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
             .title(R.string.chapters)
             .customView(view = binding.root)
             .negativeButton(android.R.string.cancel)
+            .onDismiss { destroy() }
             .show {
                 adapter = ReaderChapterAdapter(this@ReaderChapterDialog)
                 binding.chapterRecycler.adapter = adapter
@@ -40,26 +40,21 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
                 }
 
                 binding.chapterRecycler.layoutManager = LinearLayoutManager(context)
-                onDismiss {
-                    destroy()
-                }
                 refreshList()
             }
     }
 
     private fun refreshList() {
-        launchUI {
-            val chapters = presenter.getChapters(activity)
-                .sortedWith(getChapterSort(presenter.manga!!))
+        val chapters = presenter.getChapters(activity)
+            .sortedWith(getChapterSort(presenter.manga!!))
 
-            adapter?.clear()
-            adapter?.updateDataSet(chapters)
+        adapter?.clear()
+        adapter?.updateDataSet(chapters)
 
-            (binding.chapterRecycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                adapter?.getGlobalPositionOf(chapters.find { it.isCurrent }) ?: 0,
-                (binding.chapterRecycler.height / 2).dpToPx
-            )
-        }
+        (binding.chapterRecycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+            adapter?.getGlobalPositionOf(chapters.find { it.isCurrent }) ?: 0,
+            (binding.chapterRecycler.height / 2).dpToPx
+        )
     }
 
     fun destroy() {
