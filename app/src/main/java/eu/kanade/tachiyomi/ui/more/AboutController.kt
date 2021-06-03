@@ -165,9 +165,8 @@ class AboutController : SettingsController(), NoToolbarElevationController {
             )
             outputDf.timeZone = TimeZone.getDefault()
 
-            @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-            buildTime.toDateTimestampString(dateFormat)
-        } catch (e: ParseException) {
+            buildTime!!.toDateTimestampString(dateFormat)
+        } catch (e: Exception) {
             BuildConfig.BUILD_TIME
         }
     }
