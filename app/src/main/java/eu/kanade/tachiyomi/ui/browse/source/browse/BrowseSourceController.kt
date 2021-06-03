@@ -246,6 +246,11 @@ open class BrowseSourceController(bundle: Bundle) :
                     return@cb
                 }
 
+                if (search.filterList == null) {
+                    activity?.toast(R.string.save_search_invalid)
+                    return@cb
+                }
+
                 presenter.sourceFilters = FilterList(search.filterList)
                 filterSheet?.setFilters(presenter.filterItems)
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()

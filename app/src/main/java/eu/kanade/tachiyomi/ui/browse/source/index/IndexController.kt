@@ -23,10 +23,13 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.toast
+import exh.savedsearches.JsonSavedSearch
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import reactivecircus.flowbinding.android.view.clicks
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -194,8 +197,14 @@ open class IndexController :
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
                 filterSheet?.dismiss()
                 if (!allDefault) {
-                    val json = buildJsonObject { put("filters", filterSerializer.serialize(presenter.sourceFilters)) }
-                    onBrowseClick(presenter.query.nullIfBlank(), json.toString())
+                    val json = Json.encodeToString(
+                        JsonSavedSearch(
+                            "",
+                            "",
+                            filterSerializer.serialize(presenter.sourceFilters)
+                        )
+                    )
+                    onBrowseClick(presenter.query.nullIfBlank(), json)
                 }
             },
             onResetClicked = {},
@@ -217,14 +226,25 @@ open class IndexController :
                     return@cb
                 }
 
+                if (search.filterList == null) {
+                    activity?.toast(R.string.save_search_invalid)
+                    return@cb
+                }
+
                 presenter.sourceFilters = FilterList(search.filterList)
                 filterSheet?.setFilters(presenter.filterItems)
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
                 filterSheet?.dismiss()
 
                 if (!allDefault) {
-                    val json = buildJsonObject { put("filters", filterSerializer.serialize(presenter.sourceFilters)) }
-                    onBrowseClick(presenter.query.nullIfBlank(), json.toString())
+                    val json = Json.encodeToString(
+                        JsonSavedSearch(
+                            "",
+                            "",
+                            filterSerializer.serialize(presenter.sourceFilters)
+                        )
+                    )
+                    onBrowseClick(presenter.query.nullIfBlank(), json)
                 }
             },
             onSavedSearchDeleteClicked = { _, _ -> }

@@ -49,11 +49,9 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.put
+import kotlinx.serialization.json.JsonArray
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -124,8 +122,6 @@ open class BrowseSourcePresenter(
     private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
 
     // SY -->
-    private var manga: Manga? = null
-
     private val filterSerializer = FilterSerializer()
     // SY <--
 
@@ -142,8 +138,8 @@ open class BrowseSourcePresenter(
 
         // SY -->
         if (filters != null) {
-            val filters = Json.decodeFromString<JsonObject>(filters)
-            filterSerializer.deserialize(sourceFilters, filters["filters"]!!.jsonArray)
+            val filters = Json.decodeFromString<JsonSavedSearch>(filters)
+            filterSerializer.deserialize(sourceFilters, filters.filters)
         }
         val allDefault = sourceFilters == source.getFilterList()
         // SY <--
@@ -451,11 +447,15 @@ open class BrowseSourcePresenter(
             !it.startsWith("${source.id}:")
         }
         val newSerialized = searches.map {
-            "${source.id}:" + buildJsonObject {
-                put("name", it.name)
-                put("query", it.query)
-                put("filters", filterSerializer.serialize(it.filterList))
-            }.toString()
+            "${source.id}:" + Json.encodeToString(
+                JsonSavedSearch(
+                    it.name,
+                    it.query,
+                    if (it.filterList != null) {
+                        filterSerializer.serialize(it.filterList)
+                    } else JsonArray(emptyList())
+                )
+            )
         }
         prefs.savedSearches().set((otherSerialized + newSerialized).toSet())
     }
@@ -463,10 +463,10 @@ open class BrowseSourcePresenter(
     fun loadSearches(): List<EXHSavedSearch> {
         val loaded = prefs.savedSearches().get()
         return loaded.map {
+            val id = it.substringBefore(':').toLong()
+            if (id != source.id) return@map null
+            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             try {
-                val id = it.substringBefore(':').toLong()
-                if (id != source.id) return@map null
-                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
@@ -478,7 +478,11 @@ open class BrowseSourcePresenter(
                 // Load failed
                 Timber.e(t, "Failed to load saved search!")
                 t.printStackTrace()
-                null
+                EXHSavedSearch(
+                    content.name,
+                    content.query,
+                    null
+                )
             }
         }.filterNotNull()
     }

@@ -215,10 +215,10 @@ open class IndexPresenter(
     fun loadSearches(): List<EXHSavedSearch> {
         val loaded = preferences.savedSearches().get()
         return loaded.mapNotNull {
+            val id = it.substringBefore(':').toLong()
+            if (id != source.id) return@mapNotNull null
+            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             try {
-                val id = it.substringBefore(':').toLong()
-                if (id != source.id) return@mapNotNull null
-                val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content.filters)
                 EXHSavedSearch(
@@ -230,7 +230,11 @@ open class IndexPresenter(
                 // Load failed
                 Timber.e(t, "Failed to load saved search!")
                 t.printStackTrace()
-                null
+                EXHSavedSearch(
+                    content.name,
+                    content.query,
+                    null
+                )
             }
         }
     }
