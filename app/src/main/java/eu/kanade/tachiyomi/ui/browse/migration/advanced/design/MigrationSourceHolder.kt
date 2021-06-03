@@ -6,6 +6,7 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.databinding.MigrationSourceItemBinding
 import eu.kanade.tachiyomi.source.icon
 import eu.kanade.tachiyomi.source.online.HttpSource
+import exh.util.capitalize
 
 class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
     FlexibleViewHolder(view, adapter) {

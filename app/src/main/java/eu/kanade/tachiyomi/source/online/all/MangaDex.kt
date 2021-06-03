@@ -176,7 +176,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
-        apiMangaParser.parseIntoMetadata(metadata, input, emptyList())
+        apiMangaParser.parseIntoMetadata(metadata, input)
     }
 
     override suspend fun fetchFollows(page: Int): MangasPage {
@@ -231,13 +231,13 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return followsHandler.fetchAllFollows()
     }
 
-    suspend fun updateReadingProgress(track: Track): Boolean {
+    /*suspend fun updateReadingProgress(track: Track): Boolean {
         return followsHandler.updateReadingProgress(track)
     }
 
     suspend fun updateRating(track: Track): Boolean {
         return followsHandler.updateRating(track)
-    }
+    }*/
 
     override suspend fun fetchTrackingInfo(url: String): Track {
         if (!isLogged()) {

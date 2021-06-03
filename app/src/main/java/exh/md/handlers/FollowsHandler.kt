@@ -153,9 +153,9 @@ class FollowsHandler(
         }
     }
 
-    suspend fun updateReadingProgress(track: Track): Boolean {
+    /*suspend fun updateReadingProgress(track: Track): Boolean {
         return true
-        /*return withIOContext {
+        return withIOContext {
             val mangaID = getMangaId(track.tracking_url)
             val formBody = FormBody.Builder()
                 .add("volume", "0")
@@ -179,12 +179,12 @@ class FollowsHandler(
                 }
             }
             result.isSuccess
-        }*/
+        }
     }
 
     suspend fun updateRating(track: Track): Boolean {
         return true
-        /*return withIOContext {
+        return withIOContext {
             val mangaID = getMangaId(track.tracking_url)
             val result = runCatching {
                 client.newCall(
@@ -205,8 +205,8 @@ class FollowsHandler(
                 }
             }
             result.isSuccess
-        }*/
-    }
+        }
+    }*/
 
     /**
      * fetch all manga from all possible pages

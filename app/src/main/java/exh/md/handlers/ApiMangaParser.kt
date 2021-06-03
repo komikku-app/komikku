@@ -40,18 +40,18 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
     }?.call()
         ?: error("Could not find no-args constructor for meta class: ${metaClass.qualifiedName}!")
 
-    suspend fun parseToManga(manga: MangaInfo, input: Response, coverUrls: List<String>, sourceId: Long): MangaInfo {
-        return parseToManga(manga, input.parseAs<MangaResponse>(MdUtil.jsonParser), coverUrls, sourceId)
+    suspend fun parseToManga(manga: MangaInfo, input: Response, sourceId: Long): MangaInfo {
+        return parseToManga(manga, input.parseAs<MangaResponse>(MdUtil.jsonParser), sourceId)
     }
 
-    suspend fun parseToManga(manga: MangaInfo, input: MangaResponse, coverUrls: List<String>, sourceId: Long): MangaInfo {
+    suspend fun parseToManga(manga: MangaInfo, input: MangaResponse, sourceId: Long): MangaInfo {
         val mangaId = db.getManga(manga.key, sourceId).executeOnIO()?.id
         val metadata = if (mangaId != null) {
             val flatMetadata = db.getFlatMetadataForManga(mangaId).executeOnIO()
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
-        parseIntoMetadata(metadata, input, coverUrls)
+        parseIntoMetadata(metadata, input)
         if (mangaId != null) {
             metadata.mangaId = mangaId
             db.insertFlatMetadata(metadata.flatten())
@@ -63,11 +63,11 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
     /**
      * Parse the manga details json into metadata object
      */
-    suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response, coverUrls: List<String>) {
-        parseIntoMetadata(metadata, input.parseAs<MangaResponse>(MdUtil.jsonParser), coverUrls)
+    suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
+        parseIntoMetadata(metadata, input.parseAs<MangaResponse>(MdUtil.jsonParser))
     }
 
-    suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, networkApiManga: MangaResponse, coverUrls: List<String>) {
+    suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, networkApiManga: MangaResponse) {
         with(metadata) {
             try {
                 val networkManga = networkApiManga.data.attributes

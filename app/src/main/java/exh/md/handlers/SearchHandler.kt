@@ -44,7 +44,7 @@ class SearchHandler(val client: OkHttpClient, private val headers: Headers, val 
                         }*/
 
                         val details = apiMangaParser
-                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang, coverUrl), response, emptyList(), sourceId).toSManga()
+                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang, coverUrl), response, sourceId).toSManga()
                         MangasPage(listOf(details), false)
                     })
                 }

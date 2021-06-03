@@ -96,7 +96,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
     override suspend fun refresh(track: Track): Track {
         return withIOContext {
             val mdex = mdex ?: throw MangaDexNotFoundException()
-            val (remoteTrack, mangaMetadata) = mdex.getTrackingAndMangaInfo(track)
+            val (remoteTrack/*, mangaMetadata*/) = mdex.getTrackingAndMangaInfo(track)
             track.copyPersonalFrom(remoteTrack)
             /*if (track.total_chapters == 0 && mangaMetadata.status == SManga.COMPLETED) {
                 track.total_chapters = mangaMetadata.maxChapterNumber ?: 0

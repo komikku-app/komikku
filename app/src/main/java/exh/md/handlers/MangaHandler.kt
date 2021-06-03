@@ -37,20 +37,18 @@ class MangaHandler(
     suspend fun fetchMangaAndChapterDetails(manga: MangaInfo, sourceId: Long, forceLatestCovers: Boolean): Pair<MangaInfo, List<ChapterInfo>> {
         return withIOContext {
             val response = client.newCall(mangaRequest(manga)).await()
-            val covers = getCovers(manga, forceLatestCovers)
-
-            apiMangaParser.parseToManga(manga, response, covers, sourceId) to getChapterList(manga)
+            apiMangaParser.parseToManga(manga, response, sourceId) to getChapterList(manga)
         }
     }
 
-    suspend fun getCovers(manga: MangaInfo, forceLatestCovers: Boolean): List<String> {
-        /*  if (forceLatestCovers) {
+    /*suspend fun getCovers(manga: MangaInfo, forceLatestCovers: Boolean): List<String> {
+        *//*  if (forceLatestCovers) {
               val covers = client.newCall(coverRequest(manga)).await().parseAs<ApiCovers>(MdUtil.jsonParser)
               return covers.data.map { it.url }
-          } else {*/
+          } else {*//*
         return emptyList()
         //  }
-    }
+    }*/
 
     suspend fun getMangaIdFromChapterId(urlChapterId: String): String {
         return withIOContext {
@@ -62,8 +60,7 @@ class MangaHandler(
 
     suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long, forceLatestCovers: Boolean): MangaInfo {
         val response = withIOContext { client.newCall(mangaRequest(manga)).await() }
-        val covers = withIOContext { getCovers(manga, forceLatestCovers) }
-        return apiMangaParser.parseToManga(manga, response, covers, sourceId)
+        return apiMangaParser.parseToManga(manga, response, sourceId)
     }
 
     fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long, forceLatestCovers: Boolean): Observable<SManga> {
