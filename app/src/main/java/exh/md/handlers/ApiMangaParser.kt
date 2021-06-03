@@ -141,9 +141,9 @@ class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
 
                 val tempStatus = parseStatus(networkManga.status ?: "")
-                val publishedOrCancelled =
+                /*val publishedOrCancelled =
                     tempStatus == SManga.PUBLICATION_COMPLETE || tempStatus == SManga.CANCELLED
-                /*if (publishedOrCancelled && isMangaCompleted(networkApiManga, filteredChapters)) {
+                if (publishedOrCancelled && isMangaCompleted(networkApiManga, filteredChapters)) {
                     manga.status = SManga.COMPLETED
                     manga.missing_chapters = null
                 } else {*/
