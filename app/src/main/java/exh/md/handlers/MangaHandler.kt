@@ -27,8 +27,8 @@ import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.api.get
 
 class MangaHandler(
-    val client: OkHttpClient,
-    val headers: Headers,
+    private val client: OkHttpClient,
+    private val headers: Headers,
     private val lang: String,
     private val apiMangaParser: ApiMangaParser,
     private val followsHandler: FollowsHandler

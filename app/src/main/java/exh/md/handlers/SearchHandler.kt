@@ -20,7 +20,13 @@ import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 
-class SearchHandler(val client: OkHttpClient, private val headers: Headers, val lang: String, val filterHandler: FilterHandler, private val apiMangaParser: ApiMangaParser) {
+class SearchHandler(
+    private val client: OkHttpClient,
+    private val headers: Headers,
+    private val lang: String,
+    private val filterHandler: FilterHandler,
+    private val apiMangaParser: ApiMangaParser
+) {
 
     fun fetchSearchManga(page: Int, query: String, filters: FilterList, sourceId: Long): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {

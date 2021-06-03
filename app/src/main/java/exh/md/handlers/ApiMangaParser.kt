@@ -27,7 +27,10 @@ import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
-class ApiMangaParser(val client: OkHttpClient, private val lang: String) {
+class ApiMangaParser(
+    private val client: OkHttpClient,
+    private val lang: String
+) {
     val db: DatabaseHelper by injectLazy()
 
     val metaClass = MangaDexSearchMetadata::class

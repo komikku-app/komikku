@@ -35,9 +35,9 @@ import okhttp3.Response
 import java.util.Locale
 
 class FollowsHandler(
-    val client: OkHttpClient,
-    val headers: Headers,
-    val preferences: PreferencesHelper,
+    private val client: OkHttpClient,
+    private val headers: Headers,
+    private val preferences: PreferencesHelper,
     private val lang: String,
     private val mdList: MdList
 ) {

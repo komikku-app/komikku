@@ -19,7 +19,11 @@ import rx.Observable
 /**
  * Returns the latest manga from the updates url since it actually respects the users settings
  */
-class PopularHandler(val client: OkHttpClient, private val headers: Headers, private val lang: String) {
+class PopularHandler(
+    private val client: OkHttpClient,
+    private val headers: Headers,
+    private val lang: String
+) {
 
     fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return client.newCall(popularMangaRequest(page))

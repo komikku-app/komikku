@@ -14,7 +14,10 @@ import okhttp3.Request
 import okhttp3.Response
 import tachiyomi.source.model.MangaInfo
 
-class SimilarHandler(val client: OkHttpClient, val lang: String) {
+class SimilarHandler(
+    private val client: OkHttpClient,
+    private val lang: String
+) {
 
     suspend fun getSimilar(manga: MangaInfo): MangasPage {
         val response = client.newCall(similarMangaRequest(manga)).await()

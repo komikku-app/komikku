@@ -12,8 +12,8 @@ import okhttp3.Request
 import rx.Observable
 
 class PageHandler(
-    val client: OkHttpClient,
-    val headers: Headers,
+    private val client: OkHttpClient,
+    private val headers: Headers,
     private val dataSaver: Boolean,
     private val apiChapterParser: ApiChapterParser,
     private val mangaPlusHandler: MangaPlusHandler
