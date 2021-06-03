@@ -27,7 +27,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import exh.syDebugVersion
 import timber.log.Timber
 import java.text.DateFormat
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
