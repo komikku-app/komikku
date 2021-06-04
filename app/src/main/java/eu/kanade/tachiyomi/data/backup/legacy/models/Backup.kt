@@ -1,30 +1,43 @@
 package eu.kanade.tachiyomi.data.backup.legacy.models
 
+import eu.kanade.tachiyomi.data.database.models.Category
+import eu.kanade.tachiyomi.data.database.models.Chapter
+import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.Track
+import exh.merged.sql.models.MergedMangaReference
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Json values
- */
-object Backup {
-    const val CURRENT_VERSION = 2
-    const val MANGA = "manga"
-    const val MANGAS = "mangas"
-    const val TRACK = "track"
-    const val CHAPTERS = "chapters"
-    const val CATEGORIES = "categories"
-    const val EXTENSIONS = "extensions"
-    const val HISTORY = "history"
-    const val VERSION = "version"
+@Serializable
+data class Backup(
+    val version: Int? = null,
+    var mangas: MutableList<MangaObject> = mutableListOf(),
+    var categories: List<@Contextual Category>? = null,
+    var extensions: List<String>? = null,
+    // SY Specific values
+    @SerialName("mergedmangareferences")
+    var mergedMangaReferences: List<@Contextual MergedMangaReference>? = null,
+    var savedSearches: String? = null
+) {
+    companion object {
+        const val CURRENT_VERSION = 2
 
-    // SY -->
-    const val SAVEDSEARCHES = "savedsearches"
-    const val MERGEDMANGAREFERENCES = "mergedmangareferences"
-    // SY <--
-
-    fun getDefaultFilename(): String {
-        val date = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
-        return "tachiyomi_$date.json"
+        fun getDefaultFilename(): String {
+            val date = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.getDefault()).format(Date())
+            return "tachiyomi_$date.json"
+        }
     }
 }
+
+@Serializable
+data class MangaObject(
+    var manga: @Contextual Manga,
+    var chapters: List<@Contextual Chapter>? = null,
+    var categories: List<String>? = null,
+    var track: List<@Contextual Track>? = null,
+    var history: List<@Contextual DHistory>? = null
+)
