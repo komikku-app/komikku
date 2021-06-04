@@ -177,8 +177,10 @@
     <string name="auto_solve_captchas_summary">Использовать В ВЫСШЕЙ СТЕПЕНИ ЭКСПЕРИМЕНТАЛЬНОЕ автоматическое прохождение ReCAPTCHA. Если ваше устройство не поддерживается, оно будет выделено серым цветом.</string>
     <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
     <string name="put_recommends_in_overflow_summary">Поместить кнопку рекомендации в выпадающее меню вместо размещения на странице манги</string>
-    <string name="pref_hide_updates_button">Переместить кнопку Обновления на вкладку Ещё</string>
-    <string name="pref_hide_history_button">Переместить кнопку История на вкладку Ещё</string>
+    <string name="pref_hide_updates_button">Показывать Обновления на панеле навигации</string>
+    <string name="pref_hide_history_button">Показывать История на панеле навигации</string>
+    <string name="pref_show_bottom_bar_labels">Всегда показывать названия панели навигации</string>
+
     <!-- Library settings -->
     <string name="pref_sorting_settings">Настройки Сортировки</string>
     <string name="pref_skip_pre_migration_summary">Используйте последние сохраненные настройки и источники перед миграцией для массовой миграции</string>
@@ -224,6 +226,16 @@
     <string name="biometric_lock_end_time">Введите время окончания</string>
     <string name="biometric_lock_time_deleted_snack">Время биометрической блокировки завершено</string>
     <string name="biometric_lock_invalid_time_selected">Выбрано неверное время</string>
+    <string name="biometric_lock_days">Биометрическая блокировка по дням</string>
+    <string name="biometric_lock_days_summary">Дней до блокировки приложения</string>
+
+    <string name="monday">Понедельник</string>
+    <string name="tuesday">Вторник</string>
+    <string name="wednesday">Среда</string>
+    <string name="thursday">Четверг</string>
+    <string name="friday">Пятница</string>
+    <string name="saturday">Суббота</string>
+    <string name="sunday">Воскресенье</string>
 
     <!-- Reader Settings -->
     <string name="page_downloading">Страница Загружается</string>
@@ -333,6 +345,7 @@
     <string name="save_search_failed_to_delete_message">При удалении поиска произошла ошибка.</string>
     <string name="save_search_delete">Удалить сохраненный поисковый запрос?</string>
     <string name="save_search_delete_message">Вы уверены, что хотите удалить сохраненный поисковый запрос: \'%1$s\'?</string>
+    <string name="save_search_invalid">Сохраненный поиск недействителен, фильтры изменились</string>
 
     <!-- Source Categories -->
     <string name="no_source_categories">Нет доступных категорий источников</string>
@@ -722,6 +735,6 @@
     </plurals>
     <string name="humanize_fallback">мгновение назад</string>
     <!-- Themes -->
-    <string name="theme_dark_amoledblue">AMOLED синяя</string>
-    <string name="theme_dark_red">Чёрное и Красное</string>
+    <string name="theme_dark_amoledblue">AMOLED Синий</string>
+    <string name="theme_dark_red">Чёрный и Красный</string>
 </resources>

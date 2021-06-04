@@ -179,7 +179,7 @@
     <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the manga page</string>
     <string name="pref_hide_updates_button">Show updates in the nav</string>
     <string name="pref_hide_history_button">Show history in the nav</string>
-    <string name="pref_show_bottom_bar_labels">Always show bottom bar labels</string>
+    <string name="pref_show_bottom_bar_labels">Always show nav labels</string>
 
     <!-- Library settings -->
     <string name="pref_sorting_settings">Sorting Settings</string>
