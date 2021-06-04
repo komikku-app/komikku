@@ -198,7 +198,9 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
                         controller?.showSettingsSheet()
                     }
                     R.id.nav_updates -> {
-                        router.pushController(DownloadController().withFadeTransaction())
+                        if (router.backstackSize == 1) {
+                            router.pushController(DownloadController().withFadeTransaction())
+                        }
                     }
                 }
             }
