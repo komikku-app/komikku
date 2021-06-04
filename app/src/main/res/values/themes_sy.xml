@@ -12,6 +12,7 @@
         <item name="colorSurface">@color/dialogDark</item>
         <item name="rippleSecondaryColor">@color/md_black_1000_6</item>
         <item name="rippleToolbarColor">@color/md_black_1000_12</item>
+        <item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
 
     <style name="Theme.Tachiyomi.Amoled.Red" parent="Theme.Tachiyomi.Amoled">
