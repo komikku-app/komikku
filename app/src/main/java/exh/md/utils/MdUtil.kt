@@ -256,12 +256,11 @@ class MdUtil {
         }
 
         fun getScanlators(scanlators: String?): Set<String> {
-            if (scanlators.isNullOrBlank()) return emptySet()
-            return scanlators.split(scanlatorSeparator).toSet()
+            return scanlators?.split(scanlatorSeparator)?.toSet().orEmpty()
         }
 
         fun getScanlatorString(scanlators: Set<String>): String {
-            return scanlators.toList().sorted().joinToString(scanlatorSeparator)
+            return scanlators.sorted().joinToString(scanlatorSeparator)
         }
 
         fun getMissingChapterCount(chapters: List<SChapter>, mangaStatus: Int): String? {
