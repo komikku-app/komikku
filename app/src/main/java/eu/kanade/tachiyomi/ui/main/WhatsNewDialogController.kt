@@ -14,6 +14,7 @@ import it.gmariotti.changelibs.library.view.ChangeLogRecyclerView
 
 class WhatsNewDialogController : DialogController() {
 
+    @Suppress("DEPRECATION")
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         val activity = activity!!
         val view = WhatsNewRecyclerView(activity)
