@@ -38,10 +38,10 @@ class PageHandler(
             "${MdUtil.atHomeUrl}/${MdUtil.getChapterId(chapter.url)}"
         }
 
-        val (client, headers) = if (isLogged) {
-            client to MdUtil.getAuthHeaders(headers, preferences, mdList)
+        val headers = if (isLogged) {
+            MdUtil.getAuthHeaders(headers, preferences, mdList)
         } else {
-            client to headers
+            headers
         }
 
         return client.newCall(pageListRequest(chapter))
@@ -53,6 +53,6 @@ class PageHandler(
     }
 
     private fun pageListRequest(chapter: SChapter): Request {
-        return GET("${MdUtil.chapterUrl}${MdUtil.getChapterId(chapter.url)}", headers, CacheControl.FORCE_NETWORK)
+        return GET(MdUtil.chapterUrl + MdUtil.getChapterId(chapter.url), headers, CacheControl.FORCE_NETWORK)
     }
 }

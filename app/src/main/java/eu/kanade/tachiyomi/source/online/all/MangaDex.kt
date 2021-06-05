@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
+import android.content.SharedPreferences
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -26,6 +27,7 @@ import exh.md.handlers.ApiMangaParser
 import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
 import exh.md.handlers.MangaPlusHandler
+import exh.md.handlers.PageHandler
 import exh.md.handlers.SimilarHandler
 import exh.md.network.MangaDexLoginHelper
 import exh.md.network.NoSessionException
@@ -36,10 +38,8 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
-import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
@@ -69,9 +69,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     val preferences = Injekt.get<PreferencesHelper>()
     val mdList: MdList = Injekt.get<TrackManager>().mdList
 
-    /*private val sourcePreferences: SharedPreferences by lazy {
+    private val sourcePreferences: SharedPreferences by lazy {
         context.getSharedPreferences("source_$id", 0x0000)
-    }*/
+    }
 
     private val loginHelper = MangaDexLoginHelper(networkHttpClient, preferences, mdList)
 
@@ -81,7 +81,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         )
         .build()
 
-    private fun useLowQualityThumbnail() = false // sourcePreferences.getInt(SHOW_THUMBNAIL_PREF, 0) == LOW_QUALITY
+    private fun dataSaver() = sourcePreferences.getBoolean(getDataSaverPreferenceKey(mdLang.lang), false)
+    private fun usePort443Only() = sourcePreferences.getBoolean(getStandardHttpsPreferenceKey(mdLang.lang), false)
 
     private val apiMangaParser by lazy {
         ApiMangaParser(baseHttpClient, mdLang.lang)
@@ -100,6 +101,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
     private val mangaPlusHandler by lazy {
         MangaPlusHandler(network.client)
+    }
+    private val pageHandler by lazy {
+        PageHandler(network.client, headers, apiChapterParser, mangaPlusHandler, preferences, mdList)
     }
 
     /*override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
@@ -148,18 +152,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return if (chapter.scanlator == "MangaPlus") {
-            mangaPlusHandler.client.newCall(mangaPlusPageListRequest(chapter))
-                .asObservableSuccess()
-                .map { response ->
-                    val chapterId = apiChapterParser.externalParse(response)
-                    mangaPlusHandler.fetchPageList(chapterId)
-                }
-        } else super.fetchPageList(chapter)
-    }
-
-    private fun mangaPlusPageListRequest(chapter: SChapter): Request {
-        return GET(MdUtil.chapterUrl + MdUtil.getChapterId(chapter.url), headers, CacheControl.FORCE_NETWORK)
+        return pageHandler.fetchPageList(chapter, isLogged(), usePort443Only(), dataSaver())
     }
 
     override fun fetchImage(page: Page): Observable<Response> {
@@ -286,9 +279,17 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             else -> fail()
         }*/
 
-    /*companion object {
-        private const val REMEMBER_ME = "mangadex_rememberme_token"
-        private const val SHOW_THUMBNAIL_PREF = "showThumbnailDefault"
-        private const val LOW_QUALITY = 1
-    }*/
+    companion object {
+        private const val dataSaverPref = "dataSaverV5"
+
+        fun getDataSaverPreferenceKey(dexLang: String): String {
+            return "${dataSaverPref}_$dexLang"
+        }
+
+        private const val standardHttpsPortPref = "usePort443"
+
+        fun getStandardHttpsPreferenceKey(dexLang: String): String {
+            return "${standardHttpsPortPref}_$dexLang"
+        }
+    }
 }
