@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -65,11 +64,6 @@ class SourceFilterSheet(
         // EXH <--
 
         return filterNavView
-    }
-
-    override fun show() {
-        super.show()
-        behavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     fun setFilters(items: List<IFlexible<*>>) {
