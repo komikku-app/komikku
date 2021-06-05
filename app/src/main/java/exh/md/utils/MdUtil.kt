@@ -298,8 +298,8 @@ class MdUtil {
             return null
         }
 
-        fun atHomeUrlHostUrl(requestUrl: String, client: OkHttpClient, cacheControl: CacheControl): String {
-            val atHomeRequest = GET(requestUrl, cache = cacheControl)
+        fun atHomeUrlHostUrl(requestUrl: String, client: OkHttpClient, headers: Headers, cacheControl: CacheControl): String {
+            val atHomeRequest = GET(requestUrl, headers, cache = cacheControl)
             val atHomeResponse = client.newCall(atHomeRequest).execute()
             return jsonParser.decodeFromString<AtHomeResponse>(atHomeResponse.body!!.string()).baseUrl
         }
