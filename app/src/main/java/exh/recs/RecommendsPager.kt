@@ -5,16 +5,13 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.SMangaImpl
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
-import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.log.maybeInjectEHLogger
 import exh.util.MangaType
 import exh.util.mangaType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -29,9 +26,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import timber.log.Timber
 
 abstract class API(_endpoint: String) {
@@ -40,11 +34,11 @@ abstract class API(_endpoint: String) {
         .maybeInjectEHLogger()
         .build()
 
-    abstract suspend fun getRecsBySearch(search: String): List<SMangaImpl>
+    abstract suspend fun getRecsBySearch(search: String): List<SManga>
 }
 
 class MyAnimeList : API("https://api.jikan.moe/v3/") {
-    private suspend fun getRecsById(id: String): List<SMangaImpl> {
+    private suspend fun getRecsById(id: String): List<SManga> {
         val httpUrl = endpoint.toHttpUrlOrNull() ?: throw Exception("Could not convert endpoint url")
         val apiUrl = httpUrl.newBuilder()
             .addPathSegment("manga")
@@ -59,7 +53,7 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
         val recommendations = data["recommendations"] as? JsonArray
         return recommendations?.filterIsInstance<JsonObject>()?.map { rec ->
             Timber.tag("RECOMMENDATIONS").d("MYANIMELIST > RECOMMENDATION: %s", rec["title"]?.jsonPrimitive?.content.orEmpty())
-            SMangaImpl().apply {
+            SManga.create().apply {
                 title = rec["title"]!!.jsonPrimitive.content
                 thumbnail_url = rec["image_url"]!!.jsonPrimitive.content
                 initialized = true
@@ -68,7 +62,7 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
         }.orEmpty()
     }
 
-    override suspend fun getRecsBySearch(search: String): List<SMangaImpl> {
+    override suspend fun getRecsBySearch(search: String): List<SManga> {
         val httpUrl = endpoint.toHttpUrlOrNull() ?: throw Exception("Could not convert endpoint url")
         val url = httpUrl.newBuilder()
             .addPathSegment("search")
@@ -121,7 +115,7 @@ class Anilist : API("https://graphql.anilist.co/") {
         }
     }
 
-    override suspend fun getRecsBySearch(search: String): List<SMangaImpl> {
+    override suspend fun getRecsBySearch(search: String): List<SManga> {
         val query =
             """
             |query Recommendations(${'$'}search: String!) {
@@ -186,7 +180,7 @@ class Anilist : API("https://graphql.anilist.co/") {
             val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
             val recTitle = getTitle(rec)
             Timber.tag("RECOMMENDATIONS").d("ANILIST > RECOMMENDATION: %s", recTitle)
-            SMangaImpl().apply {
+            SManga.create().apply {
                 title = recTitle
                 thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content
                 initialized = true
@@ -201,38 +195,29 @@ open class RecommendsPager(
     private val smart: Boolean = true,
     private var preferredApi: API = API.MYANIMELIST
 ) : Pager() {
-    override fun requestNext(): Observable<MangasPage> {
-        return runAsObservable({
-            if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
+    override suspend fun requestNextPage() {
+        if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
 
-            val apiList = API_MAP.toList().sortedByDescending { it.first == preferredApi }
+        val apiList = API_MAP.toList().sortedByDescending { it.first == preferredApi }
 
-            val recs = apiList
-                .asSequence()
-                .map { (key, api) ->
-                    try {
-                        val recs = runBlocking(Dispatchers.IO) { api.getRecsBySearch(manga.originalTitle) }
-                        Timber.tag("RECOMMENDATIONS").d("%s > Results: %s", key, recs.count())
-                        recs
-                    } catch (e: Exception) {
-                        Timber.tag("RECOMMENDATIONS").e("%s > Error: %s", key, e.message)
-                        listOf<SMangaImpl>()
-                    }
-                }
-                .firstOrNull { it.isNotEmpty() }
-                .orEmpty()
-
-            MangasPage(recs, false)
-        })
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext {
-                if (it.mangas.isNotEmpty()) {
-                    onPageReceived(it)
-                } else {
-                    throw NoResultsException()
-                }
+        val recs = apiList.firstNotNullOfOrNull { (key, api) ->
+            try {
+                val recs = api.getRecsBySearch(manga.originalTitle)
+                Timber.tag("RECOMMENDATIONS").d("%s > Results: %s", key, recs.count())
+                recs
+            } catch (e: Exception) {
+                Timber.tag("RECOMMENDATIONS").e("%s > Error: %s", key, e.message)
+                null
             }
+        }.orEmpty()
+
+        val mangasPage = MangasPage(recs, false)
+
+        if (mangasPage.mangas.isNotEmpty()) {
+            onPageReceived(mangasPage)
+        } else {
+            throw NoResultsException()
+        }
     }
 
     companion object {
