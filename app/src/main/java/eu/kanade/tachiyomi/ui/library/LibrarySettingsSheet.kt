@@ -6,6 +6,7 @@ import android.view.View
 import com.bluelinelabs.conductor.Router
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -27,6 +28,7 @@ class LibrarySettingsSheet(
     private val sort: Sort
     private val display: Display
     private val grouping: Grouping
+    private val db: DatabaseHelper by injectLazy()
 
     init {
         filters = Filter(router.activity!!)
@@ -44,6 +46,16 @@ class LibrarySettingsSheet(
 
     fun refreshSort() {
         sort.refreshMode()
+    }
+
+    /**
+     * adjusts selected button to match real state.
+     * @param currentCategory ID of currently shown category
+     */
+    fun show(currentCategory: Category) {
+        display.currentCategory = currentCategory
+        display.adjustDisplaySelection()
+        super.show()
     }
 
     override fun getTabViews(): List<View> = listOf(
@@ -289,8 +301,39 @@ class LibrarySettingsSheet(
     inner class Display @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
         Settings(context, attrs) {
 
+        private val displayGroup: DisplayGroup
+        private val badgeGroup: BadgeGroup
+
+        // SY -->
+        private val buttonsGroup: ButtonsGroup
+
+        // SY <--
+        private val tabsGroup: TabsGroup
+
         init {
-            setGroups(listOf(DisplayGroup(), BadgeGroup(), /* SY --> */ ButtonsGroup(), /* SY <-- */ TabsGroup()))
+            displayGroup = DisplayGroup()
+            badgeGroup = BadgeGroup()
+            // SY -->
+            buttonsGroup = ButtonsGroup()
+            // SY <--
+            tabsGroup = TabsGroup()
+            setGroups(listOf(displayGroup, badgeGroup, /* SY --> */ buttonsGroup, /* SY <-- */ tabsGroup))
+        }
+
+        // Refreshes Display Setting selections
+        fun adjustDisplaySelection() {
+            val mode = getDisplayModePreference()
+            displayGroup.setGroupSelections(mode)
+            displayGroup.items.forEach { adapter.notifyItemChanged(it) }
+        }
+
+        // Gets user preference of currently selected display mode at current category
+        private fun getDisplayModePreference(): DisplayMode {
+            return if (preferences.categorisedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0) {
+                DisplayMode.values()[currentCategory?.displayMode ?: 0]
+            } else {
+                preferences.libraryDisplayMode().get()
+            }
         }
 
         inner class DisplayGroup : Group {
@@ -309,13 +352,8 @@ class LibrarySettingsSheet(
             override val footer = null
 
             override fun initModels() {
-                val mode = preferences.libraryDisplayMode().get()
-                compactGrid.checked = mode == DisplayMode.COMPACT_GRID
-                comfortableGrid.checked = mode == DisplayMode.COMFORTABLE_GRID
-                // SY -->
-                noTitleGrid.checked = mode == DisplayMode.NO_TITLE_GRID
-                // SY <--
-                list.checked = mode == DisplayMode.LIST
+                val mode = getDisplayModePreference()
+                setGroupSelections(mode)
             }
 
             override fun onItemClicked(item: Item) {
@@ -325,19 +363,49 @@ class LibrarySettingsSheet(
                 item.group.items.forEach { (it as Item.Radio).checked = false }
                 item.checked = true
 
-                preferences.libraryDisplayMode().set(
-                    when (item) {
-                        compactGrid -> DisplayMode.COMPACT_GRID
-                        comfortableGrid -> DisplayMode.COMFORTABLE_GRID
-                        // SY -->
-                        noTitleGrid -> DisplayMode.NO_TITLE_GRID
-                        // SY <--
-                        list -> DisplayMode.LIST
-                        else -> throw NotImplementedError("Unknown display mode")
-                    }
-                )
+                setDisplayModePreference(item)
 
                 item.group.items.forEach { adapter.notifyItemChanged(it) }
+            }
+
+            // Sets display group selections based on given mode
+            fun setGroupSelections(mode: DisplayMode) {
+                compactGrid.checked = mode == DisplayMode.COMPACT_GRID
+                comfortableGrid.checked = mode == DisplayMode.COMFORTABLE_GRID
+                // SY -->
+                noTitleGrid.checked = mode == DisplayMode.NO_TITLE_GRID
+                // SY <--
+                list.checked = mode == DisplayMode.LIST
+            }
+
+            private fun setDisplayModePreference(item: Item) {
+                if (preferences.categorisedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0) {
+                    val flag = when (item) {
+                        compactGrid -> Category.COMPACT_GRID
+                        comfortableGrid -> Category.COMFORTABLE_GRID
+                        // SY -->
+                        noTitleGrid -> Category.NO_TITLE_GRID
+                        // SY <--
+                        list -> Category.LIST
+                        else -> throw NotImplementedError("Unknown display mode")
+                    }
+
+                    currentCategory?.displayMode = flag
+
+                    db.insertCategory(currentCategory!!).executeAsBlocking()
+                } else {
+                    preferences.libraryDisplayMode().set(
+                        when (item) {
+                            compactGrid -> DisplayMode.COMPACT_GRID
+                            comfortableGrid -> DisplayMode.COMFORTABLE_GRID
+                            // SY -->
+                            noTitleGrid -> DisplayMode.NO_TITLE_GRID
+                            // SY <--
+                            list -> DisplayMode.LIST
+                            else -> throw NotImplementedError("Unknown display mode")
+                        }
+                    )
+                }
             }
         }
 
@@ -500,6 +568,8 @@ class LibrarySettingsSheet(
          * Click listener to notify the parent fragment when an item from a group is clicked.
          */
         var onGroupClicked: (Group) -> Unit = {}
+
+        var currentCategory: Category? = null
 
         fun setGroups(groups: List<Group>) {
             adapter = Adapter(groups.map { it.createItems() }.flatten())

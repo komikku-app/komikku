@@ -41,12 +41,11 @@ object PreferenceValues {
     enum class DisplayMode {
         COMPACT_GRID,
         COMFORTABLE_GRID,
+        LIST,
 
         // SY -->
         NO_TITLE_GRID,
-
         // SY <--
-        LIST,
     }
 
     enum class TappingInvertMode(val shouldInvertHorizontal: Boolean = false, val shouldInvertVertical: Boolean = false) {

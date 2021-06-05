@@ -16,7 +16,25 @@ interface Category : Serializable {
     var mangaOrder: List<Long>
     // SY <--
 
+    private fun setFlags(flag: Int, mask: Int) {
+        flags = flags and mask.inv() or (flag and mask)
+    }
+
+    var displayMode: Int
+        get() = flags and MASK
+        set(mode) = setFlags(mode, MASK)
+
     companion object {
+
+        const val COMPACT_GRID = 0b00000000
+        const val COMFORTABLE_GRID = 0b00000001
+        const val LIST = 0b00000010
+
+        // SY -->
+        const val NO_TITLE_GRID = 0b00000011
+
+        // SY <--
+        const val MASK = 0b00000011
 
         fun create(name: String): Category = CategoryImpl().apply {
             this.name = name

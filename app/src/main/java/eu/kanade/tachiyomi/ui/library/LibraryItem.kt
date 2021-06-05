@@ -21,11 +21,16 @@ import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Preference<DisplayMode>) :
+class LibraryItem(
+    val manga: LibraryManga,
+    private val shouldSetFromCategory: Preference<Boolean>,
+    private val defaultLibraryDisplayMode: Preference<DisplayMode>
+) :
     AbstractFlexibleItem<LibraryHolder<*>>(), IFilterable<String> {
 
     private val sourceManager: SourceManager = Injekt.get()
 
+    var displayMode: Int = -1
     var downloadCount = -1
     var unreadCount = -1
     var isLocal = false
@@ -34,8 +39,20 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
     var startReadingButton = false
     // SY <--
 
+    private fun getDisplayMode(): DisplayMode {
+        return if (shouldSetFromCategory.get() && manga.category != 0) {
+            if (displayMode != -1) {
+                DisplayMode.values()[displayMode]
+            } else {
+                DisplayMode.COMPACT_GRID
+            }
+        } else {
+            defaultLibraryDisplayMode.get()
+        }
+    }
+
     override fun getLayoutRes(): Int {
-        return when (libraryDisplayMode.get()) {
+        return when (getDisplayMode()) {
             DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item
             DisplayMode.COMFORTABLE_GRID /* SY --> */, DisplayMode.NO_TITLE_GRID /* SY <-- */ -> R.layout.source_comfortable_grid_item
             DisplayMode.LIST -> R.layout.source_list_item
@@ -43,7 +60,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
     }
 
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): LibraryHolder<*> {
-        return when (libraryDisplayMode.get()) {
+        return when (val displayMode = getDisplayMode()) {
             DisplayMode.COMPACT_GRID -> {
                 val binding = SourceCompactGridItemBinding.bind(view)
                 val parent = adapter.recyclerView as AutofitRecyclerView
@@ -68,7 +85,7 @@ class LibraryItem(val manga: LibraryManga, private val libraryDisplayMode: Prefe
                         coverHeight
                     )
                 }
-                LibraryComfortableGridHolder(view, adapter, libraryDisplayMode.get() != DisplayMode.NO_TITLE_GRID)
+                LibraryComfortableGridHolder(view, adapter, displayMode != DisplayMode.NO_TITLE_GRID)
             }
             DisplayMode.LIST -> {
                 LibraryListHolder(view, adapter)
