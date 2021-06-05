@@ -14,9 +14,10 @@ import rx.Observable
 class PageHandler(
     private val client: OkHttpClient,
     private val headers: Headers,
-    private val dataSaver: Boolean,
     private val apiChapterParser: ApiChapterParser,
-    private val mangaPlusHandler: MangaPlusHandler
+    private val mangaPlusHandler: MangaPlusHandler,
+    private val usePort443Only: () -> Boolean,
+    private val dataSaver: () -> Boolean
 ) {
 
     fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
@@ -28,11 +29,18 @@ class PageHandler(
                     mangaPlusHandler.fetchPageList(chapterId)
                 }
         }
+
+        val atHomeRequestUrl = if (usePort443Only()) {
+            "${MdUtil.atHomeUrl}/${MdUtil.getChapterId(chapter.url)}?forcePort443=true"
+        } else {
+            "${MdUtil.atHomeUrl}/${MdUtil.getChapterId(chapter.url)}"
+        }
+
         return client.newCall(pageListRequest(chapter))
             .asObservableSuccess()
             .map { response ->
-                val host = MdUtil.atHomeUrlHostUrl("${MdUtil.atHomeUrl}/${MdUtil.getChapterId(chapter.url)}", client)
-                apiChapterParser.pageListParse(response, host, dataSaver)
+                val host = MdUtil.atHomeUrlHostUrl(atHomeRequestUrl, client, CacheControl.FORCE_NETWORK)
+                apiChapterParser.pageListParse(response, host, dataSaver())
             }
     }
 

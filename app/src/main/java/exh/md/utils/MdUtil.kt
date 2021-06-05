@@ -10,7 +10,10 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.log.xLogD
+import exh.log.xLogE
 import exh.md.handlers.serializers.AtHomeResponse
+import exh.md.handlers.serializers.CoverListResponse
+import exh.md.handlers.serializers.CoverResponse
 import exh.md.handlers.serializers.ListCallResponse
 import exh.md.handlers.serializers.LoginBodyToken
 import exh.md.handlers.serializers.MangaResponse
@@ -24,6 +27,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -44,6 +48,7 @@ class MdUtil {
         const val apiUrl = "https://api.mangadex.org"
         const val imageUrlCacheNotFound = "https://cdn.statically.io/img/raw.githubusercontent.com/CarlosEsco/Neko/master/.github/manga_cover_not_found.png"
         const val atHomeUrl = "$apiUrl/at-home/server"
+        const val coverUrl = "$apiUrl/cover"
         const val chapterUrl = "$apiUrl/chapter/"
         const val chapterSuffix = "/chapter/"
         const val checkTokenUrl = "$apiUrl/auth/check"
@@ -68,10 +73,10 @@ class MdUtil {
             }.build().toString()
         }
 
-        fun coverUrl(mangaId: String, coverId: String) = "$apiUrl/cover/?manga[]=$mangaId&ids[]=$coverId"
+        fun coverUrl(mangaId: String, coverId: String) = "$apiUrl/cover?manga[]=$mangaId&ids[]=$coverId"
 
-        const val similarCache = "https://raw.githubusercontent.com/goldbattle/MangadexRecomendations/master/output/api/"
-        const val similarCacheCdn = "https://cdn.statically.io/gh/goldbattle/MangadexRecomendations/master/output/api/"
+        const val similarCacheMapping = "https://api.similarmanga.com/mapping/mdex2search.csv"
+        const val similarCacheMangas = "https://api.similarmanga.com/manga/"
         const val similarBaseApi = "https://api.similarmanga.com/similar/"
 
         const val groupSearchUrl = "$baseUrl/groups/0/1/"
@@ -95,6 +100,11 @@ class MdUtil {
             }
 
         private const val scanlatorSeparator = " & "
+
+        const val contentRatingSafe = "safe"
+        const val contentRatingSuggestive = "suggestive"
+        const val contentRatingErotica = "erotica"
+        const val contentRatingPornographic = "pornographic"
 
         val validOneShotFinalChapters = listOf("0", "1")
 
@@ -288,10 +298,10 @@ class MdUtil {
             return null
         }
 
-        fun atHomeUrlHostUrl(requestUrl: String, client: OkHttpClient): String {
-            val atHomeRequest = GET(requestUrl)
+        fun atHomeUrlHostUrl(requestUrl: String, client: OkHttpClient, cacheControl: CacheControl): String {
+            val atHomeRequest = GET(requestUrl, cache = cacheControl)
             val atHomeResponse = client.newCall(atHomeRequest).execute()
-            return atHomeResponse.parseAs<AtHomeResponse>(jsonParser).baseUrl
+            return jsonParser.decodeFromString<AtHomeResponse>(atHomeResponse.body!!.string()).baseUrl
         }
 
         val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+SSS", Locale.US)
@@ -300,13 +310,59 @@ class MdUtil {
         fun parseDate(dateAsString: String): Long =
             dateFormatter.parse(dateAsString)?.time ?: 0
 
-        fun createMangaEntry(json: MangaResponse, lang: String, coverUrl: String): MangaInfo {
-            val key = buildMangaUrl(json.data.id)
+        fun createMangaEntry(json: MangaResponse, lang: String, coverUrl: String?): MangaInfo {
             return MangaInfo(
-                key = key,
+                key = buildMangaUrl(json.data.id),
                 title = cleanString(json.data.attributes.title[lang] ?: json.data.attributes.title["en"]!!),
-                cover = coverUrl
+                cover = coverUrl.orEmpty()
             )
+        }
+
+        suspend fun getCoverUrl(dexId: String, coverId: String?, client: OkHttpClient): String {
+            coverId ?: return ""
+            val coverResponse = client.newCall(GET("$coverUrl/$coverId"))
+                .await().parseAs<CoverResponse>()
+            val fileName = coverResponse.data.attributes.fileName
+            return "$cdnUrl/covers/$dexId/$fileName"
+        }
+
+        suspend fun getCoversFromMangaList(mangaResponseList: List<MangaResponse>, client: OkHttpClient): Map<String, String> {
+            val idsAndCoverIds = mangaResponseList.mapNotNull { mangaResponse ->
+                val mangaId = mangaResponse.data.id
+                val coverId = mangaResponse.relationships.firstOrNull { relationship ->
+                    relationship.type.equals("cover_art", true)
+                }?.id
+                if (coverId == null) {
+                    null
+                } else {
+                    Pair(mangaId, coverId)
+                }
+            }.toMap()
+
+            return runCatching {
+                getBatchCoverUrls(idsAndCoverIds, client)
+            }.getOrNull()!!
+        }
+
+        private suspend fun getBatchCoverUrls(ids: Map<String, String>, client: OkHttpClient): Map<String, String> {
+            try {
+                val url = coverUrl.toHttpUrl().newBuilder().apply {
+                    ids.values.forEach { coverArtId ->
+                        addQueryParameter("ids[]", coverArtId)
+                    }
+                    addQueryParameter("limit", ids.size.toString())
+                }.build().toString()
+                val coverList = client.newCall(GET(url)).await().parseAs<CoverListResponse>(jsonParser)
+                return coverList.results.map { coverResponse ->
+                    val fileName = coverResponse.data.attributes.fileName
+                    val mangaId = coverResponse.relationships.first { it.type.equals("manga", true) }.id
+                    val thumbnailUrl = "$cdnUrl/covers/$mangaId/$fileName"
+                    Pair(mangaId, thumbnailUrl)
+                }.toMap()
+            } catch (e: Exception) {
+                xLogE("Error getting covers", e)
+                throw e
+            }
         }
 
         fun getLoginBody(preferences: PreferencesHelper, mdList: MdList) = preferences.trackToken(mdList).get().nullIfBlank()?.let {

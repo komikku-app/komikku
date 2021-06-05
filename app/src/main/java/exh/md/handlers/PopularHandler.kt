@@ -50,19 +50,10 @@ class PopularHandler(
         val mlResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
         val hasMoreResults = mlResponse.limit + mlResponse.offset < mlResponse.total
 
+        val coverMap = MdUtil.getCoversFromMangaList(mlResponse.results, client)
+
         val mangaList = mlResponse.results.map {
-            val coverUrl = MdUtil.formThumbUrl(it.data.id)
-            /*val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
-            if (coverUrlId != null) {
-                runCatching {
-                    val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
-                        .parseAs<CoverListResponse>()
-                    covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
-                        coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
-                    }
-                }
-            }*/
-            MdUtil.createMangaEntry(it, lang, coverUrl).toSManga()
+            MdUtil.createMangaEntry(it, lang, coverMap[it.data.id]).toSManga()
         }
         return MangasPage(mangaList, hasMoreResults)
     }

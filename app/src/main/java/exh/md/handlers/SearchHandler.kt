@@ -2,13 +2,11 @@ package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
-import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.runAsObservable
-import exh.md.handlers.serializers.CoverListResponse
 import exh.md.handlers.serializers.MangaListResponse
 import exh.md.handlers.serializers.MangaResponse
 import exh.md.utils.MdUtil
@@ -36,21 +34,8 @@ class SearchHandler(
                 .flatMap { response ->
                     runAsObservable({
                         val mangaResponse = response.parseAs<MangaResponse>(MdUtil.jsonParser)
-
-                        val coverUrl = MdUtil.formThumbUrl(mangaResponse.data.id)
-                        /*val coverUrlId = mangaResponse.relationships.firstOrNull { it.type == "cover_art" }?.id
-                        if (coverUrlId != null) {
-                            runCatching {
-                                val covers = client.newCall(GET(MdUtil.coverUrl(mangaResponse.data.id, coverUrlId))).await()
-                                    .parseAs<CoverListResponse>()
-                                covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
-                                    coverUrl = "${MdUtil.cdnUrl}/covers/${mangaResponse.data.id}/$fileName"
-                                }
-                            }
-                        }*/
-
                         val details = apiMangaParser
-                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang, coverUrl), response, sourceId).toSManga()
+                            .parseToManga(MdUtil.createMangaEntry(mangaResponse, lang, null), response, sourceId).toSManga()
                         MangasPage(listOf(details), false)
                     })
                 }
@@ -67,20 +52,10 @@ class SearchHandler(
 
     private suspend fun searchMangaParse(response: Response): MangasPage {
         val mlResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
+        val coverMap = MdUtil.getCoversFromMangaList(mlResponse.results, client)
         val hasMoreResults = mlResponse.limit + mlResponse.offset < mlResponse.total
         val mangaList = mlResponse.results.map {
-            var coverUrl = MdUtil.formThumbUrl(it.data.id)
-            val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
-            if (coverUrlId != null) {
-                runCatching {
-                    val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
-                        .parseAs<CoverListResponse>()
-                    covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
-                        coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
-                    }
-                }
-            }
-            MdUtil.createMangaEntry(it, lang, coverUrl).toSManga()
+            MdUtil.createMangaEntry(it, lang, coverMap[it.data.id]).toSManga()
         }
         return MangasPage(mangaList, hasMoreResults)
     }

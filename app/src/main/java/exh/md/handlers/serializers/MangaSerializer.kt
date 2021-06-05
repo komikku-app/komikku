@@ -98,6 +98,7 @@ data class CoverListResponse(
 @Serializable
 data class CoverResponse(
     val data: Cover,
+    val relationships: List<Relationships>
 )
 
 @Serializable

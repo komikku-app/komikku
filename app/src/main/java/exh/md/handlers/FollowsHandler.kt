@@ -75,23 +75,13 @@ class FollowsHandler(
         val comparator = compareBy<Pair<SManga, MangaDexSearchMetadata>> { it.second.followStatus }
             .thenBy { it.first.title }
 
-        return response.map {
-            val coverUrl = MdUtil.formThumbUrl(it.data.id)
-            /*val coverUrlId = it.relationships.firstOrNull { it.type == "cover_art" }?.id
-            if (coverUrlId != null) {
-                runCatching {
-                    val covers = client.newCall(GET(MdUtil.coverUrl(it.data.id, coverUrlId))).await()
-                        .parseAs<CoverListResponse>()
-                    covers.results.firstOrNull()?.data?.attributes?.fileName?.let { fileName ->
-                        coverUrl = "${MdUtil.cdnUrl}/covers/${it.data.id}/$fileName"
-                    }
-                }
-            }*/
+        val coverMap = MdUtil.getCoversFromMangaList(response, client)
 
+        return response.map {
             MdUtil.createMangaEntry(
                 it,
                 lang,
-                coverUrl
+                coverMap[it.data.id]
             ).toSManga() to MangaDexSearchMetadata().apply {
                 followStatus = FollowStatus.fromDex(statuses[it.data.id]).int
             }
