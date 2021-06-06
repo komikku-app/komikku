@@ -4,7 +4,6 @@ import android.view.View
 import androidx.core.view.isVisible
 import coil.clear
 import coil.imageLoader
-import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -71,7 +70,6 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
             val request = ImageRequest.Builder(view.context)
                 .data(manga)
                 .setParameter(MangaCoverFetcher.USE_CUSTOM_COVER, false)
-                .diskCachePolicy(CachePolicy.DISABLED)
                 .target(StateImageViewTarget(binding.thumbnail, binding.progress, crossfadeDuration))
                 .build()
             itemView.context.imageLoader.enqueue(request)
