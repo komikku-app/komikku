@@ -209,7 +209,7 @@ open class BrowseSourcePresenter(
             try {
                 pager.requestNextPage()
             } catch (e: Throwable) {
-                view?.onAddPageError(e)
+                withUIContext { view?.onAddPageError(e) }
             }
         }
     }
