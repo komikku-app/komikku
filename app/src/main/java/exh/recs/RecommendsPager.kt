@@ -2,14 +2,15 @@ package exh.recs
 
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.log.maybeInjectEHLogger
 import exh.util.MangaType
 import exh.util.mangaType
 import kotlinx.serialization.decodeFromString
@@ -24,15 +25,15 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import timber.log.Timber
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
-abstract class API(_endpoint: String) {
-    var endpoint: String = _endpoint
-    val client = OkHttpClient.Builder()
-        .maybeInjectEHLogger()
-        .build()
+abstract class API(val endpoint: String) {
+    val client by lazy {
+        Injekt.get<NetworkHelper>().client
+    }
 
     abstract suspend fun getRecsBySearch(search: String): List<SManga>
 }
@@ -71,9 +72,8 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
             .build()
             .toString()
 
-        val response = client.newCall(GET(url)).await()
-        val body = withIOContext { response.body?.string() } ?: throw Exception("Null Response")
-        val data = Json.decodeFromString<JsonObject>(body)
+        val data = client.newCall(GET(url)).await()
+            .parseAs<JsonObject>()
         val results = data["results"] as? JsonArray
         if (results.isNullOrEmpty()) {
             throw Exception("'$search' not found")
@@ -159,9 +159,8 @@ class Anilist : API("https://graphql.anilist.co/") {
         }
         val payloadBody = payload.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
-        val response = client.newCall(POST(endpoint, body = payloadBody)).await()
-        val body = withIOContext { response.body?.string() } ?: throw Exception("Null Response")
-        val data = Json.decodeFromString<JsonObject>(body)["data"] as? JsonObject ?: throw Exception("Unexpected response")
+        val data = client.newCall(POST(endpoint, body = payloadBody)).await()
+            .parseAs<JsonObject>()
 
         val media = data["Page"]?.jsonObject?.get("media")?.jsonArray
         if (media.isNullOrEmpty()) {
