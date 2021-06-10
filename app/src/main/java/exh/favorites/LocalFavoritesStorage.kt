@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.isEhBasedManga
-import exh.util.executeOnIO
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import uy.kohesive.injekt.injectLazy
@@ -20,13 +19,13 @@ class LocalFavoritesStorage {
 
     fun getRealm(): Realm = Realm.getInstance(realmConfig)
 
-    suspend fun getChangedDbEntries(realm: Realm) =
+    fun getChangedDbEntries(realm: Realm) =
         getChangedEntries(
             realm,
             parseToFavoriteEntries(
                 loadDbCategories(
                     db.getFavoriteMangas()
-                        .executeOnIO()
+                        .executeAsBlocking()
                         .asSequence()
                 )
             )
@@ -45,11 +44,11 @@ class LocalFavoritesStorage {
             )
         )
 
-    suspend fun snapshotEntries(realm: Realm) {
+    fun snapshotEntries(realm: Realm) {
         val dbMangas = parseToFavoriteEntries(
             loadDbCategories(
                 db.getFavoriteMangas()
-                    .executeOnIO()
+                    .executeAsBlocking()
                     .asSequence()
             )
         )
@@ -97,8 +96,8 @@ class LocalFavoritesStorage {
                 it.category == entry.category
         }
 
-    private suspend fun loadDbCategories(manga: Sequence<Manga>): Sequence<Pair<Int, Manga>> {
-        val dbCategories = db.getCategories().executeOnIO()
+    private fun loadDbCategories(manga: Sequence<Manga>): Sequence<Pair<Int, Manga>> {
+        val dbCategories = db.getCategories().executeAsBlocking()
 
         return manga.filter(this::validateDbManga).mapNotNull {
             val category = db.getCategoriesForManga(it).executeAsBlocking()

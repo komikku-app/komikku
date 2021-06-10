@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
 import exh.GalleryAddEvent
@@ -24,7 +25,6 @@ import exh.log.xLog
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
-import exh.util.executeOnIO
 import exh.util.ignore
 import exh.util.trans
 import exh.util.wifiManager
@@ -85,13 +85,13 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Validate library state
         status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context)
-        val libraryManga = db.getLibraryMangas().executeOnIO()
+        val libraryManga = db.getLibraryMangas().executeAsBlocking()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
             if (!it.isEhBasedManga()) return@forEach
 
             if (it.id in seenManga) {
-                val inCategories = db.getCategoriesForManga(it).executeOnIO()
+                val inCategories = db.getCategoriesForManga(it).executeAsBlocking()
                 status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(it, inCategories, context)
 
                 logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, it.id))
@@ -194,8 +194,8 @@ class FavoritesSyncHelper(val context: Context) {
         }
     }
 
-    private suspend fun applyRemoteCategories(categories: List<String>) {
-        val localCategories = db.getCategories().executeOnIO()
+    private fun applyRemoteCategories(categories: List<String>) {
+        val localCategories = db.getCategories().executeAsBlocking()
 
         val newLocalCategories = localCategories.toMutableList()
 
@@ -233,7 +233,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Only insert categories if changed
         if (changed) {
-            db.insertCategories(newLocalCategories).executeOnIO()
+            db.insertCategories(newLocalCategories).executeAsBlocking()
         }
     }
 
@@ -267,7 +267,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         for (i in 1..retryCount) {
             try {
-                val resp = exh.client.newCall(request).await()
+                val resp = withIOContext { exh.client.newCall(request).await() }
 
                 if (resp.isSuccessful) {
                     success = true
@@ -340,7 +340,7 @@ class FavoritesSyncHelper(val context: Context) {
                 db.getManga(url, EXH_SOURCE_ID),
                 db.getManga(url, EH_SOURCE_ID)
             ).forEach {
-                val manga = it.executeOnIO()
+                val manga = it.executeAsBlocking()
 
                 if (manga?.favorite == true) {
                     manga.favorite = false
@@ -357,7 +357,7 @@ class FavoritesSyncHelper(val context: Context) {
         }
 
         val insertedMangaCategories = mutableListOf<Pair<MangaCategory, Manga>>()
-        val categories = db.getCategories().executeOnIO()
+        val categories = db.getCategories().executeAsBlocking()
 
         // Apply additions
         throttleManager.resetThrottle()
@@ -376,7 +376,8 @@ class FavoritesSyncHelper(val context: Context) {
                 "${exh.baseUrl}${it.getUrl()}",
                 true,
                 exh,
-                throttleManager::throttle
+                throttleManager::throttle,
+                true
             )
 
             if (result is GalleryAddEvent.Fail) {

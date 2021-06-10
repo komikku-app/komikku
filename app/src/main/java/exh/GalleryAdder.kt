@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.log.xLogStack
 import exh.source.getMainSource
-import exh.util.executeOnIO
+import exh.util.maybeRunBlocking
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -53,7 +53,8 @@ class GalleryAdder {
         url: String,
         fav: Boolean = false,
         forceSource: UrlImportableSource? = null,
-        throttleFunc: suspend () -> Unit = {}
+        throttleFunc: suspend () -> Unit = {},
+        protectTrans: Boolean = false
     ): GalleryAddEvent {
         logger.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
         try {
@@ -118,7 +119,7 @@ class GalleryAdder {
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
-            val manga = db.getManga(cleanedMangaUrl, source.id).executeOnIO()
+            val manga = db.getManga(cleanedMangaUrl, source.id).executeAsBlocking()
                 ?: Manga.create(source.id).apply {
                     this.url = cleanedMangaUrl
                     title = realMangaUrl
@@ -146,14 +147,16 @@ class GalleryAdder {
 
             // Fetch and copy chapters
             try {
-                val chapterList = if (source is EHentai) {
-                    source.getChapterList(manga.toMangaInfo(), throttleFunc)
-                } else {
-                    source.getChapterList(manga.toMangaInfo())
-                }.map { it.toSChapter() }
+                maybeRunBlocking(protectTrans) {
+                    val chapterList = if (source is EHentai) {
+                        source.getChapterList(manga.toMangaInfo(), throttleFunc)
+                    } else {
+                        source.getChapterList(manga.toMangaInfo())
+                    }.map { it.toSChapter() }
 
-                if (chapterList.isNotEmpty()) {
-                    syncChaptersWithSource(db, chapterList, manga, source)
+                    if (chapterList.isNotEmpty()) {
+                        syncChaptersWithSource(db, chapterList, manga, source)
+                    }
                 }
             } catch (e: Exception) {
                 logger.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
@@ -161,7 +164,7 @@ class GalleryAdder {
             }
 
             return if (cleanedChapterUrl != null) {
-                val chapter = db.getChapter(cleanedChapterUrl, manga.id!!).executeOnIO()
+                val chapter = db.getChapter(cleanedChapterUrl, manga.id!!).executeAsBlocking()
                 if (chapter != null) {
                     GalleryAddEvent.Success(url, manga, context, chapter)
                 } else {
