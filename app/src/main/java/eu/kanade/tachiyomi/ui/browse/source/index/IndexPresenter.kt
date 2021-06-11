@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Compani
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Dispatchers
@@ -213,9 +214,8 @@ open class IndexPresenter(
     private val filterSerializer = FilterSerializer()
 
     fun loadSearches(): List<EXHSavedSearch> {
-        val loaded = preferences.savedSearches().get()
-        return loaded.mapNotNull {
-            val id = it.substringBefore(':').toLong()
+        return preferences.savedSearches().get().mapNotNull {
+            val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
             if (id != source.id) return@mapNotNull null
             val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             try {
@@ -228,8 +228,7 @@ open class IndexPresenter(
                 )
             } catch (t: RuntimeException) {
                 // Load failed
-                Timber.e(t, "Failed to load saved search!")
-                t.printStackTrace()
+                xLogE("Failed to load saved search!", t)
                 EXHSavedSearch(
                     content.name,
                     content.query,

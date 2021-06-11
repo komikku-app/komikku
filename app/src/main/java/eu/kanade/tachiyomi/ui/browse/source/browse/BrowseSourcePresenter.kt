@@ -39,6 +39,7 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.removeCovers
+import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Job
@@ -443,9 +444,9 @@ open class BrowseSourcePresenter(
 
     // EXH -->
     fun saveSearches(searches: List<EXHSavedSearch>) {
-        val otherSerialized = prefs.savedSearches().get().filter {
-            !it.startsWith("${source.id}:")
-        }
+        val otherSerialized = prefs.savedSearches().get().filterNot {
+            it.startsWith("${source.id}:")
+        }.toSet()
         val newSerialized = searches.map {
             "${source.id}:" + Json.encodeToString(
                 JsonSavedSearch(
@@ -457,14 +458,13 @@ open class BrowseSourcePresenter(
                 )
             )
         }
-        prefs.savedSearches().set((otherSerialized + newSerialized).toSet())
+        prefs.savedSearches().set(otherSerialized + newSerialized)
     }
 
     fun loadSearches(): List<EXHSavedSearch> {
-        val loaded = prefs.savedSearches().get()
-        return loaded.map {
-            val id = it.substringBefore(':').toLong()
-            if (id != source.id) return@map null
+        return prefs.savedSearches().get().mapNotNull {
+            val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
+            if (id != source.id) return@mapNotNull null
             val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             try {
                 val originalFilters = source.getFilterList()
@@ -476,15 +476,14 @@ open class BrowseSourcePresenter(
                 )
             } catch (t: RuntimeException) {
                 // Load failed
-                Timber.e(t, "Failed to load saved search!")
-                t.printStackTrace()
+                xLogE("Failed to load saved search!", t)
                 EXHSavedSearch(
                     content.name,
                     content.query,
                     null
                 )
             }
-        }.filterNotNull()
+        }
     }
     // EXH <--
 }

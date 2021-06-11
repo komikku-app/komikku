@@ -147,8 +147,8 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      * @return list of [BackupSavedSearch] to be backed up
      */
     private fun backupSavedSearches(): List<BackupSavedSearch> {
-        return preferences.savedSearches().get().map {
-            val sourceId = it.substringBefore(':').toLong()
+        return preferences.savedSearches().get().mapNotNull {
+            val sourceId = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
             val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             BackupSavedSearch(
                 content.name,
@@ -414,8 +414,8 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
     // SY -->
     internal fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
-        val currentSavedSearches = preferences.savedSearches().get().map {
-            val sourceId = it.substringBefore(':').toLong()
+        val currentSavedSearches = preferences.savedSearches().get().mapNotNull {
+            val sourceId = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
             val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
             BackupSavedSearch(
                 content.name,
@@ -425,22 +425,19 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             )
         }
 
-        preferences.savedSearches()
-            .set(
-                (
-                    backupSavedSearches.filter { backupSavedSearch -> currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source } }
-                        .map {
-                            "${it.source}:" + Json.encodeToString(
-                                JsonSavedSearch(
-                                    it.name,
-                                    it.query,
-                                    Json.decodeFromString(it.filterList)
-                                )
-                            )
-                        } + preferences.savedSearches().get()
-                    )
-                    .toSet()
+        val newSavedSearches = backupSavedSearches.filter { backupSavedSearch ->
+            currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
+        }.map {
+            "${it.source}:" + Json.encodeToString(
+                JsonSavedSearch(
+                    it.name,
+                    it.query,
+                    Json.decodeFromString(it.filterList)
+                )
             )
+        }.toSet()
+
+        preferences.savedSearches().set(newSavedSearches + preferences.savedSearches().get())
     }
 
     /**

@@ -289,32 +289,32 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
 
         val newSavedSearches = backupSavedSearches.mapNotNull {
             runCatching {
-                val id = it.substringBefore(':').toLong()
+                val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
                 val content = parser.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 id to content
             }.getOrNull()
-        }.toMutableList()
+        }.toMutableSet()
 
-        val currentSources = newSavedSearches.map { it.first }.toSet()
+        val currentSources = newSavedSearches.map(Pair<Long, *>::first).toSet()
 
         newSavedSearches += preferences.savedSearches().get().mapNotNull {
             kotlin.runCatching {
-                val id = it.substringBefore(':').toLong()
+                val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
                 val content = parser.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
                 id to content
             }.getOrNull()
-        }.toMutableList()
+        }
 
         val otherSerialized = preferences.savedSearches().get().mapNotNull {
-            val sourceId = it.split(":")[0].toLongOrNull() ?: return@mapNotNull null
+            val sourceId = it.substringBefore(":").toLongOrNull() ?: return@mapNotNull null
             if (sourceId in currentSources) return@mapNotNull null
             it
-        }
+        }.toSet()
 
-        val newSerialized = newSavedSearches.map {
-            "${it.first}:" + Json.encodeToString(it.second)
-        }
-        preferences.savedSearches().set((otherSerialized + newSerialized).toSet())
+        val newSerialized = newSavedSearches.map { (source, savedSearch) ->
+            "$source:" + Json.encodeToString(savedSearch)
+        }.toSet()
+        preferences.savedSearches().set(otherSerialized + newSerialized)
     }
 
     /**
