@@ -55,6 +55,7 @@ class ChapterLoader(
                 }.map { pages -> loader to pages }
             }
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnError { chapter.state = ReaderChapter.State.Error(it) }
             .doOnNext { (loader, pages) ->
                 if (pages.isEmpty()) {
                     throw Exception(context.getString(R.string.page_list_empty_error))
@@ -73,7 +74,6 @@ class ChapterLoader(
                 }
             }
             .toCompletable()
-            .doOnError { chapter.state = ReaderChapter.State.Error(it) }
     }
 
     /**
