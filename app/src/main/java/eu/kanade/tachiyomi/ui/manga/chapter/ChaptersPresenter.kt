@@ -112,14 +112,14 @@ class ChaptersPresenter(
 
                     // Emit the number of chapters to the info tab.
                     chapterCountRelay.call(
-                        chapters.maxBy { it.chapter_number }?.chapter_number
+                        chapters.maxByOrNull { it.chapter_number }?.chapter_number
                             ?: 0f
                     )
 
                     // Emit the upload date of the most recent chapter
                     lastUpdateRelay.call(
                         Date(
-                            chapters.maxBy { it.date_upload }?.date_upload
+                            chapters.maxByOrNull { it.date_upload }?.date_upload
                                 ?: 0
                         )
                     )

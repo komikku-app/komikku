@@ -52,7 +52,7 @@ class SmartSearchEngine(
             }.flatMap { it.await() }
         }
 
-        return eligibleManga.maxBy { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.dist }?.manga
     }
 
     suspend fun normalSearch(source: CatalogueSource, title: String): SManga? {
@@ -74,7 +74,7 @@ class SmartSearchEngine(
             }
         }
 
-        return eligibleManga.maxBy { it.dist }?.manga
+        return eligibleManga.maxByOrNull { it.dist }?.manga
     }
 
     private fun getSmartSearchQueries(cleanedTitle: String): List<String> {

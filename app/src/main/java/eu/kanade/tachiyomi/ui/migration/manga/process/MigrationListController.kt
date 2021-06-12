@@ -218,7 +218,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                         }
                                     }
                                 }
-                            }.mapNotNull { it.await() }.maxBy { it.second }?.first
+                            }.mapNotNull { it.await() }.maxByOrNull { it.second }?.first
                         } else {
                             validSources.forEachIndexed { index, source ->
                                 val searchResult = try {

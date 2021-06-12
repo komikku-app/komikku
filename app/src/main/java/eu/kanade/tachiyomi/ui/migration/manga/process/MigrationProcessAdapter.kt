@@ -106,7 +106,7 @@ class MigrationProcessAdapter(
         if (MigrationFlags.hasChapters(flags)) {
             val prevMangaChapters = db.getChapters(prevManga).executeAsBlocking()
             val maxChapterRead =
-                prevMangaChapters.filter { it.read }.maxBy { it.chapter_number }?.chapter_number
+                prevMangaChapters.filter { it.read }.maxByOrNull { it.chapter_number }?.chapter_number
             if (maxChapterRead != null) {
                 val dbChapters = db.getChapters(manga).executeAsBlocking()
                 for (chapter in dbChapters) {
