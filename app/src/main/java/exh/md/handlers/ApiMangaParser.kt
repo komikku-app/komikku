@@ -48,9 +48,9 @@ class ApiMangaParser(
     }
 
     suspend fun parseToManga(manga: MangaInfo, input: MangaResponse, sourceId: Long): MangaInfo {
-        val mangaId = db.getManga(manga.key, sourceId).executeOnIO()?.id
+        val mangaId = db.getManga(manga.key, sourceId).executeAsBlocking()?.id
         val metadata = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeOnIO()
+            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeAsBlocking()
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 

@@ -134,7 +134,9 @@ class GalleryAdder {
             }
 
             // Fetch and copy details
-            val newManga = source.getMangaDetails(manga.toMangaInfo())
+            val newManga = maybeRunBlocking(protectTrans) {
+                source.getMangaDetails(manga.toMangaInfo())
+            }
             manga.copyFrom(newManga.toSManga())
             manga.initialized = true
 

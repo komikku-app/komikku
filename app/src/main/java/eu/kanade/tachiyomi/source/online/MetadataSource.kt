@@ -60,7 +60,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     suspend fun parseToManga(manga: MangaInfo, input: I): MangaInfo {
         val mangaId = manga.id()
         val metadata = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeOnIO()
+            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeAsBlocking()
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
@@ -96,7 +96,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      */
     suspend fun fetchOrLoadMetadata(mangaId: Long?, inputProducer: suspend () -> I): M {
         val meta = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeOnIO()
+            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeAsBlocking()
             flatMetadata?.raise(metaClass)
         } else {
             null
@@ -114,7 +114,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
 
     fun getDescriptionAdapter(controller: MangaController): RecyclerView.Adapter<*>?
 
-    suspend fun MangaInfo.id() = db.getManga(key, id).executeOnIO()?.id
+    fun MangaInfo.id() = db.getManga(key, id).executeAsBlocking()?.id
     val SManga.id get() = (this as? Manga)?.id
     val SChapter.mangaId get() = (this as? Chapter)?.manga_id
 }
