@@ -549,7 +549,7 @@ class LibraryController(
             R.id.action_migrate -> {
                 val skipPre = preferences.skipPreMigration().get()
                 val selectedMangaIds = selectedMangas.filterNot { it.source == MERGED_SOURCE_ID }.mapNotNull { it.id }
-                destroyActionModeIfNeeded()
+                clearSelection()
                 if (selectedMangaIds.isNotEmpty()) {
                     PreMigrationController.navigateToMigration(skipPre, router, selectedMangaIds)
                 } else {
