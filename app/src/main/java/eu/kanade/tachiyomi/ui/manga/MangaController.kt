@@ -6,7 +6,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
@@ -18,12 +17,12 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.annotation.FloatRange
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
-import androidx.core.graphics.blue
-import androidx.core.graphics.green
-import androidx.core.graphics.red
 import androidx.core.os.bundleOf
+import androidx.core.view.children
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
@@ -97,7 +96,6 @@ import eu.kanade.tachiyomi.util.hasCustomCover
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.storage.getUriCompat
-import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.toShareIntent
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.getCoordinates
@@ -187,7 +185,7 @@ class MangaController :
     private val preferences: PreferencesHelper by injectLazy()
     private val coverCache: CoverCache by injectLazy()
 
-    private val toolbarTextColor by lazy { view!!.context.getResourceColor(R.attr.colorOnPrimary) }
+    private var toolbarTextView: TextView? = null
 
     private var mangaInfoAdapter: MangaInfoHeaderAdapter? = null
 
@@ -397,28 +395,22 @@ class MangaController :
         updateFilterIconState()
     }
 
-    private fun updateToolbarTitleAlpha(alpha: Int? = null) {
+    private fun updateToolbarTitleAlpha(@FloatRange(from = 0.0, to = 1.0) alpha: Float? = null) {
         val scrolledList = binding.fullRecycler ?: binding.infoRecycler!!
-
-        val calculatedAlpha = when {
+        if (toolbarTextView == null) {
+            toolbarTextView = (activity as? MainActivity)?.binding?.toolbar?.children
+                ?.find { it is TextView } as TextView
+        }
+        toolbarTextView?.alpha = when {
             // Specific alpha provided
             alpha != null -> alpha
 
             // First item isn't in view, full opacity
-            ((scrolledList.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition() > 0) -> 255
+            ((scrolledList.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition() > 0) -> 1F
 
             // Based on scroll amount when first item is in view
-            else -> min(scrolledList.computeVerticalScrollOffset(), 255)
+            else -> min(scrolledList.computeVerticalScrollOffset(), 255) / 255F
         }
-
-        (activity as? MainActivity)?.binding?.toolbar?.setTitleTextColor(
-            Color.argb(
-                calculatedAlpha,
-                toolbarTextColor.red,
-                toolbarTextColor.green,
-                toolbarTextColor.blue
-            )
-        )
     }
 
     private fun updateFilterIconState() {
@@ -470,7 +462,8 @@ class MangaController :
         mangaMetaInfoAdapter = null
         // SY <--
         addSnackbar?.dismiss()
-        updateToolbarTitleAlpha(255)
+        updateToolbarTitleAlpha(1F)
+        toolbarTextView = null
         super.onDestroyView(view)
     }
 
