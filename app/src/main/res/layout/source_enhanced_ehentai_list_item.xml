@@ -29,7 +29,7 @@
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progress"
-            style="@style/Theme.Widget.CircularProgressIndicator.Small"
+            style="@style/Widget.Tachiyomi.CircularProgressIndicator.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

@@ -162,9 +162,9 @@
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab"
-        style="@style/Theme.Widget.FAB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="0dp"
         android:layout_marginEnd="16dp"
         android:text="@string/action_migrate"
         app:icon="@drawable/ic_arrow_forward_24dp"

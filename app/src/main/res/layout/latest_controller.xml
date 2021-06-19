@@ -27,7 +27,7 @@
             android:background="?attr/colorSurface" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
-            style="@style/Theme.Widget.CircularProgressIndicator.Small"
+            style="@style/Widget.Tachiyomi.CircularProgressIndicator.Small"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center"

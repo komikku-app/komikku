@@ -6,13 +6,11 @@
     android:layout_column="0"
     android:padding="16dp"
     android:showDividers="middle"
-    android:divider="@color/backgroundDark">
+    android:divider="?attr/colorOnBackground">
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:showDividers="middle"
-        android:divider="@color/backgroundDark">
+        android:layout_height="match_parent" >
 
         <TextView
             android:layout_width="wrap_content"
@@ -44,8 +42,7 @@
             android:id="@+id/doujinshi_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -64,8 +61,7 @@
             android:id="@+id/manga_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -84,8 +80,7 @@
             android:id="@+id/artist_cg_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -104,8 +99,7 @@
             android:id="@+id/game_cg_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -124,8 +118,7 @@
             android:id="@+id/western_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -144,8 +137,7 @@
             android:id="@+id/non_h_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -164,8 +156,7 @@
             android:id="@+id/image_set_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -184,8 +175,7 @@
             android:id="@+id/cosplay_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -204,8 +194,7 @@
             android:id="@+id/asian_porn_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 
     <TableRow
@@ -224,7 +213,6 @@
             android:id="@+id/misc_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            style="@style/Theme.Widget.BasicSwitch" />
+            android:layout_gravity="center" />
     </TableRow>
 </TableLayout>

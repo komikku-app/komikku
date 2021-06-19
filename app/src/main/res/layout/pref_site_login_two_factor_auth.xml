@@ -48,7 +48,6 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/two_factor_holder"
-        style="@style/Theme.Widget.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -76,7 +75,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="@string/login"
-        android:textColor="@android:color/white"
+        android:textColor="?attr/colorOnPrimary"
+        app:pb_colorNormal="?attr/colorPrimary"
+        app:pb_colorPressed="?attr/colorPrimary"
         app:pb_textComplete="@string/login_success"
         app:pb_textError="@string/invalid_login"
         app:pb_textProgress="@string/loading" />

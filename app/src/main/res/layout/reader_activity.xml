@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
-            android:background="?attr/colorPrimary"
+            android:background="?attr/colorToolbar"
             app:elevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -223,7 +223,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:gravity="center"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorOnToolbar"
                             android:textSize="15sp"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -250,7 +250,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
                             android:gravity="center"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorOnToolbar"
                             android:textSize="15sp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -272,7 +272,7 @@
                     android:padding="@dimen/screen_edge_margin"
                     android:rotation="90"
                     app:srcCompat="@drawable/ic_skip_next_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
             </LinearLayout>
 
@@ -315,7 +315,7 @@
                     android:contentDescription="@string/action_previous_chapter"
                     android:padding="@dimen/screen_edge_margin"
                     app:srcCompat="@drawable/ic_skip_previous_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <LinearLayout
                     android:id="@+id/reader_seekbar"
@@ -331,7 +331,7 @@
                         android:layout_width="32dp"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:textColor="?attr/colorOnPrimary"
+                        android:textColor="?attr/colorOnToolbar"
                         android:textSize="15sp"
                         tools:text="1" />
 
@@ -352,7 +352,7 @@
                         android:layout_width="32dp"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:textColor="?attr/colorOnPrimary"
+                        android:textColor="?attr/colorOnToolbar"
                         android:textSize="15sp"
                         tools:text="15" />
 
@@ -367,7 +367,7 @@
                     android:contentDescription="@string/action_next_chapter"
                     android:padding="@dimen/screen_edge_margin"
                     app:srcCompat="@drawable/ic_skip_next_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
             </LinearLayout>
 
@@ -375,13 +375,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:layout_gravity="bottom"
-                android:background="?attr/colorPrimary">
+                android:background="?attr/colorToolbar">
 
                 <ImageButton
                     android:id="@+id/action_chapter_list"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="?selectableItemBackgroundBorderless"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/custom_filter"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toStartOf="@+id/action_web_view"
@@ -389,13 +389,13 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_format_list_numbered_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <ImageButton
                     android:id="@+id/action_web_view"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="?selectableItemBackgroundBorderless"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/custom_filter"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toStartOf="@id/action_reading_mode"
@@ -403,13 +403,13 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_public_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <ImageButton
                     android:id="@+id/action_reading_mode"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/ripple_regular"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/viewer"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toStartOf="@id/action_crop_borders"
@@ -417,13 +417,13 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_reader_default_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <ImageButton
                     android:id="@+id/action_crop_borders"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/ripple_regular"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/pref_crop_borders"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toStartOf="@id/action_rotation"
@@ -431,13 +431,13 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_crop_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <ImageButton
                     android:id="@+id/action_rotation"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/ripple_regular"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/pref_rotation_type"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toStartOf="@id/double_page"
@@ -445,13 +445,13 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_screen_rotation_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <ImageButton
                     android:id="@+id/double_page"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/ripple_regular"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/page_layout"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toStartOf="@id/shift_page_button"
@@ -459,13 +459,13 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_book_open_variant_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <ImageButton
                     android:id="@+id/shift_page_button"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/ripple_regular"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/shift_double_pages"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toStartOf="@id/action_settings"
@@ -473,13 +473,13 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_page_next_outline_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <ImageButton
                     android:id="@+id/action_settings"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/ripple_regular"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/action_settings"
                     android:padding="@dimen/screen_edge_margin"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -487,7 +487,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintHorizontal_chainStyle="spread"
                     app:srcCompat="@drawable/ic_settings_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -6,24 +6,24 @@
         android:id="@+id/action_select_none"
         android:icon="@drawable/ic_select_none_24dp"
         android:title="@string/select_none"
-        app:iconTint="?attr/colorOnPrimary"
+        app:iconTint="?attr/colorOnToolbar"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_select_all"
         android:icon="@drawable/ic_select_all_24dp"
         android:title="@string/action_select_all"
-        app:iconTint="?attr/colorOnPrimary"
+        app:iconTint="?attr/colorOnToolbar"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_match_enabled"
         android:icon="@drawable/ic_browse_filled_24dp"
         android:title="@string/match_enabled_sources"
-        app:iconTint="?attr/colorOnPrimary"
+        app:iconTint="?attr/colorOnToolbar"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_match_pinned"
         android:icon="@drawable/ic_pin_24dp"
         android:title="@string/match_pinned_sources"
-        app:iconTint="?attr/colorOnPrimary"
+        app:iconTint="?attr/colorOnToolbar"
         app:showAsAction="ifRoom" />
 </menu>

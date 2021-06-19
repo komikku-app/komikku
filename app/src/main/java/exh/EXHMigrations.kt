@@ -286,6 +286,14 @@ object EXHMigrations {
                         LibraryUpdateJob.setupTask(context, 3)
                     }
                 }
+                if (oldVersion under 20) {
+                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+                    if (prefs.getString(PreferenceKeys.themeDark, null) == "amoledblue") {
+                        prefs.edit {
+                            putString(PreferenceKeys.themeDark, "amoled")
+                        }
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap

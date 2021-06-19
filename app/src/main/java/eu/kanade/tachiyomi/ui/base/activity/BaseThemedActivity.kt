@@ -35,7 +35,8 @@ abstract class BaseThemedActivity : AppCompatActivity() {
                 DarkThemeVariant.midnightdusk -> R.style.Theme_Tachiyomi_Dark_MidnightDusk
                 DarkThemeVariant.amoled -> R.style.Theme_Tachiyomi_Amoled
                 DarkThemeVariant.hotpink -> R.style.Theme_Tachiyomi_Amoled_HotPink
-                DarkThemeVariant.amoledblue -> R.style.Theme_Tachiyomi_Amoled_Blue
+                // Hide AMOLED blue for now, so we don't crash the fuck out
+                DarkThemeVariant.amoledblue -> R.style.Theme_Tachiyomi_Amoled
                 DarkThemeVariant.red -> R.style.Theme_Tachiyomi_Amoled_Red
             }
         } else {

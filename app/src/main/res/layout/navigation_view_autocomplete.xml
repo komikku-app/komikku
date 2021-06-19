@@ -23,7 +23,7 @@
 
         <AutoCompleteTextView
             android:id="@+id/nav_view_item"
-            style="@style/Theme.Widget.TextInputLayout.OutlinedBox"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -39,5 +39,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:chipSpacingVertical="4dp"
-        style="@style/Theme.Widget.Chip"/>
+        style="@style/Widget.Tachiyomi.Chip.Action"/>
 </LinearLayout>

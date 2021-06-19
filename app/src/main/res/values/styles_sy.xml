@@ -4,17 +4,17 @@
     <!--========-->
     <!--Toolbars-->
     <!--========-->
-    <style name="Theme.Toolbar.Custom.Amoled.Red" parent="Theme.Toolbar.Custom.Amoled">
+    <!--<style name="Theme.Toolbar.Custom.Amoled.Red" parent="Theme.Toolbar.Custom.Amoled">
         <item name="android:textColorPrimary">@color/red</item>
-    </style>
+    </style>-->
 
 
     <!--===========-->
     <!--AlertDialog-->
     <!--===========-->
-    <style name="Theme.AlertDialog.Amoled.Red" parent="Theme.AlertDialog">
+    <!--<style name="Theme.AlertDialog.Amoled.Red" parent="Theme.AlertDialog">
         <item name="colorAccent">@color/red</item>
-    </style>
+    </style>-->
 
 
     <!--=====-->
