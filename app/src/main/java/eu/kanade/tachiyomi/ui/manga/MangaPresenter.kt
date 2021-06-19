@@ -886,6 +886,10 @@ class MangaPresenter(
         }
     }
 
+    fun startDownloadingNow(chapter: Chapter) {
+        downloadManager.startDownloadNow(chapter)
+    }
+
     /**
      * Mark the selected chapter list as read/unread.
      * @param selectedChapters the list of selected chapters.
