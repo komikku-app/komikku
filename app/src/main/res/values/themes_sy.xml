@@ -23,6 +23,7 @@
         <item name="android:textColorSecondary">@color/dark_red</item>
         <item name="android:textColorHint">@color/dark_red</item>
         <item name="md_color_title">@color/red</item>
+        <item name="colorControlHighlight">@color/dark_red_6</item>
 
         <!-- Themes -->
         <!--<item name="materialAlertDialogTheme">@style/Theme.AlertDialog.Amoled.Red</item>-->
