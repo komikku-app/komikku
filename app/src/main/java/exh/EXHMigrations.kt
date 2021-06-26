@@ -26,6 +26,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
+import eu.kanade.tachiyomi.ui.library.LibrarySort
+import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
+import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import exh.log.xLogE
 import exh.log.xLogW
@@ -288,6 +291,40 @@ object EXHMigrations {
                 }
                 if (oldVersion under 20) {
                     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+                    val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
+                    val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
+
+                    @Suppress("DEPRECATION")
+                    val newSortingMode = when (oldSortingMode) {
+                        LibrarySort.ALPHA -> SortModeSetting.ALPHABETICAL
+                        LibrarySort.LAST_READ -> SortModeSetting.LAST_READ
+                        LibrarySort.LAST_CHECKED -> SortModeSetting.LAST_CHECKED
+                        LibrarySort.UNREAD -> SortModeSetting.UNREAD
+                        LibrarySort.TOTAL -> SortModeSetting.TOTAL_CHAPTERS
+                        LibrarySort.LATEST_CHAPTER -> SortModeSetting.LATEST_CHAPTER
+                        LibrarySort.CHAPTER_FETCH_DATE -> SortModeSetting.DATE_FETCHED
+                        LibrarySort.DATE_ADDED -> SortModeSetting.DATE_ADDED
+                        LibrarySort.DRAG_AND_DROP -> SortModeSetting.DRAG_AND_DROP
+                        LibrarySort.TAG_LIST -> SortModeSetting.TAG_LIST
+                        else -> SortModeSetting.ALPHABETICAL
+                    }
+
+                    val newSortingDirection = when (oldSortingDirection) {
+                        true -> SortDirectionSetting.ASCENDING
+                        else -> SortDirectionSetting.DESCENDING
+                    }
+
+                    prefs.edit(commit = true) {
+                        remove(PreferenceKeys.librarySortingMode)
+                        remove(PreferenceKeys.librarySortingDirection)
+                    }
+
+                    prefs.edit {
+                        putString(PreferenceKeys.librarySortingMode, newSortingMode.name)
+                        putString(PreferenceKeys.librarySortingDirection, newSortingDirection.name)
+                    }
+
                     if (prefs.getString(PreferenceKeys.themeDark, null) == "amoledblue") {
                         prefs.edit {
                             putString(PreferenceKeys.themeDark, "amoled")

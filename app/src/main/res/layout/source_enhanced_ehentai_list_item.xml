@@ -4,11 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="140dp"
-    android:layout_gravity="center_vertical"
-    android:background="@drawable/list_item_selector"
-    android:paddingEnd="8dp"
-    tools:layout_editor_absoluteX="0dp"
-    tools:layout_editor_absoluteY="25dp">
+    android:background="@drawable/library_item_selector"
+    android:foreground="@drawable/library_item_selector_overlay"
+    android:padding="4dp">
 
     <FrameLayout
         android:id="@+id/card"
@@ -18,6 +16,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:scaleType="centerCrop"
+            tools:src="@mipmap/ic_launcher" />
 
         <LinearLayout
             android:id="@+id/badges"
@@ -43,14 +49,6 @@
                 android:visibility="gone"
                 tools:visibility="visible" />
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/thumbnail"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:scaleType="centerCrop"
-            tools:src="@mipmap/ic_launcher" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progress"
@@ -89,7 +87,7 @@
         app:layout_constraintTop_toBottomOf="@+id/title"
         tools:text="Manga title for the life of me I cant think yes totally" />
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -110,7 +108,7 @@
             android:paddingEnd="8dp"
             android:paddingBottom="4dp" />
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <me.zhanghai.android.materialratingbar.MaterialRatingBar
         android:id="@+id/rating_bar"

@@ -28,13 +28,13 @@ import java.util.Date
  * @param adapter the adapter handling this holder.
  * @constructor creates a new catalogue holder.
  */
-class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleAdapter<*>) :
+class SourceEnhancedEHentaiListHolder(view: View, adapter: FlexibleAdapter<*>) :
     SourceHolder<SourceEnhancedEhentaiListItemBinding>(view, adapter) {
 
-    override val binding = SourceEnhancedEhentaiListItemBinding.bind(view)
+    override val binding = SourceEnhancedEhentaiListItemBinding.bind(itemView)
 
-    private val favoriteColor = view.context.getResourceColor(R.attr.colorOnSurface, 0.38f)
-    private val unfavoriteColor = view.context.getResourceColor(R.attr.colorOnSurface)
+    private val favoriteColor = itemView.context.getResourceColor(R.attr.colorOnSurface, 0.38f)
+    private val unfavoriteColor = itemView.context.getResourceColor(R.attr.colorOnSurface)
 
     /**
      * Method called from [CatalogueAdapter.onBindViewHolder]. It updates the data for this
@@ -81,7 +81,7 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
 
         if (pair != null) {
             binding.genre.setBackgroundColor(pair.first.color)
-            binding.genre.text = view.context.getString(pair.second)
+            binding.genre.text = itemView.context.getString(pair.second)
         } else binding.genre.text = metadata.genre
 
         metadata.datePosted?.let { binding.datePosted.text = MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
@@ -96,9 +96,9 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
         val pageCount = metadata.length
 
         binding.language.text = if (locale != null && pageCount != null) {
-            view.resources.getQuantityString(R.plurals.browse_language_and_pages, pageCount, pageCount, locale.toLanguageTag().uppercase())
+            itemView.resources.getQuantityString(R.plurals.browse_language_and_pages, pageCount, pageCount, locale.toLanguageTag().uppercase())
         } else if (pageCount != null) {
-            view.resources.getQuantityString(R.plurals.num_pages, pageCount, pageCount)
+            itemView.resources.getQuantityString(R.plurals.num_pages, pageCount, pageCount)
         } else locale?.toLanguageTag()?.uppercase()
     }
 
@@ -108,10 +108,10 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
 
         binding.thumbnail.clear()
         if (!manga.thumbnail_url.isNullOrEmpty()) {
-            val crossfadeDuration = view.context.imageLoader.defaults.transition.let {
+            val crossfadeDuration = itemView.context.imageLoader.defaults.transition.let {
                 if (it is CrossfadeTransition) it.durationMillis else 0
             }
-            val request = ImageRequest.Builder(view.context)
+            val request = ImageRequest.Builder(itemView.context)
                 .data(manga)
                 .setParameter(MangaCoverFetcher.USE_CUSTOM_COVER, false)
                 .diskCachePolicy(CachePolicy.DISABLED)

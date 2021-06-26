@@ -15,10 +15,11 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
-import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.LibraryCategoryBinding
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
+import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
+import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
@@ -38,6 +39,7 @@ import rx.subscriptions.CompositeSubscription
 import uy.kohesive.injekt.injectLazy
 import java.util.ArrayDeque
 import java.util.concurrent.TimeUnit
+import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting as DisplayMode
 
 /**
  * Fragment containing the library manga for a certain category.
@@ -158,7 +160,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
 
         // If displayMode should be set from category adjust manga count per row
         if (preferences.categorisedDisplaySettings().get()) {
-            recycler.spanCount = if (category.displayMode == Category.LIST || (preferences.libraryDisplayMode().get() == DisplayMode.LIST && category.id == 0)) {
+            recycler.spanCount = if (DisplayMode.fromFlag(category.displayMode) == DisplayMode.LIST || (preferences.libraryDisplayMode().get() == DisplayMode.LIST && category.id == 0)) {
                 1
             } else {
                 controller.mangaPerRow
@@ -264,10 +266,15 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     private suspend fun onNextLibraryManga(cScope: CoroutineScope, event: LibraryMangaEvent) {
         // Get the manga list for this category.
         // SY -->
-        val sortingMode = preferences.librarySortingMode().get()
         adapter.isLongPressDragEnabled = adapter.canDrag()
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
-        if (sortingMode == LibrarySort.DRAG_AND_DROP) {
+        if (preferences.categorisedDisplaySettings().get() && category.id != 0) {
+            if (SortModeSetting.fromFlag(category.sortMode) == SortModeSetting.DRAG_AND_DROP) {
+                mangaForCategory = mangaForCategory.sortedBy {
+                    category.mangaOrder.indexOf(it.manga.id)
+                }
+            }
+        } else if (preferences.librarySortingMode().get() == SortModeSetting.DRAG_AND_DROP) {
             if (category.id == 0) {
                 category.mangaOrder = preferences.defaultMangaOrder().get()
                     .split("/")
@@ -435,10 +442,15 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         } else {
             db.insertCategory(category).asRxObservable().subscribe()
         }
-        if (preferences.librarySortingMode().get() != LibrarySort.DRAG_AND_DROP) {
-            preferences.librarySortingAscending().set(true)
-            preferences.librarySortingMode().set(LibrarySort.DRAG_AND_DROP)
-            controller.refreshSort()
+        if (preferences.categorisedDisplaySettings().get() && category.id != 0) {
+            if (SortModeSetting.fromFlag(category.sortMode) != SortModeSetting.DRAG_AND_DROP) {
+                category.sortMode = SortModeSetting.DRAG_AND_DROP.flag
+                category.sortDirection = SortDirectionSetting.ASCENDING.flag
+                db.insertCategory(category).asRxObservable().subscribe()
+            }
+        } else if (preferences.librarySortingMode().get() != SortModeSetting.DRAG_AND_DROP) {
+            preferences.librarySortingAscending().set(SortDirectionSetting.ASCENDING)
+            preferences.librarySortingMode().set(SortModeSetting.DRAG_AND_DROP)
         }
     }
     // SY <--

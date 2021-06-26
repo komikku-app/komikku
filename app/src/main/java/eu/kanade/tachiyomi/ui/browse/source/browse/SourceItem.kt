@@ -12,16 +12,16 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
+import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.isEhBasedManga
 import uy.kohesive.injekt.injectLazy
 
-class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMode> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
+class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayModeSetting> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
     AbstractFlexibleItem<SourceHolder<*>>() {
     // SY -->
     val preferences: PreferencesHelper by injectLazy()
@@ -30,9 +30,9 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
     override fun getLayoutRes(): Int {
         return /* SY --> */ if (manga.isEhBasedManga() && preferences.enhancedEHentaiView().get()) R.layout.source_enhanced_ehentai_list_item
         else /* SY <-- */ when (displayMode.get()) {
-            DisplayMode.COMPACT_GRID -> R.layout.source_compact_grid_item
-            DisplayMode.COMFORTABLE_GRID, /* SY --> */ DisplayMode.NO_TITLE_GRID /* SY <-- */ -> R.layout.source_comfortable_grid_item
-            DisplayMode.LIST -> R.layout.source_list_item
+            DisplayModeSetting.COMPACT_GRID -> R.layout.source_compact_grid_item
+            DisplayModeSetting.COMFORTABLE_GRID, /* SY --> */ DisplayModeSetting.NO_TITLE_GRID /* SY <-- */ -> R.layout.source_comfortable_grid_item
+            DisplayModeSetting.LIST -> R.layout.source_list_item
         }
     }
 
@@ -43,7 +43,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         return /* SY --> */ if (manga.isEhBasedManga() && preferences.enhancedEHentaiView().get()) {
             SourceEnhancedEHentaiListHolder(view, adapter)
         } else /* SY <-- */ when (displayMode.get()) {
-            DisplayMode.COMPACT_GRID -> {
+            DisplayModeSetting.COMPACT_GRID -> {
                 val binding = SourceCompactGridItemBinding.bind(view)
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
@@ -60,7 +60,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
                 }
                 SourceGridHolder(view, adapter)
             }
-            DisplayMode.COMFORTABLE_GRID /* SY --> */, DisplayMode.NO_TITLE_GRID /* SY <-- */ -> {
+            DisplayModeSetting.COMFORTABLE_GRID /* SY --> */, DisplayModeSetting.NO_TITLE_GRID /* SY <-- */ -> {
                 val binding = SourceComfortableGridItemBinding.bind(view)
                 val parent = adapter.recyclerView as AutofitRecyclerView
                 val coverHeight = parent.itemWidth / 3 * 4
@@ -70,9 +70,9 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
                         coverHeight
                     )
                 }
-                SourceComfortableGridHolder(view, adapter, displayMode.get() != DisplayMode.NO_TITLE_GRID)
+                SourceComfortableGridHolder(view, adapter, displayMode.get() != DisplayModeSetting.NO_TITLE_GRID)
             }
-            DisplayMode.LIST -> {
+            DisplayModeSetting.LIST -> {
                 SourceListHolder(view, adapter)
             }
         }

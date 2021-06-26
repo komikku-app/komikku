@@ -153,6 +153,7 @@ object PreferenceKeys {
     const val filterLewd = "pref_filter_library_lewd"
 
     const val librarySortingMode = "library_sorting_mode"
+    const val librarySortingDirection = "library_sorting_ascending"
 
     const val automaticExtUpdates = "automatic_ext_updates"
 
