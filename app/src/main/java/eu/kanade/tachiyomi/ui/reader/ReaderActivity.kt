@@ -6,12 +6,14 @@ import android.app.ProgressDialog
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -25,13 +27,15 @@ import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.annotation.ColorInt
-import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import androidx.core.view.setPadding
 import androidx.lifecycle.lifecycleScope
 import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import com.google.android.material.shape.MaterialShapeDrawable
+import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -44,6 +48,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
+import eu.kanade.tachiyomi.ui.base.activity.BaseThemedActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.AddToLibraryFirst
@@ -70,12 +75,8 @@ import eu.kanade.tachiyomi.util.system.GLUtil
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.view.defaultBar
-import eu.kanade.tachiyomi.util.view.hideBar
-import eu.kanade.tachiyomi.util.view.isDefaultBar
 import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.util.view.setTooltip
-import eu.kanade.tachiyomi.util.view.showBar
 import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import eu.kanade.tachiyomi.widget.listener.SimpleSeekBarListener
 import exh.log.xLogE
@@ -172,21 +173,19 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
     private var readingModeToast: Toast? = null
 
+    private val windowInsetsController by lazy { WindowInsetsControllerCompat(window, binding.root) }
+
     /**
      * Called when the activity is created. Initializes the presenter and configuration.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(
-            when (preferences.readerTheme().get()) {
-                0 -> R.style.Theme_Reader_Light
-                2 -> R.style.Theme_Reader_Dark_Grey
-                else -> R.style.Theme_Reader_Dark
-            }
-        )
+        setTheme(BaseThemedActivity.getThemeResourceId(preferences))
         super.onCreate(savedInstanceState)
 
         binding = ReaderActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
         if (presenter.needsInit()) {
             val manga = intent.extras!!.getLong("manga", -1)
@@ -214,9 +213,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         config = ReaderConfig()
         initializeMenu()
 
-        // Avoid status bar showing up on rotation
-        window.decorView.setOnSystemUiVisibilityChangeListener {
-            setMenuVisibility(menuVisible, animate = false)
+        binding.pageNumber.applyInsetter {
+            type(navigationBars = true) {
+                margin()
+            }
         }
 
         // Finish when incognito mode is disabled
@@ -394,17 +394,15 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             onBackPressed()
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.readerMenu) { _, insets ->
-            if (!window.isDefaultBar()) {
-                val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                binding.readerMenu.setPadding(
-                    systemInsets.left,
-                    systemInsets.top,
-                    systemInsets.right,
-                    systemInsets.bottom
-                )
+        binding.toolbar.applyInsetter {
+            type(navigationBars = true, statusBars = true) {
+                margin(top = true, horizontal = true)
             }
-            insets
+        }
+        binding.readerMenuBottom.applyInsetter {
+            type(navigationBars = true) {
+                margin(bottom = true, horizontal = true)
+            }
         }
 
         binding.toolbar.setOnClickListener {
@@ -764,6 +762,21 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         updateBottomButtons()
         // <-- EH
 
+        val alpha = if (preferences.isDarkMode()) 230 else 242 // 90% dark 95% light
+        listOf(
+            binding.toolbarBottom,
+            binding.leftChapter,
+            binding.readerSeekbar,
+            binding.rightChapter
+        ).forEach {
+            it.background.alpha = alpha
+        }
+
+        val systemBarsColor = (binding.toolbarBottom.background as ColorDrawable).color
+        window.statusBarColor = systemBarsColor
+        window.navigationBarColor = systemBarsColor
+        (binding.toolbar.background as MaterialShapeDrawable).fillColor = ColorStateList.valueOf(systemBarsColor)
+
         // Set initial visibility
         setMenuVisibility(menuVisible)
 
@@ -879,11 +892,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     fun setMenuVisibility(visible: Boolean, animate: Boolean = true) {
         menuVisible = visible
         if (visible) {
-            if (preferences.fullscreen().get()) {
-                window.showBar()
-            } else {
-                resetDefaultMenuAndBar()
-            }
+            windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             binding.readerMenu.isVisible = true
 
             if (animate) {
@@ -917,9 +926,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         } else {
             if (preferences.fullscreen().get()) {
-                window.hideBar()
-            } else {
-                resetDefaultMenuAndBar()
+                windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
             }
 
             if (animate) {
@@ -973,14 +980,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     // SY <--
 
     /**
-     * Reset menu padding and system bar
-     */
-    private fun resetDefaultMenuAndBar() {
-        binding.readerMenu.setPadding(0)
-        window.defaultBar()
-    }
-
-    /**
      * Called from the presenter when a manga is ready. Used to instantiate the appropriate viewer
      * and the toolbar title.
      */
@@ -1000,6 +999,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             binding.viewerContainer.removeAllViews()
         }
         viewer = newViewer
+        updateViewerInset(preferences.fullscreen().get())
         binding.viewerContainer.addView(newViewer.getView())
 
         // SY -->
@@ -1371,6 +1371,19 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     }
 
     /**
+     * Updates viewer inset depending on fullscreen reader preferences.
+     */
+    fun updateViewerInset(fullscreen: Boolean) {
+        viewer?.getView()?.applyInsetter {
+            if (!fullscreen) {
+                type(navigationBars = true, statusBars = true) {
+                    padding()
+                }
+            }
+        }
+    }
+
+    /**
      * Class that handles the user preferences of the reader.
      */
     private inner class ReaderConfig {
@@ -1390,8 +1403,15 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
          */
         init {
             preferences.readerTheme().asFlow()
-                .drop(1) // We only care about updates
-                .onEach { recreate() }
+                .onEach {
+                    binding.readerContainer.setBackgroundResource(
+                        when (preferences.readerTheme().get()) {
+                            0 -> android.R.color.white
+                            2 -> R.color.background_dark
+                            else -> android.R.color.black
+                        }
+                    )
+                }
                 .launchIn(lifecycleScope)
 
             preferences.showPageNumber().asFlow()
@@ -1428,6 +1448,14 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 .onEach { setGrayscale(it) }
                 .launchIn(lifecycleScope)
 
+            preferences.fullscreen().asFlow()
+                .onEach {
+                    WindowCompat.setDecorFitsSystemWindows(window, !it)
+                    updateViewerInset(it)
+                }
+                .launchIn(lifecycleScope)
+
+            // SY -->
             preferences.pageLayout().asFlow()
                 .drop(1)
                 .onEach { updateBottomButtons() }
@@ -1448,6 +1476,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     )
                 }
                 .launchIn(lifecycleScope)
+            // SY <--
         }
 
         /**
