@@ -464,11 +464,11 @@ class LibraryUpdateService(
         }
 
         // SY -->
-        val handler = CoroutineExceptionHandler { _, exception ->
-            Timber.e(exception)
-        }
-        ioScope.launch(handler) {
-            if (source.isMdBasedSource() && trackManager.mdList.isLogged) {
+        if (source.isMdBasedSource() && trackManager.mdList.isLogged) {
+            val handler = CoroutineExceptionHandler { _, exception ->
+                Timber.e(exception)
+            }
+            ioScope.launch(handler) {
                 val tracks = db.getTracks(manga).executeOnIO()
                 if (tracks.isEmpty() || tracks.none { it.sync_id == TrackManager.MDLIST }) {
                     var track = trackManager.mdList.createInitialTracker(manga)

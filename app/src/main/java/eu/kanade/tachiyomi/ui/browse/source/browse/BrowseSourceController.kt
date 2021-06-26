@@ -437,13 +437,13 @@ open class BrowseSourceController(bundle: Bundle) :
         super.onPrepareOptionsMenu(menu)
 
         val isHttpSource = presenter.source is HttpSource
-        menu.findItem(R.id.action_open_in_web_view).isVisible = isHttpSource
+        menu.findItem(R.id.action_open_in_web_view)?.isVisible = isHttpSource
 
         val isLocalSource = presenter.source is LocalSource
-        menu.findItem(R.id.action_local_source_help).isVisible = isLocalSource
+        menu.findItem(R.id.action_local_source_help)?.isVisible = isLocalSource
 
         // SY -->
-        menu.findItem(R.id.action_settings).isVisible = presenter.source is ConfigurableSource
+        menu.findItem(R.id.action_settings)?.isVisible = presenter.source is ConfigurableSource
         // SY <--
     }
 

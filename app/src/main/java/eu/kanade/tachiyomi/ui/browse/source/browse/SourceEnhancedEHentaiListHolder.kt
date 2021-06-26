@@ -81,7 +81,11 @@ class SourceEnhancedEHentaiListHolder(private val view: View, adapter: FlexibleA
 
         metadata.averageRating?.let { binding.ratingBar.rating = it.toFloat() }
 
-        val locale = SourceTagsUtil.getLocaleSourceUtil(metadata.tags.firstOrNull { it.namespace == "language" }?.name)
+        val locale = SourceTagsUtil.getLocaleSourceUtil(
+            metadata.tags
+                .firstOrNull { it.namespace == EHentaiSearchMetadata.EH_LANGUAGE_NAMESPACE }
+                ?.name
+        )
         val pageCount = metadata.length
 
         binding.language.text = if (locale != null && pageCount != null) {

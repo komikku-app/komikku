@@ -14,7 +14,6 @@ import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
-import exh.util.executeOnIO
 import rx.Completable
 import rx.Single
 import tachiyomi.source.model.MangaInfo

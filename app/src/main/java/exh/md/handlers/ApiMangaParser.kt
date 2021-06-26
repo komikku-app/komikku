@@ -17,7 +17,6 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.capitalize
 import exh.util.dropEmpty
-import exh.util.executeOnIO
 import exh.util.floor
 import exh.util.nullIfEmpty
 import okhttp3.OkHttpClient

@@ -179,11 +179,17 @@ open class BrowseSourcePresenter(
         pagerSubscription = pager.results()
             .observeOn(Schedulers.io())
             // SY -->
-            .map { triple -> Triple(triple.first, triple.second.map { networkToLocalManga(it, sourceId) }, triple.third) }
+            .map { (page, mangas, metadata) ->
+                Triple(page, mangas.map { networkToLocalManga(it, sourceId) }, metadata)
+            }
             // SY <--
             .doOnNext { initializeMangas(it.second) }
             // SY -->
-            .map { triple -> triple.first to triple.second.mapIndexed { index, manga -> SourceItem(manga, sourceDisplayMode, triple.third?.getOrNull(index)) } }
+            .map { (page, mangas, metadata) ->
+                page to mangas.mapIndexed { index, manga ->
+                    SourceItem(manga, sourceDisplayMode, metadata?.getOrNull(index))
+                }
+            }
             // SY <--
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeReplay(
