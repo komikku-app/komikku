@@ -365,7 +365,8 @@ class FavoritesSyncHelper(val context: Context) {
             status.value = FavoritesSyncStatus.Processing(
                 context.getString(R.string.favorites_sync_add_to_local, index + 1, changeSet.added.size),
                 needWarnThrottle(),
-                context
+                context,
+                it.title
             )
 
             throttleManager.throttle()
@@ -441,12 +442,14 @@ sealed class FavoritesSyncStatus(val message: String) {
             BadLibraryState(context.getString(R.string.favorites_sync_manga_in_multiple_categories, manga.title, categories.joinToString { it.name }))
     }
     class Initializing(context: Context) : FavoritesSyncStatus(context.getString(R.string.favorites_sync_initializing))
-    class Processing(message: String, isThrottle: Boolean = false, context: Context) : FavoritesSyncStatus(
+    class Processing(message: String, isThrottle: Boolean = false, context: Context, val title: String? = null) : FavoritesSyncStatus(
         if (isThrottle) {
             context.getString(R.string.favorites_sync_processing_throttle, message)
         } else {
             message
         }
-    )
+    ) {
+        val delayedMessage get() = if (title != null) this.message + "\n\n" + title else null
+    }
     class CompleteWithErrors(messages: List<String>) : FavoritesSyncStatus(messages.joinToString("\n"))
 }

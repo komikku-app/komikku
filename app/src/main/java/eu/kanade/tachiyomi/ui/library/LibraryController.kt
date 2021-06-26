@@ -50,9 +50,12 @@ import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
 import exh.ui.LoaderManager
 import exh.util.milliseconds
+import exh.util.seconds
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import reactivecircus.flowbinding.android.view.clicks
@@ -697,7 +700,7 @@ class LibraryController(
         favoritesSyncJob =
             presenter.favoritesSync.status
                 .sample(100.milliseconds)
-                .onEach {
+                .mapLatest {
                     updateSyncStatus(it)
                 }
                 .launchIn(viewScope)
@@ -764,7 +767,7 @@ class LibraryController(
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
-    private fun updateSyncStatus(status: FavoritesSyncStatus) {
+    private suspend fun updateSyncStatus(status: FavoritesSyncStatus) {
         when (status) {
             is FavoritesSyncStatus.Idle -> {
                 releaseSyncLocks()
@@ -832,6 +835,10 @@ class LibraryController(
             }
         }
         oldSyncStatus = status
+        if (status is FavoritesSyncStatus.Processing && status.delayedMessage != null) {
+            delay(5.seconds)
+            favSyncDialog?.message(text = status.delayedMessage)
+        }
     }
 
     fun startReading(manga: Manga, adapter: LibraryCategoryAdapter) {
