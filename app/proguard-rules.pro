@@ -1,15 +1,17 @@
 -dontobfuscate
 
-# Extensions may require methods unused in the core app
--dontwarn eu.kanade.tachiyomi.**
--keep class eu.kanade.tachiyomi.** { public protected private *; }
-
--keep class org.jsoup.** { *; }
--keep class kotlin.** { *; }
--keep class okhttp3.** { *; }
--keep class com.google.gson.** { *; }
--keep class com.github.salomonbrys.kotson.** { *; }
--keep class com.squareup.duktape.** { *; }
+# Keep extension's common dependencies
+-keep,allowoptimization class eu.kanade.tachiyomi.** { public protected *; }
+-keep,allowoptimization class kotlin.** { public protected *; }
+-keep,allowoptimization class okhttp3.** { public protected *; }
+-keep,allowoptimization class rx.** { public protected *; }
+-keep,allowoptimization class org.jsoup.** { public protected *; }
+-keep,allowoptimization class com.google.gson.** { public protected *; }
+-keep,allowoptimization class com.github.salomonbrys.kotson.** { public protected *; }
+-keep,allowoptimization class com.squareup.duktape.** { public protected *; }
+-keep,allowoptimization class androidx.preference.** { *; }
+-keep,allowoptimization class okio.** { *; }
+-keep,allowoptimization class kotlinx.serialization.** { *; }
 
 # === Keep EH classes
 -keep class exh.** { *; }
