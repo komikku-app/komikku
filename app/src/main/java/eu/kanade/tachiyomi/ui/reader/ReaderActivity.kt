@@ -185,8 +185,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding = ReaderActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-
         if (presenter.needsInit()) {
             val manga = intent.extras!!.getLong("manga", -1)
             val chapter = intent.extras!!.getLong("chapter", -1)
@@ -774,7 +772,9 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         val systemBarsColor = (binding.toolbarBottom.background as ColorDrawable).color
         window.statusBarColor = systemBarsColor
-        window.navigationBarColor = systemBarsColor
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            window.navigationBarColor = systemBarsColor
+        }
         (binding.toolbar.background as MaterialShapeDrawable).fillColor = ColorStateList.valueOf(systemBarsColor)
 
         // Set initial visibility
@@ -927,6 +927,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         } else {
             if (preferences.fullscreen().get()) {
                 windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
+                windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
 
             if (animate) {
