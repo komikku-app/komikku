@@ -301,7 +301,7 @@ class LibraryController(
 
     fun showSettingsSheet() {
         if (adapter?.categories?.isNotEmpty() == true) {
-            adapter?.categories?.get(binding.libraryPager.currentItem)?.let { category ->
+            adapter?.categories?.getOrNull(binding.libraryPager.currentItem)?.let { category ->
                 settingsSheet?.show(category)
             }
         } else {
