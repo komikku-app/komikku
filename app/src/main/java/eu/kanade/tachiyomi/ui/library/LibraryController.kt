@@ -333,10 +333,10 @@ class LibraryController(
             .map { (it.id ?: -1) to (mangaMap[it.id]?.size ?: 0) }
             .toMap()
 
-        if (preferences.categorisedDisplaySettings().get()) {
+        /*if (preferences.categorisedDisplaySettings().get()) {
             // Reattach adapter so it doesn't get de-synced
             reattachAdapter()
-        }
+        }*/
 
         // Restore active category.
         binding.libraryPager.setCurrentItem(activeCat, false)
