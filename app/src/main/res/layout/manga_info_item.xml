@@ -36,7 +36,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/manga_info_toggle_more"
-        style="@style/Widget.Tachiyomi.Button.ActionButton"
+        style="@style/Widget.Tachiyomi.Button.InlineButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
@@ -48,7 +48,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/manga_info_toggle_less"
-        style="@style/Widget.Tachiyomi.Button.ActionButton"
+        style="@style/Widget.Tachiyomi.Button.InlineButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
