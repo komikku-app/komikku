@@ -140,7 +140,7 @@ class LibraryItem(
         val tag = if (minus) { query.substringAfter("-") } else query
         return when (sourceName.contains(tag, true)) {
             false -> containsGenre(query, genres)
-            else  -> !minus
+            else -> !minus
         }
     }
 

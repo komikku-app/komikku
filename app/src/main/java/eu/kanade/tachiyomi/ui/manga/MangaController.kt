@@ -1477,8 +1477,7 @@ class MangaController :
 
     fun onTrackingSearchResultsError(error: Throwable) {
         Timber.e(error)
-        activity?.toast(error.message)
-        getTrackingSearchDialog()?.onSearchResultsError()
+        getTrackingSearchDialog()?.onSearchResultsError(error.message)
     }
 
     private fun getTrackingSearchDialog(): TrackSearchDialog? {
