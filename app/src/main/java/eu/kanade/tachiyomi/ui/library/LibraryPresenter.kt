@@ -352,17 +352,28 @@ class LibraryPresenter(
         }
         // SY <--
 
+        val defaultSortingMode = SortModeSetting.get(preferences, null)
         val sortingModes = categories.associate { category ->
             (category.id ?: 0) to SortModeSetting.get(preferences, category)
         }
 
+        val defaultSortAscending = SortDirectionSetting.get(preferences, null)
         val sortAscending = categories.associate { category ->
             (category.id ?: 0) to SortDirectionSetting.get(preferences, category)
         }
 
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
-            val sortingMode = sortingModes[i1.manga.category]!!
-            val sortAscending = sortAscending[i1.manga.category]!! == SortDirectionSetting.ASCENDING
+            val sortingMode = if (groupType == LibraryGroup.BY_DEFAULT) {
+                sortingModes[i1.manga.category] ?: defaultSortingMode
+            } else {
+                defaultSortingMode
+            }
+            val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
+                sortAscending[i1.manga.category] ?: defaultSortAscending
+            } else {
+                defaultSortAscending
+            } == SortDirectionSetting.ASCENDING
+
             when (sortingMode) {
                 SortModeSetting.ALPHABETICAL -> i1.manga.title.compareTo(i2.manga.title, true)
                 SortModeSetting.LAST_READ -> {
@@ -413,7 +424,11 @@ class LibraryPresenter(
         }
 
         return map.mapValues { entry ->
-            val sortAscending = sortAscending[entry.key]!! == SortDirectionSetting.ASCENDING
+            val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
+                sortAscending[entry.key] ?: defaultSortAscending
+            } else {
+                defaultSortAscending
+            } == SortDirectionSetting.ASCENDING
 
             val comparator = if (sortAscending) {
                 Comparator(sortFn)
@@ -834,18 +849,13 @@ class LibraryPresenter(
             }
         }
 
-        val categories = (
-            when (groupType) {
-                LibraryGroup.BY_SOURCE -> grouping.sortedBy { it.third.lowercase() }
-                LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.filter { it.second in map.keys }
-                else -> grouping
-            }
-            )
-            .map {
-                val category = Category.create(it.third)
-                category.id = it.second
-                category
-            }
+        val categories = when (groupType) {
+            LibraryGroup.BY_SOURCE -> grouping.sortedBy { it.third.lowercase() }
+            LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.filter { it.second in map.keys }
+            else -> grouping
+        }.map { (_, id, name) ->
+            Category.create(name).also { it.id = id }
+        }
 
         return map to categories
     }
