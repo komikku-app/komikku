@@ -84,7 +84,7 @@ class ReaderPresenter(
     // SY -->
     var meta: RaisedSearchMetadata? = null
         private set
-    var mergedManga: List<Manga>? = null
+    var mergedManga: Map<Long, Manga>? = null
         private set
     // SY <--
 
@@ -284,8 +284,8 @@ class ReaderPresenter(
         val context = Injekt.get<Application>()
         val source = sourceManager.getOrStub(manga.source)
         val mergedReferences = if (source is MergedSource) db.getMergedMangaReferences(manga.id!!).executeAsBlocking() else emptyList()
-        mergedManga = if (source is MergedSource) db.getMergedMangas(manga.id!!).executeAsBlocking() else emptyList()
-        loader = ChapterLoader(context, downloadManager, manga, source, sourceManager, mergedReferences, mergedManga ?: emptyList())
+        mergedManga = if (source is MergedSource) db.getMergedMangas(manga.id!!).executeAsBlocking().associateBy { it.id!! } else emptyMap()
+        loader = ChapterLoader(context, downloadManager, manga, source, sourceManager, mergedReferences, mergedManga ?: emptyMap())
 
         Observable.just(manga).subscribeLatestCache(ReaderActivity::setManga)
         viewerChaptersRelay.subscribeLatestCache(ReaderActivity::setChapters)
@@ -601,11 +601,12 @@ class ReaderPresenter(
         // SY -->
         return when {
             resolveDefault && readingMode == ReadingModeType.DEFAULT && preferences.useAutoWebtoon().get() -> {
-                manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name)) ?: if (manga.readingModeType == ReadingModeType.DEFAULT.flagValue) {
-                    default
-                } else {
-                    readingMode.prefValue
-                }
+                manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
+                    ?: if (manga.readingModeType == ReadingModeType.DEFAULT.flagValue) {
+                        default
+                    } else {
+                        readingMode.prefValue
+                    }
             }
             resolveDefault && readingMode == ReadingModeType.DEFAULT -> default
             else -> manga.readingModeType
@@ -929,7 +930,7 @@ class ReaderPresenter(
         val manga = if (mergedManga.isNullOrEmpty()) {
             manga
         } else {
-            mergedManga?.find { it.id == chapter.chapter.manga_id }
+            mergedManga.orEmpty()[chapter.chapter.manga_id]
         } ?: return
         // SY <--
 

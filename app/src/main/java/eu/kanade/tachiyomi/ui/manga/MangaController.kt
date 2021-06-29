@@ -612,7 +612,7 @@ class MangaController :
     // SY -->
     fun openMergedMangaWebview() {
         val sourceManager: SourceManager = Injekt.get()
-        val mergedManga = presenter.mergedManga.filterNot { it.source == MERGED_SOURCE_ID }
+        val mergedManga = presenter.mergedManga.values.filterNot { it.source == MERGED_SOURCE_ID }
         val sources = mergedManga.map { sourceManager.getOrStub(it.source) }
         MaterialDialog(activity!!)
             .title(R.string.action_open_in_web_view)

@@ -148,7 +148,7 @@ class MangaPresenter(
 
     var meta: RaisedSearchMetadata? = null
 
-    var mergedManga = emptyList<Manga>()
+    var mergedManga = emptyMap<Long, Manga>()
         private set
 
     var dedupe: Boolean = true
@@ -161,7 +161,7 @@ class MangaPresenter(
 
         // SY -->
         if (source is MergedSource) {
-            launchIO { mergedManga = db.getMergedMangas(manga.id!!).executeAsBlocking() }
+            launchIO { mergedManga = db.getMergedMangas(manga.id!!).executeAsBlocking().associateBy { it.id!! } }
         }
         // SY <--
 
@@ -559,7 +559,7 @@ class MangaPresenter(
     fun deleteDownloads() {
         // SY -->
         if (source is MergedSource) {
-            val mergedManga = mergedManga.map { it to sourceManager.getOrStub(it.source) }
+            val mergedManga = mergedManga.map { it.value to sourceManager.getOrStub(it.value.source) }
             mergedManga.forEach { (manga, source) ->
                 downloadManager.deleteManga(manga, source)
             }
@@ -685,7 +685,7 @@ class MangaPresenter(
     private fun observeDownloads() {
         // SY -->
         val isMergedSource = source is MergedSource
-        val mergedIds = if (isMergedSource) mergedManga.mapNotNull { it.id } else emptyList()
+        val mergedIds = if (isMergedSource) mergedManga.keys else emptySet()
         // SY <--
         observeDownloadsStatusSubscription?.let { remove(it) }
         observeDownloadsStatusSubscription = downloadManager.queue.getStatusObservable()
@@ -741,7 +741,7 @@ class MangaPresenter(
         val isMergedSource = source is MergedSource
         // SY <--
         chapters
-            .filter { downloadManager.isChapterDownloaded(/* SY --> */ if (isMergedSource) it.toMergedDownloadChapter() else it, if (isMergedSource) mergedManga.firstOrNull { manga -> it.manga_id == manga.id } ?: manga else /* SY <-- */ manga) }
+            .filter { downloadManager.isChapterDownloaded(/* SY --> */ if (isMergedSource) it.toMergedDownloadChapter() else it, if (isMergedSource) mergedManga[it.manga_id] ?: manga else /* SY <-- */ manga) }
             .forEach { it.status = Download.State.DOWNLOADED }
     }
 
@@ -921,7 +921,7 @@ class MangaPresenter(
         // SY -->
         if (source is MergedSource) {
             chapters.groupBy { it.manga_id }.forEach { map ->
-                val manga = mergedManga.firstOrNull { it.id == map.key } ?: return@forEach
+                val manga = mergedManga[map.key] ?: return@forEach
                 downloadManager.downloadChapters(manga, map.value.map { it.toMergedDownloadChapter() })
             }
         } else /* SY <-- */ downloadManager.downloadChapters(manga, chapters)
@@ -1117,7 +1117,7 @@ class MangaPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             // SY -->
             .map { trackItems ->
-                if (manga.source in mangaDexSourceIds || mergedManga.any { it.source in mangaDexSourceIds }) {
+                if (manga.source in mangaDexSourceIds || mergedManga.values.any { it.source in mangaDexSourceIds }) {
                     val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
                     when {
                         mdTrack == null -> {
@@ -1137,7 +1137,7 @@ class MangaPresenter(
 
     // SY -->
     private fun createMdListTrack(): TrackItem {
-        val mdManga = mergedManga.find { it.source in mangaDexSourceIds }
+        val mdManga = mergedManga.values.find { it.source in mangaDexSourceIds }
         val track = trackManager.mdList.createInitialTracker(manga, mdManga ?: manga)
         track.id = db.insertTrack(track).executeAsBlocking().insertedId()
         return TrackItem(track, trackManager.mdList)
