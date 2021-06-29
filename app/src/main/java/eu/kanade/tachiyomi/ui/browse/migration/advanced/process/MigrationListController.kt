@@ -312,7 +312,9 @@ class MigrationListController(bundle: Bundle? = null) :
                     )
                 )
             }
-            router.popCurrentController()
+            if (adapter?.hideNotFound == false) {
+                router.popCurrentController()
+            }
         }
     }
 

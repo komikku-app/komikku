@@ -356,6 +356,8 @@ class PreferencesHelper(val context: Context) {
 
     fun skipPreMigration() = flowPrefs.getBoolean(Keys.skipPreMigration, false)
 
+    fun hideNotFoundMigration() = flowPrefs.getBoolean(Keys.hideNotFoundMigration, false)
+
     fun isHentaiEnabled() = flowPrefs.getBoolean(Keys.eh_is_hentai_enabled, true)
 
     fun enableExhentai() = flowPrefs.getBoolean(Keys.eh_enableExHentai, false)

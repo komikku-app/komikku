@@ -236,6 +236,8 @@ object PreferenceKeys {
 
     const val skipPreMigration = "skip_pre_migration"
 
+    const val hideNotFoundMigration = "hide_not_found_migration"
+
     const val eh_showSyncIntro = "eh_show_sync_intro"
 
     const val eh_readOnlySync = "eh_sync_read_only"

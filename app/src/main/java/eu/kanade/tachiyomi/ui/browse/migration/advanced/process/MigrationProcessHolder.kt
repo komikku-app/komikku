@@ -113,9 +113,13 @@ class MigrationProcessHolder(
                             }
                             .launchIn(adapter.controller.viewScope)
                     } else {
-                        binding.migrationMangaCardTo.loadingGroup.isVisible = false
-                        binding.migrationMangaCardTo.title.text = view.context.applicationContext
-                            .getString(R.string.no_alternatives_found)
+                        if (adapter.hideNotFound) {
+                            adapter.removeManga(bindingAdapterPosition)
+                        } else {
+                            binding.migrationMangaCardTo.loadingGroup.isVisible = false
+                            binding.migrationMangaCardTo.title.text = view.context.applicationContext
+                                .getString(R.string.no_alternatives_found)
+                        }
                     }
                     binding.migrationMenu.isVisible = true
                     binding.skipManga.isVisible = false

@@ -24,67 +24,72 @@
             android:id="@+id/data_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="6dp"
             android:layout_marginTop="8dp"
             android:text="@string/data_to_include_in_migration"
             android:textAppearance="@style/TextAppearance.Medium.Body2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <CheckBox
-            android:id="@+id/mig_chapters"
-            android:layout_width="wrap_content"
+        <HorizontalScrollView
+            android:id="@+id/migration_data_scrollView"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:checked="true"
-            android:text="@string/chapters"
-            app:layout_constraintStart_toStartOf="@+id/data_label"
-            app:layout_constraintTop_toBottomOf="@+id/data_label" />
-
-        <CheckBox
-            android:id="@+id/mig_categories"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:checked="true"
-            android:text="@string/categories"
-            app:layout_constraintBottom_toBottomOf="@+id/mig_chapters"
-            app:layout_constraintStart_toEndOf="@+id/mig_chapters"
-            app:layout_constraintTop_toTopOf="@+id/mig_chapters" />
-
-        <CheckBox
-            android:id="@+id/mig_tracking"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:checked="true"
-            android:text="@string/track"
-            app:layout_constraintBottom_toBottomOf="@+id/mig_categories"
-            app:layout_constraintStart_toEndOf="@+id/mig_categories"
-            app:layout_constraintTop_toTopOf="@+id/mig_categories" />
-
-        <CheckBox
-            android:id="@+id/mig_extra"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:checked="true"
-            android:text="@string/log_extra"
-            app:layout_constraintBottom_toBottomOf="@+id/mig_tracking"
+            android:scrollbars="none"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/mig_tracking"
-            app:layout_constraintTop_toTopOf="@+id/mig_tracking" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/data_label">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/mig_chapters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:checked="true"
+                    android:text="@string/chapters" />
+
+                <CheckBox
+                    android:id="@+id/mig_categories"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:checked="true"
+                    android:text="@string/categories" />
+
+                <CheckBox
+                    android:id="@+id/mig_tracking"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:checked="true"
+                    android:text="@string/track" />
+
+                <CheckBox
+                    android:id="@+id/mig_extra"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:checked="true"
+                    android:text="@string/log_extra" />
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <TextView
             android:id="@+id/options_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
             android:layout_marginTop="8dp"
             android:text="@string/action_settings"
             android:textAppearance="@style/TextAppearance.Medium.Body2"
-            app:layout_constraintStart_toStartOf="@+id/mig_chapters"
-            app:layout_constraintTop_toBottomOf="@+id/mig_chapters" />
+            app:layout_constraintStart_toStartOf="@+id/migration_data_scrollView"
+            app:layout_constraintTop_toBottomOf="@+id/migration_data_scrollView" />
 
         <RadioGroup
             android:id="@+id/sourceGroup"
@@ -154,18 +159,30 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:text="@string/skip_this_step_next_time"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/extra_search_param"
             app:layout_constraintStart_toStartOf="@+id/extra_search_param"
             app:layout_constraintTop_toBottomOf="@+id/extra_search_param_text" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/Hide_not_found_manga"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/hide_not_found_manga"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/skip_step"
+            app:layout_constraintStart_toStartOf="@+id/skip_step"
+            app:layout_constraintTop_toBottomOf="@+id/skip_step" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="0dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
+        android:minWidth="0dp"
         android:text="@string/action_migrate"
         app:icon="@drawable/ic_arrow_forward_24dp"
         app:layout_anchor="@id/constraintLayout"

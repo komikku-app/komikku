@@ -39,6 +39,7 @@ class MigrationBottomSheetDialog(activity: Activity, private val listener: Start
 
         binding.fab.setOnClickListener {
             preferences.skipPreMigration().set(binding.skipStep.isChecked)
+            preferences.hideNotFoundMigration().set(binding.HideNotFoundManga.isChecked)
             listener.startMigration(
                 if (binding.useSmartSearch.isChecked && binding.extraSearchParamText.text.isNotBlank()) {
                     binding.extraSearchParamText.toString()
@@ -72,6 +73,7 @@ class MigrationBottomSheetDialog(activity: Activity, private val listener: Start
         binding.sourceGroup.bindToPreference(preferences.useSourceWithMost())
 
         binding.skipStep.isChecked = preferences.skipPreMigration().get()
+        binding.HideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
         binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 (listener as? Controller)?.activity?.toast(

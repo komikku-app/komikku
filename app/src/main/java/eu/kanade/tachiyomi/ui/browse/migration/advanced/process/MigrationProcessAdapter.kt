@@ -23,6 +23,8 @@ class MigrationProcessAdapter(
 
     val menuItemListener: MigrationProcessInterface = controller
 
+    val hideNotFound = preferences.hideNotFoundMigration().get()
+
     override fun updateDataSet(items: List<MigrationProcessItem>?) {
         this.items = items.orEmpty()
         super.updateDataSet(items)
