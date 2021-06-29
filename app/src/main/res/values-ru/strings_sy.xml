@@ -258,10 +258,10 @@
     <string name="reader_preload_amount_summary">Количество страниц для предварительной загрузки при чтении. Более высокие значения приведут к более плавному чтению, за счет более высокого использования кэша. Рекомендуется увеличить объем выделяемого кэша при использовании больших значений</string>
     <string name="reader_cache_size">Размер кэша читалки</string>
     <string name="reader_cache_size_summary">Количество изображений, сохраняемых на устройстве во время чтения. Более высокие значения приведут к более плавному чтению за счет более высокого использования дискового пространства</string>
-    <string name="preserve_reading_position">Сохранить позицию чтения при чтении манги</string>
+    <string name="preserve_reading_position">Сохранить позицию чтения прочитанной манги</string>
     <string name="auto_webtoon_mode">Автоматический веб-комикс</string>
     <string name="auto_webtoon_mode_summary">Использовать автоматический режим для веб-комикса, которые вероятно имеют формат длинной полосы</string>
-    <string name="enable_zoom_out">Включить зум</string>
+    <string name="enable_zoom_out">Включить уменьшение масштаба</string>
     <string name="tap_scroll_page">Нажатия листают постранично</string>
     <string name="tap_scroll_page_summary">Нажатие будет прокручивать целую страницу, а не по размеру экрана, если эта опция включена</string>
     <string name="reader_bottom_buttons">Нижние Кнопки Читалки</string>
