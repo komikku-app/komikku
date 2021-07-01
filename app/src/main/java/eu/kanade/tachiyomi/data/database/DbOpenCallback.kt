@@ -24,7 +24,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = /* SY --> */ 7 /* SY <-- */
+        const val DATABASE_VERSION = /* SY --> */ 8 /* SY <-- */
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -80,6 +80,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         }
         if (oldVersion < 7) {
             db.execSQL("DROP TABLE IF EXISTS manga_related")
+        }
+        if (oldVersion < 8) {
+            db.execSQL(MangaTable.addNextUpdateCol)
         }
     }
 
