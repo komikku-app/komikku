@@ -170,8 +170,7 @@
     <string name="log_extreme_desc">network inspection mode</string>
 
     <!-- General Settings -->
-    <string name="theme_dark_amoledblue">AMOLED Blue</string>
-    <string name="theme_dark_red">Black-Red</string>
+    <string name="theme_pure_red">Pure Red</string>
     <string name="toggle_expand_search_filters">Expand all search filters by default</string>
     <string name="auto_solve_captchas">Automatically solve captcha</string>
     <string name="auto_solve_captchas_summary">Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device.</string>

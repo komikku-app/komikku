@@ -4,29 +4,20 @@
     <!--=============-->
     <!-- Dark Themes -->
     <!--=============-->
-    <style name="Theme.Tachiyomi.Amoled.Red">
-        <!--<item name="actionBarTheme">@style/Theme.Toolbar.Custom.Amoled.Red</item>-->
-        <!--<item name="colorToolbar">@color/md_black_1000</item>
-        <item name="colorOnToolbar">@color/red</item>-->
-        <item name="colorPrimary">@color/dark_red</item>
-        <item name="colorPrimaryVariant">@color/red</item>
+    <style name="Theme.Tachiyomi.PureRed">
+        <item name="colorPrimary">@color/red</item>
         <item name="colorSecondary">@color/dark_red</item>
         <item name="colorTertiary">@color/md_black_1000</item>
+        <item name="colorControlHighlight">@color/dark_red_6</item>
+
+        <item name="colorOnPrimary">@color/md_black_1000</item>
         <item name="colorOnTertiary">@color/red</item>
         <item name="colorOnSurface">@color/red</item>
-        <item name="colorAccent">@color/dark_red</item>
-        <item name="colorOnPrimary">@color/md_black_1000</item>
-        <!--<item name="colorAccentOnPrimary">@color/red</item>
-        <item name="rippleSecondaryColor">@color/dark_red_6</item>-->
+
         <item name="android:textColor">@color/red</item>
         <item name="android:textColorPrimary">@color/red</item>
         <item name="android:textColorSecondary">@color/dark_red</item>
         <item name="android:textColorHint">@color/dark_red</item>
-        <item name="md_color_title">@color/red</item>
-        <item name="colorControlHighlight">@color/dark_red_6</item>
-
-        <!-- Themes -->
-        <!--<item name="materialAlertDialogTheme">@style/Theme.AlertDialog.Amoled.Red</item>-->
     </style>
 
 </resources>

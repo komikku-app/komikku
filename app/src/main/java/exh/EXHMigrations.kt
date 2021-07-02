@@ -325,12 +325,6 @@ object EXHMigrations {
                         putString(PreferenceKeys.librarySortingMode, newSortingMode.name)
                         putString(PreferenceKeys.librarySortingDirection, newSortingDirection.name)
                     }
-
-                    if (prefs.getString(PreferenceKeys.themeDark, null) == "amoledblue") {
-                        prefs.edit {
-                            putString(PreferenceKeys.themeDark, "amoled")
-                        }
-                    }
                 }
                 if (oldVersion under 21) {
                     // Setup EH updater task after migrating to WorkManager

@@ -170,8 +170,6 @@
     <string name="log_extreme_desc">modo de inspeção de rede</string>
 
     <!-- General Settings -->
-    <string name="theme_dark_amoledblue">Azul AMOLED</string>
-    <string name="theme_dark_red">Preto-Sangue</string>
     <string name="toggle_expand_search_filters">Expandir todos os filtros de pesquisa por padrão</string>
     <string name="auto_solve_captchas">Resolver captcha automaticamente</string>
     <string name="auto_solve_captchas_summary">Use o Resolve-ReCAPTCHA automático ALTAMENTE EXPERIMENTAL. Ficará cinza se não suportado por seu celular.</string>
