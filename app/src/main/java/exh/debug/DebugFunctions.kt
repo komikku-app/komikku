@@ -1,6 +1,7 @@
 package exh.debug
 
 import android.app.Application
+import androidx.work.WorkManager
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
@@ -30,8 +31,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.lang.RuntimeException
+import java.util.UUID
 
 @Suppress("unused")
 object DebugFunctions {
@@ -201,14 +204,31 @@ object DebugFunctions {
     }
 
     fun listScheduledJobs() = app.jobScheduler.allPendingJobs.joinToString(",\n") { j ->
-        """
-        {
-            info: ${j.id},
-            isPeriod: ${j.isPeriodic},
-            isPersisted: ${j.isPersisted},
-            intervalMillis: ${j.intervalMillis},
+        val info = j.extras.getString("EXTRA_WORK_SPEC_ID")?.let {
+            WorkManager.getInstance(app).getWorkInfoById(UUID.fromString(it)).get()
         }
-        """.trimIndent()
+
+        if (info != null) {
+            """
+            {
+                id: ${info.id},
+                isPeriodic: ${j.extras["EXTRA_IS_PERIODIC"]},
+                state: ${info.state.name},
+                tags: [
+                    ${info.tags.joinToString(separator = ",\n                    ")}
+                ],
+            }
+            """.trimIndent()
+        } else {
+            """
+            {
+                info: ${j.id},
+                isPeriodic: ${j.isPeriodic},
+                isPersisted: ${j.isPersisted},
+                intervalMillis: ${j.intervalMillis},
+            }
+            """.trimIndent()
+        }
     }
 
     fun cancelAllScheduledJobs() = app.jobScheduler.cancelAll()
