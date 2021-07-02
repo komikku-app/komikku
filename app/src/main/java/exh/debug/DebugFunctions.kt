@@ -192,8 +192,8 @@ object DebugFunctions {
 
     fun convertAllExhentaiGalleriesToEhentai() = convertSources(EXH_SOURCE_ID, EH_SOURCE_ID)
 
-    fun testLaunchEhentaiBackgroundUpdater(): String {
-        return EHentaiUpdateWorker.launchBackgroundTest(app)
+    fun testLaunchEhentaiBackgroundUpdater() {
+        EHentaiUpdateWorker.launchBackgroundTest(app)
     }
 
     fun rescheduleEhentaiBackgroundUpdater() {

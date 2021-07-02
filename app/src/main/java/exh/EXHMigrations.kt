@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.ui.library.LibrarySort
 import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
@@ -330,6 +331,10 @@ object EXHMigrations {
                             putString(PreferenceKeys.themeDark, "amoled")
                         }
                     }
+                }
+                if (oldVersion under 21) {
+                    // Setup EH updater task after migrating to WorkManager
+                    EHentaiUpdateWorker.scheduleBackground(context)
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
