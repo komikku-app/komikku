@@ -329,6 +329,10 @@ object EXHMigrations {
                 if (oldVersion under 21) {
                     // Setup EH updater task after migrating to WorkManager
                     EHentaiUpdateWorker.scheduleBackground(context)
+
+                    if (preferences.lang().get() in listOf("en-US", "en-GB")) {
+                        preferences.lang().set("en")
+                    }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)
