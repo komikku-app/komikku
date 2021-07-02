@@ -17,7 +17,7 @@ body:
           required: true
         - label: I have tried the [troubleshooting guide](https://tachiyomi.org/help/guides/troubleshooting/).
           required: true
-        - label: I have updated the app to version **[1.7.0](https://github.com/jobobby04/tachiyomisy/releases/tag/v1.7.0)**.
+        - label: I have updated the app to version **[1.7.0](https://github.com/jobobby04/tachiyomisy/releases/tag/1.7.0)**.
           required: true
         - label: I have updated all installed extensions.
           required: true
