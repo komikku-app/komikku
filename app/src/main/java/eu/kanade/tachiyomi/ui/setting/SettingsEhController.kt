@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.ui.setting
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.Handler
 import android.text.InputType
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.WhichButton
@@ -628,7 +628,7 @@ class SettingsEhController : SettingsController() {
 
                 onChange {
                     // Post to event looper to allow the preference to be updated.
-                    Handler().post { EHentaiUpdateWorker.scheduleBackground(context) }
+                    ContextCompat.getMainExecutor(context).execute { EHentaiUpdateWorker.scheduleBackground(context) }
                     true
                 }
 
