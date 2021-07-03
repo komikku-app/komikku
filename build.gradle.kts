@@ -38,10 +38,6 @@ buildscript {
         // Firebase Crashlytics
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.7.1")
     }
-    repositories {
-        google()
-        jcenter()
-    }
 }
 
 tasks.register("clean", Delete::class) {

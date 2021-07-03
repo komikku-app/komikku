@@ -13,8 +13,8 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        jcenter()
     }
 }
 
+rootProject.name = "TachiyomiSY"
 include(":app")
