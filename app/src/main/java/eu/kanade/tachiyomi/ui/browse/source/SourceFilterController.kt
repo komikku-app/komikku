@@ -186,7 +186,7 @@ class SourceFilterController : SettingsController() {
         }
 
         searchView.queryTextChanges()
-            .filter { router.backstack.lastOrNull()?.controller() == this }
+            .filter { router.backstack.lastOrNull()?.controller == this }
             .onEach {
                 this.query = it.toString()
                 drawSources()

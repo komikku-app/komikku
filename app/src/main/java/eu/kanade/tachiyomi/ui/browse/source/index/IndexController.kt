@@ -124,7 +124,7 @@ open class IndexController :
     }
 
     override fun onSearchViewQueryTextChange(newText: String?) {
-        if (router.backstack.lastOrNull()?.controller() == this) {
+        if (router.backstack.lastOrNull()?.controller == this) {
             presenter.query = newText ?: ""
         }
     }

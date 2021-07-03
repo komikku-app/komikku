@@ -272,7 +272,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     override fun updateCount() {
         launchUI {
-            if (router.backstack.lastOrNull()?.controller() == this@MigrationListController) {
+            if (router.backstack.lastOrNull()?.controller == this@MigrationListController) {
                 setTitle()
             }
         }
@@ -408,16 +408,16 @@ class MigrationListController(bundle: Bundle? = null) :
     private fun navigateOut() {
         if (migratingManga?.size == 1) {
             launchUI {
-                val hasDetails = router.backstack.any { it.controller() is MangaController }
+                val hasDetails = router.backstack.any { it.controller is MangaController }
                 if (hasDetails) {
                     val manga = migratingManga?.firstOrNull()?.searchResult?.get()?.let {
                         db.getManga(it).executeOnIO()
                     }
                     if (manga != null) {
                         val newStack = router.backstack.filter {
-                            it.controller() !is MangaController &&
-                                it.controller() !is MigrationListController &&
-                                it.controller() !is PreMigrationController
+                            it.controller !is MangaController &&
+                                it.controller !is MigrationListController &&
+                                it.controller !is PreMigrationController
                         } + MangaController(manga).withFadeTransaction()
                         router.setBackstack(newStack, FadeChangeHandler())
                         return@launchUI
