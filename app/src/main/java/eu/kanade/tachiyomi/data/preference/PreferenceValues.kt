@@ -31,6 +31,7 @@ object PreferenceValues {
         PURE_RED(R.string.theme_pure_red),
 
         // Deprecated
+        DARK_BLUE(null),
         HOT_PINK(null),
     }
 
