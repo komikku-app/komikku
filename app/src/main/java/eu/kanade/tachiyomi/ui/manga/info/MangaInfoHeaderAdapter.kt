@@ -289,6 +289,11 @@ class MangaInfoHeaderAdapter(
             listOf(binding.mangaCover, binding.backdrop).forEach {
                 it.loadAny(manga)
             }
+            if (initialLoad && isTablet) {
+                initialLoad = false
+                // wrap_content and autoFixTextSize can cause unwanted behaviour this tries to solve it
+                binding.mangaFullTitle.requestLayout()
+            }
         }
 
         /**
