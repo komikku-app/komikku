@@ -479,7 +479,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             binding.readerSeekbar,
             binding.rightChapter,
             // SY -->
-            binding.pageSeekbarVert,
+            binding.readerSeekbarVert,
             binding.aboveChapter,
             binding.belowChapter
             // SY <--
@@ -492,7 +492,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             window.navigationBarColor = toolbarColor
         }
-        (binding.toolbar.background as MaterialShapeDrawable).fillColor = ColorStateList.valueOf(toolbarColor)
+        // SY -->
+        binding.toolbar.background.alpha = 0
+        (binding.header.background as MaterialShapeDrawable).fillColor = ColorStateList.valueOf(toolbarColor)
+        // SY <--
 
         // Set initial visibility
         setMenuVisibility(menuVisible)
