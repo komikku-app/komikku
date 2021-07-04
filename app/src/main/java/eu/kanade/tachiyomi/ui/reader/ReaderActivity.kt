@@ -462,12 +462,43 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
                 .launchIn(lifecycleScope)
         }
-        // SY <--
 
-        binding.actionSettings.setOnClickListener {
-            ReaderSettingsSheet(this).show()
+        initBottomShortcuts()
+
+        // SY <--
+        updateBottomButtons()
+
+        initDropdownMenu()
+        // <-- EH
+
+        val alpha = if (isNightMode()) 230 else 242 // 90% dark 95% light
+        val toolbarColor = ColorUtils.setAlphaComponent(getThemeColor(R.attr.colorToolbar), alpha)
+        listOf(
+            binding.toolbarBottom,
+            binding.leftChapter,
+            binding.readerSeekbar,
+            binding.rightChapter
+        ).forEach {
+            it.backgroundTintMode = PorterDuff.Mode.DST_IN
+            it.backgroundTintList = ColorStateList.valueOf(toolbarColor)
         }
 
+        window.statusBarColor = toolbarColor
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            window.navigationBarColor = toolbarColor
+        }
+        (binding.toolbar.background as MaterialShapeDrawable).fillColor = ColorStateList.valueOf(toolbarColor)
+
+        // Set initial visibility
+        setMenuVisibility(menuVisible)
+
+        // --> EH
+        setEhUtilsVisibility(ehUtilsVisible)
+        // <-- EH
+    }
+
+    // EXH -->
+    fun initBottomShortcuts() {
         // Reading mode
         with(binding.actionReadingMode) {
             setTooltip(R.string.viewer)
@@ -594,7 +625,6 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
             }
         }
-
         with(binding.shiftPageButton) {
             setTooltip(R.string.shift_double_pages)
 
@@ -602,7 +632,9 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 shiftDoublePages()
             }
         }
+    }
 
+    fun initDropdownMenu() {
         binding.expandEhButton.clicks()
             .onEach {
                 ehUtilsVisible = !ehUtilsVisible
@@ -759,37 +791,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
             }
             .launchIn(lifecycleScope)
-
-        updateBottomButtons()
-        // <-- EH
-
-        val alpha = if (isNightMode()) 230 else 242 // 90% dark 95% light
-        val toolbarColor = ColorUtils.setAlphaComponent(getThemeColor(R.attr.colorToolbar), alpha)
-        listOf(
-            binding.toolbarBottom,
-            binding.leftChapter,
-            binding.readerSeekbar,
-            binding.rightChapter
-        ).forEach {
-            it.backgroundTintMode = PorterDuff.Mode.DST_IN
-            it.backgroundTintList = ColorStateList.valueOf(toolbarColor)
-        }
-
-        window.statusBarColor = toolbarColor
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            window.navigationBarColor = toolbarColor
-        }
-        (binding.toolbar.background as MaterialShapeDrawable).fillColor = ColorStateList.valueOf(toolbarColor)
-
-        // Set initial visibility
-        setMenuVisibility(menuVisible)
-
-        // --> EH
-        setEhUtilsVisibility(ehUtilsVisible)
-        // <-- EH
     }
 
-    // EXH -->
     private fun exhCurrentpage(): ReaderPage? {
         val currentPage = (((viewer as? PagerViewer)?.currentPage ?: (viewer as? WebtoonViewer)?.currentPage) as? ReaderPage)?.index
         return currentPage?.let { presenter.viewerChaptersRelay.value.currChapter.pages?.getOrNull(it) }
