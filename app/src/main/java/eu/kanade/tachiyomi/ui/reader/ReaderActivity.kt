@@ -395,7 +395,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             onBackPressed()
         }
 
-        binding.toolbar.applyInsetter {
+        binding.header.applyInsetter {
             type(navigationBars = true, statusBars = true) {
                 margin(top = true, horizontal = true)
             }
