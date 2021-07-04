@@ -21,7 +21,7 @@
         android:icon="@drawable/ic_done_24dp"
         android:title="@string/action_mark_as_read"
         app:iconTint="?attr/colorOnToolbar"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_mark_as_unread"
