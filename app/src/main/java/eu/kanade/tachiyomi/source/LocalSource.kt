@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.source
 
 import android.content.Context
 import com.github.junrar.Archive
-import com.google.gson.JsonParser
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Filter
@@ -17,8 +16,11 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.EpubFile
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okio.buffer
+import okio.source
 import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -169,29 +171,13 @@ class LocalSource(private val context: Context) : CatalogueSource {
 
     @Serializable
     data class MangaJson(
-        val title: String,
-        val author: String?,
-        val artist: String?,
-        val description: String?,
-        val genre: List<String>?,
-        val status: Int
-    ) {
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as MangaJson
-
-            if (title != other.title) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return title.hashCode()
-        }
-    }
+        val title: String? = null,
+        val author: String? = null,
+        val artist: String? = null,
+        val description: String? = null,
+        val genre: List<String>? = null,
+        val status: Int? = null
+    )
     // SY <--
 
     override fun fetchLatestUpdates(page: Int) = fetchSearchManga(page, "", LATEST_FILTERS)
@@ -203,16 +189,19 @@ class LocalSource(private val context: Context) : CatalogueSource {
             .flatten()
             .firstOrNull { it.extension == "json" }
             ?.apply {
-                val reader = this.inputStream().bufferedReader()
-                val json = JsonParser.parseReader(reader).asJsonObject
+                val json = json.decodeFromString<MangaJson>(
+                    this.inputStream()
+                        .source()
+                        .buffer()
+                        .use { it.readUtf8() }
+                )
 
-                manga.title = json["title"]?.asString ?: manga.title
-                manga.author = json["author"]?.asString ?: manga.author
-                manga.artist = json["artist"]?.asString ?: manga.artist
-                manga.description = json["description"]?.asString ?: manga.description
-                manga.genre = json["genre"]?.asJsonArray?.joinToString(", ") { it.asString }
-                    ?: manga.genre
-                manga.status = json["status"]?.asInt ?: manga.status
+                manga.title = json.title ?: manga.title
+                manga.author = json.author ?: manga.author
+                manga.artist = json.artist ?: manga.artist
+                manga.description = json.description ?: manga.description
+                manga.genre = json.genre?.joinToString(", ") ?: manga.genre
+                manga.status = json.status ?: manga.status
             }
 
         return Observable.just(manga)

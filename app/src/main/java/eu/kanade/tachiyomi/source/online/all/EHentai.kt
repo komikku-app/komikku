@@ -126,6 +126,7 @@ class EHentai(
             val linkElement = body.selectFirst(".gl3c > a, .gl2e > div > a")
             val infoElement = body.selectFirst(".gl3e")
 
+            // why is column2 null
             val favElement = column2.children().find { it.attr("style").startsWith("border-color") }
             val infoElements = infoElement?.select("div")
             val parsedTags = mutableListOf<RaisedTag>()

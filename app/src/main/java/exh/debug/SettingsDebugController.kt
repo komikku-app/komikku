@@ -3,12 +3,9 @@ package exh.debug
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.util.Log
-import android.widget.HorizontalScrollView
-import android.widget.TextView
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.customview.customView
 import eu.kanade.tachiyomi.ui.setting.SettingsController
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.onClick
@@ -36,22 +33,26 @@ class SettingsDebugController : SettingsController() {
                     isPersistent = false
 
                     onClick {
-                        val view = TextView(context)
-                        view.setHorizontallyScrolling(true)
-                        view.setTextIsSelectable(true)
-
-                        val hView = HorizontalScrollView(context)
-                        hView.addView(view)
-
                         try {
                             val result = it.call(DebugFunctions)
-                            view.text = "Function returned result:\n\n$result"
+                            val text = "Function returned result:\n\n$result"
                             MaterialDialog(context)
-                                .customView(view = hView, scrollable = true)
+                                .title(text = title.toString())
+                                .message(text = text) {
+                                    messageTextView.apply {
+                                        setHorizontallyScrolling(true)
+                                        setTextIsSelectable(true)
+                                    }
+                                }
                         } catch (t: Throwable) {
-                            view.text = "Function threw exception:\n\n${Log.getStackTraceString(t)}"
+                            val text = "Function threw exception:\n\n${Log.getStackTraceString(t)}"
                             MaterialDialog(context)
-                                .customView(view = hView, scrollable = true)
+                                .message(text = text) {
+                                    messageTextView.apply {
+                                        setHorizontallyScrolling(true)
+                                        setTextIsSelectable(true)
+                                    }
+                                }
                         }.show()
                     }
                 }
