@@ -34,7 +34,7 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
                     val item = adapter?.getItem(position)
                     if (item != null && item.id != presenter.getCurrentChapter()?.chapter?.id) {
                         dismiss()
-                        presenter.loadNewChapterFromSheet(item)
+                        presenter.loadNewChapterFromDialog(item)
                     }
                     true
                 }

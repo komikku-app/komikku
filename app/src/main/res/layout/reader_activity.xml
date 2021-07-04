@@ -175,7 +175,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toTopOf="@id/below_guideline"
+            app:layout_constraintBottom_toTopOf="@id/reader_menu_bottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/above_guideline"
@@ -276,14 +276,6 @@
             </LinearLayout>
 
         </RelativeLayout>
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/below_guideline"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.9"
-            app:layout_constraintBottom_toTopOf="@id/reader_menu_bottom"/>
 
         <LinearLayout
             android:id="@+id/reader_menu_bottom"

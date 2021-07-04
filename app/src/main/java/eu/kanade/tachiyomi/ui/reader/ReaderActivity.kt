@@ -477,7 +477,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             binding.toolbarBottom,
             binding.leftChapter,
             binding.readerSeekbar,
-            binding.rightChapter
+            binding.rightChapter,
+            // SY -->
+            binding.pageSeekbarVert,
+            binding.aboveChapter,
+            binding.belowChapter
+            // SY <--
         ).forEach {
             it.backgroundTintMode = PorterDuff.Mode.DST_IN
             it.backgroundTintList = ColorStateList.valueOf(toolbarColor)
@@ -1072,6 +1077,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             binding.leftChapter.setTooltip(R.string.action_previous_chapter)
             binding.rightChapter.setTooltip(R.string.action_next_chapter)
         }
+        binding.aboveChapter.setTooltip(R.string.action_previous_chapter)
+        binding.belowChapter.setTooltip(R.string.action_next_chapter)
 
         binding.pleaseWait.isVisible = true
         binding.pleaseWait.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in_long))
@@ -1122,12 +1129,20 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         if (leftChapterObject == null && rightChapterObject == null) {
             binding.leftChapter.isVisible = false
             binding.rightChapter.isVisible = false
+            binding.aboveChapter.isVisible = false
+            binding.belowChapter.isVisible = false
         } else {
             binding.leftChapter.isEnabled = leftChapterObject != null
             binding.leftChapter.imageAlpha = if (leftChapterObject != null) ENABLED_BUTTON_IMAGE_ALPHA else DISABLED_BUTTON_IMAGE_ALPHA
 
             binding.rightChapter.isEnabled = rightChapterObject != null
             binding.rightChapter.imageAlpha = if (rightChapterObject != null) ENABLED_BUTTON_IMAGE_ALPHA else DISABLED_BUTTON_IMAGE_ALPHA
+
+            binding.aboveChapter.isEnabled = leftChapterObject != null
+            binding.aboveChapter.imageAlpha = if (leftChapterObject != null) ENABLED_BUTTON_IMAGE_ALPHA else DISABLED_BUTTON_IMAGE_ALPHA
+
+            binding.belowChapter.isEnabled = rightChapterObject != null
+            binding.belowChapter.imageAlpha = if (rightChapterObject != null) ENABLED_BUTTON_IMAGE_ALPHA else DISABLED_BUTTON_IMAGE_ALPHA
         }
 
         // Invalidate menu to show proper chapter bookmark state

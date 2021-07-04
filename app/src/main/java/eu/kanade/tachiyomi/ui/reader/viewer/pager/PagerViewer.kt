@@ -66,7 +66,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             field = value
             if (value) {
                 awaitingIdleViewerChapters?.let {
-                    setChaptersInternal(it)
+                    setChaptersDoubleShift(it)
                     awaitingIdleViewerChapters = null
                 }
             }
@@ -239,7 +239,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      */
     override fun setChapters(chapters: ViewerChapters) {
         if (isIdle) {
-            setChaptersInternal(chapters)
+            setChaptersDoubleShift(chapters)
         } else {
             awaitingIdleViewerChapters = chapters
         }

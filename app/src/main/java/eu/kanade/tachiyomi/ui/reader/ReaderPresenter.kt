@@ -380,7 +380,7 @@ class ReaderPresenter(
             .also(::add)
     }
 
-    fun loadNewChapterFromSheet(chapter: Chapter) {
+    fun loadNewChapterFromDialog(chapter: Chapter) {
         val newChapter = chapterList.firstOrNull { it.chapter.id == chapter.id } ?: return
         loadAdjacent(newChapter)
     }
