@@ -1,45 +1,24 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.data.database.models.Track
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.data.track.mdlist.MdList
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.await
-import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.md.handlers.serializers.MangaListResponse
-import exh.md.handlers.serializers.MangaResponse
-import exh.md.handlers.serializers.MangaStatusListResponse
-import exh.md.handlers.serializers.MangaStatusResponse
-import exh.md.handlers.serializers.ResultResponse
-import exh.md.handlers.serializers.UpdateReadingStatus
+import exh.md.dto.MangaDto
+import exh.md.dto.ReadingStatusDto
+import exh.md.service.MangaDexAuthService
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.md.utils.mdListCall
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.util.under
-import kotlinx.serialization.encodeToString
-import okhttp3.CacheControl
-import okhttp3.Headers
-import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
-import java.util.Locale
+import kotlinx.coroutines.async
 
 class FollowsHandler(
-    private val client: OkHttpClient,
-    private val headers: Headers,
-    private val preferences: PreferencesHelper,
     private val lang: String,
-    private val mdList: MdList
+    private val service: MangaDexAuthService
 ) {
 
     /**
@@ -47,21 +26,15 @@ class FollowsHandler(
      */
     suspend fun fetchFollows(page: Int): MetadataMangasPage {
         return withIOContext {
-            val response = client.newCall(followsListRequest(MdUtil.mangaLimit * page - 1)).await()
-            if (response.code == 204) {
+            val follows = service.userFollowList(MdUtil.mangaLimit * page)
+
+            if (follows.results.isEmpty()) {
                 return@withIOContext MetadataMangasPage(emptyList(), false, emptyList())
             }
 
-            val mangaListResponse = response.parseAs<MangaListResponse>(MdUtil.jsonParser)
-
-            if (mangaListResponse.results.isEmpty()) {
-                return@withIOContext MetadataMangasPage(emptyList(), false, emptyList())
-            }
-
-            val hasMoreResults = mangaListResponse.limit + mangaListResponse.offset under mangaListResponse.total
-            val statusListResponse = client.newCall(mangaStatusListRequest()).await()
-                .parseAs<MangaStatusListResponse>()
-            val results = followsParseMangaPage(mangaListResponse.results, statusListResponse.statuses)
+            val hasMoreResults = follows.limit + follows.offset under follows.total
+            val statusListResponse = service.readingStatusAllManga()
+            val results = followsParseMangaPage(follows.results, statusListResponse.statuses)
 
             MetadataMangasPage(results.map { it.first }, hasMoreResults, results.map { it.second })
         }
@@ -71,51 +44,21 @@ class FollowsHandler(
      * Parse follows api to manga page
      * used when multiple follows
      */
-    private suspend fun followsParseMangaPage(response: List<MangaResponse>, statuses: Map<String, String?>): List<Pair<SManga, MangaDexSearchMetadata>> {
+    private fun followsParseMangaPage(
+        response: List<MangaDto>,
+        statuses: Map<String, String?>
+    ): List<Pair<SManga, MangaDexSearchMetadata>> {
         val comparator = compareBy<Pair<SManga, MangaDexSearchMetadata>> { it.second.followStatus }
             .thenBy { it.first.title }
-
-        val coverMap = MdUtil.getCoversFromMangaList(response, client)
 
         return response.map {
             MdUtil.createMangaEntry(
                 it,
-                lang,
-                coverMap[it.data.id]
+                lang
             ).toSManga() to MangaDexSearchMetadata().apply {
                 followStatus = FollowStatus.fromDex(statuses[it.data.id]).int
             }
         }.sortedWith(comparator)
-    }
-
-    /**
-     * fetch follow status used when fetching status for 1 manga
-     */
-    private fun followStatusParse(response: Response, sResponse: Response): Track {
-        val mangaResponse = response.parseAs<MangaResponse>(MdUtil.jsonParser)
-        val statusResponse = sResponse.parseAs<MangaStatusResponse>()
-        val track = Track.create(TrackManager.MDLIST)
-        track.status = FollowStatus.fromDex(statusResponse.status).int
-        track.tracking_url = MdUtil.baseUrl + "/manga/" + mangaResponse.data.id
-        track.title = mangaResponse.data.attributes.title[lang] ?: mangaResponse.data.attributes.title["en"]!!
-
-        /* if (follow.chapter.isNotBlank()) {
-                track.last_chapter_read = follow.chapter.toFloat().floor()
-        }*/
-        return track
-    }
-
-    /**
-     * build Request for follows page
-     */
-    private fun followsListRequest(offset: Int): Request {
-        val tempUrl = MdUtil.userFollows.toHttpUrl().newBuilder()
-
-        tempUrl.apply {
-            addQueryParameter("limit", MdUtil.mangaLimit.toString())
-            addQueryParameter("offset", offset.toString())
-        }
-        return GET(tempUrl.build().toString(), MdUtil.getAuthHeaders(headers, preferences, mdList), CacheControl.FORCE_NETWORK)
     }
 
     /**
@@ -125,21 +68,17 @@ class FollowsHandler(
         return withIOContext {
             val status = when (followStatus == FollowStatus.UNFOLLOWED) {
                 true -> null
-                false -> followStatus.name.lowercase(Locale.US)
+                false -> followStatus.toDex()
+            }
+            val readingStatusDto = ReadingStatusDto(status)
+
+            if (followStatus == FollowStatus.UNFOLLOWED) {
+                service.unfollowManga(mangaId)
+            } else {
+                service.followManga(mangaId)
             }
 
-            val jsonString = MdUtil.jsonParser.encodeToString(UpdateReadingStatus(status))
-
-            val postResult = client.newCall(
-                POST(
-                    MdUtil.updateReadingStatusUrl(mangaId),
-                    MdUtil.getAuthHeaders(headers, preferences, mdList),
-                    jsonString.toRequestBody("application/json".toMediaType())
-                )
-            ).await()
-
-            val body = postResult.parseAs<ResultResponse>(MdUtil.jsonParser)
-            body.result == "ok"
+            service.updateReadingStatusForManga(mangaId, readingStatusDto).result == "ok"
         }
     }
 
@@ -203,43 +142,26 @@ class FollowsHandler(
      */
     suspend fun fetchAllFollows(): List<Pair<SManga, MangaDexSearchMetadata>> {
         return withIOContext {
-            val results = client.mdListCall<MangaResponse> {
-                followsListRequest(it)
+            val results = async {
+                mdListCall {
+                    service.userFollowList(it)
+                }
             }
 
-            val statuses = client.newCall(mangaStatusListRequest()).await()
-                .parseAs<MangaStatusListResponse>().statuses
+            val readingStatusResponse = async { service.readingStatusAllManga().statuses }
 
-            followsParseMangaPage(results, statuses)
+            followsParseMangaPage(results.await(), readingStatusResponse.await())
         }
     }
 
     suspend fun fetchTrackingInfo(url: String): Track {
         return withIOContext {
             val mangaId = MdUtil.getMangaId(url)
-            val request = GET(
-                MdUtil.mangaUrl + "/" + mangaId,
-                MdUtil.getAuthHeaders(headers, preferences, mdList),
-                CacheControl.FORCE_NETWORK
-            )
-            val statusRequest = GET(
-                MdUtil.mangaUrl + "/" + mangaId + "/status",
-                MdUtil.getAuthHeaders(headers, preferences, mdList),
-                CacheControl.FORCE_NETWORK
-            )
-            val response = client.newCall(request).await()
-            val statusResponse = client.newCall(statusRequest).await()
-            followStatusParse(response, statusResponse)
+            val followStatus = FollowStatus.fromDex(service.readingStatusForManga(mangaId).status)
+            Track.create(TrackManager.MDLIST).apply {
+                status = followStatus.int
+                tracking_url = "${MdUtil.baseUrl}/title/$mangaId"
+            }
         }
-    }
-
-    private fun mangaStatusListRequest(status: FollowStatus? = null): Request {
-        val mangaStatusUrl = MdUtil.mangaStatus.toHttpUrl().newBuilder()
-
-        if (status != null) {
-            mangaStatusUrl.addQueryParameter("status", status.name.lowercase(Locale.US))
-        }
-
-        return GET(mangaStatusUrl.build().toString(), MdUtil.getAuthHeaders(headers, preferences, mdList), CacheControl.FORCE_NETWORK)
     }
 }

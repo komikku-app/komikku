@@ -1,4 +1,4 @@
-package exh.md.handlers.serializers
+package exh.md.dto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer

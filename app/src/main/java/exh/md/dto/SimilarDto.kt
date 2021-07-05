@@ -1,20 +1,20 @@
-package exh.md.handlers.serializers
+package exh.md.dto
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SimilarMangaResponse(
+data class SimilarMangaDto(
     val id: String,
     val title: Map<String, String>,
     val contentRating: String,
-    val matches: List<Matches>,
-    val updatedAt: String
+    val matches: List<SimilarMangaMatchListDto>,
+    val updatedAt: String,
 )
 
 @Serializable
-data class Matches(
+data class SimilarMangaMatchListDto(
     val id: String,
     val title: Map<String, String>,
     val contentRating: String,
-    val score: Double
+    val score: Double,
 )

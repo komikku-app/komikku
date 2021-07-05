@@ -21,8 +21,9 @@ import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.MangaDexFabHeaderAdapter
-import exh.md.handlers.ApiChapterParser
+import exh.md.dto.MangaDto
 import exh.md.handlers.ApiMangaParser
 import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
@@ -32,13 +33,14 @@ import exh.md.handlers.SimilarHandler
 import exh.md.network.MangaDexLoginHelper
 import exh.md.network.NoSessionException
 import exh.md.network.TokenAuthenticator
+import exh.md.service.MangaDexAuthService
+import exh.md.service.MangaDexService
+import exh.md.service.SimilarService
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdLang
-import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
-import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import rx.Observable
@@ -51,7 +53,7 @@ import kotlin.reflect.KClass
 @Suppress("OverridingDeprecatedMember")
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
-    MetadataSource<MangaDexSearchMetadata, Response>,
+    MetadataSource<MangaDexSearchMetadata, MangaDto>,
     // UrlImportableSource,
     FollowsSource,
     LoginSource,
@@ -73,7 +75,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         context.getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val loginHelper = MangaDexLoginHelper(networkHttpClient, preferences, mdList)
+    val mangadexAuthServiceLazy = lazy { MangaDexAuthService(baseHttpClient, headers, preferences, mdList) }
+
+    private val loginHelper = MangaDexLoginHelper(mangadexAuthServiceLazy, preferences, mdList)
 
     override val baseHttpClient: OkHttpClient = super.client.newBuilder()
         .authenticator(
@@ -84,26 +88,30 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private fun dataSaver() = sourcePreferences.getBoolean(getDataSaverPreferenceKey(mdLang.lang), false)
     private fun usePort443Only() = sourcePreferences.getBoolean(getStandardHttpsPreferenceKey(mdLang.lang), false)
 
-    private val apiMangaParser by lazy {
-        ApiMangaParser(baseHttpClient, mdLang.lang)
+    private val mangadexService by lazy {
+        MangaDexService(client)
     }
-    private val apiChapterParser by lazy {
-        ApiChapterParser()
+    private val mangadexAuthService by mangadexAuthServiceLazy
+    private val similarService by lazy {
+        SimilarService(client)
+    }
+    private val apiMangaParser by lazy {
+        ApiMangaParser(mdLang.lang)
     }
     private val followsHandler by lazy {
-        FollowsHandler(baseHttpClient, headers, preferences, mdLang.lang, mdList)
+        FollowsHandler(mdLang.lang, mangadexAuthService)
     }
     private val mangaHandler by lazy {
-        MangaHandler(baseHttpClient, headers, mdLang.lang, apiMangaParser, followsHandler)
+        MangaHandler(mdLang.lang, mangadexService, apiMangaParser, followsHandler)
     }
     private val similarHandler by lazy {
-        SimilarHandler(baseHttpClient, mdLang.lang)
+        SimilarHandler(mdLang.lang, mangadexService, similarService)
     }
     private val mangaPlusHandler by lazy {
         MangaPlusHandler(network.client)
     }
     private val pageHandler by lazy {
-        PageHandler(network.client, headers, apiChapterParser, mangaPlusHandler, preferences, mdList)
+        PageHandler(headers, mangadexService, mangaPlusHandler, preferences, mdList)
     }
 
     /*override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
@@ -152,7 +160,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return pageHandler.fetchPageList(chapter, isLogged(), usePort443Only(), dataSaver())
+        return runAsObservable({ pageHandler.fetchPageList(chapter, isLogged(), usePort443Only(), dataSaver()) })
     }
 
     override fun fetchImage(page: Page): Observable<Response> {
@@ -168,7 +176,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return MangaDexDescriptionAdapter(controller)
     }
 
-    override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Response) {
+    override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: MangaDto) {
         apiMangaParser.parseIntoMetadata(metadata, input)
     }
 
@@ -198,8 +206,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         twoFactorCode: String?
     ): Boolean {
         val result = loginHelper.login(username, password)
-        return if (result is MangaDexLoginHelper.LoginResult.Success) {
-            MdUtil.updateLoginToken(result.token, preferences, mdList)
+        return if (result) {
             mdList.saveCredentials(username, password)
             true
         } else false
@@ -207,7 +214,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override suspend fun logout(): Boolean {
         val result = try {
-            loginHelper.logout(MdUtil.getAuthHeaders(Headers.Builder().build(), preferences, mdList))
+            loginHelper.logout()
         } catch (e: NoSessionException) {
             true
         } catch (e: Exception) {

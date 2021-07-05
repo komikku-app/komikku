@@ -1,0 +1,119 @@
+package exh.md.dto
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class MangaListDto(
+    override val limit: Int,
+    override val offset: Int,
+    override val total: Int,
+    override val results: List<MangaDto>,
+) : ListCallDto<MangaDto>
+
+@Serializable
+data class MangaDto(
+    val result: String,
+    val data: MangaDataDto,
+    val relationships: List<RelationshipDto>,
+)
+
+@Serializable
+data class MangaDataDto(val id: String, val type: String, val attributes: MangaAttributesDto)
+
+@Serializable
+data class MangaAttributesDto(
+    val title: Map<String, String>,
+    val altTitles: List<Map<String, String>>,
+    val description: Map<String, String>,
+    val links: Map<String, String>?,
+    val originalLanguage: String,
+    val lastVolume: String?,
+    val lastChapter: String?,
+    val contentRating: String?,
+    val publicationDemographic: String?,
+    val status: String?,
+    val year: Int?,
+    val tags: List<TagDto>,
+)
+
+@Serializable
+data class TagDto(
+    val id: String,
+    val attributes: TagAttributesDto
+)
+
+@Serializable
+data class TagAttributesDto(
+    val name: Map<String, String>
+)
+
+@Serializable
+data class RelationshipDto(
+    val id: String,
+    val type: String,
+    val attributes: IncludesAttributesDto? = null,
+)
+
+@Serializable
+data class IncludesAttributesDto(
+    val name: String? = null,
+    val fileName: String? = null,
+)
+
+@Serializable
+data class AuthorListDto(
+    val results: List<AuthorDto>,
+)
+
+@Serializable
+data class AuthorDto(
+    val result: String,
+    val data: AuthorDataDto,
+)
+
+@Serializable
+data class AuthorDataDto(
+    val id: String,
+    val attributes: AuthorAttributesDto,
+)
+
+@Serializable
+data class AuthorAttributesDto(
+    val name: String,
+)
+
+@Serializable
+data class ReadingStatusDto(
+    val status: String?,
+)
+
+@Serializable
+data class ReadingStatusMapDto(
+    val statuses: Map<String, String?>,
+)
+
+@Serializable
+data class ReadChapterDto(
+    val data: List<String>,
+)
+
+@Serializable
+data class CoverListDto(
+    val results: List<CoverDto>,
+)
+
+@Serializable
+data class CoverDto(
+    val data: CoverDataDto,
+    val relationships: List<RelationshipDto>,
+)
+
+@Serializable
+data class CoverDataDto(
+    val attributes: CoverAttributesDto,
+)
+
+@Serializable
+data class CoverAttributesDto(
+    val fileName: String,
+)
