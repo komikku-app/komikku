@@ -19,7 +19,6 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
                 android:theme="?attr/actionBarTheme"/>
 
         </eu.kanade.tachiyomi.widget.ElevationAppBarLayout>
