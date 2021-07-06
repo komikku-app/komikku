@@ -312,21 +312,13 @@
                     android:scheme="https" />
 
                 <!-- MangaDex -->
-                <!--<data
+                <data
                     android:scheme="https"
                     android:host="www.mangadex.org"
                     android:pathPrefix="/manga/" />
                 <data
                     android:scheme="https"
                     android:host="mangadex.org"
-                    android:pathPrefix="/manga/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.mangadex.cc"
-                    android:pathPrefix="/manga/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.mangadex.cc"
                     android:pathPrefix="/manga/" />
 
                 <data
@@ -337,14 +329,6 @@
                     android:scheme="https"
                     android:host="mangadex.org"
                     android:pathPrefix="/title/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.mangadex.cc"
-                    android:pathPrefix="/title/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.mangadex.cc"
-                    android:pathPrefix="/title/" />
 
                 <data
                     android:scheme="https"
@@ -354,14 +338,6 @@
                     android:scheme="https"
                     android:host="mangadex.org"
                     android:pathPrefix="/chapter/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.mangadex.cc"
-                    android:pathPrefix="/chapter/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.mangadex.cc"
-                    android:pathPrefix="/chapter/" />-->
             </intent-filter>
         </activity>
         <activity

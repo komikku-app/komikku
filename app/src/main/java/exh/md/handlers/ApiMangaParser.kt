@@ -1,7 +1,6 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLogE
 import exh.md.dto.ChapterDto
@@ -15,7 +14,6 @@ import exh.metadata.metadata.base.insertFlatMetadata
 import exh.util.capitalize
 import exh.util.floor
 import exh.util.nullIfEmpty
-import okhttp3.Response
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
@@ -200,9 +198,8 @@ class ApiMangaParser(
             }.toList()
     }
 
-    fun chapterParseForMangaId(response: Response): String {
-        return response.parseAs<ChapterDto>(MdUtil.jsonParser)
-            .relationships.firstOrNull { it.type.equals("manga", true) }?.id ?: throw Exception("Not found")
+    fun chapterParseForMangaId(chapterDto: ChapterDto): String? {
+        return chapterDto.relationships.find { it.type.equals("manga", true) }?.id
     }
 
     fun StringBuilder.appends(string: String): StringBuilder = append("$string ")

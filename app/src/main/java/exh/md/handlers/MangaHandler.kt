@@ -82,4 +82,10 @@ class MangaHandler(
             remoteTrack.await() to null
         }
     }
+
+    suspend fun getMangaFromChapterId(chapterId: String): String? {
+        return withIOContext {
+            apiMangaParser.chapterParseForMangaId(service.viewChapter(chapterId))
+        }
+    }
 }

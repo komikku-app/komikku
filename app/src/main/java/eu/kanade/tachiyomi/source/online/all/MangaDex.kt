@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -19,6 +20,7 @@ import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
+import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.runAsObservable
@@ -37,7 +39,9 @@ import exh.md.service.MangaDexAuthService
 import exh.md.service.MangaDexService
 import exh.md.service.SimilarService
 import exh.md.utils.FollowStatus
+import exh.md.utils.MdApi
 import exh.md.utils.MdLang
+import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
@@ -54,7 +58,7 @@ import kotlin.reflect.KClass
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     MetadataSource<MangaDexSearchMetadata, MangaDto>,
-    // UrlImportableSource,
+    UrlImportableSource,
     FollowsSource,
     LoginSource,
     BrowseSourceFilterHeader,
@@ -66,7 +70,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         MdLang.fromExt(lang) ?: MdLang.ENGLISH
     }
 
-    // override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
+    override val matchingHosts: List<String> = listOf("mangadex.org", "www.mangadex.org")
 
     val preferences = Injekt.get<PreferencesHelper>()
     val mdList: MdList = Injekt.get<TrackManager>().mdList
@@ -114,18 +118,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         PageHandler(headers, mangadexService, mangaPlusHandler, preferences, mdList)
     }
 
-    /*override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        urlImportFetchSearchManga(context, query) {
-            importIdToMdId(query) {
-                super.fetchSearchManga(page, query, filters)
-            }
-        }*/
-
-    /*override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
-        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.toLowerCase() ?: return null
+    override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
+        val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.lowercase() ?: return null
 
         return if (lcFirstPathSegment == "title" || lcFirstPathSegment == "manga") {
-            "/manga/" + uri.pathSegments[1]
+            MdUtil.buildMangaUrl(uri.pathSegments[1])
         } else {
             null
         }
@@ -133,15 +130,14 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override fun mapUrlToChapterUrl(uri: Uri): String? {
         if (!uri.pathSegments.firstOrNull().equals("chapter", true)) return null
-        val id = uri.pathSegments.getOrNull(1)?.toIntOrNull() ?: return null
-        return MdUtil.oldApiChapter + id
+        val id = uri.pathSegments.getOrNull(1) ?: return null
+        return MdApi.chapter + '/' + id
     }
 
     override suspend fun mapChapterUrlToMangaUrl(uri: Uri): String? {
-        val id = uri.pathSegments.getOrNull(2) ?: return null
-        val mangaId = MangaHandler(baseHttpClient, headers, mdLang).getMangaIdFromChapterId(id)
-        return MdUtil.mapMdIdToMangaUrl(mangaId)
-    }*/
+        val id = uri.pathSegments.getOrNull(1) ?: return null
+        return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
+    }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return mangaHandler.fetchMangaDetailsObservable(manga, id, preferences.mangaDexForceLatestCovers().get())
@@ -240,9 +236,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }*/
 
     override suspend fun fetchTrackingInfo(url: String): Track {
-        if (!isLogged()) {
-            throw Exception("Not Logged in")
-        }
         return followsHandler.fetchTrackingInfo(url)
     }
 
@@ -265,26 +258,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     suspend fun getMangaSimilar(manga: MangaInfo): MangasPage {
         return similarHandler.getSimilar(manga)
     }
-
-    /*private fun importIdToMdId(query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
-        when {
-            query.toIntOrNull() != null -> {
-                runAsObservable({
-                    GalleryAdder().addGallery(context, MdUtil.baseUrl + MdUtil.mapMdIdToMangaUrl(query.toInt()), false, this@MangaDex)
-                })
-                    .map { res ->
-                        MangasPage(
-                            if (res is GalleryAddEvent.Success) {
-                                listOf(res.manga)
-                            } else {
-                                emptyList()
-                            },
-                            false
-                        )
-                    }
-            }
-            else -> fail()
-        }*/
 
     companion object {
         private const val dataSaverPref = "dataSaverV5"
