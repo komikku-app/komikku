@@ -95,13 +95,11 @@ class MangaDexService(
     }
 
     suspend fun getAtHomeServer(
-        headers: Headers,
-        chapterId: String,
-        forcePort443: Boolean,
-    ): Pair<String, AtHomeDto> {
-        val url = "${MdApi.atHomeServer}/$chapterId?forcePort443=$forcePort443"
-        return client.newCall(GET(url, headers, CacheControl.FORCE_NETWORK))
+        atHomeRequestUrl: String,
+        headers: Headers
+    ): AtHomeDto {
+        return client.newCall(GET(atHomeRequestUrl, headers, CacheControl.FORCE_NETWORK))
             .await()
-            .let { it.request.url.toUrl().toString() to it.parseAs(MdUtil.jsonParser) }
+            .parseAs()
     }
 }

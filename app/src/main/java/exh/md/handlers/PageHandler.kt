@@ -8,8 +8,12 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.dto.AtHomeDto
 import exh.md.dto.ChapterDto
 import exh.md.service.MangaDexService
+import exh.md.utils.MdApi
 import exh.md.utils.MdUtil
 import okhttp3.Headers
+import tachiyomi.source.Source
+import kotlin.reflect.full.superclasses
+import kotlin.reflect.jvm.isAccessible
 
 class PageHandler(
     private val headers: Headers,
@@ -19,7 +23,7 @@ class PageHandler(
     private val mdList: MdList,
 ) {
 
-    suspend fun fetchPageList(chapter: SChapter, isLogged: Boolean, usePort443Only: Boolean, dataSaver: Boolean): List<Page> {
+    suspend fun fetchPageList(chapter: SChapter, isLogged: Boolean, usePort443Only: Boolean, dataSaver: Boolean, mangadex: Source): List<Page> {
         return withIOContext {
             val chapterResponse = service.viewChapter(MdUtil.getChapterId(chapter.url))
 
@@ -36,11 +40,33 @@ class PageHandler(
                     headers
                 }
 
-                val (atHomeRequestUrl, atHomeResponse) = service.getAtHomeServer(headers, MdUtil.getChapterId(chapter.url), usePort443Only)
+                val atHomeRequestUrl = if (usePort443Only) {
+                    "${MdApi.atHomeServer}/${MdUtil.getChapterId(chapter.url)}?forcePort443=true"
+                } else {
+                    "${MdApi.atHomeServer}/${MdUtil.getChapterId(chapter.url)}"
+                }
+
+                updateExtensionVariable(mangadex, atHomeRequestUrl)
+
+                val atHomeResponse = service.getAtHomeServer(atHomeRequestUrl, headers)
 
                 pageListParse(chapterResponse, atHomeRequestUrl, atHomeResponse, dataSaver)
             }
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
+        val mangadexSuperclass = mangadex::class.superclasses.first()
+
+        val helperCallable = mangadexSuperclass.members.find { it.name == "helper" } ?: return
+        helperCallable.isAccessible = true
+        val helper = helperCallable.call(mangadex) ?: return
+
+        val tokenTrackerCallable = helper::class.members.find { it.name == "tokenTracker" } ?: return
+        tokenTrackerCallable.isAccessible = true
+        val tokenTracker = tokenTrackerCallable.call(helper) as? HashMap<String, Long> ?: return
+        tokenTracker[atHomeRequestUrl] = System.currentTimeMillis()
     }
 
     fun pageListParse(
@@ -57,10 +83,8 @@ class PageHandler(
         }
         val now = System.currentTimeMillis()
 
-        val pages = pageArray.mapIndexed { pos, imgUrl ->
-            Page(pos + 1, "${atHomeDto.baseUrl},$atHomeRequestUrl,$now", imgUrl)
+        return pageArray.mapIndexed { pos, imgUrl ->
+            Page(pos, "${atHomeDto.baseUrl},$atHomeRequestUrl,$now", imgUrl)
         }
-
-        return pages
     }
 }

@@ -1,6 +1,7 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.Page
 import exh.md.dto.MangaPlusSerializer
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -25,8 +26,8 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         .addInterceptor { imageIntercept(it) }
         .build()
 
-    fun fetchPageList(chapterId: String): List<Page> {
-        val response = client.newCall(pageListRequest(chapterId)).execute()
+    suspend fun fetchPageList(chapterId: String): List<Page> {
+        val response = client.newCall(pageListRequest(chapterId)).await()
         return pageListParse(response)
     }
 
