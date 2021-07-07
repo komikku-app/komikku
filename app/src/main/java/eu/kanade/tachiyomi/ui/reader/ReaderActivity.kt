@@ -1434,6 +1434,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                         when (preferences.readerTheme().get()) {
                             0 -> android.R.color.white
                             2 -> R.color.reader_background_dark
+                            3 -> automaticBackgroundColor()
                             else -> android.R.color.black
                         }
                     )
@@ -1503,6 +1504,17 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 }
                 .launchIn(lifecycleScope)
             // SY <--
+        }
+
+        /**
+         * Picks background color for [ReaderActivity] based on light/dark theme preference
+         */
+        private fun automaticBackgroundColor(): Int {
+            return if (baseContext.isNightMode()) {
+                R.color.reader_background_dark
+            } else {
+                android.R.color.white
+            }
         }
 
         /**
