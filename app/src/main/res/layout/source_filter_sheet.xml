@@ -31,6 +31,7 @@
             android:layout_weight="1"
             android:contentDescription="@string/action_save"
             android:tint="?attr/colorAccent"
+            android:background="?attr/borderlessButtonStyle"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/filter_btn"
             app:layout_constraintHorizontal_bias="1"
