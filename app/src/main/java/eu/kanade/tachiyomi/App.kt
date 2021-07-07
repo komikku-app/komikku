@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Environment
@@ -42,7 +41,6 @@ import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.ui.security.SecureActivityDelegate
-import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.notification
 import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
@@ -99,8 +97,6 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
             setupDebugOverlay()
         }
 
-        LocaleHelper.updateConfiguration(this, resources.configuration)
-
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         // Show notification to disable Incognito Mode when it's enabled
@@ -135,11 +131,6 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
         MultiDex.install(this)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        LocaleHelper.updateConfiguration(this, newConfig, true)
     }
 
     override fun newImageLoader(): ImageLoader {
