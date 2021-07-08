@@ -153,7 +153,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.6.0-beta01")
 
     // UI library
-    implementation("com.google.android.material:material:1.4.0")
+    implementation("com.google.android.material:material:1.5.0-alpha01")
 
     "standardImplementation"("com.google.firebase:firebase-core:19.0.0")
 
@@ -174,7 +174,7 @@ dependencies {
     implementation("org.conscrypt:conscrypt-android:2.5.2")
 
     // JSON
-    val kotlinSerializationVersion = "1.2.1"
+    val kotlinSerializationVersion = "1.2.2"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinSerializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$kotlinSerializationVersion")
     implementation("com.google.code.gson:gson:2.8.7")
@@ -209,7 +209,7 @@ dependencies {
     implementation("com.github.inorichi.injekt:injekt-core:65b0440")
 
     // Image library
-    val coilVersion = "1.2.0"
+    val coilVersion = "1.2.1"
     implementation("io.coil-kt:coil:$coilVersion")
     implementation("io.coil-kt:coil-gif:$coilVersion")
 
@@ -222,7 +222,7 @@ dependencies {
     implementation("com.jakewharton.timber:timber:4.7.1")
 
     // Crash reports
-    //implementation("ch.acra:acra-http:5.7.0")
+    //implementation("ch.acra:acra-http:5.8.1")
 
     // Sort
     implementation("com.github.gpanther:java-nat-sort:natural-comparator-1.1")
