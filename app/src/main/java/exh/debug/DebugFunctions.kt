@@ -342,4 +342,20 @@ object DebugFunctions {
             )
         }
     }
+
+    fun resetReaderViewerForAllManga() {
+        db.inTransaction {
+            db.lowLevel().executeSQL(
+                RawQuery.builder()
+                    .query(
+                        """
+                        UPDATE ${MangaTable.TABLE}
+                            SET ${MangaTable.COL_VIEWER} = 0
+                        """.trimIndent()
+                    )
+                    .affectsTables(MangaTable.TABLE)
+                    .build()
+            )
+        }
+    }
 }
