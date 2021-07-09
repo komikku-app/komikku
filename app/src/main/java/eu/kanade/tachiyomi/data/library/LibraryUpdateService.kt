@@ -68,7 +68,6 @@ import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.File
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * This class will take care of updating the chapters of the manga from the library. It can be
@@ -352,7 +351,8 @@ class LibraryUpdateService(
      */
     suspend fun updateChapterList() {
         val semaphore = Semaphore(5)
-        val progressCount = AtomicInteger(0)
+        var progressCount = 0
+        val currentlyUpdatingManga = mutableListOf<LibraryManga>()
         val newUpdates = mutableListOf<Pair<LibraryManga, Array<Chapter>>>()
         val failedUpdates = mutableListOf<Pair<Manga, String?>>()
         var hasDownloads = false
@@ -370,7 +370,13 @@ class LibraryUpdateService(
                                     return@async
                                 }
 
-                                notifier.showProgressNotification(manga, progressCount.andIncrement, mangaToUpdate.size)
+                                currentlyUpdatingManga.add(manga)
+                                progressCount++
+                                notifier.showProgressNotification(
+                                    currentlyUpdatingManga,
+                                    progressCount,
+                                    mangaToUpdate.size
+                                )
 
                                 try {
                                     val (newChapters, _) = updateManga(manga)
@@ -399,6 +405,13 @@ class LibraryUpdateService(
                                 if (preferences.autoUpdateTrackers()) {
                                     updateTrackings(manga, loggedServices)
                                 }
+
+                                currentlyUpdatingManga.remove(manga)
+                                notifier.showProgressNotification(
+                                    currentlyUpdatingManga,
+                                    progressCount,
+                                    mangaToUpdate.size
+                                )
                             }
                         }
                     }
@@ -497,7 +510,7 @@ class LibraryUpdateService(
                 return
             }
 
-            notifier.showProgressNotification(manga, progressCount++, mangaToUpdate.size)
+            notifier.showProgressNotification(listOf(manga), progressCount++, mangaToUpdate.size)
 
             sourceManager.get(manga.source)?.let { source ->
                 try {
@@ -532,8 +545,7 @@ class LibraryUpdateService(
                 return
             }
 
-            // Notify manga that will update.
-            notifier.showProgressNotification(manga, progressCount++, mangaToUpdate.size)
+            notifier.showProgressNotification(listOf(manga), progressCount++, mangaToUpdate.size)
 
             // Update the tracking details.
             updateTrackings(manga, loggedServices)
@@ -572,7 +584,7 @@ class LibraryUpdateService(
      * filter all follows from Mangadex and only add reading or rereading manga to library
      */
     private suspend fun syncFollows() {
-        val count = AtomicInteger(0)
+        var count = 0
         val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager) ?: return
         val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
 
@@ -587,7 +599,8 @@ class LibraryUpdateService(
                     return
                 }
 
-                notifier.showProgressNotification(networkManga, count.andIncrement, size)
+                count++
+                notifier.showProgressNotification(listOf(networkManga), count, size)
 
                 var dbManga = db.getManga(networkManga.url, mangaDex.id)
                     .executeOnIO()
@@ -616,7 +629,7 @@ class LibraryUpdateService(
      * Method that updates the all mangas which are not tracked as "reading" on mangadex
      */
     private suspend fun pushFavorites() {
-        val count = AtomicInteger(0)
+        var count = 0
         val listManga = db.getFavoriteMangas().executeAsBlocking().filter { it.source in mangaDexSourceIds }
 
         // filter all follows from Mangadex and only add reading or rereading manga to library
@@ -626,7 +639,8 @@ class LibraryUpdateService(
                     return
                 }
 
-                notifier.showProgressNotification(manga, count.andIncrement, listManga.size)
+                count++
+                notifier.showProgressNotification(listOf(manga), count, listManga.size)
 
                 // Get this manga's trackers from the database
                 val dbTracks = db.getTracks(manga).executeAsBlocking()
