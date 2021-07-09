@@ -361,45 +361,45 @@ class LibraryUpdateService(
         withIOContext {
             mangaToUpdate.groupBy { it.source }
                 .filterNot { it.key in LIBRARY_UPDATE_EXCLUDED_SOURCES }
-                .values.map { mangaInSource ->
+                .values
+                .map { mangaInSource ->
                     async {
                         semaphore.withPermit {
-                            mangaInSource
-                                .onEach { manga ->
-                                    if (updateJob?.isActive != true) {
-                                        return@async
-                                    }
-
-                                    notifier.showProgressNotification(manga, progressCount.andIncrement, mangaToUpdate.size)
-
-                                    try {
-                                        val (newChapters, _) = updateManga(manga)
-
-                                        if (newChapters.isNotEmpty()) {
-                                            if (manga.shouldDownloadNewChapters(db, preferences)) {
-                                                downloadChapters(manga, newChapters)
-                                                hasDownloads = true
-                                            }
-
-                                            // Convert to the manga that contains new chapters
-                                            newUpdates.add(
-                                                manga to newChapters.sortedByDescending { ch -> ch.source_order }
-                                                    .toTypedArray()
-                                            )
-                                        }
-                                    } catch (e: Throwable) {
-                                        val errorMessage = if (e is NoChaptersException) {
-                                            getString(R.string.no_chapters_error)
-                                        } else {
-                                            e.message
-                                        }
-                                        failedUpdates.add(manga to errorMessage)
-                                    }
-
-                                    if (preferences.autoUpdateTrackers()) {
-                                        updateTrackings(manga, loggedServices)
-                                    }
+                            mangaInSource.forEach { manga ->
+                                if (updateJob?.isActive != true) {
+                                    return@async
                                 }
+
+                                notifier.showProgressNotification(manga, progressCount.andIncrement, mangaToUpdate.size)
+
+                                try {
+                                    val (newChapters, _) = updateManga(manga)
+
+                                    if (newChapters.isNotEmpty()) {
+                                        if (manga.shouldDownloadNewChapters(db, preferences)) {
+                                            downloadChapters(manga, newChapters)
+                                            hasDownloads = true
+                                        }
+
+                                        // Convert to the manga that contains new chapters
+                                        newUpdates.add(
+                                            manga to newChapters.sortedByDescending { ch -> ch.source_order }
+                                                .toTypedArray()
+                                        )
+                                    }
+                                } catch (e: Throwable) {
+                                    val errorMessage = if (e is NoChaptersException) {
+                                        getString(R.string.no_chapters_error)
+                                    } else {
+                                        e.message
+                                    }
+                                    failedUpdates.add(manga to errorMessage)
+                                }
+
+                                if (preferences.autoUpdateTrackers()) {
+                                    updateTrackings(manga, loggedServices)
+                                }
+                            }
                         }
                     }
                 }.awaitAll()
