@@ -37,6 +37,7 @@ import com.ms_square.debugoverlay.DebugOverlay
 import com.ms_square.debugoverlay.modules.FpsModule
 import eu.kanade.tachiyomi.data.coil.ByteBufferFetcher
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
+import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkHelper
@@ -136,6 +137,7 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this).apply {
             componentRegistry {
+                add(TachiyomiImageDecoder(this@App.resources))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     add(ImageDecoderDecoder(this@App))
                 } else {
