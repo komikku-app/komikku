@@ -8,7 +8,6 @@ import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.ExtensionCardItemBinding
-import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -60,8 +59,8 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     // SY -->
     private fun String.plusRepo(extension: Extension): String {
         return if (extension is Extension.Available) {
-            when (extension.repoUrl) {
-                ExtensionGithubApi.REPO_URL_PREFIX -> this
+            when {
+                extension.repoUrl.contains("tachiyomiorg/tachiyomi-extensions") -> this
                 else -> {
                     this + if (this.isEmpty()) {
                         ""
