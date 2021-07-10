@@ -170,8 +170,8 @@ class MangaInfoItemAdapter(
                         }
                         mangaTagsInfoAdapter?.updateDataSet(namespaceTags)
                     }
-                    binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
-                    binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performSearch, controller::performGlobalSearch, source?.id ?: 0)
+                    binding.mangaGenresTagsFullChips.setChipsExtended(manga.getGenres(), controller::performGenreSearch, controller::performGlobalSearch, source?.id ?: 0)
+                    binding.mangaGenresTagsCompactChips.setChipsExtended(manga.getGenres(), controller::performGenreSearch, controller::performGlobalSearch, source?.id ?: 0)
                     // SY <--
                 } else {
                     binding.mangaGenresTagsCompactChips.isVisible = false
