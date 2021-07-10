@@ -1,6 +1,7 @@
 package exh.md.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class MangaListDto(
@@ -22,10 +23,10 @@ data class MangaDataDto(val id: String, val type: String, val attributes: MangaA
 
 @Serializable
 data class MangaAttributesDto(
-    val title: Map<String, String>,
+    val title: JsonElement,
     val altTitles: List<Map<String, String>>,
-    val description: Map<String, String>,
-    val links: Map<String, String>?,
+    val description: JsonElement,
+    val links: JsonElement?,
     val originalLanguage: String,
     val lastVolume: String?,
     val lastChapter: String?,

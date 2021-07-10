@@ -38,11 +38,11 @@ data class ChapterAttributesDto(
 
 @Serializable
 data class GroupListDto(
-    val limit: Int,
-    val offset: Int,
-    val total: Int,
-    val results: List<GroupDto>,
-)
+    override val limit: Int,
+    override val offset: Int,
+    override val total: Int,
+    override val results: List<GroupDto>,
+) : ListCallDto<GroupDto>
 
 @Serializable
 data class GroupDto(

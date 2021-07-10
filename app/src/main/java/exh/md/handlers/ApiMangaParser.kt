@@ -7,6 +7,7 @@ import exh.md.dto.ChapterDto
 import exh.md.dto.MangaDto
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
+import exh.md.utils.asMdMap
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.metadata.metadata.base.getFlatMetadataForManga
@@ -55,7 +56,7 @@ class ApiMangaParser(
             try {
                 val mangaAttributesDto = mangaDto.data.attributes
                 mdUuid = mangaDto.data.id
-                title = MdUtil.cleanString(mangaAttributesDto.title[lang] ?: mangaAttributesDto.title["en"]!!)
+                title = MdUtil.cleanString(mangaAttributesDto.title.asMdMap().let { it[lang] ?: it["en"]!! })
                 altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
                 mangaDto.relationships
@@ -66,7 +67,7 @@ class ApiMangaParser(
                         cover = MdUtil.cdnCoverUrl(mangaDto.data.id, coverFileName)
                     }
 
-                description = MdUtil.cleanDescription(mangaAttributesDto.description[lang] ?: mangaAttributesDto.description["en"]!!)
+                description = MdUtil.cleanDescription(mangaAttributesDto.description.asMdMap().let { it[lang] ?: it["en"].orEmpty() })
 
                 authors = mangaDto.relationships.filter { relationshipDto ->
                     relationshipDto.type.equals(MdConstants.Types.author, true)
@@ -85,7 +86,7 @@ class ApiMangaParser(
                     manga.users = it.users
                 }*/
 
-                mangaAttributesDto.links?.let { links ->
+                mangaAttributesDto.links?.asMdMap()?.let { links ->
                     links["al"]?.let { anilistId = it }
                     links["kt"]?.let { kitsuId = it }
                     links["mal"]?.let { myAnimeListId = it }
