@@ -12,8 +12,7 @@ class AutoSolvingWebViewClient(
     verifyComplete: (String) -> Boolean,
     injectScript: String?,
     headers: Map<String, String>
-) :
-    HeadersInjectingWebViewClient(activity, verifyComplete, injectScript, headers) {
+) : HeadersInjectingWebViewClient(activity, verifyComplete, injectScript, headers) {
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         // Inject our custom script into the recaptcha iframes

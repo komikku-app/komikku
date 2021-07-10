@@ -9,8 +9,7 @@ open class HeadersInjectingWebViewClient(
     verifyComplete: (String) -> Boolean,
     injectScript: String?,
     private val headers: Map<String, String>
-) :
-    BasicWebViewClient(activity, verifyComplete, injectScript) {
+) : BasicWebViewClient(activity, verifyComplete, injectScript) {
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         // Temp disabled as it's unreliable
