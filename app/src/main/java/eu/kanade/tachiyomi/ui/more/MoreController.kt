@@ -32,6 +32,8 @@ import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import exh.ui.batchadd.BatchAddController
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
@@ -73,6 +75,10 @@ class MoreController :
             iconRes = R.drawable.ic_glasses_24dp
             iconTint = tintColor
             defaultValue = false
+
+            preferences.incognitoMode().asFlow()
+                .onEach { isChecked = it }
+                .launchIn(viewScope)
         }
 
         preferenceCategory {
