@@ -56,7 +56,7 @@ class ApiMangaParser(
             try {
                 val mangaAttributesDto = mangaDto.data.attributes
                 mdUuid = mangaDto.data.id
-                title = MdUtil.cleanString(mangaAttributesDto.title.asMdMap().let { it[lang] ?: it["en"]!! })
+                title = MdUtil.cleanString(mangaAttributesDto.title.asMdMap().let { it[lang] ?: it["en"].orEmpty() })
                 altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
                 mangaDto.relationships
