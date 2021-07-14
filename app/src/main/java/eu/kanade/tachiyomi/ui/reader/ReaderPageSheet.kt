@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.reader
 import android.view.LayoutInflater
 import android.view.View
 import androidx.core.view.isVisible
-import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ReaderPageSheetBinding
 import eu.kanade.tachiyomi.source.model.Page
@@ -57,13 +57,12 @@ class ReaderPageSheet(
     private fun setAsCover(page: ReaderPage) {
         if (page.status != Page.READY) return
 
-        MaterialDialog(activity)
-            .message(R.string.confirm_set_image_as_cover)
-            .positiveButton(android.R.string.ok) {
+        MaterialAlertDialogBuilder(activity)
+            .setMessage(R.string.confirm_set_image_as_cover)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 activity.setAsCover(page)
-                dismiss()
             }
-            .negativeButton(android.R.string.cancel)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 

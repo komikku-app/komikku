@@ -10,9 +10,7 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -402,17 +400,17 @@ class SettingsAdvancedController : SettingsController() {
         // SY <--
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            return MaterialDialog(activity!!)
-                .message(R.string.clear_database_confirmation)
-                // SY -->
+            return MaterialAlertDialogBuilder(activity!!)
+                .setMessage(R.string.clear_database_confirmation)
                 .checkBoxPrompt(R.string.clear_db_exclude_read) {
                     keepReadManga = it
                 }
                 // SY <--
-                .positiveButton(android.R.string.ok) {
-                    (targetController as? SettingsAdvancedController)?.clearDatabase(/* SY --> */keepReadManga/* SY <-- */)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    (targetController as? SettingsAdvancedController)?.clearDatabase()
                 }
-                .negativeButton(android.R.string.cancel)
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
         }
     }
 

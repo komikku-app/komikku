@@ -11,10 +11,9 @@ import android.view.MenuItem
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItems
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -373,15 +372,13 @@ class SourceController(bundle: Bundle? = null) :
         }
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            return MaterialDialog(activity!!)
-                .title(text = source)
-                .listItems(
-                    items = items.map { it.first },
-                    waitForPositiveButton = false
-                ) { dialog, which, _ ->
+            return MaterialAlertDialogBuilder(activity!!)
+                .setTitle(source)
+                .setItems(items.map { it.first }.toTypedArray()) { dialog, which ->
                     items[which].second()
                     dialog.dismiss()
                 }
+                .create()
         }
     }
 
