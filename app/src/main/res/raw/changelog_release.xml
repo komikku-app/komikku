@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="v8.6.5-AZ" changeDate="">
+        <changelogtext>fixed a bunch of random extension issues</changelogtext>
+        <changelogtext>something about cloudflare idk</changelogtext>
+    </changelogversion>
     <changelogversion versionName="v8.6.4-AZ" changeDate="">
         <changelogtext>Fixed library update stopping halfway when an error is thrown fetching chapters</changelogtext>
         <changelogtext>Added 1.x extension support</changelogtext>
