@@ -29,7 +29,7 @@ jobs:
           # The mode of writing to use: `overwrite`, `append`, or `preserve`.
           write-mode: overwrite # optional, default is preserve
       - name: Build Release APK
-        run: bash ./gradlew assembleRelease --stacktrace
+        run: bash ./gradlew assembleStandardRelease --stacktrace
       - name: Sign Android release
         uses: r0adkll/sign-android-release@v1
         with:
