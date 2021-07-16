@@ -26,7 +26,6 @@ shortcutHelper.setFilePath("./shortcuts.xml")
 
 android {
     compileSdkVersion(AndroidConfig.compileSdk)
-    buildToolsVersion(AndroidConfig.buildTools)
     ndkVersion = AndroidConfig.ndk
 
     defaultConfig {
