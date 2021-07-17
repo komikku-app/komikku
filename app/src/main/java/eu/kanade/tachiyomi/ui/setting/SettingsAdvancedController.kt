@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.network.PREF_DOH_GOOGLE
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
+import eu.kanade.tachiyomi.ui.base.controller.openInBrowser
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -95,6 +96,16 @@ class SettingsAdvancedController : SettingsController() {
                 } else {
                     context.toast(R.string.battery_optimization_disabled)
                 }
+            }
+        }
+
+        preference {
+            key = "pref_dont_kill_my_app"
+            title = "Don't kill my app!"
+            summaryRes = R.string.about_dont_kill_my_app
+
+            onClick {
+                openInBrowser("https://dontkillmyapp.com/")
             }
         }
 
