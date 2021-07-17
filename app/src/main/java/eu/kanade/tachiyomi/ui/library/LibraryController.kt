@@ -316,6 +316,7 @@ class LibraryController(
             binding.emptyView.hide()
         } else {
             binding.emptyView.show(R.string.information_empty_library)
+            (activity as? MainActivity)?.ready = true
         }
 
         // Get the current active category.
