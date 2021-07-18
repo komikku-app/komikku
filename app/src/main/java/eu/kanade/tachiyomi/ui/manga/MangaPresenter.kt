@@ -16,9 +16,9 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
-import eu.kanade.tachiyomi.data.track.UnattendedTrackService
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -1156,7 +1156,7 @@ class MangaPresenter(
                                 val track = it.service.refresh(it.track!!)
                                 db.insertTrack(track).executeAsBlocking()
 
-                                if (it.service is UnattendedTrackService) {
+                                if (it.service is EnhancedTrackService) {
                                     syncChaptersWithTrackServiceTwoWay(db, allChapters, track, it.service)
                                 }
                             }
@@ -1194,7 +1194,7 @@ class MangaPresenter(
                     service.bind(item, hasReadChapters)
                     db.insertTrack(item).executeAsBlocking()
 
-                    if (service is UnattendedTrackService) {
+                    if (service is EnhancedTrackService) {
                         syncChaptersWithTrackServiceTwoWay(db, allChapters, item, service)
                     }
                 } catch (e: Throwable) {
