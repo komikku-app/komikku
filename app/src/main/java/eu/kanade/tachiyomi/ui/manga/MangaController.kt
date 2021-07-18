@@ -712,7 +712,7 @@ class MangaController :
             }
         }
 
-        if (source != null && preferences.autoAddTrack()) {
+        if (source != null) {
             presenter.trackList
                 .map { it.service }
                 .filterIsInstance<EnhancedTrackService>()
