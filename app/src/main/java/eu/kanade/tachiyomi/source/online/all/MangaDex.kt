@@ -211,6 +211,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override suspend fun logout(): Boolean {
         val result = try {
             loginHelper.logout()
+            true
         } catch (e: NoSessionException) {
             true
         } catch (e: Exception) {
