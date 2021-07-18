@@ -83,7 +83,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     private val loginHelper = MangaDexLoginHelper(mangadexAuthServiceLazy, preferences, mdList)
 
-    override val baseHttpClient: OkHttpClient = super.client.newBuilder()
+    override val baseHttpClient: OkHttpClient = delegate.client.newBuilder()
         .authenticator(
             TokenAuthenticator(loginHelper)
         )

@@ -56,7 +56,7 @@ class PageHandler(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
+    private fun updateExtensionVariable(mangadex: Source, atHomeRequestUrl: String) {
         val mangadexSuperclass = mangadex::class.superclasses.first()
 
         val helperCallable = mangadexSuperclass.members.find { it.name == "helper" } ?: return
@@ -69,7 +69,7 @@ class PageHandler(
         tokenTracker[atHomeRequestUrl] = System.currentTimeMillis()
     }
 
-    fun pageListParse(
+    private fun pageListParse(
         chapterDto: ChapterDto,
         atHomeRequestUrl: String,
         atHomeDto: AtHomeDto,

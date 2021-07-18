@@ -159,8 +159,9 @@ class FollowsHandler(
             val mangaId = MdUtil.getMangaId(url)
             val followStatus = FollowStatus.fromDex(service.readingStatusForManga(mangaId).status)
             Track.create(TrackManager.MDLIST).apply {
+                title = ""
                 status = followStatus.int
-                tracking_url = "${MdUtil.baseUrl}/title/$mangaId"
+                tracking_url = url
             }
         }
     }

@@ -382,7 +382,7 @@ class LibraryUpdateService(
                                 )
 
                                 try {
-                                    val (newChapters, _) = updateManga(manga)
+                                    val (newChapters, _) = updateManga(manga, loggedServices)
 
                                     if (newChapters.isNotEmpty()) {
                                         if (manga.shouldDownloadNewChapters(db, preferences)) {
@@ -456,7 +456,7 @@ class LibraryUpdateService(
      * @param manga the manga to update.
      * @return a pair of the inserted and removed chapters.
      */
-    suspend fun updateManga(manga: Manga): Pair<List<Chapter>, List<Chapter>> {
+    suspend fun updateManga(manga: Manga, loggedServices: List<TrackService>): Pair<List<Chapter>, List<Chapter>> {
         val source = sourceManager.getOrStub(manga.source).getMainSource()
 
         // Update manga details metadata in the background
@@ -480,16 +480,15 @@ class LibraryUpdateService(
         }
 
         // SY -->
-        if (source.isMdBasedSource() && trackManager.mdList.isLogged) {
+        if (source.isMdBasedSource() && trackManager.mdList in loggedServices) {
             val handler = CoroutineExceptionHandler { _, exception ->
                 Timber.e(exception)
             }
             ioScope.launch(handler) {
-                val tracks = db.getTracks(manga).executeOnIO()
+                val tracks = db.getTracks(manga).executeAsBlocking()
                 if (tracks.isEmpty() || tracks.none { it.sync_id == TrackManager.MDLIST }) {
-                    var track = trackManager.mdList.createInitialTracker(manga)
-                    track = trackManager.mdList.refresh(track)
-                    db.insertTrack(track).executeOnIO()
+                    val track = trackManager.mdList.createInitialTracker(manga)
+                    db.insertTrack(trackManager.mdList.refresh(track)).executeAsBlocking()
                 }
             }
         }
