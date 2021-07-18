@@ -5,10 +5,13 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -27,7 +30,9 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.imageLoader
 import coil.loadAny
+import coil.request.ImageRequest
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -1014,12 +1019,35 @@ class MangaController :
         }
     }
 
+    /**
+     * Fetches the cover with Coil, turns it into Bitmap and does something with it (asynchronous)
+     * @param context The context for building and executing the ImageRequest
+     * @param coverHandler A function that describes what should be done with the Bitmap
+     */
+    private fun useCoverAsBitmap(context: Context, coverHandler: (Bitmap) -> Unit) {
+        val req = ImageRequest.Builder(context)
+            .data(manga)
+            .target { result ->
+                val coverBitmap = (result as BitmapDrawable).bitmap
+                coverHandler(coverBitmap)
+            }
+            .build()
+        context.imageLoader.enqueue(req)
+    }
+
     fun shareCover() {
         try {
             val activity = activity!!
-            val cover = presenter.shareCover(activity)
-            val uri = cover.getUriCompat(activity)
-            startActivity(Intent.createChooser(uri.toShareIntent(), activity.getString(R.string.action_share)))
+            useCoverAsBitmap(activity) { coverBitmap ->
+                val cover = presenter.shareCover(activity, coverBitmap)
+                val uri = cover.getUriCompat(activity)
+                startActivity(
+                    Intent.createChooser(
+                        uri.toShareIntent(),
+                        activity.getString(R.string.action_share)
+                    )
+                )
+            }
         } catch (e: Exception) {
             Timber.e(e)
             activity?.toast(R.string.error_sharing_cover)
@@ -1028,8 +1056,11 @@ class MangaController :
 
     fun saveCover() {
         try {
-            presenter.saveCover(activity!!)
-            activity?.toast(R.string.cover_saved)
+            val activity = activity!!
+            useCoverAsBitmap(activity) { coverBitmap ->
+                presenter.saveCover(activity, coverBitmap)
+                activity.toast(R.string.cover_saved)
+            }
         } catch (e: Exception) {
             Timber.e(e)
             activity?.toast(R.string.error_saving_cover)
