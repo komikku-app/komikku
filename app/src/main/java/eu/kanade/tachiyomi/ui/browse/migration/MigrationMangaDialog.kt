@@ -2,8 +2,8 @@ package eu.kanade.tachiyomi.ui.browse.migration
 
 import android.app.Dialog
 import android.os.Bundle
-import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.Controller
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
@@ -32,15 +32,16 @@ class MigrationMangaDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
                 else ""
                 )
         ).orEmpty()
-        return MaterialDialog(activity!!)
-            .message(text = confirmString)
-            .positiveButton(if (copy) R.string.copy else R.string.migrate) {
+        return MaterialAlertDialogBuilder(activity!!)
+            .setMessage(confirmString)
+            .setPositiveButton(if (copy) R.string.copy else R.string.migrate) { _, _ ->
                 if (copy) {
                     (targetController as? MigrationListController)?.copyMangas()
                 } else {
                     (targetController as? MigrationListController)?.migrateMangas()
                 }
             }
-            .negativeButton(android.R.string.cancel)
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
     }
 }

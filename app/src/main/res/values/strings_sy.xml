@@ -221,7 +221,7 @@
     </plurals>
     <string name="biometric_lock_start_time">Enter starting time</string>
     <string name="biometric_lock_end_time">Enter end time</string>
-    <string name="biometric_lock_time_deleted_snack">Biometric lock time completed</string>
+    <string name="biometric_lock_time_deleted_snack">Biometric lock time deleted</string>
     <string name="biometric_lock_invalid_time_selected">Invalid time selected</string>
     <string name="biometric_lock_days">Biometric lock days</string>
     <string name="biometric_lock_days_summary">Days to have the app locked</string>

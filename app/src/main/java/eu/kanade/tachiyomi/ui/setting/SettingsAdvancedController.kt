@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
@@ -323,16 +324,25 @@ class SettingsAdvancedController : SettingsController() {
     // SY -->
     class CleanupDownloadsDialogController : DialogController() {
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            return MaterialDialog(activity!!).show {
-                title(R.string.clean_up_downloaded_chapters)
-                    .listItemsMultiChoice(R.array.clean_up_downloads, disabledIndices = intArrayOf(0), initialSelection = intArrayOf(0, 1, 2)) { _, selections, _ ->
-                        val deleteRead = selections.contains(1)
-                        val deleteNonFavorite = selections.contains(2)
-                        (targetController as? SettingsAdvancedController)?.cleanupDownloads(deleteRead, deleteNonFavorite)
+            val options = activity!!.resources.getStringArray(R.array.clean_up_downloads)
+            val selected = options.map { true }.toBooleanArray()
+            return MaterialAlertDialogBuilder(activity!!)
+                .setTitle(R.string.clean_up_downloaded_chapters)
+                .setMultiChoiceItems(options, selected) { dialog, which, checked ->
+                    if (which == 0) {
+                        (dialog as AlertDialog).listView.setItemChecked(which, true)
+                    } else {
+                        selected[which] = checked
                     }
-                positiveButton(android.R.string.ok)
-                negativeButton(android.R.string.cancel)
-            }
+                }
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    (targetController as? SettingsAdvancedController)?.cleanupDownloads(
+                        selected[1],
+                        selected[2]
+                    )
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
         }
     }
 
@@ -400,14 +410,18 @@ class SettingsAdvancedController : SettingsController() {
         // SY <--
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+            val item = arrayOf(
+                activity!!.getString(R.string.clear_db_exclude_read)
+            )
+            val selected = booleanArrayOf(true)
             return MaterialAlertDialogBuilder(activity!!)
                 .setMessage(R.string.clear_database_confirmation)
-                .checkBoxPrompt(R.string.clear_db_exclude_read) {
-                    keepReadManga = it
+                .setMultiChoiceItems(item, selected) { _, _, isChecked ->
+                    selected[0] = isChecked
                 }
                 // SY <--
                 .setPositiveButton(android.R.string.ok) { _, _ ->
-                    (targetController as? SettingsAdvancedController)?.clearDatabase()
+                    (targetController as? SettingsAdvancedController)?.clearDatabase(selected.first())
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()

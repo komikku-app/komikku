@@ -13,8 +13,8 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -430,14 +430,14 @@ class MigrationListController(bundle: Bundle? = null) :
 
     override fun handleBack(): Boolean {
         activity?.let {
-            MaterialDialog(it).show {
-                title(R.string.stop_migrating)
-                positiveButton(R.string.action_stop) {
+            MaterialAlertDialogBuilder(it)
+                .setTitle(R.string.stop_migrating)
+                .setPositiveButton(R.string.action_stop) { _, _ ->
                     router.popCurrentController()
                     migrationsJob?.cancel()
                 }
-                negativeButton(android.R.string.cancel)
-            }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
         return true
     }

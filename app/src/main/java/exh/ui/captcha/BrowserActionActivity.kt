@@ -11,7 +11,7 @@ import android.webkit.JsResult
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
-import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityCaptchaBinding
@@ -190,12 +190,10 @@ class BrowserActionActivity : AppCompatActivity() {
         xLogE("Captcha solve Error", IllegalStateException("Captcha solve failure!"))
         withUIContext {
             binding.webview.evaluateJavascript(SOLVE_UI_SCRIPT_HIDE, null)
-            MaterialDialog(this@BrowserActionActivity)
-                .title(R.string.captcha_solve_failure)
-                .message(R.string.captcha_solve_failure_message)
-                .cancelable(true)
-                .cancelOnTouchOutside(true)
-                .positiveButton(android.R.string.ok)
+            MaterialAlertDialogBuilder(this@BrowserActionActivity)
+                .setTitle(R.string.captcha_solve_failure)
+                .setMessage(R.string.captcha_solve_failure_message)
+                .setPositiveButton(android.R.string.ok, null)
                 .show()
         }
     }

@@ -4,15 +4,15 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.text.InputType
+import android.view.LayoutInflater
+import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
+import androidx.core.widget.doAfterTextChanged
 import androidx.preference.PreferenceScreen
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.WhichButton
-import com.afollestad.materialdialogs.actions.setActionButtonEnabled
-import com.afollestad.materialdialogs.customview.customView
-import com.afollestad.materialdialogs.input.getInputField
-import com.afollestad.materialdialogs.input.input
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -21,8 +21,9 @@ import eu.kanade.tachiyomi.data.preference.CHARGING
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.UNMETERED_NETWORK
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
-import eu.kanade.tachiyomi.databinding.EhDialogCategoriesBinding
-import eu.kanade.tachiyomi.databinding.EhDialogLanguagesBinding
+import eu.kanade.tachiyomi.databinding.DialogStubTextinputBinding
+import eu.kanade.tachiyomi.ui.setting.eh.FrontPageCategoriesDialog
+import eu.kanade.tachiyomi.ui.setting.eh.LanguagesDialog
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
@@ -42,6 +43,7 @@ import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.LocalFavoritesStorage
+import exh.log.xLogD
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.isEhBasedManga
@@ -73,7 +75,7 @@ import kotlin.time.Duration
 class SettingsEhController : SettingsController() {
     private val db: DatabaseHelper by injectLazy()
 
-    private fun Preference<*>.reconfigure(): Boolean {
+    fun Preference<*>.reconfigure(): Boolean {
         // Listen for change commit
         asFlow()
             .take(1) // Only listen for first commit
@@ -186,30 +188,36 @@ class SettingsEhController : SettingsController() {
                 summary = context.getString(R.string.tag_filtering_threshhold_summary, preferences.ehTagFilterValue().get())
 
                 onClick {
-                    MaterialDialog(activity!!)
-                        .title(R.string.tag_filtering_threshold)
-                        .input(
-                            inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
-                            waitForPositiveButton = false,
-                            allowEmpty = false
-                        ) { dialog, number ->
-                            val inputField = dialog.getInputField()
-                            val value = number.toString().toIntOrNull()
-
-                            if ((value != null && value in -9999..0) || number.toString() == "-") {
-                                inputField.error = null
-                            } else {
-                                inputField.error = context.getString(R.string.tag_filtering_threshhold_error)
+                    var value: Int? = preferences.ehTagFilterValue().get()
+                    MaterialAlertDialogBuilder(activity!!)
+                        .setTitle(R.string.tag_filtering_threshold)
+                        .let { builder ->
+                            val binding = DialogStubTextinputBinding.inflate(LayoutInflater.from(builder.context))
+                            binding.textField.editText?.apply {
+                                inputType = InputType.TYPE_NUMBER_FLAG_SIGNED
+                                setText(value.toString(), TextView.BufferType.EDITABLE)
+                                doAfterTextChanged {
+                                    value = it?.toString()?.toIntOrNull()
+                                    this@SettingsEhController.xLogD(value)
+                                    error = if (value in -9999..0 || it.toString() == "-") {
+                                        null
+                                    } else {
+                                        context.getString(R.string.tag_filtering_threshhold_error)
+                                    }
+                                }
+                                post {
+                                    requestFocusFromTouch()
+                                    context.getSystemService<InputMethodManager>()?.showSoftInput(this, 0)
+                                }
                             }
-                            dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in -9999..0)
+                            builder.setView(binding.root)
                         }
-                        .positiveButton(android.R.string.ok) {
-                            val value = it.getInputField().text.toString().toInt()
-                            preferences.ehTagFilterValue().set(value)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            preferences.ehTagFilterValue().set(value ?: return@setPositiveButton)
                             summary = context.getString(R.string.tag_filtering_threshhold_summary, preferences.ehTagFilterValue().get())
                             preferences.ehTagFilterValue().reconfigure()
                         }
-                        .negativeButton(android.R.string.cancel)
+                        .setNegativeButton(android.R.string.cancel, null)
                         .show()
                 }
 
@@ -225,31 +233,37 @@ class SettingsEhController : SettingsController() {
                 summary = context.getString(R.string.tag_watching_threshhold_summary, preferences.ehTagWatchingValue().get())
 
                 onClick {
-                    MaterialDialog(activity!!)
-                        .title(R.string.tag_watching_threshhold)
-                        .input(
-                            inputType = InputType.TYPE_NUMBER_FLAG_SIGNED,
-                            maxLength = 4,
-                            waitForPositiveButton = false,
-                            allowEmpty = false
-                        ) { dialog, number ->
-                            val inputField = dialog.getInputField()
-                            val value = number.toString().toIntOrNull()
+                    var value: Int? = preferences.ehTagWatchingValue().get()
+                    MaterialAlertDialogBuilder(activity!!)
+                        .setTitle(R.string.tag_watching_threshhold)
+                        .let { builder ->
+                            val binding = DialogStubTextinputBinding.inflate(LayoutInflater.from(builder.context))
+                            binding.textField.editText?.apply {
+                                inputType = InputType.TYPE_NUMBER_FLAG_SIGNED
 
-                            if (value != null && value in 0..9999) {
-                                inputField.error = null
-                            } else {
-                                inputField.error = context.getString(R.string.tag_watching_threshhold_error)
+                                setText(value.toString(), TextView.BufferType.EDITABLE)
+                                doAfterTextChanged {
+                                    value = it?.toString()?.toIntOrNull()
+
+                                    error = if (value in 0..9999) {
+                                        null
+                                    } else {
+                                        context.getString(R.string.tag_watching_threshhold_error)
+                                    }
+                                }
+                                post {
+                                    requestFocusFromTouch()
+                                    context.getSystemService<InputMethodManager>()?.showSoftInput(this, 0)
+                                }
                             }
-                            dialog.setActionButtonEnabled(WhichButton.POSITIVE, value != null && value in 0..9999)
+                            builder.setView(binding.root)
                         }
-                        .positiveButton(android.R.string.ok) {
-                            val value = it.getInputField().text.toString().toInt()
-                            preferences.ehTagWatchingValue().set(value)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            preferences.ehTagWatchingValue().set(value ?: return@setPositiveButton)
                             summary = context.getString(R.string.tag_watching_threshhold_summary, preferences.ehTagWatchingValue().get())
                             preferences.ehTagWatchingValue().reconfigure()
                         }
-                        .negativeButton(android.R.string.cancel)
+                        .setNegativeButton(android.R.string.cancel, null)
                         .show()
                 }
 
@@ -258,143 +272,14 @@ class SettingsEhController : SettingsController() {
             }
 
             preference {
-                key = "pref_language_filtering"
+                key = PreferenceKeys.eh_settings_languages
                 titleRes = R.string.language_filtering
                 summaryRes = R.string.language_filtering_summary
 
                 onClick {
-                    MaterialDialog(activity!!)
-                        .title(R.string.language_filtering)
-                        .message(R.string.language_filtering_summary)
-                        .customView(R.layout.eh_dialog_languages, scrollable = true)
-                        .positiveButton(android.R.string.ok) {
-                            val customView = it.view.contentLayout.customView!!
-                            val binding = EhDialogLanguagesBinding.bind(customView)
-
-                            val languages = with(binding) {
-                                listOf(
-                                    "${japaneseOriginal.isChecked}*${japaneseTranslated.isChecked}*${japaneseRewrite.isChecked}",
-                                    "${englishOriginal.isChecked}*${englishTranslated.isChecked}*${englishRewrite.isChecked}",
-                                    "${chineseOriginal.isChecked}*${chineseTranslated.isChecked}*${chineseRewrite.isChecked}",
-                                    "${dutchOriginal.isChecked}*${dutchTranslated.isChecked}*${dutchRewrite.isChecked}",
-                                    "${frenchOriginal.isChecked}*${frenchTranslated.isChecked}*${frenchRewrite.isChecked}",
-                                    "${germanOriginal.isChecked}*${germanTranslated.isChecked}*${germanRewrite.isChecked}",
-                                    "${hungarianOriginal.isChecked}*${hungarianTranslated.isChecked}*${hungarianRewrite.isChecked}",
-                                    "${italianOriginal.isChecked}*${italianTranslated.isChecked}*${italianRewrite.isChecked}",
-                                    "${koreanOriginal.isChecked}*${koreanTranslated.isChecked}*${koreanRewrite.isChecked}",
-                                    "${polishOriginal.isChecked}*${polishTranslated.isChecked}*${polishRewrite.isChecked}",
-                                    "${portugueseOriginal.isChecked}*${portugueseTranslated.isChecked}*${portugueseRewrite.isChecked}",
-                                    "${russianOriginal.isChecked}*${russianTranslated.isChecked}*${russianRewrite.isChecked}",
-                                    "${spanishOriginal.isChecked}*${spanishTranslated.isChecked}*${spanishRewrite.isChecked}",
-                                    "${thaiOriginal.isChecked}*${thaiTranslated.isChecked}*${thaiRewrite.isChecked}",
-                                    "${vietnameseOriginal.isChecked}*${vietnameseTranslated.isChecked}*${vietnameseRewrite.isChecked}",
-                                    "${notAvailableOriginal.isChecked}*${notAvailableTranslated.isChecked}*${notAvailableRewrite.isChecked}",
-                                    "${otherOriginal.isChecked}*${otherTranslated.isChecked}*${otherRewrite.isChecked}"
-                                ).joinToString("\n")
-                            }
-
-                            preferences.exhSettingsLanguages().set(languages)
-
-                            preferences.exhSettingsLanguages().reconfigure()
-                        }
-                        .show {
-                            val customView = this.view.contentLayout.customView!!
-                            val binding = EhDialogLanguagesBinding.bind(customView)
-                            val settingsLanguages = preferences.exhSettingsLanguages().get().split("\n")
-
-                            val japanese = settingsLanguages[0].split("*").map { it.toBoolean() }
-                            val english = settingsLanguages[1].split("*").map { it.toBoolean() }
-                            val chinese = settingsLanguages[2].split("*").map { it.toBoolean() }
-                            val dutch = settingsLanguages[3].split("*").map { it.toBoolean() }
-                            val french = settingsLanguages[4].split("*").map { it.toBoolean() }
-                            val german = settingsLanguages[5].split("*").map { it.toBoolean() }
-                            val hungarian = settingsLanguages[6].split("*").map { it.toBoolean() }
-                            val italian = settingsLanguages[7].split("*").map { it.toBoolean() }
-                            val korean = settingsLanguages[8].split("*").map { it.toBoolean() }
-                            val polish = settingsLanguages[9].split("*").map { it.toBoolean() }
-                            val portuguese = settingsLanguages[10].split("*").map { it.toBoolean() }
-                            val russian = settingsLanguages[11].split("*").map { it.toBoolean() }
-                            val spanish = settingsLanguages[12].split("*").map { it.toBoolean() }
-                            val thai = settingsLanguages[13].split("*").map { it.toBoolean() }
-                            val vietnamese = settingsLanguages[14].split("*").map { it.toBoolean() }
-                            val notAvailable =
-                                settingsLanguages[15].split("*").map { it.toBoolean() }
-                            val other = settingsLanguages[16].split("*").map { it.toBoolean() }
-
-                            with(binding) {
-                                japaneseOriginal.isChecked = japanese[0]
-                                japaneseTranslated.isChecked = japanese[1]
-                                japaneseRewrite.isChecked = japanese[2]
-
-                                japaneseOriginal.isChecked = japanese[0]
-                                japaneseTranslated.isChecked = japanese[1]
-                                japaneseRewrite.isChecked = japanese[2]
-
-                                englishOriginal.isChecked = english[0]
-                                englishTranslated.isChecked = english[1]
-                                englishRewrite.isChecked = english[2]
-
-                                chineseOriginal.isChecked = chinese[0]
-                                chineseTranslated.isChecked = chinese[1]
-                                chineseRewrite.isChecked = chinese[2]
-
-                                dutchOriginal.isChecked = dutch[0]
-                                dutchTranslated.isChecked = dutch[1]
-                                dutchRewrite.isChecked = dutch[2]
-
-                                frenchOriginal.isChecked = french[0]
-                                frenchTranslated.isChecked = french[1]
-                                frenchRewrite.isChecked = french[2]
-
-                                germanOriginal.isChecked = german[0]
-                                germanTranslated.isChecked = german[1]
-                                germanRewrite.isChecked = german[2]
-
-                                hungarianOriginal.isChecked = hungarian[0]
-                                hungarianTranslated.isChecked = hungarian[1]
-                                hungarianRewrite.isChecked = hungarian[2]
-
-                                italianOriginal.isChecked = italian[0]
-                                italianTranslated.isChecked = italian[1]
-                                italianRewrite.isChecked = italian[2]
-
-                                koreanOriginal.isChecked = korean[0]
-                                koreanTranslated.isChecked = korean[1]
-                                koreanRewrite.isChecked = korean[2]
-
-                                polishOriginal.isChecked = polish[0]
-                                polishTranslated.isChecked = polish[1]
-                                polishRewrite.isChecked = polish[2]
-
-                                portugueseOriginal.isChecked = portuguese[0]
-                                portugueseTranslated.isChecked = portuguese[1]
-                                portugueseRewrite.isChecked = portuguese[2]
-
-                                russianOriginal.isChecked = russian[0]
-                                russianTranslated.isChecked = russian[1]
-                                russianRewrite.isChecked = russian[2]
-
-                                spanishOriginal.isChecked = spanish[0]
-                                spanishTranslated.isChecked = spanish[1]
-                                spanishRewrite.isChecked = spanish[2]
-
-                                thaiOriginal.isChecked = thai[0]
-                                thaiTranslated.isChecked = thai[1]
-                                thaiRewrite.isChecked = thai[2]
-
-                                vietnameseOriginal.isChecked = vietnamese[0]
-                                vietnameseTranslated.isChecked = vietnamese[1]
-                                vietnameseRewrite.isChecked = vietnamese[2]
-
-                                notAvailableOriginal.isChecked = notAvailable[0]
-                                notAvailableTranslated.isChecked = notAvailable[1]
-                                notAvailableRewrite.isChecked = notAvailable[2]
-
-                                otherOriginal.isChecked = other[0]
-                                otherTranslated.isChecked = other[1]
-                                otherRewrite.isChecked = other[2]
-                            }
-                        }
+                    val dialog = LanguagesDialog()
+                    dialog.targetController = this@SettingsEhController
+                    dialog.showDialog(router)
                 }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
@@ -402,56 +287,14 @@ class SettingsEhController : SettingsController() {
             }
 
             preference {
-                key = "pref_front_page_categories"
+                key = PreferenceKeys.eh_enabled_categories
                 titleRes = R.string.frong_page_categories
                 summaryRes = R.string.fromt_page_categories_summary
 
                 onClick {
-                    MaterialDialog(activity!!)
-                        .title(R.string.frong_page_categories)
-                        .message(R.string.fromt_page_categories_summary)
-                        .customView(R.layout.eh_dialog_categories, scrollable = true)
-                        .positiveButton { dialog ->
-                            val customView = dialog.view.contentLayout.customView!!
-                            val binding = EhDialogCategoriesBinding.bind(customView)
-
-                            with(binding) {
-                                preferences.exhEnabledCategories().set(
-                                    listOf(
-                                        (!doujinshiCheckbox.isChecked),
-                                        (!mangaCheckbox.isChecked),
-                                        (!artistCgCheckbox.isChecked),
-                                        (!gameCgCheckbox.isChecked),
-                                        (!westernCheckbox.isChecked),
-                                        (!nonHCheckbox.isChecked),
-                                        (!imageSetCheckbox.isChecked),
-                                        (!cosplayCheckbox.isChecked),
-                                        (!asianPornCheckbox.isChecked),
-                                        (!miscCheckbox.isChecked)
-                                    ).joinToString(separator = ",") { it.toString() }
-                                )
-                            }
-
-                            preferences.exhEnabledCategories().reconfigure()
-                        }
-                        .show {
-                            val customView = this.view.contentLayout.customView!!
-                            val binding = EhDialogCategoriesBinding.bind(customView)
-
-                            with(binding) {
-                                val list = preferences.exhEnabledCategories().get().split(",").map { !it.toBoolean() }
-                                doujinshiCheckbox.isChecked = list[0]
-                                mangaCheckbox.isChecked = list[1]
-                                artistCgCheckbox.isChecked = list[2]
-                                gameCgCheckbox.isChecked = list[3]
-                                westernCheckbox.isChecked = list[4]
-                                nonHCheckbox.isChecked = list[5]
-                                imageSetCheckbox.isChecked = list[6]
-                                cosplayCheckbox.isChecked = list[7]
-                                asianPornCheckbox.isChecked = list[8]
-                                miscCheckbox.isChecked = list[9]
-                            }
-                        }
+                    val dialog = FrontPageCategoriesDialog()
+                    dialog.targetController = this@SettingsEhController
+                    dialog.showDialog(router)
                 }
 
                 preferences.enableExhentai().asImmediateFlow { isVisible = it }
@@ -540,10 +383,10 @@ class SettingsEhController : SettingsController() {
 
                 onClick {
                     activity?.let { activity ->
-                        MaterialDialog(activity)
-                            .title(R.string.favorites_sync_reset)
-                            .message(R.string.favorites_sync_reset_message)
-                            .positiveButton(android.R.string.ok) {
+                        MaterialAlertDialogBuilder(activity)
+                            .setTitle(R.string.favorites_sync_reset)
+                            .setMessage(R.string.favorites_sync_reset_message)
+                            .setPositiveButton(android.R.string.ok) { _, _ ->
                                 LocalFavoritesStorage().apply {
                                     getRealm().use {
                                         it.trans {
@@ -553,8 +396,8 @@ class SettingsEhController : SettingsController() {
                                 }
                                 activity.toast(context.getString(R.string.sync_state_reset), Toast.LENGTH_LONG)
                             }
-                            .negativeButton(android.R.string.cancel)
-                            .cancelable(false)
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setCancelable(false)
                             .show()
                     }
                 }
@@ -642,9 +485,10 @@ class SettingsEhController : SettingsController() {
                 titleRes = R.string.show_updater_statistics
 
                 onClick {
-                    val progress = MaterialDialog(context)
-                        .message(R.string.gallery_updater_statistics_collection)
-                        .cancelable(false)
+                    val progress = MaterialAlertDialogBuilder(context)
+                        .setMessage(R.string.gallery_updater_statistics_collection)
+                        .setCancelable(false)
+                        .create()
                     progress.show()
 
                     viewScope.launch(Dispatchers.IO) {
@@ -688,10 +532,10 @@ class SettingsEhController : SettingsController() {
                         }
 
                         withContext(Dispatchers.Main) {
-                            MaterialDialog(context)
-                                .title(R.string.gallery_updater_statistics)
-                                .message(text = updateInfo)
-                                .positiveButton(android.R.string.ok)
+                            MaterialAlertDialogBuilder(context)
+                                .setTitle(R.string.gallery_updater_statistics)
+                                .setMessage(updateInfo)
+                                .setPositiveButton(android.R.string.ok, null)
                                 .show()
                         }
                     }

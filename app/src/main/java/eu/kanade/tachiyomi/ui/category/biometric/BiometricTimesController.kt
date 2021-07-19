@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.timepicker.MaterialTimePicker
 import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
@@ -21,6 +22,8 @@ import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.shrinkOnScroll
+import exh.util.hours
+import exh.util.minutes
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -34,7 +37,6 @@ class BiometricTimesController :
     ActionMode.Callback,
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
-    BiometricTimesCreateDialog.Listener,
     UndoHelper.OnActionListener {
 
     /**
@@ -97,7 +99,7 @@ class BiometricTimesController :
         fab.setText(R.string.action_add)
         fab.setIconResource(R.drawable.ic_add_24dp)
         fab.setOnClickListener {
-            BiometricTimesCreateDialog(this@BiometricTimesController).showDialog(router, null)
+            showTimePicker()
         }
     }
 
@@ -298,15 +300,19 @@ class BiometricTimesController :
         activity?.toast(R.string.biometric_lock_time_conflicts)
     }
 
-    override fun startNextDialog(startTime: Duration?) {
-        if (startTime != null) {
-            BiometricTimesCreateDialog(this@BiometricTimesController, startTime).showDialog(router, null)
-        } else activity?.toast(R.string.biometric_lock_invalid_time_selected)
-    }
-
-    override fun createTimeRange(startTime: Duration?, endTime: Duration?) {
-        if (startTime != null && endTime != null) {
-            presenter.createTimeRange(TimeRange(startTime, endTime))
-        } else activity?.toast(R.string.biometric_lock_invalid_time_selected)
+    fun showTimePicker(startTime: Duration? = null) {
+        val picker = MaterialTimePicker.Builder()
+            .setTitleText(if (startTime == null) R.string.biometric_lock_start_time else R.string.biometric_lock_end_time)
+            .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
+            .build()
+        picker.addOnPositiveButtonClickListener {
+            val timeRange = picker.hour.hours + picker.minute.minutes
+            if (startTime != null) {
+                presenter.createTimeRange(TimeRange(startTime, timeRange))
+            } else {
+                showTimePicker(timeRange)
+            }
+        }
+        picker.show((activity as MainActivity).supportFragmentManager, null)
     }
 }

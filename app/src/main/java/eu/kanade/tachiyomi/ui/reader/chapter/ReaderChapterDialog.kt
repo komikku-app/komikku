@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.ui.reader.chapter
 
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.callbacks.onDismiss
-import com.afollestad.materialdialogs.customview.customView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -12,36 +12,41 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.system.dpToPx
+import kotlinx.coroutines.launch
 
 class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterAdapter.OnBookmarkClickListener {
     private val binding = ReaderChaptersDialogBinding.inflate(activity.layoutInflater, null, false)
 
     var presenter: ReaderPresenter = activity.presenter
     var adapter: FlexibleAdapter<ReaderChapterItem>? = null
-    var dialog: MaterialDialog
+    var dialog: AlertDialog
 
     init {
-        dialog = MaterialDialog(activity)
-            .title(R.string.chapters)
-            .customView(view = binding.root)
-            .negativeButton(android.R.string.cancel)
-            .onDismiss { destroy() }
-            .show {
-                adapter = ReaderChapterAdapter(this@ReaderChapterDialog)
-                binding.chapterRecycler.adapter = adapter
+        dialog = MaterialAlertDialogBuilder(activity)
+            .setTitle(R.string.chapters)
+            .setView(binding.root)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setOnDismissListener { destroy() }
+            .create()
 
-                adapter?.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, position ->
-                    val item = adapter?.getItem(position)
-                    if (item != null && item.id != presenter.getCurrentChapter()?.chapter?.id) {
-                        dismiss()
-                        presenter.loadNewChapterFromDialog(item)
-                    }
-                    true
-                }
+        adapter = ReaderChapterAdapter(this@ReaderChapterDialog)
+        binding.chapterRecycler.adapter = adapter
 
-                binding.chapterRecycler.layoutManager = LinearLayoutManager(context)
-                refreshList()
+        adapter?.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, position ->
+            val item = adapter?.getItem(position)
+            if (item != null && item.id != presenter.getCurrentChapter()?.chapter?.id) {
+                dialog.dismiss()
+                presenter.loadNewChapterFromDialog(item)
             }
+            true
+        }
+
+        binding.chapterRecycler.layoutManager = LinearLayoutManager(activity)
+        activity.lifecycleScope.launch {
+            refreshList()
+        }
+
+        dialog.show()
     }
 
     private fun refreshList() {

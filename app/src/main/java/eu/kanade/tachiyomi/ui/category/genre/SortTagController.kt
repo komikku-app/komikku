@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import dev.chrisbanes.insetter.applyInsetter
@@ -230,10 +230,10 @@ class SortTagController :
     }
 
     private fun helpDialog(hasPositive: Boolean = false) {
-        MaterialDialog(activity!!)
-            .title(R.string.add_tag)
-            .message(R.string.action_add_tags_message)
-            .positiveButton(android.R.string.ok) {
+        MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.add_tag)
+            .setMessage(R.string.action_add_tags_message)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 if (hasPositive) {
                     SortTagCreateDialog(this@SortTagController).showDialog(router, null)
                 }

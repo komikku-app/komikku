@@ -8,7 +8,7 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -216,11 +216,9 @@ open class IndexController :
 
                 if (search == null) {
                     filterSheet?.context?.let {
-                        MaterialDialog(it)
-                            .title(R.string.save_search_failed_to_load)
-                            .message(R.string.save_search_failed_to_load_message)
-                            .cancelable(true)
-                            .cancelOnTouchOutside(true)
+                        MaterialAlertDialogBuilder(it)
+                            .setTitle(R.string.save_search_failed_to_load)
+                            .setMessage(R.string.save_search_failed_to_load_message)
                             .show()
                     }
                     return@cb

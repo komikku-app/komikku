@@ -3,7 +3,8 @@ package exh.uconfig
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import com.afollestad.materialdialogs.MaterialDialog
+import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -14,7 +15,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 
 class ConfiguringDialogController : DialogController() {
-    private var materialDialog: MaterialDialog? = null
+    private var materialDialog: AlertDialog? = null
     val scope = MainScope()
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
@@ -28,10 +29,10 @@ class ConfiguringDialogController : DialogController() {
                 } catch (e: Exception) {
                     launchUI {
                         activity?.let {
-                            MaterialDialog(it)
-                                .title(R.string.eh_settings_configuration_failed)
-                                .message(text = it.getString(R.string.eh_settings_configuration_failed_message, e.message))
-                                .positiveButton(android.R.string.ok)
+                            MaterialAlertDialogBuilder(it)
+                                .setTitle(R.string.eh_settings_configuration_failed)
+                                .setMessage(it.getString(R.string.eh_settings_configuration_failed_message, e.message))
+                                .setPositiveButton(android.R.string.ok, null)
                                 .show()
                         }
                     }
@@ -43,10 +44,11 @@ class ConfiguringDialogController : DialogController() {
             }
         }
 
-        return MaterialDialog(activity!!)
-            .title(R.string.eh_settings_uploading_to_server)
-            .message(R.string.eh_settings_uploading_to_server_message)
-            .cancelable(false)
+        return MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.eh_settings_uploading_to_server)
+            .setMessage(R.string.eh_settings_uploading_to_server_message)
+            .setCancelable(false)
+            .create()
             .also {
                 materialDialog = it
             }

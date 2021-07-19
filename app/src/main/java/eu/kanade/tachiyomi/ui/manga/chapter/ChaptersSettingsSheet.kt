@@ -5,9 +5,8 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.view.isVisible
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import com.bluelinelabs.conductor.Router
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.ui.manga.MangaPresenter
@@ -110,26 +109,27 @@ class ChaptersSettingsSheet(
 
             override fun onItemClicked(item: Item) {
                 if (item is Item.DrawableSelection) {
-                    val scanlators = presenter.allChapterScanlators.toList()
-                    val filteredScanlators = presenter.manga.filtered_scanlators?.let { MdUtil.getScanlators(it) }
-                    val preselected = if (filteredScanlators.isNullOrEmpty()) {
-                        scanlators.mapIndexed { index, _ -> index }
-                    } else {
-                        filteredScanlators.map { scanlators.indexOf(it) }
-                    }.toIntArray()
+                    val scanlators = presenter.allChapterScanlators.toTypedArray()
+                    val filteredScanlators = presenter.manga.filtered_scanlators?.let { MdUtil.getScanlators(it) } ?: scanlators.toSet()
+                    val selection = scanlators.map {
+                        it in filteredScanlators
+                    }.toBooleanArray()
 
-                    MaterialDialog(context)
-                        .title(R.string.select_scanlators)
-                        .listItemsMultiChoice(items = presenter.allChapterScanlators.toList(), initialSelection = preselected) { _, selections, _ ->
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle(R.string.select_scanlators)
+                        .setMultiChoiceItems(scanlators, selection) { _, which, selected ->
+                            selection[which] = selected
+                        }
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
                             launchIO {
                                 supervisorScope {
-                                    val selected = selections.map { scanlators[it] }.toSet()
+                                    val selected = scanlators.filterIndexed { index, s -> selection[index] }.toSet()
                                     presenter.setScanlatorFilter(selected)
                                     withUIContext { onGroupClicked(this@FilterGroup) }
                                 }
                             }
                         }
-                        .negativeButton(R.string.action_reset) {
+                        .setNegativeButton(R.string.action_reset) { _, _ ->
                             launchIO {
                                 supervisorScope {
                                     presenter.setScanlatorFilter(presenter.allChapterScanlators)
@@ -137,7 +137,6 @@ class ChaptersSettingsSheet(
                                 }
                             }
                         }
-                        .positiveButton(android.R.string.ok)
                         .show()
                     return
                 }

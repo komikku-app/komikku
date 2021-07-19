@@ -34,8 +34,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.afollestad.materialdialogs.MaterialDialog
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.mikepenz.aboutlibraries.util.getThemeColor
 import dev.chrisbanes.insetter.applyInsetter
@@ -693,10 +693,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehAutoscrollHelp.clicks()
             .onEach {
-                MaterialDialog(this)
-                    .title(R.string.eh_autoscroll_help)
-                    .message(R.string.eh_autoscroll_help_message)
-                    .positiveButton(android.R.string.ok)
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.eh_autoscroll_help)
+                    .setMessage(R.string.eh_autoscroll_help_message)
+                    .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
             .launchIn(lifecycleScope)
@@ -747,10 +747,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehRetryAllHelp.clicks()
             .onEach {
-                MaterialDialog(this)
-                    .title(R.string.eh_retry_all_help)
-                    .message(R.string.eh_retry_all_help_message)
-                    .positiveButton(android.R.string.ok)
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.eh_retry_all_help)
+                    .setMessage(R.string.eh_retry_all_help_message)
+                    .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
             .launchIn(lifecycleScope)
@@ -784,10 +784,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehBoostPageHelp.clicks()
             .onEach {
-                MaterialDialog(this)
-                    .title(R.string.eh_boost_page_help)
-                    .message(R.string.eh_boost_page_help_message)
-                    .positiveButton(android.R.string.ok)
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.eh_boost_page_help)
+                    .setMessage(R.string.eh_boost_page_help_message)
+                    .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
             .launchIn(lifecycleScope)

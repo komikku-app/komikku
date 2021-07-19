@@ -4,19 +4,16 @@ import android.app.Dialog
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.text.InputType
 import android.widget.ArrayAdapter
+import android.widget.ScrollView
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
 import coil.loadAny
 import coil.transform.RoundedCornersTransformation
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.customview.customView
-import com.afollestad.materialdialogs.input.getInputField
-import com.afollestad.materialdialogs.input.input
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -26,6 +23,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.util.dropBlank
 import exh.util.trimOrNull
 import kotlinx.coroutines.flow.launchIn
@@ -64,13 +62,15 @@ class EditMangaDialog : DialogController {
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         binding = EditMangaDialogBinding.inflate(activity!!.layoutInflater)
-        val dialog = MaterialDialog(activity!!).apply {
-            customView(view = binding.root, scrollable = true)
-            negativeButton(android.R.string.cancel)
-            positiveButton(R.string.action_save) { onPositiveButtonClick() }
+        val view = ScrollView(activity!!).apply {
+            addView(binding.root)
         }
         onViewCreated()
-        return dialog
+        return MaterialAlertDialogBuilder(activity!!)
+            .setView(view)
+            .setPositiveButton(R.string.action_save) { _, _ -> onPositiveButtonClick() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
     }
 
     fun onViewCreated() {
@@ -230,15 +230,16 @@ class EditMangaDialog : DialogController {
             textStartPadding = 0F
 
             clicks().onEach {
-                MaterialDialog(context)
-                    .title(R.string.add_tag)
-                    .input(inputType = InputType.TYPE_CLASS_TEXT)
-                    .positiveButton(android.R.string.ok) {
-                        val newTag = it.getInputField().text.toString().trimOrNull()
-
+                var newTag: String? = null
+                MaterialAlertDialogBuilder(context)
+                    .setTitle(R.string.add_tag)
+                    .setTextInput {
+                        text = it.trimOrNull()
+                    }
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
                         if (newTag != null) setChips(items + listOf(newTag))
                     }
-                    .negativeButton(android.R.string.cancel)
+                    .setNegativeButton(android.R.string.cancel, null)
                     .show()
             }.launchIn(infoController.viewScope)
         }

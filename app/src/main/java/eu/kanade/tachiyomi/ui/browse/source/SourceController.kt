@@ -234,7 +234,8 @@ class SourceController(bundle: Bundle? = null) :
     }
 
     private fun addToCategories(source: Source) {
-        val categories = preferences.sourcesTabCategories().get().toList().sortedBy { it.lowercase() }
+        val categories = preferences.sourcesTabCategories().get().sortedBy { it.lowercase() }
+            .toTypedArray()
 
         if (categories.isEmpty()) {
             applicationContext?.toast(R.string.no_source_categories)
@@ -245,16 +246,18 @@ class SourceController(bundle: Bundle? = null) :
         val sources = preferenceSources.map { it.split("|")[0] }
 
         if (source.id.toString() in sources) {
-            val preferenceSourcePairs = preferenceSources.map { it.split("|") }.filter { it[0] == source.id.toString() }.map { it[0] to it[1] }.toMutableList()
+            val sourceCategories = preferenceSources
+                .map { item -> item.split("|").let { it.component1() to it.component2() } }
+                .filter { it.first == source.id.toString() }
+                .map { it.second }
 
-            val preselected = preferenceSourcePairs.map { category ->
-                categories.indexOf(category.second)
-            }.toTypedArray()
+            val selection = categories.map { it in sourceCategories }
+                .toBooleanArray()
 
-            ChangeSourceCategoriesDialog(this, source, categories, preselected)
+            ChangeSourceCategoriesDialog(this, source, categories, selection)
                 .showDialog(router)
         } else {
-            ChangeSourceCategoriesDialog(this, source, categories, emptyArray())
+            ChangeSourceCategoriesDialog(this, source, categories, categories.map { false }.toBooleanArray())
                 .showDialog(router)
         }
     }

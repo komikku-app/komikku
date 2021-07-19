@@ -4,8 +4,7 @@ import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
 import androidx.preference.PreferenceScreen
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.TappingInvertMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -543,27 +542,32 @@ class SettingsReaderController : SettingsController() {
         private val preferences: PreferencesHelper = Injekt.get()
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            val selected = preferences.readerBottomButtons().get()
+            val oldSelection = preferences.readerBottomButtons().get()
             val values = ReaderBottomButton.values()
-            val items = values.map { it.value }
 
-            val preselected = selected.mapNotNull { selection -> items.indexOf(selection).takeUnless { it == -1 } }
-                .toIntArray()
+            val selection = values.map { it.value in oldSelection }
+                .toBooleanArray()
 
-            return MaterialDialog(activity!!)
-                .title(R.string.reader_bottom_buttons)
-                .listItemsMultiChoice(
-                    items = values.map { activity!!.getString(it.stringRes) },
-                    initialSelection = preselected
-                ) { _, selections: IntArray, _ ->
-                    val included = selections
-                        .map { values[it].value }
+            return MaterialAlertDialogBuilder(activity!!)
+                .setTitle(R.string.reader_bottom_buttons)
+                .setMultiChoiceItems(
+                    values.map { activity!!.getString(it.stringRes) }.toTypedArray(),
+                    selection
+                ) { _, which, selected ->
+                    selection[which] = selected
+                }
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    val included = values
+                        .filterIndexed { index, _ ->
+                            selection[index]
+                        }
+                        .map { it.value }
                         .toSet()
 
                     preferences.readerBottomButtons().set(included)
                 }
-                .positiveButton(android.R.string.ok)
-                .negativeButton(android.R.string.cancel)
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
         }
     }
 }

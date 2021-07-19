@@ -13,8 +13,7 @@ import android.widget.Toast
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.input.input
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -25,6 +24,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.log.xLogD
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -147,18 +147,18 @@ class EhLoginActivity : BaseViewBindingActivity<EhActivityLoginBinding>() {
 
     private fun openIgneousDialog() {
         var igneous: CharSequence? = null
-        MaterialDialog(this)
-            .title(R.string.custom_igneous_cookie)
-            .message(R.string.custom_igneous_cookie_message)
-            .input { _, charSequence ->
-                igneous = charSequence
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.custom_igneous_cookie)
+            .setMessage(R.string.custom_igneous_cookie_message)
+            .setTextInput { igneousText ->
+                igneous = igneousText
             }
-            .positiveButton(android.R.string.ok) {
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 if (!igneous.isNullOrBlank()) {
                     this.igneous = igneous?.toString()?.trim()
                 }
             }
-            .negativeButton(android.R.string.cancel)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 

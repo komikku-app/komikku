@@ -331,29 +331,35 @@ class SettingsDownloadController : SettingsController() {
             val dbCategories = db.getCategories().executeAsBlocking()
             val categories = listOf(Category.createDefault()) + dbCategories
 
-            val items = categories.map { it.name }
-            val preselected = categories
-                .mapIndexedNotNull { index, category ->
-                    if (category.id in preferences.dontDeleteFromCategories().get().map { it.toInt() }) {
-                        index
-                    } else null
+            val items = categories.map { it.name }.toTypedArray()
+            val selection = categories
+                .mapNotNull { category ->
+                    category.id in preferences.dontDeleteFromCategories().get().map { it.toInt() }
                 }
-                .toIntArray()
+                .toBooleanArray()
 
-            return MaterialDialog(activity!!)
-                .title(R.string.categories)
-                .listItemsMultiChoice(
-                    items = items,
-                    initialSelection = preselected
-                ) { _: MaterialDialog, selections: IntArray, _: List<CharSequence> ->
-                    val included = selections
-                        .map { categories[it].id.toString() }
+            return MaterialAlertDialogBuilder(activity!!)
+                .setTitle(R.string.categories)
+                .setMultiChoiceItems(
+                    items,
+                    selection
+                ) { _, which, selected ->
+                    selection[which] = selected
+                }
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    val included = selection
+                        .mapIndexed { index, selected ->
+                            if (selected) {
+                                categories[index].id.toString()
+                            } else null
+                        }
+                        .filterNotNull()
                         .toSet()
 
                     preferences.dontDeleteFromCategories().set(included)
                 }
-                .positiveButton(android.R.string.ok)
-                .negativeButton(android.R.string.cancel)
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
         }
     }
 

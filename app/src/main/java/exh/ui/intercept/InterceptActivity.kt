@@ -5,10 +5,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.callbacks.onCancel
-import com.afollestad.materialdialogs.callbacks.onDismiss
-import com.afollestad.materialdialogs.list.listItemsSingleChoice
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -83,14 +80,12 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
                     is InterceptResult.Failure -> {
                         binding.interceptProgress.isVisible = false
                         binding.interceptStatus.text = this.getString(R.string.error_with_reason, it.reason)
-                        MaterialDialog(this)
-                            .title(R.string.chapter_error)
-                            .message(text = this.getString(R.string.could_not_open_manga, it.reason))
-                            .cancelable(true)
-                            .cancelOnTouchOutside(true)
-                            .positiveButton(android.R.string.ok)
-                            .onCancel { onBackPressed() }
-                            .onDismiss { onBackPressed() }
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle(R.string.chapter_error)
+                            .setMessage(getString(R.string.could_not_open_manga, it.reason))
+                            .setPositiveButton(android.R.string.ok, null)
+                            .setOnCancelListener { onBackPressed() }
+                            .setOnDismissListener { onBackPressed() }
                             .show()
                     }
                 }
@@ -114,9 +109,10 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
             status.value = InterceptResult.Loading
             val sources = galleryAdder.pickSource(gallery)
             if (sources.size > 1) {
-                MaterialDialog(this)
-                    .title(R.string.label_sources)
-                    .listItemsSingleChoice(items = sources.map { it.toString() }) { _, index, _ ->
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.label_sources)
+                    .setSingleChoiceItems(sources.map { it.toString() }.toTypedArray(), 0) { dialog, index ->
+                        dialog.dismiss()
                         loadGalleryEnd(gallery, sources[index])
                     }
                     .show()

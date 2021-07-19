@@ -54,6 +54,7 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import eu.kanade.tachiyomi.widget.EmptyView
+import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.log.xLogW
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
@@ -205,15 +206,19 @@ open class BrowseSourceController(bundle: Bundle) :
             // EXH -->
             onSaveClicked = {
                 filterSheet?.context?.let {
-                    MaterialDialog(it)
-                        .title(R.string.save_search)
-                        .input(hintRes = R.string.save_search_hint) { _, searchName ->
+                    var searchName = ""
+                    MaterialAlertDialogBuilder(it)
+                        .setTitle(R.string.save_search)
+                        .setTextInput(hint = it.getString(R.string.save_search_hint)) { input ->
+                            searchName = input
+                        }
+                        .setPositiveButton(R.string.action_save) { _, _ ->
                             val oldSavedSearches = presenter.loadSearches()
                             if (searchName.isNotBlank() &&
                                 oldSavedSearches.size < MAX_SAVED_SEARCHES
                             ) {
                                 val newSearches = oldSavedSearches + EXHSavedSearch(
-                                    searchName.toString().trim(),
+                                    searchName.trim(),
                                     presenter.query,
                                     presenter.sourceFilters
                                 )
@@ -221,10 +226,7 @@ open class BrowseSourceController(bundle: Bundle) :
                                 filterSheet?.setSavedSearches(newSearches)
                             }
                         }
-                        .positiveButton(R.string.action_save)
-                        .negativeButton(R.string.action_cancel)
-                        .cancelable(true)
-                        .cancelOnTouchOutside(true)
+                        .setNegativeButton(R.string.action_cancel, null)
                         .show()
                 }
             },
@@ -235,11 +237,9 @@ open class BrowseSourceController(bundle: Bundle) :
 
                 if (search == null) {
                     filterSheet?.context?.let {
-                        MaterialDialog(it)
-                            .title(R.string.save_search_failed_to_load)
-                            .message(R.string.save_search_failed_to_load_message)
-                            .cancelable(true)
-                            .cancelOnTouchOutside(true)
+                        MaterialAlertDialogBuilder(it)
+                            .setTitle(R.string.save_search_failed_to_load)
+                            .setMessage(R.string.save_search_failed_to_load_message)
                             .show()
                     }
                     return@cb
@@ -267,30 +267,26 @@ open class BrowseSourceController(bundle: Bundle) :
 
                 if (search == null || search.name != name) {
                     filterSheet?.context?.let {
-                        MaterialDialog(it)
-                            .title(R.string.save_search_failed_to_delete)
-                            .message(R.string.save_search_failed_to_delete_message)
-                            .cancelable(true)
-                            .cancelOnTouchOutside(true)
+                        MaterialAlertDialogBuilder(it)
+                            .setTitle(R.string.save_search_failed_to_delete)
+                            .setMessage(R.string.save_search_failed_to_delete_message)
                             .show()
                     }
                     return@cb
                 }
 
                 filterSheet?.context?.let {
-                    MaterialDialog(it)
-                        .title(R.string.save_search_delete)
-                        .message(text = it.getString(R.string.save_search_delete_message, search.name))
-                        .positiveButton(R.string.action_cancel)
-                        .negativeButton(android.R.string.ok) {
+                    MaterialAlertDialogBuilder(it)
+                        .setTitle(R.string.save_search_delete)
+                        .setMessage(it.getString(R.string.save_search_delete_message, search.name))
+                        .setPositiveButton(R.string.action_cancel, null)
+                        .setNegativeButton(android.R.string.ok) { _, _ ->
                             val newSearches = savedSearches.filterIndexed { index, _ ->
                                 index != indexToDelete
                             }
                             presenter.saveSearches(newSearches)
                             filterSheet?.setSavedSearches(newSearches)
                         }
-                        .cancelable(true)
-                        .cancelOnTouchOutside(true)
                         .show()
                 }
             }

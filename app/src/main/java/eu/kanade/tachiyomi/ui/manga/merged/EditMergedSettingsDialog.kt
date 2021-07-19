@@ -2,11 +2,11 @@ package eu.kanade.tachiyomi.ui.manga.merged
 
 import android.app.Dialog
 import android.os.Bundle
+import android.widget.ScrollView
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.customview.customView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -50,13 +50,15 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
         binding = EditMergedSettingsDialogBinding.inflate(activity!!.layoutInflater)
-        val dialog = MaterialDialog(activity!!)
-            .customView(view = binding.root, scrollable = true)
-            .negativeButton(android.R.string.cancel)
-            .positiveButton(R.string.action_save) { onPositiveButtonClick() }
-
+        val view = ScrollView(activity!!).apply {
+            addView(binding.root)
+        }
         onViewCreated()
-        return dialog
+        return MaterialAlertDialogBuilder(activity!!)
+            .setView(view)
+            .setPositiveButton(R.string.action_save) { _, _ -> onPositiveButtonClick() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
     }
 
     fun onViewCreated() {
@@ -99,26 +101,26 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
         val mergedMangaAdapter = mergedMangaAdapter ?: return
         val mergeMangaReference = mergedMangaAdapter.currentItems.getOrNull(position)?.mergedMangaReference ?: return
 
-        MaterialDialog(activity!!)
-            .title(R.string.delete_merged_manga)
-            .message(R.string.delete_merged_manga_desc)
-            .positiveButton(android.R.string.ok) {
+        MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.delete_merged_manga)
+            .setMessage(R.string.delete_merged_manga_desc)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 db.deleteMergedManga(mergeMangaReference).executeAsBlocking()
                 dialog?.dismiss()
                 mangaController.router.popController(mangaController)
             }
-            .negativeButton(android.R.string.cancel)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
     override fun onToggleChapterUpdatesClicked(position: Int) {
-        MaterialDialog(activity!!)
-            .title(R.string.chapter_updates_merged_manga)
-            .message(R.string.chapter_updates_merged_manga_desc)
-            .positiveButton(android.R.string.ok) {
+        MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.chapter_updates_merged_manga)
+            .setMessage(R.string.chapter_updates_merged_manga_desc)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 toggleChapterUpdates(position)
             }
-            .negativeButton(android.R.string.cancel)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -136,13 +138,13 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     }
 
     override fun onToggleChapterDownloadsClicked(position: Int) {
-        MaterialDialog(activity!!)
-            .title(R.string.download_merged_manga)
-            .message(R.string.download_merged_manga_desc)
-            .positiveButton(android.R.string.ok) {
+        MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.download_merged_manga)
+            .setMessage(R.string.download_merged_manga_desc)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 toggleChapterDownloads(position)
             }
-            .negativeButton(android.R.string.cancel)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 

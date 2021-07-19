@@ -18,9 +18,10 @@ class WhatsNewDialogController : DialogController() {
         val activity = activity!!
         val view = WhatsNewRecyclerView(activity)
         return MaterialAlertDialogBuilder(activity)
-            .setTitle(res = if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY <-- */) R.string.notices else R.string.whats_new)
-            .setCustomView(view = view)
+            .setTitle(if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY <-- */) R.string.notices else R.string.whats_new)
+            .setView(view)
             .setPositiveButton(android.R.string.cancel, null)
+            .create()
     }
 
     class WhatsNewRecyclerView(context: Context) : ChangeLogRecyclerView(context) {
