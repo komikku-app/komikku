@@ -45,7 +45,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun displayScore(track: Track) = track.score.toInt().toString()
 
-    override suspend fun update(track: Track): Track {
+    override suspend fun update(track: Track, didReadChapter: Boolean): Track {
         return withIOContext {
             val mdex = mdex ?: throw MangaDexNotFoundException()
 
@@ -91,7 +91,19 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override fun getCompletionStatus(): Int = FollowStatus.COMPLETED.int
 
-    override suspend fun bind(track: Track): Track = update(refresh(track).also { if (it.status == FollowStatus.UNFOLLOWED.int) it.status = FollowStatus.READING.int })
+    override fun getReadingStatus(): Int = FollowStatus.READING.int
+
+    override fun getRereadingStatus(): Int = FollowStatus.RE_READING.int
+
+    override suspend fun bind(track: Track, hasReadChapters: Boolean): Track = update(
+        refresh(track).also {
+            if (it.status == FollowStatus.UNFOLLOWED.int) {
+                it.status = if (hasReadChapters) {
+                    FollowStatus.READING.int
+                } else FollowStatus.PLAN_TO_READ.int
+            }
+        }
+    )
 
     override suspend fun refresh(track: Track): Track {
         return withIOContext {
