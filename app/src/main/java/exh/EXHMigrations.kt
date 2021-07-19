@@ -338,8 +338,6 @@ object EXHMigrations {
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
 
-                // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
-
                 return true
             }
         } catch (e: Exception) {

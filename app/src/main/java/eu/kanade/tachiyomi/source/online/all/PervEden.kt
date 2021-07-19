@@ -57,7 +57,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
             val newAltTitles = mutableListOf<String>()
             tags.clear()
             var inStatus: String? = null
-            rightBoxElement.childNodes().forEach {
+            rightBoxElement!!.childNodes().forEach {
                 if (it is Element && it.tagName().lowercase() == "h4") {
                     inStatus = it.text().trim()
                 } else {

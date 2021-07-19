@@ -121,9 +121,9 @@ class EHentai(
             // Do not parse header and ads
             it.selectFirst("th") == null && it.selectFirst(".itd") == null
         }.map { body ->
-            val thumbnailElement = body.selectFirst(".gl1e img, .gl2c .glthumb img")
-            val column2 = body.selectFirst(".gl3e, .gl2c")
-            val linkElement = body.selectFirst(".gl3c > a, .gl2e > div > a")
+            val thumbnailElement = body.selectFirst(".gl1e img, .gl2c .glthumb img")!!
+            val column2 = body.selectFirst(".gl3e, .gl2c")!!
+            val linkElement = body.selectFirst(".gl3c > a, .gl2e > div > a")!!
             val infoElement = body.selectFirst(".gl3e")
 
             // why is column2 null
@@ -143,7 +143,7 @@ class EHentai(
                     thumbnail_url = thumbnailElement.attr("src")
 
                     if (infoElements != null) {
-                        linkElement.select("div div")?.getOrNull(1)?.select("tr")?.forEach { row ->
+                        linkElement.select("div div").getOrNull(1)?.select("tr")?.forEach { row ->
                             val namespace = row.select(".tc").text().removeSuffix(":")
                             parsedTags.addAll(
                                 row.select("div").map { element ->
@@ -160,7 +160,7 @@ class EHentai(
                             )
                         }
                     } else {
-                        val tagElement = body.selectFirst(".gl3c > a")
+                        val tagElement = body.selectFirst(".gl3c > a")!!
                         val tagElements = tagElement.select("div")
                         tagElements.forEach { element ->
                             if (element.className() == "gt") {
@@ -198,8 +198,8 @@ class EHentai(
                                 ?.replace(" ", "")
                         )
 
-                        val info = body.selectFirst(".gl2c")
-                        val extraInfo = body.selectFirst(".gl4c")
+                        val info = body.selectFirst(".gl2c")!!
+                        val extraInfo = body.selectFirst(".gl4c")!!
 
                         val infoList = info.select("div div")
 
@@ -308,7 +308,7 @@ class EHentai(
 
                 val parentLink = doc.select("#gdd .gdt1").find { el ->
                     el.text().lowercase() == "parent:"
-                }!!.nextElementSibling().selectFirst("a")?.attr("href")
+                }!!.nextElementSibling()!!.selectFirst("a")?.attr("href")
 
                 if (parentLink != null) {
                     updateHelper.parentLookupTable.put(
@@ -332,12 +332,12 @@ class EHentai(
         // Build chapter for root gallery
         val self = ChapterInfo(
             key = EHentaiSearchMetadata.normalizeUrl(doc.location()),
-            name = "v1: " + doc.selectFirst("#gn").text(),
+            name = "v1: " + doc.selectFirst("#gn")!!.text(),
             number = 1f,
             dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(
                 doc.select("#gdd .gdt1").find { el ->
                     el.text().lowercase() == "posted:"
-                }!!.nextElementSibling().text()
+                }!!.nextElementSibling()!!.text()
             )!!.time
         )
         // Build and append the rest of the galleries
@@ -604,7 +604,7 @@ class EHentai(
                 // Parse the table
                 select("#gdd tr").forEach {
                     val left = it.select(".gdt1").text().trimOrNull()
-                    val rightElement = it.selectFirst(".gdt2")
+                    val rightElement = it.selectFirst(".gdt2")!!
                     val right = rightElement.text().trimOrNull()
                     if (left != null && right != null) {
                         ignore {
@@ -689,7 +689,7 @@ class EHentai(
 
     private fun realImageUrlParse(response: Response, page: Page): String {
         with(response.asJsoup()) {
-            val currentImage = getElementById("img").attr("src")
+            val currentImage = getElementById("img")!!.attr("src")
             // Each press of the retry button will choose another server
             select("#loadfail").attr("onclick").nullIfBlank()?.let {
                 page.url = addParam(page.url, "nl", it.substring(it.indexOf('\'') + 1 until it.lastIndexOf('\'')))

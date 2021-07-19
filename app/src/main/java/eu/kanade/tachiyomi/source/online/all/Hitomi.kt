@@ -48,11 +48,11 @@ class Hitomi(delegate: HttpSource, val context: Context) :
 
             tags.clear()
 
-            thumbnailUrl = "https:" + input.selectFirst(".cover img").attr("src")
+            thumbnailUrl = "https:" + input.selectFirst(".cover img")!!.attr("src")
 
-            val galleryElement = input.selectFirst(".gallery")
+            val galleryElement = input.selectFirst(".gallery")!!
 
-            title = galleryElement.selectFirst("h1").text()
+            title = galleryElement.selectFirst("h1")!!.text()
             artists = galleryElement.select("h2 a").map { it.text() }
             tags += artists.map { RaisedTag("artist", it, RaisedSearchMetadata.TAG_TYPE_VIRTUAL) }
 
@@ -107,7 +107,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
             }
 
             uploadDate = try {
-                DATE_FORMAT.parse(input.selectFirst(".gallery-info .date").text())!!.time
+                DATE_FORMAT.parse(input.selectFirst(".gallery-info .date")!!.text())!!.time
             } catch (e: Exception) {
                 null
             }
