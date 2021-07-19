@@ -313,10 +313,6 @@
     <string name="az_recommends">Ver Recomendações</string>
     <string name="merge">Juntar</string>
     <string name="merge_with_another_source">Juntar Com Outra</string>
-    <string name="cover_saved">Capa salva</string>
-    <string name="share_cover">Compartilhar capa</string>
-    <string name="error_saving_cover">Erro ao salvar capa</string>
-    <string name="error_sharing_cover">Erro ao compartilhar capa</string>
 
     <!-- Manga info fragment -->
     <string name="hiatus">Hiato</string>
