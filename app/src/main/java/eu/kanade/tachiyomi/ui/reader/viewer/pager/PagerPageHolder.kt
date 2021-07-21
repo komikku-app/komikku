@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.annotation.SuppressLint
+import android.app.ActionBar
 import android.graphics.BitmapFactory
 import android.graphics.PointF
 import android.graphics.drawable.Animatable
@@ -117,6 +118,24 @@ class PagerPageHolder(
      */
     private var readImageHeaderSubscription: Subscription? = null
 
+    private var visibilityListener = ActionBar.OnMenuVisibilityListener { isVisible ->
+        if (isVisible.not()) {
+            subsamplingImageView?.setOnStateChangedListener(null)
+            return@OnMenuVisibilityListener
+        }
+        subsamplingImageView?.setOnStateChangedListener(
+            object : SubsamplingScaleImageView.OnStateChangedListener {
+                override fun onScaleChanged(newScale: Float, origin: Int) {
+                    viewer.activity.hideMenu()
+                }
+
+                override fun onCenterChanged(newCenter: PointF?, origin: Int) {
+                    viewer.activity.hideMenu()
+                }
+            }
+        )
+    }
+
     // SY -->
     var status: Int = 0
     var extraStatus: Int = 0
@@ -130,6 +149,7 @@ class PagerPageHolder(
         addView(progressIndicator)
         scope = CoroutineScope(Job() + Dispatchers.Default)
         observeStatus()
+        viewer.activity.addOnMenuVisibilityListener(visibilityListener)
     }
 
     /**
@@ -144,6 +164,8 @@ class PagerPageHolder(
         unsubscribeStatus(2)
         unsubscribeReadImageHeader()
         subsamplingImageView?.setOnImageEventListener(null)
+        subsamplingImageView?.setOnStateChangedListener(null)
+        viewer.activity.removeOnMenuVisibilityListener(visibilityListener)
     }
 
     /**
