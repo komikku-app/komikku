@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.storage.DiskUtil
 import rx.Observable
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
@@ -380,6 +381,12 @@ class DownloadManager(private val context: Context) {
         } else {
             Timber.e("Could not rename downloaded chapter: %s.", oldNames.joinToString())
         }
+    }
+
+    fun renameMangaDir(oldTitle: String, newTitle: String, source: Long) {
+        val sourceDir = provider.findSourceDir(sourceManager.getOrStub(source)) ?: return
+        val mangaDir = sourceDir.findFile(DiskUtil.buildValidFilename(oldTitle), true) ?: return
+        mangaDir.renameTo(DiskUtil.buildValidFilename(newTitle))
     }
 
     private fun getChaptersToDelete(chapters: List<Chapter>): List<Chapter> {

@@ -1,7 +1,11 @@
 package eu.kanade.tachiyomi.source.model
 
+import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
+import eu.kanade.tachiyomi.data.download.DownloadManager
 import tachiyomi.source.model.MangaInfo
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.Serializable
 
 interface SManga : Serializable {
@@ -41,8 +45,13 @@ interface SManga : Serializable {
 
     fun copyFrom(other: SManga) {
         // EXH -->
-        if (other.title.isNotBlank()) {
+        if (other.title.isNotBlank() && originalTitle != other.title) {
+            val oldTitle = originalTitle
             title = other.originalTitle
+            val source = (this as? Manga)?.source
+            if (source != null) {
+                Injekt.get<DownloadManager>().renameMangaDir(oldTitle, other.originalTitle, source)
+            }
         }
         // EXH <--
 
