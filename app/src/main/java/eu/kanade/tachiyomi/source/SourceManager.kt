@@ -183,10 +183,13 @@ open class SourceManager(private val context: Context) {
             return name
         }
 
-        private fun getSourceNotInstalledException(): Exception {
-            return Exception(context.getString(R.string.source_not_installed, id.toString()))
+        private fun getSourceNotInstalledException(): SourceNotInstalledException {
+            return SourceNotInstalledException(id)
         }
     }
+
+    inner class SourceNotInstalledException(val id: Long) :
+        Exception(context.getString(R.string.source_not_installed, id.toString()))
 
     // SY -->
     companion object {
