@@ -138,9 +138,12 @@ open class BrowseSourcePresenter(
         sourceFilters = source.getFilterList()
 
         // SY -->
-        if (filters != null) {
-            val filters = Json.decodeFromString<JsonSavedSearch>(filters)
-            filterSerializer.deserialize(sourceFilters, filters.filters)
+        val jsonFilters = filters
+        if (jsonFilters != null) {
+            runCatching {
+                val filters = Json.decodeFromString<JsonSavedSearch>(jsonFilters)
+                filterSerializer.deserialize(sourceFilters, filters.filters)
+            }
         }
         val allDefault = sourceFilters == source.getFilterList()
         // SY <--
