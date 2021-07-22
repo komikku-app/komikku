@@ -12,8 +12,6 @@ open class MangaImpl : Manga {
     override lateinit var url: String
 
     // SY -->
-    private val customMangaManager: CustomMangaManager by injectLazy()
-
     override var title: String
         get() = if (favorite) {
             val customTitle = customMangaManager.getManga(this)?.title
@@ -93,4 +91,10 @@ open class MangaImpl : Manga {
     override fun hashCode(): Int {
         return url.hashCode() + id.hashCode()
     }
+
+    // SY -->
+    companion object {
+        private val customMangaManager: CustomMangaManager by injectLazy()
+    }
+    // SY <--
 }
