@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogW
 import exh.source.getMainSource
@@ -107,7 +108,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
                 )
                 if (result) {
                     dialog?.dismiss()
-                    launchUI {
+                    withUIContext {
                         binding.root.context.toast(R.string.login_success)
                     }
                 } else {

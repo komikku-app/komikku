@@ -45,6 +45,7 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
+import kotlinx.coroutines.CancellationException
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import rx.Observable
@@ -209,19 +210,10 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override suspend fun logout(): Boolean {
-        val result = try {
-            loginHelper.logout()
-            true
-        } catch (e: NoSessionException) {
-            true
-        } catch (e: Exception) {
-            e.message?.equals("HTTP error 405") ?: false
-        }
-
-        return if (result) {
-            mdList.logout()
-            true
-        } else false
+        val e = runCatching { loginHelper.logout() }.exceptionOrNull()
+        if (e is CancellationException) throw e
+        mdList.logout()
+        return true
     }
 
     override suspend fun fetchAllFollows(): List<Pair<SManga, MangaDexSearchMetadata>> {
