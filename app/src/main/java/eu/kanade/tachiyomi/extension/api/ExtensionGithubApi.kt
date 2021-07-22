@@ -23,34 +23,22 @@ internal class ExtensionGithubApi {
     private val networkService: NetworkHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
 
-    private var requiresFallbackSource = false
-
     suspend fun findExtensions(): List<Extension.Available> {
         return withIOContext {
-            val response = try {
-                networkService.client
-                    .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
-                    .await()
-            } catch (e: Throwable) {
-                requiresFallbackSource = true
-
-                networkService.client
-                    .newCall(GET("${FALLBACK_REPO_URL_PREFIX}index.min.json"))
-                    .await()
-            }
-
-            parseResponse(response.parseAs()) + preferences.extensionRepos().get().flatMap { repoPath ->
-                try {
-                    networkService.client
-                        .newCall(GET("$BASE_URL$repoPath/repo/index.min.json"))
-                        .await()
-                } catch (e: Exception) {
-                    networkService.client
-                        .newCall(GET("$FALLBACK_BASE_URL$repoPath@repo/index.min.json"))
-                        .await()
-                }.parseAs<JsonArray>()
-                    .let { parseResponse(it, getUrlPrefix(repoPath)) }
-            }
+            networkService.client
+                .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
+                .await()
+                .parseAs<JsonArray>()
+                .let { parseResponse(it) }
+        } /* SY --> */ + preferences.extensionRepos().get().flatMap { repoPath ->
+            val url = "$BASE_URL$repoPath/repo/"
+            networkService.client
+                .newCall(GET("${url}index.min.json"))
+                .await()
+                .parseAs<JsonArray>()
+                .let {
+                    parseResponse(it, url)
+                }
         }
         // SY <--
     }
@@ -85,7 +73,7 @@ internal class ExtensionGithubApi {
         return extensionsWithUpdate
     }
 
-    private fun parseResponse(json: JsonArray /* SY --> */, repoUrl: String = getUrlPrefix() /* SY <-- */): List<Extension.Available> {
+    private fun parseResponse(json: JsonArray /* SY --> */, repoUrl: String = REPO_URL_PREFIX /* SY <-- */): List<Extension.Available> {
         return json
             .filter { element ->
                 val versionName = element.jsonObject["version"]!!.jsonPrimitive.content
@@ -109,32 +97,19 @@ internal class ExtensionGithubApi {
     }
 
     fun getApkUrl(extension: Extension.Available): String {
-        return /* SY --> */ "${extension.repoUrl}apk/${extension.apkName}" /* SY <-- */
-    }
-
-    private fun getUrlPrefix(): String {
-        return when (requiresFallbackSource) {
-            true -> FALLBACK_REPO_URL_PREFIX
-            false -> REPO_URL_PREFIX
-        }
+        return /* SY --> */ "${extension.repoUrl}/apk/${extension.apkName}" /* SY <-- */
     }
 
     // SY -->
-    private fun getUrlPrefix(repoUrl: String): String {
-        return when (requiresFallbackSource) {
-            true -> "${FALLBACK_BASE_URL}$repoUrl@repo/"
-            false -> "${BASE_URL}$repoUrl/repo/"
-        }
-    }
-
     private fun Extension.isBlacklisted(
         blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get()
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
     // SY <--
+
+    companion object {
+        const val BASE_URL = "https://raw.githubusercontent.com/"
+        const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
+    }
 }
-const val BASE_URL = "https://raw.githubusercontent.com/"
-const val FALLBACK_BASE_URL = "https://cdn.jsdelivr.net/gh/"
-private const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
-private const val FALLBACK_REPO_URL_PREFIX = "${FALLBACK_BASE_URL}tachiyomiorg/tachiyomi-extensions@repo/"
