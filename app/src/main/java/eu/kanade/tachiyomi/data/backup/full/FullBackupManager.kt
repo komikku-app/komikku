@@ -416,7 +416,11 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     internal fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
         val currentSavedSearches = preferences.savedSearches().get().mapNotNull {
             val sourceId = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
-            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+            val content = try {
+                Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+            } catch (e: Exception) {
+                return@mapNotNull null
+            }
             BackupSavedSearch(
                 content.name,
                 content.query,

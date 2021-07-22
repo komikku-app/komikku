@@ -217,7 +217,11 @@ open class IndexPresenter(
         return preferences.savedSearches().get().mapNotNull {
             val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
             if (id != source.id) return@mapNotNull null
-            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+            val content = try {
+                Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+            } catch (e: Exception) {
+                return@mapNotNull null
+            }
             try {
                 val originalFilters = source.getFilterList()
                 filterSerializer.deserialize(originalFilters, content.filters)
