@@ -33,7 +33,6 @@ import exh.md.handlers.MangaPlusHandler
 import exh.md.handlers.PageHandler
 import exh.md.handlers.SimilarHandler
 import exh.md.network.MangaDexLoginHelper
-import exh.md.network.NoSessionException
 import exh.md.network.TokenAuthenticator
 import exh.md.service.MangaDexAuthService
 import exh.md.service.MangaDexService
