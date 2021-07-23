@@ -602,11 +602,7 @@ class ReaderPresenter(
         return when {
             resolveDefault && readingMode == ReadingModeType.DEFAULT && preferences.useAutoWebtoon().get() -> {
                 manga.defaultReaderType(manga.mangaType(sourceName = sourceManager.get(manga.source)?.name))
-                    ?: if (manga.readingModeType == ReadingModeType.DEFAULT.flagValue) {
-                        default
-                    } else {
-                        readingMode.prefValue
-                    }
+                    ?: default
             }
             resolveDefault && readingMode == ReadingModeType.DEFAULT -> default
             else -> manga.readingModeType
