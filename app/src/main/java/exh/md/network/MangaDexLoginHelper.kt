@@ -71,7 +71,17 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
 
     suspend fun logout() {
         return withIOContext {
-            authService.logout()
+            try {
+                if (isAuthenticated()) {
+                    authService.logout()
+                } else {
+                    if (refreshToken()) {
+                        authService.logout()
+                    }
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+            }
         }
     }
 }
