@@ -127,11 +127,6 @@ class SettingsGeneralController : SettingsController() {
                 }
 
                 summary = "%s"
-
-                onChange {
-                    activity?.recreate()
-                    true
-                }
             }
             listPreference {
                 key = Keys.appTheme

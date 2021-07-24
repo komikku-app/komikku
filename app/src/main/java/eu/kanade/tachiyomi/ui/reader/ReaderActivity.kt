@@ -52,7 +52,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseRxActivity
-import eu.kanade.tachiyomi.ui.base.activity.BaseThemedActivity.Companion.applyThemePreferences
+import eu.kanade.tachiyomi.ui.base.activity.BaseThemedActivity.Companion.applyAppTheme
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter.SetAsCoverResult.AddToLibraryFirst
@@ -184,7 +184,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      * Called when the activity is created. Initializes the presenter and configuration.
      */
     override fun onCreate(savedInstanceState: Bundle?) {
-        applyThemePreferences(preferences)
+        applyAppTheme(preferences)
         super.onCreate(savedInstanceState)
 
         binding = ReaderActivityBinding.inflate(layoutInflater)
