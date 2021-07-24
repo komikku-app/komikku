@@ -928,14 +928,14 @@ class MangaController :
                             override fun onAnimationEnd(animation: Animator) {
                                 thumbView.alpha = 1f
                                 binding.expandedImage.isVisible = false
-                                actionFab?.isVisible = true
+                                actionFab?.isVisible = presenter.filteredAndSortedChapters.any { !it.read }
                                 currentAnimator = null
                             }
 
                             override fun onAnimationCancel(animation: Animator) {
                                 thumbView.alpha = 1f
                                 binding.expandedImage.isVisible = false
-                                actionFab?.isVisible = true
+                                actionFab?.isVisible = presenter.filteredAndSortedChapters.any { !it.read }
                                 currentAnimator = null
                             }
                         }
