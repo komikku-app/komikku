@@ -150,5 +150,10 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
 
     override suspend fun login(username: String, password: String): Unit = throw Exception("not used")
 
+    override fun logout() {
+        super.logout()
+        preferences.trackToken(this).delete()
+    }
+
     class MangaDexNotFoundException : Exception("Mangadex not enabled")
 }
