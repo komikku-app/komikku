@@ -44,7 +44,6 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
-import kotlinx.coroutines.CancellationException
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import rx.Observable
