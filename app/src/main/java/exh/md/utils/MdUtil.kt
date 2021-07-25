@@ -318,8 +318,7 @@ class MdUtil {
 
             return sourceManager.getVisibleOnlineSources()
                 .asSequence()
-                .map { it.getMainSource() }
-                .filterIsInstance<MangaDex>()
+                .mapNotNull { it.getMainSource<MangaDex>() }
                 .filter { it.lang in languages }
                 .filterNot { it.id.toString() in disabledSourceIds }
                 .toList()

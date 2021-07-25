@@ -302,8 +302,8 @@ class MangaController :
         chaptersHeaderAdapter = MangaChaptersHeaderAdapter(this)
         chaptersAdapter = ChaptersAdapter(this, view.context)
         // SY -->
-        val mainSource = presenter.source.getMainSource()
-        if (mainSource is MetadataSource<*, *>) {
+        val mainSource = presenter.source.getMainSource<MetadataSource<*, *>>()
+        if (mainSource != null) {
             mangaMetaInfoAdapter = mainSource.getDescriptionAdapter(this)
         }
         if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null) {
@@ -556,8 +556,8 @@ class MangaController :
 
     // SY -->
     fun onNextMetaInfo(flatMetadata: FlatMetadata) {
-        val mainSource = presenter.source.getMainSource()
-        if (mainSource is MetadataSource<*, *>) {
+        val mainSource = presenter.source.getMainSource<MetadataSource<*, *>>()
+        if (mainSource != null) {
             presenter.meta = flatMetadata.raise(mainSource.metaClass)
             mangaMetaInfoAdapter?.notifyDataSetChanged()
             updateFilterIconState()

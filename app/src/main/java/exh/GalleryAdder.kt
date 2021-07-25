@@ -37,8 +37,7 @@ class GalleryAdder {
     fun pickSource(url: String): List<UrlImportableSource> {
         val uri = url.toUri()
         return sourceManager.getVisibleCatalogueSources()
-            .map { it.getMainSource() }
-            .filterIsInstance<UrlImportableSource>()
+            .mapNotNull { it.getMainSource<UrlImportableSource>() }
             .filter {
                 it.lang in filters.first && it.id !in filters.second && try {
                     it.matchesUri(uri)
@@ -71,8 +70,7 @@ class GalleryAdder {
                 }
             } else {
                 sourceManager.getVisibleCatalogueSources()
-                    .map { it.getMainSource() }
-                    .filterIsInstance<UrlImportableSource>()
+                    .mapNotNull { it.getMainSource<UrlImportableSource>() }
                     .find {
                         it.lang in filters.first && it.id !in filters.second && try {
                             it.matchesUri(uri)

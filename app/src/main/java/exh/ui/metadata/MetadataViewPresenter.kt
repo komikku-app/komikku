@@ -30,8 +30,8 @@ class MetadataViewPresenter(
 
         launchIO {
             val flatMetadata = db.getFlatMetadataForManga(manga.id!!).executeOnIO() ?: return@launchIO
-            val mainSource = source.getMainSource()
-            if (mainSource is MetadataSource<*, *>) {
+            val mainSource = source.getMainSource<MetadataSource<*, *>>()
+            if (mainSource != null) {
                 meta.value = flatMetadata.raise(mainSource.metaClass)
             }
         }

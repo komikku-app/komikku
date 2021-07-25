@@ -118,8 +118,8 @@ class SourceFilterSheet(
 
         init {
             // SY -->
-            val mainSource = source?.getMainSource()
-            if (mainSource is BrowseSourceFilterHeader && controller != null) {
+            val mainSource = source?.getMainSource<BrowseSourceFilterHeader>()
+            if (mainSource != null && controller != null) {
                 adapters += mainSource.getFilterHeader(controller) { dismissSheet?.invoke() }
             }
             adapters += savedSearchesAdapter

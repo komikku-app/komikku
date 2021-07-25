@@ -180,8 +180,8 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             }
         }
 
-        val source = sourceManager.get(manga.source)?.getMainSource()
-        if (source is MetadataSource<*, *>) {
+        val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
+        if (source != null) {
             manga.id?.let { mangaId ->
                 databaseHelper.getFlatMetadataForManga(mangaId).executeAsBlocking()?.let { flatMetadata ->
                     mangaObject.flatMetadata = BackupFlatMetadata.copyFrom(flatMetadata)

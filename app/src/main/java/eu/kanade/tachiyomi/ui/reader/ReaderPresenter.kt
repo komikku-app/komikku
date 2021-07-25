@@ -247,8 +247,8 @@ class ReaderPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             // SY -->
             .flatMap { manga ->
-                val source = sourceManager.get(manga.source)?.getMainSource()
-                if (manga.initialized && source is MetadataSource<*, *>) {
+                val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
+                if (manga.initialized && source != null) {
                     db.getFlatMetadataForManga(mangaId).asRxSingle().map {
                         manga to it?.raise(source.metaClass)
                     }.toObservable()

@@ -57,6 +57,7 @@ import eu.kanade.tachiyomi.widget.EmptyView
 import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.log.xLogW
 import exh.savedsearches.EXHSavedSearch
+import exh.source.anyIs
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
 import exh.widget.preference.MangadexLoginDialog
@@ -169,8 +170,8 @@ open class BrowseSourceController(bundle: Bundle) :
         binding.progress.isVisible = true
 
         // SY -->
-        val mainSource = presenter.source.getMainSource()
-        if (mainSource is LoginSource && mainSource.requiresLogin && !mainSource.isLogged()) {
+        val mainSource = presenter.source.getMainSource<LoginSource>()
+        if (mainSource != null && mainSource.requiresLogin && !mainSource.isLogged()) {
             val dialog = MangadexLoginDialog(mainSource)
             dialog.showDialog(router)
         }
@@ -438,7 +439,7 @@ open class BrowseSourceController(bundle: Bundle) :
         menu.findItem(R.id.action_local_source_help)?.isVisible = isLocalSource
 
         // SY -->
-        menu.findItem(R.id.action_settings)?.isVisible = presenter.source is ConfigurableSource
+        menu.findItem(R.id.action_settings)?.isVisible = presenter.source.anyIs<ConfigurableSource>()
         // SY <--
     }
 
