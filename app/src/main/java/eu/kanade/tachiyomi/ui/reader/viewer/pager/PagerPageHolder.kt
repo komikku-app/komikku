@@ -331,11 +331,8 @@ class PagerPageHolder(
      * Called when the page is ready.
      */
     private fun setImage() {
-        progressIndicator.isVisible = true
-        progressIndicator.isVisible = true
         if (extraPage == null) {
-            progressIndicator.setProgress(100)
-            progressIndicator.hide()
+            progressIndicator.setCompleteProgressAndHide()
         } else {
             progressIndicator.setProgress(95)
         }
@@ -467,8 +464,7 @@ class PagerPageHolder(
         return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, viewer.config.pageCanvasColor) {
             scope?.launchUI {
                 if (it == 100) {
-                    progressIndicator.setProgress(100)
-                    progressIndicator.hide()
+                    progressIndicator.setCompleteProgressAndHide()
                 } else {
                     progressIndicator.setProgress(it)
                 }
@@ -509,13 +505,6 @@ class PagerPageHolder(
     }
 
     /**
-     * Called when the image is decoded and going to be displayed.
-     */
-    private fun onImageDecoded() {
-        progressIndicator.hide()
-    }
-
-    /**
      * Called when an image fails to decode.
      */
     private fun onImageDecodeError() {
@@ -549,7 +538,6 @@ class PagerPageHolder(
                             ZoomType.Right -> setScaleAndCenter(scale, PointF(sWidth.toFloat(), 0f))
                             ZoomType.Center -> setScaleAndCenter(scale, center.also { it?.y = 0f })
                         }
-                        onImageDecoded()
                     }
 
                     override fun onImageLoadError(e: Exception) {
@@ -680,7 +668,6 @@ class PagerPageHolder(
                         result.start()
                     }
                     setImageDrawable(result)
-                    onImageDecoded()
                 },
                 onError = {
                     onImageDecodeError()
