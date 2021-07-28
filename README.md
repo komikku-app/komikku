@@ -11,10 +11,10 @@ Tachiyomi is a free and open source manga reader for Android 6.0 and above. This
 ## Features
 
 Features of Tachiyomi(original) include:
-* Online reading from [a variety of sources](https://github.com/tachiyomiorg/tachiyomi-extensions)
-* Local reading of downloaded manga
+* Online reading from a variety of sources
+* Local reading of downloaded content
 * A configurable reader with multiple viewers, reading directions and other settings.
-* [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.io/), [Shikimori](https://shikimori.one), and [Bangumi](https://bgm.tv/) support
+* Tracker support: [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.io/), [Shikimori](https://shikimori.one), and [Bangumi](https://bgm.tv/)
 * Categories to organize your library
 * Light and dark themes
 * Schedule updating your library for new chapters
@@ -90,7 +90,6 @@ Please make sure to read the full guidelines. Your issue may be closed without w
 * Include steps to reproduce (if not obvious from description)
 * Include screenshot (if needed)
 * If it could be device-dependent, try reproducing on another device (if possible)
-* For large logs use http://pastebin.com/ (or similar)
 * Don't group unrelated requests into one issue
 
 DO: https://github.com/tachiyomiorg/tachiyomi/issues/24 https://github.com/tachiyomiorg/tachiyomi/issues/71
