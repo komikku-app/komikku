@@ -118,22 +118,21 @@ class PagerPageHolder(
      */
     private var readImageHeaderSubscription: Subscription? = null
 
+    val stateChangedListener = object : SubsamplingScaleImageView.OnStateChangedListener {
+        override fun onScaleChanged(newScale: Float, origin: Int) {
+            viewer.activity.hideMenu()
+        }
+
+        override fun onCenterChanged(newCenter: PointF?, origin: Int) {
+            viewer.activity.hideMenu()
+        }
+    }
     private var visibilityListener = ActionBar.OnMenuVisibilityListener { isVisible ->
         if (isVisible.not()) {
             subsamplingImageView?.setOnStateChangedListener(null)
             return@OnMenuVisibilityListener
         }
-        subsamplingImageView?.setOnStateChangedListener(
-            object : SubsamplingScaleImageView.OnStateChangedListener {
-                override fun onScaleChanged(newScale: Float, origin: Int) {
-                    viewer.activity.hideMenu()
-                }
-
-                override fun onCenterChanged(newCenter: PointF?, origin: Int) {
-                    viewer.activity.hideMenu()
-                }
-            }
-        )
+        subsamplingImageView?.setOnStateChangedListener(stateChangedListener)
     }
 
     // SY -->
@@ -150,6 +149,10 @@ class PagerPageHolder(
         scope = CoroutineScope(Job() + Dispatchers.Default)
         observeStatus()
         viewer.activity.addOnMenuVisibilityListener(visibilityListener)
+        if (viewer.activity.menuVisible) {
+            // Listener will not be available if user changed page with seek bar
+            subsamplingImageView?.setOnStateChangedListener(stateChangedListener)
+        }
     }
 
     /**

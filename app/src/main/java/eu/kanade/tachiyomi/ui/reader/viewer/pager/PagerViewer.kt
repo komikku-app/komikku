@@ -74,6 +74,9 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
 
     private var pagerListener = object : ViewPager.SimpleOnPageChangeListener() {
         override fun onPageSelected(position: Int) {
+            if (activity.isScrollingThroughPages.not()) {
+                activity.hideMenu()
+            }
             onPageChange(position)
         }
 
@@ -101,6 +104,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
 
             val pos = PointF(event.rawX / pager.width, event.rawY / pager.height)
             val navigator = config.navigator
+
             when (navigator.getAction(pos)) {
                 NavigationRegion.MENU -> activity.toggleMenu()
                 NavigationRegion.NEXT -> moveToNext()
@@ -163,7 +167,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
      * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
      */
     private fun onPageChange(position: Int) {
-        activity.hideMenu()
         val page = adapter.joinedItems.getOrNull(position)
         if (page != null && currentPage != page) {
             val allowPreload = checkAllowPreload(page.first as? ReaderPage)
