@@ -22,8 +22,8 @@ class MangaFilteredScanlatorsPutResolver : PutResolver<Manga>() {
 
     fun mapToUpdateQuery(manga: Manga) = UpdateQuery.builder()
         .table(MangaTable.TABLE)
-        .where("${MangaTable.COL_FILTERED_SCANLATORS} = ?")
-        .whereArgs(manga.filtered_scanlators)
+        .where("${MangaTable.COL_ID} = ?")
+        .whereArgs(manga.id)
         .build()
 
     fun mapToContentValues(manga: Manga) = contentValuesOf(
