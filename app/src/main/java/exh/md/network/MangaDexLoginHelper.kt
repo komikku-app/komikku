@@ -9,7 +9,8 @@ import exh.md.dto.LoginRequestDto
 import exh.md.dto.RefreshTokenDto
 import exh.md.service.MangaDexAuthService
 import exh.md.utils.MdUtil
-import kotlinx.coroutines.CancellationException
+import exh.util.seconds
+import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 
 class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
@@ -72,11 +73,14 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
     suspend fun logout() {
         return withIOContext {
             try {
-                if (isAuthenticated()) {
-                    authService.logout()
-                } else {
-                    if (refreshToken()) {
+                coroutineScope {
+                    launch {
                         authService.logout()
+                        cancel()
+                    }
+                    launch {
+                        delay(30.seconds)
+                        cancel()
                     }
                 }
             } catch (e: Exception) {
