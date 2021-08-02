@@ -74,13 +74,14 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
         return withIOContext {
             try {
                 coroutineScope {
-                    launch {
+                    var delayJob: Job? = null
+                    val loginJob = launch {
                         authService.logout()
-                        cancel()
+                        delayJob?.cancel()
                     }
-                    launch {
+                    delayJob = launch {
                         delay(30.seconds)
-                        cancel()
+                        loginJob.cancel()
                     }
                 }
             } catch (e: Exception) {
