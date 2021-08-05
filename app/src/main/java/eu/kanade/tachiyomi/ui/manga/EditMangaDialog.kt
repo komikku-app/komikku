@@ -234,10 +234,10 @@ class EditMangaDialog : DialogController {
                 MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.add_tag)
                     .setTextInput {
-                        text = it.trimOrNull()
+                        newTag = it.trimOrNull()
                     }
                     .setPositiveButton(android.R.string.ok) { _, _ ->
-                        if (newTag != null) setChips(items + listOf(newTag))
+                        if (newTag != null) setChips(items + listOfNotNull(newTag))
                     }
                     .setNegativeButton(android.R.string.cancel, null)
                     .show()
