@@ -69,11 +69,6 @@
     <string name="eh_image_quality_summary">Качество загруженных изображений</string>
     <string name="eh_image_quality">Качество изображения</string>
     <string name="eh_image_quality_auto">Авто</string>
-    <string name="eh_image_quality_2400">2400x</string>
-    <string name="eh_image_quality_1600">1600x</string>
-    <string name="eh_image_quality_1280">1280x</string>
-    <string name="eh_image_quality_980">980x</string>
-    <string name="eh_image_quality_780">780x</string>
     <string name="pref_enhanced_e_hentai_view">Улучшения E/ExHentai</string>
     <string name="pref_enhanced_e_hentai_view_summary">Включить/отключить расширенное меню просмотра, созданное для E/ExHentai</string>
     <string name="favorites_sync">Синхронизация избранного</string>
@@ -172,6 +167,7 @@
     <string name="log_extreme_desc">режим проверки сети</string>
 
     <!-- General Settings -->
+    <string name="theme_pure_red">Чисто красный</string>
     <string name="toggle_expand_search_filters">Разверните все фильтры поиска по умолчанию</string>
     <string name="auto_solve_captchas">Автоматическое решение капчи</string>
     <string name="auto_solve_captchas_summary">Использовать В ВЫСШЕЙ СТЕПЕНИ ЭКСПЕРИМЕНТАЛЬНОЕ автоматическое прохождение ReCAPTCHA. Если ваше устройство не поддерживается, оно будет выделено серым цветом.</string>
@@ -405,6 +401,7 @@
     <string name="use_most_chapters">Использовать источник с наибольшим количеством глав (медленнее)</string>
     <string name="use_first_source">Использовать первый источник с альтернативой</string>
     <string name="skip_this_step_next_time">Не показывать этот диалог в следующий раз</string>
+    <string name="hide_not_found_manga">Скрыть не найденную мангу</string>
     <string name="search_parameter">Параметр поиска (например: language:english)</string>
     <string name="latest_">Последняя глава: %1$s</string>
     <string name="migrating_to">переместится в</string>
@@ -586,6 +583,7 @@
     <string name="mal_id">Mal id</string>
     <string name="manga_updates_id">Обновления манги id</string>
     <string name="anime_planet_id">Планета аниме id</string>
+    <string name="translated">Переведён</string>
 
     <!-- Extra gallery info -->
     <plurals name="num_pages">
