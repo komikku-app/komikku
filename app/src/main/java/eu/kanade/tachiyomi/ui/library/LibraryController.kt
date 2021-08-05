@@ -229,7 +229,12 @@ class LibraryController(
             when (group) {
                 is LibrarySettingsSheet.Filter.FilterGroup -> onFilterChanged()
                 is LibrarySettingsSheet.Sort.SortGroup -> onSortChanged()
-                is LibrarySettingsSheet.Display.DisplayGroup -> reattachAdapter()
+                is LibrarySettingsSheet.Display.DisplayGroup -> {
+                    if (!preferences.categorisedDisplaySettings().get() || activeCategory == 0) {
+                        // Reattach adapter when flow preference change
+                        reattachAdapter()
+                    }
+                }
                 is LibrarySettingsSheet.Display.BadgeGroup -> onBadgeSettingChanged()
                 // SY -->
                 is LibrarySettingsSheet.Display.ButtonsGroup -> onButtonSettingChanged()
