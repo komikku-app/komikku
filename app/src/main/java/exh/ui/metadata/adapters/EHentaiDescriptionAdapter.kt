@@ -93,6 +93,10 @@ class EHentaiDescriptionAdapter(
                 }
             }
 
+            binding.uploader.setOnClickListener {
+                meta.uploader?.let { controller.performSearch("uploader:\"$it\"") }
+            }
+
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
