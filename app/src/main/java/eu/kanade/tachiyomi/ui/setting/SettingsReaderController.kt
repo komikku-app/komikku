@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.TappingInvertMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
@@ -305,6 +306,21 @@ class SettingsReaderController : SettingsController() {
                 )
                 entryValues = arrayOf("0", "10", "15", "20", "25")
                 defaultValue = "0"
+                summary = "%s"
+            }
+            listPreference {
+                key = Keys.readerHideThreshold
+                titleRes = R.string.pref_hide_threshold
+                entriesRes = arrayOf(
+                    R.string.pref_highest,
+                    R.string.pref_high,
+                    R.string.pref_low,
+                    R.string.pref_lowest
+                )
+                entryValues = PreferenceValues.ReaderHideThreshold.values()
+                    .map { it.name }
+                    .toTypedArray()
+                defaultValue = "${PreferenceValues.ReaderHideThreshold.LOW}"
                 summary = "%s"
             }
             switchPreference {
