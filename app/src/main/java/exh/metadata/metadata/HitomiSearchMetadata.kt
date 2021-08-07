@@ -26,15 +26,9 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
 
     var artists: List<String> = emptyList()
 
-    var group: String? = null
-
     var genre: String? = null
 
     var language: String? = null
-
-    var series: List<String> = emptyList()
-
-    var characters: List<String> = emptyList()
 
     var uploadDate: Long? = null
 
@@ -69,11 +63,8 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
                 title?.let { getString(R.string.title) to it },
                 thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
                 artists.nullIfEmpty()?.joinToString()?.let { getString(R.string.artist) to it },
-                group?.let { getString(R.string.group) to it },
                 genre?.let { getString(R.string.genre) to it },
                 language?.let { getString(R.string.language) to it },
-                series.nullIfEmpty()?.joinToString()?.let { getString(R.string.series) to it },
-                characters.nullIfEmpty()?.joinToString()?.let { getString(R.string.characters) to it },
                 uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
             )
         }

@@ -126,6 +126,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
         const val EH_GENRE_NAMESPACE = "genre"
         private const val EH_ARTIST_NAMESPACE = "artist"
         const val EH_LANGUAGE_NAMESPACE = "language"
+        const val EH_META_NAMESPACE = "meta"
 
         private fun splitGalleryUrl(url: String) =
             url.let {

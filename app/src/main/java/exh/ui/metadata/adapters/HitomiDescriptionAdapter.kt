@@ -44,14 +44,12 @@ class HitomiDescriptionAdapter(
             } ?: meta.genre ?: itemView.context.getString(R.string.unknown)
 
             binding.whenPosted.text = MetadataUtil.EX_DATE_FORMAT.format(Date(meta.uploadDate ?: 0))
-            binding.group.text = meta.group ?: itemView.context.getString(R.string.unknown)
             binding.language.text = meta.language ?: itemView.context.getString(R.string.unknown)
 
             binding.moreInfo.bindDrawable(itemView.context, R.drawable.ic_info_24dp)
 
             listOf(
                 binding.genre,
-                binding.group,
                 binding.language,
                 binding.whenPosted
             ).forEach { textView ->

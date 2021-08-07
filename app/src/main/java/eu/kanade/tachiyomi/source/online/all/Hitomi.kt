@@ -54,23 +54,31 @@ class Hitomi(delegate: HttpSource, val context: Context) :
 
             title = galleryElement.selectFirst("h1")!!.text()
             artists = galleryElement.select("h2 a").map { it.text() }
-            tags += artists.map { RaisedTag("artist", it, RaisedSearchMetadata.TAG_TYPE_VIRTUAL) }
+            tags += artists.map { RaisedTag("artist", it, HitomiSearchMetadata.TAG_TYPE_DEFAULT) }
 
             input.select(".gallery-info tr").forEach { galleryInfoElement ->
                 val content = galleryInfoElement.child(1)
                 when (galleryInfoElement.child(0).text().lowercase()) {
                     "group" -> {
-                        group = content.text()
-                        tags += RaisedTag("group", group!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
+                        val group = content.text()
+                        tags += RaisedTag(
+                            "group",
+                            group,
+                            if (group != "N/A") {
+                                HitomiSearchMetadata.TAG_TYPE_DEFAULT
+                            } else {
+                                RaisedSearchMetadata.TAG_TYPE_VIRTUAL
+                            }
+                        )
                     }
                     "type" -> {
                         genre = content.text()
-                        tags += RaisedTag("type", genre!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
+                        tags += RaisedTag("genre", genre!!, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
                     }
                     "series" -> {
-                        series = content.select("a").map { it.text() }
+                        val series = content.select("a").map { it.text() }
                         tags += series.map {
-                            RaisedTag("series", it, RaisedSearchMetadata.TAG_TYPE_VIRTUAL)
+                            RaisedTag("series", it, HitomiSearchMetadata.TAG_TYPE_DEFAULT)
                         }
                     }
                     "language" -> {
@@ -80,7 +88,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                         }
                     }
                     "characters" -> {
-                        characters = content.select("a").map { it.text() }
+                        val characters = content.select("a").map { it.text() }
                         tags += characters.map {
                             RaisedTag(
                                 "character",

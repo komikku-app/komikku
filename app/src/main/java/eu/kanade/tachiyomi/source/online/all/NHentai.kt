@@ -93,7 +93,15 @@ class NHentai(delegate: HttpSource, val context: Context) :
             jsonResponse.tags.filter {
                 it.type != null && it.name != null
             }.mapTo(tags) {
-                RaisedTag(it.type!!, it.name!!, if (it.type == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE) RaisedSearchMetadata.TAG_TYPE_VIRTUAL else NHentaiSearchMetadata.TAG_TYPE_DEFAULT)
+                RaisedTag(
+                    it.type!!,
+                    it.name!!,
+                    if (it.type == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE) {
+                        RaisedSearchMetadata.TAG_TYPE_VIRTUAL
+                    } else {
+                        NHentaiSearchMetadata.TAG_TYPE_DEFAULT
+                    }
+                )
             }
         }
     }

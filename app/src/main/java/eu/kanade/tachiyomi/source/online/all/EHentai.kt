@@ -35,6 +35,7 @@ import exh.log.xLogD
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
+import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_META_NAMESPACE
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_NORMAL
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
@@ -654,24 +655,25 @@ class EHentai(
                 tags.clear()
                 select("#taglist tr").forEach {
                     val namespace = it.select(".tc").text().removeSuffix(":")
-                    tags.addAll(
-                        it.select("div").map { element ->
-                            RaisedTag(
-                                namespace,
-                                element.text().trim(),
-                                when {
-                                    element.hasClass("gtl") -> TAG_TYPE_LIGHT
-                                    element.hasClass("gtw") -> TAG_TYPE_WEAK
-                                    else -> TAG_TYPE_NORMAL
-                                }
-                            )
-                        }
-                    )
+                    tags += it.select("div").map { element ->
+                        RaisedTag(
+                            namespace,
+                            element.text().trim(),
+                            when {
+                                element.hasClass("gtl") -> TAG_TYPE_LIGHT
+                                element.hasClass("gtw") -> TAG_TYPE_WEAK
+                                else -> TAG_TYPE_NORMAL
+                            }
+                        )
+                    }
                 }
 
                 // Add genre as virtual tag
                 genre?.let {
-                    tags.add(RaisedTag(EH_GENRE_NAMESPACE, it, TAG_TYPE_VIRTUAL))
+                    tags += RaisedTag(EH_GENRE_NAMESPACE, it, TAG_TYPE_VIRTUAL)
+                }
+                if (aged) {
+                    tags += RaisedTag(EH_META_NAMESPACE, "aged", TAG_TYPE_VIRTUAL)
                 }
             }
         }
