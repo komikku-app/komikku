@@ -28,6 +28,9 @@ class WebtoonConfig(
     var sidePadding = 0
         private set
 
+    var theme = preferences.readerTheme().get()
+        private set
+
     // SY -->
     var usePageTransitions = false
 
@@ -62,6 +65,9 @@ class WebtoonConfig(
 
         preferences.dualPageInvertWebtoon()
             .register({ dualPageInvert = it }, { imagePropertyChangedListener?.invoke() })
+
+        preferences.readerTheme()
+            .register({ theme = it }, { imagePropertyChangedListener?.invoke() })
 
         // SY -->
         preferences.webtoonEnableZoomOut()
