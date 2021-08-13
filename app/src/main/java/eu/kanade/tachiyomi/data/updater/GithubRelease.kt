@@ -22,8 +22,8 @@ class GithubRelease(
      * Get download link of latest release from the assets.
      * @return download link of latest release.
      */
-    val downloadLink: String
-        get() = assets[0].downloadLink
+    fun getDownloadLink(): String =
+        assets[0].downloadLink
 
     /**
      * Assets class containing download url.

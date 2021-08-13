@@ -16,10 +16,10 @@ class UpdaterJob(private val context: Context, workerParams: WorkerParameters) :
 
     override fun doWork() = runBlocking {
         try {
-            val result = GithubUpdateChecker().checkForUpdate()
+            val result = AppUpdateChecker().checkForUpdate()
 
-            if (result is GithubUpdateResult.NewUpdate) {
-                UpdaterNotifier(context).promptUpdate(result.release.downloadLink)
+            if (result is AppUpdateResult.NewUpdate) {
+                UpdaterNotifier(context).promptUpdate(result.release.getDownloadLink())
             }
             Result.success()
         } catch (e: Exception) {
