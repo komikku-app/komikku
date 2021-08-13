@@ -115,6 +115,12 @@ class PagerPageHolder(
      */
     private var readImageHeaderSubscription: Subscription? = null
 
+    /**
+     * Context that has been wrapped to use the correct theme values based on the
+     * current app theme and reader background color
+     */
+    private val readerThemedContext = context.createReaderThemeContext(viewer.config.theme)
+
     val stateChangedListener = object : SubsamplingScaleImageView.OnStateChangedListener {
         override fun onScaleChanged(newScale: Float, origin: Int) {
             viewer.activity.hideMenu()
@@ -142,8 +148,7 @@ class PagerPageHolder(
     // SY <--
 
     init {
-        val indicatorContext = context.createReaderThemeContext(viewer.config.theme)
-        progressIndicator = ReaderProgressIndicator(indicatorContext).apply {
+        progressIndicator = ReaderProgressIndicator(readerThemedContext).apply {
             updateLayoutParams<LayoutParams> {
                 gravity = Gravity.CENTER
             }
@@ -591,7 +596,7 @@ class PagerPageHolder(
     private fun initRetryButton(): PagerButton {
         if (retryButton != null) return retryButton!!
 
-        retryButton = PagerButton(context, viewer).apply {
+        retryButton = PagerButton(readerThemedContext, viewer).apply {
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 gravity = Gravity.CENTER
             }
@@ -618,7 +623,7 @@ class PagerPageHolder(
         }
         decodeErrorLayout = decodeLayout
 
-        TextView(context).apply {
+        TextView(readerThemedContext).apply {
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 setMargins(margins, margins, margins, margins)
             }
@@ -628,7 +633,7 @@ class PagerPageHolder(
             decodeLayout.addView(this)
         }
 
-        PagerButton(context, viewer).apply {
+        PagerButton(readerThemedContext, viewer).apply {
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 setMargins(margins, margins, margins, margins)
             }
@@ -642,7 +647,7 @@ class PagerPageHolder(
 
         val imageUrl = page.imageUrl
         if (imageUrl.orEmpty().startsWith("http", true)) {
-            PagerButton(context, viewer).apply {
+            PagerButton(readerThemedContext, viewer).apply {
                 layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                     setMargins(margins, margins, margins, margins)
                 }
