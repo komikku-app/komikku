@@ -32,7 +32,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig.ZoomType
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.ImageUtil
-import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import kotlinx.coroutines.CoroutineScope
@@ -67,7 +66,11 @@ class PagerPageHolder(
     /**
      * Loading progress bar to indicate the current progress.
      */
-    private val progressIndicator: ReaderProgressIndicator
+    private val progressIndicator = ReaderProgressIndicator(context).apply {
+        updateLayoutParams<LayoutParams> {
+            gravity = Gravity.CENTER
+        }
+    }
 
     /**
      * Image view that supports subsampling on zoom.
@@ -142,12 +145,6 @@ class PagerPageHolder(
     // SY <--
 
     init {
-        val indicatorContext = context.createReaderThemeContext(viewer.config.theme)
-        progressIndicator = ReaderProgressIndicator(indicatorContext).apply {
-            updateLayoutParams<LayoutParams> {
-                gravity = Gravity.CENTER
-            }
-        }
         addView(progressIndicator)
         scope = CoroutineScope(Job() + Dispatchers.Default)
         observeStatus()
