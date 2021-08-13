@@ -7,6 +7,7 @@ import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -70,14 +71,16 @@ object EXHMigrations {
             if (oldVersion < BuildConfig.VERSION_CODE) {
                 preferences.ehLastVersionCode().set(BuildConfig.VERSION_CODE)
 
+                if (BuildConfig.INCLUDE_UPDATER) {
+                    UpdaterJob.setupTask(context)
+                }
+                ExtensionUpdateJob.setupTask(context)
+                LibraryUpdateJob.setupTask(context)
+                BackupCreatorJob.setupTask(context)
+                EHentaiUpdateWorker.scheduleBackground(context)
+
                 // Fresh install
                 if (oldVersion == 0) {
-                    // Set up default background tasks
-                    if (BuildConfig.INCLUDE_UPDATER) {
-                        UpdaterJob.setupTask(context)
-                    }
-                    ExtensionUpdateJob.setupTask(context)
-                    LibraryUpdateJob.setupTask(context)
                     return false
                 }
                 if (oldVersion under 4) {
