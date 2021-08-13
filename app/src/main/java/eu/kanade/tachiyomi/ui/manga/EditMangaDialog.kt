@@ -130,7 +130,7 @@ class EditMangaDialog : DialogController {
             if (manga.description != manga.originalDescription) {
                 binding.mangaDescription.append(manga.description.orEmpty())
             }
-            binding.mangaGenresTags.setChips(manga.getGenres().orEmpty())
+            binding.mangaGenresTags.setChips(manga.getGenres().orEmpty().dropBlank())
 
             binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.originalTitle}"
             if (manga.originalAuthor != null) {
