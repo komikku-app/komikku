@@ -193,10 +193,9 @@ open class BrowseSourceController(bundle: Bundle) :
             presenter.loadSearches(),
             // SY <--
             onFilterClicked = {
-                val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
                 showProgressBar()
                 adapter?.clear()
-                presenter.setSourceFilter(if (allDefault) FilterList() else presenter.sourceFilters)
+                presenter.setSourceFilter(presenter.sourceFilters)
             },
             onResetClicked = {
                 presenter.appliedFilters = FilterList()
@@ -495,7 +494,7 @@ open class BrowseSourceController(bundle: Bundle) :
         showProgressBar()
         adapter?.clear()
 
-        presenter.restartPager(newQuery)
+        presenter.restartPager(newQuery, presenter.sourceFilters)
     }
 
     /**
