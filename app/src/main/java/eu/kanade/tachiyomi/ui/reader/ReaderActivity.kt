@@ -100,6 +100,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
@@ -1466,11 +1467,25 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      */
     private inner class ReaderConfig {
 
-        private val grayscalePaint by lazy {
-            Paint().apply {
+        private fun getCombinedPaint(grayscale: Boolean, invertedColors: Boolean): Paint {
+            return Paint().apply {
                 colorFilter = ColorMatrixColorFilter(
                     ColorMatrix().apply {
-                        setSaturation(0f)
+                        if (grayscale) {
+                            setSaturation(0f)
+                        }
+                        if (invertedColors) {
+                            postConcat(
+                                ColorMatrix(
+                                    floatArrayOf(
+                                        -1f, 0f, 0f, 0f, 255f,
+                                        0f, -1f, 0f, 0f, 255f,
+                                        0f, 0f, -1f, 0f, 255f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
+                            )
+                        }
                     }
                 )
             }
@@ -1523,8 +1538,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 .onEach { setColorFilter(preferences.colorFilter().get()) }
                 .launchIn(lifecycleScope)
 
-            preferences.grayscale().asFlow()
-                .onEach { setGrayscale(it) }
+            merge(preferences.grayscale().asFlow(), preferences.invertedColors().asFlow())
+                .onEach { setLayerPaint(preferences.grayscale().get(), preferences.invertedColors().get()) }
                 .launchIn(lifecycleScope)
 
             preferences.fullscreen().asFlow()
@@ -1675,8 +1690,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             binding.colorOverlay.setFilterColor(value, preferences.colorFilterMode().get())
         }
 
-        private fun setGrayscale(enabled: Boolean) {
-            val paint = if (enabled) grayscalePaint else null
+        private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {
+            val paint = if (grayscale || invertedColors) getCombinedPaint(grayscale, invertedColors) else null
             binding.viewerContainer.setLayerType(LAYER_TYPE_HARDWARE, paint)
         }
     }
