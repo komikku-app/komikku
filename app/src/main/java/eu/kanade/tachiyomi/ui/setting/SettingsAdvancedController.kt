@@ -20,9 +20,9 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.network.PREF_DOH_ADGUARD
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.network.PREF_DOH_GOOGLE
-import eu.kanade.tachiyomi.network.PREF_DOH_ADGUARD
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
