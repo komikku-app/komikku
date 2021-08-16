@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.online.all.NHentai
 import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
@@ -21,6 +22,7 @@ import exh.savedsearches.JsonSavedSearch
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
+import exh.source.nHentaiSourceIds
 import exh.util.cancellable
 import exh.util.executeOnIO
 import exh.util.jobScheduler
@@ -31,7 +33,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.lang.RuntimeException
 import java.util.UUID
@@ -351,6 +352,27 @@ object DebugFunctions {
                         """
                         UPDATE ${MangaTable.TABLE}
                             SET ${MangaTable.COL_VIEWER} = 0
+                        """.trimIndent()
+                    )
+                    .affectsTables(MangaTable.TABLE)
+                    .build()
+            )
+        }
+    }
+
+    fun migrateAllNhentaiToOtherLang() {
+        val sources = nHentaiSourceIds.toMutableList()
+            .also { it.remove(NHentai.otherId) }
+            .joinToString(separator = ",")
+
+        db.inTransaction {
+            db.lowLevel().executeSQL(
+                RawQuery.builder()
+                    .query(
+                        """
+                        UPDATE ${MangaTable.TABLE}
+                            SET ${MangaTable.COL_SOURCE} = ${NHentai.otherId}
+                            WHERE ${MangaTable.COL_FAVORITE} = 1 AND ${MangaTable.COL_SOURCE} in ($sources)
                         """.trimIndent()
                     )
                     .affectsTables(MangaTable.TABLE)
