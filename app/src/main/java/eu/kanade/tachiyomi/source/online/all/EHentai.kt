@@ -107,7 +107,7 @@ class EHentai(
         get() = "https://$domain"
 
     override val lang = "all"
-    override val supportsLatest = !exh
+    override val supportsLatest = true
 
     private val preferences: PreferencesHelper by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
@@ -416,10 +416,8 @@ class EHentai(
         return if (it.text() == ">") it.attr("href") else null
     }
 
-    override fun popularMangaRequest(page: Int) = if (exh) {
-        latestUpdatesRequest(page)
-    } else {
-        exGet("$baseUrl/toplist.php?tl=15&p=${page - 1}", null) // Custom page logic for toplists
+    override fun popularMangaRequest(page: Int): Request {
+        return exGet("$baseUrl/popular")
     }
 
     private fun <T : MangasPage> Observable<T>.checkValid(): Observable<MangasPage> = map {
@@ -447,17 +445,29 @@ class EHentai(
         }
 
     private fun searchMangaRequestObservable(page: Int, query: String, filters: FilterList): Observable<Request> {
-        val uri = "$baseUrl$QUERY_PREFIX".toUri().buildUpon()
+        val uri = baseUrl.toUri().buildUpon()
+        val toplist = ToplistOption.values()[filters.firstNotNullOfOrNull { (it as? ToplistOptions)?.state } ?: 0]
 
-        uri.appendQueryParameter("f_search", (query + " " + combineQuery(filters)).trim())
-        filters.forEach {
-            if (it is UriFilter) it.addToUri(uri)
+        if (toplist == ToplistOption.NONE) {
+            uri.appendQueryParameter("f_apply", "Apply+Filter")
+            uri.appendQueryParameter("f_search", (query + " " + combineQuery(filters)).trim())
+            filters.forEach {
+                if (it is UriFilter) it.addToUri(uri)
+            }
+        } else {
+            uri.appendPath("toplist.php")
+            uri.appendQueryParameter("tl", toplist.index.toString())
+            uri.appendQueryParameter("p", (page - 1).toString())
         }
 
-        val request = exGet(uri.toString(), page)
+        val regularPage = if (toplist == ToplistOption.NONE) {
+            page
+        } else null
+
+        val request = exGet(uri.toString(), regularPage)
 
         // Reverse search results on filter
-        if (filters.any { it is ReverseFilter && it.state }) {
+        if (toplist == ToplistOption.NONE && filters.any { it is ReverseFilter && it.state }) {
             return client.newCall(request)
                 .asObservableSuccess()
                 .map {
@@ -810,6 +820,15 @@ class EHentai(
         val excludePrefix = "-"
 
         return FilterList(
+            *if (exh) {
+                emptyArray()
+            } else {
+                arrayOf(
+                    Filter.Header("Note: Will ignore other parameters!"),
+                    ToplistOptions(),
+                    Filter.Separator()
+                )
+            },
             AutoCompleteTags(
                 EHTags.getNameSpaces().map { "$it:" } + EHTags.getAllTags(),
                 EHTags.getNameSpaces().map { "$it:" },
@@ -833,6 +852,23 @@ class EHentai(
             }
         }
     }
+
+    enum class ToplistOption(val humanName: String, val index: Int) {
+        NONE("None", 0),
+        ALL_TIME("All time", 11),
+        PAST_YEAR("Past year", 12),
+        PAST_MONTH("Past month", 13),
+        YESTERDAY("Yesterday", 15);
+
+        override fun toString(): String {
+            return humanName
+        }
+    }
+
+    class ToplistOptions : Filter.Select<ToplistOption>(
+        "Toplists",
+        ToplistOption.values()
+    )
 
     class GenreOption(name: String, val genreId: Int) : Filter.CheckBox(name, false)
     class GenreGroup :
@@ -1037,7 +1073,6 @@ class EHentai(
     }
 
     companion object {
-        private const val QUERY_PREFIX = "?f_apply=Apply+Filter"
         private const val TR_SUFFIX = "TR"
         private const val REVERSE_PARAM = "TEH_REVERSE"
         private val PAGE_COUNT_REGEX = "[0-9]*".toRegex()
