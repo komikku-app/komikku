@@ -40,12 +40,12 @@ class EHentaiDescriptionAdapter(
 
             binding.genre.text =
                 meta.genre?.let { MetadataUtil.getGenreAndColour(itemView.context, it) }
-                ?.let {
-                    binding.genre.setBackgroundColor(it.first)
-                    it.second
-                }
-                ?: meta.genre
-                ?: itemView.context.getString(R.string.unknown)
+                    ?.let {
+                        binding.genre.setBackgroundColor(it.first)
+                        it.second
+                    }
+                    ?: meta.genre
+                    ?: itemView.context.getString(R.string.unknown)
 
             binding.visible.text = itemView.context.getString(R.string.is_visible, meta.visible ?: itemView.context.getString(R.string.unknown))
 

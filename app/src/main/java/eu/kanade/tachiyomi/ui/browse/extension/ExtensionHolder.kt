@@ -72,6 +72,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             }
         } else this
     }
+
     // SY <--
 
     @Suppress("ResourceType")

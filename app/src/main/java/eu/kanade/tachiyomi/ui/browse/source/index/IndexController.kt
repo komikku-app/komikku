@@ -196,16 +196,18 @@ open class IndexController :
             onFilterClicked = {
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
                 filterSheet?.dismiss()
-                if (!allDefault) {
-                    val json = Json.encodeToString(
+                val json = if (allDefault) {
+                    null
+                } else {
+                    Json.encodeToString(
                         JsonSavedSearch(
                             "",
                             "",
                             filterSerializer.serialize(presenter.sourceFilters)
                         )
                     )
-                    onBrowseClick(presenter.query.nullIfBlank(), json)
                 }
+                onBrowseClick(presenter.query.nullIfBlank(), json)
             },
             onResetClicked = {},
             onSaveClicked = {},

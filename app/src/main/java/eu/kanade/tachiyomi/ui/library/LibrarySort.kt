@@ -15,6 +15,7 @@ object LibrarySort {
     // SY -->
     const val DRAG_AND_DROP = 7
     const val TAG_LIST = 9
+
     // SY <--
 
     @Deprecated("Removed in favor of searching by source")

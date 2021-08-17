@@ -50,7 +50,6 @@ class MangaInfoButtonsAdapter(
                     .onEach {
                         controller.mergeWithAnother()
                     }
-
                     .launchIn(controller.viewScope)
             }
             // EXH <--

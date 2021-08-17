@@ -56,6 +56,7 @@ object SettingsSearchHelper {
         }
         controllers
     }
+
     // SY <--
 
     /**
