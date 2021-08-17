@@ -464,7 +464,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
         menuCopy.icon.mutate()
         menuMigrate.icon.mutate()
-        val tintColor = activity?.getResourceColor(R.attr.colorOnPrimary) ?: Color.WHITE
+        val tintColor = activity?.getResourceColor(R.attr.colorOnToolbar) ?: Color.WHITE
         val translucentWhite = ColorUtils.setAlphaComponent(tintColor, 127)
         menuCopy.icon?.setTint(if (allMangasDone) tintColor else translucentWhite)
         menuMigrate?.icon?.setTint(if (allMangasDone) tintColor else translucentWhite)

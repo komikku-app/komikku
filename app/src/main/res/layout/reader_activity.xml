@@ -203,7 +203,7 @@
                     android:padding="@dimen/screen_edge_margin"
                     android:rotation="90"
                     app:srcCompat="@drawable/ic_skip_previous_24dp"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnToolbar" />
 
                 <LinearLayout
                     android:id="@+id/reader_seekbar_vert"
