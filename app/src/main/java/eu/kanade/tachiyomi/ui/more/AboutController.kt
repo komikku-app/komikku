@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-class AboutController : SettingsController(), NoToolbarElevationController {
+class AboutController : SettingsController(), NoAppBarElevationController {
 
     private val updateChecker by lazy { AppUpdateChecker() }
 

@@ -13,16 +13,21 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.FloatRange
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.os.bundleOf
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.bluelinelabs.conductor.ControllerChangeHandler
@@ -54,6 +59,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.getMainAppBarHeight
 import eu.kanade.tachiyomi.ui.base.controller.ToolbarLiftOnScrollController
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -110,6 +116,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import reactivecircus.flowbinding.recyclerview.scrollEvents
+import reactivecircus.flowbinding.recyclerview.scrollStateChanges
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
@@ -120,7 +127,6 @@ import kotlin.math.min
 
 class MangaController :
     NucleusController<MangaControllerBinding, MangaPresenter>,
-    ToolbarLiftOnScrollController,
     FabController,
     ActionMode.Callback,
     FlexibleAdapter.OnItemClickListener,
@@ -318,6 +324,37 @@ class MangaController :
                 // Delayed in case we need to jump to chapters
                 it.post {
                     updateToolbarTitleAlpha()
+                }
+            }
+
+            it.scrollStateChanges()
+                .onEach { _ ->
+                    // Disable swipe refresh when view is not at the top
+                    val firstPos = (it.layoutManager as LinearLayoutManager)
+                        .findFirstCompletelyVisibleItemPosition()
+                    binding.swipeRefresh.isEnabled = firstPos <= 0
+                }
+                .launchIn(viewScope)
+
+            binding.fastScroller.doOnLayout { scroller ->
+                scroller.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = getMainAppBarHeight()
+                }
+                scroller.applyInsetter {
+                    type(navigationBars = true) {
+                        margin()
+                    }
+                }
+            }
+
+            binding.swipeRefresh.doOnLayout { swipeRefresh ->
+                swipeRefresh as SwipeRefreshLayout
+                swipeRefresh.setOnApplyWindowInsetsListener { _, windowInsets ->
+                    val topStatusBarInset = WindowInsetsCompat.toWindowInsetsCompat(windowInsets)
+                        .getInsets(WindowInsetsCompat.Type.statusBars())
+                        .top
+                    swipeRefresh.setProgressViewEndTarget(false, getMainAppBarHeight() + topStatusBarInset)
+                    windowInsets
                 }
             }
         }
