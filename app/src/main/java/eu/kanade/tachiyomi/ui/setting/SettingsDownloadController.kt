@@ -148,7 +148,7 @@ class SettingsDownloadController : SettingsController() {
         }
 
         val dbCategories = db.getCategories().executeAsBlocking()
-        val categories = listOf(Category.createDefault()) + dbCategories
+        val categories = listOf(Category.createDefault(context)) + dbCategories
 
         preferenceCategory {
             titleRes = R.string.pref_category_auto_download
@@ -280,7 +280,7 @@ class SettingsDownloadController : SettingsController() {
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val dbCategories = db.getCategories().executeAsBlocking()
-            val categories = listOf(Category.createDefault()) + dbCategories
+            val categories = listOf(Category.createDefault(activity!!)) + dbCategories
 
             val items = categories.map { it.name }
             var selected = categories
