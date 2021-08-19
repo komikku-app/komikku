@@ -2,6 +2,9 @@ package eu.kanade.tachiyomi.ui.setting
 
 import android.app.Dialog
 import android.os.Bundle
+import androidx.biometric.BiometricPrompt
+import androidx.fragment.app.FragmentActivity
+import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
@@ -19,6 +22,9 @@ import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
+import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
+import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.startAuthentication
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.launchIn
 import uy.kohesive.injekt.injectLazy
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
@@ -28,11 +34,36 @@ class SettingsSecurityController : SettingsController() {
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_security
 
-        if (AuthenticatorUtil.isSupported(context)) {
+        if (context.isAuthenticationSupported()) {
             switchPreference {
                 key = Keys.useAuthenticator
                 titleRes = R.string.lock_with_biometrics
                 defaultValue = false
+                onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
+                    (activity as? FragmentActivity)?.startAuthentication(
+                        activity!!.getString(R.string.lock_with_biometrics),
+                        activity!!.getString(R.string.confirm_lock_change),
+                        callback = object : AuthenticatorUtil.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(
+                                activity: FragmentActivity?,
+                                result: BiometricPrompt.AuthenticationResult
+                            ) {
+                                super.onAuthenticationSucceeded(activity, result)
+                                isChecked = newValue as Boolean
+                            }
+
+                            override fun onAuthenticationError(
+                                activity: FragmentActivity?,
+                                errorCode: Int,
+                                errString: CharSequence
+                            ) {
+                                super.onAuthenticationError(activity, errorCode, errString)
+                                activity?.toast(errString.toString())
+                            }
+                        }
+                    )
+                    false
+                }
             }
             intListPreference {
                 key = Keys.lockAppAfter
@@ -48,6 +79,33 @@ class SettingsSecurityController : SettingsController() {
                 entryValues = values
                 defaultValue = "0"
                 summary = "%s"
+                onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
+                    if (value == newValue) return@OnPreferenceChangeListener false
+
+                    (activity as? FragmentActivity)?.startAuthentication(
+                        activity!!.getString(R.string.lock_when_idle),
+                        activity!!.getString(R.string.confirm_lock_change),
+                        callback = object : AuthenticatorUtil.AuthenticationCallback() {
+                            override fun onAuthenticationSucceeded(
+                                activity: FragmentActivity?,
+                                result: BiometricPrompt.AuthenticationResult
+                            ) {
+                                super.onAuthenticationSucceeded(activity, result)
+                                value = newValue as String
+                            }
+
+                            override fun onAuthenticationError(
+                                activity: FragmentActivity?,
+                                errorCode: Int,
+                                errString: CharSequence
+                            ) {
+                                super.onAuthenticationError(activity, errorCode, errString)
+                                activity?.toast(errString.toString())
+                            }
+                        }
+                    )
+                    false
+                }
 
                 preferences.useAuthenticator().asImmediateFlow { isVisible = it }
                     .launchIn(viewScope)
