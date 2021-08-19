@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.annotation.SuppressLint
 import android.app.ActionBar
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.PointF
 import android.graphics.drawable.Animatable
@@ -32,7 +33,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig.ZoomType
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.ImageUtil
-import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import kotlinx.coroutines.CoroutineScope
@@ -53,10 +53,11 @@ import kotlin.math.roundToInt
  */
 @SuppressLint("ViewConstructor")
 class PagerPageHolder(
+    readerThemedContext: Context,
     val viewer: PagerViewer,
     val page: ReaderPage,
     private var extraPage: ReaderPage? = null
-) : FrameLayout(viewer.activity), ViewPagerAdapter.PositionableView {
+) : FrameLayout(readerThemedContext), ViewPagerAdapter.PositionableView {
 
     /**
      * Item that identifies this view. Needed by the adapter to not recreate views.
@@ -114,12 +115,6 @@ class PagerPageHolder(
      * the appropiate image view depending if the image is animated (GIF).
      */
     private var readImageHeaderSubscription: Subscription? = null
-
-    /**
-     * Context that has been wrapped to use the correct theme values based on the
-     * current app theme and reader background color
-     */
-    private val readerThemedContext = context.createReaderThemeContext(viewer.config.theme)
 
     val stateChangedListener = object : SubsamplingScaleImageView.OnStateChangedListener {
         override fun onScaleChanged(newScale: Float, origin: Int) {
@@ -596,7 +591,7 @@ class PagerPageHolder(
     private fun initRetryButton(): PagerButton {
         if (retryButton != null) return retryButton!!
 
-        retryButton = PagerButton(readerThemedContext, viewer).apply {
+        retryButton = PagerButton(context, viewer).apply {
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 gravity = Gravity.CENTER
             }
@@ -623,7 +618,7 @@ class PagerPageHolder(
         }
         decodeErrorLayout = decodeLayout
 
-        TextView(readerThemedContext).apply {
+        TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 setMargins(margins, margins, margins, margins)
             }
@@ -633,7 +628,7 @@ class PagerPageHolder(
             decodeLayout.addView(this)
         }
 
-        PagerButton(readerThemedContext, viewer).apply {
+        PagerButton(context, viewer).apply {
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 setMargins(margins, margins, margins, margins)
             }
@@ -647,7 +642,7 @@ class PagerPageHolder(
 
         val imageUrl = page.imageUrl
         if (imageUrl.orEmpty().startsWith("http", true)) {
-            PagerButton(readerThemedContext, viewer).apply {
+            PagerButton(context, viewer).apply {
                 layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                     setMargins(margins, margins, margins, margins)
                 }

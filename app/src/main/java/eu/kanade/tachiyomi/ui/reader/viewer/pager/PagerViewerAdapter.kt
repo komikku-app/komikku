@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.hasMissingChapters
+import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
 import timber.log.Timber
 import kotlin.math.max
@@ -46,6 +47,12 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     private var shifted = viewer.config.shiftDoublePage
     private var doubledUp = viewer.config.doublePages
     // SY <--
+
+    /**
+     * Context that has been wrapped to use the correct theme values based on the
+     * current app theme and reader background color
+     */
+    private var readerThemedContext = viewer.activity.createReaderThemeContext(viewer.config.theme)
 
     /**
      * Updates this adapter with the given [chapters]. It handles setting a few pages of the
@@ -152,8 +159,8 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         val item = joinedItems[position].first
         val item2 = joinedItems[position].second
         return when (item) {
-            is ReaderPage -> PagerPageHolder(viewer, item, item2 as? ReaderPage)
-            is ChapterTransition -> PagerTransitionHolder(viewer, item)
+            is ReaderPage -> PagerPageHolder(readerThemedContext, viewer, item, item2 as? ReaderPage)
+            is ChapterTransition -> PagerTransitionHolder(readerThemedContext, viewer, item)
             else -> throw NotImplementedError("Holder for ${item.javaClass} not implemented")
         }
     }
@@ -211,8 +218,11 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
         notifyDataSetChanged()
     }
 
-    // SY -->
+    fun refresh() {
+        readerThemedContext = viewer.activity.createReaderThemeContext(viewer.config.theme)
+    }
 
+    // SY -->
     private fun setJoinedItems(useSecondPage: Boolean = false) {
         val oldCurrent = joinedItems.getOrNull(viewer.pager.currentItem)
         if (!viewer.config.doublePages) {
