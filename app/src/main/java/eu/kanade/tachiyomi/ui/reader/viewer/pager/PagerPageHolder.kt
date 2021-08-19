@@ -339,7 +339,7 @@ class PagerPageHolder(
      */
     private fun setImage() {
         if (extraPage == null) {
-            progressIndicator.setCompleteProgressAndHide()
+            progressIndicator.hide()
         } else {
             progressIndicator.setProgress(95)
         }
@@ -480,7 +480,7 @@ class PagerPageHolder(
         return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, viewer.config.pageCanvasColor) {
             scope?.launchUI {
                 if (it == 100) {
-                    progressIndicator.setCompleteProgressAndHide()
+                    progressIndicator.hide()
                 } else {
                     progressIndicator.setProgress(it)
                 }
