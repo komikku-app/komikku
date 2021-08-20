@@ -46,8 +46,9 @@ data class BackupManga(
     @ProtoNumber(800) var customTitle: String? = null,
     @ProtoNumber(801) var customArtist: String? = null,
     @ProtoNumber(802) var customAuthor: String? = null,
-    @ProtoNumber(803) var customDescription: String? = null,
-    @ProtoNumber(803) var customGenre: List<String>? = null,
+    // skipping 803 due to using duplicate value in previous builds
+    @ProtoNumber(804) var customDescription: String? = null,
+    @ProtoNumber(805) var customGenre: List<String>? = null,
 
     // Neko specific values
     @ProtoNumber(901) var filtered_scanlators: String? = null,
