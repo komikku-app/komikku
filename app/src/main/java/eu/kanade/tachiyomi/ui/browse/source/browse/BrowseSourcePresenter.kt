@@ -43,7 +43,6 @@ import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -104,11 +103,6 @@ open class BrowseSourcePresenter(
      * Pager containing a list of manga results.
      */
     private lateinit var pager: Pager
-
-    /**
-     * Flow of manga list to initialize.
-     */
-    private val mangaDetailsFlow = MutableStateFlow<List<Manga>>(emptyList())
 
     /**
      * Subscription for the pager.
