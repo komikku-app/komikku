@@ -27,7 +27,7 @@ import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.widget.preference.LoginPreference
+import eu.kanade.tachiyomi.widget.preference.TrackerPreference
 import uy.kohesive.injekt.injectLazy
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
@@ -95,11 +95,13 @@ class SettingsTrackingController :
     private inline fun PreferenceGroup.trackPreference(
         service: TrackService,
         crossinline login: () -> Unit
-    ): LoginPreference {
+    ): TrackerPreference {
         return add(
-            LoginPreference(context).apply {
+            TrackerPreference(context).apply {
                 key = Keys.trackUsername(service.id)
                 titleRes = service.nameRes()
+                iconRes = service.getLogo()
+                iconColor = service.getLogoColor()
                 onClick {
                     if (service.isLogged) {
                         if (service is NoLoginTrackService) {
@@ -140,7 +142,7 @@ class SettingsTrackingController :
     }
 
     private fun updatePreference(id: Int) {
-        val pref = findPreference(Keys.trackUsername(id)) as? LoginPreference
+        val pref = findPreference(Keys.trackUsername(id)) as? TrackerPreference
         pref?.notifyChanged()
     }
 
