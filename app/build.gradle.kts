@@ -75,21 +75,22 @@ android {
             dimension = "default"
         }
         create("dev") {
-            resConfigs("en", "xxhdpi")
+            resourceConfigurations.addAll(listOf("en", "xxhdpi"))
             dimension = "default"
         }
     }
 
     packagingOptions {
-        exclude("META-INF/DEPENDENCIES")
-        exclude("LICENSE.txt")
-        exclude("META-INF/LICENSE")
-        exclude("META-INF/LICENSE.txt")
-        exclude("META-INF/NOTICE")
-        exclude("META-INF/*.kotlin_module")
-
-        // Compatibility for two RxJava versions (EXH)
-        exclude("META-INF/rxjava.properties")
+        resources.excludes.addAll(listOf(
+            "META-INF/DEPENDENCIES",
+            "LICENSE.txt",
+            "META-INF/LICENSE",
+            "META-INF/LICENSE.txt",
+            "META-INF/NOTICE",
+            "META-INF/*.kotlin_module",
+            // Compatibility for two RxJava versions (EXH)
+            "META-INF/rxjava.properties",
+        ))
     }
 
     dependenciesInfo {
@@ -117,7 +118,6 @@ android {
 }
 
 dependencies {
-
     implementation(kotlin("reflect", version = BuildPluginsVersion.KOTLIN))
 
     val coroutinesVersion = "1.5.1"
