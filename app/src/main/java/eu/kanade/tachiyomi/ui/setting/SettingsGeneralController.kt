@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
+import eu.kanade.tachiyomi.util.preference.initThenAdd
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.listPreference
 import eu.kanade.tachiyomi.util.preference.onChange
@@ -18,6 +19,7 @@ import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.isTablet
+import eu.kanade.tachiyomi.widget.preference.ThemesPreference
 import kotlinx.coroutines.flow.launchIn
 import java.util.Date
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
@@ -161,7 +163,7 @@ class SettingsGeneralController : SettingsController() {
 
                 summary = "%s"
             }
-            listPreference {
+            initThenAdd(ThemesPreference(context)) {
                 key = Keys.appTheme
                 titleRes = R.string.pref_app_theme
 
@@ -173,10 +175,8 @@ class SettingsGeneralController : SettingsController() {
                     }
                     it.titleResId != null && monetFilter
                 }
-                entriesRes = appThemes.map { it.titleResId!! }.toTypedArray()
-                entryValues = appThemes.map { it.name }.toTypedArray()
+                entries = appThemes
                 defaultValue = appThemes[0].name
-                summary = "%s"
 
                 onChange {
                     activity?.recreate()
