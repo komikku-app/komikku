@@ -52,7 +52,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
      * Context that has been wrapped to use the correct theme values based on the
      * current app theme and reader background color
      */
-    private var readerThemedContext = viewer.activity.createReaderThemeContext(viewer.config.theme)
+    private var readerThemedContext = viewer.activity.createReaderThemeContext()
 
     /**
      * Updates this adapter with the given [chapters]. It handles setting a few pages of the
@@ -219,7 +219,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     }
 
     fun refresh() {
-        readerThemedContext = viewer.activity.createReaderThemeContext(viewer.config.theme)
+        readerThemedContext = viewer.activity.createReaderThemeContext()
     }
 
     // SY -->

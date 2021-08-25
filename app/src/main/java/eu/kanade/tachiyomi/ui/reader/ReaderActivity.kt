@@ -1120,7 +1120,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.aboveChapter.setTooltip(R.string.action_previous_chapter)
         binding.belowChapter.setTooltip(R.string.action_next_chapter)
 
-        val loadingIndicatorContext = createReaderThemeContext(preferences.readerTheme().get())
+        val loadingIndicatorContext = createReaderThemeContext()
         loadingIndicator = ReaderProgressIndicator(loadingIndicatorContext).apply {
             updateLayoutParams<FrameLayout.LayoutParams> {
                 gravity = Gravity.CENTER
