@@ -252,9 +252,18 @@ class ApiMangaParser(
         // Convert from unix time
         val dateUpload = MdUtil.parseDate(attributes.publishAt)
 
-        val scanlatorName = networkChapter.relationships.filter {
-            it.type == MdConstants.Types.scanlator
-        }.mapNotNull { groups[it.id] }.toSet()
+        val scanlatorName = networkChapter.relationships
+            .filter {
+                it.type == MdConstants.Types.scanlator
+            }
+            .mapNotNull { groups[it.id] }
+            .map {
+                if (it == "no group") {
+                    "No Group"
+                } else it
+            }
+            .toSet()
+            .ifEmpty { setOf("No Group") }
 
         val scanlator = MdUtil.cleanString(MdUtil.getScanlatorString(scanlatorName))
 
