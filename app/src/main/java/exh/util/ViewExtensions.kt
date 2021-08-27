@@ -46,8 +46,8 @@ fun Context.makeSearchChip(
         }
         if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID) {
             chipStrokeWidth = when (type) {
-                EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 5F
-                EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 3F
+                EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 3F
+                EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 1F
                 EHentaiSearchMetadata.TAG_TYPE_WEAK -> 0F
                 else -> chipStrokeWidth
             }
