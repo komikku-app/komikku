@@ -8,7 +8,6 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
-import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
