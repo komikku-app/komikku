@@ -462,14 +462,20 @@ class MigrationListController(bundle: Bundle? = null) :
             )
         }
 
-        menuCopy.icon.mutate()
-        menuMigrate.icon.mutate()
         val tintColor = activity?.getResourceColor(R.attr.colorOnToolbar) ?: Color.WHITE
-        val translucentWhite = ColorUtils.setAlphaComponent(tintColor, 127)
-        menuCopy.icon?.setTint(if (allMangasDone) tintColor else translucentWhite)
-        menuMigrate?.icon?.setTint(if (allMangasDone) tintColor else translucentWhite)
-        menuCopy.isEnabled = allMangasDone
-        menuMigrate.isEnabled = allMangasDone
+        val color = if (allMangasDone) {
+            tintColor
+        } else {
+            ColorUtils.setAlphaComponent(tintColor, 127)
+        }
+        menuCopy.setIconTint(allMangasDone, color)
+        menuMigrate.setIconTint(allMangasDone, color)
+    }
+
+    private fun MenuItem.setIconTint(enabled: Boolean, color: Int) {
+        icon.mutate()
+        icon.setTint(color)
+        isEnabled = enabled
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
