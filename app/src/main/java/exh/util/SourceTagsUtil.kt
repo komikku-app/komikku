@@ -12,7 +12,12 @@ import exh.source.nHentaiSourceIds
 import java.util.Locale
 
 object SourceTagsUtil {
-    fun getWrappedTag(sourceId: Long, namespace: String? = null, tag: String? = null, fullTag: String? = null): String? {
+    fun getWrappedTag(
+        sourceId: Long?,
+        namespace: String? = null,
+        tag: String? = null,
+        fullTag: String? = null
+    ): String? {
         return if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId in nHentaiSourceIds || sourceId in hitomiSourceIds) {
             val parsed = when {
                 fullTag != null -> parseTag(fullTag)

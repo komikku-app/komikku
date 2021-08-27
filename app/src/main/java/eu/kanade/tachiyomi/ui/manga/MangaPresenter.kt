@@ -154,6 +154,8 @@ class MangaPresenter(
 
     var mergedManga = emptyMap<Long, Manga>()
         private set
+    var mergedMangaReferences = emptyList<MergedMangaReference>()
+        private set
 
     var dedupe: Boolean = true
 
@@ -166,6 +168,7 @@ class MangaPresenter(
         // SY -->
         if (source is MergedSource) {
             launchIO { mergedManga = db.getMergedMangas(manga.id!!).executeAsBlocking().associateBy { it.id!! } }
+            launchIO { mergedMangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking() }
         }
         // SY <--
 
@@ -188,11 +191,13 @@ class MangaPresenter(
                 }
             }
             .subscribeLatestCache({ view, (manga, flatMetadata) ->
-                flatMetadata?.let { metadata ->
-                    view.onNextMetaInfo(metadata)
-                }
+                val mainSource = source.getMainSource<MetadataSource<*, *>>()
+                val meta = if (mainSource != null) {
+                    flatMetadata?.raise(mainSource.metaClass)
+                } else null
+                this.meta = meta
                 // SY <--
-                view.onNextMangaInfo(manga, source)
+                view.onNextMangaInfo(manga, source, meta)
             })
 
         getTrackingObservable()
@@ -383,7 +388,7 @@ class MangaPresenter(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(
                     { view, _ ->
-                        view.onNextMangaInfo(manga, source)
+                        view.onNextMangaInfo(manga, source, meta)
                     }
                 )
         }

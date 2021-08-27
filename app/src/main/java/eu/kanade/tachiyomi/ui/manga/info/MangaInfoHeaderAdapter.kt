@@ -4,11 +4,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.loadAny
+import coil.target.ImageViewTarget
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.MangaInfoHeaderBinding
@@ -16,38 +18,48 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.all.MergedSource
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.view.setChips
 import exh.merged.sql.models.MergedMangaReference
+import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.MERGED_SOURCE_ID
+import exh.source.getMainSource
 import exh.util.SourceTagsUtil
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.view.longClicks
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class MangaInfoHeaderAdapter(
     private val controller: MangaController,
-    private val isTablet: Boolean
+    private val fromSource: Boolean,
+    private val isTablet: Boolean,
 ) :
     RecyclerView.Adapter<MangaInfoHeaderAdapter.HeaderViewHolder>() {
 
     private val trackManager: TrackManager by injectLazy()
 
     // SY -->
-    private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
 
-    private var mergedMangaReferences: List<MergedMangaReference> = emptyList()
     // SY <--
 
     private var manga: Manga = controller.presenter.manga
     private var source: Source = controller.presenter.source
+
+    // SY -->
+    private var meta: RaisedSearchMetadata? = controller.presenter.meta
+    private var mergedMangaReferences: List<MergedMangaReference> = controller.presenter.mergedMangaReferences
+
+    // SY <--
     private var trackCount: Int = 0
+    private var metaInfoAdapter: RecyclerView.Adapter<*>? = null
+    private var mangaTagsInfoAdapter: NamespaceTagsAdapter = NamespaceTagsAdapter(controller, source)
 
     private lateinit var binding: MangaInfoHeaderBinding
 
@@ -55,6 +67,20 @@ class MangaInfoHeaderAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HeaderViewHolder {
         binding = MangaInfoHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        // SY -->
+        metaInfoAdapter = source.getMainSource<MetadataSource<*, *>>()?.getDescriptionAdapter(controller)
+        binding.metadataView.isVisible = if (metaInfoAdapter != null) {
+            binding.metadataView.layoutManager = LinearLayoutManager(binding.root.context)
+            binding.metadataView.adapter = metaInfoAdapter
+            true
+        } else {
+            false
+        }
+
+        binding.genreGroups.layoutManager = LinearLayoutManager(binding.root.context)
+        binding.genreGroups.adapter = mangaTagsInfoAdapter
+        // SY <--
+
         return HeaderViewHolder(binding.root)
     }
 
@@ -70,16 +96,16 @@ class MangaInfoHeaderAdapter(
      * @param manga manga object containing information about manga.
      * @param source the source of the manga.
      */
-    fun update(manga: Manga, source: Source) {
+    fun update(manga: Manga, source: Source, meta: RaisedSearchMetadata?, mergedMangaReferences: List<MergedMangaReference>) {
         this.manga = manga
         this.source = source
         // SY -->
-        if (source is MergedSource) {
-            mergedMangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
-        }
+        this.meta = meta
+        this.mergedMangaReferences = mergedMangaReferences
         // SY <--
 
         notifyDataSetChanged()
+        notifyMetaAdapter()
     }
 
     fun setTrackingCount(trackCount: Int) {
@@ -88,14 +114,22 @@ class MangaInfoHeaderAdapter(
         notifyDataSetChanged()
     }
 
+    fun notifyMetaAdapter() {
+        metaInfoAdapter?.notifyDataSetChanged()
+    }
+
     inner class HeaderViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
         fun bind() {
             // For rounded corners
             binding.mangaCover.clipToOutline = true
+
             // SY -->
-            binding.mangaCover.clicks()
-                .onEach { controller.onThumbnailClick(binding.mangaCover) }
-                .launchIn(controller.viewScope)
+            mangaTagsInfoAdapter.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, _ ->
+                controller.viewScope.launchUI {
+                    toggleMangaInfo()
+                }
+                false
+            }
             // SY <--
 
             binding.btnFavorite.clicks()
@@ -209,13 +243,22 @@ class MangaInfoHeaderAdapter(
                 }
                 .launchIn(controller.viewScope)
 
+            binding.mangaSummaryText.longClicks()
+                .onEach {
+                    controller.activity?.copyToClipboard(
+                        view.context.getString(R.string.description),
+                        binding.mangaSummaryText.text.toString()
+                    )
+                }
+                .launchIn(controller.viewScope)
+
             binding.mangaCover.longClicks()
                 .onEach {
                     showCoverOptionsDialog()
                 }
                 .launchIn(controller.viewScope)
 
-            setMangaInfo(manga, source)
+            setMangaInfo(manga, source, meta)
         }
 
         private fun showCoverOptionsDialog() {
@@ -245,7 +288,7 @@ class MangaInfoHeaderAdapter(
          * @param manga manga object containing information about manga.
          * @param source the source of the manga.
          */
-        private fun setMangaInfo(manga: Manga, source: Source?) {
+        private fun setMangaInfo(manga: Manga, source: Source?, meta: RaisedSearchMetadata?) {
             // Update full title TextView.
             binding.mangaFullTitle.text = if (manga.title.isBlank()) {
                 view.context.getString(R.string.unknown)
@@ -278,7 +321,6 @@ class MangaInfoHeaderAdapter(
                 } else /* SY <-- */ if (mangaSource != null) {
                     text = mangaSource
                     setOnClickListener {
-                        val sourceManager = Injekt.get<SourceManager>()
                         controller.performSearch(sourceManager.getOrStub(source.id).name)
                     }
                 } else {
@@ -305,14 +347,139 @@ class MangaInfoHeaderAdapter(
             setFavoriteButtonState(manga.favorite)
 
             // Set cover if changed.
-            listOf(binding.mangaCover, binding.backdrop).forEach {
-                it.loadAny(manga)
+            binding.backdrop.loadAny(manga)
+            binding.mangaCover.loadAny(manga) {
+                listener(
+                    onSuccess = { request, _ ->
+                        (request.target as? ImageViewTarget)?.drawable?.let { drawable ->
+                            val ratio = drawable.minimumWidth / drawable.minimumHeight.toFloat()
+                            binding.root.getConstraintSet(R.id.end)
+                                ?.setDimensionRatio(R.id.manga_cover, ratio.toString())
+                        }
+                    }
+                )
             }
-            if (initialLoad && isTablet) {
-                initialLoad = false
-                // wrap_content and autoFixTextSize can cause unwanted behaviour this tries to solve it
-                binding.mangaFullTitle.requestLayout()
+
+            // Manga info section
+            val hasInfoContent = !manga.description.isNullOrBlank() || !manga.genre.isNullOrBlank()
+            showMangaInfo(hasInfoContent)
+            if (hasInfoContent) {
+                // Update description TextView.
+                binding.mangaSummaryText.text = if (manga.description.isNullOrBlank()) {
+                    view.context.getString(R.string.unknown)
+                } else {
+                    manga.description
+                }
+
+                // SY -->
+                if (manga.description == "meta") {
+                    binding.mangaSummaryText.text = ""
+                    /*binding.mangaInfoToggleLess.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                        topToBottom = -1
+                        bottomToBottom = binding.mangaSummaryText.id
+                    }*/
+                }
+                // SY <--
+
+                // Update genres list
+                if (!manga.genre.isNullOrBlank()) {
+                    binding.mangaGenresTagsCompactChips.setChips(
+                        manga.getGenres(),
+                        controller::performGenreSearch
+                    )
+                    // SY -->
+                    // if (source?.getMainSource<NamespaceSource>() != null) {
+                    setChipsWithNamespace(
+                        manga.genre,
+                        meta
+                    )
+                    // binding.mangaGenresTagsFullChips.isVisible = false
+                    /*} else {
+                        binding.mangaGenresTagsFullChips.setChips(
+                            manga.getGenres(),
+                            controller::performGenreSearch
+                        )
+                        binding.genreGroups.isVisible = false
+                    }*/
+                    // SY <--
+                } else {
+                    binding.mangaGenresTagsCompactChips.isVisible = false
+                    // binding.mangaGenresTagsFullChips.isVisible = false
+                    // SY -->
+                    binding.genreGroups.isVisible = false
+                    // SY <--
+                }
+
+                // Handle showing more or less info
+                merge(
+                    binding.mangaSummaryText.clicks(),
+                    binding.mangaInfoToggleMore.clicks(),
+                    binding.mangaInfoToggleLess.clicks(),
+                    binding.mangaSummarySection.clicks()
+                )
+                    .onEach { toggleMangaInfo() }
+                    .launchIn(controller.viewScope)
+
+                // Expand manga info if navigated from source listing or explicitly set to
+                // (e.g. on tablets)
+                if (initialLoad && (fromSource || isTablet)) {
+                    toggleMangaInfo()
+                    initialLoad = false
+                    // wrap_content and autoFixTextSize can cause unwanted behaviour this tries to solve it
+                    binding.mangaFullTitle.requestLayout()
+                }
+
+                // Refreshes will change the state and it needs to be set to correct state to display correctly
+                if (binding.mangaSummaryText.maxLines == 2) {
+                    binding.mangaSummarySection.transitionToState(R.id.start)
+                } else {
+                    binding.mangaSummarySection.transitionToState(R.id.end)
+                }
             }
+        }
+
+        private fun showMangaInfo(visible: Boolean) {
+            binding.mangaSummarySection.isVisible = visible
+        }
+
+        private fun toggleMangaInfo() {
+            val isCurrentlyExpanded = binding.mangaSummaryText.maxLines != 2
+
+            if (isCurrentlyExpanded) {
+                binding.mangaSummarySection.transitionToStart()
+            } else {
+                binding.mangaSummarySection.transitionToEnd()
+            }
+
+            binding.mangaSummaryText.maxLines = if (isCurrentlyExpanded) {
+                2
+            } else {
+                Int.MAX_VALUE
+            }
+        }
+
+        private fun setChipsWithNamespace(genre: String?, meta: RaisedSearchMetadata?) {
+            val namespaceTags = when {
+                meta != null -> {
+                    meta.tags
+                        .filterNot { it.type == RaisedSearchMetadata.TAG_TYPE_VIRTUAL }
+                        .groupBy { it.namespace }
+                        .map { (namespace, tags) ->
+                            NamespaceTagsItem(
+                                namespace,
+                                tags.map {
+                                    it.name to it.type
+                                }
+                            )
+                        }
+                }
+                genre != null -> {
+                    listOf(NamespaceTagsItem(null, genre.split(",").map { it.trim() to null }))
+                }
+                else -> emptyList()
+            }
+
+            mangaTagsInfoAdapter.updateDataSet(namespaceTags)
         }
 
         /**

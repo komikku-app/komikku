@@ -2,15 +2,10 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Point
-import android.graphics.Rect
-import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,8 +13,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.animation.DecelerateInterpolator
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.FloatRange
 import androidx.appcompat.app.AppCompatActivity
@@ -31,7 +24,6 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.imageLoader
-import coil.loadAny
 import coil.request.ImageRequest
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -85,7 +77,6 @@ import eu.kanade.tachiyomi.ui.manga.chapter.MangaChaptersHeaderAdapter
 import eu.kanade.tachiyomi.ui.manga.chapter.base.BaseChaptersAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoButtonsAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoHeaderAdapter
-import eu.kanade.tachiyomi.ui.manga.info.MangaInfoItemAdapter
 import eu.kanade.tachiyomi.ui.manga.merged.EditMergedSettingsDialog
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.ui.manga.track.TrackSearchDialog
@@ -107,6 +98,7 @@ import eu.kanade.tachiyomi.util.view.snack
 import exh.log.xLogD
 import exh.md.similar.MangaDexSimilarController
 import exh.metadata.metadata.base.FlatMetadata
+import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.recs.RecommendsController
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
@@ -117,7 +109,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
-import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.recyclerview.scrollEvents
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import timber.log.Timber
@@ -192,14 +183,12 @@ class MangaController :
 
     private var mangaInfoAdapter: MangaInfoHeaderAdapter? = null
 
-    // SY >--
-    private var mangaInfoItemAdapter: MangaInfoItemAdapter? = null
-    private var mangaInfoButtonsAdapter: MangaInfoButtonsAdapter? = null
-    private var mangaMetaInfoAdapter: RecyclerView.Adapter<*>? = null
-
-    // SY <--
     private var chaptersHeaderAdapter: MangaChaptersHeaderAdapter? = null
     private var chaptersAdapter: ChaptersAdapter? = null
+
+    // SY -->
+    private var mangaInfoButtonsAdapter: MangaInfoButtonsAdapter? = null
+    // SY <--
 
     // Sheet containing filter/sort/display items.
     private var settingsSheet: ChaptersSettingsSheet? = null
@@ -237,8 +226,6 @@ class MangaController :
     private var editMangaDialog: EditMangaDialog? = null
 
     private var editMergedSettingsDialog: EditMergedSettingsDialog? = null
-
-    private var currentAnimator: Animator? = null
     // EXH <--
 
     init {
@@ -298,18 +285,13 @@ class MangaController :
         if (manga == null || source == null) return
 
         // Init RecyclerView and adapter
-        mangaInfoAdapter = MangaInfoHeaderAdapter(this, binding.infoRecycler != null)
+        mangaInfoAdapter = MangaInfoHeaderAdapter(this, fromSource, binding.infoRecycler != null)
         chaptersHeaderAdapter = MangaChaptersHeaderAdapter(this)
         chaptersAdapter = ChaptersAdapter(this, view.context)
         // SY -->
-        val mainSource = presenter.source.getMainSource<MetadataSource<*, *>>()
-        if (mainSource != null) {
-            mangaMetaInfoAdapter = mainSource.getDescriptionAdapter(this)
-        }
         if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null) {
             mangaInfoButtonsAdapter = MangaInfoButtonsAdapter(this)
         }
-        mangaInfoItemAdapter = MangaInfoItemAdapter(this, fromSource, binding.infoRecycler != null)
         // SY <--
 
         // Phone layout
@@ -317,8 +299,6 @@ class MangaController :
             it.adapter = ConcatAdapter(
                 listOfNotNull(
                     mangaInfoAdapter,
-                    mangaMetaInfoAdapter,
-                    mangaInfoItemAdapter,
                     mangaInfoButtonsAdapter,
                     chaptersHeaderAdapter,
                     chaptersAdapter
@@ -346,9 +326,7 @@ class MangaController :
             it.adapter = ConcatAdapter(
                 listOfNotNull(
                     mangaInfoAdapter,
-                    mangaInfoButtonsAdapter,
-                    mangaMetaInfoAdapter,
-                    mangaInfoItemAdapter
+                    mangaInfoButtonsAdapter
                 )
             )
 
@@ -459,11 +437,6 @@ class MangaController :
         chaptersHeaderAdapter = null
         chaptersAdapter = null
         settingsSheet = null
-        // SY -->
-        mangaInfoButtonsAdapter = null
-        mangaInfoItemAdapter = null
-        mangaMetaInfoAdapter = null
-        // SY <--
         addSnackbar?.dismiss()
         updateToolbarTitleAlpha(1F)
         toolbarTextView = null
@@ -559,7 +532,7 @@ class MangaController :
         val mainSource = presenter.source.getMainSource<MetadataSource<*, *>>()
         if (mainSource != null) {
             presenter.meta = flatMetadata.raise(mainSource.metaClass)
-            mangaMetaInfoAdapter?.notifyDataSetChanged()
+            mangaInfoAdapter?.notifyMetaAdapter()
             updateFilterIconState()
         }
     }
@@ -573,13 +546,10 @@ class MangaController :
      * @param manga manga object containing information about manga.
      * @param source the source of the manga.
      */
-    fun onNextMangaInfo(manga: Manga, source: Source) {
+    fun onNextMangaInfo(manga: Manga, source: Source, metadata: RaisedSearchMetadata?) {
         if (manga.initialized) {
             // Update view.
-            mangaInfoAdapter?.update(manga, source)
-            mangaInfoItemAdapter?.update(manga, source, presenter.meta)
-
-            binding.expandedImage.loadAny(manga)
+            mangaInfoAdapter?.update(manga, source, metadata, presenter.mergedMangaReferences)
         } else {
             // Initialize manga.
             fetchMangaInfoFromSource()
@@ -842,110 +812,6 @@ class MangaController :
 
         presenter.moveMangaToCategories(manga, categories)
     }
-
-    // SY -->
-    fun onThumbnailClick(thumbView: ImageView) {
-        if (!presenter.manga.initialized || presenter.manga.thumbnail_url == null) return
-        currentAnimator?.cancel()
-
-        val startBoundsInt = Rect()
-        val finalBoundsInt = Rect()
-        val globalOffset = Point()
-
-        thumbView.getGlobalVisibleRect(startBoundsInt)
-        binding.root.getGlobalVisibleRect(finalBoundsInt, globalOffset)
-        startBoundsInt.offset(-globalOffset.x, -globalOffset.y)
-        finalBoundsInt.offset(-globalOffset.x, -globalOffset.y)
-
-        val startBounds = RectF(startBoundsInt)
-        val finalBounds = RectF(finalBoundsInt)
-
-        val startScale: Float
-        if ((finalBounds.width() / finalBounds.height() > startBounds.width() / startBounds.height())) {
-            startScale = startBounds.height() / finalBounds.height()
-            val startWidth: Float = startScale * finalBounds.width()
-            val deltaWidth: Float = (startWidth - startBounds.width()) / 2
-            startBounds.left -= deltaWidth.toInt()
-            startBounds.right += deltaWidth.toInt()
-        } else {
-            startScale = startBounds.width() / finalBounds.width()
-            val startHeight: Float = startScale * finalBounds.height()
-            val deltaHeight: Float = (startHeight - startBounds.height()) / 2f
-            startBounds.top -= deltaHeight.toInt()
-            startBounds.bottom += deltaHeight.toInt()
-        }
-        thumbView.alpha = 0f
-        actionFab?.isVisible = false
-        binding.expandedImage.isVisible = true
-
-        binding.expandedImage.pivotX = 0f
-        binding.expandedImage.pivotY = 0f
-
-        currentAnimator = AnimatorSet().apply {
-            play(
-                ObjectAnimator.ofFloat(
-                    binding.expandedImage,
-                    View.X,
-                    startBounds.left,
-                    finalBounds.left
-                )
-            ).apply {
-                with(ObjectAnimator.ofFloat(binding.expandedImage, View.Y, startBounds.top, finalBounds.top))
-                with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_X, startScale, 1f))
-                with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_Y, startScale, 1f))
-            }
-            duration = resources?.getInteger(android.R.integer.config_shortAnimTime)?.toLong() ?: 150L
-            interpolator = DecelerateInterpolator()
-            addListener(
-                object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        currentAnimator = null
-                    }
-
-                    override fun onAnimationCancel(animation: Animator) {
-                        currentAnimator = null
-                    }
-                }
-            )
-            start()
-        }
-
-        binding.expandedImage.clicks()
-            .onEach {
-                currentAnimator?.cancel()
-
-                currentAnimator = AnimatorSet().apply {
-                    play(ObjectAnimator.ofFloat(binding.expandedImage, View.X, startBounds.left)).apply {
-                        with(ObjectAnimator.ofFloat(binding.expandedImage, View.Y, startBounds.top))
-                        with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_X, startScale))
-                        with(ObjectAnimator.ofFloat(binding.expandedImage, View.SCALE_Y, startScale))
-                    }
-                    duration = resources?.getInteger(android.R.integer.config_shortAnimTime)?.toLong() ?: 150L
-                    interpolator = DecelerateInterpolator()
-                    addListener(
-                        object : AnimatorListenerAdapter() {
-
-                            override fun onAnimationEnd(animation: Animator) {
-                                thumbView.alpha = 1f
-                                binding.expandedImage.isVisible = false
-                                actionFab?.isVisible = presenter.filteredAndSortedChapters.any { !it.read }
-                                currentAnimator = null
-                            }
-
-                            override fun onAnimationCancel(animation: Animator) {
-                                thumbView.alpha = 1f
-                                binding.expandedImage.isVisible = false
-                                actionFab?.isVisible = presenter.filteredAndSortedChapters.any { !it.read }
-                                currentAnimator = null
-                            }
-                        }
-                    )
-                    start()
-                }
-            }
-            .launchIn(viewScope)
-    }
-    // SY <--
 
     /**
      * Perform a global search using the provided query.
