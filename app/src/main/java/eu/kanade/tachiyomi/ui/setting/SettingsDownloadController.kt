@@ -116,7 +116,7 @@ class SettingsDownloadController : SettingsController() {
             // SY -->
             preference {
                 val dbCategories = db.getCategories().executeAsBlocking()
-                val categories = listOf(Category.createDefault()) + dbCategories
+                val categories = listOf(Category.createDefault(context)) + dbCategories
 
                 key = Keys.dontDeleteFromCategories
                 titleRes = R.string.pref_dont_delete_from_categories
@@ -329,7 +329,7 @@ class SettingsDownloadController : SettingsController() {
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val dbCategories = db.getCategories().executeAsBlocking()
-            val categories = listOf(Category.createDefault()) + dbCategories
+            val categories = listOf(Category.createDefault(activity!!)) + dbCategories
 
             val items = categories.map { it.name }.toTypedArray()
             val selection = categories

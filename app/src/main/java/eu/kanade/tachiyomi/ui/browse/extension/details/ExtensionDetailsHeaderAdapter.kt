@@ -57,8 +57,8 @@ class ExtensionDetailsHeaderAdapter(private val presenter: ExtensionDetailsPrese
 
             // SY -->
             if (extension.isRedundant) {
-                binding.extensionWarningBanner.isVisible = true
-                binding.extensionWarningBanner.setText(R.string.redundant_extension_message)
+                binding.warningBanner.isVisible = true
+                binding.warningBanner.setText(R.string.redundant_extension_message)
             }
             // SY <--
         }
