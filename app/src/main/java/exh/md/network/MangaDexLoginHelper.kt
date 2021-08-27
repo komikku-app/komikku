@@ -10,7 +10,11 @@ import exh.md.dto.RefreshTokenDto
 import exh.md.service.MangaDexAuthService
 import exh.md.utils.MdUtil
 import exh.util.seconds
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 
 class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
