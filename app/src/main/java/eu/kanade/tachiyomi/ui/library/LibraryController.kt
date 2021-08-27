@@ -11,7 +11,6 @@ import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -473,7 +472,7 @@ class LibraryController(
         // Tint icon if there's a filter active
         if (settingsSheet.filters.hasActiveFilters()) {
             val filterColor = activity!!.getResourceColor(R.attr.colorFilterActive)
-            DrawableCompat.setTint(filterItem.icon, filterColor)
+            filterItem.icon.setTint(filterColor)
         }
     }
 

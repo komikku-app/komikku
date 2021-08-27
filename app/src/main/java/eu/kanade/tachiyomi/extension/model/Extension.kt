@@ -7,7 +7,7 @@ sealed class Extension {
     abstract val name: String
     abstract val pkgName: String
     abstract val versionName: String
-    abstract val versionCode: Int
+    abstract val versionCode: Long
     abstract val lang: String?
     abstract val isNsfw: Boolean
 
@@ -15,7 +15,7 @@ sealed class Extension {
         override val name: String,
         override val pkgName: String,
         override val versionName: String,
-        override val versionCode: Int,
+        override val versionCode: Long,
         override val lang: String,
         override val isNsfw: Boolean,
         val pkgFactory: String?,
@@ -32,7 +32,7 @@ sealed class Extension {
         override val name: String,
         override val pkgName: String,
         override val versionName: String,
-        override val versionCode: Int,
+        override val versionCode: Long,
         override val lang: String,
         override val isNsfw: Boolean,
         val apkName: String,
@@ -46,7 +46,7 @@ sealed class Extension {
         override val name: String,
         override val pkgName: String,
         override val versionName: String,
-        override val versionCode: Int,
+        override val versionCode: Long,
         val signatureHash: String,
         override val lang: String? = null,
         override val isNsfw: Boolean = false
