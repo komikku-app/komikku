@@ -26,26 +26,26 @@ class ReaderPageSheet(
     override fun createView(inflater: LayoutInflater): View {
         binding = ReaderPageSheetBinding.inflate(activity.layoutInflater, null, false)
 
-        binding.setAsCoverLayout.setOnClickListener { setAsCover(page) }
-        binding.shareLayout.setOnClickListener { share(page) }
-        binding.saveLayout.setOnClickListener { save(page) }
+        binding.setAsCover.setOnClickListener { setAsCover(page) }
+        binding.share.setOnClickListener { share(page) }
+        binding.save.setOnClickListener { save(page) }
 
         if (extraPage != null) {
-            binding.setAsCoverItem.setText(R.string.action_set_first_page_cover)
-            binding.shareItem.setText(R.string.action_share_first_page)
-            binding.saveItem.setText(R.string.action_save_first_page)
+            binding.setAsCover.setText(R.string.action_set_first_page_cover)
+            binding.share.setText(R.string.action_share_first_page)
+            binding.save.setText(R.string.action_save_first_page)
 
-            binding.setAsCoverLayoutExtra.isVisible = true
-            binding.setAsCoverLayoutExtra.setOnClickListener { setAsCover(extraPage) }
-            binding.shareLayoutExtra.isVisible = true
-            binding.shareLayoutExtra.setOnClickListener { share(extraPage) }
-            binding.saveLayoutExtra.isVisible = true
-            binding.saveLayoutExtra.setOnClickListener { save(extraPage) }
+            binding.setAsCoverExtra.isVisible = true
+            binding.setAsCoverExtra.setOnClickListener { setAsCover(extraPage) }
+            binding.shareExtra.isVisible = true
+            binding.shareExtra.setOnClickListener { share(extraPage) }
+            binding.saveExtra.isVisible = true
+            binding.saveExtra.setOnClickListener { save(extraPage) }
 
-            binding.shareLayoutCombined.isVisible = true
-            binding.shareLayoutCombined.setOnClickListener { shareCombined() }
-            binding.saveLayoutCombined.isVisible = true
-            binding.saveLayoutCombined.setOnClickListener { saveCombined() }
+            binding.shareCombined.isVisible = true
+            binding.shareCombined.setOnClickListener { shareCombined() }
+            binding.saveCombined.isVisible = true
+            binding.saveCombined.setOnClickListener { saveCombined() }
         }
 
         return binding.root
