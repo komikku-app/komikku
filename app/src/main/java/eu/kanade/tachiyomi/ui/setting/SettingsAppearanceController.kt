@@ -156,20 +156,25 @@ class SettingsAppearanceController : SettingsController() {
                 summary = "%s"
             }
         }
-        switchPreference {
-            key = Keys.showNavUpdates
-            titleRes = R.string.pref_hide_updates_button
-            defaultValue = true
-        }
-        switchPreference {
-            key = Keys.showNavHistory
-            titleRes = R.string.pref_hide_history_button
-            defaultValue = true
-        }
-        switchPreference {
-            key = Keys.bottomBarLabels
-            titleRes = R.string.pref_show_bottom_bar_labels
-            defaultValue = true
+        
+        preferenceCategory {
+            titleRes = R.string.pref_category_navbar
+
+            switchPreference {
+                key = Keys.showNavUpdates
+                titleRes = R.string.pref_hide_updates_button
+                defaultValue = true
+            }
+            switchPreference {
+                key = Keys.showNavHistory
+                titleRes = R.string.pref_hide_history_button
+                defaultValue = true
+            }
+            switchPreference {
+                key = Keys.bottomBarLabels
+                titleRes = R.string.pref_show_bottom_bar_labels
+                defaultValue = true
+            }
         }
     }
 }

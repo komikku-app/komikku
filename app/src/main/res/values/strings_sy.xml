@@ -170,12 +170,15 @@
     <string name="log_extreme_desc">network inspection mode</string>
 
     <!-- General Settings -->
-    <string name="theme_pure_red">Pure Red</string>
     <string name="toggle_expand_search_filters">Expand all search filters by default</string>
     <string name="auto_solve_captchas">Automatically solve captcha</string>
     <string name="auto_solve_captchas_summary">Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device.</string>
     <string name="put_recommends_in_overflow">Recommendations in overflow</string>
     <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the manga page</string>
+    
+    <!-- Appearance Settings -->
+    <string name="theme_pure_red">Pure Red</string>
+    <string name="pref_category_navbar">Navbar</string>
     <string name="pref_hide_updates_button">Show updates in the nav</string>
     <string name="pref_hide_history_button">Show history in the nav</string>
     <string name="pref_show_bottom_bar_labels">Always show nav labels</string>
