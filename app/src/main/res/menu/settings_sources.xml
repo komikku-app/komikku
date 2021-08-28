@@ -7,7 +7,7 @@
         android:icon="@drawable/ic_search_24dp"
         app:showAsAction="collapseActionView|ifRoom"
         app:iconTint="?attr/colorOnToolbar"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"/>
+        app:actionViewClass="eu.kanade.tachiyomi.widget.TachiyomiSearchView"/>
 
     <item
         android:id="@+id/action_sort"
