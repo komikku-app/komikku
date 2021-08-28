@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import coil.imageLoader
 import coil.request.ImageRequest
+import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -80,6 +81,7 @@ import eu.kanade.tachiyomi.ui.manga.chapter.DeleteChaptersDialog
 import eu.kanade.tachiyomi.ui.manga.chapter.DownloadCustomChaptersDialog
 import eu.kanade.tachiyomi.ui.manga.chapter.MangaChaptersHeaderAdapter
 import eu.kanade.tachiyomi.ui.manga.chapter.base.BaseChaptersAdapter
+import eu.kanade.tachiyomi.ui.manga.info.MangaFullCoverDialog
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoButtonsAdapter
 import eu.kanade.tachiyomi.ui.manga.info.MangaInfoHeaderAdapter
 import eu.kanade.tachiyomi.ui.manga.merged.EditMergedSettingsDialog
@@ -222,6 +224,8 @@ class MangaController :
     private var isRefreshingChapters = false
 
     private var trackSheet: TrackSheet? = null
+
+    private var dialog: MangaFullCoverDialog? = null
 
     // EXH -->
     val smartSearchConfig: SourceController.SmartSearchConfig? = args.getParcelable(
@@ -514,7 +518,6 @@ class MangaController :
 
         // Hide options for non-library manga
         menu.findItem(R.id.action_edit_categories).isVisible = presenter.manga.favorite && presenter.getCategories().isNotEmpty()
-        menu.findItem(R.id.action_edit_cover).isVisible = /* SY --> */ false /* presenter.manga.favorite SY <-- */
         menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite /* SY --> */ && presenter.manga.source != MERGED_SOURCE_ID /* SY <-- */
 
         // SY -->
@@ -531,10 +534,6 @@ class MangaController :
             R.id.download_next, R.id.download_next_5, R.id.download_next_10,
             R.id.download_custom, R.id.download_unread, R.id.download_all
             -> downloadChapters(item.itemId)
-
-            R.id.action_share_cover -> shareCover()
-            R.id.action_save_cover -> saveCover()
-            // SY --> R.id.action_edit_cover -> changeCover() // SY <--
 
             // SY -->
             R.id.action_edit -> {
@@ -947,6 +946,21 @@ class MangaController :
         context.imageLoader.enqueue(req)
     }
 
+    fun showFullCoverDialog() {
+        if (dialog != null) return
+        val manga = manga ?: return
+        dialog = MangaFullCoverDialog(this, manga)
+        dialog?.addLifecycleListener(
+            object : LifecycleListener() {
+                override fun postDestroy(controller: Controller) {
+                    super.postDestroy(controller)
+                    dialog = null
+                }
+            }
+        )
+        dialog?.showDialog(router)
+    }
+
     fun shareCover() {
         try {
             val activity = activity!!
@@ -1024,6 +1038,7 @@ class MangaController :
     fun onSetCoverSuccess() {
         editMangaDialog?.loadCover()
         mangaInfoAdapter?.notifyDataSetChanged()
+        dialog?.setImage(manga)
         activity?.toast(R.string.cover_updated)
     }
 
