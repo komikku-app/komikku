@@ -356,7 +356,9 @@ class MangaController :
                     val topStatusBarInset = WindowInsetsCompat.toWindowInsetsCompat(windowInsets)
                         .getInsets(WindowInsetsCompat.Type.statusBars())
                         .top
+                    swipeRefresh.isRefreshing = false
                     swipeRefresh.setProgressViewEndTarget(false, getMainAppBarHeight() + topStatusBarInset)
+                    updateRefreshing()
                     windowInsets
                 }
             }
