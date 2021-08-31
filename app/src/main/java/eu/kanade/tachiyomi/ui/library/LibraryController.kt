@@ -39,7 +39,9 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.widget.EmptyView
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.source.MERGED_SOURCE_ID
@@ -314,7 +316,14 @@ class LibraryController(
         if (mangaMap.isNotEmpty()) {
             binding.emptyView.hide()
         } else {
-            binding.emptyView.show(R.string.information_empty_library)
+            binding.emptyView.show(
+                R.string.information_empty_library,
+                listOf(
+                    EmptyView.Action(R.string.getting_started_guide, R.drawable.ic_help_24dp) {
+                        activity?.openInBrowser("https://tachiyomi.org/help/guides/getting-started")
+                    }
+                ),
+            )
             (activity as? MainActivity)?.ready = true
         }
 
