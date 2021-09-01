@@ -59,7 +59,8 @@ class ApiMangaParser(
                 title = MdUtil.cleanString(mangaAttributesDto.title.asMdMap().let { it[lang] ?: it["en"].orEmpty() })
                 altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
-                mangaDto.relationships
+                val mangaRelationshipsDto = mangaDto.data.relationships
+                mangaRelationshipsDto
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
                     ?.fileName
@@ -69,11 +70,11 @@ class ApiMangaParser(
 
                 description = MdUtil.cleanDescription(mangaAttributesDto.description.asMdMap().let { it[lang] ?: it["en"].orEmpty() })
 
-                authors = mangaDto.relationships.filter { relationshipDto ->
+                authors = mangaRelationshipsDto.filter { relationshipDto ->
                     relationshipDto.type.equals(MdConstants.Types.author, true)
                 }.mapNotNull { it.attributes!!.name }.distinct()
 
-                artists = mangaDto.relationships.filter { relationshipDto ->
+                artists = mangaRelationshipsDto.filter { relationshipDto ->
                     relationshipDto.type.equals(MdConstants.Types.artist, true)
                 }.mapNotNull { it.attributes!!.name }.distinct()
 
@@ -200,7 +201,7 @@ class ApiMangaParser(
     }
 
     fun chapterParseForMangaId(chapterDto: ChapterDto): String? {
-        return chapterDto.relationships.find { it.type.equals("manga", true) }?.id
+        return chapterDto.data.relationships.find { it.type.equals("manga", true) }?.id
     }
 
     fun StringBuilder.appends(string: String): StringBuilder = append("$string ")
@@ -252,7 +253,7 @@ class ApiMangaParser(
         // Convert from unix time
         val dateUpload = MdUtil.parseDate(attributes.publishAt)
 
-        val scanlatorName = networkChapter.relationships
+        val scanlatorName = networkChapter.data.relationships
             .filter {
                 it.type == MdConstants.Types.scanlator
             }

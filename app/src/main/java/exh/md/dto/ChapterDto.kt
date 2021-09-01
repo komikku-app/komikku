@@ -14,7 +14,6 @@ data class ChapterListDto(
 data class ChapterDto(
     val result: String,
     val data: ChapterDataDto,
-    val relationships: List<RelationshipDto>,
 )
 
 @Serializable
@@ -22,6 +21,7 @@ data class ChapterDataDto(
     val id: String,
     val type: String,
     val attributes: ChapterAttributesDto,
+    val relationships: List<RelationshipDto>,
 )
 
 @Serializable

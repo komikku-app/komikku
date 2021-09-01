@@ -28,13 +28,17 @@ class MangaDexService(
     ): MangaListDto {
         return client.newCall(
             GET(
-                MdApi.manga.toHttpUrl().newBuilder().apply {
-                    addQueryParameter("includes[]", MdConstants.Types.coverArt)
-                    addQueryParameter("limit", ids.size.toString())
-                    ids.forEach {
-                        addQueryParameter("ids[]", it)
+                MdApi.manga.toHttpUrl()
+                    .newBuilder()
+                    .apply {
+                        addQueryParameter("includes[]", MdConstants.Types.coverArt)
+                        addQueryParameter("limit", ids.size.toString())
+                        ids.forEach {
+                            addQueryParameter("ids[]", it)
+                        }
                     }
-                }.build().toString(),
+                    .build()
+                    .toString(),
                 cache = CacheControl.FORCE_NETWORK
             )
         ).await().parseAs(MdUtil.jsonParser)
@@ -45,7 +49,16 @@ class MangaDexService(
     ): MangaDto {
         return client.newCall(
             GET(
-                "${MdApi.manga}/$id?includes[]=${MdConstants.Types.coverArt}&includes[]=${MdConstants.Types.author}&includes[]=${MdConstants.Types.artist}",
+                MdApi.manga.toHttpUrl()
+                    .newBuilder()
+                    .apply {
+                        addPathSegment(id)
+                        addQueryParameter("includes[]", MdConstants.Types.coverArt)
+                        addQueryParameter("includes[]", MdConstants.Types.author)
+                        addQueryParameter("includes[]", MdConstants.Types.artist)
+                    }
+                    .build()
+                    .toString(),
                 cache = CacheControl.FORCE_NETWORK
             )
         ).await().parseAs(MdUtil.jsonParser)
@@ -56,12 +69,23 @@ class MangaDexService(
         translatedLanguage: String,
         offset: Int,
     ): ChapterListDto {
-        val url = "${MdApi.manga}/$id/feed?limit=500&includes[]=${MdConstants.Types.scanlator}&order[volume]=desc&order[chapter]=desc".toHttpUrl()
+        val url = MdApi.manga.toHttpUrl()
             .newBuilder()
             .apply {
+                addPathSegment(id)
+                addPathSegment("feed")
+                addQueryParameter("limit", "500")
+                addQueryParameter("includes[]", MdConstants.Types.scanlator)
+                addQueryParameter("order[volume]", "desc")
+                addQueryParameter("order[chapter]", "desc")
+                addQueryParameter("contentRating[]", "safe")
+                addQueryParameter("contentRating[]", "suggestive")
+                addQueryParameter("contentRating[]", "erotica")
+                addQueryParameter("contentRating[]", "pornographic")
                 addQueryParameter("translatedLanguage[]", translatedLanguage)
                 addQueryParameter("offset", offset.toString())
-            }.build()
+            }
+            .build()
             .toString()
 
         return client.newCall(

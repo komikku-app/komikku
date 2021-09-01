@@ -266,7 +266,7 @@ class MdUtil {
             return MangaInfo(
                 key = buildMangaUrl(json.data.id),
                 title = cleanString(json.data.attributes.title.asMdMap().let { it[lang] ?: it["en"].orEmpty() }),
-                cover = json.relationships
+                cover = json.data.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
                     ?.fileName
@@ -280,14 +280,17 @@ class MdUtil {
             return "$cdnUrl/covers/$dexId/$fileName"
         }
 
-        fun getLoginBody(preferences: PreferencesHelper, mdList: MdList) = preferences.trackToken(mdList).get().nullIfBlank()?.let {
-            try {
-                jsonParser.decodeFromString<LoginBodyTokenDto>(it)
-            } catch (e: SerializationException) {
-                xLogD("Unable to load login body")
-                null
+        fun getLoginBody(preferences: PreferencesHelper, mdList: MdList) = preferences.trackToken(mdList)
+            .get()
+            .nullIfBlank()
+            ?.let {
+                try {
+                    jsonParser.decodeFromString<LoginBodyTokenDto>(it)
+                } catch (e: SerializationException) {
+                    xLogD("Unable to load login body")
+                    null
+                }
             }
-        }
 
         fun sessionToken(preferences: PreferencesHelper, mdList: MdList) = getLoginBody(preferences, mdList)?.session
 
@@ -300,7 +303,10 @@ class MdUtil {
         }
 
         fun getAuthHeaders(headers: Headers, preferences: PreferencesHelper, mdList: MdList) =
-            headers.newBuilder().add("Authorization", "Bearer ${sessionToken(preferences, mdList) ?: throw NoSessionException()}").build()
+            headers.newBuilder().add(
+                "Authorization",
+                "Bearer " + (sessionToken(preferences, mdList) ?: throw NoSessionException())
+            ).build()
 
         fun getEnabledMangaDex(preferences: PreferencesHelper, sourceManager: SourceManager = Injekt.get()): MangaDex? {
             return getEnabledMangaDexs(preferences, sourceManager).let { mangadexs ->

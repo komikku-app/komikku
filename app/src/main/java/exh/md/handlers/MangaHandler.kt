@@ -53,7 +53,7 @@ class MangaHandler(
     }
 
     private fun getGroupMap(results: List<ChapterDto>): Map<String, String> {
-        return results.map { chapter -> chapter.relationships }
+        return results.map { chapter -> chapter.data.relationships }
             .flatten()
             .filter { it.type == MdConstants.Types.scanlator }
             .map { it.id to it.attributes!!.name!! }
