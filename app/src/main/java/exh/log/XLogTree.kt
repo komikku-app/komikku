@@ -5,16 +5,16 @@ import com.elvishew.xlog.XLog
 import timber.log.Timber
 
 class XLogTree : Timber.DebugTree() {
-    override fun log(priority: Int, tag: String?, message: String, throwable: Throwable?) {
+    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         if (tag != null) {
-            if (throwable != null) {
-                XLog.tag(tag).log(priority.toXLogLevel(), message, throwable)
+            if (t != null) {
+                XLog.tag(tag).log(priority.toXLogLevel(), message, t)
             } else {
                 XLog.tag(tag).log(priority.toXLogLevel(), message)
             }
         } else {
-            if (throwable != null) {
-                XLog.log(priority.toXLogLevel(), message, throwable)
+            if (t != null) {
+                XLog.log(priority.toXLogLevel(), message, t)
             } else {
                 XLog.log(priority.toXLogLevel(), message)
             }
