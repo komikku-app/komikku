@@ -217,7 +217,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/manga_actions"
+        app:layout_constraintTop_toBottomOf="@id/metadata_view"
         app:layoutDescription="@xml/manga_summary_section_scene">
 
         <TextView
