@@ -119,6 +119,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         PageHandler(headers, mangadexService, mangaPlusHandler, comikeyHandler, preferences, mdList)
     }
 
+    // UrlImportableSource methods
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         val lcFirstPathSegment = uri.pathSegments.firstOrNull()?.lowercase() ?: return null
 
@@ -140,6 +141,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
+    // HttpSource methods
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return mangaHandler.fetchMangaDetailsObservable(manga, id, preferences.mangaDexForceLatestCovers().get())
     }
@@ -166,6 +168,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         }
     }
 
+    // MetadataSource methods
     override val metaClass: KClass<MangaDexSearchMetadata> = MangaDexSearchMetadata::class
 
     override fun getDescriptionAdapter(controller: MangaController): MangaDexDescriptionAdapter {
@@ -176,10 +179,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         apiMangaParser.parseIntoMetadata(metadata, input)
     }
 
-    override suspend fun fetchFollows(page: Int): MangasPage {
-        return followsHandler.fetchFollows(page)
-    }
-
+    // LoginSource methods
     override val requiresLogin: Boolean = false
 
     override val twoFactorAuth = LoginSource.AuthSupport.NOT_SUPPORTED
@@ -214,10 +214,24 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return true
     }
 
+    // FollowsSource methods
+    override suspend fun fetchFollows(page: Int): MangasPage {
+        return followsHandler.fetchFollows(page)
+    }
+
     override suspend fun fetchAllFollows(): List<Pair<SManga, MangaDexSearchMetadata>> {
         return followsHandler.fetchAllFollows()
     }
 
+    override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
+        return followsHandler.updateFollowStatus(mangaID, followStatus)
+    }
+
+    override suspend fun fetchTrackingInfo(url: String): Track {
+        return followsHandler.fetchTrackingInfo(url)
+    }
+
+    // Tracker methods
     /*suspend fun updateReadingProgress(track: Track): Boolean {
         return followsHandler.updateReadingProgress(track)
     }
@@ -226,22 +240,16 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return followsHandler.updateRating(track)
     }*/
 
-    override suspend fun fetchTrackingInfo(url: String): Track {
-        return followsHandler.fetchTrackingInfo(url)
-    }
-
     suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
         return mangaHandler.getTrackingInfo(track)
     }
 
-    override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
-        return followsHandler.updateFollowStatus(mangaID, followStatus)
-    }
-
+    // BrowseSourceFilterHeader method
     override fun getFilterHeader(controller: BaseController<*>, onClick: () -> Unit): MangaDexFabHeaderAdapter {
         return MangaDexFabHeaderAdapter(controller, this, onClick)
     }
 
+    // RandomMangaSource method
     override suspend fun fetchRandomMangaUrl(): String {
         return mangaHandler.fetchRandomMangaId()
     }
