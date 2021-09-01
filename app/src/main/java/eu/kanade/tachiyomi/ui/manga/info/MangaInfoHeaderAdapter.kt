@@ -397,7 +397,7 @@ class MangaInfoHeaderAdapter(
                     // SY -->
                     // if (source?.getMainSource<NamespaceSource>() != null) {
                     setChipsWithNamespace(
-                        manga.genre,
+                        manga.getGenres(),
                         meta
                     )
                     // binding.mangaGenresTagsFullChips.isVisible = false
@@ -483,7 +483,7 @@ class MangaInfoHeaderAdapter(
             }
         }
 
-        private fun setChipsWithNamespace(genre: String?, meta: RaisedSearchMetadata?) {
+        private fun setChipsWithNamespace(genre: List<String>?, meta: RaisedSearchMetadata?) {
             val namespaceTags = when {
                 meta != null -> {
                     meta.tags
@@ -499,7 +499,24 @@ class MangaInfoHeaderAdapter(
                         }
                 }
                 genre != null -> {
-                    listOf(NamespaceTagsItem(null, genre.split(",").map { it.trim() to null }))
+                    if (genre.all { it.contains(':') }) {
+                        genre
+                            .map { tag ->
+                                val index = tag.indexOf(':')
+                                tag.substring(0, index).trim() to tag.substring(index + 1).trim()
+                            }
+                            .groupBy {
+                                it.first
+                            }
+                            .mapValues { group ->
+                                group.value.map { it.second to 0 }
+                            }
+                            .map { (namespace, tags) ->
+                                NamespaceTagsItem(namespace, tags)
+                            }
+                    } else {
+                        listOf(NamespaceTagsItem(null, genre.map { it to null }))
+                    }
                 }
                 else -> emptyList()
             }
