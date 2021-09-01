@@ -3,101 +3,64 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.Page
-import exh.md.dto.MangaPlusSerializer
-import kotlinx.serialization.protobuf.ProtoBuf
+import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.asJsoup
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Headers
-import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.ResponseBody.Companion.toResponseBody
-import java.util.UUID
 
-class MangaPlusHandler(currentClient: OkHttpClient) {
-    val baseUrl = "https://jumpg-webapi.tokyo-cdn.com/api"
+class ComikeyHandler(cloudflareClient: OkHttpClient) {
+    val baseUrl = "https://comikey.com"
+    private val apiUrl = "$baseUrl/sapi"
     val headers = Headers.Builder()
-        .add("Origin", WEB_URL)
-        .add("Referer", WEB_URL)
-        .add("User-Agent", USER_AGENT)
-        .add("SESSION-TOKEN", UUID.randomUUID().toString()).build()
-
-    val client: OkHttpClient = currentClient.newBuilder()
-        .addInterceptor { imageIntercept(it) }
+        .add("User-Agent", HttpSource.DEFAULT_USER_AGENT)
         .build()
 
-    suspend fun fetchPageList(chapterId: String): List<Page> {
-        val response = client.newCall(pageListRequest(chapterId)).await()
-        return pageListParse(response)
+    val client: OkHttpClient = cloudflareClient
+
+    private val urlForbidden = "https://fakeimg.pl/1800x2252/FFFFFF/000000/?font_size=120&text=This%20chapter%20is%20not%20available%20for%20free.%0A%0AIf%20you%20have%20purchased%20this%20chapter%2C%20please%20%0Aopen%20the%20website%20in%20web%20view%20and%20log%20in."
+
+    suspend fun fetchPageList(externalUrl: String): List<Page> {
+        val httpUrl = externalUrl.toHttpUrl()
+        val mangaId = getMangaId(httpUrl.pathSegments[1])
+        val response = client.newCall(pageListRequest(mangaId, httpUrl.pathSegments[2])).await()
+        val request = getActualPageList(response) ?: return listOf(Page(0, urlForbidden, urlForbidden))
+        return pageListParse(client.newCall(request).await())
     }
 
-    private fun pageListRequest(chapterId: String): Request {
-        return GET(
-            "$baseUrl/manga_viewer?chapter_id=$chapterId&split=yes&img_quality=super_high",
-            headers
-        )
+    suspend fun getMangaId(mangaUrl: String): Int {
+        val response = client.newCall(GET("$baseUrl/read/$mangaUrl")).await()
+        val url = response.asJsoup().selectFirst("meta[property=og:url]")!!.attr("content")
+        return url.trimEnd('/').substringAfterLast('/').toInt()
     }
 
-    private fun pageListParse(response: Response): List<Page> {
-        val result = ProtoBuf.decodeFromByteArray(MangaPlusSerializer, response.body!!.bytes())
+    private fun pageListRequest(mangaId: Int, chapterGuid: String): Request {
+        return GET("$apiUrl/comics/$mangaId/read?format=json&content=EPI-$chapterGuid", headers)
+    }
 
-        if (result.success == null) {
-            throw Exception("error getting images")
+    private fun getActualPageList(response: Response): Request? {
+        val element = Json.parseToJsonElement(response.body!!.string()).jsonObject
+        val ok = element["ok"]?.jsonPrimitive?.booleanOrNull ?: false
+        if (ok.not()) {
+            return null
         }
+        val url = element["href"]?.jsonPrimitive!!.content
+        return GET(url, headers)
+    }
 
-        return result.success.mangaViewer!!.pages
-            .mapNotNull { it.page }
-            .mapIndexed { i, page ->
-                val encryptionKey =
-                    if (page.encryptionKey == null) "" else "&encryptionKey=${page.encryptionKey}"
-                Page(i, "", "${page.imageUrl}$encryptionKey")
+    fun pageListParse(response: Response): List<Page> {
+        return Json.parseToJsonElement(response.body!!.string())
+            .jsonObject["readingOrder"]!!
+            .jsonArray.mapIndexed { index, element ->
+                val url = element.jsonObject["href"]!!.jsonPrimitive.content
+                Page(index, url, url)
             }
-    }
-
-    private fun imageIntercept(chain: Interceptor.Chain): Response {
-        var request = chain.request()
-
-        if (!request.url.queryParameterNames.contains("encryptionKey")) {
-            return chain.proceed(request)
-        }
-
-        val encryptionKey = request.url.queryParameter("encryptionKey")!!
-
-        // Change the url and remove the encryptionKey to avoid detection.
-        val newUrl = request.url.newBuilder().removeAllQueryParameters("encryptionKey").build()
-        request = request.newBuilder().url(newUrl).build()
-
-        val response = chain.proceed(request)
-
-        val image = decodeImage(encryptionKey, response.body!!.bytes())
-
-        val body = image.toResponseBody("image/jpeg".toMediaTypeOrNull())
-        return response.newBuilder().body(body).build()
-    }
-
-    private fun decodeImage(encryptionKey: String, image: ByteArray): ByteArray {
-        val keyStream = HEX_GROUP
-            .findAll(encryptionKey)
-            .map { it.groupValues[1].toInt(16) }
-            .toList()
-
-        val content = image
-            .map { it.toInt() }
-            .toIntArray()
-
-        val blockSizeInBytes = keyStream.size
-
-        content.forEachIndexed { i, value ->
-            content[i] = value xor keyStream[i % blockSizeInBytes]
-        }
-
-        return ByteArray(content.size) { pos -> content[pos].toByte() }
-    }
-
-    companion object {
-        private const val WEB_URL = "https://mangaplus.shueisha.co.jp"
-        private const val USER_AGENT =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.92 Safari/537.36"
-        private val HEX_GROUP = "(.{1,2})".toRegex()
     }
 }

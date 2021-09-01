@@ -30,10 +30,14 @@ data class ChapterAttributesDto(
     val volume: String?,
     val chapter: String?,
     val translatedLanguage: String,
-    val publishAt: String,
+    val hash: String,
     val data: List<String>,
     val dataSaver: List<String>,
-    val hash: String,
+    val externalUrl: String?,
+    val version: Int,
+    val createdAt: String,
+    val updatedAt: String,
+    val publishAt: String,
 )
 
 @Serializable

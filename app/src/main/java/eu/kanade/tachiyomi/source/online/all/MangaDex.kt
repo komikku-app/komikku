@@ -7,8 +7,6 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -27,6 +25,7 @@ import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.MangaDexFabHeaderAdapter
 import exh.md.dto.MangaDto
 import exh.md.handlers.ApiMangaParser
+import exh.md.handlers.ComikeyHandler
 import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
 import exh.md.handlers.MangaPlusHandler
@@ -113,8 +112,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val mangaPlusHandler by lazy {
         MangaPlusHandler(network.client)
     }
+    private val comikeyHandler by lazy {
+        ComikeyHandler(network.cloudflareClient)
+    }
     private val pageHandler by lazy {
-        PageHandler(headers, mangadexService, mangaPlusHandler, preferences, mdList)
+        PageHandler(headers, mangadexService, mangaPlusHandler, comikeyHandler, preferences, mdList)
     }
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
@@ -159,10 +161,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchImage(page: Page): Observable<Response> {
-        return if (page.imageUrl?.contains("mangaplus", true) == true) {
-            mangaPlusHandler.client.newCall(GET(page.imageUrl!!, headers))
-                .asObservableSuccess()
-        } else super.fetchImage(page)
+        return pageHandler.fetchImage(page) {
+            super.fetchImage(it)
+        }
     }
 
     override val metaClass: KClass<MangaDexSearchMetadata> = MangaDexSearchMetadata::class
