@@ -87,9 +87,7 @@ android {
             "META-INF/LICENSE",
             "META-INF/LICENSE.txt",
             "META-INF/NOTICE",
-            "META-INF/*.kotlin_module",
-            // Compatibility for two RxJava versions (EXH)
-            "META-INF/rxjava.properties",
+            "META-INF/*.kotlin_module"
         ))
     }
 
@@ -266,11 +264,11 @@ dependencies {
     implementation ("info.debatty:java-string-similarity:2.0.0")
 
     // Firebase (EH)
-    implementation("com.google.firebase:firebase-analytics-ktx:19.0.0")
-    implementation("com.google.firebase:firebase-crashlytics-ktx:18.1.0")
+    implementation("com.google.firebase:firebase-analytics-ktx:19.0.1")
+    implementation("com.google.firebase:firebase-crashlytics-ktx:18.2.1")
 
     // Better logging (EH)
-    implementation("com.elvishew:xlog:1.9.0")
+    implementation("com.elvishew:xlog:1.11.0")
 
     // Debug utils (EH)
     val debugOverlayVersion = "1.1.3"
