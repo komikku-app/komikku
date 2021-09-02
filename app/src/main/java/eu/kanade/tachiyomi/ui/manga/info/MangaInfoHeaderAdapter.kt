@@ -349,20 +349,22 @@ class MangaInfoHeaderAdapter(
                 }
             }
 
-            // Update status TextView.
-            binding.mangaStatus.setText(
-                when (manga.status) {
-                    SManga.ONGOING -> R.string.ongoing
-                    SManga.COMPLETED -> R.string.completed
-                    SManga.LICENSED -> R.string.licensed
+            // Update manga status.
+            binding.apply {
+                val (statusDrawable, statusString) = when (manga.status) {
+                    SManga.ONGOING -> R.drawable.ic_status_ongoing_24dp to R.string.ongoing
+                    SManga.COMPLETED -> R.drawable.ic_status_completed_24dp to R.string.completed
+                    SManga.LICENSED -> R.drawable.ic_status_licensed_24dp to R.string.licensed
                     // SY --> Mangadex specific statuses
-                    SManga.HIATUS -> R.string.hiatus
-                    SManga.PUBLICATION_COMPLETE -> R.string.publication_complete
-                    SManga.CANCELLED -> R.string.cancelled
+                    SManga.HIATUS -> R.drawable.ic_status_unknown_24dp to R.string.hiatus
+                    SManga.PUBLICATION_COMPLETE -> R.drawable.ic_status_unknown_24dp to R.string.publication_complete
+                    SManga.CANCELLED -> R.drawable.ic_status_unknown_24dp to R.string.cancelled
                     // SY <--
-                    else -> R.string.unknown_status
+                    else -> R.drawable.ic_status_unknown_24dp to R.string.unknown
                 }
-            )
+                mangaStatusIcon.setImageResource(statusDrawable)
+                mangaStatus.setText(statusString)
+            }
 
             // Set the favorite drawable to the correct one.
             setFavoriteButtonState(manga.favorite)
