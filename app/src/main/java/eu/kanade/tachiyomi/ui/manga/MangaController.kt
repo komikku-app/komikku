@@ -485,6 +485,7 @@ class MangaController :
         destroyActionModeIfNeeded()
         (activity as? MainActivity)?.clearFixViewToBottom(binding.actionToolbar)
         binding.actionToolbar.destroy()
+        mangaInfoAdapter?.onDestroyView()
         mangaInfoAdapter = null
         chaptersHeaderAdapter = null
         chaptersAdapter = null

@@ -61,7 +61,7 @@ class MangaInfoHeaderAdapter(
     // SY <--
     private var trackCount: Int = 0
     private var metaInfoAdapter: RecyclerView.Adapter<*>? = null
-    private var mangaTagsInfoAdapter: NamespaceTagsAdapter = NamespaceTagsAdapter(controller, source)
+    private var mangaTagsInfoAdapter: NamespaceTagsAdapter? = NamespaceTagsAdapter(controller, source)
 
     private lateinit var binding: MangaInfoHeaderBinding
 
@@ -139,7 +139,7 @@ class MangaInfoHeaderAdapter(
             binding.mangaCover.clipToOutline = true
 
             // SY -->
-            mangaTagsInfoAdapter.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, _ ->
+            mangaTagsInfoAdapter?.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, _ ->
                 controller.viewScope.launchUI {
                     toggleMangaInfo()
                 }
@@ -483,6 +483,7 @@ class MangaInfoHeaderAdapter(
             }
         }
 
+        // SY -->
         private fun setChipsWithNamespace(genre: List<String>?, meta: RaisedSearchMetadata?) {
             val namespaceTags = when {
                 meta != null -> {
@@ -521,8 +522,9 @@ class MangaInfoHeaderAdapter(
                 else -> emptyList()
             }
 
-            mangaTagsInfoAdapter.updateDataSet(namespaceTags)
+            mangaTagsInfoAdapter?.updateDataSet(namespaceTags)
         }
+        // SY <--
 
         /**
          * Update favorite button with correct drawable and text.
@@ -539,5 +541,12 @@ class MangaInfoHeaderAdapter(
                 isActivated = isFavorite
             }
         }
+    }
+
+    fun onDestroyView() {
+        metaInfoAdapter = null
+        mangaTagsInfoAdapter = null
+        binding.metadataView.adapter = null
+        binding.genreGroups.adapter = null
     }
 }
