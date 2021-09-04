@@ -56,6 +56,12 @@ object PreferenceValues {
         LOWEST(47)
     }
 
+    enum class TabletUiMode {
+        ALWAYS,
+        LANDSCAPE,
+        NEVER
+    }
+
     // SY -->
     enum class GroupLibraryMode {
         GLOBAL,
