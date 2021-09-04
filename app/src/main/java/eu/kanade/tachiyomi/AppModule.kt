@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.job.DelayedTrackingStore
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.SourceManager
@@ -24,6 +25,8 @@ class AppModule(val app: Application) : InjektModule {
 
     override fun InjektRegistrar.registerInjectables() {
         addSingleton(app)
+
+        addSingletonFactory { Json { ignoreUnknownKeys = true } }
 
         addSingletonFactory { PreferencesHelper(app) }
 
@@ -43,7 +46,7 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory { TrackManager(app) }
 
-        addSingletonFactory { Json { ignoreUnknownKeys = true } }
+        addSingletonFactory { DelayedTrackingStore(app) }
 
         // SY -->
         addSingletonFactory { CustomMangaManager(app) }
