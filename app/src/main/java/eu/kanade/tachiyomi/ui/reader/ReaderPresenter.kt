@@ -12,6 +12,8 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.job.DelayedTrackingStore
+import eu.kanade.tachiyomi.data.track.job.DelayedTrackingUpdateJob
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
@@ -27,6 +29,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.util.defaultReaderType
 import java.io.File
@@ -49,7 +52,8 @@ class ReaderPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
-    private val preferences: PreferencesHelper = Injekt.get()
+    private val preferences: PreferencesHelper = Injekt.get(),
+    private val delayedTrackingStore: DelayedTrackingStore = Injekt.get(),
 ) : BasePresenter<ReaderActivity>() {
 
     /**
@@ -625,23 +629,27 @@ class ReaderPresenter(
         val chapterRead = readerChapter.chapter.chapter_number.toInt()
 
         val trackManager = Injekt.get<TrackManager>()
+        val context = Injekt.get<Application>()
 
-        db.getTracks(manga).asRxSingle()
-            .flatMapCompletable { trackList ->
-                Completable.concat(
-                    trackList.map { track ->
-                        val service = trackManager.getService(track.sync_id)
-                        if (service != null && service.isLogged && chapterRead > track.last_chapter_read) {
-                            track.last_chapter_read = chapterRead
+        launchIO {
+            db.getTracks(manga).executeAsBlocking()
+                .mapNotNull { track ->
+                    val service = trackManager.getService(track.sync_id)
+                    if (service != null && service.isLogged && chapterRead > track.last_chapter_read) {
+                        track.last_chapter_read = chapterRead
 
-                            // We wan't these to execute even if the presenter is destroyed and leaks
-                            // for a while. The view can still be garbage collected.
-                            Observable.defer { service.update(track) }
-                                .map { db.insertTrack(track).executeAsBlocking() }
-                                .toCompletable()
-                                .onErrorComplete()
-                        } else {
-                            Completable.complete()
+                        // We want these to execute even if the presenter is destroyed and leaks
+                        // for a while. The view can still be garbage collected.
+                        async {
+                            runCatching {
+                                if (context.isOnline()) {
+                                    service.update(track, true)
+                                    db.insertTrack(track).executeAsBlocking()
+                                } else {
+                                    delayedTrackingStore.addItem(track)
+                                    DelayedTrackingUpdateJob.setupTask(context)
+                                }
+                            }
                         }
                     }
                 )
