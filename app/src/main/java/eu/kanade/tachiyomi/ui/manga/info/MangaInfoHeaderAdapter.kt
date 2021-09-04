@@ -11,6 +11,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.MangaInfoHeaderBinding
 import eu.kanade.tachiyomi.source.Source
@@ -46,11 +47,8 @@ class MangaInfoHeaderAdapter(
     RecyclerView.Adapter<MangaInfoHeaderAdapter.HeaderViewHolder>() {
 
     private val trackManager: TrackManager by injectLazy()
-
-    // SY -->
+    private val preferences: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
-
-    // SY <--
 
     private var manga: Manga = controller.presenter.manga
     private var source: Source = controller.presenter.source
@@ -336,7 +334,6 @@ class MangaInfoHeaderAdapter(
             val mangaSource = source?.toString()
             with(binding.mangaSource) {
                 if (mangaSource != null) {
-                    val preferences = controller.presenter.preferences
                     val enabledLanguages = preferences.enabledLanguages().get()
                         .filterNot { it == "all" }
 
@@ -350,7 +347,7 @@ class MangaInfoHeaderAdapter(
 
                         // For edge cases where user disables a source they got manga of in their library.
                         else /* SY <-- */ if (source.lang !in enabledLanguages) {
-                            source.toString()
+                            mangaSource
                         } else {
                             // Hide the language tag when only one language is used.
                             source.name
@@ -360,7 +357,7 @@ class MangaInfoHeaderAdapter(
                         if (isMergedSource) {
                             getMergedSourcesString(enabledLanguages, false)
                         } else {
-                            source.toString()
+                            mangaSource
                         }
                     }
 
