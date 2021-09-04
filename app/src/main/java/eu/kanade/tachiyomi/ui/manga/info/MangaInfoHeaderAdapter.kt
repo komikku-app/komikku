@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.controller.getMainAppBarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -334,13 +335,35 @@ class MangaInfoHeaderAdapter(
             // If manga source is known update source TextView.
             val mangaSource = source?.toString()
             with(binding.mangaSource) {
-                // SY -->
-                if (source?.id == MERGED_SOURCE_ID) {
-                    text = mergedMangaReferences.map {
-                        sourceManager.getOrStub(it.mangaSourceId).toString()
-                    }.distinct().joinToString()
-                } else /* SY <-- */ if (mangaSource != null) {
-                    text = mangaSource
+                if (mangaSource != null) {
+                    val preferences = controller.presenter.preferences
+                    val enabledLanguages = preferences.enabledLanguages().get()
+                        .filterNot { it == "all" }
+
+                    val isMergedSource = source is MergedSource
+
+                    text = if (enabledLanguages.size == 1) {
+                        // SY -->
+                        if (isMergedSource) {
+                            getMergedSourcesString(enabledLanguages, true)
+                        }
+
+                        // For edge cases where user disables a source they got manga of in their library.
+                        else /* SY <-- */ if (source.lang !in enabledLanguages) {
+                            source.toString()
+                        } else {
+                            // Hide the language tag when only one language is used.
+                            source.name
+                        }
+                    } else {
+                        // Display the language tag when multiple languages are used.
+                        if (isMergedSource) {
+                            getMergedSourcesString(enabledLanguages, false)
+                        } else {
+                            source.toString()
+                        }
+                    }
+
                     setOnClickListener {
                         controller.performSearch(sourceManager.getOrStub(source.id).name)
                     }
@@ -486,6 +509,23 @@ class MangaInfoHeaderAdapter(
         }
 
         // SY -->
+        private fun getMergedSourcesString(enabledLangs: List<String>, onlyName: Boolean = false): String {
+            return if (onlyName) {
+                mergedMangaReferences.map {
+                    val source = sourceManager.getOrStub(it.mangaSourceId)
+                    if (source.lang !in enabledLangs) {
+                        source.toString()
+                    } else {
+                        source.name
+                    }
+                }.distinct().joinToString()
+            } else {
+                mergedMangaReferences.map {
+                    sourceManager.getOrStub(it.mangaSourceId).toString()
+                }.distinct().joinToString()
+            }
+        }
+
         private fun setChipsWithNamespace(genre: List<String>?, meta: RaisedSearchMetadata?) {
             val namespaceTags = when {
                 meta != null -> {
