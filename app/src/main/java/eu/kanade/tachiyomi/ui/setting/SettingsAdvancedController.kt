@@ -507,10 +507,10 @@ class SettingsAdvancedController : SettingsController() {
     }
 
     private companion object {
-        const val CLEAR_CACHE_KEY = "pref_clear_cache_key"
-
         // SY -->
         private var job: Job? = null
         // SY <--
     }
 }
+
+private const val CLEAR_CACHE_KEY = "pref_clear_cache_key"
