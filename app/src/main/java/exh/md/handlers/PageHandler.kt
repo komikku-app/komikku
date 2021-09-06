@@ -25,6 +25,7 @@ class PageHandler(
     private val service: MangaDexService,
     private val mangaPlusHandler: MangaPlusHandler,
     private val comikeyHandler: ComikeyHandler,
+    private val bilibiliHandler: BilibiliHandler,
     private val preferences: PreferencesHelper,
     private val mdList: MdList,
 ) {
@@ -42,7 +43,11 @@ class PageHandler(
                     chapter.scanlator.equals("comikey", true) -> comikeyHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
                     )
-                    else -> throw Exception("Chapter not supported")
+                    chapter.scanlator.equals("bilibili comics", true) -> bilibiliHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl,
+                        chapterResponse.data.attributes.chapter.toString()
+                    )
+                    else -> throw Exception("${chapter.scanlator} not supported")
                 }
             } else {
                 val headers = if (isLogged) {
@@ -100,6 +105,7 @@ class PageHandler(
     }
 
     fun fetchImage(page: Page, superMethod: (Page) -> Observable<Response>): Observable<Response> {
+        xLogD(page.imageUrl)
         return when {
             page.imageUrl?.contains("mangaplus", true) == true -> {
                 mangaPlusHandler.client.newCall(GET(page.imageUrl!!, headers))
@@ -108,6 +114,19 @@ class PageHandler(
             page.imageUrl?.contains("comikey", true) == true -> {
                 comikeyHandler.client.newCall(GET(page.imageUrl!!, comikeyHandler.headers))
                     .asObservableSuccess()
+            }
+            page.imageUrl?.contains("/bfs/comic/", true) == true -> {
+                bilibiliHandler.client.newCall(GET(page.imageUrl!!, bilibiliHandler.headers))
+                    .asObservableSuccess()
+            }
+            else -> superMethod(page)
+        }
+    }
+
+    fun fetchImageUrl(page: Page, superMethod: (Page) -> Observable<String>): Observable<String> {
+        return when {
+            page.url.contains("/bfs/comic/") -> {
+                bilibiliHandler.fetchImageUrl(page)
             }
             else -> superMethod(page)
         }

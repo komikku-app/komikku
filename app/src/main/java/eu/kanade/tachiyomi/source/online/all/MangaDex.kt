@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.MangaDexFabHeaderAdapter
 import exh.md.dto.MangaDto
 import exh.md.handlers.ApiMangaParser
+import exh.md.handlers.BilibiliHandler
 import exh.md.handlers.ComikeyHandler
 import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
@@ -115,8 +116,19 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val comikeyHandler by lazy {
         ComikeyHandler(network.cloudflareClient)
     }
+    private val bilibiliHandler by lazy {
+        BilibiliHandler(network.cloudflareClient)
+    }
     private val pageHandler by lazy {
-        PageHandler(headers, mangadexService, mangaPlusHandler, comikeyHandler, preferences, mdList)
+        PageHandler(
+            headers,
+            mangadexService,
+            mangaPlusHandler,
+            comikeyHandler,
+            bilibiliHandler,
+            preferences,
+            mdList
+        )
     }
 
     // UrlImportableSource methods
@@ -165,6 +177,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override fun fetchImage(page: Page): Observable<Response> {
         return pageHandler.fetchImage(page) {
             super.fetchImage(it)
+        }
+    }
+
+    override fun fetchImageUrl(page: Page): Observable<String> {
+        return pageHandler.fetchImageUrl(page) {
+            super.fetchImageUrl(it)
         }
     }
 
