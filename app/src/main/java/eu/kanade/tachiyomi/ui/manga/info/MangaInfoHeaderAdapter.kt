@@ -368,7 +368,7 @@ class MangaInfoHeaderAdapter(
                 SManga.ONGOING -> R.drawable.ic_status_ongoing_24dp to R.string.ongoing
                 SManga.COMPLETED -> R.drawable.ic_status_completed_24dp to R.string.completed
                 SManga.LICENSED -> R.drawable.ic_status_licensed_24dp to R.string.licensed
-                // SY --> Mangadex specific statuses
+                // SY --> MangaDex specific statuses
                 SManga.HIATUS -> R.drawable.ic_status_hiatus_24dp to R.string.hiatus
                 SManga.PUBLICATION_COMPLETE -> R.drawable.ic_status_publication_complete_24dp to R.string.publication_complete
                 SManga.CANCELLED -> R.drawable.ic_status_cancelled_24dp to R.string.cancelled
