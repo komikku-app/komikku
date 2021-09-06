@@ -60,7 +60,7 @@ class MangaFullCoverDialog : DialogController {
                 }
                 true
             }
-            menu?.findItem(R.id.action_edit_cover)?.isVisible = manga?.favorite ?: false
+            menu?.findItem(R.id.action_edit_cover)?.isVisible = /* SY --> */ false /* manga?.favorite ?: false SY <-- */
         }
 
         binding?.fullCover?.apply {
