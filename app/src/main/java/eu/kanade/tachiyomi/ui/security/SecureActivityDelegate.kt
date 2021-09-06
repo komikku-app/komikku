@@ -50,17 +50,18 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
 
         // SY -->
         val today: Calendar = Calendar.getInstance()
-        val timeRanges = preferences.authenticatorTimeRanges().get().mapNotNull { TimeRange.fromPreferenceString(it) }
+        val timeRanges = preferences.authenticatorTimeRanges().get()
+            .mapNotNull { TimeRange.fromPreferenceString(it) }
         if (timeRanges.isNotEmpty()) {
             val now = today.get(Calendar.HOUR_OF_DAY).hours + today.get(Calendar.MINUTE).minutes
-            val locked = timeRanges.any { now in it }
-            if (!locked) {
+            val lockedNow = timeRanges.any { now in it }
+            if (!lockedNow) {
                 return false
             }
         }
 
         val lockedDays = preferences.authenticatorDays().get()
-        val locked = lockedDays == LOCK_ALL_DAYS || when (today.get(Calendar.DAY_OF_WEEK)) {
+        val lockedToday = lockedDays == LOCK_ALL_DAYS || when (today.get(Calendar.DAY_OF_WEEK)) {
             Calendar.SUNDAY -> (lockedDays and LOCK_SUNDAY) == LOCK_SUNDAY
             Calendar.MONDAY -> (lockedDays and LOCK_MONDAY) == LOCK_MONDAY
             Calendar.TUESDAY -> (lockedDays and LOCK_TUESDAY) == LOCK_TUESDAY
@@ -71,7 +72,7 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
             else -> false
         }
 
-        if (!locked) {
+        if (!lockedToday) {
             return false
         }
         // SY <--

@@ -36,7 +36,7 @@ class ConfiguringDialogController : DialogController() {
                                 .show()
                         }
                     }
-                    xLogE("Configuration error!", e)
+                    this@ConfiguringDialogController.xLogE("Configuration error!", e)
                 }
                 launchUI {
                     finish()

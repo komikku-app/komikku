@@ -157,7 +157,7 @@ class SettingsAppearanceController : SettingsController() {
                 summary = "%s"
             }
         }
-        
+
         preferenceCategory {
             titleRes = R.string.pref_category_navbar
 
