@@ -19,11 +19,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
-import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.controller.getMainAppBarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
 import eu.kanade.tachiyomi.util.view.setChips
@@ -131,9 +129,6 @@ class MangaInfoHeaderAdapter(
 
     inner class HeaderViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
         fun bind() {
-            val summaryTransition = binding.mangaSummarySection.getTransition(R.id.manga_summary_section_transition)
-            summaryTransition.applySystemAnimatorScale(view.context)
-
             // For rounded corners
             binding.mangaCover.clipToOutline = true
 
@@ -337,28 +332,27 @@ class MangaInfoHeaderAdapter(
                     val enabledLanguages = preferences.enabledLanguages().get()
                         .filterNot { it == "all" }
 
-                    val isMergedSource = source is MergedSource
-
-                    text = if (enabledLanguages.size == 1) {
+                    // SY -->
+                    val isMergedSource = source.id == MERGED_SOURCE_ID
+                    // SY <--
+                    val hasOneActiveLanguages = enabledLanguages.size == 1
+                    val isInEnabledLanguages = source.lang in enabledLanguages
+                    text = when {
                         // SY -->
-                        if (isMergedSource) {
-                            getMergedSourcesString(enabledLanguages, true)
-                        }
-
+                        isMergedSource && hasOneActiveLanguages -> getMergedSourcesString(
+                            enabledLanguages,
+                            true
+                        )
+                        isMergedSource -> getMergedSourcesString(
+                            enabledLanguages,
+                            false
+                        )
+                        // SY <--
                         // For edge cases where user disables a source they got manga of in their library.
-                        else /* SY <-- */ if (source.lang !in enabledLanguages) {
-                            mangaSource
-                        } else {
-                            // Hide the language tag when only one language is used.
-                            source.name
-                        }
-                    } else {
-                        // Display the language tag when multiple languages are used.
-                        if (isMergedSource) {
-                            getMergedSourcesString(enabledLanguages, false)
-                        } else {
-                            mangaSource
-                        }
+                        hasOneActiveLanguages && !isInEnabledLanguages -> mangaSource
+                        // Hide the language tag when only one language is used.
+                        hasOneActiveLanguages && isInEnabledLanguages -> source.name
+                        else -> mangaSource
                     }
 
                     setOnClickListener {
@@ -370,21 +364,19 @@ class MangaInfoHeaderAdapter(
             }
 
             // Update manga status.
-            binding.apply {
-                val (statusDrawable, statusString) = when (manga.status) {
-                    SManga.ONGOING -> R.drawable.ic_status_ongoing_24dp to R.string.ongoing
-                    SManga.COMPLETED -> R.drawable.ic_status_completed_24dp to R.string.completed
-                    SManga.LICENSED -> R.drawable.ic_status_licensed_24dp to R.string.licensed
-                    // SY --> MangaDex specific statuses
-                    SManga.HIATUS -> R.drawable.ic_status_hiatus_24dp to R.string.hiatus
-                    SManga.PUBLICATION_COMPLETE -> R.drawable.ic_status_publication_complete_24dp to R.string.publication_complete
-                    SManga.CANCELLED -> R.drawable.ic_status_cancelled_24dp to R.string.cancelled
-                    // SY <--
-                    else -> R.drawable.ic_status_unknown_24dp to R.string.unknown
-                }
-                mangaStatusIcon.setImageResource(statusDrawable)
-                mangaStatus.setText(statusString)
+            val (statusDrawable, statusString) = when (manga.status) {
+                SManga.ONGOING -> R.drawable.ic_status_ongoing_24dp to R.string.ongoing
+                SManga.COMPLETED -> R.drawable.ic_status_completed_24dp to R.string.completed
+                SManga.LICENSED -> R.drawable.ic_status_licensed_24dp to R.string.licensed
+                // SY --> Mangadex specific statuses
+                SManga.HIATUS -> R.drawable.ic_status_hiatus_24dp to R.string.hiatus
+                SManga.PUBLICATION_COMPLETE -> R.drawable.ic_status_publication_complete_24dp to R.string.publication_complete
+                SManga.CANCELLED -> R.drawable.ic_status_cancelled_24dp to R.string.cancelled
+                // SY <--
+                else -> R.drawable.ic_status_unknown_24dp to R.string.unknown
             }
+            binding.mangaStatusIcon.setImageResource(statusDrawable)
+            binding.mangaStatus.setText(statusString)
 
             // Set the favorite drawable to the correct one.
             setFavoriteButtonState(manga.favorite)
@@ -432,6 +424,7 @@ class MangaInfoHeaderAdapter(
                     }*/
                     // SY <--
                 } else {
+                    binding.mangaGenresTagsCompact.isVisible = false
                     binding.mangaGenresTagsCompactChips.isVisible = false
                     // binding.mangaGenresTagsFullChips.isVisible = false
                     // SY -->
@@ -444,25 +437,20 @@ class MangaInfoHeaderAdapter(
                     binding.mangaSummaryText.clicks(),
                     binding.mangaInfoToggleMore.clicks(),
                     binding.mangaInfoToggleLess.clicks(),
-                    binding.mangaSummarySection.clicks()
+                    binding.mangaSummarySection.clicks(),
                 )
                     .onEach { toggleMangaInfo() }
                     .launchIn(controller.viewScope)
+
+                if (initialLoad) {
+                    binding.mangaGenresTagsCompact.requestLayout()
+                }
 
                 // Expand manga info if navigated from source listing or explicitly set to
                 // (e.g. on tablets)
                 if (initialLoad && (fromSource || isTablet)) {
                     toggleMangaInfo()
                     initialLoad = false
-                    // wrap_content and autoFixTextSize can cause unwanted behaviour this tries to solve it
-                    binding.mangaFullTitle.requestLayout()
-                }
-
-                // Refreshes will change the state and it needs to be set to correct state to display correctly
-                if (binding.mangaSummaryText.maxLines == maxLines) {
-                    binding.mangaSummarySection.transitionToState(R.id.start)
-                } else {
-                    binding.mangaSummarySection.transitionToState(R.id.end)
                 }
             }
         }
@@ -474,34 +462,30 @@ class MangaInfoHeaderAdapter(
         private fun toggleMangaInfo() {
             val isCurrentlyExpanded = binding.mangaSummaryText.maxLines != maxLines
 
-            if (isCurrentlyExpanded) {
-                binding.mangaSummarySection.transitionToStart()
-            } else {
-                binding.mangaSummarySection.transitionToEnd()
-            }
+            binding.mangaInfoToggleMore.isVisible = isCurrentlyExpanded
+            binding.mangaInfoScrim.isVisible = isCurrentlyExpanded
+            binding.mangaInfoToggleMoreScrim.isVisible = isCurrentlyExpanded
+            binding.mangaGenresTagsCompact.isVisible = isCurrentlyExpanded
+            binding.mangaGenresTagsCompactChips.isVisible = isCurrentlyExpanded
+
+            binding.mangaInfoToggleLess.isVisible = !isCurrentlyExpanded
+            // SY --> binding.mangaGenresTagsFullChips.isVisible = !isCurrentlyExpanded
+            binding.genreGroups.isVisible = !isCurrentlyExpanded
+            // SY <--
 
             binding.mangaSummaryText.text = updateDescription(manga.description, isCurrentlyExpanded)
 
-            binding.mangaSummaryText.maxLines = if (isCurrentlyExpanded) {
-                maxLines
-            } else {
-                Int.MAX_VALUE
+            binding.mangaSummaryText.maxLines = when {
+                isCurrentlyExpanded -> maxLines
+                else -> Int.MAX_VALUE
             }
         }
 
         private fun updateDescription(description: String?, isCurrentlyExpanded: Boolean): CharSequence? {
-            return if (description.isNullOrBlank()) {
-                view.context.getString(R.string.unknown)
-            } else {
-                // Max lines of 3 with a blank line looks whack so we remove
-                // any line breaks that is 2 or more and replace it with 1
-                // however, don't do this if already expanded because we need those blank lines
-                if (!isCurrentlyExpanded) {
-                    description
-                } else {
-                    description
-                        .replace(Regex("[\\r\\n]{2,}", setOf(RegexOption.MULTILINE)), "\n")
-                }
+            return when {
+                description.isNullOrBlank() -> view.context.getString(R.string.unknown)
+                isCurrentlyExpanded -> description.replace(Regex("[\\r\\n]{2,}", setOf(RegexOption.MULTILINE)), "\n")
+                else -> description
             }
         }
 
@@ -573,10 +557,13 @@ class MangaInfoHeaderAdapter(
         private fun setFavoriteButtonState(isFavorite: Boolean) {
             // Set the Favorite drawable to the correct one.
             // Border drawable if false, filled drawable if true.
+            val (iconResource, stringResource) = when (isFavorite) {
+                true -> R.drawable.ic_favorite_24dp to R.string.in_library
+                false -> R.drawable.ic_favorite_border_24dp to R.string.add_to_library
+            }
             binding.btnFavorite.apply {
-                setIconResource(if (isFavorite) R.drawable.ic_favorite_24dp else R.drawable.ic_favorite_border_24dp)
-                text =
-                    context.getString(if (isFavorite) R.string.in_library else R.string.add_to_library)
+                setIconResource(iconResource)
+                text = context.getString(stringResource)
                 isActivated = isFavorite
             }
         }
