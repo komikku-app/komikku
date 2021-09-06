@@ -16,15 +16,13 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.EpubFile
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okio.buffer
-import okio.source
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import rx.Observable
 import timber.log.Timber
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -74,13 +72,12 @@ class LocalSource(private val context: Context) : CatalogueSource {
             val c = context.getString(R.string.app_name) + File.separator + "local"
             return DiskUtil.getExternalStorages(context).map { File(it.absolutePath, c) }
         }
-
-        // SY -->
-        val json = Json {
-            prettyPrint = true
-        }
-        // SY <--
     }
+
+    private val json: Json by injectLazy()
+    // SY -->
+    private val preferences: PreferencesHelper by injectLazy()
+    // SY <--
 
     override val id = ID
     override val name = context.getString(R.string.local_source)
@@ -94,7 +91,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         val baseDirs = getBaseDirectories(context)
         // SY -->
-        val allowLocalSourceHiddenFolders = Injekt.get<PreferencesHelper>().allowLocalSourceHiddenFolders().get()
+        val allowLocalSourceHiddenFolders = preferences.allowLocalSourceHiddenFolders().get()
         // SY <--
 
         val time = if (filters === LATEST_FILTERS) System.currentTimeMillis() - LATEST_THRESHOLD else 0L
@@ -172,7 +169,9 @@ class LocalSource(private val context: Context) : CatalogueSource {
         } ?: return
         val existingFileName = directory.listFiles()?.find { it.extension == "json" }?.name
         val file = File(directory, existingFileName ?: "info.json")
-        file.writeText(json.encodeToString(manga.toJson()))
+        file.outputStream().use {
+            json.encodeToStream(manga.toJson(), it)
+        }
     }
 
     private fun SManga.toJson(): MangaJson {
@@ -199,12 +198,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
             .flatten()
             .firstOrNull { it.extension == "json" }
             ?.apply {
-                val json = json.decodeFromString<MangaJson>(
-                    this.inputStream()
-                        .source()
-                        .buffer()
-                        .use { it.readUtf8() }
-                )
+                val json = json.decodeFromStream<MangaJson>(inputStream())
 
                 manga.title = json.title ?: manga.title
                 manga.author = json.author ?: manga.author
