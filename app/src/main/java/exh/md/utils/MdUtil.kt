@@ -265,7 +265,7 @@ class MdUtil {
         fun createMangaEntry(json: MangaDto, lang: String): MangaInfo {
             return MangaInfo(
                 key = buildMangaUrl(json.data.id),
-                title = cleanString(json.data.attributes.title.asMdMap().let { it[lang] ?: it["en"].orEmpty() }),
+                title = cleanString(getTitle(json.data.attributes.title.asMdMap(), lang, json.data.attributes.originalLanguage)),
                 cover = json.data.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
@@ -274,6 +274,10 @@ class MdUtil {
                         cdnCoverUrl(json.data.id, coverFileName)
                     }.orEmpty()
             )
+        }
+
+        fun getTitle(titleMap: Map<String, String?>, currentLang: String, originalLanguage: String): String {
+            return titleMap[currentLang] ?: titleMap["en"] ?: titleMap[originalLanguage].orEmpty()
         }
 
         fun cdnCoverUrl(dexId: String, fileName: String): String {
