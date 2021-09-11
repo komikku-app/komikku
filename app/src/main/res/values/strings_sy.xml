@@ -210,8 +210,6 @@
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Save Chapters as CBZ</string>
     <string name="save_chapter_as_cbz_level">CBZ Compression level</string>
-    <string name="pref_dont_delete_from_categories">Categories to exclude from deletion</string>
-    <string name="pref_dont_delete_from_categories_summary">If a manga is in any of these categories, chapters will not be deleted when marking as read and when finishing a chapter.\nCategories:\n%1$s</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Biometric lock times</string>

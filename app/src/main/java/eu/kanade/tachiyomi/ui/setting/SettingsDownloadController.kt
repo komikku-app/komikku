@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
+import eu.kanade.tachiyomi.util.preference.multiSelectListPreference
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
@@ -43,6 +44,9 @@ class SettingsDownloadController : SettingsController() {
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_downloads
+
+        val dbCategories = db.getCategories().executeAsBlocking()
+        val categories = listOf(Category.createDefault(context)) + dbCategories
 
         preference {
             key = Keys.downloadsDirectory
@@ -113,42 +117,26 @@ class SettingsDownloadController : SettingsController() {
                 titleRes = R.string.pref_remove_bookmarked_chapters
                 defaultValue = false
             }
-            // SY -->
-            preference {
-                val dbCategories = db.getCategories().executeAsBlocking()
-                val categories = listOf(Category.createDefault(context)) + dbCategories
+            multiSelectListPreference {
+                key = Keys.removeExcludeCategories
+                titleRes = R.string.pref_remove_exclude_categories
+                entries = categories.map { it.name }.toTypedArray()
+                entryValues = categories.map { it.id.toString() }.toTypedArray()
 
-                key = Keys.dontDeleteFromCategories
-                titleRes = R.string.pref_dont_delete_from_categories
-
-                onClick {
-                    val ctrl = DontDeleteFromCategoriesDialog()
-                    ctrl.targetController = this@SettingsDownloadController
-                    ctrl.showDialog(router)
-                }
-
-                preferences.dontDeleteFromCategories().asFlow()
-                    .onEach { mutableSet ->
-                        val selectedCategories = mutableSet
+                preferences.removeExcludeCategories().asFlow()
+                    .onEach { mutable ->
+                        val selected = mutable
                             .mapNotNull { id -> categories.find { it.id == id.toInt() } }
                             .sortedBy { it.order }
 
-                        summary = context.getString(
-                            R.string.pref_dont_delete_from_categories_summary,
-                            if (selectedCategories.isEmpty()) {
-                                context.getString(R.string.tapping_inverted_none)
-                            } else {
-                                selectedCategories.joinToString { it.name }
-                            }
-                        )
-                    }
-                    .launchIn(viewScope)
+                        summary = if (selected.isEmpty()) {
+                            resources?.getString(R.string.none)
+                        } else {
+                            selected.joinToString { it.name }
+                        }
+                    }.launchIn(viewScope)
             }
-            // SY <--
         }
-
-        val dbCategories = db.getCategories().executeAsBlocking()
-        val categories = listOf(Category.createDefault(context)) + dbCategories
 
         preferenceCategory {
             titleRes = R.string.pref_category_auto_download
@@ -316,47 +304,6 @@ class SettingsDownloadController : SettingsController() {
 
                     preferences.downloadNewCategories().set(included)
                     preferences.downloadNewCategoriesExclude().set(excluded)
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .create()
-        }
-    }
-
-    class DontDeleteFromCategoriesDialog : DialogController() {
-
-        private val preferences: PreferencesHelper = Injekt.get()
-        private val db: DatabaseHelper = Injekt.get()
-
-        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            val dbCategories = db.getCategories().executeAsBlocking()
-            val categories = listOf(Category.createDefault(activity!!)) + dbCategories
-
-            val items = categories.map { it.name }.toTypedArray()
-            val selection = categories
-                .mapNotNull { category ->
-                    category.id in preferences.dontDeleteFromCategories().get().map { it.toInt() }
-                }
-                .toBooleanArray()
-
-            return MaterialAlertDialogBuilder(activity!!)
-                .setTitle(R.string.categories)
-                .setMultiChoiceItems(
-                    items,
-                    selection
-                ) { _, which, selected ->
-                    selection[which] = selected
-                }
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    val included = selection
-                        .mapIndexed { index, selected ->
-                            if (selected) {
-                                categories[index].id.toString()
-                            } else null
-                        }
-                        .filterNotNull()
-                        .toSet()
-
-                    preferences.dontDeleteFromCategories().set(included)
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()

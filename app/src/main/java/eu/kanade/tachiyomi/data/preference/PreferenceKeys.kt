@@ -185,6 +185,7 @@ object PreferenceKeys {
 
     const val downloadNewCategories = "download_new_categories"
     const val downloadNewCategoriesExclude = "download_new_categories_exclude"
+    const val removeExcludeCategories = "remove_exclude_categories"
 
     const val libraryDisplayMode = "pref_display_mode_library"
 
@@ -370,8 +371,6 @@ object PreferenceKeys {
     const val authenticatorDays = "biometric_days"
 
     const val sortTagsForLibrary = "sort_tags_for_library"
-
-    const val dontDeleteFromCategories = "dont_delete_from_categories"
 
     const val extensionRepos = "extension_repos"
 

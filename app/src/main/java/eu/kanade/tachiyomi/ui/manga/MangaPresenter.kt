@@ -64,7 +64,6 @@ import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedSource
 import exh.source.mangaDexSourceIds
-import exh.util.shouldDeleteChapters
 import exh.util.trimOrNull
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -972,7 +971,7 @@ class MangaPresenter(
         launchIO {
             db.updateChaptersProgress(chapters).executeAsBlocking()
 
-            if (preferences.removeAfterMarkedAsRead() /* SY --> */ && manga.shouldDeleteChapters(db, preferences) /* SY <-- */) {
+            if (preferences.removeAfterMarkedAsRead()) {
                 deleteChapters(chapters.filter { it.read })
             }
         }

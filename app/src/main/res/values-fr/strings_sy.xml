@@ -190,8 +190,6 @@
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Enregistrer les chapitres sous CBZ</string>
     <string name="save_chapter_as_cbz_level">Niveau de compression CBZ</string>
-    <string name="pref_dont_delete_from_categories">Catégories à exclure de la suppression</string>
-    <string name="pref_dont_delete_from_categories_summary">Si un manga appartient à l\'une de ces catégories, les chapitres ne seront pas supprimés lors du marquage comme lu et lors de la fin d\'un chapitre.\nCatégories:\n%1$s</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Temps de verrouillage biométrique</string>

@@ -205,8 +205,6 @@
     <!-- Download settings -->
     <string name="save_chapter_as_cbz">Сохранить главы как CBZ</string>
     <string name="save_chapter_as_cbz_level">CBZ степень сжатия</string>
-    <string name="pref_dont_delete_from_categories">Категории, исключаемые из удаления</string>
-    <string name="pref_dont_delete_from_categories_summary">Если манга относится к любой из этих категорий, главы не будут удалены при пометке как прочитанные и при завершении главы.\nКатегории:\n%1$s</string>
 
     <!-- Security settings -->
     <string name="biometric_lock_times">Время биометрической блокировки</string>
