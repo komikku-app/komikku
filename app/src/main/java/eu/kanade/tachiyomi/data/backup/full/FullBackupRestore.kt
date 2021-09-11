@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.data.backup.full.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.full.models.BackupMergedMangaReference
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSavedSearch
 import eu.kanade.tachiyomi.data.backup.full.models.BackupSerializer
+import eu.kanade.tachiyomi.data.backup.full.models.BackupSource
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
@@ -48,7 +49,8 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         // SY <--
 
         // Store source mapping for error messages
-        sourceMapping = backup.backupSources.map { it.sourceId to it.name }.toMap()
+        var backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
+        sourceMapping = backupMaps.map { it.sourceId to it.name }.toMap()
 
         // Restore individual manga, sort by merged source so that merged source manga go last and merged references get the proper ids
         backup.backupManga /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */.forEach {
@@ -86,7 +88,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         val manga = backupManga.getMangaImpl()
         val chapters = backupManga.getChaptersImpl()
         val categories = backupManga.categories
-        val history = backupManga.history
+        val history = backupManga.brokenHistory.map { BackupHistory(it.url, it.lastRead) } + backupManga.history
         val tracks = backupManga.getTrackingImpl()
         // SY -->
         val mergedMangaReferences = backupManga.mergedMangaReferences
