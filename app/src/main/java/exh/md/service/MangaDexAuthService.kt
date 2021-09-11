@@ -17,6 +17,7 @@ import exh.md.dto.ReadingStatusMapDto
 import exh.md.dto.RefreshTokenDto
 import exh.md.dto.ResultDto
 import exh.md.utils.MdApi
+import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
 import okhttp3.CacheControl
 import okhttp3.Headers
@@ -76,11 +77,10 @@ class MangaDexAuthService(
         ).await().parseAs(MdUtil.jsonParser)
     }
 
-    // &includes[]=${MdConstants.Type.coverArt}
     suspend fun userFollowList(offset: Int): MangaListDto {
         return client.newCall(
             GET(
-                "${MdApi.userFollows}?limit=100&offset=$offset",
+                "${MdApi.userFollows}?limit=100&offset=$offset&includes[]=${MdConstants.Types.coverArt}",
                 getHeaders(),
                 CacheControl.FORCE_NETWORK
             )
