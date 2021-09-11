@@ -16,7 +16,6 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.EpubFile
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -75,6 +74,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
     }
 
     private val json: Json by injectLazy()
+
     // SY -->
     private val preferences: PreferencesHelper by injectLazy()
     // SY <--
