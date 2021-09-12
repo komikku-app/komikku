@@ -18,7 +18,7 @@ class WhatsNewDialogController : DialogController() {
         val activity = activity!!
         val view = WhatsNewRecyclerView(activity)
         return MaterialAlertDialogBuilder(activity)
-            .setTitle(if (BuildConfig.DEBUG /* SY --> */ || syDebugVersion != "0" /* SY <-- */) R.string.notices else R.string.whats_new)
+            .setTitle(R.string.whats_new)
             .setView(view)
             .setPositiveButton(android.R.string.cancel, null)
             .create()
