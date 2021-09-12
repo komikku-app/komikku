@@ -79,7 +79,7 @@
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
 
-                    <Switch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/eh_autoscroll"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -94,14 +94,16 @@
                         android:layout_weight="0.2"
                         android:ems="10"
                         android:inputType="numberDecimal"
-                        android:maxLength="10" />
+                        android:maxLength="10"
+                        android:importantForAutofill="no" />
 
                     <Button
                         android:id="@+id/eh_autoscroll_help"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="40dp"
                         android:layout_height="wrap_content"
-                        android:text="\?" />
+                        android:text="\?"
+                        tools:ignore="HardcodedText" />
 
                 </LinearLayout>
 
@@ -124,7 +126,8 @@
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="40dp"
                         android:layout_height="wrap_content"
-                        android:text="\?" />
+                        android:text="\?"
+                        tools:ignore="HardcodedText" />
 
                     <Button
                         android:id="@+id/eh_boost_page"
@@ -139,7 +142,8 @@
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="40dp"
                         android:layout_height="wrap_content"
-                        android:text="\?" />
+                        android:text="\?"
+                        tools:ignore="HardcodedText" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -150,7 +154,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="0dp"
-                app:srcCompat="@drawable/ic_keyboard_arrow_down_white_32dp" />
+                app:srcCompat="@drawable/ic_keyboard_arrow_down_white_32dp"
+                app:tint="?attr/colorOnToolbar" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
