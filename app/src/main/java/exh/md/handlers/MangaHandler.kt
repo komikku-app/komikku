@@ -8,7 +8,7 @@ import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.md.dto.ChapterDto
+import exh.md.dto.ChapterDataDto
 import exh.md.service.MangaDexService
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
@@ -52,8 +52,8 @@ class MangaHandler(
         }
     }
 
-    private fun getGroupMap(results: List<ChapterDto>): Map<String, String> {
-        return results.map { chapter -> chapter.data.relationships }
+    private fun getGroupMap(results: List<ChapterDataDto>): Map<String, String> {
+        return results.map { chapter -> chapter.relationships }
             .flatten()
             .filter { it.type == MdConstants.Types.scanlator }
             .map { it.id to it.attributes!!.name!! }

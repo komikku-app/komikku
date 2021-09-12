@@ -8,7 +8,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.log.xLogD
 import exh.md.dto.LoginBodyTokenDto
-import exh.md.dto.MangaDto
+import exh.md.dto.MangaDataDto
 import exh.md.network.NoSessionException
 import exh.source.getMainSource
 import exh.util.floor
@@ -262,16 +262,16 @@ class MdUtil {
         fun parseDate(dateAsString: String): Long =
             dateFormatter.parse(dateAsString)?.time ?: 0
 
-        fun createMangaEntry(json: MangaDto, lang: String): MangaInfo {
+        fun createMangaEntry(json: MangaDataDto, lang: String): MangaInfo {
             return MangaInfo(
-                key = buildMangaUrl(json.data.id),
-                title = cleanString(getTitle(json.data.attributes.title.asMdMap(), lang, json.data.attributes.originalLanguage)),
-                cover = json.data.relationships
+                key = buildMangaUrl(json.id),
+                title = cleanString(getTitle(json.attributes.title.asMdMap(), lang, json.attributes.originalLanguage)),
+                cover = json.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
                     ?.fileName
                     ?.let { coverFileName ->
-                        cdnCoverUrl(json.data.id, coverFileName)
+                        cdnCoverUrl(json.id, coverFileName)
                     }.orEmpty()
             )
         }

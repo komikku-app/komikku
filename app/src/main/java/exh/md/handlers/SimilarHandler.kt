@@ -26,7 +26,7 @@ class SimilarHandler(
             it.id
         }
 
-        val mangaList = service.viewMangas(ids).results.map {
+        val mangaList = service.viewMangas(ids).data.map {
             MdUtil.createMangaEntry(it, lang).toSManga()
         }
 

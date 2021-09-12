@@ -13,7 +13,7 @@ suspend fun <T> mdListCall(request: suspend (offset: Int) -> ListCallDto<T>): Li
 
     do {
         val list = request(offset)
-        results += list.results
+        results += list.data
         offset += list.limit
     } while (offset under list.total)
 

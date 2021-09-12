@@ -8,8 +8,8 @@ data class MangaListDto(
     override val limit: Int,
     override val offset: Int,
     override val total: Int,
-    override val results: List<MangaDto>,
-) : ListCallDto<MangaDto>
+    override val data: List<MangaDataDto>
+) : ListCallDto<MangaDataDto>
 
 @Serializable
 data class MangaDto(

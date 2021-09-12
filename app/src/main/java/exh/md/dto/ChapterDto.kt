@@ -7,8 +7,8 @@ data class ChapterListDto(
     override val limit: Int,
     override val offset: Int,
     override val total: Int,
-    override val results: List<ChapterDto>,
-) : ListCallDto<ChapterDto>
+    override val data: List<ChapterDataDto>,
+) : ListCallDto<ChapterDataDto>
 
 @Serializable
 data class ChapterDto(
@@ -45,8 +45,8 @@ data class GroupListDto(
     override val limit: Int,
     override val offset: Int,
     override val total: Int,
-    override val results: List<GroupDto>,
-) : ListCallDto<GroupDto>
+    override val data: List<GroupDataDto>,
+) : ListCallDto<GroupDataDto>
 
 @Serializable
 data class GroupDto(

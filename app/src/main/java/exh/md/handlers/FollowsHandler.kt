@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.md.dto.MangaDto
+import exh.md.dto.MangaDataDto
 import exh.md.dto.ReadingStatusDto
 import exh.md.service.MangaDexAuthService
 import exh.md.utils.FollowStatus
@@ -28,13 +28,13 @@ class FollowsHandler(
         return withIOContext {
             val follows = service.userFollowList(MdUtil.mangaLimit * page)
 
-            if (follows.results.isEmpty()) {
+            if (follows.data.isEmpty()) {
                 return@withIOContext MetadataMangasPage(emptyList(), false, emptyList())
             }
 
             val hasMoreResults = follows.limit + follows.offset under follows.total
             val statusListResponse = service.readingStatusAllManga()
-            val results = followsParseMangaPage(follows.results, statusListResponse.statuses)
+            val results = followsParseMangaPage(follows.data, statusListResponse.statuses)
 
             MetadataMangasPage(results.map { it.first }, hasMoreResults, results.map { it.second })
         }
@@ -45,7 +45,7 @@ class FollowsHandler(
      * used when multiple follows
      */
     private fun followsParseMangaPage(
-        response: List<MangaDto>,
+        response: List<MangaDataDto>,
         statuses: Map<String, String?>
     ): List<Pair<SManga, MangaDexSearchMetadata>> {
         val comparator = compareBy<Pair<SManga, MangaDexSearchMetadata>> { it.second.followStatus }
@@ -56,7 +56,7 @@ class FollowsHandler(
                 it,
                 lang
             ).toSManga() to MangaDexSearchMetadata().apply {
-                followStatus = FollowStatus.fromDex(statuses[it.data.id]).int
+                followStatus = FollowStatus.fromDex(statuses[it.id]).int
             }
         }.sortedWith(comparator)
     }

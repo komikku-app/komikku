@@ -3,6 +3,7 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLogE
+import exh.md.dto.ChapterDataDto
 import exh.md.dto.ChapterDto
 import exh.md.dto.MangaDto
 import exh.md.utils.MdConstants
@@ -189,7 +190,7 @@ class ApiMangaParser(
         else -> SManga.UNKNOWN
     }
 
-    fun chapterListParse(chapterListResponse: List<ChapterDto>, groupMap: Map<String, String>): List<ChapterInfo> {
+    fun chapterListParse(chapterListResponse: List<ChapterDataDto>, groupMap: Map<String, String>): List<ChapterInfo> {
         val now = System.currentTimeMillis()
 
         return chapterListResponse.asSequence()
@@ -207,11 +208,11 @@ class ApiMangaParser(
     fun StringBuilder.appends(string: String): StringBuilder = append("$string ")
 
     private fun mapChapter(
-        networkChapter: ChapterDto,
+        networkChapter: ChapterDataDto,
         groups: Map<String, String>,
     ): ChapterInfo {
-        val attributes = networkChapter.data.attributes
-        val key = MdUtil.chapterSuffix + networkChapter.data.id
+        val attributes = networkChapter.attributes
+        val key = MdUtil.chapterSuffix + networkChapter.id
         val chapterName = StringBuilder()
         // Build chapter name
 
@@ -253,7 +254,7 @@ class ApiMangaParser(
         // Convert from unix time
         val dateUpload = MdUtil.parseDate(attributes.publishAt)
 
-        val scanlatorName = networkChapter.data.relationships
+        val scanlatorName = networkChapter.relationships
             .filter {
                 it.type == MdConstants.Types.scanlator
             }
