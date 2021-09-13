@@ -43,7 +43,6 @@ import kotlin.reflect.KClass
 open class SourceManager(private val context: Context) {
 
     private val sourcesMap = mutableMapOf<Long, Source>()
-
     private val stubSourcesMap = mutableMapOf<Long, StubSource>()
 
     // SY -->

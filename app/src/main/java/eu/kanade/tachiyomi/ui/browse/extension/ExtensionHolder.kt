@@ -6,24 +6,18 @@ import coil.clear
 import coil.load
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.ExtensionCardItemBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     FlexibleViewHolder(view, adapter) {
 
     private val binding = ExtensionCardItemBinding.bind(view)
-
-    private val shouldLabelNsfw by lazy {
-        Injekt.get<PreferencesHelper>().labelNsfwExtension()
-    }
 
     init {
         binding.extButton.setOnClickListener {
@@ -42,8 +36,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             extension is Extension.Installed && extension.isUnofficial -> itemView.context.getString(R.string.ext_unofficial)
             extension is Extension.Installed && extension.isObsolete -> itemView.context.getString(R.string.ext_obsolete)
             // SY -->
-            extension is Extension.Installed && extension.isRedundant -> itemView.context.getString(R.string.ext_redundant)
-            extension.isNsfw && shouldLabelNsfw -> itemView.context.getString(R.string.ext_nsfw_short).plusRepo(extension)
+            extension.isNsfw -> itemView.context.getString(R.string.ext_nsfw_short).plusRepo(extension)
             else -> "".plusRepo(extension)
             // SY <--
         }.uppercase()
