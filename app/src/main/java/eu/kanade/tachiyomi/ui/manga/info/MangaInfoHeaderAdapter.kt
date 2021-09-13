@@ -330,7 +330,7 @@ class MangaInfoHeaderAdapter(
             with(binding.mangaSource) {
                 if (mangaSource != null) {
                     val enabledLanguages = preferences.enabledLanguages().get()
-                        .filterNot { it == "all" }
+                        .filterNot { it in listOf("all", "other") }
 
                     // SY -->
                     val isMergedSource = source.id == MERGED_SOURCE_ID
