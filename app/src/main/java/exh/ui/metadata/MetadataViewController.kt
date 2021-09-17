@@ -36,8 +36,6 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(bundle.getLong(MangaController.MANGA_EXTRA))
 
-    var data = emptyList<Pair<String, String>>()
-
     var adapter: MetadataViewAdapter? = null
 
     var manga: Manga? = null
@@ -69,14 +67,14 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
 
         if (manga == null || source == null) return
         binding.recycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.VERTICAL, false)
-        adapter = MetadataViewAdapter(data)
+        adapter = MetadataViewAdapter()
         binding.recycler.adapter = adapter
         binding.recycler.setHasFixedSize(true)
     }
 
     fun onNextMangaInfo(meta: RaisedSearchMetadata?) {
+        val adapter = adapter ?: return
         val context = view?.context ?: return
-        data = meta?.getExtraInfoPairs(context).orEmpty()
-        adapter?.update(data)
+        adapter.items = meta?.getExtraInfoPairs(context).orEmpty()
     }
 }

@@ -568,11 +568,4 @@ class MangaInfoHeaderAdapter(
             }
         }
     }
-
-    fun onDestroyView() {
-        metaInfoAdapter = null
-        mangaTagsInfoAdapter = null
-        binding.metadataView.adapter = null
-        binding.genreGroups.adapter = null
-    }
 }

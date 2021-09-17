@@ -7,53 +7,42 @@ import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.databinding.MetadataViewItemBinding
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 
-class MetadataViewAdapter(private var data: List<Pair<String, String>>) :
+class MetadataViewAdapter :
     RecyclerView.Adapter<MetadataViewAdapter.ViewHolder>() {
 
     private lateinit var binding: MetadataViewItemBinding
+
+    var items: List<Pair<String, String>> = emptyList()
+        set(value) {
+            if (field !== value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MetadataViewAdapter.ViewHolder {
         binding = MetadataViewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding.root)
     }
 
-    fun update(data: List<Pair<String, String>>) {
-        this.data = data
-        notifyDataSetChanged()
-    }
-
     // binds the data to the TextView in each cell
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(position)
+        holder.bind(items[position].first, items[position].second)
     }
 
     // total number of cells
-    override fun getItemCount(): Int = data.size
+    override fun getItemCount(): Int {
+        return items.size
+    }
 
     // stores and recycles views as they are scrolled off screen
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        fun bind(position: Int) {
-            binding.infoTitle.text = data[position].first
-            binding.infoText.text = data[position].second
+        fun bind(title: String, text: String) {
+            binding.infoTitle.text = title
+            binding.infoText.text = text
             binding.infoText.setOnClickListener {
-                itemView.context.copyToClipboard(data[position].second, data[position].second)
+                itemView.context.copyToClipboard(title, text)
             }
         }
-
-        override fun equals(other: Any?): Boolean {
-            return binding.infoText.hashCode() == other.hashCode()
-        }
-
-        override fun hashCode(): Int {
-            return binding.infoText.hashCode()
-        }
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
-
-    override fun hashCode(): Int {
-        return super.hashCode()
     }
 }

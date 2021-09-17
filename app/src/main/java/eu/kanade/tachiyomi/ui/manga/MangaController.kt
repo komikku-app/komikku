@@ -480,7 +480,6 @@ class MangaController :
     override fun onDestroyView(view: View) {
         destroyActionModeIfNeeded()
         binding.actionToolbar.destroy()
-        mangaInfoAdapter?.onDestroyView()
         mangaInfoAdapter = null
         chaptersHeaderAdapter = null
         chaptersAdapter = null
