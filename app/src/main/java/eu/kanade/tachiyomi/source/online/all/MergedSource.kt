@@ -179,11 +179,10 @@ class MergedSource : HttpSource() {
                 }
                 .awaitAll()
                 .let { pairs ->
-                    if (exception != null) {
-                        throw exception!!
-                    }
                     pairs.flatMap { it?.first.orEmpty() } to pairs.flatMap { it?.second.orEmpty() }
                 }
+        }.also {
+            exception?.let { throw it }
         }
     }
 
