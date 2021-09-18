@@ -827,6 +827,9 @@ class MangaController :
      */
     private fun toggleFavorite() {
         val isNowFavorite = presenter.toggleFavorite()
+        if (isNowFavorite) {
+            addSnackbar?.dismiss()
+        }
         if (activity != null && !isNowFavorite && presenter.hasDownloads()) {
             (activity as? MainActivity)?.binding?.rootCoordinator?.snack(activity!!.getString(R.string.delete_downloads_for_manga)) {
                 setAction(R.string.action_delete) {
@@ -834,7 +837,6 @@ class MangaController :
                 }
             }
         }
-
         mangaInfoAdapter?.notifyDataSetChanged()
     }
 
@@ -1345,7 +1347,7 @@ class MangaController :
         val manga = presenter.manga
         presenter.downloadChapters(chapters)
         if (view != null && !manga.favorite) {
-            addSnackbar = (activity as? MainActivity)?.binding?.rootCoordinator?.snack(view.context.getString(R.string.snack_add_to_library), Snackbar.LENGTH_INDEFINITE) {
+            addSnackbar = (activity as? MainActivity)?.binding?.rootCoordinator?.snack(view.context.getString(R.string.snack_add_to_library)) {
                 setAction(R.string.action_add) {
                     if (!manga.favorite) {
                         addToLibrary(manga)
