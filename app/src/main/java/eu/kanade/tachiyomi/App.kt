@@ -14,9 +14,8 @@ import android.webkit.WebView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import coil.ImageLoader
@@ -70,14 +69,14 @@ import java.security.Security
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-open class App : Application(), LifecycleObserver, ImageLoaderFactory {
+open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
     private val preferences: PreferencesHelper by injectLazy()
 
     private val disableIncognitoReceiver = DisableIncognitoReceiver()
 
     override fun onCreate() {
-        super.onCreate()
+        super<Application>.onCreate()
         // if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         setupExhLogging() // EXH logging
         Timber.plant(XLogTree()) // SY Redirect Timber to XLog
@@ -168,9 +167,7 @@ open class App : Application(), LifecycleObserver, ImageLoaderFactory {
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    @Suppress("unused")
-    fun onAppBackgrounded() {
+    override fun onStop(owner: LifecycleOwner) {
         if (!AuthenticatorUtil.isAuthenticating && preferences.lockAppAfter().get() >= 0) {
             SecureActivityDelegate.locked = true
         }
