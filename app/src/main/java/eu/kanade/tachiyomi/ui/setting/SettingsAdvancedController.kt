@@ -225,7 +225,7 @@ class SettingsAdvancedController : SettingsController() {
 
         // --> EXH
         preferenceCategory {
-            titleRes = R.string.group_downloader
+            titleRes = R.string.download_notifier_downloader_title
 
             preference {
                 key = "clean_up_downloaded_chapters"
