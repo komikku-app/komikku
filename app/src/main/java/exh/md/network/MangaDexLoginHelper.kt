@@ -11,10 +11,7 @@ import exh.md.service.MangaDexAuthService
 import exh.md.utils.MdUtil
 import exh.util.seconds
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 
 class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
@@ -76,20 +73,8 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
 
     suspend fun logout() {
         return withIOContext {
-            try {
-                coroutineScope {
-                    var delayJob: Job? = null
-                    val loginJob = launch {
-                        authService.logout()
-                        delayJob?.cancel()
-                    }
-                    delayJob = launch {
-                        delay(30.seconds)
-                        loginJob.cancel()
-                    }
-                }
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
+            withTimeoutOrNull(10.seconds) {
+                authService.logout()
             }
         }
     }
