@@ -62,6 +62,12 @@ object PreferenceValues {
         NEVER,
     }
 
+    enum class ExtensionInstaller {
+        LEGACY,
+        PACKAGEINSTALLER,
+        SHIZUKU
+    }
+
     // SY -->
     enum class GroupLibraryMode {
         GLOBAL,

@@ -228,6 +228,8 @@ object PreferenceKeys {
 
     const val tabletUiMode = "tablet_ui_mode"
 
+    const val extensionInstaller = "extension_installer"
+
     fun trackUsername(syncId: Int) = "pref_mangasync_username_$syncId"
 
     fun trackPassword(syncId: Int) = "pref_mangasync_password_$syncId"

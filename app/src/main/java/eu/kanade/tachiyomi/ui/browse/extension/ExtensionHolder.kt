@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.extension
 
 import android.annotation.SuppressLint
 import android.view.View
+import androidx.core.view.isVisible
 import coil.clear
 import coil.load
 import eu.davidea.viewholders.FlexibleViewHolder
@@ -12,7 +13,6 @@ import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.util.system.LocaleHelper
-import uy.kohesive.injekt.api.get
 
 class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     FlexibleViewHolder(view, adapter) {
@@ -22,6 +22,9 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     init {
         binding.extButton.setOnClickListener {
             adapter.buttonClickListener.onButtonClick(bindingAdapterPosition)
+        }
+        binding.cancelButton.setOnClickListener {
+            adapter.buttonClickListener.onCancelButtonClick(bindingAdapterPosition)
         }
     }
 
@@ -47,7 +50,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
         } else {
             extension.getApplicationIcon(itemView.context)?.let { binding.image.setImageDrawable(it) }
         }
-        bindButton(item)
+        bindButtons(item)
     }
 
     // SY -->
@@ -67,49 +70,43 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     }
 
     // SY <--
-
     @Suppress("ResourceType")
-    fun bindButton(item: ExtensionItem) = with(binding.extButton) {
-        isEnabled = true
-        isClickable = true
-
+    fun bindButtons(item: ExtensionItem) = with(binding.extButton) {
         val extension = item.extension
 
         val installStep = item.installStep
-        if (installStep != null) {
-            setText(
-                when (installStep) {
-                    InstallStep.Pending -> R.string.ext_pending
-                    InstallStep.Downloading -> R.string.ext_downloading
-                    InstallStep.Installing -> R.string.ext_installing
-                    InstallStep.Installed -> R.string.ext_installed
-                    InstallStep.Error -> R.string.action_retry
-                }
-            )
-            if (installStep != InstallStep.Error) {
-                isEnabled = false
-                isClickable = false
-            }
-        } else if (extension is Extension.Installed) {
-            when {
-                extension.hasUpdate -> {
-                    setText(R.string.ext_update)
-                }
-                else -> {
-                    // SY -->
-                    if (extension.sources.any { it is ConfigurableSource }) {
-                        @SuppressLint("SetTextI18n")
-                        text = context.getString(R.string.action_settings) + "+"
-                    } else {
-                        setText(R.string.action_settings)
+        setText(
+            when (installStep) {
+                InstallStep.Pending -> R.string.ext_pending
+                InstallStep.Downloading -> R.string.ext_downloading
+                InstallStep.Installing -> R.string.ext_installing
+                InstallStep.Installed -> R.string.ext_installed
+                InstallStep.Error -> R.string.action_retry
+                InstallStep.Idle -> {
+                    when (extension) {
+                        is Extension.Installed -> {
+                            if (extension.hasUpdate) {
+                                R.string.ext_update
+                            } else {
+                                R.string.action_settings
+                            }
+                        }
+                        is Extension.Untrusted -> R.string.ext_trust
+                        is Extension.Available -> R.string.ext_install
                     }
-                    // SY <--
                 }
             }
-        } else if (extension is Extension.Untrusted) {
-            setText(R.string.ext_trust)
-        } else {
-            setText(R.string.ext_install)
+        )
+        // SY -->
+        if (extension is Extension.Installed && extension.sources.any { it is ConfigurableSource }) {
+            @SuppressLint("SetTextI18n")
+            text = "$text+"
         }
+        // SY <--
+
+        val isIdle = installStep == InstallStep.Idle || installStep == InstallStep.Error
+        binding.cancelButton.isVisible = !isIdle
+        isEnabled = isIdle
+        isClickable = isIdle
     }
 }
