@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.data.preference.PreferenceValues.DisplayMode
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.NsfwAllowance
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
+import eu.kanade.tachiyomi.util.system.MiuiUtil
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -237,6 +238,11 @@ class PreferencesHelper(val context: Context) {
     fun trustedSignatures() = flowPrefs.getStringSet("trusted_signatures", emptySet())
 
     fun enableDoh() = prefs.getBoolean(Keys.enableDoh, false)
+
+    fun extensionInstaller() = flowPrefs.getEnum(
+        Keys.extensionInstaller,
+        if (MiuiUtil.isMiui()) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER
+    )
 
     // --> AZ J2K CHERRYPICKING
 

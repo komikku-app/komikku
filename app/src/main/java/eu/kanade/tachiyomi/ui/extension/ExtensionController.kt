@@ -125,6 +125,11 @@ open class ExtensionController :
         }
     }
 
+    override fun onCancelButtonClick(position: Int) {
+        val extension = (adapter?.getItem(position) as? ExtensionItem)?.extension ?: return
+        presenter.cancelInstallUpdateExtension(extension)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.extension_main, menu)
 

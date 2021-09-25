@@ -38,4 +38,10 @@ object PreferenceValues {
         PARTIAL,
         BLOCKED
     }
+
+    enum class ExtensionInstaller {
+        LEGACY,
+        PACKAGEINSTALLER,
+        SHIZUKU
+    }
 }

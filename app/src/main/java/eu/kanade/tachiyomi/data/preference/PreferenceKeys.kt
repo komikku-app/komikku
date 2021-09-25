@@ -169,6 +169,8 @@ object PreferenceKeys {
 
     const val eh_lock_length = "lock_length"
 
+    const val extensionInstaller = "extension_installer"
+
     const val eh_lock_finger = "lock_finger"
 
     const val eh_lock_manually = "eh_lock_manually"

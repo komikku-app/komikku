@@ -30,6 +30,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.nononsenseapps.filepicker.FilePickerActivity
+import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.lang.truncateCenter
 import eu.kanade.tachiyomi.widget.CustomLayoutPickerActivity
@@ -269,5 +270,26 @@ fun Context.vibrate(time: Long) {
         vibeService.vibrate(VibrationEffect.createOneShot(time, VibrationEffect.DEFAULT_AMPLITUDE))
     } else {
         vibeService.vibrate(time)
+    }
+}
+
+/**
+ * Gets document size of provided [Uri]
+ *
+ * @return document size of [uri] or null if size can't be obtained
+ */
+fun Context.getUriSize(uri: Uri): Long? {
+    return UniFile.fromUri(this, uri).length().takeIf { it >= 0 }
+}
+
+/**
+ * Returns true if [packageName] is installed.
+ */
+fun Context.isPackageInstalled(packageName: String): Boolean {
+    return try {
+        packageManager.getApplicationInfo(packageName, 0)
+        true
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
     }
 }
