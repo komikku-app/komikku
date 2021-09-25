@@ -11,11 +11,7 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.source.BlacklistedSources
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.long
+import kotlinx.serialization.Serializable
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 
@@ -29,17 +25,15 @@ internal class ExtensionGithubApi {
             networkService.client
                 .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
                 .await()
-                .parseAs<JsonArray>()
-                .let { parseResponse(it) }
+                .parseAs<List<ExtensionJsonObject>>()
+                .toExtensions()
         } /* SY --> */ + preferences.extensionRepos().get().flatMap { repoPath ->
             val url = "$BASE_URL$repoPath/repo/"
             networkService.client
                 .newCall(GET("${url}index.min.json"))
                 .await()
-                .parseAs<JsonArray>()
-                .let {
-                    parseResponse(it, url)
-                }
+                .parseAs<List<ExtensionJsonObject>>()
+                .toExtensions(url)
         }
         // SY <--
     }
@@ -74,26 +68,26 @@ internal class ExtensionGithubApi {
         return extensionsWithUpdate
     }
 
-    private fun parseResponse(json: JsonArray /* SY --> */, repoUrl: String = REPO_URL_PREFIX /* SY <-- */): List<Extension.Available> {
-        return json
-            .filter { element ->
-                val versionName = element.jsonObject["version"]!!.jsonPrimitive.content
-                val libVersion = versionName.substringBeforeLast('.').toDouble()
+    private fun List<ExtensionJsonObject>.toExtensions(/* SY --> */ repoUrl: String = REPO_URL_PREFIX /* SY <-- */): List<Extension.Available> {
+        return this
+            .filter {
+                val libVersion = it.version.substringBeforeLast('.').toDouble()
                 libVersion >= ExtensionLoader.LIB_VERSION_MIN && libVersion <= ExtensionLoader.LIB_VERSION_MAX
             }
-            .map { element ->
-                val name = element.jsonObject["name"]!!.jsonPrimitive.content.substringAfter("Tachiyomi: ")
-                val pkgName = element.jsonObject["pkg"]!!.jsonPrimitive.content
-                val apkName = element.jsonObject["apk"]!!.jsonPrimitive.content
-                val versionName = element.jsonObject["version"]!!.jsonPrimitive.content
-                val versionCode = element.jsonObject["code"]!!.jsonPrimitive.long
-                val lang = element.jsonObject["lang"]!!.jsonPrimitive.content
-                val nsfw = element.jsonObject["nsfw"]!!.jsonPrimitive.int == 1
-                // SY -->
-                val icon = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"
-                // SY <--
-
-                Extension.Available(name, pkgName, versionName, versionCode, lang, nsfw, apkName, icon /* SY --> */, repoUrl /* SY <-- */)
+            .map {
+                Extension.Available(
+                    name = it.name.substringAfter("Tachiyomi: "),
+                    pkgName = it.pkg,
+                    versionName = it.version,
+                    versionCode = it.code,
+                    lang = it.lang,
+                    isNsfw = it.nsfw == 1,
+                    apkName = it.apk,
+                    iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.apk.replace(".apk", ".png")}",
+                    // SY -->
+                    repoUrl = repoUrl
+                    // SY <--
+                )
             }
     }
 
@@ -108,9 +102,18 @@ internal class ExtensionGithubApi {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
     // SY <--
-
-    companion object {
-        const val BASE_URL = "https://raw.githubusercontent.com/"
-        const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
-    }
 }
+
+const val BASE_URL = "https://raw.githubusercontent.com/"
+const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
+
+@Serializable
+private data class ExtensionJsonObject(
+    val name: String,
+    val pkg: String,
+    val apk: String,
+    val version: String,
+    val code: Long,
+    val lang: String,
+    val nsfw: Int,
+)

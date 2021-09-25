@@ -8,7 +8,7 @@ import coil.load
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ExtensionCardItemBinding
-import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
+import eu.kanade.tachiyomi.extension.api.REPO_URL_PREFIX
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -57,12 +57,12 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     private fun String.plusRepo(extension: Extension): String {
         return if (extension is Extension.Available) {
             when (extension.repoUrl) {
-                ExtensionGithubApi.REPO_URL_PREFIX -> this
+                REPO_URL_PREFIX -> this
                 else -> {
-                    this + if (this.isEmpty()) {
-                        ""
+                    if (isEmpty()) {
+                        this
                     } else {
-                        " • "
+                        this + " • "
                     } + itemView.context.getString(R.string.repo_source)
                 }
             }
