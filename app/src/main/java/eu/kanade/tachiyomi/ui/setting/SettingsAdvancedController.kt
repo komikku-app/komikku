@@ -6,14 +6,10 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
-import androidx.core.view.setMargins
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
@@ -50,7 +46,6 @@ import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.system.MiuiUtil
-import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
 import eu.kanade.tachiyomi.util.system.isTablet
 import eu.kanade.tachiyomi.util.system.powerManager
@@ -497,41 +492,26 @@ class SettingsAdvancedController : SettingsController() {
     class ClearDatabaseDialogController : DialogController() {
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val item = arrayOf(
+                activity!!.getString(R.string.clear_database_confirmation),
                 activity!!.getString(R.string.clear_db_exclude_read)
             )
-            val selected = booleanArrayOf(true)
+            val selected = booleanArrayOf(true, true)
             return MaterialAlertDialogBuilder(activity!!)
                 // .setMessage(R.string.clear_database_confirmation)
                 // SY -->
-                .setMultiChoiceItems(item, selected) { _, _, isChecked ->
-                    selected[0] = isChecked
+                .setMultiChoiceItems(item, selected) { _, which, checked ->
+                    if (which == 0) {
+                        (dialog as AlertDialog).listView.setItemChecked(which, true)
+                    } else {
+                        selected[which] = checked
+                    }
                 }
                 // SY <--
                 .setPositiveButton(android.R.string.ok) { _, _ ->
-                    (targetController as? SettingsAdvancedController)?.clearDatabase(selected.first())
+                    (targetController as? SettingsAdvancedController)?.clearDatabase(selected.last())
                 }
                 .setNegativeButton(android.R.string.cancel, null)
-                .create().apply {
-                    LinearLayout(this.context).apply {
-                        layoutParams = LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
-                        )
-                        TextView(this.context).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            ).apply {
-                                setMargins(8.dpToPx)
-                            }
-                            setText(R.string.clear_database_confirmation)
-                            isClickable = false
-                            isFocusable = false
-                        }.let(this::addView)
-                        isClickable = false
-                        isFocusable = false
-                    }.let(listView::addFooterView)
-                }
+                .create()
         }
     }
 
