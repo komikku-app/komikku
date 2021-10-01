@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.util.system.openInBrowser
 import exh.util.executeOnIO
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
 class MigrationSourcesController :
     NucleusController<MigrationSourcesControllerBinding, MigrationSourcesPresenter>(),
@@ -30,6 +31,8 @@ class MigrationSourcesController :
     // SY -->
     SourceAdapter.OnAllClickListener {
     // SY <--
+
+    private val preferences: PreferencesHelper by injectLazy()
 
     private var adapter: SourceAdapter? = null
 
@@ -68,10 +71,29 @@ class MigrationSourcesController :
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        when (val itemId = item.itemId) {
             R.id.action_source_migration_help -> activity?.openInBrowser(HELP_URL)
+            R.id.asc_alphabetical, R.id.desc_alphabetical -> {
+                setSortingDirection(SortSetting.ALPHABETICAL, itemId == R.id.asc_alphabetical)
+            }
+            R.id.asc_count, R.id.desc_count -> {
+                setSortingDirection(SortSetting.TOTAL, itemId == R.id.asc_count)
+            }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun setSortingDirection(sortSetting: SortSetting, isAscending: Boolean) {
+        val direction = if (isAscending) {
+            DirectionSetting.ASCENDING
+        } else {
+            DirectionSetting.DESCENDING
+        }
+
+        preferences.migrationSortingDirection().set(direction)
+        preferences.migrationSortingMode().set(sortSetting)
+
+        presenter.requestSortUpdate()
     }
 
     fun setSources(sourcesWithManga: List<SourceItem>) {
@@ -127,7 +149,15 @@ class MigrationSourcesController :
     }
     // SY <--
 
-    companion object {
-        private const val HELP_URL = "https://tachiyomi.org/help/guides/source-migration/"
+    enum class DirectionSetting {
+        ASCENDING,
+        DESCENDING;
+    }
+
+    enum class SortSetting {
+        ALPHABETICAL,
+        TOTAL;
     }
 }
+
+private const val HELP_URL = "https://tachiyomi.org/help/guides/source-migration/"
