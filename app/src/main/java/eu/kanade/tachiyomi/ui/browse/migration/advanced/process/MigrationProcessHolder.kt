@@ -17,7 +17,6 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
@@ -63,19 +62,17 @@ class MigrationProcessHolder(
             binding.skipManga.isVisible = true
             binding.migrationMangaCardTo.resetManga()
             if (manga != null) {
-                withUIContext {
-                    binding.migrationMangaCardFrom.attachManga(manga, source)
-                    binding.migrationMangaCardFrom.root.clicks()
-                        .onEach {
-                            adapter.controller.router.pushController(
-                                MangaController(
-                                    manga,
-                                    true
-                                ).withFadeTransaction()
-                            )
-                        }
-                        .launchIn(adapter.controller.viewScope)
-                }
+                binding.migrationMangaCardFrom.attachManga(manga, source)
+                binding.migrationMangaCardFrom.root.clicks()
+                    .onEach {
+                        adapter.controller.router.pushController(
+                            MangaController(
+                                manga,
+                                true
+                            ).withFadeTransaction()
+                        )
+                    }
+                    .launchIn(adapter.controller.viewScope)
 
                 /*launchUI {
                     item.manga.progress.asFlow().collect { (max, progress) ->
@@ -94,37 +91,36 @@ class MigrationProcessHolder(
                 val resultSource = searchResult?.source?.let {
                     sourceManager.get(it)
                 }
-                withUIContext {
-                    if (item.manga.mangaId != this@MigrationProcessHolder.item?.manga?.mangaId ||
-                        item.manga.migrationStatus == MigrationStatus.RUNNING
-                    ) {
-                        return@withUIContext
-                    }
-                    if (searchResult != null && resultSource != null) {
-                        binding.migrationMangaCardTo.attachManga(searchResult, resultSource)
-                        binding.migrationMangaCardTo.root.clicks()
-                            .onEach {
-                                adapter.controller.router.pushController(
-                                    MangaController(
-                                        searchResult,
-                                        true
-                                    ).withFadeTransaction()
-                                )
-                            }
-                            .launchIn(adapter.controller.viewScope)
-                    } else {
-                        if (adapter.hideNotFound) {
-                            adapter.removeManga(bindingAdapterPosition)
-                        } else {
-                            binding.migrationMangaCardTo.loadingGroup.isVisible = false
-                            binding.migrationMangaCardTo.title.text = view.context.applicationContext
-                                .getString(R.string.no_alternatives_found)
-                        }
-                    }
-                    binding.migrationMenu.isVisible = true
-                    binding.skipManga.isVisible = false
-                    adapter.sourceFinished()
+
+                if (item.manga.mangaId != this@MigrationProcessHolder.item?.manga?.mangaId ||
+                    item.manga.migrationStatus == MigrationStatus.RUNNING
+                ) {
+                    return@launchUI
                 }
+                if (searchResult != null && resultSource != null) {
+                    binding.migrationMangaCardTo.attachManga(searchResult, resultSource)
+                    binding.migrationMangaCardTo.root.clicks()
+                        .onEach {
+                            adapter.controller.router.pushController(
+                                MangaController(
+                                    searchResult,
+                                    true
+                                ).withFadeTransaction()
+                            )
+                        }
+                        .launchIn(adapter.controller.viewScope)
+                } else {
+                    if (adapter.hideNotFound) {
+                        adapter.removeManga(bindingAdapterPosition)
+                    } else {
+                        binding.migrationMangaCardTo.loadingGroup.isVisible = false
+                        binding.migrationMangaCardTo.title.text = view.context.applicationContext
+                            .getString(R.string.no_alternatives_found)
+                    }
+                }
+                binding.migrationMenu.isVisible = true
+                binding.skipManga.isVisible = false
+                adapter.sourceFinished()
             }
         }
     }
