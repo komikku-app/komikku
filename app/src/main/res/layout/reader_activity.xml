@@ -227,8 +227,8 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             tools:text="1" />
 
-                        <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
-                            android:id="@+id/page_seekbar_vert"
+                        <eu.kanade.tachiyomi.ui.reader.ReaderSlider
+                            android:id="@+id/page_slider_vert"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_marginTop="27dp"
@@ -339,8 +339,8 @@
                         Wonky way of setting height due to issues with horizontally centering the thumb in Android 5.
                         See https://stackoverflow.com/questions/15701767/android-thumb-is-not-centered-in-seekbar
                     -->
-                    <eu.kanade.tachiyomi.ui.reader.ReaderSeekBar
-                        android:id="@+id/page_seekbar"
+                    <eu.kanade.tachiyomi.ui.reader.ReaderSlider
+                        android:id="@+id/page_slider"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

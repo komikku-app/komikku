@@ -28,7 +28,6 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
-import android.widget.SeekBar
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
@@ -42,6 +41,7 @@ import androidx.lifecycle.lifecycleScope
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.slider.Slider
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -89,10 +89,10 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.popupMenu
 import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
-import eu.kanade.tachiyomi.widget.listener.SimpleSeekBarListener
 import exh.log.xLogE
 import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
+import exh.util.floor
 import exh.util.mangaType
 import exh.util.seconds
 import kotlinx.coroutines.Dispatchers
@@ -424,27 +424,18 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         // SY -->
         // Init listeners on bottom menu
-        val listener = object : SimpleSeekBarListener() {
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-                super.onStartTrackingTouch(seekBar)
+        val listener = object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
                 isScrollingThroughPages = true
             }
 
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-                super.onStopTrackingTouch(seekBar)
+            override fun onStopTrackingTouch(slider: Slider) {
                 isScrollingThroughPages = false
             }
-
-            override fun onProgressChanged(seekBar: SeekBar, value: Int, fromUser: Boolean) {
-                if (viewer != null && fromUser) {
-                    moveToPageIndex(value)
-                    binding.pageSeekbar.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                }
-            }
         }
-        listOf(binding.pageSeekbar, binding.pageSeekbarVert)
+        listOf(binding.pageSlider, binding.pageSliderVert)
             .forEach {
-                it.setOnSeekBarChangeListener(listener)
+                it.addOnSliderTouchListener(listener)
             }
         // SY <--
 
@@ -860,8 +851,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         if (doublePages) {
             // If we're moving from singe to double, we want the current page to be the first page
             pViewer.config.shiftDoublePage = (
-                binding.pageSeekbar.progress +
-                    (currentChapter?.pages?.take(binding.pageSeekbar.progress)?.count { it.fullPage || it.isolatedPage } ?: 0)
+                binding.pageSlider.value.floor() +
+                    (currentChapter?.pages?.take(binding.pageSlider.value.floor())?.count { it.fullPage || it.isolatedPage } ?: 0)
                 ) % 2 != 0
         }
         presenter.viewerChaptersRelay.value?.let {
@@ -1102,7 +1093,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         // SY <--
         binding.toolbar.title = manga.title
 
-        binding.pageSeekbar.isRTL = newViewer is R2LPagerViewer
+        binding.pageSlider.isRTL = newViewer is R2LPagerViewer
         if (newViewer is R2LPagerViewer) {
             binding.leftChapter.setTooltip(R.string.action_next_chapter)
             binding.rightChapter.setTooltip(R.string.action_previous_chapter)
@@ -1263,7 +1254,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         binding.pageNumber.text = "$currentPage/${pages.size}"
         // binding.pageText.text = "${page.number}/${pages.size}"
 
-        // Set seekbar page number
+        // Set page numbers
         if (viewer !is R2LPagerViewer) {
             binding.leftPageText.text = currentPage
             binding.rightPageText.text = "${pages.size}"
@@ -1272,17 +1263,18 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             binding.leftPageText.text = "${pages.size}"
         }
 
+        // Set slider progress
+        binding.pageSlider.valueTo = pages.lastIndex.toFloat()
+        binding.pageSlider.value = page.index.toFloat()
+
+        // SY -->
+        binding.pageSliderVert.valueTo = pages.lastIndex.toFloat()
+        binding.pageSliderVert.value = page.index.toFloat()
+        // SY <--
+
         // SY -->
         binding.abovePageText.text = currentPage
         binding.belowPageText.text = "${pages.size}"
-        // SY <--
-
-        binding.pageSeekbar.max = pages.lastIndex
-        binding.pageSeekbar.progress = page.index
-
-        // SY -->
-        binding.pageSeekbarVert.max = pages.lastIndex
-        binding.pageSeekbarVert.progress = page.index
         // SY <--
     }
 
