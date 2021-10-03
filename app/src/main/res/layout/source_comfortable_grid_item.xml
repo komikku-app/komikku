@@ -67,7 +67,6 @@
 
                 <TextView
                     android:id="@+id/local_text"
-                    style="@style/TextAppearance.Regular.Caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="?attr/colorTertiary"
@@ -77,13 +76,13 @@
                     android:paddingEnd="3dp"
                     android:paddingBottom="1dp"
                     android:text="@string/local_source_badge"
+                    android:textAppearance="?attr/textAppearanceCaption"
                     android:textColor="?attr/colorOnTertiary"
                     android:visibility="gone"
                     tools:visibility="visible" />
 
                 <TextView
                     android:id="@+id/download_text"
-                    style="@style/TextAppearance.Regular.Caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="?attr/colorTertiary"
@@ -92,6 +91,7 @@
                     android:maxLines="1"
                     android:paddingEnd="3dp"
                     android:paddingBottom="1dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
                     android:textColor="?attr/colorOnTertiary"
                     android:visibility="gone"
                     tools:text="120"
@@ -99,7 +99,6 @@
 
                 <TextView
                     android:id="@+id/unread_text"
-                    style="@style/TextAppearance.Regular.Caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="?attr/colorSecondary"
@@ -108,6 +107,7 @@
                     android:paddingEnd="3dp"
                     android:maxLines="1"
                     android:paddingBottom="1dp"
+                    android:textAppearance="?attr/textAppearanceCaption"
                     android:textColor="?attr/colorOnSecondary"
                     android:visibility="gone"
                     tools:text="120"
@@ -115,7 +115,6 @@
 
                 <TextView
                     android:id="@+id/favorite_text"
-                    style="@style/TextAppearance.Regular.Caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="?attr/colorSecondary"
@@ -125,6 +124,7 @@
                     android:paddingEnd="3dp"
                     android:paddingBottom="1dp"
                     android:text="@string/in_library"
+                    android:textAppearance="?attr/textAppearanceCaption"
                     android:textColor="?attr/colorOnSecondary"
                     android:visibility="gone"
                     tools:visibility="visible" />
@@ -144,14 +144,13 @@
 
         <TextView
             android:id="@+id/title"
-            style="@style/TextAppearance.Regular.Body1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:fontFamily="@font/ptsans_narrow_bold"
-            android:lineSpacingExtra="-4dp"
             android:maxLines="2"
             android:padding="4dp"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textSize="12sp"
             android:textColor="@color/source_comfortable_item_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/card"
