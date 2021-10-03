@@ -88,6 +88,14 @@ class MigrationProcessAdapter(
 
     fun removeManga(position: Int) {
         val item = getItem(position) ?: return
+        if (items.size == 1) {
+            item.manga.migrationStatus = MigrationStatus.MANGA_NOT_FOUND
+            item.manga.migrationJob.cancel()
+            item.manga.searchResult.initialize(null)
+            sourceFinished()
+            notifyDataSetChanged()
+            return
+        }
         menuItemListener.removeManga(item)
         item.manga.migrationJob.cancel()
         removeItem(position)
