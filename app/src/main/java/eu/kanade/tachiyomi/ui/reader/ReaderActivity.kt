@@ -113,6 +113,8 @@ import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import kotlin.math.abs
+import kotlin.math.max
+
 /**
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the
  * viewers, to which calls from the presenter or UI events are delegated.
@@ -1264,11 +1266,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         }
 
         // Set slider progress
-        binding.pageSlider.valueTo = pages.lastIndex.toFloat()
+        binding.pageSlider.isEnabled = pages.size > 1
+        binding.pageSlider.valueTo = max(pages.lastIndex.toFloat(), 1f)
         binding.pageSlider.value = page.index.toFloat()
 
         // SY -->
-        binding.pageSliderVert.valueTo = pages.lastIndex.toFloat()
+        binding.pageSliderVert.valueTo = max(pages.lastIndex.toFloat(), 1f)
         binding.pageSliderVert.value = page.index.toFloat()
         // SY <--
 
