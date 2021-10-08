@@ -35,6 +35,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.savedsearches.JsonSavedSearch
@@ -45,10 +46,10 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
+import logcat.LogPriority
 import okio.buffer
 import okio.gzip
 import okio.sink
-import timber.log.Timber
 import kotlin.math.max
 
 class FullBackupManager(context: Context) : AbstractBackupManager(context) {
@@ -109,7 +110,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             file.openOutputStream().sink().gzip().buffer().use { it.write(byteArray) }
             return file.uri.toString()
         } catch (e: Exception) {
-            Timber.e(e)
+            logcat(LogPriority.ERROR, e)
             throw e
         }
     }

@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
 import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.system.logcat
 import exh.util.MangaType
 import exh.util.mangaType
 import kotlinx.serialization.decodeFromString
@@ -23,10 +24,10 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import logcat.LogPriority
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -53,7 +54,7 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
         val data = Json.decodeFromString<JsonObject>(body)
         val recommendations = data["recommendations"] as? JsonArray
         return recommendations?.filterIsInstance<JsonObject>()?.map { rec ->
-            Timber.tag("RECOMMENDATIONS").d("MYANIMELIST > RECOMMENDATION: %s", rec["title"]?.jsonPrimitive?.content.orEmpty())
+            logcat { "MYANIMELIST > RECOMMENDATION: " + rec["title"]?.jsonPrimitive?.content.orEmpty() }
             SManga.create().apply {
                 title = rec["title"]!!.jsonPrimitive.content
                 thumbnail_url = rec["image_url"]!!.jsonPrimitive.content
@@ -178,7 +179,7 @@ class Anilist : API("https://graphql.anilist.co/") {
         return result["recommendations"]?.jsonObject?.get("edges")?.jsonArray?.map {
             val rec = it.jsonObject["node"]!!.jsonObject["mediaRecommendation"]!!.jsonObject
             val recTitle = getTitle(rec)
-            Timber.tag("RECOMMENDATIONS").d("ANILIST > RECOMMENDATION: %s", recTitle)
+            logcat { "ANILIST > RECOMMENDATION: $recTitle" }
             SManga.create().apply {
                 title = recTitle
                 thumbnail_url = rec["coverImage"]!!.jsonObject["large"]!!.jsonPrimitive.content
@@ -202,10 +203,10 @@ open class RecommendsPager(
         val recs = apiList.firstNotNullOfOrNull { (key, api) ->
             try {
                 val recs = api.getRecsBySearch(manga.originalTitle)
-                Timber.tag("RECOMMENDATIONS").d("%s > Results: %s", key, recs.count())
+                logcat { key.toString() + " > Results: " + recs.count() }
                 recs
             } catch (e: Exception) {
-                Timber.tag("RECOMMENDATIONS").e("%s > Error: %s", key, e.message)
+                logcat(LogPriority.ERROR, e) { key.toString() }
                 null
             }
         }.orEmpty()

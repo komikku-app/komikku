@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import exh.log.xLogW
 import exh.metadata.sql.models.SearchTag
 import exh.metadata.sql.models.SearchTitle
 import exh.search.Namespace
@@ -30,7 +31,6 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 
 /**
@@ -151,7 +151,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                     // Do not catch cancellations
                     if (e is CancellationException) throw e
 
-                    Timber.w(e, "Could not filter mangas!")
+                    this@LibraryCategoryAdapter.xLogW("Could not filter mangas!", e)
                     mangas
                 }
 

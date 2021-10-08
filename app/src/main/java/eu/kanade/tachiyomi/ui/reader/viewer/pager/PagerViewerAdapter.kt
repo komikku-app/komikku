@@ -9,8 +9,8 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.hasMissingChapters
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
+import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
-import timber.log.Timber
 import kotlin.math.max
 
 /**
@@ -174,7 +174,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             if (position != -1) {
                 return position
             } else {
-                Timber.d("Position for ${view.item} not found")
+                logcat { "Position for ${view.item} not found" }
             }
         }
         return POSITION_NONE

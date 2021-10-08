@@ -39,6 +39,7 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.removeCovers
+import eu.kanade.tachiyomi.util.system.logcat
 import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
@@ -53,10 +54,10 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import logcat.LogPriority
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -194,7 +195,7 @@ open class BrowseSourcePresenter(
                     view.onAddPage(page, mangas)
                 },
                 { _, error ->
-                    Timber.e(error)
+                    logcat(LogPriority.ERROR, error)
                 }
             )
 
@@ -260,7 +261,7 @@ open class BrowseSourcePresenter(
                         view?.onMangaInitialized(it)
                     }
                 }
-                .catch { e -> Timber.e(e) }
+                .catch { e -> logcat(LogPriority.ERROR, e) }
                 .collect()
         }
     }
@@ -278,7 +279,7 @@ open class BrowseSourcePresenter(
             manga.initialized = true
             db.insertManga(manga).executeAsBlocking()
         } catch (e: Exception) {
-            Timber.e(e)
+            logcat(LogPriority.ERROR, e)
         }
         return manga
     }
@@ -321,7 +322,7 @@ open class BrowseSourcePresenter(
                             syncChaptersWithTrackServiceTwoWay(db, db.getChapters(manga).executeAsBlocking(), track, service as TrackService)
                         }
                     } catch (e: Exception) {
-                        Timber.w(e, "Could not match manga: ${manga.title} with service $service")
+                        logcat(LogPriority.WARN, e) { "Could not match manga: ${manga.title} with service $service" }
                     }
                 }
             }

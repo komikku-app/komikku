@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Compani
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.system.logcat
 import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
@@ -24,12 +25,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import logcat.LogPriority
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -170,7 +171,7 @@ open class IndexPresenter(
                     view?.onMangaInitialized(pair.first, pair.second)
                 },
                 { error ->
-                    Timber.e(error)
+                    logcat(LogPriority.ERROR, error)
                 }
             )
     }

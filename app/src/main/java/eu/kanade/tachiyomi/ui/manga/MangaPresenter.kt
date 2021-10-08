@@ -47,6 +47,7 @@ import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.getPicturesDir
 import eu.kanade.tachiyomi.util.storage.getTempShareDir
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.updateCoverLastModified
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
@@ -74,12 +75,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
+import logcat.LogPriority
 import rx.Observable
 import rx.Single
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -201,7 +202,9 @@ class MangaPresenter(
 
         getTrackingObservable()
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeLatestCache(MangaController::onTrackingCount) { _, error -> Timber.e(error) }
+            .subscribeLatestCache(MangaController::onTrackingCount) { _, error ->
+                logcat(LogPriority.ERROR, error)
+            }
 
         // Prepare the relay.
         chaptersRelay.flatMap { applyChapterFilters(it) }
@@ -211,7 +214,7 @@ class MangaPresenter(
                     filteredAndSortedChapters = chapters
                     view?.onNextChapters(chapters)
                 },
-                { _, error -> Timber.e(error) }
+                { _, error -> logcat(LogPriority.ERROR, error) }
             )
 
         // Manga info - end
@@ -763,7 +766,7 @@ class MangaPresenter(
                     view.onChapterDownloadUpdate(it)
                 },
                 { _, error ->
-                    Timber.e(error)
+                    logcat(LogPriority.ERROR, error)
                 }
             )
 
@@ -774,7 +777,7 @@ class MangaPresenter(
             .filter { download -> /* SY --> */ if (isMergedSource) download.manga.id in mergedIds else /* SY <-- */ download.manga.id == manga.id }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeLatestCache(MangaController::onChapterDownloadUpdate) { _, error ->
-                Timber.e(error)
+                logcat(LogPriority.ERROR, error)
             }
     }
 

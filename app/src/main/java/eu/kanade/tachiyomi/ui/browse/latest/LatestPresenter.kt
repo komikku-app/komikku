@@ -12,12 +12,13 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.system.logcat
+import logcat.LogPriority
 import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subjects.PublishSubject
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -125,7 +126,7 @@ open class LatestPresenter(
                     view.setItems(manga)
                 },
                 { _, error ->
-                    Timber.e(error)
+                    logcat(LogPriority.ERROR, error)
                 }
             )
     }
@@ -160,7 +161,7 @@ open class LatestPresenter(
                     view?.onMangaInitialized(source, manga)
                 },
                 { error ->
-                    Timber.e(error)
+                    logcat(LogPriority.ERROR, error)
                 }
             )
     }

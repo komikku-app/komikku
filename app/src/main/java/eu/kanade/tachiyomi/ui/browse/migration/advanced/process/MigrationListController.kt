@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.getResourceColor
+import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.eh.EHentaiThrottleManager
 import exh.smartsearch.SmartSearchEngine
@@ -52,7 +53,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import timber.log.Timber
+import logcat.LogPriority
 import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -224,7 +225,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                 source.getChapterList(localManga.toMangaInfo())
                                             }.map { it.toSChapter() }
                                         } catch (e: Exception) {
-                                            Timber.e(e)
+                                            this@MigrationListController.logcat(LogPriority.ERROR, e)
                                             emptyList()
                                         }
                                         withIOContext {

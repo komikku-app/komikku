@@ -15,12 +15,13 @@ import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.EpubFile
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import logcat.LogPriority
 import rx.Observable
-import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.FileInputStream
@@ -152,7 +153,7 @@ class LocalSource(private val context: Context) : CatalogueSource {
                             val dest = updateCover(chapter, this)
                             thumbnail_url = dest?.absolutePath
                         } catch (e: Exception) {
-                            Timber.e(e)
+                            logcat(LogPriority.ERROR, e)
                         }
                     }
                 }

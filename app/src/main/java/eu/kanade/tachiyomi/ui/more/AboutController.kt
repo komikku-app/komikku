@@ -19,9 +19,10 @@ import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.syDebugVersion
-import timber.log.Timber
+import logcat.LogPriority
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -111,7 +112,7 @@ class AboutController : SettingsController(), NoAppBarElevationController {
                 }
             } catch (error: Exception) {
                 activity?.toast(error.message)
-                Timber.e(error)
+                logcat(LogPriority.ERROR, error)
             }
         }
     }

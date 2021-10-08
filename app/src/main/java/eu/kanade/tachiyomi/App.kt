@@ -22,6 +22,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.util.DebugLogger
 import com.elvishew.xlog.LogConfiguration
 import com.elvishew.xlog.LogLevel
 import com.elvishew.xlog.XLog
@@ -51,7 +52,7 @@ import exh.log.CrashlyticsPrinter
 import exh.log.EHDebugModeOverlay
 import exh.log.EHLogLevel
 import exh.log.EnhancedFilePrinter
-import exh.log.XLogTree
+import exh.log.XLogLogcatLogger
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.syDebugVersion
@@ -59,8 +60,8 @@ import exh.util.days
 import io.realm.Realm
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import logcat.LogcatLogger
 import org.conscrypt.Conscrypt
-import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -79,7 +80,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         super<Application>.onCreate()
         // if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
         setupExhLogging() // EXH logging
-        Timber.plant(XLogTree()) // SY Redirect Timber to XLog
+        LogcatLogger.install(XLogLogcatLogger()) // SY Redirect Logcat to XLog
         if (!BuildConfig.DEBUG) addAnalytics()
 
         // TLS 1.3 support for Android < 10
@@ -141,6 +142,10 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                     }
                 )
             }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
+
+        /*if (!LogcatLogger.isInstalled && preferences.verboseLogging()) {
+            LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
+        }*/
     }
 
     override fun newImageLoader(): ImageLoader {
@@ -158,6 +163,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
             okHttpClient(Injekt.get<NetworkHelper>().coilClient)
             crossfade((300 * this@App.animatorDurationScale).toInt())
             allowRgb565(getSystemService<ActivityManager>()!!.isLowRamDevice)
+            if (preferences.verboseLogging()) logger(DebugLogger())
         }.build()
     }
 

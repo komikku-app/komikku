@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.network
 
 import android.content.Context
 import coil.util.CoilUtils
-import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
