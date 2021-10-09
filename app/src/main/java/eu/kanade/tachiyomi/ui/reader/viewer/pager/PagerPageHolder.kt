@@ -371,11 +371,11 @@ class PagerPageHolder(
     private fun mergePages(imageStream: InputStream, imageStream2: InputStream?): InputStream {
         imageStream2 ?: return imageStream
         if (page.fullPage) return imageStream
-        if (ImageUtil.findImageType(imageStream) == ImageUtil.ImageType.GIF) {
+        if (ImageUtil.isAnimatedAndSupported(imageStream)) {
             page.fullPage = true
             skipExtra = true
             return imageStream
-        } else if (ImageUtil.findImageType(imageStream2) == ImageUtil.ImageType.GIF) {
+        } else if (ImageUtil.isAnimatedAndSupported(imageStream2)) {
             page.isolatedPage = true
             extraPage?.fullPage = true
             skipExtra = true
