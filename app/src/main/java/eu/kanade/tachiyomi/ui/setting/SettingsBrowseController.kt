@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.setting
 
+import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
@@ -12,6 +13,7 @@ import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.preferenceCategory
+import eu.kanade.tachiyomi.util.preference.requireAuthentication
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
@@ -116,6 +118,12 @@ class SettingsBrowseController : SettingsController() {
                 titleRes = R.string.pref_show_nsfw_source
                 summaryRes = R.string.requires_app_restart
                 defaultValue = true
+
+                requireAuthentication(
+                    activity as? FragmentActivity,
+                    activity!!.getString(R.string.pref_category_nsfw_content),
+                    activity!!.getString(R.string.confirm_lock_change),
+                )
             }
 
             infoPreference(R.string.parental_controls_info)

@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.intListPreference
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
+import eu.kanade.tachiyomi.util.preference.requireAuthentication
 import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
@@ -39,32 +40,14 @@ class SettingsSecurityController : SettingsController() {
                 key = Keys.useAuthenticator
                 titleRes = R.string.lock_with_biometrics
                 defaultValue = false
-                onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-                    (activity as? FragmentActivity)?.startAuthentication(
-                        activity!!.getString(R.string.lock_with_biometrics),
-                        activity!!.getString(R.string.confirm_lock_change),
-                        callback = object : AuthenticatorUtil.AuthenticationCallback() {
-                            override fun onAuthenticationSucceeded(
-                                activity: FragmentActivity?,
-                                result: BiometricPrompt.AuthenticationResult
-                            ) {
-                                super.onAuthenticationSucceeded(activity, result)
-                                isChecked = newValue as Boolean
-                            }
 
-                            override fun onAuthenticationError(
-                                activity: FragmentActivity?,
-                                errorCode: Int,
-                                errString: CharSequence
-                            ) {
-                                super.onAuthenticationError(activity, errorCode, errString)
-                                activity?.toast(errString.toString())
-                            }
-                        }
-                    )
-                    false
-                }
+                requireAuthentication(
+                    activity as? FragmentActivity,
+                    activity!!.getString(R.string.lock_with_biometrics),
+                    activity!!.getString(R.string.confirm_lock_change),
+                )
             }
+
             intListPreference {
                 key = Keys.lockAppAfter
                 titleRes = R.string.lock_when_idle
@@ -118,6 +101,7 @@ class SettingsSecurityController : SettingsController() {
             summaryRes = R.string.secure_screen_summary
             defaultValue = false
         }
+
         switchPreference {
             key = Keys.hideNotificationContent
             titleRes = R.string.hide_notification_content
