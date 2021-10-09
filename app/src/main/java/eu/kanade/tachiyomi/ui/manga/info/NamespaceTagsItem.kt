@@ -6,8 +6,15 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
+import tachiyomi.source.Source
 
-class NamespaceTagsItem(val namespace: String?, val tags: List<Pair<String, Int?>>) :
+class NamespaceTagsItem(
+    val namespace: String?,
+    val tags: List<Pair<String, Int?>>,
+    val onClick: (item: String) -> Unit,
+    val onLongClick: (item: String) -> Unit,
+    val source: Source
+) :
     AbstractFlexibleItem<NamespaceTagsHolder>() {
 
     override fun getLayoutRes(): Int {
@@ -15,7 +22,7 @@ class NamespaceTagsItem(val namespace: String?, val tags: List<Pair<String, Int?
     }
 
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): NamespaceTagsHolder {
-        return NamespaceTagsHolder(view, adapter as NamespaceTagsAdapter)
+        return NamespaceTagsHolder(view, adapter)
     }
 
     override fun bindViewHolder(

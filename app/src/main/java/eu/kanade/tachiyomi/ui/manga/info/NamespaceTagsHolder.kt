@@ -5,6 +5,7 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.google.android.material.chip.Chip
+import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.databinding.MangaInfoGenreGroupingBinding
 import eu.kanade.tachiyomi.util.system.dpToPx
@@ -12,7 +13,7 @@ import exh.util.makeSearchChip
 
 class NamespaceTagsHolder(
     view: View,
-    val adapter: NamespaceTagsAdapter
+    adapter: FlexibleAdapter<*>
 ) : FlexibleViewHolder(view, adapter) {
     val binding = MangaInfoGenreGroupingBinding.bind(view)
 
@@ -40,9 +41,9 @@ class NamespaceTagsHolder(
         item.tags.map { (tag, type) ->
             binding.root.context.makeSearchChip(
                 tag,
-                adapter.controller::performSearch,
-                adapter.controller::performGlobalSearch,
-                adapter.source.id,
+                item.onClick,
+                item.onLongClick,
+                item.source.id,
                 namespace,
                 type
             )
