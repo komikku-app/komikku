@@ -58,7 +58,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
                         Gravity.BOTTOM
                     )
                 }
-                SourceGridHolder(view, adapter)
+                SourceCompactGridHolder(view, adapter)
             }
             DisplayModeSetting.COMFORTABLE_GRID /* SY --> */, DisplayModeSetting.NO_TITLE_GRID /* SY <-- */ -> {
                 val binding = SourceComfortableGridItemBinding.bind(view)

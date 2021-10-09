@@ -10,7 +10,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
+import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
 import eu.kanade.tachiyomi.widget.StateImageViewTarget
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -23,10 +23,10 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
  * @param adapter the adapter handling this holder.
  * @constructor creates a new catalogue holder.
  */
-open class SourceGridHolder(private val view: View, private val adapter: FlexibleAdapter<*>) :
-    SourceHolder<SourceComfortableGridItemBinding>(view, adapter) {
+open class SourceCompactGridHolder(private val view: View, private val adapter: FlexibleAdapter<*>) :
+    SourceHolder<SourceCompactGridItemBinding>(view, adapter) {
 
-    override val binding = SourceComfortableGridItemBinding.bind(view)
+    override val binding = SourceCompactGridItemBinding.bind(view)
 
     /**
      * Method called from [CatalogueAdapter.onBindViewHolder]. It updates the data for this
@@ -42,11 +42,11 @@ open class SourceGridHolder(private val view: View, private val adapter: Flexibl
         binding.thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
 
         // For rounded corners
-        binding.leftBadges.clipToOutline = true
-        binding.rightBadges.clipToOutline = true
+        binding.badges.leftBadges.clipToOutline = true
+        binding.badges.rightBadges.clipToOutline = true
 
         // Set favorite badge
-        binding.favoriteText.isVisible = manga.favorite
+        binding.badges.favoriteText.isVisible = manga.favorite
 
         setImage(manga)
     }
