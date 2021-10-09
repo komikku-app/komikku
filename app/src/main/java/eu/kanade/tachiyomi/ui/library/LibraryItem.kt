@@ -34,6 +34,7 @@ class LibraryItem(
     var downloadCount = -1
     var unreadCount = -1
     var isLocal = false
+    var sourceLanguage = ""
 
     // SY -->
     var startReadingButton = false
