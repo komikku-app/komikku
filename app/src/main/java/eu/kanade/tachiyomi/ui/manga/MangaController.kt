@@ -55,7 +55,6 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
@@ -94,7 +93,6 @@ import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.hasCustomCover
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.storage.getUriCompat
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toShareIntent
@@ -105,7 +103,6 @@ import eu.kanade.tachiyomi.util.view.snack
 import eu.kanade.tachiyomi.widget.materialdialogs.QuadStateTextView
 import exh.log.xLogD
 import exh.md.similar.MangaDexSimilarController
-import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.recs.RecommendsController
 import exh.source.MERGED_SOURCE_ID
@@ -304,18 +301,29 @@ class MangaController :
         if (manga == null || source == null) return
 
         // Init RecyclerView and adapter
-        mangaInfoAdapter = MangaInfoHeaderAdapter(this, fromSource, binding.infoRecycler != null)
-        chaptersHeaderAdapter = MangaChaptersHeaderAdapter(this)
+        mangaInfoAdapter = MangaInfoHeaderAdapter(this, fromSource, binding.infoRecycler != null).apply {
+            setHasStableIds(true)
+        }
+        chaptersHeaderAdapter = MangaChaptersHeaderAdapter(this).apply {
+            setHasStableIds(true)
+        }
         chaptersAdapter = ChaptersAdapter(this, view.context)
         // SY -->
         if (!preferences.recommendsInOverflow().get() || smartSearchConfig != null) {
-            mangaInfoButtonsAdapter = MangaInfoButtonsAdapter(this)
+            mangaInfoButtonsAdapter = MangaInfoButtonsAdapter(this).apply {
+                setHasStableIds(true)
+            }
         }
         // SY <--
 
         // Phone layout
         binding.fullRecycler?.let {
+            val config = ConcatAdapter.Config.Builder()
+                .setIsolateViewTypes(true)
+                .setStableIdMode(ConcatAdapter.Config.StableIdMode.SHARED_STABLE_IDS)
+                .build()
             it.adapter = ConcatAdapter(
+                config,
                 listOfNotNull(
                     mangaInfoAdapter,
                     mangaInfoButtonsAdapter,
@@ -390,7 +398,6 @@ class MangaController :
         settingsSheet = ChaptersSettingsSheet(router, presenter) { group ->
             if (group is ChaptersSettingsSheet.Filter.FilterGroup) {
                 updateFilterIconState()
-                chaptersAdapter?.notifyDataSetChanged()
             }
         }
 
@@ -568,17 +575,6 @@ class MangaController :
     }
 
     // Manga info - start
-
-    // SY -->
-    fun onNextMetaInfo(flatMetadata: FlatMetadata) {
-        val mainSource = presenter.source.getMainSource<MetadataSource<*, *>>()
-        if (mainSource != null) {
-            presenter.meta = flatMetadata.raise(mainSource.metaClass)
-            mangaInfoAdapter?.notifyMetaAdapter()
-            updateFilterIconState()
-        }
-    }
-    // SY <--
 
     /**
      * Check if manga is initialized.
@@ -834,7 +830,7 @@ class MangaController :
                 }
             }
         }
-        mangaInfoAdapter?.notifyDataSetChanged()
+        mangaInfoAdapter?.update()
     }
 
     fun onCategoriesClick() {
@@ -1038,7 +1034,7 @@ class MangaController :
 
     override fun deleteMangaCover(manga: Manga) {
         presenter.deleteCustomCover(manga)
-        mangaInfoAdapter?.notifyDataSetChanged()
+        mangaInfoAdapter?.notifyItemChanged(0, manga)
         destroyActionModeIfNeeded()
     }
 
@@ -1057,7 +1053,7 @@ class MangaController :
 
     fun onSetCoverSuccess() {
         editMangaDialog?.loadCover()
-        mangaInfoAdapter?.notifyDataSetChanged()
+        mangaInfoAdapter?.notifyItemChanged(0, this)
         (dialog as? MangaFullCoverDialog)?.setImage(manga)
         activity?.toast(R.string.cover_updated)
     }
@@ -1172,19 +1168,20 @@ class MangaController :
         val lastClickPosition = lastClickPositionStack.peek()!!
         when {
             lastClickPosition == -1 -> setSelection(position)
-            lastClickPosition > position ->
-                for (i in position until lastClickPosition)
-                    setSelection(i)
-            lastClickPosition < position ->
-                for (i in lastClickPosition + 1..position)
-                    setSelection(i)
+            lastClickPosition > position -> {
+                for (i in position until lastClickPosition) setSelection(i)
+                chaptersAdapter?.notifyItemRangeChanged(position, lastClickPosition, position)
+            }
+            lastClickPosition < position -> {
+                for (i in lastClickPosition + 1..position) setSelection(i)
+                chaptersAdapter?.notifyItemRangeChanged(lastClickPosition + 1, position, position)
+            }
             else -> setSelection(position)
         }
         if (lastClickPosition != position) {
             lastClickPositionStack.remove(position) // move to top if already exists
             lastClickPositionStack.push(position)
         }
-        chaptersAdapter?.notifyDataSetChanged()
     }
 
     fun showSettingsSheet() {
@@ -1197,7 +1194,6 @@ class MangaController :
         val adapter = chaptersAdapter ?: return
         val item = adapter.getItem(position) ?: return
         adapter.toggleSelection(position)
-        adapter.notifyDataSetChanged()
         if (adapter.isSelected(position)) {
             selectedChapters.add(item)
         } else {
@@ -1330,11 +1326,11 @@ class MangaController :
         selectedChapters.clear()
         for (i in 0..adapter.itemCount) {
             adapter.toggleSelection(i)
+            adapter.notifyItemChanged(i, i)
         }
         selectedChapters.addAll(adapter.selectedPositions.mapNotNull { adapter.getItem(it) })
 
         actionMode?.invalidate()
-        adapter.notifyDataSetChanged()
     }
 
     private fun markAsRead(chapters: List<ChapterItem>) {
@@ -1401,10 +1397,7 @@ class MangaController :
     fun onChaptersDeleted(chapters: List<ChapterItem>) {
         // this is needed so the downloaded text gets removed from the item
         chapters.forEach {
-            chaptersAdapter?.updateItem(it)
-        }
-        launchUI {
-            chaptersAdapter?.notifyDataSetChanged()
+            chaptersAdapter?.updateItem(it, it)
         }
     }
 

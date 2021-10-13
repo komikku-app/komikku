@@ -66,7 +66,9 @@ class MangaInfoHeaderAdapter(
         binding.mangaSummarySection.expanded = fromSource || isTablet
 
         // SY -->
-        metaInfoAdapter = source.getMainSource<MetadataSource<*, *>>()?.getDescriptionAdapter(controller)
+        metaInfoAdapter = source.getMainSource<MetadataSource<*, *>>()?.getDescriptionAdapter(controller)?.apply {
+            setHasStableIds(true)
+        }
         binding.metadataView.isVisible = if (metaInfoAdapter != null) {
             binding.metadataView.layoutManager = LinearLayoutManager(binding.root.context)
             binding.metadataView.adapter = metaInfoAdapter
@@ -80,6 +82,8 @@ class MangaInfoHeaderAdapter(
     }
 
     override fun getItemCount(): Int = 1
+
+    override fun getItemId(position: Int): Long = hashCode().toLong()
 
     override fun onBindViewHolder(holder: HeaderViewHolder, position: Int) {
         holder.bind()
@@ -98,15 +102,17 @@ class MangaInfoHeaderAdapter(
         this.meta = meta
         this.mergedMangaReferences = mergedMangaReferences
         // SY <--
+        update()
+        updateMetaAdapter()
+    }
 
-        notifyDataSetChanged()
-        notifyMetaAdapter()
+    fun update() {
+        notifyItemChanged(0, this)
     }
 
     fun setTrackingCount(trackCount: Int) {
         this.trackCount = trackCount
-
-        notifyDataSetChanged()
+        update()
     }
 
     private fun updateCoverPosition() {
@@ -116,7 +122,7 @@ class MangaInfoHeaderAdapter(
         }
     }
 
-    fun notifyMetaAdapter() {
+    private fun updateMetaAdapter() {
         metaInfoAdapter?.notifyDataSetChanged()
     }
 
