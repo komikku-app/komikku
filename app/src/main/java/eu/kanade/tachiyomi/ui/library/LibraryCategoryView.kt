@@ -6,8 +6,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import dev.chrisbanes.insetter.Insetter
-import dev.chrisbanes.insetter.windowInsetTypesOf
+import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
 import eu.kanade.tachiyomi.R
@@ -106,9 +105,11 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             }
         }
 
-        Insetter.builder()
-            .paddingBottom(windowInsetTypesOf(navigationBars = true))
-            .applyToView(recycler)
+        recycler.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
 
         adapter = LibraryCategoryAdapter(this, controller)
 
