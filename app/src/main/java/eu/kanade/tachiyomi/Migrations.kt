@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.data.updater.UpdaterJob
+import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.ui.library.LibrarySort
@@ -41,7 +41,7 @@ object Migrations {
 
             // Always set up background tasks to ensure they're running
             if (BuildConfig.INCLUDE_UPDATER) {
-                UpdaterJob.setupTask(context)
+                AppUpdateJob.setupTask(context)
             }
             ExtensionUpdateJob.setupTask(context)
             LibraryUpdateJob.setupTask(context)
@@ -55,7 +55,7 @@ object Migrations {
             if (oldVersion < 14) {
                 // Restore jobs after upgrading to Evernote's job scheduler.
                 if (BuildConfig.INCLUDE_UPDATER) {
-                    UpdaterJob.setupTask(context)
+                    AppUpdateJob.setupTask(context)
                 }
                 LibraryUpdateJob.setupTask(context)
             }
@@ -88,7 +88,7 @@ object Migrations {
             if (oldVersion < 43) {
                 // Restore jobs after migrating from Evernote's job scheduler to WorkManager.
                 if (BuildConfig.INCLUDE_UPDATER) {
-                    UpdaterJob.setupTask(context)
+                    AppUpdateJob.setupTask(context)
                 }
                 LibraryUpdateJob.setupTask(context)
                 BackupCreatorJob.setupTask(context)
@@ -128,7 +128,7 @@ object Migrations {
                     remove("pref_filter_completed_key")
                 }
             }
-            if (oldVersion < 53) {
+            if (oldVersion < 54) {
                 // Force MAL log out due to login flow change
                 // v52: switched from scraping to WebView
                 // v53: switched from WebView to OAuth
@@ -160,10 +160,15 @@ object Migrations {
 
                 // Disable update check for Android 5.x users
                 if (BuildConfig.INCLUDE_UPDATER && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-                    UpdaterJob.cancelTask(context)
+                    AppUpdateJob.cancelTask(context)
                 }
             }
             if (oldVersion < 60) {
+                // Re-enable update check that was prevously accidentally disabled for M
+                if (BuildConfig.INCLUDE_UPDATER && Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+                    AppUpdateJob.setupTask(context)
+                }
+
                 // Migrate Rotation and Viewer values to default values for viewer_flags
                 val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 val newOrientation = when (prefs.getInt("pref_rotation_type_key", 1)) {
