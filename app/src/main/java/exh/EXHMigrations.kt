@@ -337,6 +337,14 @@ object EXHMigrations {
                     //    preferences.lang().set("en")
                     // }
                 }
+                if (oldVersion under 22) {
+                    // Handle removed every 3, 4, 6, and 8 hour library updates
+                    val updateInterval = preferences.libraryUpdateInterval().get()
+                    if (updateInterval in listOf(3, 4, 6, 8)) {
+                        preferences.libraryUpdateInterval().set(12)
+                        LibraryUpdateJob.setupTask(context, 12)
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
