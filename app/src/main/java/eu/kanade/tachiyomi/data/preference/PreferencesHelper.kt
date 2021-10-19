@@ -21,7 +21,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import eu.kanade.tachiyomi.util.system.MiuiUtil
-import eu.kanade.tachiyomi.util.system.isTablet
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
