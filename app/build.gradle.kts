@@ -276,8 +276,8 @@ dependencies {
     implementation ("info.debatty:java-string-similarity:2.0.0")
 
     // Firebase (EH)
-    implementation("com.google.firebase:firebase-analytics-ktx:19.0.1")
-    implementation("com.google.firebase:firebase-crashlytics-ktx:18.2.1")
+    implementation("com.google.firebase:firebase-analytics-ktx:19.0.2")
+    implementation("com.google.firebase:firebase-crashlytics-ktx:18.2.3")
 
     // Better logging (EH)
     implementation("com.elvishew:xlog:1.11.0")
