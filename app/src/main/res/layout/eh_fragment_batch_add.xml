@@ -20,7 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/eh_batch_add_title"
-                android:textAppearance="@style/TextAppearance.Medium.Title"
+                android:textAppearance="?attr/textAppearanceHeadline6"
                 android:visibility="visible"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
@@ -60,7 +60,7 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginRight="0dp"
                 android:text="@string/eh_batch_add_adding_galleries"
-                android:textAppearance="@style/TextAppearance.Medium.Title"
+                android:textAppearance="?attr/textAppearanceHeadline6"
                 android:visibility="gone"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
@@ -122,7 +122,7 @@
                     android:id="@+id/progress_log"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Regular.Body1"
+                    android:textAppearance="?attr/textAppearanceBody2"
                     android:visibility="visible" />
             </ScrollView>
 

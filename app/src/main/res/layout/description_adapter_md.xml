@@ -6,10 +6,11 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/rating"
-        style="@style/TextAppearance.Regular.Body1.Secondary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:textColor="?android:attr/textColorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/rating_bar"
         app:layout_constraintTop_toTopOf="parent" />

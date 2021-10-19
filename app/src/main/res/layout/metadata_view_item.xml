@@ -9,7 +9,7 @@
         android:layout_width="140dp"
         android:layout_height="match_parent"
         android:layout_marginStart="8dp"
-        style="@style/TextAppearance.Regular.Body1" />
+        android:textAppearance="?attr/textAppearanceBody2" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/info_text"
@@ -17,6 +17,7 @@
         android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:layout_marginStart="8dp"
-        style="@style/TextAppearance.Regular.Body1.Secondary" />
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:textColor="?android:attr/textColorSecondary" />
 
 </LinearLayout>

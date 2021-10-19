@@ -91,7 +91,7 @@
         android:text="@string/vertical_plus_viewer"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:textAppearance="@style/TextAppearance.Medium.SubHeading" />
+        android:textAppearance="@style/TextAppearance.Tachiyomi.SectionHeader" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/crop_borders_continuous_vertical"

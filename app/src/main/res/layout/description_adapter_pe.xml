@@ -22,13 +22,13 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/genre"
-                style="@style/TextAppearance.Regular.Body1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="8dp"
                 android:paddingTop="4dp"
                 android:paddingEnd="8dp"
-                android:paddingBottom="4dp" />
+                android:paddingBottom="4dp"
+                android:textAppearance="?attr/textAppearanceBody2" />
 
         </androidx.cardview.widget.CardView>
 
@@ -44,13 +44,13 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/language"
-            style="@style/TextAppearance.Regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:textAppearance="?attr/textAppearanceBody2"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -70,10 +70,11 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/rating"
-            style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"/>
+            android:layout_marginStart="8dp"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="?android:attr/textColorSecondary"/>
 
     </LinearLayout>
 

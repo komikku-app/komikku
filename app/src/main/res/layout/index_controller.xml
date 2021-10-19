@@ -19,11 +19,11 @@
 
             <TextView
                 android:id="@+id/latest"
-                style="@style/TextAppearance.Regular.SubHeading"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:text="@string/latest"
+                android:textAppearance="?attr/textAppearanceSubtitle2"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/latest_bar_more_icon"
                 app:layout_constraintStart_toStartOf="parent"
@@ -84,11 +84,11 @@
 
             <TextView
                 android:id="@+id/browse"
-                style="@style/TextAppearance.Regular.SubHeading"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:text="@string/browse"
+                android:textAppearance="?attr/textAppearanceSubtitle2"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/browse_bar_more_icon"
                 app:layout_constraintStart_toStartOf="parent"

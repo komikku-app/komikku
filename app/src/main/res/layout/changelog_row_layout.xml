@@ -16,7 +16,7 @@
         android:paddingStart="@dimen/chglib_material_keyline1"
         android:paddingEnd="0dp"
         android:text="@string/changelog_row_bulletpoint"
-        android:textAppearance="@style/TextAppearance.Medium.Title" />
+        android:textAppearance="?attr/textAppearanceHeadline6" />
 
     <!-- ChangeLog Row [Text] You have to use the id="chg_text" -->
     <TextView
@@ -29,7 +29,7 @@
         android:paddingTop="8dp"
         android:paddingEnd="@dimen/chglib_material_keyline1"
         android:paddingBottom="8dp"
-        android:textAppearance="@style/TextAppearance.Regular.Body1"
+        android:textAppearance="?attr/textAppearanceCaption"
         tools:text="Use DashClock with Android 4.2's Daydream feature; great for use with desktop docks!" />
 
 </LinearLayout>

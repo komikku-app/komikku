@@ -35,7 +35,6 @@
 
             <TextView
                 android:id="@+id/favorite_text"
-                style="@style/TextAppearance.Regular.Caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorSecondary"
@@ -45,6 +44,7 @@
                 android:paddingEnd="3dp"
                 android:paddingBottom="1dp"
                 android:text="@string/in_library"
+                android:textAppearance="?attr/textAppearanceCaption"
                 android:textColor="?attr/colorOnSecondary"
                 android:visibility="gone"
                 tools:visibility="visible" />
@@ -63,13 +63,13 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/title"
-        style="@style/TextAppearance.Regular.SubHeading"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="2"
+        android:textAppearance="?attr/textAppearanceSubtitle2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/card"
         app:layout_constraintTop_toTopOf="parent"
@@ -99,14 +99,14 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/genre"
-            style="@style/TextAppearance.Regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:paddingStart="8dp"
             android:paddingTop="4dp"
             android:paddingEnd="8dp"
-            android:paddingBottom="4dp" />
+            android:paddingBottom="4dp"
+            android:textAppearance="?attr/textAppearanceBody2" />
 
     </com.google.android.material.card.MaterialCardView>
 

@@ -51,7 +51,6 @@
 
             <TextView
                 android:id="@+id/manga_chapters"
-                style="@style/TextAppearance.Regular.Caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorSecondary"
@@ -59,21 +58,20 @@
                 android:paddingTop="1dp"
                 android:paddingEnd="3dp"
                 android:paddingBottom="1dp"
-                android:text="101"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textSize="12sp"
                 android:textColor="?attr/colorOnSecondary"
                 android:visibility="gone"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+                tools:text="101" />
         </LinearLayout>
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/title"
-            style="@style/TextAppearance.Regular.Body1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:ellipsize="end"
-            android:fontFamily="@font/ptsans_narrow_bold"
-            android:lineSpacingExtra="-4dp"
             android:maxLines="2"
             android:padding="8dp"
             android:shadowColor="@color/md_black_1000"
@@ -81,6 +79,8 @@
             android:shadowDy="0"
             android:shadowRadius="4"
             android:textColor="@color/md_white_1000"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textSize="12sp"
             tools:text="Sample name" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
@@ -110,7 +110,6 @@
 
         <TextView
             android:id="@+id/manga_source_label"
-            style="@style/TextAppearance.Medium.Body2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="false"
@@ -118,15 +117,17 @@
             app:layout_constraintLeft_toLeftOf="parent"
             android:ellipsize="end"
             android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
             tools:layout_editor_absoluteY="57dp" />
 
         <TextView
             android:id="@+id/manga_last_chapter_label"
-            style="@style/TextAppearance.Regular.Body1.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="false"
-            android:textIsSelectable="false" />
+            android:textIsSelectable="false"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="?android:attr/textColorSecondary" />
 
     </LinearLayout>
 
