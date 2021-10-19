@@ -300,10 +300,8 @@ class MdUtil {
 
         fun refreshToken(preferences: PreferencesHelper, mdList: MdList) = getLoginBody(preferences, mdList)?.refresh
 
-        fun updateLoginToken(token: LoginBodyTokenDto?, preferences: PreferencesHelper, mdList: MdList) {
-            if (token != null) {
-                preferences.trackToken(mdList).set(jsonParser.encodeToString(token))
-            } else preferences.trackToken(mdList).delete()
+        fun updateLoginToken(token: LoginBodyTokenDto, preferences: PreferencesHelper, mdList: MdList) {
+            preferences.trackToken(mdList).set(jsonParser.encodeToString(token))
         }
 
         fun getAuthHeaders(headers: Headers, preferences: PreferencesHelper, mdList: MdList) =

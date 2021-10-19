@@ -12,7 +12,6 @@ import exh.md.utils.MdUtil
 import exh.util.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.serialization.encodeToString
 
 class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
     val authService by authServiceLazy
@@ -31,7 +30,7 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
         }
         val refresh = runCatching {
             val jsonResponse = authService.refreshToken(RefreshTokenDto(refreshToken))
-            preferences.trackToken(mdList).set(MdUtil.jsonParser.encodeToString(jsonResponse.token))
+            MdUtil.updateLoginToken(jsonResponse.token, preferences, mdList)
         }
 
         val e = refresh.exceptionOrNull()
@@ -52,12 +51,16 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
             if (e is CancellationException) throw e
 
             val loginResponseDto = loginResult.getOrNull()
-            MdUtil.updateLoginToken(
-                loginResponseDto?.token,
-                preferences,
-                mdList
-            )
-            loginResponseDto != null
+            if (loginResponseDto != null) {
+                MdUtil.updateLoginToken(
+                    loginResponseDto.token,
+                    preferences,
+                    mdList
+                )
+                true
+            } else {
+                false
+            }
         }
     }
 
