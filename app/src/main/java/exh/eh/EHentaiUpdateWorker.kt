@@ -17,13 +17,14 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.preference.CHARGING
+import eu.kanade.tachiyomi.data.preference.ONLY_ON_WIFI
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.UNMETERED_NETWORK
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
+import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.log.xLog
@@ -57,9 +58,14 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
 
     override suspend fun doWork(): Result {
         return try {
-            startUpdating()
-            logger.d("Update job completed!")
-            Result.success()
+            val preferences = Injekt.get<PreferencesHelper>()
+            if (requiresWifiConnection(preferences) && !context.isConnectedToWifi()) {
+                Result.failure()
+            } else {
+                startUpdating()
+                logger.d("Update job completed!")
+                Result.success()
+            }
         } catch (e: Exception) {
             Result.failure()
         }
@@ -240,14 +246,9 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             if (interval > 0) {
                 val restrictions = preferences.exhAutoUpdateRequirements().get()
                 val acRestriction = CHARGING in restrictions
-                val wifiRestriction = if (UNMETERED_NETWORK in restrictions) {
-                    NetworkType.UNMETERED
-                } else {
-                    NetworkType.CONNECTED
-                }
 
                 val constraints = Constraints.Builder()
-                    .setRequiredNetworkType(wifiRestriction)
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
                     .setRequiresCharging(acRestriction)
                     .build()
 
@@ -271,6 +272,11 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         fun cancelBackground(context: Context) {
             WorkManager.getInstance(context).cancelAllWorkByTag(TAG)
         }
+    }
+
+    fun requiresWifiConnection(preferences: PreferencesHelper): Boolean {
+        val restrictions = preferences.exhAutoUpdateRequirements().get()
+        return ONLY_ON_WIFI in restrictions
     }
 }
 

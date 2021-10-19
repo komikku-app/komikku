@@ -18,8 +18,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.CHARGING
+import eu.kanade.tachiyomi.data.preference.ONLY_ON_WIFI
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
-import eu.kanade.tachiyomi.data.preference.UNMETERED_NETWORK
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.databinding.DialogStubTextinputBinding
 import eu.kanade.tachiyomi.ui.setting.eh.FrontPageCategoriesDialog
@@ -443,15 +443,15 @@ class SettingsEhController : SettingsController() {
             multiSelectListPreference {
                 key = PreferenceKeys.eh_autoUpdateRestrictions
                 titleRes = R.string.auto_update_restrictions
-                entriesRes = arrayOf(R.string.network_unmetered, R.string.charging)
-                entryValues = arrayOf(UNMETERED_NETWORK, CHARGING)
+                entriesRes = arrayOf(R.string.connected_to_wifi, R.string.charging)
+                entryValues = arrayOf(ONLY_ON_WIFI, CHARGING)
 
                 fun updateSummary() {
                     val restrictions = preferences.exhAutoUpdateRequirements().get()
                         .sorted()
                         .map {
                             when (it) {
-                                UNMETERED_NETWORK -> context.getString(R.string.network_unmetered)
+                                ONLY_ON_WIFI -> context.getString(R.string.connected_to_wifi)
                                 CHARGING -> context.getString(R.string.charging)
                                 else -> it
                             }
