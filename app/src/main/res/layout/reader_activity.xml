@@ -86,6 +86,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:padding="8dp"
+                        android:textColor="?attr/colorOnToolbar"
                         android:text="@string/eh_autoscroll" />
 
                     <EditText
@@ -104,6 +105,7 @@
                         android:layout_width="40dp"
                         android:layout_height="wrap_content"
                         android:text="\?"
+                        android:textColor="?attr/colorOnToolbar"
                         tools:ignore="HardcodedText" />
 
                 </LinearLayout>
@@ -120,6 +122,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textColor="?attr/colorOnToolbar"
                         android:text="@string/eh_retry_all" />
 
                     <Button
@@ -128,6 +131,7 @@
                         android:layout_width="40dp"
                         android:layout_height="wrap_content"
                         android:text="\?"
+                        android:textColor="?attr/colorOnToolbar"
                         tools:ignore="HardcodedText" />
 
                     <Button
@@ -136,6 +140,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:textColor="?attr/colorOnToolbar"
                         android:text="@string/eh_boost_page" />
 
                     <Button
@@ -144,6 +149,7 @@
                         android:layout_width="40dp"
                         android:layout_height="wrap_content"
                         android:text="\?"
+                        android:textColor="?attr/colorOnToolbar"
                         tools:ignore="HardcodedText" />
                 </LinearLayout>
 

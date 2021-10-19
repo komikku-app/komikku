@@ -392,16 +392,6 @@ class MangaInfoHeaderAdapter(
                 // Update description TextView.
                 binding.mangaSummaryText.text = updateDescription(manga.description, (fromSource || isTablet).not())
 
-                // SY -->
-                if (manga.description == "meta") {
-                    binding.mangaSummaryText.text = ""
-                    /*binding.mangaInfoToggleLess.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                        topToBottom = -1
-                        bottomToBottom = binding.mangaSummaryText.id
-                    }*/
-                }
-                // SY <--
-
                 // Update genres list
                 if (!manga.genre.isNullOrBlank()) {
                     binding.mangaGenresTagsCompactChips.setChips(
@@ -484,6 +474,9 @@ class MangaInfoHeaderAdapter(
         private fun updateDescription(description: String?, isCurrentlyExpanded: Boolean): CharSequence {
             return when {
                 description.isNullOrBlank() -> view.context.getString(R.string.unknown)
+                // SY -->
+                description == "meta" -> ""
+                // SY <--
                 isCurrentlyExpanded ->
                     description
                         .replace(Regex(" +\$", setOf(RegexOption.MULTILINE)), "")

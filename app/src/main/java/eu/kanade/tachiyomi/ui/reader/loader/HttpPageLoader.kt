@@ -106,11 +106,11 @@ class HttpPageLoader(
                     ReaderPage(index, page.url, page.imageUrl)
                 }
                 if (preferences.aggressivePageLoading().get()) {
-                    rp.mapNotNull {
+                    rp.forEach {
                         if (it.status == Page.QUEUE) {
-                            PriorityPage(it, 0)
-                        } else null
-                    }.forEach { queue.offer(it) }
+                            queue.offer(PriorityPage(it, 0))
+                        }
+                    }
                 }
                 rp
                 // SY <--

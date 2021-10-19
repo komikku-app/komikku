@@ -54,7 +54,7 @@
                     android:contentDescription="@string/action_start_reading"
                     android:padding="6dp"
                     android:src="@drawable/ic_start_reading_24dp"
-                    android:tint="@android:color/white" />
+                    app:tint="@android:color/white" />
             </FrameLayout>
 
             <LinearLayout

@@ -51,10 +51,12 @@ class SettingsLibraryController : SettingsController() {
     private val db: DatabaseHelper = Injekt.get()
     private val trackManager: TrackManager by injectLazy()
 
+    // SY -->
     /**
      * Sheet containing filter/sort/display items.
      */
     private var settingsSheet: LibrarySettingsSheet? = null
+    // SY <--
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_library

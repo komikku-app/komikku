@@ -71,6 +71,7 @@ class SettingsReaderController : SettingsController() {
             summaryRes = R.string.pref_show_navigation_mode_summary
             defaultValue = false
         }
+        // SY -->
         switchPreference {
             key = Keys.forceHorizontalSeekbar
             titleRes = R.string.pref_force_horz_seekbar
@@ -91,6 +92,7 @@ class SettingsReaderController : SettingsController() {
             defaultValue = false
             preferences.forceHorizontalSeekbar().asImmediateFlow { isVisible = !it }.launchIn(viewScope)
         }
+        // SY <--
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             switchPreference {
                 key = Keys.trueColor
@@ -410,6 +412,7 @@ class SettingsReaderController : SettingsController() {
             }
         }
 
+        // SY -->
         preferenceCategory {
             titleRes = R.string.page_downloading
 
@@ -499,7 +502,6 @@ class SettingsReaderController : SettingsController() {
             }
         }
 
-        // EXH -->
         preferenceCategory {
             titleRes = R.string.pref_category_fork
 
@@ -550,9 +552,10 @@ class SettingsReaderController : SettingsController() {
                 preferences.pageLayout().asImmediateFlow { isVisible = it != PagerConfig.PageLayout.SINGLE_PAGE }
             }
         }
-        // EXH <--
+        // SY <--
     }
 
+    // SY -->
     class ReaderBottomButtonsDialog : DialogController() {
 
         private val preferences: PreferencesHelper = Injekt.get()
@@ -586,4 +589,5 @@ class SettingsReaderController : SettingsController() {
                 .create()
         }
     }
+    // SY <--
 }

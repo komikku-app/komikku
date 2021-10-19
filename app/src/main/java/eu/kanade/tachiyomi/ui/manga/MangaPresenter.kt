@@ -321,7 +321,7 @@ class MangaPresenter(
 
                 withUIContext { view?.onFetchMangaInfoDone() }
             } catch (e: Throwable) {
-                xLogE("Error getting manga details", e)
+                this@MangaPresenter.xLogE("Error getting manga details", e)
                 withUIContext { view?.onFetchMangaInfoError(e) }
             }
         }

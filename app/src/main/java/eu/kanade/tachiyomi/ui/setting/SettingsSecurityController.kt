@@ -123,6 +123,7 @@ class SettingsSecurityController : SettingsController() {
             titleRes = R.string.hide_notification_content
             defaultValue = false
         }
+        // SY -->
         preference {
             key = "pref_edit_lock_times"
             titleRes = R.string.action_edit_biometric_lock_times
@@ -149,8 +150,10 @@ class SettingsSecurityController : SettingsController() {
                 SetLockedDaysDialog().showDialog(router)
             }
         }
+        // SY <--
     }
 
+    // SY -->
     class SetLockedDaysDialog(bundle: Bundle? = null) : DialogController(bundle) {
         val preferences: PreferencesHelper by injectLazy()
 
@@ -212,4 +215,5 @@ class SettingsSecurityController : SettingsController() {
                 .create()
         }
     }
+    // SY <--
 }
