@@ -55,8 +55,8 @@ open class SourceCompactGridHolder(private val view: View, private val adapter: 
     override fun onSetMetadataValues(manga: Manga, metadata: RaisedSearchMetadata) {
         if (metadata is MangaDexSearchMetadata) {
             metadata.followStatus?.let {
-                binding.localText.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
-                binding.localText.isVisible = true
+                binding.badges.localText.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
+                binding.badges.localText.isVisible = true
             }
         }
     }
