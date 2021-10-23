@@ -10,6 +10,10 @@ import eu.kanade.tachiyomi.ui.base.changehandler.OneWayFadeChangeHandler
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.system.openInBrowser
 
+fun Router.setRoot(controller: Controller, id: Int) {
+    setRoot(controller.withFadeTransaction().tag(id.toString()))
+}
+
 fun Router.popControllerWithTag(tag: String): Boolean {
     val controller = getControllerWithTag(tag)
     if (controller != null) {
