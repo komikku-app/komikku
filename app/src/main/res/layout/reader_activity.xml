@@ -233,20 +233,27 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             tools:text="1" />
 
-                        <eu.kanade.tachiyomi.ui.reader.ReaderSlider
-                            android:id="@+id/page_slider_vert"
+                        <FrameLayout
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_marginTop="27dp"
                             android:layout_marginBottom="27dp"
-                            android:layout_gravity="center|top"
-                            android:rotation="90"
-                            android:progress="30"
                             app:layout_constraintDimensionRatio="1:1"
                             app:layout_constraintBottom_toTopOf="@id/below_page_text"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/above_page_text" />
+                            app:layout_constraintTop_toBottomOf="@id/above_page_text" >
+
+                            <eu.kanade.tachiyomi.ui.reader.ReaderSlider
+                                android:id="@+id/page_slider_vert"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:rotation="90"
+                                android:layout_gravity="center"
+                                app:layout_constraintDimensionRatio="1:1" />
+
+                        </FrameLayout>
+
 
                         <TextView
                             android:id="@+id/below_page_text"
