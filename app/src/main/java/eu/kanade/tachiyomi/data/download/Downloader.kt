@@ -484,35 +484,40 @@ class Downloader(
 
         // Only rename the directory if it's downloaded.
         if (download.status == Download.State.DOWNLOADED) {
-            if (preferences.saveChaptersAsCBZ().get()) {
-                val zip = mangaDir.createFile("$dirname.cbz.tmp")
-                val zipOut = ZipOutputStream(BufferedOutputStream(zip.openOutputStream()))
-                val compressionLevel = preferences.saveChaptersAsCBZLevel().get()
+            var zip: UniFile? = null
+            if (
+                preferences.saveChaptersAsCBZ().get() &&
+                mangaDir.createFile("$dirname.cbz.tmp").also { zip = it } != null
+            ) {
+                ZipOutputStream(zip!!.openOutputStream().buffered()).use { zipOut ->
+                    val compressionLevel = preferences.saveChaptersAsCBZLevel().get()
 
-                zipOut.setLevel(compressionLevel)
+                    zipOut.setLevel(compressionLevel)
 
-                if (compressionLevel == 0) {
-                    zipOut.setMethod(ZipEntry.STORED)
-                }
-
-                tmpDir.listFiles()?.forEach { img ->
-                    val input = img.openInputStream()
-                    val data = input.readBytes()
-                    val entry = ZipEntry(img.name)
                     if (compressionLevel == 0) {
-                        val crc = CRC32()
-                        val size = img.length()
-                        crc.update(data)
-                        entry.crc = crc.value
-                        entry.compressedSize = size
-                        entry.size = size
+                        zipOut.setMethod(ZipEntry.STORED)
                     }
-                    zipOut.putNextEntry(entry)
-                    zipOut.write(data)
-                    input.close()
+
+                    tmpDir.listFiles()?.forEach { img ->
+                        img.openInputStream().use { input ->
+                            val data = input.readBytes()
+                            val entry = ZipEntry(img.name)
+                            if (compressionLevel == 0) {
+                                val crc = CRC32()
+                                val size = img.length()
+                                crc.update(data)
+                                entry.crc = crc.value
+                                entry.compressedSize = size
+                                entry.size = size
+                            }
+                            zipOut.putNextEntry(entry)
+                            zipOut.write(data)
+                            zipOut.closeEntry()
+                        }
+                    }
                 }
-                zipOut.close()
-                zip.renameTo("$dirname.cbz")
+
+                zip!!.renameTo("$dirname.cbz")
                 tmpDir.delete()
             } else {
                 tmpDir.renameTo(dirname)
