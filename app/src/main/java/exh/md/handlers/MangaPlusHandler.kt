@@ -3,7 +3,8 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.Page
-import exh.md.dto.MangaPlusSerializer
+import exh.md.dto.MangaPlusResponse
+import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
 import okhttp3.Headers
 import okhttp3.Interceptor
@@ -39,7 +40,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
     }
 
     private fun pageListParse(response: Response): List<Page> {
-        val result = ProtoBuf.decodeFromByteArray(MangaPlusSerializer, response.body!!.bytes())
+        val result = ProtoBuf.decodeFromByteArray<MangaPlusResponse>(response.body!!.bytes())
 
         if (result.success == null) {
             throw Exception("error getting images")
