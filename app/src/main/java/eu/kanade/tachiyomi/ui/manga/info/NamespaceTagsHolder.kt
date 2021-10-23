@@ -32,7 +32,7 @@ class NamespaceTagsHolder(
             true
         } else {
             binding.tags.updateLayoutParams<LinearLayout.LayoutParams> {
-                marginStart = 16.dpToPx
+                marginStart = 0.dpToPx
             }
             false
         }
