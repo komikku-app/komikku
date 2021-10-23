@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.source.index
 
 import android.view.View
+import androidx.core.view.isVisible
 import coil.clear
 import coil.imageLoader
 import coil.request.CachePolicy
@@ -37,9 +38,17 @@ class IndexCardHolder(view: View, adapter: IndexCardAdapter) :
     fun bind(manga: Manga) {
         binding.card.clipToOutline = true
 
+        // Set manga title
         binding.title.text = manga.title
+
         // Set alpha of thumbnail.
         binding.cover.alpha = if (manga.favorite) 0.3f else 1.0f
+
+        // For rounded corners
+        binding.badges.clipToOutline = true
+
+        // Set favorite badge
+        binding.favoriteText.isVisible = manga.favorite
 
         setImage(manga)
     }
