@@ -34,7 +34,6 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
 import uy.kohesive.injekt.injectLazy
-import java.io.BufferedOutputStream
 import java.io.File
 import java.util.zip.CRC32
 import java.util.zip.ZipEntry
