@@ -28,7 +28,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
         .build()
 
     suspend fun fetchPageList(chapterId: String): List<Page> {
-        val response = client.newCall(pageListRequest(chapterId)).await()
+        val response = client.newCall(pageListRequest(chapterId.substringAfterLast("/"))).await()
         return pageListParse(response)
     }
 
