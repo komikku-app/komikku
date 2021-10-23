@@ -19,6 +19,7 @@ import exh.md.dto.ResultDto
 import exh.md.utils.MdApi
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
+import okhttp3.Authenticator
 import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.OkHttpClient
@@ -30,6 +31,10 @@ class MangaDexAuthService(
     private val preferences: PreferencesHelper,
     private val mdList: MdList
 ) {
+    private val noAuthenticatorClient = client.newBuilder()
+        .authenticator(Authenticator.NONE)
+        .build()
+
     fun getHeaders() = MdUtil.getAuthHeaders(
         headers,
         preferences,
@@ -37,7 +42,7 @@ class MangaDexAuthService(
     )
 
     suspend fun login(request: LoginRequestDto): LoginResponseDto {
-        return client.newCall(
+        return noAuthenticatorClient.newCall(
             POST(
                 MdApi.login,
                 body = MdUtil.encodeToBody(request),
@@ -57,7 +62,7 @@ class MangaDexAuthService(
     }
 
     suspend fun checkToken(): CheckTokenDto {
-        return client.newCall(
+        return noAuthenticatorClient.newCall(
             GET(
                 MdApi.checkToken,
                 getHeaders(),
@@ -67,7 +72,7 @@ class MangaDexAuthService(
     }
 
     suspend fun refreshToken(request: RefreshTokenDto): LoginResponseDto {
-        return client.newCall(
+        return noAuthenticatorClient.newCall(
             POST(
                 MdApi.refreshToken,
                 getHeaders(),

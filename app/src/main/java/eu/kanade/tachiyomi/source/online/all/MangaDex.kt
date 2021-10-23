@@ -78,7 +78,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         context.getSharedPreferences("source_$id", 0x0000)
     }
 
-    val mangadexAuthServiceLazy = lazy { MangaDexAuthService(baseHttpClient, headers, preferences, mdList) }
+    private val mangadexAuthServiceLazy = lazy { MangaDexAuthService(baseHttpClient, headers, preferences, mdList) }
 
     private val loginHelper = MangaDexLoginHelper(mangadexAuthServiceLazy, preferences, mdList)
 

@@ -1,3 +1,5 @@
 package exh.md.network
 
-class NoSessionException : IllegalArgumentException("Session token does not exist")
+import java.io.IOException
+
+class NoSessionException : IOException("Session token does not exist")
