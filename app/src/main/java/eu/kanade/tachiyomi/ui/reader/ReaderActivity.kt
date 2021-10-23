@@ -18,6 +18,7 @@ import android.graphics.PorterDuff
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MotionEvent
@@ -435,9 +436,17 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                 isScrollingThroughPages = false
             }
         }
+        val onChangeListener = Slider.OnChangeListener { slider, value, fromUser ->
+            if (viewer != null && fromUser) {
+                isScrollingThroughPages = true
+                moveToPageIndex(value.toInt())
+                slider.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            }
+        }
         listOf(binding.pageSlider, binding.pageSliderVert)
             .forEach {
                 it.addOnSliderTouchListener(listener)
+                it.addOnChangeListener(onChangeListener)
             }
         // SY <--
 
