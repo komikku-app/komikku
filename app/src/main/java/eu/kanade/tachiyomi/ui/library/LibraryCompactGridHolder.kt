@@ -1,13 +1,17 @@
 package eu.kanade.tachiyomi.ui.library
 
 import android.view.View
+import android.widget.FrameLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updateMargins
 import androidx.recyclerview.widget.RecyclerView
 import coil.clear
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
+import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -79,6 +83,14 @@ class LibraryCompactGridHolder(
         binding.badges.localText.isVisible = item.isLocal
 
         // SY -->
+        val topMargin = if (item.sourceLanguage.isNotEmpty()) {
+            16.dpToPx
+        } else {
+            0.dpToPx
+        }
+        binding.playLayout.updateLayoutParams<FrameLayout.LayoutParams> {
+            updateMargins(top = topMargin)
+        }
         binding.playLayout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
         // SY <--
 
