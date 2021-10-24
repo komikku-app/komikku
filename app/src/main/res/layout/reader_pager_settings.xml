@@ -88,6 +88,15 @@
         android:textColor="?android:attr/textColorSecondary"
         android:text="@string/pref_page_transitions" />
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/invert_double_pages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:text="@string/invert_double_pages" />
+
     <androidx.constraintlayout.widget.Group
         android:id="@+id/tapping_prefs_group"
         android:layout_width="wrap_content"

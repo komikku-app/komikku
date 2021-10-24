@@ -137,6 +137,8 @@ class PagerConfig(
                 }
             )
 
+        preferences.invertDoublePages()
+            .register({ invertDoublePages = it && dualPageSplit == false }, { imagePropertyChangedListener?.invoke() })
         // SY <--
     }
 

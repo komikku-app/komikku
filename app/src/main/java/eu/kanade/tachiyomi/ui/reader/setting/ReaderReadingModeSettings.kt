@@ -88,6 +88,7 @@ class ReaderReadingModeSettings @JvmOverloads constructor(context: Context, attr
         // SY -->
         binding.pagerPrefsGroup.pageTransitionsPager.bindToPreference(preferences.pageTransitionsPager())
         binding.pagerPrefsGroup.pageLayout.bindToPreference(preferences.pageLayout())
+        binding.pagerPrefsGroup.invertDoublePages.bindToPreference(preferences.invertDoublePages())
         // SY <--
     }
 

@@ -1256,7 +1256,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         val pages = page.chapter.pages ?: return
 
         val currentPage = if (hasExtraPage) {
-            if (resources.isLTR) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}"
+            val invertDoublePage = (viewer as? PagerViewer)?.config?.invertDoublePages ?: false
+            if (resources.isLTR xor invertDoublePage) "${page.number}-${page.number + 1}" else "${page.number + 1}-${page.number}"
         } else {
             "${page.number}"
         }

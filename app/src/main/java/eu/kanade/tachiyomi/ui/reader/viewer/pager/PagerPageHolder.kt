@@ -23,9 +23,6 @@ import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import logcat.LogPriority
 import rx.Observable
@@ -104,12 +101,10 @@ class PagerPageHolder(
     var extraStatus: Int = 0
     var progress: Int = 0
     var extraProgress: Int = 0
-    var scope: CoroutineScope? = null
     // SY <--
 
     init {
         addView(progressIndicator)
-        scope = CoroutineScope(Job() + Dispatchers.Default)
         observeStatus()
     }
 
@@ -393,7 +388,7 @@ class PagerPageHolder(
             logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
             return imageBytes.inputStream()
         }
-        scope?.launchUI { progressIndicator.setProgress(96) }
+        viewer.scope.launchUI { progressIndicator.setProgress(96) }
         val height = imageBitmap.height
         val width = imageBitmap.width
 
@@ -417,7 +412,7 @@ class PagerPageHolder(
             logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
             return imageBytes.inputStream()
         }
-        scope?.launchUI { progressIndicator.setProgress(97) }
+        viewer.scope.launchUI { progressIndicator.setProgress(97) }
         val height2 = imageBitmap2.height
         val width2 = imageBitmap2.width
 
@@ -429,12 +424,12 @@ class PagerPageHolder(
             splitDoublePages()
             return imageBytes.inputStream()
         }
-        val isLTR = (viewer !is R2LPagerViewer).xor(viewer.config.invertDoublePages)
+        val isLTR = (viewer !is R2LPagerViewer) xor viewer.config.invertDoublePages
 
         imageStream.close()
         imageStream2.close()
         return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, viewer.config.pageCanvasColor) {
-            scope?.launchUI {
+            viewer.scope.launchUI {
                 if (it == 100) {
                     progressIndicator.hide()
                 } else {
@@ -445,7 +440,7 @@ class PagerPageHolder(
     }
 
     private fun splitDoublePages() {
-        scope?.launchUI {
+        viewer.scope.launchUI {
             delay(100)
             viewer.splitDoublePages(page)
             if (extraPage?.fullPage == true || page.fullPage) {
