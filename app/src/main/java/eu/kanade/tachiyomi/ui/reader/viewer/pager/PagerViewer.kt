@@ -28,7 +28,7 @@ import kotlin.math.min
 @Suppress("LeakingThis")
 abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
 
-    private val scope = MainScope()
+    val scope = MainScope()
 
     /**
      * View pager used by this viewer. It's abstract to implement L2R, R2L and vertical pagers on
@@ -167,7 +167,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     /**
      * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
      */
-    private fun onPageChange(position: Int) {
+    fun onPageChange(position: Int) {
         val page = adapter.joinedItems.getOrNull(position)
         if (page != null && currentPage != page) {
             val allowPreload = checkAllowPreload(page.first as? ReaderPage)
@@ -437,6 +437,10 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
 
     fun updateShifting(page: ReaderPage? = null) {
         adapter.pageToShift = page ?: adapter.joinedItems.getOrNull(pager.currentItem)?.first as? ReaderPage
+    }
+
+    fun splitDoublePages(currentPage: ReaderPage) {
+        adapter.splitDoublePages(currentPage)
     }
 
     fun getShiftedPage(): ReaderPage? = adapter.pageToShift

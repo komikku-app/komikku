@@ -8,9 +8,11 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.hasMissingChapters
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
+import kotlinx.coroutines.delay
 import kotlin.math.max
 
 /**
@@ -357,6 +359,26 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
             index = joinedItems.indexOfFirst { it.first == newerPage || it.second == newerPage }
         }
         viewer.pager.setCurrentItem(index, false)
+    }
+
+    fun splitDoublePages(current: ReaderPage) {
+        val oldCurrent = joinedItems.getOrNull(viewer.pager.currentItem)
+        setJoinedItems(
+            oldCurrent?.second == current ||
+                (current.index + 1) < (
+                (
+                    oldCurrent?.second
+                        ?: oldCurrent?.first
+                    ) as? ReaderPage
+                )?.index ?: 0
+        )
+
+        // The listener may be removed when we split a page, so the ui may not have updated properly
+        // This case usually happens when we load a new chapter and the first 2 pages need to split og
+        viewer.scope.launchUI {
+            delay(100)
+            viewer.onPageChange(viewer.pager.currentItem)
+        }
     }
     // SY <--
 }
