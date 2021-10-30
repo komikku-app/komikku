@@ -381,8 +381,6 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
 
     override fun onResume() {
         super.onResume()
-        syncActivityViewWithController()
-
         checkForUpdates()
     }
 
