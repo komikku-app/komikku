@@ -39,16 +39,18 @@ class ReaderGeneralSettings @JvmOverloads constructor(context: Context, attrs: A
         binding.backgroundColor.bindToIntPreference(preferences.readerTheme(), R.array.reader_themes_values)
         binding.showPageNumber.bindToPreference(preferences.showPageNumber())
         binding.fullscreen.bindToPreference(preferences.fullscreen())
+        preferences.fullscreen()
+            .asImmediateFlow {
+                // If the preference is explicitly disabled, that means the setting was configured since there is a cutout
+                binding.cutoutShort.isVisible = it && ((context as ReaderActivity).hasCutout || !preferences.cutoutShort().get())
+                binding.cutoutShort.bindToPreference(preferences.cutoutShort())
+            }
+            .launchIn((context as ReaderActivity).lifecycleScope)
+
         binding.keepscreen.bindToPreference(preferences.keepScreenOn())
         binding.longTap.bindToPreference(preferences.readWithLongTap())
         binding.alwaysShowChapterTransition.bindToPreference(preferences.alwaysShowChapterTransition())
         // binding.pageTransitions.bindToPreference(preferences.pageTransitions())
-
-        // If the preference is explicitly disabled, that means the setting was configured since there is a cutout
-        if ((context as ReaderActivity).hasCutout || !preferences.cutoutShort().get()) {
-            binding.cutoutShort.isVisible = true
-            binding.cutoutShort.bindToPreference(preferences.cutoutShort())
-        }
 
         // SY -->
         binding.forceHorzSeekbar.bindToPreference(preferences.forceHorizontalSeekbar())

@@ -139,6 +139,7 @@ class SettingsReaderController : SettingsController() {
                     key = Keys.cutoutShort
                     titleRes = R.string.pref_cutout_short
                     defaultValue = true
+                    preferences.fullscreen().asImmediateFlow { isVisible = it }.launchIn(viewScope)
                 }
             }
 
