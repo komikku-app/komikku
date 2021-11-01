@@ -70,14 +70,6 @@ class ExtensionPreferencesController(bundle: Bundle? = null) :
 
         val themedContext by lazy { getPreferenceThemeContext() }
         val manager = PreferenceManager(themedContext)
-        // TODO
-        val dataStore = SharedPreferencesDataStore(/*if (source is HttpSource) {
-            source.preferences
-        } else {*/
-            context.getSharedPreferences("source_${source.id}", Context.MODE_PRIVATE)
-            /*}*/
-        )
-        manager.preferenceDataStore = dataStore
         manager.onDisplayPreferenceDialogListener = this
         val screen = manager.createPreferenceScreen(themedContext)
         preferenceScreen = screen
@@ -87,6 +79,14 @@ class ExtensionPreferencesController(bundle: Bundle? = null) :
         for (source in extension.sources) {
             if (source is ConfigurableSource) {
                 try {
+                    // TODO
+                    val dataStore = SharedPreferencesDataStore(/*if (source is HttpSource) {
+                        source.preferences
+                        } else {*/
+                        context.getSharedPreferences("source_${source.id}", Context.MODE_PRIVATE)
+                        /*}*/
+                    )
+                    manager.preferenceDataStore = dataStore
                     addPreferencesForSource(screen, source, multiSource)
                 } catch (e: AbstractMethodError) {
                     Timber.e("Source did not implement [addPreferencesForSource]: ${source.name}")
