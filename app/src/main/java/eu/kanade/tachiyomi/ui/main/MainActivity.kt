@@ -78,9 +78,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
-import java.util.Date
 import java.util.LinkedList
-import java.util.concurrent.TimeUnit
 
 class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
 
