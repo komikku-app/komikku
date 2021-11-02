@@ -138,11 +138,8 @@ class SourceFilterSheet(
 
         // EXH -->
         fun setSavedSearches(searches: List<EXHSavedSearch>) {
-            val savedSearchesChips = getSavedSearchesChips(searches)
-            savedSearchesAdapter.chips = savedSearchesChips
-            recycler.post {
-                (recycler.findViewHolderForAdapterPosition(0) as? SavedSearchesAdapter.SavedSearchesViewHolder)?.bind(savedSearchesChips)
-            }
+            savedSearchesAdapter.chips = getSavedSearchesChips(searches)
+            savedSearchesAdapter.notifyItemChanged(0)
         }
 
         private fun getSavedSearchesChips(searches: List<EXHSavedSearch>): List<Chip> {
