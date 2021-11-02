@@ -27,6 +27,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.LibraryControllerBinding
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.base.controller.RootController
@@ -72,7 +73,8 @@ import java.util.concurrent.TimeUnit
 
 class LibraryController(
     bundle: Bundle? = null,
-    private val preferences: PreferencesHelper = Injekt.get()
+    private val preferences: PreferencesHelper = Injekt.get(),
+    private val trackManager: TrackManager = Injekt.get()
 ) : SearchableNucleusController<LibraryControllerBinding, LibraryPresenter>(bundle),
     RootController,
     TabbedController,
@@ -537,7 +539,7 @@ class LibraryController(
                     it.source == PERV_EDEN_EN_SOURCE_ID ||
                     it.source == PERV_EDEN_IT_SOURCE_ID
             }
-            binding.actionToolbar.findItem(R.id.action_push_to_mdlist)?.isVisible = selectedMangas.any {
+            binding.actionToolbar.findItem(R.id.action_push_to_mdlist)?.isVisible = trackManager.mdList.isLogged && selectedMangas.any {
                 it.source in mangaDexSourceIds
             }
             // SY <--
