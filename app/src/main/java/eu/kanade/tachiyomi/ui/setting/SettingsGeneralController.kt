@@ -37,7 +37,7 @@ class SettingsGeneralController : SettingsController() {
         switchPreference {
             key = Keys.showUpdatesNavBadge
             titleRes = R.string.pref_library_update_show_tab_badge
-            defaultValue = true
+            defaultValue = false
         }
         switchPreference {
             key = Keys.confirmExit
