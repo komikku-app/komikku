@@ -91,9 +91,9 @@ class MigrationProcessAdapter(
         if (items.size == 1) {
             item.manga.migrationStatus = MigrationStatus.MANGA_NOT_FOUND
             item.manga.migrationJob.cancel()
-            item.manga.searchResult.initialize(null)
+            item.manga.searchResult.set(null)
             sourceFinished()
-            notifyDataSetChanged()
+            notifyItemChanged(position)
             return
         }
         menuItemListener.removeManga(item)
