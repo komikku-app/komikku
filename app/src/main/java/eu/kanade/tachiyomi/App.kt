@@ -46,6 +46,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.ui.security.SecureActivityDelegate
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
+import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.notification
 import exh.debug.DebugToggles
 import exh.log.CrashlyticsPrinter
@@ -180,8 +181,13 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
     }
 
     protected open fun setupNotificationChannels() {
-        Notifications.createChannels(this)
+        try {
+            Notifications.createChannels(this)
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Failed to modify notification channels" }
+        }
     }
+
 
     // EXH
     private fun setupExhLogging() {
