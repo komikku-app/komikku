@@ -7,7 +7,7 @@ import coil.clear
 import coil.load
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.databinding.ExtensionCardItemBinding
+import eu.kanade.tachiyomi.databinding.ExtensionItemBinding
 import eu.kanade.tachiyomi.extension.api.REPO_URL_PREFIX
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
@@ -17,7 +17,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     FlexibleViewHolder(view, adapter) {
 
-    private val binding = ExtensionCardItemBinding.bind(view)
+    private val binding = ExtensionItemBinding.bind(view)
 
     init {
         binding.extButton.setOnClickListener {
@@ -31,7 +31,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
     fun bind(item: ExtensionItem) {
         val extension = item.extension
 
-        binding.extTitle.text = extension.name
+        binding.name.text = extension.name
         binding.version.text = extension.versionName
         binding.lang.text = LocaleHelper.getSourceDisplayName(extension.lang, itemView.context)
         binding.warning.text = when {
@@ -44,11 +44,11 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             // SY <--
         }.uppercase()
 
-        binding.image.clear()
+        binding.icon.clear()
         if (extension is Extension.Available) {
-            binding.image.load(extension.iconUrl)
+            binding.icon.load(extension.iconUrl)
         } else {
-            extension.getApplicationIcon(itemView.context)?.let { binding.image.setImageDrawable(it) }
+            extension.getApplicationIcon(itemView.context)?.let { binding.icon.setImageDrawable(it) }
         }
         bindButtons(item)
     }
