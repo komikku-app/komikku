@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -102,8 +101,6 @@ class SourceFilterSheet(
 
         var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
 
-        val adapters = mutableListOf<RecyclerView.Adapter<*>>()
-
         private val savedSearchesAdapter = SavedSearchesAdapter(getSavedSearchesChips(searches))
         // SY <--
 
@@ -118,13 +115,16 @@ class SourceFilterSheet(
 
         init {
             // SY -->
-            val mainSource = source?.getMainSource<BrowseSourceFilterHeader>()
-            if (mainSource != null && controller != null) {
-                adapters += mainSource.getFilterHeader(controller) { dismissSheet?.invoke() }
-            }
-            adapters += savedSearchesAdapter
-            adapters += adapter
-            recycler.adapter = ConcatAdapter(adapters)
+            recycler.adapter = ConcatAdapter(
+                listOfNotNull(
+                    controller?.let {
+                        source?.getMainSource<BrowseSourceFilterHeader>()
+                            ?.getFilterHeader(it) { dismissSheet?.invoke() }
+                    },
+                    savedSearchesAdapter,
+                    adapter
+                )
+            )
             // SY <--
             recycler.setHasFixedSize(true)
             (binding.root.getChildAt(1) as ViewGroup).addView(recycler)
