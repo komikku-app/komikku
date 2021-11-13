@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 import android.view.MenuItem
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
@@ -108,17 +109,17 @@ class MigrationProcessAdapter(
         manga: Manga,
         replace: Boolean
     ) {
-        if (controller.config == null) return
+        controller.config ?: return
         val flags = preferences.migrateFlags().get()
         // Update chapters read
         if (MigrationFlags.hasChapters(flags)) {
             val prevMangaChapters = db.getChapters(prevManga).executeAsBlocking()
             val maxChapterRead =
-                prevMangaChapters.filter { it.read }.maxOfOrNull { it.chapter_number }
+                prevMangaChapters.filter(Chapter::read).maxOfOrNull(Chapter::chapter_number)
             val dbChapters = db.getChapters(manga).executeAsBlocking()
             val prevHistoryList = db.getHistoryByMangaId(prevManga.id!!).executeAsBlocking()
             val historyList = mutableListOf<History>()
-            for (chapter in dbChapters) {
+            dbChapters.forEach { chapter ->
                 if (chapter.isRecognizedNumber) {
                     val prevChapter =
                         prevMangaChapters.find { it.isRecognizedNumber && it.chapter_number == chapter.chapter_number }

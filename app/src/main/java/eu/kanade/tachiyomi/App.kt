@@ -61,6 +61,7 @@ import exh.util.days
 import io.realm.Realm
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import logcat.LogPriority
 import logcat.LogcatLogger
 import org.conscrypt.Conscrypt
 import uy.kohesive.injekt.Injekt
@@ -187,7 +188,6 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
             logcat(LogPriority.ERROR, e) { "Failed to modify notification channels" }
         }
     }
-
 
     // EXH
     private fun setupExhLogging() {
