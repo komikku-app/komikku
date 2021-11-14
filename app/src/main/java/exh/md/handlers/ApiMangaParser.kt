@@ -57,7 +57,7 @@ class ApiMangaParser(
             try {
                 val mangaAttributesDto = mangaDto.data.attributes
                 mdUuid = mangaDto.data.id
-                title = MdUtil.cleanString(mangaAttributesDto.title.asMdMap().let { it[lang] ?: it["en"].orEmpty() })
+                title = MdUtil.cleanString(MdUtil.getFromLangMap(mangaAttributesDto.title.asMdMap(), lang, mangaAttributesDto.originalLanguage))
                 altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
                 val mangaRelationshipsDto = mangaDto.data.relationships
@@ -69,7 +69,7 @@ class ApiMangaParser(
                         cover = MdUtil.cdnCoverUrl(mangaDto.data.id, coverFileName)
                     }
 
-                description = MdUtil.cleanDescription(MdUtil.getTitle(mangaAttributesDto.description.asMdMap(), lang, mangaAttributesDto.originalLanguage))
+                description = MdUtil.cleanDescription(MdUtil.getFromLangMap(mangaAttributesDto.description.asMdMap(), lang, mangaAttributesDto.originalLanguage))
 
                 authors = mangaRelationshipsDto.filter { relationshipDto ->
                     relationshipDto.type.equals(MdConstants.Types.author, true)

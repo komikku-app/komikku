@@ -265,7 +265,7 @@ class MdUtil {
         fun createMangaEntry(json: MangaDataDto, lang: String): MangaInfo {
             return MangaInfo(
                 key = buildMangaUrl(json.id),
-                title = cleanString(getTitle(json.attributes.title.asMdMap(), lang, json.attributes.originalLanguage)),
+                title = cleanString(getFromLangMap(json.attributes.title.asMdMap(), lang, json.attributes.originalLanguage)),
                 cover = json.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
@@ -276,10 +276,10 @@ class MdUtil {
             )
         }
 
-        fun getTitle(titleMap: Map<String, String?>, currentLang: String, originalLanguage: String): String {
-            return titleMap[currentLang] ?: titleMap["en"] ?: titleMap[originalLanguage].let {
+        fun getFromLangMap(langMap: Map<String, String?>, currentLang: String, originalLanguage: String): String {
+            return langMap[currentLang] ?: langMap["en"] ?: langMap[originalLanguage].let {
                 if (it == null && originalLanguage == "ja") {
-                    titleMap["jp"]
+                    langMap["jp"]
                 } else {
                     it
                 }.orEmpty()
