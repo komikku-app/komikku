@@ -24,7 +24,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:layout_gravity="center_vertical"
-        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:textAppearance="?attr/textAppearanceTitleSmall"
         tools:text="Title"/>
 
     <ImageView

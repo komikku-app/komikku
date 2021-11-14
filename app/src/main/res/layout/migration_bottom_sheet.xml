@@ -27,7 +27,7 @@
             android:layout_marginStart="6dp"
             android:layout_marginTop="8dp"
             android:text="@string/data_to_include_in_migration"
-            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -87,7 +87,7 @@
             android:layout_marginStart="6dp"
             android:layout_marginTop="8dp"
             android:text="@string/action_settings"
-            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
             app:layout_constraintStart_toStartOf="@+id/migration_data_scrollView"
             app:layout_constraintTop_toBottomOf="@+id/migration_data_scrollView" />
 

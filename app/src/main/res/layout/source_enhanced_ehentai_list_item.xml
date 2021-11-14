@@ -44,7 +44,7 @@
                 android:paddingEnd="3dp"
                 android:paddingBottom="1dp"
                 android:text="@string/in_library"
-                android:textAppearance="?attr/textAppearanceCaption"
+                android:textAppearance="?attr/textAppearanceBodySmall"
                 android:textColor="?attr/colorOnSecondary"
                 android:visibility="gone"
                 tools:visibility="visible" />
@@ -69,7 +69,7 @@
         android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="2"
-        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:textAppearance="?attr/textAppearanceTitleSmall"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/card"
         app:layout_constraintTop_toTopOf="parent"
@@ -106,7 +106,7 @@
             android:paddingTop="4dp"
             android:paddingEnd="8dp"
             android:paddingBottom="4dp"
-            android:textAppearance="?attr/textAppearanceBody2" />
+            android:textAppearance="?attr/textAppearanceBodyMedium" />
 
     </com.google.android.material.card.MaterialCardView>
 

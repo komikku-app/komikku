@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:text="@string/searching_source"
-                android:textAppearance="?attr/textAppearanceHeadline6" />
+                android:textAppearance="?attr/textAppearanceTitleLarge" />
 
             <com.google.android.material.progressindicator.CircularProgressIndicator
                 android:id="@+id/intercept_progress"

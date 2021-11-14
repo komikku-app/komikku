@@ -58,7 +58,7 @@
                 android:paddingTop="1dp"
                 android:paddingEnd="3dp"
                 android:paddingBottom="1dp"
-                android:textAppearance="?attr/textAppearanceBody2"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textSize="12sp"
                 android:textColor="?attr/colorOnSecondary"
                 android:visibility="gone"
@@ -79,7 +79,7 @@
             android:shadowDy="0"
             android:shadowRadius="4"
             android:textColor="@color/md_white_1000"
-            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
             android:textSize="12sp"
             tools:text="Sample name" />
 
@@ -117,7 +117,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
             tools:layout_editor_absoluteY="57dp" />
 
         <TextView
@@ -126,7 +126,7 @@
             android:layout_height="wrap_content"
             android:clickable="false"
             android:textIsSelectable="false"
-            android:textAppearance="?attr/textAppearanceBody2"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?android:attr/textColorSecondary" />
 
     </LinearLayout>

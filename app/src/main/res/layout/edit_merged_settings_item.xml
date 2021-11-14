@@ -66,7 +66,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="2"
-                    android:textAppearance="?attr/textAppearanceSubtitle2"
+                    android:textAppearance="?attr/textAppearanceTitleSmall"
                     tools:text="Title" />
 
                 <TextView

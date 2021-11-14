@@ -19,7 +19,7 @@
         android:paddingTop="@dimen/chglib_material_keyline1"
         android:paddingBottom="@dimen/chglib_material_keyline1"
         android:textAllCaps="false"
-        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:textAppearance="?attr/textAppearanceTitleSmall"
         android:textColor="?attr/colorAccent" />
 
 </LinearLayout>
