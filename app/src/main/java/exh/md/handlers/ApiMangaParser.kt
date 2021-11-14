@@ -69,7 +69,7 @@ class ApiMangaParser(
                         cover = MdUtil.cdnCoverUrl(mangaDto.data.id, coverFileName)
                     }
 
-                description = MdUtil.cleanDescription(mangaAttributesDto.description.asMdMap().let { it[lang] ?: it["en"].orEmpty() })
+                description = MdUtil.cleanDescription(MdUtil.getTitle(mangaAttributesDto.description.asMdMap(), lang, mangaAttributesDto.originalLanguage))
 
                 authors = mangaRelationshipsDto.filter { relationshipDto ->
                     relationshipDto.type.equals(MdConstants.Types.author, true)

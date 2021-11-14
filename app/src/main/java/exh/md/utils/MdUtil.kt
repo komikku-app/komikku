@@ -277,7 +277,13 @@ class MdUtil {
         }
 
         fun getTitle(titleMap: Map<String, String?>, currentLang: String, originalLanguage: String): String {
-            return titleMap[currentLang] ?: titleMap["en"] ?: titleMap[originalLanguage].orEmpty()
+            return titleMap[currentLang] ?: titleMap["en"] ?: titleMap[originalLanguage].let {
+                if (it == null && originalLanguage == "ja") {
+                    titleMap["jp"]
+                } else {
+                    it
+                }.orEmpty()
+            }
         }
 
         fun cdnCoverUrl(dexId: String, fileName: String): String {
