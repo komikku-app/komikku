@@ -14,6 +14,7 @@ import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
 import exh.md.utils.mdListCall
 import exh.metadata.metadata.MangaDexSearchMetadata
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
@@ -27,7 +28,8 @@ class MangaHandler(
 ) {
     suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long, forceLatestCovers: Boolean): MangaInfo {
         val response = withIOContext { service.viewManga(MdUtil.getMangaId(manga.key)) }
-        return apiMangaParser.parseToManga(manga, response, sourceId)
+        val simpleChapters = withIOContext { getSimpleChapters(manga) }
+        return apiMangaParser.parseToManga(manga, response, simpleChapters, sourceId)
     }
 
     fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long, forceLatestCovers: Boolean): Observable<SManga> {
@@ -87,5 +89,18 @@ class MangaHandler(
         return withIOContext {
             apiMangaParser.chapterParseForMangaId(service.viewChapter(chapterId))
         }
+    }
+
+    private suspend fun getSimpleChapters(manga: MangaInfo): List<String> {
+        return runCatching { service.aggregateChapters(MdUtil.getMangaId(manga.key), lang) }
+            .onFailure {
+                if (it is CancellationException) throw it
+            }
+            .map { dto ->
+                dto.volumes.values
+                    .flatMap { it.chapters.values }
+                    .map { it.chapter }
+            }
+            .getOrDefault(emptyList())
     }
 }

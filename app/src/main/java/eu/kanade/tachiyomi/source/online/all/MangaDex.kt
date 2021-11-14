@@ -56,7 +56,7 @@ import kotlin.reflect.KClass
 @Suppress("OverridingDeprecatedMember")
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
-    MetadataSource<MangaDexSearchMetadata, MangaDto>,
+    MetadataSource<MangaDexSearchMetadata, Pair<MangaDto, List<String>>>,
     UrlImportableSource,
     FollowsSource,
     LoginSource,
@@ -193,8 +193,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return MangaDexDescriptionAdapter(controller)
     }
 
-    override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: MangaDto) {
-        apiMangaParser.parseIntoMetadata(metadata, input)
+    override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Pair<MangaDto, List<String>>) {
+        apiMangaParser.parseIntoMetadata(metadata, input.first, input.second)
     }
 
     // LoginSource methods

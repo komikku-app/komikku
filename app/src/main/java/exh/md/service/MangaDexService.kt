@@ -4,6 +4,7 @@ import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
+import exh.md.dto.AggregateDto
 import exh.md.dto.AtHomeDto
 import exh.md.dto.AtHomeImageReportDto
 import exh.md.dto.ChapterDto
@@ -56,6 +57,26 @@ class MangaDexService(
                         addQueryParameter("includes[]", MdConstants.Types.coverArt)
                         addQueryParameter("includes[]", MdConstants.Types.author)
                         addQueryParameter("includes[]", MdConstants.Types.artist)
+                    }
+                    .build()
+                    .toString(),
+                cache = CacheControl.FORCE_NETWORK
+            )
+        ).await().parseAs(MdUtil.jsonParser)
+    }
+
+    suspend fun aggregateChapters(
+        id: String,
+        translatedLanguage: String
+    ): AggregateDto {
+        return client.newCall(
+            GET(
+                MdApi.manga.toHttpUrl()
+                    .newBuilder()
+                    .apply {
+                        addPathSegment(id)
+                        addPathSegment("aggregate")
+                        addQueryParameter("translatedLanguage[]", translatedLanguage)
                     }
                     .build()
                     .toString(),
