@@ -7,21 +7,21 @@
         android:icon="@drawable/ic_label_24dp"
         android:title="@string/action_move_category"
         app:iconTint="?attr/colorOnToolbar"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_download_unread"
         android:icon="@drawable/ic_get_app_24dp"
         android:title="@string/action_download_unread"
         app:iconTint="?attr/colorOnToolbar"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_mark_as_read"
         android:icon="@drawable/ic_done_24dp"
         android:title="@string/action_mark_as_read"
         app:iconTint="?attr/colorOnToolbar"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_mark_as_unread"
@@ -35,7 +35,7 @@
         android:icon="@drawable/ic_delete_24dp"
         android:title="@string/action_delete"
         app:iconTint="?attr/colorOnToolbar"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_clean"
