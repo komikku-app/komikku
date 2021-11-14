@@ -8,6 +8,7 @@ import exh.source.EXH_SOURCE_ID
 import exh.source.PURURIN_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
 import exh.source.hitomiSourceIds
+import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
 import java.util.Locale
 
@@ -18,7 +19,15 @@ object SourceTagsUtil {
         tag: String? = null,
         fullTag: String? = null
     ): String? {
-        return if (sourceId == EXH_SOURCE_ID || sourceId == EH_SOURCE_ID || sourceId in nHentaiSourceIds || sourceId in hitomiSourceIds) {
+        return if (
+            sourceId == EXH_SOURCE_ID ||
+            sourceId == EH_SOURCE_ID ||
+            sourceId in nHentaiSourceIds ||
+            sourceId in hitomiSourceIds ||
+            sourceId in mangaDexSourceIds ||
+            sourceId == PURURIN_SOURCE_ID ||
+            sourceId == TSUMINO_SOURCE_ID
+        ) {
             val parsed = when {
                 fullTag != null -> parseTag(fullTag)
                 namespace != null && tag != null -> RaisedTag(namespace, tag, TAG_TYPE_DEFAULT)
@@ -28,27 +37,28 @@ object SourceTagsUtil {
                 when (sourceId) {
                     in hitomiSourceIds -> wrapTagHitomi(parsed.namespace, parsed.name.substringBefore('|').trim())
                     in nHentaiSourceIds -> wrapTagNHentai(parsed.namespace, parsed.name.substringBefore('|').trim())
+                    in mangaDexSourceIds -> parsed.name
                     PURURIN_SOURCE_ID -> parsed.name.substringBefore('|').trim()
-                    TSUMINO_SOURCE_ID -> parsed.name.substringBefore('|').trim()
+                    TSUMINO_SOURCE_ID -> wrapTagTsumino(parsed.namespace, parsed.name.substringBefore('|').trim())
                     else -> wrapTag(parsed.namespace, parsed.name.substringBefore('|').trim())
                 }
             } else null
         } else null
     }
 
-    private fun wrapTag(namespace: String, tag: String) = if (tag.contains(' ')) {
+    private fun wrapTag(namespace: String, tag: String) = if (tag.contains(spaceRegex)) {
         "$namespace:\"$tag$\""
     } else {
         "$namespace:$tag$"
     }
 
-    private fun wrapTagHitomi(namespace: String, tag: String) = if (tag.contains(' ')) {
+    private fun wrapTagHitomi(namespace: String, tag: String) = if (tag.contains(spaceRegex)) {
         "$namespace:$tag".replace("\\s".toRegex(), "_")
     } else {
         "$namespace:$tag"
     }
 
-    private fun wrapTagNHentai(namespace: String, tag: String) = if (tag.contains(' ')) {
+    private fun wrapTagNHentai(namespace: String, tag: String) = if (tag.contains(spaceRegex)) {
         if (namespace == "tag") {
             """"$tag""""
         } else {
@@ -56,6 +66,20 @@ object SourceTagsUtil {
         }
     } else {
         "$namespace:$tag"
+    }
+
+    private fun wrapTagTsumino(namespace: String, tag: String) = if (tag.contains(spaceRegex)) {
+        if (namespace == "tags") {
+            "\"${tag.replace(spaceRegex, "_")}\""
+        } else {
+            "\"$namespace: ${tag.replace(spaceRegex, "_")}\""
+        }
+    } else {
+        if (namespace == "tags") {
+            tag
+        } else {
+            "$namespace:$tag"
+        }
     }
 
     fun parseTag(tag: String) = RaisedTag(
@@ -68,7 +92,7 @@ object SourceTagsUtil {
         if (tag.startsWith("-")) TAG_TYPE_EXCLUDE else TAG_TYPE_DEFAULT
     )
 
-    const val TAG_TYPE_EXCLUDE = 69 // why not
+    private const val TAG_TYPE_EXCLUDE = 69 // why not
 
     enum class GenreColor(val color: Int) {
         DOUJINSHI_COLOR("#f44336"),
@@ -104,6 +128,8 @@ object SourceTagsUtil {
     }
 
     private const val TAG_TYPE_DEFAULT = 1
+
+    private val spaceRegex = "\\s".toRegex()
 }
 
 fun Manga.getRaisedTags(genres: List<String>? = getGenres()): List<RaisedTag>? = genres?.map {
