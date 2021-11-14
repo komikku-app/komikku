@@ -165,14 +165,10 @@ class ApiMangaParser(
     }
 
     fun chapterListParse(chapterListResponse: List<ChapterDataDto>, groupMap: Map<String, String>): List<ChapterInfo> {
-        val now = System.currentTimeMillis()
-
-        return chapterListResponse.asSequence()
+        return chapterListResponse
             .map {
                 mapChapter(it, groupMap)
-            }.filter {
-                it.dateUpload <= now
-            }.toList()
+            }
     }
 
     fun chapterParseForMangaId(chapterDto: ChapterDto): String? {

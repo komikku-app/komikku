@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
+import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -153,7 +154,18 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.getMangaFromChapterId(id)?.let { MdUtil.buildMangaUrl(it) }
     }
 
-    // HttpSource methods
+    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
+        val request = delegate.latestUpdatesRequest(page)
+        val url = request.url.newBuilder()
+            .removeAllQueryParameters("includeFutureUpdates")
+            .build()
+        return client.newCall(request.newBuilder().url(url).build())
+            .asObservableSuccess()
+            .map { response ->
+                delegate.latestUpdatesParse(response)
+            }
+    }
+
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return mangaHandler.fetchMangaDetailsObservable(manga, id, preferences.mangaDexForceLatestCovers().get())
     }
