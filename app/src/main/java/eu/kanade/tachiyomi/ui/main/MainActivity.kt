@@ -10,6 +10,7 @@ import android.os.Looper
 import android.view.Gravity
 import android.view.Menu
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.Toast
 import androidx.appcompat.view.ActionMode
 import androidx.core.animation.doOnEnd
@@ -30,6 +31,7 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.Router
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.navigation.NavigationBarView
+import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
@@ -126,6 +128,11 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         // Prevent splash screen showing up on configuration changes
         val splashScreen = if (savedInstanceState == null) installSplashScreen() else null
 
+        // Set up shared element transition and disable overlay so views don't show above system bars
+        window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+        setExitSharedElementCallback(MaterialContainerTransformSharedElementCallback())
+        window.sharedElementsUseOverlay = false
+
         super.onCreate(savedInstanceState)
 
         val didMigration = if (savedInstanceState == null) EXHMigrations.upgrade(preferences) else false
@@ -144,6 +151,7 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
         // Draw edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(window, false)
         binding.fabLayout.rootFab.applyInsetter {
+            ignoreVisibility(true)
             type(navigationBars = true) {
                 margin()
             }

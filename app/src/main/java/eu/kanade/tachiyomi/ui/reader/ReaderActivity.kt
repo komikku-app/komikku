@@ -22,7 +22,9 @@ import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MotionEvent
+import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
+import android.view.Window
 import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -42,6 +44,8 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.slider.Slider
+import com.google.android.material.transition.platform.MaterialContainerTransform
+import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -138,6 +142,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         private const val ENABLED_BUTTON_IMAGE_ALPHA = 255
         private const val DISABLED_BUTTON_IMAGE_ALPHA = 64
+
+        const val SHARED_ELEMENT_NAME = "reader_shared_element_root"
     }
 
     private val preferences: PreferencesHelper by injectLazy()
@@ -195,6 +201,17 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         applyAppTheme(preferences)
+
+        // Setup shared element transitions
+        window.requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
+        findViewById<View>(android.R.id.content).transitionName = SHARED_ELEMENT_NAME
+        setEnterSharedElementCallback(MaterialContainerTransformSharedElementCallback())
+        window.sharedElementEnterTransition = buildContainerTransform(true)
+        window.sharedElementReturnTransition = buildContainerTransform(false)
+
+        // Postpone custom transition until manga ready
+        postponeEnterTransition()
+
         super.onCreate(savedInstanceState)
 
         binding = ReaderActivityBinding.inflate(layoutInflater)
@@ -390,6 +407,12 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
         val handled = viewer?.handleGenericMotionEvent(event) ?: false
         return handled || super.dispatchGenericMotionEvent(event)
+    }
+
+    private fun buildContainerTransform(entering: Boolean): MaterialContainerTransform {
+        return MaterialContainerTransform(this, entering).apply {
+            addTarget(android.R.id.content)
+        }
     }
 
     /**
@@ -1122,6 +1145,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
             }
         }
         binding.readerContainer.addView(loadingIndicator)
+
+        startPostponedEnterTransition()
     }
 
     private fun showReadingModeToast(mode: Int) {
