@@ -35,6 +35,7 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
@@ -79,6 +80,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
+import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
 
 class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
@@ -101,6 +103,8 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
      * App bar lift state for backstack
      */
     private val backstackLiftState = mutableMapOf<String, Boolean>()
+
+    private val chapterCache: ChapterCache by injectLazy()
 
     // To be checked by splash screen. If true then splash screen will be removed.
     var ready = false
@@ -518,7 +522,10 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
             // Exit confirmation (resets after 2 seconds)
             lifecycleScope.launchUI { resetExitConfirmation() }
         } else if (backstackSize == 1 || !router.handleBack()) {
-            // Regular back
+            // Regular back (i.e. closing the app)
+            if (preferences.autoClearChapterCache()) {
+                chapterCache.clear()
+            }
             super.onBackPressed()
         }
     }
