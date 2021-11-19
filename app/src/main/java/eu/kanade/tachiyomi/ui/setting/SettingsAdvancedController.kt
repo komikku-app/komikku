@@ -1,10 +1,8 @@
 package eu.kanade.tachiyomi.ui.setting
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -29,6 +27,7 @@ import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.openInBrowser
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.setting.database.ClearDatabaseController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -152,9 +151,7 @@ class SettingsAdvancedController : SettingsController() {
                 summaryRes = R.string.pref_clear_database_summary
 
                 onClick {
-                    val ctrl = ClearDatabaseDialogController()
-                    ctrl.targetController = this@SettingsAdvancedController
-                    ctrl.showDialog(router)
+                    router.pushController(ClearDatabaseController().withFadeTransaction())
                 }
             }
         }
@@ -499,44 +496,6 @@ class SettingsAdvancedController : SettingsController() {
                 withUIContext { activity?.toast(R.string.cache_delete_error) }
             }
         }
-    }
-
-    class ClearDatabaseDialogController : DialogController() {
-        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            val item = arrayOf(
-                activity!!.getString(R.string.clear_database_confirmation),
-                activity!!.getString(R.string.clear_db_exclude_read)
-            )
-            val selected = booleanArrayOf(true, true)
-            return MaterialAlertDialogBuilder(activity!!)
-                // .setMessage(R.string.clear_database_confirmation)
-                // SY -->
-                .setMultiChoiceItems(item, selected) { _, which, checked ->
-                    if (which == 0) {
-                        (dialog as AlertDialog).listView.setItemChecked(which, true)
-                    } else {
-                        selected[which] = checked
-                    }
-                }
-                // SY <--
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    (targetController as? SettingsAdvancedController)?.clearDatabase(selected.last())
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .create()
-        }
-    }
-
-    private fun clearDatabase(keepReadManga: Boolean) {
-        // SY -->
-        if (keepReadManga) {
-            db.deleteMangasNotInLibraryAndNotRead().executeAsBlocking()
-        } else {
-            db.deleteMangasNotInLibrary().executeAsBlocking()
-        }
-        // SY <--
-        db.deleteHistoryNoLastRead().executeAsBlocking()
-        activity?.toast(R.string.clear_database_completed)
     }
 
     private companion object {
