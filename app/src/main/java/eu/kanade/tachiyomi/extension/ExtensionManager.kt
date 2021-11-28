@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.lang.launchNow
+import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.log.xLogD
 import exh.source.BlacklistedSources
@@ -24,6 +25,7 @@ import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.async
+import logcat.LogPriority
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -198,7 +200,8 @@ class ExtensionManager(
             val extensions: List<Extension.Available> = try {
                 api.findExtensions()
             } catch (e: Exception) {
-                context.toast(e.message)
+                logcat(LogPriority.ERROR, e)
+                context.toast(R.string.extension_api_error)
                 emptyList()
             }
 
