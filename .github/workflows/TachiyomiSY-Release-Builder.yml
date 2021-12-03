@@ -52,12 +52,9 @@ jobs:
           write-mode: overwrite # optional, default is preserve
 
       - name: Build app
-        uses: eskatos/gradle-command-action@v1
+        uses: gradle/gradle-command-action@v2
         with:
           arguments: assembleStandardRelease --stacktrace
-          wrapper-cache-enabled: true
-          dependencies-cache-enabled: true
-          configuration-cache-enabled: true
 
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
