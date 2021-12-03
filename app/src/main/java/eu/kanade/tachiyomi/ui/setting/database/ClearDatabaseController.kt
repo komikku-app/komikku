@@ -154,7 +154,7 @@ class ClearDatabaseController :
             )
             val selected = booleanArrayOf(true, true)
             return MaterialAlertDialogBuilder(activity!!)
-                //.setMessage(R.string.clear_database_confirmation)
+                // .setMessage(R.string.clear_database_confirmation)
                 // SY -->
                 .setMultiChoiceItems(item, selected) { _, which, checked ->
                     if (which == 0) {
@@ -173,7 +173,7 @@ class ClearDatabaseController :
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun clearDatabaseForSelectedSources(/* SY --> */ keepReadManga: Boolean/* SY <-- */ ) {
+    private fun clearDatabaseForSelectedSources(/* SY --> */ keepReadManga: Boolean/* SY <-- */) {
         val adapter = adapter ?: return
         val selectedSourceIds = adapter.selectedPositions.mapNotNull { position ->
             adapter.getItem(position)?.source?.id

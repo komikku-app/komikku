@@ -183,13 +183,13 @@ open class IndexPresenter(
      * @return an observable of the manga to initialize
      */
     private fun getMangaDetailsObservable(manga: Manga, source: Source, isLatest: Boolean): Observable<Pair<Manga, Boolean>> {
-        return runAsObservable({
+        return runAsObservable {
             val networkManga = source.getMangaDetails(manga.toMangaInfo())
             manga.copyFrom(networkManga.toSManga())
             manga.initialized = true
             db.insertManga(manga).executeAsBlocking()
             manga to isLatest
-        })
+        }
             .onErrorResumeNext { Observable.just(manga to isLatest) }
     }
 

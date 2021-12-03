@@ -45,7 +45,7 @@ class MigrationMangaPresenter(
     fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean) {
         val source = sourceManager.get(manga.source) ?: return
 
-        Observable.defer { runAsObservable({ source.getChapterList(manga.toMangaInfo()).map { it.toSChapter() } }) }.onErrorReturn { emptyList() }
+        Observable.defer { runAsObservable { source.getChapterList(manga.toMangaInfo()).map { it.toSChapter() } } }.onErrorReturn { emptyList() }
             .doOnNext { migrateMangaInternal(source, it, prevManga, manga, replace) }
             .onErrorReturn { emptyList() }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

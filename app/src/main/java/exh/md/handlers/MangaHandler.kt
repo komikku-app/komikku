@@ -33,14 +33,14 @@ class MangaHandler(
     }
 
     fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long, forceLatestCovers: Boolean): Observable<SManga> {
-        return runAsObservable({
+        return runAsObservable {
             getMangaDetails(manga.toMangaInfo(), sourceId, forceLatestCovers).toSManga()
-        })
+        }
     }
 
-    fun fetchChapterListObservable(manga: SManga): Observable<List<SChapter>> = runAsObservable({
+    fun fetchChapterListObservable(manga: SManga): Observable<List<SChapter>> = runAsObservable {
         getChapterList(manga.toMangaInfo()).map { it.toSChapter() }
-    })
+    }
 
     suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
         return withIOContext {

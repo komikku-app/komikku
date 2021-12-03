@@ -131,11 +131,11 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
             val mdex = mdex ?: throw MangaDexNotFoundException()
             mdex.fetchSearchManga(0, query, mdex.getFilterList())
                 .flatMap { page ->
-                    runAsObservable({
+                    runAsObservable {
                         page.mangas.map {
                             toTrackSearch(mdex.getMangaDetails(it.toMangaInfo()))
                         }
-                    })
+                    }
                 }
                 .awaitSingle()
         }

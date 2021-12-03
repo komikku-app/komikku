@@ -28,16 +28,16 @@ internal class ExtensionGithubApi {
                 .await()
                 .parseAs<List<ExtensionJsonObject>>()
                 .toExtensions() /* SY --> */ + preferences.extensionRepos()
-                    .get()
-                    .flatMap { repoPath ->
-			            val url = "$BASE_URL$repoPath/repo/"
-			            networkService.client
-			                .newCall(GET("${url}index.min.json"))
-			                .await()
-			                .parseAs<List<ExtensionJsonObject>>()
-			                .toExtensions(url)
-			        }
-			        // SY <--
+                .get()
+                .flatMap { repoPath ->
+                    val url = "$BASE_URL$repoPath/repo/"
+                    networkService.client
+                        .newCall(GET("${url}index.min.json"))
+                        .await()
+                        .parseAs<List<ExtensionJsonObject>>()
+                        .toExtensions(url)
+                }
+            // SY <--
 
             // Sanity check - a small number of extensions probably means something broke
             // with the repo generator

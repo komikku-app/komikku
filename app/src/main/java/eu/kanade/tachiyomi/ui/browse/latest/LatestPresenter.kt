@@ -173,13 +173,13 @@ open class LatestPresenter(
      * @return an observable of the manga to initialize
      */
     private fun getMangaDetailsObservable(manga: Manga, source: Source): Observable<Manga> {
-        return runAsObservable({
+        return runAsObservable {
             val networkManga = source.getMangaDetails(manga.toMangaInfo())
             manga.copyFrom(networkManga.toSManga())
             manga.initialized = true
             db.insertManga(manga).executeAsBlocking()
             manga
-        })
+        }
             .onErrorResumeNext { Observable.just(manga) }
     }
 

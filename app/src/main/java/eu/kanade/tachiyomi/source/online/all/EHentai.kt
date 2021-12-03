@@ -365,9 +365,9 @@ class EHentai(
 
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use getChapterList instead")
-    fun fetchChapterList(manga: SManga, throttleFunc: suspend () -> Unit) = runAsObservable({
+    fun fetchChapterList(manga: SManga, throttleFunc: suspend () -> Unit) = runAsObservable {
         getChapterList(manga.toMangaInfo(), throttleFunc).map { it.toSChapter() }
-    })
+    }
 
     override fun fetchPageList(chapter: SChapter) = fetchChapterPage(chapter, baseUrl + chapter.url)
         .map {

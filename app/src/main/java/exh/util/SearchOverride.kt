@@ -18,9 +18,9 @@ private val galleryAdder by lazy {
 fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: String, fail: () -> Observable<MangasPage>): Observable<MangasPage> =
     when {
         query.startsWith("http://") || query.startsWith("https://") -> {
-            runAsObservable({
+            runAsObservable {
                 galleryAdder.addGallery(context, query, false, this@urlImportFetchSearchManga)
-            })
+            }
                 .map { res ->
                     MangasPage(
                         if (res is GalleryAddEvent.Success) {

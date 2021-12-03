@@ -52,9 +52,9 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      */
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use the MangaInfo variant")
-    fun parseToManga(manga: SManga, input: I): Completable = runAsObservable({
+    fun parseToManga(manga: SManga, input: I): Completable = runAsObservable {
         parseToManga(manga.toMangaInfo(), input)
-    }).toCompletable()
+    }.toCompletable()
 
     suspend fun parseToManga(manga: MangaInfo, input: I): MangaInfo {
         val mangaId = manga.id()
@@ -82,9 +82,9 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("use fetchOrLoadMetadata made for MangaInfo")
     fun getOrLoadMetadata(mangaId: Long?, inputProducer: () -> Single<I>): Single<M> =
-        runAsObservable({
+        runAsObservable {
             fetchOrLoadMetadata(mangaId) { inputProducer().toObservable().awaitSingle() }
-        }).toSingle()
+        }.toSingle()
 
     /**
      * Try to first get the metadata from the DB. If the metadata is not in the DB, calls the input
