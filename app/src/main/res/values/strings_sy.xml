@@ -177,7 +177,6 @@
     <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the manga page</string>
     
     <!-- Appearance Settings -->
-    <string name="theme_pure_red">Pure Red</string>
     <string name="pref_category_navbar">Navbar</string>
     <string name="pref_hide_updates_button">Show updates in the nav</string>
     <string name="pref_hide_history_button">Show history in the nav</string>

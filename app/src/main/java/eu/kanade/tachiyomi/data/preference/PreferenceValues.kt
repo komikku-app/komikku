@@ -32,14 +32,14 @@ object PreferenceValues {
         TEALTURQUOISE(R.string.theme_tealturquoise),
         YINYANG(R.string.theme_yinyang),
 
-        // SY -->
-        PURE_RED(R.string.theme_pure_red),
-        // SY <--
-
         // Deprecated
         DARK_BLUE(null),
         HOT_PINK(null),
         BLUE(null),
+
+        // SY -->
+        PURE_RED(null),
+        // SY <--
     }
 
     enum class TappingInvertMode(val shouldInvertHorizontal: Boolean = false, val shouldInvertVertical: Boolean = false) {

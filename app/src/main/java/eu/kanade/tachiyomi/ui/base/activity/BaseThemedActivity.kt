@@ -55,9 +55,6 @@ abstract class BaseThemedActivity : AppCompatActivity() {
                 PreferenceValues.AppTheme.YOTSUBA -> {
                     resIds += R.style.Theme_Tachiyomi_Yotsuba
                 }
-                PreferenceValues.AppTheme.PURE_RED -> {
-                    resIds += R.style.Theme_Tachiyomi_PureRed
-                }
                 else -> {
                     resIds += R.style.Theme_Tachiyomi
                 }

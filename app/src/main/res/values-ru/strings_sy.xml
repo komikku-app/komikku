@@ -167,7 +167,6 @@
     <string name="log_extreme_desc">режим проверки сети</string>
 
     <!-- General Settings -->
-    <string name="theme_pure_red">Чисто красный</string>
     <string name="pref_category_navbar">Панель навигации</string>
     <string name="toggle_expand_search_filters">Разверните все фильтры поиска по умолчанию</string>
     <string name="auto_solve_captchas">Автоматическое решение капчи</string>

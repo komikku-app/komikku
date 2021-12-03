@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Red Theme -->
-    <color name="red">#FF0000</color>
-    <color name="dark_red">#880000</color>
-    <color name="dark_red_6">#0F880000</color>
-</resources>
