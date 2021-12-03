@@ -229,6 +229,7 @@ class FilterHandler {
                 is TagExclusionMode -> {
                     queryMap["excludedTagsMode"] = filter.values[filter.state].uppercase(Locale.US)
                 }
+                else -> Unit
             }
         }
         if (originalLanguageList.isNotEmpty()) {

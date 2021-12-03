@@ -167,11 +167,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return mangaHandler.fetchMangaDetailsObservable(manga, id, preferences.mangaDexForceLatestCovers().get())
+        return mangaHandler.fetchMangaDetailsObservable(manga, id)
     }
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        return mangaHandler.getMangaDetails(manga, id, preferences.mangaDexForceLatestCovers().get())
+        return mangaHandler.getMangaDetails(manga, id)
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {

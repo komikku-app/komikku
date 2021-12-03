@@ -26,15 +26,15 @@ class MangaHandler(
     private val apiMangaParser: ApiMangaParser,
     private val followsHandler: FollowsHandler
 ) {
-    suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long, forceLatestCovers: Boolean): MangaInfo {
+    suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
         val response = withIOContext { service.viewManga(MdUtil.getMangaId(manga.key)) }
         val simpleChapters = withIOContext { getSimpleChapters(manga) }
         return apiMangaParser.parseToManga(manga, response, simpleChapters, sourceId)
     }
 
-    fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long, forceLatestCovers: Boolean): Observable<SManga> {
+    fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long): Observable<SManga> {
         return runAsObservable {
-            getMangaDetails(manga.toMangaInfo(), sourceId, forceLatestCovers).toSManga()
+            getMangaDetails(manga.toMangaInfo(), sourceId).toSManga()
         }
     }
 

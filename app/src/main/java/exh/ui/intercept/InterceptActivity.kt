@@ -88,6 +88,8 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
                             .setOnDismissListener { onBackPressed() }
                             .show()
                     }
+                    InterceptResult.Idle -> Unit
+                    InterceptResult.Loading -> Unit
                 }
             }
             .launchIn(lifecycleScope)
