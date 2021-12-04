@@ -307,7 +307,16 @@ class SettingsAdvancedController : SettingsController() {
             }
 
             switchPreference {
-                titleRes = R.string.ignore_jpeg
+                titleRes = R.string.data_saver_downloader
+                key = Keys.dataSaverDownloaer
+                defaultValue = true
+
+                preferences.dataSaver().asImmediateFlow { isVisible = it }
+                    .launchIn(viewScope)
+            }
+
+            switchPreference {
+                titleRes = R.string.data_saver_ignore_jpeg
                 key = Keys.ignoreJpeg
                 defaultValue = false
 
@@ -316,7 +325,7 @@ class SettingsAdvancedController : SettingsController() {
             }
 
             switchPreference {
-                titleRes = R.string.ignore_gif
+                titleRes = R.string.data_saver_ignore_gif
                 key = Keys.ignoreGif
                 defaultValue = true
 

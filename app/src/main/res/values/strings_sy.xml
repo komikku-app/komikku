@@ -148,8 +148,9 @@
     </plurals>
     <string name="data_saver">Data Saver</string>
     <string name="data_saver_summary">Compress images before downloading or loading in reader, requires a Bandwidth Hero Proxy server</string>
-    <string name="ignore_jpeg">Ignore Jpeg Images</string>
-    <string name="ignore_gif">Ignore Gif Animations</string>
+    <string name="data_saver_downloader">Use data saver in the downloader</string>
+    <string name="data_saver_ignore_jpeg">Ignore Jpeg Images</string>
+    <string name="data_saver_ignore_gif">Ignore Gif Animations</string>
     <string name="data_saver_image_quality">Image Quality</string>
     <string name="data_saver_image_quality_summary">Higher values mean that a higher percentage of the image quality is saved, but it also means the file size is larger, 80 percent is a good median between file size and image quality</string>
     <string name="data_saver_image_format">Compress to Jpeg</string>
@@ -329,6 +330,8 @@
     <!-- Browse -->
     <!-- Sources Tab -->
     <string name="find_in_another_source">Find in another source</string>
+    <string name="data_saver_exclude">Exclude from data saver</string>
+    <string name="data_saver_stop_exclude">Stop excluding from data saver</string>
 
     <!-- Smart Search -->
     <string name="searching_source">Searching source…</string>

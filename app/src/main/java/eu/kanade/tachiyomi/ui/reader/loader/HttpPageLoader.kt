@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.source.isEhBasedSource
+import exh.util.DataSaver
 import logcat.LogPriority
 import rx.Completable
 import rx.Observable
@@ -45,6 +46,10 @@ class HttpPageLoader(
     private val subscriptions = CompositeSubscription()
 
     private val preloadSize = /* SY --> */ preferences.preloadSize().get() /* SY <-- */
+
+    // SY -->
+    private val dataSaver = DataSaver(source, preferences)
+    // SY <--
 
     init {
         // EXH -->
@@ -270,8 +275,17 @@ class HttpPageLoader(
      */
     private fun HttpSource.cacheImage(page: ReaderPage): Observable<ReaderPage> {
         page.status = Page.DOWNLOAD_IMAGE
+        // SY -->
+        val imageUrl = page.imageUrl!!
+        page.imageUrl = dataSaver.compress(imageUrl)
+        // SY <--
         return fetchImage(page)
-            .doOnNext { chapterCache.putImageToCache(page.imageUrl!!, it) }
+            .doOnNext {
+                // SY -->
+                page.imageUrl = imageUrl
+                // SY <--
+                chapterCache.putImageToCache(page.imageUrl!!, it)
+            }
             .map { page }
     }
 

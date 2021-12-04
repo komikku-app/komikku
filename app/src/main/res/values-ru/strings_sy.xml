@@ -145,8 +145,8 @@
     </plurals>
     <string name="data_saver">Экономия данных</string>
     <string name="data_saver_summary">Сжатие изображений перед скачиванием или загрузкой в Читалке требует наличия прокси-сервера Bandwidth Hero</string>
-    <string name="ignore_jpeg">Игнорировать изображения Jpeg</string>
-    <string name="ignore_gif">Игнорировать Gif-Анимацию</string>
+    <string name="data_saver_ignore_jpeg">Игнорировать изображения Jpeg</string>
+    <string name="data_saver_ignore_gif">Игнорировать Gif-Анимацию</string>
     <string name="data_saver_image_quality">Качество изображения</string>
     <string name="data_saver_image_quality_summary">Более высокие значения означают, что сохраняется более высокий процент качества изображения, но это также означает, что размер файла больше, 80 процентов-это хорошая промежуточная величина между размером файла и качеством изображения</string>
     <string name="data_saver_image_format">Сжатие в Jpeg</string>

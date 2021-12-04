@@ -28,6 +28,7 @@ import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
+import exh.util.DataSaver
 import kotlinx.coroutines.async
 import logcat.LogPriority
 import okhttp3.Response
@@ -319,6 +320,10 @@ class Downloader(
             Observable.just(download.pages!!)
         }
 
+        val dataSaver = if (preferences.dataSaverDownloader().get()) {
+            DataSaver(download.source, preferences)
+        } else DataSaver.NoOp
+
         pageListObservable
             .doOnNext { _ ->
                 // Delete all temporary (unfinished) files
@@ -333,7 +338,7 @@ class Downloader(
             .flatMap { download.source.fetchAllImageUrlsFromPageList(it) }
             // Start downloading images, consider we can have downloaded images already
             // Concurrently do 5 pages at a time
-            .flatMap({ page -> getOrDownloadImage(page, download, tmpDir) }, 5)
+            .flatMap({ page -> getOrDownloadImage(page, download, tmpDir, dataSaver) }, 5)
             .onBackpressureLatest()
             // Do when page is downloaded.
             .doOnNext { notifier.onProgressChange(download) }
@@ -357,7 +362,7 @@ class Downloader(
      * @param download the download of the page.
      * @param tmpDir the temporary directory of the download.
      */
-    private fun getOrDownloadImage(page: Page, download: Download, tmpDir: UniFile): Observable<Page> {
+    private fun getOrDownloadImage(page: Page, download: Download, tmpDir: UniFile, dataSaver: DataSaver): Observable<Page> {
         // If the image URL is empty, do nothing
         if (page.imageUrl == null) {
             return Observable.just(page)
@@ -376,7 +381,7 @@ class Downloader(
         val pageObservable = when {
             imageFile != null -> Observable.just(imageFile)
             chapterCache.isImageInCache(page.imageUrl!!) -> copyImageFromCache(chapterCache.getImageFile(page.imageUrl!!), tmpDir, filename)
-            else -> downloadImage(page, download.source, tmpDir, filename)
+            else -> downloadImage(page, download.source, tmpDir, filename, dataSaver)
         }
 
         return pageObservable
@@ -404,11 +409,16 @@ class Downloader(
      * @param tmpDir the temporary directory of the download.
      * @param filename the filename of the image.
      */
-    private fun downloadImage(page: Page, source: HttpSource, tmpDir: UniFile, filename: String): Observable<UniFile> {
+    private fun downloadImage(page: Page, source: HttpSource, tmpDir: UniFile, filename: String, dataSaver: DataSaver): Observable<UniFile> {
         page.status = Page.DOWNLOAD_IMAGE
         page.progress = 0
+        val imageUrl = page.imageUrl!!
+        page.imageUrl = dataSaver.compress(imageUrl)
         return source.fetchImage(page)
             .map { response ->
+                // SY -->
+                page.imageUrl = imageUrl
+                // SY <--
                 val file = tmpDir.createFile("$filename.tmp")
                 try {
                     response.body!!.source().saveTo(file.openOutputStream())

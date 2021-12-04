@@ -186,7 +186,7 @@ class SourceController(bundle: Bundle? = null) :
         }
 
         // SY -->
-        val isWatched = preferences.latestTabSources().get().contains(item.source.id.toString())
+        val isWatched = item.source.id.toString() in preferences.latestTabSources().get()
 
         if (item.source.supportsLatest) {
             items.add(
@@ -203,6 +203,16 @@ class SourceController(bundle: Bundle? = null) :
                 { addToCategories(item.source) }
             )
         )
+
+        if (preferences.dataSaver().get()) {
+            val isExcluded = item.source.id.toString() in preferences.dataSaverExcludedSources().get()
+            items.add(
+                Pair(
+                    activity.getString(if (isExcluded) R.string.data_saver_stop_exclude else R.string.data_saver_exclude),
+                    { excludeFromDataSaver(item.source, isExcluded) }
+                )
+            )
+        }
         // SY <--
 
         SourceOptionsDialog(item.source.toString(), items).showDialog(router)
@@ -286,6 +296,14 @@ class SourceController(bundle: Bundle? = null) :
             preferenceSources.sorted().toSet()
         )
         presenter.updateSources()
+    }
+
+    private fun excludeFromDataSaver(source: Source, isExcluded: Boolean) {
+        if (isExcluded) {
+            preferences.dataSaverExcludedSources() -= source.id.toString()
+        } else {
+            preferences.dataSaverExcludedSources() += source.id.toString()
+        }
     }
     // SY <--
 

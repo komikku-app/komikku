@@ -491,6 +491,10 @@ class PreferencesHelper(val context: Context) {
 
     fun dataSaverColorBW() = flowPrefs.getBoolean(Keys.dataSaverColorBW, false)
 
+    fun dataSaverExcludedSources() = flowPrefs.getStringSet(Keys.dataSaverExcludedSources, emptySet())
+
+    fun dataSaverDownloader() = flowPrefs.getBoolean(Keys.dataSaverDownloaer, true)
+
     fun saveChaptersAsCBZ() = flowPrefs.getBoolean(Keys.saveChaptersAsCBZ, false)
 
     fun saveChaptersAsCBZLevel() = flowPrefs.getInt(Keys.saveChaptersAsCBZLevel, 0)

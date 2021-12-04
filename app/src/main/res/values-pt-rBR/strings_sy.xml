@@ -148,8 +148,8 @@
     </plurals>
     <string name="data_saver">Economizar Dados</string>
     <string name="data_saver_summary">Comprime imagens antes de baixar ou carregar no leitor, requer um servidor Bandwidth Hero Proxy</string>
-    <string name="ignore_jpeg">Ignorar Imagens Jpeg</string>
-    <string name="ignore_gif">Ignorar Animações Gif</string>
+    <string name="data_saver_ignore_jpeg">Ignorar Imagens Jpeg</string>
+    <string name="data_saver_ignore_gif">Ignorar Animações Gif</string>
     <string name="data_saver_image_quality">Qualidade da Imagem</string>
     <string name="data_saver_image_quality_summary">Valores maiores indicam que um maior percentual da qualidade de imagem é salva, mas implicam aumento no tamanho do arquivo, 80 por cento é uma boa média entre tamanho de arquivo e qualidade de imagem</string>
     <string name="data_saver_image_format">Comprimir em Jpeg</string>
