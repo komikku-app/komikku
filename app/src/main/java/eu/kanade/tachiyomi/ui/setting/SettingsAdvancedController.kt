@@ -57,6 +57,7 @@ import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
+import rikka.sui.Sui
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -233,7 +234,7 @@ class SettingsAdvancedController : SettingsController() {
 
                 onChange {
                     if (it == PreferenceValues.ExtensionInstaller.SHIZUKU.name &&
-                        !context.isPackageInstalled("moe.shizuku.privileged.api")
+                        !(context.isPackageInstalled("moe.shizuku.privileged.api") || Sui.isSui())
                     ) {
                         MaterialAlertDialogBuilder(context)
                             .setTitle(R.string.ext_installer_shizuku)
