@@ -42,7 +42,8 @@ enum class MdLang(val lang: String, val prettyPrint: String, val extLang: String
     LINTHUANIAN("lt", "Lithuanian"),
     HEBREW("he", "Hebrew"),
     HINDI("hi", "Hindi"),
-    NORWEGIAN("no", "Norwegian")
+    NORWEGIAN("no", "Norwegian"),
+    NEPALI("ne", "Nepali")
     ;
 
     companion object {
