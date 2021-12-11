@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_sort_first_checked">Primeira verificação</string>
     <string name="action_sort_drag_and_drop">Arraste e solte</string>
     <string name="action_sort_enabled">Ativado</string>
     <string name="action_skip_manga">Não migrar</string>
@@ -158,7 +157,6 @@
     <string name="data_saver_color_bw">Converter em Preto e Branco</string>
     <string name="data_saver_server">Servidor Bandwidth Hero Proxy</string>
     <string name="data_saver_server_summary">Insira a url do servidor Bandwidth Hero Proxy aqui</string>
-    <string name="update_monthly">Mensal</string>
     <string name="clear_db_exclude_read">Manter mangás com capítulos lidos</string>
 
     <!-- Log Level -->
@@ -219,7 +217,6 @@
     <string name="biometric_lock_start_time">Inserir tempo inicial</string>
     <string name="biometric_lock_end_time">Inserir tempo final</string>
     <string name="biometric_lock_time_deleted_snack">Tempo de bloqueio biométrico concluído</string>
-    <string name="biometric_lock_invalid_time_selected">Tempo selecionado inválido</string>
     <string name="biometric_lock_days">Dias de bloqueio biométrico</string>
     <string name="biometric_lock_days_summary">Dias para ter o app bloqueado</string>
 
@@ -247,7 +244,6 @@
     <string name="reader_preload_amount_12_pages">12 Páginas</string>
     <string name="reader_preload_amount_14_pages">14 Páginas</string>
     <string name="reader_preload_amount_16_pages">16 Páginas</string>
-    <string name="reader_preload_amount_18_pages">18 Páginas</string>
     <string name="reader_preload_amount_20_pages">20 Páginas</string>
     <string name="reader_preload_amount_summary">Número de páginas a pré-carregar enquanto lê. Valores maiores trarão uma experiência de leitura mais suave, à custa do uso de cache maior, é aconselhável aumentar a quantia de cache que aloca ao usar valores maiores</string>
     <string name="reader_cache_size">Tamanho de cache do leitor</string>
@@ -319,9 +315,7 @@
 
     <!-- Manga Info Edit -->
     <string name="reset_tags">Redefinir Tags</string>
-    <string name="reset_cover">Redefinir Capa</string>
     <string name="add_tag">Adicionar Tag</string>
-    <string name="cover_reset_toast">A capa atualizará ao sair da edição de informação do mangá</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->
@@ -359,8 +353,6 @@
         <item quantity="one">%1$d tag na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
         <item quantity="other">%1$d tags na lista de ordenação. Isto dá uma opção na biblioteca de ordenar por uma lista de tags baseada em prioridade, ou seja, os mangás serão ordenados de modo a priorizar aqueles com as tags que deseja</item>
     </plurals>
-    <string name="pref_tag_sorting_desc">Lista de ordenação de tag</string>
-    <string name="action_add_tags">Adicionar tag</string>
     <string name="action_add_tags_message">Leia isto! Tags devem ser exatas, não há combinação parcial, não pode fazer netorare filtrar female:netorare ou similar!\nO estilo para tags é\n\"female: sole female\"\nsem aspas!\nAdicionar variantes da mesma tag é suportado, então pode-se fazer \"tag: netorare\" para NHentai e \"female: netorare\" para E-Hentai!</string>
     <string name="action_edit_tags">Edit\r tags</string>
     <string name="information_empty_tags">Você não tem tags. Toque no botão Adicionar para criar um e ordenar sua biblioteca por tags</string>
@@ -426,7 +418,6 @@
     <string name="no_valid_manga">Sem mangás válidos selecionados</string>
 
     <!-- Library Sheet -->
-    <string name="tracked">Monitorado</string>
     <string name="lewd">Lascivo</string>
     <string name="started">Iniciado</string>
 
@@ -559,8 +550,6 @@
     <string name="last_update_check">Última atualiz.</string>
     <string name="path">Caminho</string>
     <string name="artist">Artista</string>
-    <string name="reader_id">Id do leitor</string>
-    <string name="series">Série</string>
     <string name="characters">Personagens</string>
     <string name="group">Grupo</string>
     <string name="media_id">Id da mídia</string>
@@ -579,7 +568,6 @@
     <string name="parodies">Paródias</string>
     <string name="author">Autor</string>
     <string name="last_chapter_number">ùltimo núm. de cap.</string>
-    <string name="missing_chapters">Caps. faltando</string>
     <string name="follow_status">Status de follow</string>
     <string name="anilist_id">Id do Anilist</string>
     <string name="kitsu_id">Id do Kitsu</string>
@@ -593,7 +581,6 @@
         <item quantity="one">%1$d página</item>
         <item quantity="other">%1$d páginas</item>
     </plurals>
-    <string name="tags">Tags</string>
     <string name="is_visible">Visível: %1$s</string>
     <string name="language_translated">%1$s TR</string>
 
@@ -630,10 +617,6 @@
     <string name="mangadex_specific_settings">Configurações do MangaDex</string>
     <string name="mangadex_sync_follows_to_library">Sincronizar mangá do MangaDex a sua bilioteca</string>
     <string name="mangadex_sync_follows_to_library_summary">Move mangás do MangaDex a sua biblioteca, se ainda não adicionados.</string>
-    <string name="mangadex_sync_follows_to_library_message">Selecione o status do mangá a ser movido do MangaDex</string>
-    <string name="mangadex_low_quality_covers">Usar miniaturas de baixa qualidade</string>
-    <string name="mangadex_use_latest_cover">Usar última capa enviada</string>
-    <string name="mangadex_use_latest_cover_summary">Se ativado, usa a última capa de mangá enviada sob o url /covers em vez da capa da página de mangá do MangaDex</string>
     <string name="mangadex_preffered_source">Fonte do MangaDex preferida</string>
     <string name="mangadex_preffered_source_summary">Define sua fonte do mangadex escolhida, ela será usada para os follows e muitas outras funções ao redor do app</string>
     <string name="two_factor">Código 2FA</string>
@@ -643,48 +626,13 @@
     <string name="random">Aleatório</string>
     <string name="mangadex_push_favorites_to_mangadex">Sincronizar mangás da bilioteca ao MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Sincroniza qualquer mangá não monitorado no MdList como Lendo.</string>
-    <string name="mangadex_push_favorites_to_mangadex_toast">%d mangás movidos ao MangaDex</string>
 
 
     <!-- Scanlator filters -->
     <string name="select_scanlators">Grupos de scanlator a mostrar</string>
-    <string name="metadata_corrupted">Metadados corrompidos, recaregue o mangá</string>
-    <string name="no_scanlators">Sem scanlators disponíveis</string>
 
     <!-- Similar -->
     <string name="similar">Similar a %1$s</string>
-    <string name="similar_manga">Mangás Similares</string>
-    <string name="similar_loading_percent">Atualizando mangás similares (%1$d / %2$d atualizado)</string>
-    <string name="similar_loading_complete">Atualização de mangás similares feita</string>
-    <string name="similar_loading_complete_error">Erro ao tentar carregar/processar mangás similares</string>
-    <string name="similar_loading_progress_start">Baixando arquivo de dados de mangás similares…</string>
-    <string name="similar_ask_to_enable_title">Ativar Mangás Similares?</string>
-    <string name="similar_ask_to_enable">
-        Gostaria de ativar recomendações de mangás similares?
-        Isto baixará cerca de 9 MB de dados se ativado agora.
-        Pode ativar isto sempre em Configurações > MangaDex.
-    </string>
-    <string name="similar_ask_to_enable_yes">Ativar</string>
-    <string name="similar_ask_to_enable_no">Pular</string>
-    <string name="similar_settings">Configurações de mangás similares</string>
-    <string name="similar_screen">Mostrar mangás similares</string>
-    <string name="similar_manually_update">Atualizar ao último banco de dados</string>
-    <string name="similar_manually_toast">Iniciando atualização manual</string>
-    <string name="similar_manually_update_message">
-        Baixa o banco de dados de mangás similares mais recente.
-        Isto pesa cerca de 9MB e é atualizado diariamente.
-    </string>
-    <string name="similar_update_fequency">Frequência de atualização de similares</string>
-    <string name="similar_screen_summary_message">
-        Isto é uma função que pode obter recomendações de mangá.
-        É um sistema de recomendação fora do MangaDex e funciona combinando por gêneros,
-        demografias, tipo de conteúdo, temas, e então usando frequência do termo–inverso da frequência nos documentos (tf–idf) para obter a
-        semelhança das descrições de dois mangás. Quando ativado, este arquivo será baixado imediatamente! O arquivo pesa cerca de 9 MB.
-    </string>
-    <string name="similar_credit">Créditos</string>
-    <string name="similar_credit_message">
-        Para mais informação e para ver o código-fonte:\n%s
-    </string>
     <string name="similar_no_results">Sem mangás similares encontrados</string>
 
     <!-- Humanize time -->

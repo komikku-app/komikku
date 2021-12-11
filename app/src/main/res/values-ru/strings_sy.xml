@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_sort_first_checked">Первый проверенный</string>
     <string name="action_sort_drag_and_drop">Перетаскивание</string>
     <string name="action_sort_enabled">Включено</string>
     <string name="action_skip_manga">Не мигриговать</string>
@@ -147,8 +146,8 @@
     </plurals>
     <string name="data_saver">Экономия данных</string>
     <string name="data_saver_summary">Сжатие изображений перед скачиванием или загрузкой в читалке, требует наличия прокси-сервера «Bandwidth Hero»</string>
-    <string name="ignore_jpeg">Игнорировать изображения JPEG</string>
-    <string name="ignore_gif">Игнорировать GIF-Анимации</string>
+    <string name="data_saver_ignore_jpeg">Игнорировать изображения JPEG</string>
+    <string name="data_saver_ignore_gif">Игнорировать GIF-Анимации</string>
     <string name="data_saver_image_quality">Качество изображения</string>
     <string name="data_saver_image_quality_summary">Более высокие значения означают, что сохраняется более высокий процент качества изображения, но это также означает, что размер файла будет больше, 80% это хорошая промежуточная величина между размером файла и качеством изображения</string>
     <string name="data_saver_image_format">Сжатие в JPEG</string>
@@ -157,7 +156,6 @@
     <string name="data_saver_color_bw">Преобразовать в Черное и Белое</string>
     <string name="data_saver_server">Прокси-сервер «Bandwidth Hero»</string>
     <string name="data_saver_server_summary">Поместите URL-адрес прокси-сервера «Bandwidth Hero» в эту область</string>
-    <string name="update_monthly">Ежемесячно</string>
     <string name="clear_db_exclude_read">Оставлять серии с читаемыми главами</string>
 
     <!-- Log Level -->
@@ -221,7 +219,6 @@
     <string name="biometric_lock_start_time">Введите время начала</string>
     <string name="biometric_lock_end_time">Введите время окончания</string>
     <string name="biometric_lock_time_deleted_snack">Биометрическое время блокировки удалено</string>
-    <string name="biometric_lock_invalid_time_selected">Выбрано неверное время</string>
     <string name="biometric_lock_days">Дни биометрической блокировки</string>
     <string name="biometric_lock_days_summary">Выбрать дни блокировки приложения</string>
     <string name="monday">Понедельник</string>
@@ -248,7 +245,6 @@
     <string name="reader_preload_amount_12_pages">12 страниц</string>
     <string name="reader_preload_amount_14_pages">14 страниц</string>
     <string name="reader_preload_amount_16_pages">16 страниц</string>
-    <string name="reader_preload_amount_18_pages">18 страниц</string>
     <string name="reader_preload_amount_20_pages">20 страниц</string>
     <string name="reader_preload_amount_summary">Количество предварительной загрузки страниц при чтении. Более высокие значения приведут к более плавному чтению, за счет более высокого использования кэша. Рекомендуется увеличить объем выделяемого кэша при использовании больших значений</string>
     <string name="reader_cache_size">Размер кэша читалки</string>
@@ -319,9 +315,7 @@
 
     <!-- Manga Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
-    <string name="reset_cover">Сбросить обложку</string>
     <string name="add_tag">Добавить тэг</string>
-    <string name="cover_reset_toast">Обложка будет обновлена, когда вы выйдете из редактора серии. </string>
 
     <!-- Browse -->
     <!-- Sources Tab -->
@@ -362,8 +356,6 @@
         <item quantity="many">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по списку тегов, основанному на приоритете, это означает, что серия будет отсортирована таким образом, чтобы отдать предпочтение тем, у которых есть нужные вам тэги.</item>
         <item quantity="other">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по списку тегов, основанному на приоритете, это означает, что серия будет отсортирована таким образом, чтобы отдать предпочтение тем, у которых есть нужные вам тэги.</item>
     </plurals>
-    <string name="pref_tag_sorting_desc">Список сортировки тегов</string>
-    <string name="action_add_tags">Добавить тэг</string>
     <string name="action_add_tags_message">ВАЖНО! Тэги должны быть точными, частичных совпадений нет, вы не можете добавить тэг «netorare», чтобы отфильтровать женский тэг: netorare, и тому подобное! \nСтиль тегов должен быть таким: \n«female: sole female»\nБез стрелочек!\nПоддерживается добавление нескольких вариантов одного и того же тега, например «tag: netorare» для «NHentai» и «female: netorare» для «E-Hentai»!</string>
     <string name="action_edit_tags">Редактировать тэги</string>
     <string name="information_empty_tags">У вас нет тэгов. Нажмите кнопку «Добавить», чтобы создать его для сортировки вашей библиотеки</string>
@@ -438,7 +430,6 @@
     <string name="no_valid_manga">Выбрана недопустимая серия</string>
 
     <!-- Library Sheet -->
-    <string name="tracked">Отслеживается</string>
     <string name="lewd">18+</string>
     <string name="started">Начато</string>
 
@@ -572,8 +563,6 @@
     <string name="last_update_check">Время последнего обновления</string>
     <string name="path">Путь</string>
     <string name="artist">Художник</string>
-    <string name="reader_id">ID читателя</string>
-    <string name="series">Серии</string>
     <string name="characters">Персонажи</string>
     <string name="group">Группа</string>
     <string name="media_id">ID медии</string>
@@ -592,7 +581,6 @@
     <string name="parodies">Пародии</string>
     <string name="author">Автор</string>
     <string name="last_chapter_number">Номер последней главы</string>
-    <string name="missing_chapters">Недостающие главы</string>
     <string name="follow_status">Следить за статусом</string>
     <string name="anilist_id">Anilist ID</string>
     <string name="kitsu_id">Kitsu ID</string>
@@ -608,7 +596,6 @@
         <item quantity="many">%1$d страниц</item>
         <item quantity="other">%1$d страниц</item>
     </plurals>
-    <string name="tags">Тэги</string>
     <string name="is_visible">Видимое: %1$s</string>
     <string name="language_translated">%1$s</string>
 
@@ -659,8 +646,6 @@
 
     <!-- Scanlator filters -->
     <string name="select_scanlators">Показать группы переводчиков</string>
-    <string name="metadata_corrupted">Метаданные повреждены, пожалуйста, обновите серию</string>
-    <string name="no_scanlators">Переводчики отсутствуют</string>
 
     <!-- Similar -->
     <string name="similar">Похожее %1$s</string>

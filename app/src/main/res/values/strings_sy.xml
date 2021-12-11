@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actions -->
-    <string name="action_sort_first_checked">First checked</string>
     <string name="action_sort_drag_and_drop">Drag &amp; Drop</string>
     <string name="action_sort_enabled">Enabled</string>
     <string name="action_skip_manga">Don\'t migrate</string>
@@ -159,7 +158,6 @@
     <string name="data_saver_color_bw">Convert to Black And White</string>
     <string name="data_saver_server">Bandwidth Hero Proxy Server</string>
     <string name="data_saver_server_summary">Put Bandwidth Hero Proxy server url here</string>
-    <string name="update_monthly">Monthly</string>
     <string name="clear_db_exclude_read">Keep manga with read chapters</string>
 
     <!-- Log Level -->
@@ -223,7 +221,6 @@
     <string name="biometric_lock_start_time">Enter starting time</string>
     <string name="biometric_lock_end_time">Enter end time</string>
     <string name="biometric_lock_time_deleted_snack">Biometric lock time deleted</string>
-    <string name="biometric_lock_invalid_time_selected">Invalid time selected</string>
     <string name="biometric_lock_days">Biometric lock days</string>
     <string name="biometric_lock_days_summary">Days to have the app locked</string>
 
@@ -251,7 +248,6 @@
     <string name="reader_preload_amount_12_pages">12 Pages</string>
     <string name="reader_preload_amount_14_pages">14 Pages</string>
     <string name="reader_preload_amount_16_pages">16 Pages</string>
-    <string name="reader_preload_amount_18_pages">18 Pages</string>
     <string name="reader_preload_amount_20_pages">20 Pages</string>
     <string name="reader_preload_amount_summary">The amount of pages to preload when reading. Higher values will result in a smoother reading experience, at the cost of higher cache usage, it is recommended to increase the amount of cache you allocate when using larger values</string>
     <string name="reader_cache_size">Reader cache size</string>
@@ -323,9 +319,7 @@
 
     <!-- Manga Info Edit -->
     <string name="reset_tags">Reset Tags</string>
-    <string name="reset_cover">Reset Cover</string>
     <string name="add_tag">Add Tag</string>
-    <string name="cover_reset_toast">The cover will be updated when you exit manga info edit</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->
@@ -366,8 +360,6 @@
         <item quantity="one">%1$d tag in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
         <item quantity="other">%1$d tags in sorting list. This adds a option in the library to sort by a priority based tag list, which means manga will be sorted in a way to prioritise the ones with the tags you want</item>
     </plurals>
-    <string name="pref_tag_sorting_desc">Tag sorting list</string>
-    <string name="action_add_tags">Add tag</string>
     <string name="action_add_tags_message">Read this! Tags must be exact, there are no partial matches, you cannot do netorare to filter out female:netorare or similar!\nThe style for namespace tags is\n\"female: sole female\"\nwithout quotes!\nAdding multiple variants of the same tag is supported, so feel free to do \"tag: netorare\" for NHentai and \"female: netorare\" for E-Hentai!</string>
     <string name="action_edit_tags">Edit tags</string>
     <string name="information_empty_tags">You have no tags. Tap the plus button to create one for sorting your library by tags</string>
@@ -435,7 +427,6 @@
     <string name="no_valid_manga">No valid manga selected</string>
 
     <!-- Library Sheet -->
-    <string name="tracked">Tracked</string>
     <string name="lewd">Lewd</string>
     <string name="started">Started</string>
 
@@ -568,8 +559,6 @@
     <string name="last_update_check">Last update check</string>
     <string name="path">Path</string>
     <string name="artist">Artist</string>
-    <string name="reader_id">Reader id</string>
-    <string name="series">Series</string>
     <string name="characters">Characters</string>
     <string name="group">Group</string>
     <string name="media_id">Media id</string>
@@ -588,7 +577,6 @@
     <string name="parodies">Parodies</string>
     <string name="author">Author</string>
     <string name="last_chapter_number">Last chapter number</string>
-    <string name="missing_chapters">Missing chapters</string>
     <string name="follow_status">Follow status</string>
     <string name="anilist_id">Anilist id</string>
     <string name="kitsu_id">Kitsu id</string>
@@ -602,7 +590,6 @@
         <item quantity="one">%1$d page</item>
         <item quantity="other">%1$d pages</item>
     </plurals>
-    <string name="tags">Tags</string>
     <string name="is_visible">Visible: %1$s</string>
     <string name="language_translated">%1$s TR</string>
 
@@ -639,10 +626,6 @@
     <string name="mangadex_specific_settings">MangaDex settings</string>
     <string name="mangadex_sync_follows_to_library">Sync Mangadex manga to your library</string>
     <string name="mangadex_sync_follows_to_library_summary">Pulls manga from MangaDex into your library if they are not already added.</string>
-    <string name="mangadex_sync_follows_to_library_message">Select the status of manga to be pulled from Mangadex</string>
-    <string name="mangadex_low_quality_covers">Use low quality thumbnails</string>
-    <string name="mangadex_use_latest_cover">Use latest uploaded cover</string>
-    <string name="mangadex_use_latest_cover_summary">When enabled, it uses the latest uploaded manga cover under the /covers url instead of using the cover on MangaDex\'s manga page</string>
     <string name="mangadex_preffered_source">Preferred MangaDex source</string>
     <string name="mangadex_preffered_source_summary">Set your chosen mangadex source, this will be used for follows and a bunch more features around the app</string>
     <string name="two_factor">2FA Code</string>
@@ -652,48 +635,13 @@
     <string name="random">Random</string>
     <string name="mangadex_push_favorites_to_mangadex">Sync library manga to MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked manga to MangaDex as reading.</string>
-    <string name="mangadex_push_favorites_to_mangadex_toast">Pushed %d manga to MangaDex</string>
 
 
     <!-- Scanlator filters -->
     <string name="select_scanlators">Scanlator groups to show</string>
-    <string name="metadata_corrupted">Metadata corrupted, please refresh the manga</string>
-    <string name="no_scanlators">No scanlators available</string>
 
     <!-- Similar -->
     <string name="similar">Similar to %1$s</string>
-    <string name="similar_manga">Similar Manga</string>
-    <string name="similar_loading_percent">Updating similar manga (%1$d / %2$d updated)</string>
-    <string name="similar_loading_complete">Updating similar manga complete</string>
-    <string name="similar_loading_complete_error">Error trying to load/process similar manga</string>
-    <string name="similar_loading_progress_start">Downloading similar manga data file…</string>
-    <string name="similar_ask_to_enable_title">Enable Similar Manga?</string>
-    <string name="similar_ask_to_enable">
-        Would you like to enable similar manga recommendations?
-        This will download approximately 9 MB of data if enabled right now.
-        You can always enable it in the Settings / Mangadex menu.
-    </string>
-    <string name="similar_ask_to_enable_yes">Enable</string>
-    <string name="similar_ask_to_enable_no">Skip</string>
-    <string name="similar_settings">Similar Manga Settings</string>
-    <string name="similar_screen">Show similar manga</string>
-    <string name="similar_manually_update">Pull latest database</string>
-    <string name="similar_manually_toast">Starting manual update</string>
-    <string name="similar_manually_update_message">
-        Download the latest similar manga database.
-        This is around 9MB in size and is updated daily.
-    </string>
-    <string name="similar_update_fequency">Similar update frequency</string>
-    <string name="similar_screen_summary_message">
-        This is a feature where one can get manga recommendations.
-        This is a recommendation system outside of MangaDex, and works by matching by genres,
-        demographics, content type, themes, and then using term frequency–inverse document frequency (tf–idf) to get the
-        similarity of two manga\'s descriptions. When enabled this file will download immediately!! The file is about 9 MB in size.
-    </string>
-    <string name="similar_credit">Credits</string>
-    <string name="similar_credit_message">
-        For more information and to view the source code:\n%s
-    </string>
     <string name="similar_no_results">No Similar Manga found</string>
 
     <!-- Humanize time -->
@@ -723,7 +671,7 @@
     </plurals>
     <plurals name="humanize_second">
         <item quantity="one">%1$d second ago</item>
-        <item quantity="other">%1$d second ago</item>
+        <item quantity="other">%1$d seconds ago</item>
     </plurals>
     <string name="humanize_fallback">moments ago</string>
 
