@@ -25,7 +25,7 @@ fun DataSaver(source: Source, preferences: PreferencesHelper): DataSaver {
     }
 }
 
-private class DataSaverImpl(preferences: PreferencesHelper): DataSaver {
+private class DataSaverImpl(preferences: PreferencesHelper) : DataSaver {
     private val dataSavedServer = preferences.dataSaverServer().get().trimEnd('/')
 
     private val ignoreJpg = preferences.ignoreJpeg().get()

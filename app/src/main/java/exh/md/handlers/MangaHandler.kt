@@ -101,6 +101,6 @@ class MangaHandler(
                     .flatMap { it.chapters.values }
                     .map { it.chapter }
             }
-            .getOrDefault(emptyList())
+            .getOrElse { emptyList() }
     }
 }
