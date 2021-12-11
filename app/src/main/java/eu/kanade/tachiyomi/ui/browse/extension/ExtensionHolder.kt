@@ -39,6 +39,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             extension is Extension.Installed && extension.isUnofficial -> itemView.context.getString(R.string.ext_unofficial)
             extension is Extension.Installed && extension.isObsolete -> itemView.context.getString(R.string.ext_obsolete)
             // SY -->
+            extension is Extension.Installed && extension.isRedundant -> itemView.context.getString(R.string.ext_redundant)
             extension.isNsfw -> itemView.context.getString(R.string.ext_nsfw_short).plusRepo(extension)
             else -> "".plusRepo(extension)
             // SY <--
