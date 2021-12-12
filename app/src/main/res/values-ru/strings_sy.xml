@@ -24,16 +24,15 @@
 
     <!-- Captcha -->
     <string name="captcha_solve_failure">Сбой при решении капчи</string>
-    <string name="captcha_solve_failure_message">Не удалось автоматически решить капчу!</string>
+    <string name="captcha_solve_failure_message">Не удалось автоматически, решить капчу!</string>
     <string name="please_login">Пожалуйста, авторизуйтесь!</string>
 
     <!-- Preferences -->
     <!-- Subsections -->
     <string name="pref_category_all_sources">Все источники</string>
     <string name="pref_category_eh">E-Hentai</string>
-    <string name="pref_category_fork">Настройки Fork\'а</string>
+    <string name="pref_category_fork">Настройки «Fork\'а»</string>
     <string name="pref_category_mangadex">MangaDex</string>
-
 
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">Настройки учетной записи (E-Hentai)</string>
@@ -78,9 +77,9 @@
     <string name="ignore_sync_errors">Игнорировать ошибки синхронизации, когда это возможно</string>
     <string name="ignore_sync_errors_summary">Не прерывайте работу синхронизации при возникновении ошибок. Ошибки по-прежнему будут отображаться после окончания синхронизации. В некоторых случаях это может привести к потере избранного. Полезно при синхронизации больших библиотек.</string>
     <string name="force_sync_state_reset">Принудительный сброс состояния синхронизации</string>
-    <string name="force_sync_state_reset_summary">Выполняет полную ресинхронизацию при следующей синхронизации. Удалённый материал не будет синхронизирован. Все избранное в приложении будет пезагружено в «ExHentai», а все избранное на «ExHentai» будет пезагружено в приложение. Полезно для восстановления синхронизации после того, как она была прервана.</string>
+    <string name="force_sync_state_reset_summary">Выполняет полную ресинхронизацию при следующей синхронизации. Удалённый материал не будет синхронизирован. Все избранное в приложении будет перезагружено в «ExHentai», а все избранное на «ExHentai» будет перезагружено в приложение. Полезно для восстановления синхронизации после того, как она была прервана.</string>
     <string name="sync_state_reset">Сброс состояния синхронизации</string>
-    <string name="gallery_update_checker">Проверка обновлений для галереи</string>
+    <string name="gallery_update_checker">Проверка обновлений для галерей</string>
     <string name="auto_update_restrictions">Ограничения автоматического обновления</string>
     <string name="time_between_batches">Время между обновлениями</string>
     <string name="time_between_batches_never">Никогда не обновлять</string>
@@ -95,8 +94,8 @@
     <string name="time_between_batches_summary_2">«%1$s» проверяет/обновляет галереи пакетами. Это означает, что оно будет ждать %2$d час(а/ов), проверять %3$d галереи, ждать %2$d час(а/ов), проверять %3$d и так далее…</string>
     <string name="show_updater_statistics">Показать статистику обновлений</string>
     <string name="gallery_updater_statistics_collection">Сбор статистики…</string>
-    <string name="gallery_updater_statistics">Статистика обновлений для галереи</string>
-    <string name="gallery_updater_stats_text">Последний раз программа обновления была запущена %1$s, и проверила %2$d из %3$d галерей которые были готовы к проверке.</string>
+    <string name="gallery_updater_statistics">Статистика обновлений для галерей</string>
+    <string name="gallery_updater_stats_text">Последний раз программа обновления, была запущена %1$s, и проверила %2$d из %3$d галерей, которые были готовы к проверке.</string>
     <string name="gallery_updater_not_ran_yet">Программа обновления еще не запущена.</string>
     <string name="gallery_updater_stats_time">\nГалереи, которые были проверены в последний раз:\n- час: %1$d\n- 6 часов: %2$d\n- 12 часов: %3$d\n- день: %4$d\n- 2 дня: %5$d\n- неделя: %6$d\n- месяц: %7$d\n- год: %8$d</string>
 
@@ -108,19 +107,19 @@
     <string name="eh_settings_configuration_failed_message">В процессе настройки произошла ошибка: %1$s</string>
     <string name="eh_settings_uploading_to_server">Загрузка настроек на сервер</string>
     <string name="eh_settings_uploading_to_server_message">Пожалуйста, подождите, это может занять некоторое время…</string>
-    <string name="eh_settings_out_of_slots_error">У вас больше нет профильных слотов на %1$s, пожалуйста, удалите профиль!</string>
+    <string name="eh_settings_out_of_slots_error">У вас больше нет, профильных слотов на «%1$s», пожалуйста, удалите профиль!</string>
 
     <!-- EH Settings Login Activity -->
     <string name="recheck_login_status">Перепроверить статус авторизации</string>
-    <string name="alternative_login_page">Альтернативная страница авторизации</string>
-    <string name="skip_page_restyling">Пропустить перерисовку страницы</string>
+    <string name="alternative_login_page">Другая страница для авторизации</string>
+    <string name="skip_page_restyling">Прекратить перерисовывать страницу</string>
     <string name="custom_igneous_cookie">Пользовательское «igneous Cookie»</string>
-    <string name="custom_igneous_cookie_message">Некоторые пользователи не могут получить доступ к «ExHentai» обычным способом и должны передать определенное значение «igneous Сookie», эта опция предназначена для таких пользователей.</string>
+    <string name="custom_igneous_cookie_message">Некоторые пользователи не могут получить доступ к «ExHentai» обычным способом, и должны передать определенное значение «igneous Сookie», эта опция предназначена для таких пользователей.</string>
 
     <!-- Advanced Settings -->
     <string name="developer_tools">Инструменты разработчика</string>
     <string name="toggle_hentai_features">Включить встроенные функции для хентая</string>
-    <string name="toggle_hentai_features_summary">Это экспериментальная функция, которая отключит все функции для хентая, если ее выключить</string>
+    <string name="toggle_hentai_features_summary">Это экспериментальная функция, если ее выключить, будут отключены все функции для хентая</string>
     <string name="toggle_delegated_sources">Включить встроенные источники</string>
     <string name="toggle_delegated_sources_summary">Использовать усовершенствования «%1$s» для следующих источников, если они установлены: «%2$s»</string>
     <string name="log_level">Уровень ведения журнала</string>
@@ -153,38 +152,42 @@
     <string name="data_saver_image_format">Сжатие в JPEG</string>
     <string name="data_saver_image_format_summary_on">Размер файла JPEG значительно меньше, чем WebP(это означает, что сохраняется больше данных), но из-за этого изображения также теряют больше качества.\nВ текущий момент сжимается в JPEG</string>
     <string name="data_saver_image_format_summary_off">Размер файла JPEG значительно меньше, чем WebP(это означает, что сохраняется больше данных), но из-за этого изображения также теряют больше качества.\nВ текущий момент сжимается в WebP</string>
-    <string name="data_saver_color_bw">Преобразовать в Черное и Белое</string>
+    <string name="data_saver_color_bw">Преобразовать в Черное &amp; Белое</string>
     <string name="data_saver_server">Прокси-сервер «Bandwidth Hero»</string>
     <string name="data_saver_server_summary">Поместите URL-адрес прокси-сервера «Bandwidth Hero» в эту область</string>
-    <string name="clear_db_exclude_read">Оставлять серии с читаемыми главами</string>
+    <string name="clear_db_exclude_read">Оставлять серии с прочитанными главами</string>
+    <string name="data_saver_exclude">Исключить из экономии данных</string>
+    <string name="data_saver_stop_exclude">Прекратить исключение из экономии данных</string>
 
     <!-- Log Level -->
-    <string name="log_minimal">Минимальный</string>
-    <string name="log_extra">Дополнительный</string>
-    <string name="log_extreme">Экстремальный</string>
+    <string name="log_minimal">Минимально</string>
+    <string name="log_extra">Дополнительно</string>
+    <string name="log_extreme">Экстремально</string>
     <string name="log_minimal_desc">только критические ошибки</string>
     <string name="log_extra_desc">регистрировать всё</string>
     <string name="log_extreme_desc">режим проверки сети</string>
 
     <!-- General Settings -->
-    <string name="pref_category_navbar">Панель навигации</string>
     <string name="toggle_expand_search_filters">Развернуть все фильтры поиска по умолчанию</string>
     <string name="auto_solve_captchas">Автоматическое решение капчи</string>
     <string name="auto_solve_captchas_summary">Использовать (ОЧЕНЬ ЭКСПЕРЕМЕНТАЛЬНО) автоматическое прохождение «ReCAPTCHA». Если ваше устройство не поддерживается, меню будет выделено серым цветом.</string>
     <string name="put_recommends_in_overflow">Рекомендации в выпадающем меню</string>
-    <string name="put_recommends_in_overflow_summary">Поместить кнопку «Рекомендации» в выпадающее меню, вместо размещения, на странице серии</string>
+    <string name="put_recommends_in_overflow_summary">Поместить кнопку «Рекомендации» в выпадающее меню, вместо размещения, на сведеньях серии</string>
+
+    <!-- Appearance Settings -->
+    <string name="pref_category_navbar">Панель навигации</string>
     <string name="pref_hide_updates_button">Показывать «Обновления» на панеле навигации</string>
     <string name="pref_hide_history_button">Показывать «История» на панеле навигации</string>
-    <string name="pref_show_bottom_bar_labels">Всегда показывать названия иконок панели навигации</string>
+    <string name="pref_show_bottom_bar_labels">Показывать названия на панели навигации</string>
 
     <!-- Library settings -->
     <string name="pref_sorting_settings">Настройки сортировки</string>
-    <string name="pref_skip_pre_migration_summary">Используйте последние сохраненные премиграционные настройки и источники для массовой миграции</string>
+    <string name="pref_skip_pre_migration_summary">Используйте последние сохраненные премиграционные настройки и источники, для массовой миграции</string>
     <string name="library_settings_sheet">Панель настроек библиотеки</string>
     <string name="library_settings_sheet_summary">Дополнительные настройки отображения библиотеки</string>
     <string name="library_group_updates">Динамические обновления категорий библиотеки</string>
     <string name="library_group_updates_global">Всегда запускать глобальные обновления категорий</string>
-    <string name="library_group_updates_all_but_ungrouped">Глобальные обновления только для несгруппированных, обновления категорий используются для другого</string>
+    <string name="library_group_updates_all_but_ungrouped">Глобальные обновления только для не группированного, обновления категорий используются для другого</string>
     <string name="library_group_updates_all">Постоянно запускать обновление категорий</string>
 
     <!-- Browse settings -->
@@ -193,7 +196,7 @@
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
     <string name="pref_source_source_filtering_summery">Фильтровать источники, которые находятся в категориях, чтобы источники не попадали под язык, если они находятся в категориях</string>
     <string name="pref_source_navigation">Убрать кнопку «Последнее»</string>
-    <string name="pref_source_navigation_summery">Убрать кнопку «Последнее» возле источников, а также убрать внутри источников вкладки «Последнее» и «Поисковик», взамен, во вкладке «Последнее», включить отслеживание последних глав источников</string>
+    <string name="pref_source_navigation_summery">Убирает кнопку «Последнее» возле источников, а также убрает внутри источников вкладки «Последнее» и «Поисковик», взамен, во вкладке «Последнее», включает последние главы в отслеживаемых источниках</string>
     <string name="pref_local_source_hidden_folders">Скрытые папки в личном источнике</string>
     <string name="pref_local_source_hidden_folders_summery">Разрешить личному источнику читать скрытые папки</string>
 
@@ -236,8 +239,8 @@
     <string name="aggressively_load_pages">Агрессивная загрузка страниц</string>
     <string name="aggressively_load_pages_summary">Медленно загружать всю главу во время чтения, вместо загрузки просматриваемых страниц</string>
     <string name="skip_queue_on_retry">Пропускать очередь при повторной попытке</string>
-    <string name="skip_queue_on_retry_summary">Обычно нажатие кнопки повтора при неудачной загрузке будет ждать, пока загрузчик закончит загрузку последней страницы, прежде чем начать пезагрузку неудачной страницы. Включение этого режима заставит загрузчик немедленно начать пезагрузку неудачной страницы, как только вы нажмёте кнопку повтора.</string>
-    <string name="reader_preload_amount">Количество предварительной загрузки страниц</string>
+    <string name="skip_queue_on_retry_summary">Обычно нажатие кнопки повтора при неудачной загрузке будет ждать, пока загрузчик закончит загрузку последней страницы, прежде чем начать перезагрузку неудачной страницы. Включение этого режима заставит загрузчик немедленно начать перезагрузку неудачной страницы, как только вы нажмёте кнопку повтора.</string>
+    <string name="reader_preload_amount">Количество страниц с предзагрузкой</string>
     <string name="reader_preload_amount_4_pages">4 страницы</string>
     <string name="reader_preload_amount_6_pages">6 страниц</string>
     <string name="reader_preload_amount_8_pages">8 страниц</string>
@@ -246,10 +249,10 @@
     <string name="reader_preload_amount_14_pages">14 страниц</string>
     <string name="reader_preload_amount_16_pages">16 страниц</string>
     <string name="reader_preload_amount_20_pages">20 страниц</string>
-    <string name="reader_preload_amount_summary">Количество предварительной загрузки страниц при чтении. Более высокие значения приведут к более плавному чтению, за счет более высокого использования кэша. Рекомендуется увеличить объем выделяемого кэша при использовании больших значений</string>
+    <string name="reader_preload_amount_summary">Количество предварительной загрузки страниц при чтении. Более высокие значения приведут, к более плавному чтению, за счет более высокого использования кэша. Рекомендуется увеличить объем выделяемого кэша при использовании больших значений</string>
     <string name="reader_cache_size">Размер кэша читалки</string>
-    <string name="reader_cache_size_summary">Количество изображений, сохраняемых на устройстве во время чтения. Более высокие значения приведут к более плавному чтению за счет более высокого использования дискового пространства</string>
-    <string name="preserve_reading_position">Сохранить позицию чтения при чтении серии</string>
+    <string name="reader_cache_size_summary">Количество изображений, сохраняемых на устройстве во время чтения. Более высокие значения приведут, к более плавному чтению за счет более высокого использования дискового пространства</string>
+    <string name="preserve_reading_position">Сохранять позицию чтения, для читаемой серии</string>
     <string name="auto_webtoon_mode">Автоматический режим веб-комикса</string>
     <string name="auto_webtoon_mode_summary">Использовать автоматический режим веб-комикса для серий, которые вероятно имеют формат длинной полосы</string>
     <string name="enable_zoom_out">Включить уменьшение масштаба</string>
@@ -261,7 +264,7 @@
     <string name="pref_show_vert_seekbar_landscape_summary">Включает вертикальную полосу прокрутки в альбомной ориентации</string>
     <string name="pref_left_handed_vertical_seekbar">Вертикальная полоса прокрутки по левую сторону</string>
     <string name="pref_left_handed_vertical_seekbar_summary">Переключает положение полосы прокрутки</string>
-    <string name="pref_force_horz_seekbar">Принудительно горизонтальная полоса прокрутки</string>
+    <string name="pref_force_horz_seekbar">Принудительная горизонтальная полоса прокрутки</string>
     <string name="pref_force_horz_seekbar_summary">Полностью убирает вертикальную полосу прокрутки в пользу горизонтальной</string>
     
     <!-- Reader -->
@@ -294,12 +297,12 @@
     <string name="eh_auto_webtoon_snack">Режим чтения веб-комикс</string>
 
     <!-- Double page spread -->
-    <string name="page_layout">Разметка страниц</string>
+    <string name="page_layout">Схема страницы</string>
     <string name="shift_double_pages">Сдвинуть на одну страницу</string>
     <string name="double_pages">Двойные страницы</string>
     <string name="single_page">Одна страница</string>
     <string name="automatic_orientation">Автоматически (на основе ориентации)</string>
-    <string name="automatic_can_still_switch">При использовании автоматической разметки страниц, вы всё ещё можете переключиться между разметками, когда читаете, без переопределения этой настройки</string>
+    <string name="automatic_can_still_switch">При использовании автоматической схемы страниц, вы всё ещё можете переключиться между схемами, когда читаете, без переопределения этой настройки</string>
     <string name="invert_double_pages">Двойные страницы наоборот</string>
 
     <!-- Manga Page -->
@@ -343,14 +346,13 @@
     <!-- Latest Tab -->
     <string name="watch">Отслеживать</string>
     <string name="unwatch">Не отслеживать</string>
-    <string name="too_many_watched">Слишком много отслеживаемых источников, нельзя добавить больше 5</string>
-    <string name="latest_tab_empty">У вас нет отслеживаемых источников, перейдите на вкладку «Источники» и, нажмите и удерживайте источник, чтобы отслеживать его.</string>
+    <string name="too_many_watched">Слишком много отслеживаемых источников, нельзя добавить больше пяти</string>
+    <string name="latest_tab_empty">У вас нет отслеживаемых источников, перейдите на вкладку «Источники» и, нажмите и удерживайте источник, чтобы добавить отслеживание.</string>
 
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Сортировка тэгов</string>
     <string name="tag_sorting">Сортировка тэгов</string>
     <plurals name="pref_tag_sorting_desc">
-        <item quantity="zero">Нет тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по списку тегов, основанному на приоритете, это означает, что серия будет отсортирована таким образом, чтобы отдать предпочтение тем, у которых есть нужные вам тэги.</item>
         <item quantity="one">%1$d тэг в списке сортировки. Это добавляет в библиотеку возможность сортировки по списку тегов, основанному на приоритете, это означает, что серия будет отсортирована таким образом, чтобы отдать предпочтение тем, у которых есть нужные вам тэги.</item>
         <item quantity="few">%1$d тэга в списке сортировки. Это добавляет в библиотеку возможность сортировки по списку тегов, основанному на приоритете, это означает, что серия будет отсортирована таким образом, чтобы отдать предпочтение тем, у которых есть нужные вам тэги.</item>
         <item quantity="many">%1$d тэгов в списке сортировки. Это добавляет в библиотеку возможность сортировки по списку тегов, основанному на приоритете, это означает, что серия будет отсортирована таким образом, чтобы отдать предпочтение тем, у которых есть нужные вам тэги.</item>
@@ -363,13 +365,13 @@
     <string name="snack_tags_deleted">Тэги удалены</string>
 
     <!-- Extension section -->
-    <string name="ext_redundant">Избыточный</string>
+    <string name="ext_redundant">Избыточное</string>
     <string name="redundant_extension_message">Это расширение является избыточным и не будет использоваться внутри этой версии Tachiyomi.</string>
 
     <!-- Extension Repos -->
     <string name="information_empty_repos">У вас нет дополнительных репозиториев. Нажмите кнопку «Добавить», чтобы создать репозиторий для добавления внешних расширений.</string>
     <string name="action_add_repo">Добавить репозиторий</string>
-    <string name="action_add_repo_message">Добавьте дополнительные репозиторий в Tachiyomi, формат  «username/repo» без стрелочек, username, является владельцем репозитория, а repo имя репозитория </string>
+    <string name="action_add_repo_message">Добавьте дополнительные репозиторий в «Tachiyomi», формат  «username/repo» без стрелочек, username, является владельцем репозитория, а repo имя репозитория </string>
     <string name="action_edit_repos">Редактировать репозитории</string>
     <plurals name="num_repos">
         <item quantity="one">%d дополнительный репозиторий</item>
@@ -398,11 +400,11 @@
     <string name="skip_this_step_next_time">Не показывать этот диалог в следующий раз</string>
     <string name="hide_not_found_manga">Скрыть не найденные серии</string>
     <string name="search_parameter">Параметр поиска (например: language:english)</string>
-    <string name="latest_">Последняя глава: %1$s</string>
+    <string name="latest_">Последнее: %1$s</string>
     <string name="migrating_to">Мигрировать в</string>
     <string name="match_pinned_sources">Соответствие закрепленных источников</string>
     <string name="match_enabled_sources">Соответствие включенных источников</string>
-    <string name="no_chapters_found_for_migration">Главы не найдены, эта серия не может быть использована для перемещения</string>
+    <string name="no_chapters_found_for_migration">Глав не найдено, эта серия не может быть использована для перемещения</string>
     <string name="no_alternatives_found">Альтернатив не найдено</string>
     <string name="stop_migrating">Остановить миграцию?</string>
     <plurals name="migrate_manga">
@@ -463,9 +465,9 @@
     <string name="favorites_sync_network_error">Ошибка сети!</string>
     <string name="favorites_sync_removing_galleries">Удаление %1$d галереи с удаленного сервера</string>
     <string name="favorites_sync_unable_to_delete">Невозможно удалить галереи с удаленных серверов!</string>
-    <string name="favorites_sync_adding_to_remote">Добавление галереи %1$d из %2$d на удаленный сервер</string>
-    <string name="favorites_sync_remove_from_local">Удаление галереи %1$d из %2$d из библиотеки</string>
-    <string name="favorites_sync_add_to_local">Добавление галереи %1$d из %2$d в библиотеку</string>
+    <string name="favorites_sync_adding_to_remote">Добавление галерей %1$d из %2$d на удаленный сервер</string>
+    <string name="favorites_sync_remove_from_local">Удаление галерей %1$d из %2$d из библиотеки</string>
+    <string name="favorites_sync_add_to_local">Добавление галерей %1$d из %2$d в библиотеку</string>
     <string name="favorites_sync_remote_not_exist">Удаленная галерея не существует, пропуск: %1$s!</string>
     <string name="favorites_sync_failed_to_add_to_local">Не удалось добавить галерею в базу данных:</string>
     <string name="favorites_sync_failed_to_add_to_local_error">«%1$s» %2$s</string>
@@ -483,20 +485,20 @@
 
     <!-- Gallery Adder -->
     <!-- Batch Add -->
-    <string name="eh_batch_add">Добавить галереи</string>
+    <string name="eh_batch_add">Добавить пакеты галерей</string>
     <string name="eh_batch_add_description">Пример:\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\nОн также поддерживает посещённые экспортированные данные в «E-Hentai»\n</string>
     <string name="eh_batch_add_title">Введите URL галерей для добавления \n(разделенные новой строкой):</string>
     <string name="eh_batch_add_button">Добавить</string>
     <string name="eh_batch_add_adding_galleries">Добавление галерей…</string>
-    <string name="eh_batch_add_finish">Закончить</string>
+    <string name="eh_batch_add_finish">Завершить</string>
     <string name="batch_add_no_valid_galleries">Нет галерей для добавления!</string>
     <string name="batch_add_no_valid_galleries_message">Вы должны указать хотя бы одну серию для добавления!</string>
     <string name="batch_add">Добавить галерею</string>
     <string name="batch_add_ok">[ОК]</string>
     <string name="batch_add_error">[ОШИБКА]</string>
-    <string name="batch_add_summary">\nСводка:\nДобавлено: %1$d галерея(и/ей)\nНеудачно: %2$d галерея(и/ей)</string>
+    <string name="batch_add_summary">\nСводка:\nДобавлено: %1$d галерея(и/ей)\nНе добавлено: %2$d галерея(и/ей)</string>
     <string name="batch_add_success_log_message">Добавлена серия: %1$s</string>
-    <string name="batch_add_unknown_type_log_message">Неизвестный тип серии для серии: %1$s</string>
+    <string name="batch_add_unknown_type_log_message">Неизвестный тип комикса для серии: %1$s</string>
     <string name="batch_add_unknown_source_log_message">Неизвестный источник для серии: %1$s</string>
     <string name="batch_add_not_exist_log_message">Серия не существует: %1$s</string>
     <string name="gallery_adder_importing_manga">Импортируется серия (URL-адрес: %1$s, Избр: %2$s, Источник: %3$s)…</string>
@@ -513,7 +515,7 @@
     <string name="error_with_reason">Ошибка: %1$s</string>
     <string name="could_not_open_manga">Не удалось открыть эту серию:\n\n%1$s</string>
     <string name="manga_id_is_null">«ID» серии равно «null»!</string>
-    <string name="loading_manga">Загрузка серии…</string>
+    <string name="loading_manga">Загрузка серий…</string>
 
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Шедевр</string>
@@ -553,7 +555,7 @@
     <string name="date_posted">Дата публикации</string>
     <string name="page_count">Количество страниц</string>
     <string name="parent">URL-адрес родителя</string>
-    <string name="visible">Видимая</string>
+    <string name="visible">Видимое</string>
     <string name="language">Язык</string>
     <string name="gallery_size">Размер галереи</string>
     <string name="total_favorites">Добавлено в избранное</string>
@@ -565,7 +567,7 @@
     <string name="artist">Художник</string>
     <string name="characters">Персонажи</string>
     <string name="group">Группа</string>
-    <string name="media_id">ID медии</string>
+    <string name="media_id">ID мультимедии</string>
     <string name="japanese_title">Японское название</string>
     <string name="english_title">Английское название</string>
     <string name="short_title">Краткое название</string>
@@ -611,11 +613,11 @@
     <string name="merge_settings">Параметры миграции</string>
     <string name="fetch_chapter_updates">Получить обновления глав</string>
     <string name="delete_merged_manga">Вы уверены?</string>
-    <string name="delete_merged_manga_desc">Это приведет к удалению серии из объединения, а также потеряет все несохраненные изменения, примененные к объединенной серии</string>
+    <string name="delete_merged_manga_desc">Это приведет к удалению серии из миграции, а также потеряет все несохраненные изменения, примененные к объединенной серии</string>
     <string name="chapter_updates_merged_manga">Переключатель обновлений глав</string>
-    <string name="chapter_updates_merged_manga_desc">Переключение этого параметра отключит или включит обновления глав, для этой объединённой серии</string>
+    <string name="chapter_updates_merged_manga_desc">Переключение этого параметра отключит/включит обновления глав, для этой объединённой серии</string>
     <string name="download_merged_manga">Переключатель загрузки новых глав</string>
-    <string name="download_merged_manga_desc">Переключение этого параметра отключит или включит загрузку глав, для этой объединённой серии</string>
+    <string name="download_merged_manga_desc">Переключение этого параметра отключит/включит загрузку глав, для этой объединённой серии</string>
     <string name="merged_references_invalid">Недействительные объединённые ссылки</string>
     <string name="merged_chapter_updates_error">Ошибка переключения обновлений глав</string>
     <string name="merged_references">Миграция ссылки</string>
@@ -633,12 +635,12 @@
     <string name="md_follows_unfollowed">Без отслеживания</string>
     <string name="mangadex_specific_settings">Настройки «MangaDex»</string>
     <string name="mangadex_sync_follows_to_library">Синхронизировать серии из «Mangadex» в вашу библиотеку</string>
-    <string name="mangadex_sync_follows_to_library_summary">Добавляет серии из «MangaDex» в вашу библиотеку, если они еще не были добавлены.</string>
+    <string name="mangadex_sync_follows_to_library_summary">Добавляет серии из «MangaDex» в вашу библиотеку, если они, еще не были добавлены.</string>
     <string name="mangadex_preffered_source">Предпочитаемый источник «MangaDex»</string>
     <string name="mangadex_preffered_source_summary">Установите выбранный вами источник MangaDex, он будет использоваться для следующих, и еще нескольких функций в приложении</string>
     <string name="two_factor">Код 2FA</string>
-    <string name="fields_cannot_be_blank">Поля не могут быть пустыми</string>
-    <string name="mangadex_add_to_follows">Добавьте отслеживание в «MangaDex»</string>
+    <string name="fields_cannot_be_blank">Поля, не могут быть, пустыми</string>
+    <string name="mangadex_add_to_follows">Добавить отслеживание в «MangaDex»</string>
     <string name="mangadex_follows">Отслеживание «MangaDex»</string>
     <string name="random">Случайная</string>
     <string name="mangadex_push_favorites_to_mangadex">Синхронизировать библиотеку с «MangaDex»</string>
@@ -648,7 +650,7 @@
     <string name="select_scanlators">Показать группы переводчиков</string>
 
     <!-- Similar -->
-    <string name="similar">Похожее %1$s</string>
+    <string name="similar">Похожее на %1$s</string>
     <string name="similar_no_results">Похожая серия не найдена</string>
 
     <!-- Humanize time -->
