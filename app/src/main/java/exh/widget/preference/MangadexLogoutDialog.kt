@@ -38,8 +38,8 @@ class MangadexLogoutDialog(bundle: Bundle? = null) : DialogController(bundle) {
                     if (source.logout()) {
                         withUIContext {
                             activity?.toast(R.string.logout_success)
+                            (targetController as? Listener)?.siteLogoutDialogClosed(source)
                         }
-                        (targetController as? Listener)?.siteLogoutDialogClosed(source)
                     } else {
                         withUIContext {
                             activity?.toast(R.string.unknown_error)
