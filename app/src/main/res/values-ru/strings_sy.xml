@@ -145,6 +145,7 @@
     </plurals>
     <string name="data_saver">Экономия данных</string>
     <string name="data_saver_summary">Сжатие изображений перед скачиванием или загрузкой в читалке, требует наличия прокси-сервера «Bandwidth Hero»</string>
+    <string name="data_saver_downloader">Использовать экономию данных в загрузчике</string>
     <string name="data_saver_ignore_jpeg">Игнорировать изображения JPEG</string>
     <string name="data_saver_ignore_gif">Игнорировать GIF-Анимации</string>
     <string name="data_saver_image_quality">Качество изображения</string>
@@ -191,7 +192,7 @@
     <string name="library_group_updates_all">Постоянно запускать обновление категорий</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_position">Последняя позиция вкладки</string>
+    <string name="pref_latest_position">Позиция вкладки «Последнее»</string>
     <string name="pref_latest_position_summery">Вы хотите, чтобы вкладка «Последнее» была первой вкладкой в «Поисковик»? Это сделает его вкладкой по умолчанию при открытии «Поисковик», не рекомендуется, если вы используете ограниченные сети(Моб. Данные)</string>
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
     <string name="pref_source_source_filtering_summery">Фильтровать источники, которые находятся в категориях, чтобы источники не попадали под язык, если они находятся в категориях</string>
