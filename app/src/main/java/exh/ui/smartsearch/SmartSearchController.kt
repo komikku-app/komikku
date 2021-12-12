@@ -11,9 +11,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.plus
@@ -36,8 +34,6 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        binding.appbar.bringToFront()
-
         if (source == null || smartSearchConfig == null) {
             router.popCurrentController()
             applicationContext?.toast("Missing data!")
@@ -48,25 +44,22 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
             .onEach { results ->
                 if (results is SmartSearchPresenter.SearchResults.Found) {
                     val transaction = MangaController(results.manga, true, smartSearchConfig).withFadeTransaction()
-                    withUIContext {
-                        router.replaceTopController(transaction)
-                    }
+                    router.replaceTopController(transaction)
                 } else {
-                    withUIContext {
-                        if (results is SmartSearchPresenter.SearchResults.NotFound) {
-                            applicationContext?.toast("Couldn't find the manga in the source!")
-                        } else {
-                            applicationContext?.toast("Error performing automatic search!")
-                        }
+                    if (results is SmartSearchPresenter.SearchResults.NotFound) {
+                        applicationContext?.toast("Couldn't find the manga in the source!")
+                    } else {
+                        applicationContext?.toast("Error performing automatic search!")
                     }
-
-                    val transaction = BrowseSourceController(source, smartSearchConfig.origTitle, smartSearchConfig).withFadeTransaction()
-                    withUIContext {
-                        router.replaceTopController(transaction)
-                    }
+                    val transaction = BrowseSourceController(
+                        source,
+                        smartSearchConfig.origTitle,
+                        smartSearchConfig
+                    ).withFadeTransaction()
+                    router.replaceTopController(transaction)
                 }
             }
-            .launchIn(viewScope + Dispatchers.IO)
+            .launchIn(viewScope)
     }
 
     companion object {
