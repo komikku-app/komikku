@@ -2,7 +2,11 @@ package exh.util
 
 import com.tfcporciuncula.flow.Preference
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.online.HttpSource
+import okhttp3.Response
+import rx.Observable
 
 interface DataSaver {
 
@@ -13,6 +17,15 @@ interface DataSaver {
             override fun compress(imageUrl: String): String {
                 return imageUrl
             }
+        }
+
+        fun HttpSource.fetchImage(page: Page, dataSaver: DataSaver): Observable<Response> {
+            val imageUrl = page.imageUrl ?: return fetchImage(page)
+            page.imageUrl = dataSaver.compress(imageUrl)
+            return fetchImage(page)
+                .doOnNext {
+                    page.imageUrl = imageUrl
+                }
         }
     }
 }

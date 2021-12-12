@@ -29,6 +29,7 @@ import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import exh.util.DataSaver
+import exh.util.DataSaver.Companion.fetchImage
 import kotlinx.coroutines.async
 import logcat.LogPriority
 import okhttp3.Response
@@ -412,13 +413,8 @@ class Downloader(
     private fun downloadImage(page: Page, source: HttpSource, tmpDir: UniFile, filename: String, dataSaver: DataSaver): Observable<UniFile> {
         page.status = Page.DOWNLOAD_IMAGE
         page.progress = 0
-        val imageUrl = page.imageUrl!!
-        page.imageUrl = dataSaver.compress(imageUrl)
-        return source.fetchImage(page)
+        return source.fetchImage(page, dataSaver)
             .map { response ->
-                // SY -->
-                page.imageUrl = imageUrl
-                // SY <--
                 val file = tmpDir.createFile("$filename.tmp")
                 try {
                     response.body!!.source().saveTo(file.openOutputStream())

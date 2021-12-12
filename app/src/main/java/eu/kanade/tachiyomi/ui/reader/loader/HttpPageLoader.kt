@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.util.lang.plusAssign
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.source.isEhBasedSource
 import exh.util.DataSaver
+import exh.util.DataSaver.Companion.fetchImage
 import logcat.LogPriority
 import rx.Completable
 import rx.Observable
@@ -275,15 +276,8 @@ class HttpPageLoader(
      */
     private fun HttpSource.cacheImage(page: ReaderPage): Observable<ReaderPage> {
         page.status = Page.DOWNLOAD_IMAGE
-        // SY -->
-        val imageUrl = page.imageUrl!!
-        page.imageUrl = dataSaver.compress(imageUrl)
-        // SY <--
-        return fetchImage(page)
+        return fetchImage(page, dataSaver)
             .doOnNext {
-                // SY -->
-                page.imageUrl = imageUrl
-                // SY <--
                 chapterCache.putImageToCache(page.imageUrl!!, it)
             }
             .map { page }
