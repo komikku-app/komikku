@@ -11,6 +11,7 @@ import exh.md.dto.LoginBodyTokenDto
 import exh.md.dto.MangaDataDto
 import exh.md.network.NoSessionException
 import exh.source.getMainSource
+import exh.util.dropBlank
 import exh.util.floor
 import exh.util.nullIfBlank
 import exh.util.nullIfZero
@@ -224,7 +225,7 @@ class MdUtil {
         }
 
         fun getScanlators(scanlators: String?): Set<String> {
-            return scanlators?.split(scanlatorSeparator)?.toSet().orEmpty()
+            return scanlators?.split(scanlatorSeparator)?.dropBlank()?.toSet().orEmpty()
         }
 
         fun getScanlatorString(scanlators: Set<String>): String {
