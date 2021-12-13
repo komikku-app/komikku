@@ -277,8 +277,19 @@
     <string name="eh_autoscroll_help_message">Automatically scroll to the next page in the specified interval. Interval is specified in seconds.</string>
     <string name="eh_retry_all_help">Retry all help</string>
     <string name="eh_retry_all_help_message">Re-add all failed pages to the download queue.</string>
+    <plurals name="eh_retry_toast">
+        <item quantity="zero">Retrying 0 failed pages…</item>
+        <item quantity="one">Retrying %1$d failed page…</item>
+        <item quantity="other">Retrying %1$d failed pages…</item>
+    </plurals>
     <string name="eh_boost_page_help">Boost page help</string>
     <string name="eh_boost_page_help_message">Normally the downloader can only download a specific amount of pages at the same time. This means you can be waiting for a page to download but the downloader will not start downloading the page until it has a free download slot. Pressing \'Boost page\' will force the downloader to begin downloading the current page, regardless of whether or not there is an available slot.</string>
+    <string name="eh_boost_page_invalid">This page cannot be boosted (invalid page)!</string>
+    <string name="eh_boost_page_errored">Page failed to load, press the retry button instead!</string>
+    <string name="eh_boost_page_downloading">This page is already downloading!</string>
+    <string name="eh_boost_page_downloaded">This page has already been downloaded!</string>
+    <string name="eh_boost_boosted">Boosted current page!</string>
+    <string name="eh_boost_invalid_loader">This page cannot be boosted (invalid page loader)!</string>
     <string name="pref_crop_borders_pager">Crop borders Pager</string>
     <string name="pref_crop_borders_continuous_vertical">Crop borders Continuous Vertical</string>
     <string name="pref_crop_borders_webtoon">Crop borders Webtoon</string>
@@ -311,6 +322,11 @@
     <string name="az_recommends">See Recommendations</string>
     <string name="merge">Merge</string>
     <string name="merge_with_another_source">Merge With Another</string>
+    <string name="manga_merged">Manga merged!</string>
+    <string name="failed_merge">Failed to merge manga: %1$s</string>
+    <string name="merge_unknown_manga">Unknown manga ID: %1$d</string>
+    <string name="merged_already">This manga is already merged with the current manga!</string>
+    <string name="merge_duplicate">This merged manga is a duplicate!</string>
 
     <!-- Manga info fragment -->
     <string name="hiatus">Hiatus</string>
@@ -320,6 +336,10 @@
     <!-- Manga Info Edit -->
     <string name="reset_tags">Reset Tags</string>
     <string name="add_tag">Add Tag</string>
+    <string name="title_hint">Title: %1$s</string>
+    <string name="description_hint">Description: %1$s</string>
+    <string name="author_hint">Author: %1$s</string>
+    <string name="artist_hint">Artist: %1$s</string>
 
     <!-- Browse -->
     <!-- Sources Tab -->
@@ -329,6 +349,8 @@
 
     <!-- Smart Search -->
     <string name="searching_source">Searching source…</string>
+    <string name="could_not_find_manga">Couldn\'t find the manga in the source!</string>
+    <string name="automatic_search_error">Error performing automatic search!</string>
 
     <!-- Saved Searches -->
     <string name="saved_searches">Saved Searches</string>
@@ -619,6 +641,10 @@
     <string name="manga_info_manga">Info manga:</string>
     <string name="toggle_dedupe">Toggle dedupe</string>
     <string name="refresh_merge">Refresh to get proper info</string>
+    <string name="no_dedupe">No dedupe</string>
+    <string name="dedupe_priority">Dedupe by priority</string>
+    <string name="dedupe_most_chapters">Show source with most chapters</string>
+    <string name="dedupe_highest_chapter">Show source with highest chapter number</string>
 
     <!-- MangaDex -->
     <string name="mdlist">MDList</string>

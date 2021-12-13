@@ -110,7 +110,6 @@ import exh.source.isMdBasedSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
@@ -737,7 +736,7 @@ class MangaController :
     suspend fun mergeWithAnother() {
         try {
             val mergedManga = withContext(Dispatchers.IO + NonCancellable) {
-                presenter.smartSearchMerge(presenter.manga, smartSearchConfig?.origMangaId!!)
+                presenter.smartSearchMerge(applicationContext!!, presenter.manga, smartSearchConfig?.origMangaId!!)
             }
 
             router?.popControllerWithTag(SMART_SEARCH_SOURCE_TAG)
@@ -749,12 +748,12 @@ class MangaController :
                     update = true
                 ).withFadeTransaction()
             )
-            applicationContext?.toast("Manga merged!")
+            applicationContext?.toast(R.string.manga_merged)
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            else {
-                applicationContext?.toast("Failed to merge manga: ${e.message}")
-            }
+
+            val activity = activity ?: return
+            activity.toast(activity.getString(R.string.failed_merge, e.message))
         }
     }
     // EXH <--

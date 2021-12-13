@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.RecyclerView
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsHeaderBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.log.xLogD
@@ -40,11 +41,11 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
             val dedupeAdapter: ArrayAdapter<String> = ArrayAdapter(
                 itemView.context,
                 android.R.layout.simple_spinner_item,
-                listOf(
-                    "No dedupe",
-                    /*"Dedupe by priority",*/
-                    "Show source with most chapters",
-                    "Show source with highest chapter number"
+                listOfNotNull(
+                    itemView.context.getString(R.string.no_dedupe),
+                    itemView.context.getString(R.string.dedupe_priority).let { null },
+                    itemView.context.getString(R.string.dedupe_most_chapters),
+                    itemView.context.getString(R.string.dedupe_highest_chapter)
                 )
             )
             dedupeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

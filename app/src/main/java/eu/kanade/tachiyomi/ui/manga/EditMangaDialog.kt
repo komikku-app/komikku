@@ -112,7 +112,8 @@ class EditMangaDialog : DialogController {
             if (manga.title != manga.url) {
                 binding.title.setText(manga.title)
             }
-            binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.url}"
+
+            binding.title.hint = context.getString(R.string.title_hint, manga.url)
             binding.mangaAuthor.setText(manga.author.orEmpty())
             binding.mangaArtist.setText(manga.artist.orEmpty())
             binding.mangaDescription.setText(manga.description.orEmpty())
@@ -132,19 +133,22 @@ class EditMangaDialog : DialogController {
             }
             binding.mangaGenresTags.setChips(manga.getGenres().orEmpty().dropBlank())
 
-            binding.title.hint = "${resources?.getString(R.string.title)}: ${manga.originalTitle}"
+            binding.title.hint = context.getString(R.string.title_hint, manga.originalTitle)
             if (manga.originalAuthor != null) {
-                binding.mangaAuthor.hint = "Author: ${manga.originalAuthor}"
+                binding.mangaAuthor.hint = context.getString(R.string.author_hint, manga.originalAuthor)
             }
             if (manga.originalArtist != null) {
-                binding.mangaArtist.hint = "Artist: ${manga.originalArtist}"
+                binding.mangaArtist.hint = context.getString(R.string.artist_hint, manga.originalArtist)
             }
             if (manga.originalDescription != null) {
                 binding.mangaDescription.hint =
-                    "${resources?.getString(R.string.description)}: ${manga.originalDescription?.replace(
-                        "\n",
-                        " "
-                    )?.chop(20)}"
+                    context.getString(
+                        R.string.description_hint,
+                        manga.originalDescription?.replace(
+                            "\n",
+                            " "
+                        )?.chop(20)
+                    )
             }
         }
         binding.mangaGenresTags.clearFocus()

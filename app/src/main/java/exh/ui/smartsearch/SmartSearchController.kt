@@ -3,6 +3,7 @@ package exh.ui.smartsearch
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhSmartSearchBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
@@ -47,9 +48,9 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
                     router.replaceTopController(transaction)
                 } else {
                     if (results is SmartSearchPresenter.SearchResults.NotFound) {
-                        applicationContext?.toast("Couldn't find the manga in the source!")
+                        applicationContext?.toast(R.string.could_not_find_manga)
                     } else {
-                        applicationContext?.toast("Error performing automatic search!")
+                        applicationContext?.toast(R.string.automatic_search_error)
                     }
                     val transaction = BrowseSourceController(
                         source,

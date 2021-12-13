@@ -8,6 +8,7 @@ import android.os.Bundle
 import coil.imageLoader
 import coil.memory.MemoryCache
 import com.jakewharton.rxrelay.PublishRelay
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -400,12 +401,13 @@ class MangaPresenter(
         }
     }
 
-    suspend fun smartSearchMerge(manga: Manga, originalMangaId: Long): Manga {
-        val originalManga = db.getManga(originalMangaId).executeAsBlocking() ?: throw IllegalArgumentException("Unknown manga ID: $originalMangaId")
+    suspend fun smartSearchMerge(context: Context, manga: Manga, originalMangaId: Long): Manga {
+        val originalManga = db.getManga(originalMangaId).executeAsBlocking()
+            ?: throw IllegalArgumentException(context.getString(R.string.merge_unknown_manga, originalMangaId))
         if (originalManga.source == MERGED_SOURCE_ID) {
             val children = db.getMergedMangaReferences(originalMangaId).executeAsBlocking()
             if (children.any { it.mangaSourceId == manga.source && it.mangaUrl == manga.url }) {
-                throw IllegalArgumentException("This manga is already merged with the current manga!")
+                throw IllegalArgumentException(context.getString(R.string.merged_already))
             }
 
             val mangaReferences = mutableListOf(
@@ -456,7 +458,7 @@ class MangaPresenter(
             var existingManga = db.getManga(mergedManga.url, mergedManga.source).executeAsBlocking()
             while (existingManga != null) {
                 if (existingManga.favorite) {
-                    throw IllegalArgumentException("This merged manga is a duplicate!")
+                    throw IllegalArgumentException(context.getString(R.string.merge_duplicate))
                 } else if (!existingManga.favorite) {
                     withContext(NonCancellable) {
                         db.deleteManga(existingManga!!).executeAsBlocking()

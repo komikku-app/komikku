@@ -780,7 +780,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                         retried++
                     }
 
-                toast("Retrying $retried failed pages...")
+                toast(resources.getQuantityString(R.plurals.eh_retry_toast, retried, retried))
             }
             .launchIn(lifecycleScope)
 
@@ -796,26 +796,25 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         binding.ehBoostPage.clicks()
             .onEach {
-                viewer?.let { _ ->
-                    val curPage = exhCurrentpage() ?: run {
-                        toast("This page cannot be boosted (invalid page)!")
-                        return@let
-                    }
+                viewer ?: return@onEach
+                val curPage = exhCurrentpage() ?: run {
+                    toast(R.string.eh_boost_page_invalid)
+                    return@onEach
+                }
 
-                    if (curPage.status == Page.ERROR) {
-                        toast("Page failed to load, press the retry button instead!")
-                    } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
-                        toast("This page is already downloading!")
-                    } else if (curPage.status == Page.READY) {
-                        toast("This page has already been downloaded!")
+                if (curPage.status == Page.ERROR) {
+                    toast(R.string.eh_boost_page_errored)
+                } else if (curPage.status == Page.LOAD_PAGE || curPage.status == Page.DOWNLOAD_IMAGE) {
+                    toast(R.string.eh_boost_page_downloading)
+                } else if (curPage.status == Page.READY) {
+                    toast(R.string.eh_boost_page_downloaded)
+                } else {
+                    val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
+                    if (loader != null) {
+                        loader.boostPage(curPage)
+                        toast(R.string.eh_boost_boosted)
                     } else {
-                        val loader = (presenter.viewerChaptersRelay.value.currChapter.pageLoader as? HttpPageLoader)
-                        if (loader != null) {
-                            loader.boostPage(curPage)
-                            toast("Boosted current page!")
-                        } else {
-                            toast("This page cannot be boosted (invalid page loader)!")
-                        }
+                        toast(R.string.eh_boost_invalid_loader)
                     }
                 }
             }
