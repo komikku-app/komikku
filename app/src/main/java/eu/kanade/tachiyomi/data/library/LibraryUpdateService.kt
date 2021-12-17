@@ -20,7 +20,9 @@ import eu.kanade.tachiyomi.data.download.DownloadService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateRanker.rankingScheme
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Companion.start
 import eu.kanade.tachiyomi.data.notification.Notifications
-import eu.kanade.tachiyomi.data.preference.PreferenceValues
+import eu.kanade.tachiyomi.data.preference.MANGA_FULLY_READ
+import eu.kanade.tachiyomi.data.preference.MANGA_ONGOING
+import eu.kanade.tachiyomi.data.preference.PreferenceValues.GroupLibraryMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -284,7 +286,11 @@ class LibraryUpdateService(
         var listToUpdate = if (categoryId != -1) {
             libraryManga.filter { it.category == categoryId }
             // SY -->
-        } else if (group == LibraryGroup.BY_DEFAULT || groupLibraryUpdateType == PreferenceValues.GroupLibraryMode.GLOBAL || (groupLibraryUpdateType == PreferenceValues.GroupLibraryMode.ALL_BUT_UNGROUPED && group == LibraryGroup.UNGROUPED)) {
+        } else if (
+            group == LibraryGroup.BY_DEFAULT ||
+            groupLibraryUpdateType == GroupLibraryMode.GLOBAL ||
+            (groupLibraryUpdateType == GroupLibraryMode.ALL_BUT_UNGROUPED && group == LibraryGroup.UNGROUPED)
+        ) {
             val categoriesToUpdate = preferences.libraryUpdateCategories().get().map(String::toInt)
             val listToInclude = if (categoriesToUpdate.isNotEmpty()) {
                 libraryManga.filter { it.category in categoriesToUpdate }
@@ -294,9 +300,9 @@ class LibraryUpdateService(
 
             val categoriesToExclude = preferences.libraryUpdateCategoriesExclude().get().map(String::toInt)
             val listToExclude = if (categoriesToExclude.isNotEmpty()) {
-                libraryManga.filter { it.category in categoriesToExclude }
+                libraryManga.filter { it.category in categoriesToExclude }.toSet()
             } else {
-                emptyList()
+                emptySet()
             }
 
             listToInclude.minus(listToExclude)
@@ -337,12 +343,15 @@ class LibraryUpdateService(
             }
             // SY <--
         }
-        if (target == Target.CHAPTERS && preferences.updateOnlyNonCompleted()) {
-            listToUpdate = listToUpdate.filterNot { it.status == SManga.COMPLETED }
-        }
 
-        if (target == Target.CHAPTERS && preferences.updateOnlyCompletelyRead()) {
-            listToUpdate = listToUpdate.filter { it.unread == 0 }
+        if (target == Target.CHAPTERS) {
+            val restrictions = preferences.libraryUpdateMangaRestriction().get()
+            if (MANGA_ONGOING in restrictions) {
+                listToUpdate = listToUpdate.filterNot { it.status == SManga.COMPLETED }
+            }
+            if (MANGA_FULLY_READ in restrictions) {
+                listToUpdate = listToUpdate.filter { it.unread == 0 }
+            }
         }
 
         val selectedScheme = preferences.libraryUpdatePrioritization().get()

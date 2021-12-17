@@ -16,8 +16,10 @@ import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.database.tables.TrackTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.preference.MANGA_ONGOING
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.minusAssign
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
@@ -83,6 +85,8 @@ object EXHMigrations {
                 if (oldVersion == 0) {
                     return false
                 }
+
+                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 if (oldVersion under 4) {
                     db.inTransaction {
                         updateSourceId(HBROWSE_SOURCE_ID, 6912)
@@ -229,7 +233,6 @@ object EXHMigrations {
                 }
                 if (oldVersion under 14) {
                     // Migrate DNS over HTTPS setting
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                     val wasDohEnabled = prefs.getBoolean("enable_doh", false)
                     if (wasDohEnabled) {
                         prefs.edit {
@@ -240,7 +243,6 @@ object EXHMigrations {
                 }
                 if (oldVersion under 16) {
                     // Reset rotation to Free after replacing Lock
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                     if (prefs.contains("pref_rotation_type_key")) {
                         prefs.edit {
                             putInt("pref_rotation_type_key", 1)
@@ -253,7 +255,6 @@ object EXHMigrations {
                 }
                 if (oldVersion under 17) {
                     // Migrate Rotation and Viewer values to default values for viewer_flags
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                     val newOrientation = when (prefs.getInt("pref_rotation_type_key", 1)) {
                         1 -> OrientationType.FREE.flagValue
                         2 -> OrientationType.PORTRAIT.flagValue
@@ -294,8 +295,6 @@ object EXHMigrations {
                     }
                 }
                 if (oldVersion under 20) {
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
                     val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
                     val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
 
@@ -343,6 +342,12 @@ object EXHMigrations {
                     if (updateInterval in listOf(3, 4, 6, 8)) {
                         preferences.libraryUpdateInterval().set(12)
                         LibraryUpdateJob.setupTask(context, 12)
+                    }
+                }
+                if (oldVersion under 23) {
+                    val oldUpdateOngoingOnly = prefs.getBoolean("pref_update_only_non_completed_key", true)
+                    if (!oldUpdateOngoingOnly) {
+                        preferences.libraryUpdateMangaRestriction() -= MANGA_ONGOING
                     }
                 }
 

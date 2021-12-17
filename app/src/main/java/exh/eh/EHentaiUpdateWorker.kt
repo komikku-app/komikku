@@ -16,8 +16,8 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
-import eu.kanade.tachiyomi.data.preference.CHARGING
-import eu.kanade.tachiyomi.data.preference.ONLY_ON_WIFI
+import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
+import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
@@ -245,7 +245,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             val interval = prefInterval ?: preferences.exhAutoUpdateFrequency().get()
             if (interval > 0) {
                 val restrictions = preferences.exhAutoUpdateRequirements().get()
-                val acRestriction = CHARGING in restrictions
+                val acRestriction = DEVICE_CHARGING in restrictions
 
                 val constraints = Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -276,7 +276,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
 
     fun requiresWifiConnection(preferences: PreferencesHelper): Boolean {
         val restrictions = preferences.exhAutoUpdateRequirements().get()
-        return ONLY_ON_WIFI in restrictions
+        return DEVICE_ONLY_ON_WIFI in restrictions
     }
 }
 

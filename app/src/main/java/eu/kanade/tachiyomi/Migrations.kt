@@ -5,8 +5,10 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
+import eu.kanade.tachiyomi.data.preference.MANGA_ONGOING
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.preference.minusAssign
 import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
@@ -51,6 +53,8 @@ object Migrations {
             if (oldVersion == 0) {
                 return false
             }
+
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
             if (oldVersion < 14) {
                 // Restore jobs after upgrading to Evernote's job scheduler.
@@ -98,8 +102,6 @@ object Migrations {
             }
             if (oldVersion < 44) {
                 // Reset sorting preference if using removed sort by source
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
                 val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
 
                 @Suppress("DEPRECATION")
@@ -111,7 +113,6 @@ object Migrations {
             }
             if (oldVersion < 52) {
                 // Migrate library filters to tri-state versions
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 fun convertBooleanPrefToTriState(key: String): Int {
                     val oldPrefValue = prefs.getBoolean(key, false)
                     return if (oldPrefValue) ExtendedNavigationView.Item.TriStateGroup.State.INCLUDE.value
@@ -140,7 +141,6 @@ object Migrations {
             }
             if (oldVersion < 57) {
                 // Migrate DNS over HTTPS setting
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 val wasDohEnabled = prefs.getBoolean("enable_doh", false)
                 if (wasDohEnabled) {
                     prefs.edit {
@@ -151,7 +151,6 @@ object Migrations {
             }
             if (oldVersion < 59) {
                 // Reset rotation to Free after replacing Lock
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 if (prefs.contains("pref_rotation_type_key")) {
                     prefs.edit {
                         putInt("pref_rotation_type_key", 1)
@@ -170,7 +169,6 @@ object Migrations {
                 }
 
                 // Migrate Rotation and Viewer values to default values for viewer_flags
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 val newOrientation = when (prefs.getInt("pref_rotation_type_key", 1)) {
                     1 -> OrientationType.FREE.flagValue
                     2 -> OrientationType.PORTRAIT.flagValue
@@ -199,8 +197,6 @@ object Migrations {
                 }
             }
             if (oldVersion < 64) {
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
                 val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
                 val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
 
@@ -243,6 +239,12 @@ object Migrations {
                 if (updateInterval in listOf(3, 4, 6, 8)) {
                     preferences.libraryUpdateInterval().set(12)
                     LibraryUpdateJob.setupTask(context, 12)
+                }
+            }
+            if (oldVersion < 72) {
+                val oldUpdateOngoingOnly = prefs.getBoolean("pref_update_only_non_completed_key", true)
+                if (!oldUpdateOngoingOnly) {
+                    preferences.libraryUpdateMangaRestriction() -= MANGA_ONGOING
                 }
             }
 
