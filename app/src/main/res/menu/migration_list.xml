@@ -6,12 +6,12 @@
         android:id="@+id/action_copy_manga"
         android:icon="@drawable/ic_copy_24dp"
         android:title="@string/copy"
-        app:iconTint="?attr/colorOnToolbar"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_migrate_manga"
         android:icon="@drawable/ic_done_all_24dp"
         android:title="@string/migrate"
-        app:iconTint="?attr/colorOnToolbar"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
 </menu>

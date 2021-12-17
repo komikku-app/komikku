@@ -6,14 +6,14 @@
         android:icon="@drawable/ic_search_24dp"
         android:title="@string/action_search"
         app:actionViewClass="eu.kanade.tachiyomi.widget.TachiyomiSearchView"
-        app:iconTint="?attr/colorOnToolbar"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="collapseActionView|ifRoom" />
 
     <item
         android:id="@+id/action_display_mode"
         android:icon="@drawable/ic_view_module_24dp"
         android:title="@string/action_display_mode"
-        app:iconTint="?attr/colorOnToolbar"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom">
         <menu>
             <group android:checkableBehavior="single">
@@ -37,21 +37,21 @@
         android:id="@+id/action_open_in_web_view"
         android:icon="@drawable/ic_public_24dp"
         android:title="@string/action_open_in_web_view"
-        app:iconTint="?attr/colorOnToolbar"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_settings"
         android:icon="@drawable/ic_settings_24dp"
         android:title="@string/action_settings"
-        app:iconTint="?attr/colorOnToolbar"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_local_source_help"
         android:icon="@drawable/ic_help_24dp"
         android:title="@string/local_source_help_guide"
-        app:iconTint="?attr/colorOnToolbar"
+        app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
 
 </menu>

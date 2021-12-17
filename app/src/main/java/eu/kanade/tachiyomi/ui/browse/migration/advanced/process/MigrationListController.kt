@@ -463,7 +463,7 @@ class MigrationListController(bundle: Bundle? = null) :
             )
         }
 
-        val tintColor = activity?.getResourceColor(R.attr.colorOnToolbar) ?: Color.WHITE
+        val tintColor = activity?.getResourceColor(R.attr.colorOnSurface) ?: Color.WHITE
         val color = if (allMangasDone) {
             tintColor
         } else {
