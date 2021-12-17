@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
+import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
@@ -189,7 +190,7 @@ class SettingsLibraryController : SettingsController() {
                 entryValues = arrayOf(DEVICE_ONLY_ON_WIFI, DEVICE_CHARGING)
                 defaultValue = preferences.libraryUpdateDeviceRestriction().defaultValue
 
-                visibleIf(preferences.libraryUpdateInterval()) { it > 0 }
+                visibleIfGlobalUpdateEnabled()
 
                 onChange {
                     // Post to event looper to allow the preference to be updated.
@@ -227,7 +228,7 @@ class SettingsLibraryController : SettingsController() {
                 entryValues = arrayOf(MANGA_FULLY_READ, MANGA_ONGOING)
                 defaultValue = preferences.libraryUpdateMangaRestriction().defaultValue
 
-                visibleIf(preferences.libraryUpdateInterval()) { it > 0 }
+                visibleIfGlobalUpdateEnabled()
 
                 fun updateSummary() {
                     val restrictions = preferences.libraryUpdateMangaRestriction().get()
@@ -255,6 +256,9 @@ class SettingsLibraryController : SettingsController() {
             preference {
                 key = Keys.libraryUpdateCategories
                 titleRes = R.string.categories
+
+                visibleIfGlobalUpdateEnabled()
+
                 onClick {
                     LibraryGlobalUpdateCategoriesDialog().showDialog(router)
                 }
@@ -314,6 +318,8 @@ class SettingsLibraryController : SettingsController() {
                 key = Keys.libraryUpdatePrioritization
                 titleRes = R.string.pref_library_update_prioritization
 
+                visibleIfGlobalUpdateEnabled()
+
                 // The following array lines up with the list rankingScheme in:
                 // ../../data/library/LibraryUpdateRanker.kt
                 val priorities = arrayOf(
@@ -341,6 +347,7 @@ class SettingsLibraryController : SettingsController() {
                 titleRes = R.string.pref_library_update_refresh_metadata
                 summaryRes = R.string.pref_library_update_refresh_metadata_summary
                 defaultValue = false
+                visibleIfGlobalUpdateEnabled()
             }
             if (trackManager.hasLoggedServices()) {
                 switchPreference {
@@ -348,6 +355,7 @@ class SettingsLibraryController : SettingsController() {
                     titleRes = R.string.pref_library_update_refresh_trackers
                     summaryRes = R.string.pref_library_update_refresh_trackers_summary
                     defaultValue = false
+                    visibleIfGlobalUpdateEnabled()
                 }
             }
         }
@@ -381,6 +389,10 @@ class SettingsLibraryController : SettingsController() {
             }
         }
         // SY <--
+    }
+
+    private inline fun Preference.visibleIfGlobalUpdateEnabled() {
+        visibleIf(preferences.libraryUpdateInterval()) { it > 0 }
     }
 
     class LibraryColumnsDialog : DialogController() {
