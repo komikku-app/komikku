@@ -48,11 +48,11 @@ class SearchMetadataGetResolver : DefaultGetResolver<SearchMetadata>() {
 
     override fun mapFromCursor(cursor: Cursor): SearchMetadata =
         SearchMetadata(
-            mangaId = cursor.getLong(cursor.getColumnIndex(COL_MANGA_ID)),
-            uploader = cursor.getString(cursor.getColumnIndex(COL_UPLOADER)),
-            extra = cursor.getString(cursor.getColumnIndex(COL_EXTRA)),
-            indexedExtra = cursor.getString(cursor.getColumnIndex(COL_INDEXED_EXTRA)),
-            extraVersion = cursor.getInt(cursor.getColumnIndex(COL_EXTRA_VERSION))
+            mangaId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_ID)),
+            uploader = cursor.getString(cursor.getColumnIndexOrThrow(COL_UPLOADER)),
+            extra = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXTRA)),
+            indexedExtra = cursor.getString(cursor.getColumnIndexOrThrow(COL_INDEXED_EXTRA)),
+            extraVersion = cursor.getInt(cursor.getColumnIndexOrThrow(COL_EXTRA_VERSION))
         )
 }
 

@@ -45,10 +45,10 @@ class SearchTitlePutResolver : DefaultPutResolver<SearchTitle>() {
 class SearchTitleGetResolver : DefaultGetResolver<SearchTitle>() {
 
     override fun mapFromCursor(cursor: Cursor): SearchTitle = SearchTitle(
-        id = cursor.getLong(cursor.getColumnIndex(COL_ID)),
-        mangaId = cursor.getLong(cursor.getColumnIndex(COL_MANGA_ID)),
-        title = cursor.getString(cursor.getColumnIndex(COL_TITLE)),
-        type = cursor.getInt(cursor.getColumnIndex(COL_TYPE))
+        id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID)),
+        mangaId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_ID)),
+        title = cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)),
+        type = cursor.getInt(cursor.getColumnIndexOrThrow(COL_TYPE))
     )
 }
 

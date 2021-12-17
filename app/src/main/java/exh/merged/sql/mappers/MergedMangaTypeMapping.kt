@@ -60,17 +60,17 @@ class MergedMangaPutResolver : DefaultPutResolver<MergedMangaReference>() {
 class MergedMangaGetResolver : DefaultGetResolver<MergedMangaReference>() {
 
     override fun mapFromCursor(cursor: Cursor): MergedMangaReference = MergedMangaReference(
-        id = cursor.getLong(cursor.getColumnIndex(COL_ID)),
-        isInfoManga = cursor.getInt(cursor.getColumnIndex(COL_IS_INFO_MANGA)) == 1,
-        getChapterUpdates = cursor.getInt(cursor.getColumnIndex(COL_GET_CHAPTER_UPDATES)) == 1,
-        chapterSortMode = cursor.getInt(cursor.getColumnIndex(COL_CHAPTER_SORT_MODE)),
-        chapterPriority = cursor.getInt(cursor.getColumnIndex(COL_CHAPTER_PRIORITY)),
-        downloadChapters = cursor.getInt(cursor.getColumnIndex(COL_DOWNLOAD_CHAPTERS)) == 1,
-        mergeId = cursor.getLong(cursor.getColumnIndex(COL_MERGE_ID)),
-        mergeUrl = cursor.getString(cursor.getColumnIndex(COL_MERGE_URL)),
-        mangaId = cursor.getLongOrNull(cursor.getColumnIndex(COL_MANGA_ID)),
-        mangaUrl = cursor.getString(cursor.getColumnIndex(COL_MANGA_URL)),
-        mangaSourceId = cursor.getLong(cursor.getColumnIndex(COL_MANGA_SOURCE))
+        id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID)),
+        isInfoManga = cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_INFO_MANGA)) == 1,
+        getChapterUpdates = cursor.getInt(cursor.getColumnIndexOrThrow(COL_GET_CHAPTER_UPDATES)) == 1,
+        chapterSortMode = cursor.getInt(cursor.getColumnIndexOrThrow(COL_CHAPTER_SORT_MODE)),
+        chapterPriority = cursor.getInt(cursor.getColumnIndexOrThrow(COL_CHAPTER_PRIORITY)),
+        downloadChapters = cursor.getInt(cursor.getColumnIndexOrThrow(COL_DOWNLOAD_CHAPTERS)) == 1,
+        mergeId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MERGE_ID)),
+        mergeUrl = cursor.getString(cursor.getColumnIndexOrThrow(COL_MERGE_URL)),
+        mangaId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COL_MANGA_ID)),
+        mangaUrl = cursor.getString(cursor.getColumnIndexOrThrow(COL_MANGA_URL)),
+        mangaSourceId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_SOURCE))
     )
 }
 

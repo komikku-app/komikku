@@ -47,11 +47,11 @@ class SearchTagPutResolver : DefaultPutResolver<SearchTag>() {
 class SearchTagGetResolver : DefaultGetResolver<SearchTag>() {
 
     override fun mapFromCursor(cursor: Cursor): SearchTag = SearchTag(
-        id = cursor.getLong(cursor.getColumnIndex(COL_ID)),
-        mangaId = cursor.getLong(cursor.getColumnIndex(COL_MANGA_ID)),
-        namespace = cursor.getString(cursor.getColumnIndex(COL_NAMESPACE)),
-        name = cursor.getString(cursor.getColumnIndex(COL_NAME)),
-        type = cursor.getInt(cursor.getColumnIndex(COL_TYPE))
+        id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID)),
+        mangaId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_ID)),
+        namespace = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAMESPACE)),
+        name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
+        type = cursor.getInt(cursor.getColumnIndexOrThrow(COL_TYPE))
     )
 }
 
