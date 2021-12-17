@@ -9,7 +9,6 @@ import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesController
@@ -26,7 +25,6 @@ import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.startAuthentication
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.coroutines.flow.launchIn
 import uy.kohesive.injekt.injectLazy
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
@@ -90,8 +88,7 @@ class SettingsSecurityController : SettingsController() {
                     false
                 }
 
-                preferences.useAuthenticator().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.useAuthenticator()) { it }
             }
         }
 
@@ -115,8 +112,7 @@ class SettingsSecurityController : SettingsController() {
             val timeRanges = preferences.authenticatorTimeRanges().get().size
             summary = context.resources.getQuantityString(R.plurals.num_lock_times, timeRanges, timeRanges)
 
-            preferences.useAuthenticator().asImmediateFlow { isVisible = it }
-                .launchIn(viewScope)
+            visibleIf(preferences.useAuthenticator()) { it }
 
             onClick {
                 router.pushController(BiometricTimesController().withFadeTransaction())
@@ -127,8 +123,7 @@ class SettingsSecurityController : SettingsController() {
             titleRes = R.string.biometric_lock_days
             summaryRes = R.string.biometric_lock_days_summary
 
-            preferences.useAuthenticator().asImmediateFlow { isVisible = it }
-                .launchIn(viewScope)
+            visibleIf(preferences.useAuthenticator()) { it }
 
             onClick {
                 SetLockedDaysDialog().showDialog(router)

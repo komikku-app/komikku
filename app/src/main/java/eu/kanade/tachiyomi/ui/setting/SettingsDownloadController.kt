@@ -16,7 +16,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
@@ -84,8 +83,7 @@ class SettingsDownloadController : SettingsController() {
             entryValues = entries
             defaultValue = "0"
 
-            preferences.saveChaptersAsCBZ().asImmediateFlow { isVisible = it }
-                .launchIn(viewScope)
+            visibleIf(preferences.saveChaptersAsCBZ()) { it }
         }
         // SY <--
 
@@ -153,8 +151,7 @@ class SettingsDownloadController : SettingsController() {
                     DownloadCategoriesDialog().showDialog(router)
                 }
 
-                preferences.downloadNew().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.downloadNew()) { it }
 
                 fun updateSummary() {
                     val selectedCategories = preferences.downloadNewCategories().get()

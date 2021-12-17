@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.TappingInvertMode
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
@@ -26,7 +25,6 @@ import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
-import kotlinx.coroutines.flow.launchIn
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
@@ -83,14 +81,14 @@ class SettingsReaderController : SettingsController() {
             titleRes = R.string.pref_show_vert_seekbar_landscape
             summaryRes = R.string.pref_show_vert_seekbar_landscape_summary
             defaultValue = false
-            preferences.forceHorizontalSeekbar().asImmediateFlow { isVisible = !it }.launchIn(viewScope)
+            visibleIf(preferences.forceHorizontalSeekbar()) { !it }
         }
         switchPreference {
             key = Keys.leftVerticalSeekbar
             titleRes = R.string.pref_left_handed_vertical_seekbar
             summaryRes = R.string.pref_left_handed_vertical_seekbar_summary
             defaultValue = false
-            preferences.forceHorizontalSeekbar().asImmediateFlow { isVisible = !it }.launchIn(viewScope)
+            visibleIf(preferences.forceHorizontalSeekbar()) { !it }
         }
         // SY <--
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -139,7 +137,8 @@ class SettingsReaderController : SettingsController() {
                     key = Keys.cutoutShort
                     titleRes = R.string.pref_cutout_short
                     defaultValue = true
-                    preferences.fullscreen().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+
+                    visibleIf(preferences.fullscreen()) { it }
                 }
             }
 
@@ -187,7 +186,7 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = "0"
                 summary = "%s"
 
-                preferences.readWithTapping().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+                visibleIf(preferences.readWithTapping()) { it }
             }
             listPreference {
                 key = Keys.pagerNavInverted
@@ -207,7 +206,7 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = TappingInvertMode.NONE.name
                 summary = "%s"
 
-                preferences.readWithTapping().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+                visibleIf(preferences.readWithTapping()) { it }
             }
             intListPreference {
                 key = Keys.imageScaleType
@@ -259,7 +258,7 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_dual_page_invert
                 summaryRes = R.string.pref_dual_page_invert_summary
                 defaultValue = false
-                preferences.dualPageSplitPaged().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+                visibleIf(preferences.dualPageSplitPaged()) { it }
             }
         }
 
@@ -275,7 +274,7 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = "0"
                 summary = "%s"
 
-                preferences.readWithTapping().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+                visibleIf(preferences.readWithTapping()) { it }
             }
             listPreference {
                 key = Keys.webtoonNavInverted
@@ -295,7 +294,7 @@ class SettingsReaderController : SettingsController() {
                 defaultValue = TappingInvertMode.NONE.name
                 summary = "%s"
 
-                preferences.readWithTapping().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+                visibleIf(preferences.readWithTapping()) { it }
             }
             intListPreference {
                 key = Keys.webtoonSidePadding
@@ -341,7 +340,7 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.pref_dual_page_invert
                 summaryRes = R.string.pref_dual_page_invert_summary
                 defaultValue = false
-                preferences.dualPageSplitWebtoon().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+                visibleIf(preferences.dualPageSplitWebtoon()) { it }
             }
             // SY -->
             switchPreference {
@@ -392,8 +391,7 @@ class SettingsReaderController : SettingsController() {
                 key = Keys.readWithVolumeKeysInverted
                 titleRes = R.string.pref_read_with_volume_keys_inverted
                 defaultValue = false
-
-                preferences.readWithVolumeKeys().asImmediateFlow { isVisible = it }.launchIn(viewScope)
+                visibleIf(preferences.readWithVolumeKeys()) { it }
             }
         }
 
@@ -550,7 +548,7 @@ class SettingsReaderController : SettingsController() {
                 key = Keys.invertDoublePages
                 titleRes = R.string.invert_double_pages
                 defaultValue = false
-                preferences.pageLayout().asImmediateFlow { isVisible = it != PagerConfig.PageLayout.SINGLE_PAGE }
+                visibleIf(preferences.pageLayout()) { it != PagerConfig.PageLayout.SINGLE_PAGE }
             }
         }
         // SY <--

@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
-import eu.kanade.tachiyomi.data.preference.asImmediateFlow
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.PREF_DOH_ADGUARD
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
@@ -303,8 +302,7 @@ class SettingsAdvancedController : SettingsController() {
                 defaultValue = ""
                 summaryRes = R.string.data_saver_server_summary
 
-                preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
@@ -312,8 +310,7 @@ class SettingsAdvancedController : SettingsController() {
                 key = Keys.dataSaverDownloaer
                 defaultValue = true
 
-                preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
@@ -321,8 +318,7 @@ class SettingsAdvancedController : SettingsController() {
                 key = Keys.ignoreJpeg
                 defaultValue = false
 
-                preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
@@ -330,8 +326,7 @@ class SettingsAdvancedController : SettingsController() {
                 key = Keys.ignoreGif
                 defaultValue = true
 
-                preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.dataSaver()) { it }
             }
 
             intListPreference {
@@ -342,8 +337,7 @@ class SettingsAdvancedController : SettingsController() {
                 defaultValue = "80"
                 summaryRes = R.string.data_saver_image_quality_summary
 
-                preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
@@ -353,8 +347,7 @@ class SettingsAdvancedController : SettingsController() {
                 summaryOn = context.getString(R.string.data_saver_image_format_summary_on)
                 summaryOff = context.getString(R.string.data_saver_image_format_summary_off)
 
-                preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
@@ -362,8 +355,7 @@ class SettingsAdvancedController : SettingsController() {
                 key = Keys.dataSaverColorBW
                 defaultValue = false
 
-                preferences.dataSaver().asImmediateFlow { isVisible = it }
-                    .launchIn(viewScope)
+                visibleIf(preferences.dataSaver()) { it }
             }
         }
 
