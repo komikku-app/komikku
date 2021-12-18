@@ -24,7 +24,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = /* SY --> */ 9 /* SY <-- */
+        const val DATABASE_VERSION = /* SY --> */ 10 /* SY <-- */
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -89,6 +89,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
             db.execSQL(TrackTable.createTableQuery)
             db.execSQL(TrackTable.insertFromTempTable)
             db.execSQL(TrackTable.dropTempTable)
+        }
+        if (oldVersion < 10) {
+            db.execSQL(ChapterTable.fixDateUploadIfNeeded)
         }
     }
 
