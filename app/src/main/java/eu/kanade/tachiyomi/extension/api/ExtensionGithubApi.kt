@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.extension.model.AvailableExtensionSources
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
@@ -98,6 +99,7 @@ internal class ExtensionGithubApi {
                     versionCode = it.code,
                     lang = it.lang,
                     isNsfw = it.nsfw == 1,
+                    sources = it.sources.toExtensionSources(),
                     apkName = it.apk,
                     iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.apk.replace(".apk", ".png")}",
                     // SY -->
@@ -105,6 +107,16 @@ internal class ExtensionGithubApi {
                     // SY <--
                 )
             }
+    }
+
+    private fun List<ExtensionSourceJsonObject>.toExtensionSources(): List<AvailableExtensionSources> {
+        return this.map {
+            AvailableExtensionSources(
+                name = it.name,
+                id = it.id,
+                baseUrl = it.baseUrl
+            )
+        }
     }
 
     fun getApkUrl(extension: Extension.Available): String {
@@ -128,8 +140,17 @@ private data class ExtensionJsonObject(
     val name: String,
     val pkg: String,
     val apk: String,
-    val version: String,
-    val code: Long,
     val lang: String,
+    val code: Long,
+    val version: String,
     val nsfw: Int,
+    val sources: List<ExtensionSourceJsonObject>,
+)
+
+@Serializable
+private data class ExtensionSourceJsonObject(
+    val name: String,
+    val id: Long,
+    val baseUrl: String
+
 )
