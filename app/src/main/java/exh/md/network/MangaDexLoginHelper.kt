@@ -46,6 +46,7 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
         return withIOContext {
             val loginRequest = LoginRequestDto(username, password)
             val loginResult = runCatching { authService.login(loginRequest) }
+                .onFailure { this@MangaDexLoginHelper.xLogE("Error logging in", it) }
 
             val e = loginResult.exceptionOrNull()
             if (e is CancellationException) throw e
@@ -77,7 +78,12 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
     suspend fun logout() {
         return withIOContext {
             withTimeoutOrNull(10.seconds) {
-                authService.logout()
+                runCatching {
+                    authService.logout()
+                }.onFailure {
+                    if (it is CancellationException) throw it
+                    this@MangaDexLoginHelper.xLogE("Error logging out", it)
+                }
             }
         }
     }
