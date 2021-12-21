@@ -99,7 +99,7 @@ internal class ExtensionGithubApi {
                     versionCode = it.code,
                     lang = it.lang,
                     isNsfw = it.nsfw == 1,
-                    sources = it.sources.toExtensionSources(),
+                    sources = it.sources?.toExtensionSources() ?: emptyList(),
                     apkName = it.apk,
                     iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.apk.replace(".apk", ".png")}",
                     // SY -->
@@ -144,7 +144,7 @@ private data class ExtensionJsonObject(
     val code: Long,
     val version: String,
     val nsfw: Int,
-    val sources: List<ExtensionSourceJsonObject>,
+    val sources: List<ExtensionSourceJsonObject>?,
 )
 
 @Serializable
