@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:foreground="?attr/selectableItemBackground"
-        android:layout_marginBottom="10dp">
+        android:layout_marginVertical="10dp">
 
         <ImageView
             android:id="@+id/manga_cover"
@@ -29,7 +29,7 @@
         android:orientation="horizontal"
         android:gravity="center">
 
-        <androidx.appcompat.widget.AppCompatSpinner
+        <Spinner
             android:id="@+id/status"
             android:minHeight="48dp"
             android:layout_width="wrap_content"
