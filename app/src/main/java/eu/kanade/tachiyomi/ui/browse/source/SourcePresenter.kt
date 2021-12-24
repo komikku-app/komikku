@@ -58,11 +58,11 @@ class SourcePresenter(
         val pinnedSourceIds = preferences.pinnedSources().get()
 
         // SY -->
-        val categories = mutableListOf<SourceCategory>()
-
-        preferences.sourcesTabCategories().get().sortedByDescending { it.lowercase() }.forEach {
-            categories.add(SourceCategory(it))
-        }
+        val categories = preferences.sourcesTabCategories().get()
+            .sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER, { it }))
+            .map {
+                SourceCategory(it)
+            }
 
         val sourcesAndCategoriesCombined = preferences.sourcesTabSourcesInCategories().get()
         val sourcesAndCategories = if (sourcesAndCategoriesCombined.isNotEmpty()) sourcesAndCategoriesCombined.map {

@@ -895,7 +895,7 @@ class LibraryPresenter(
         }
 
         val categories = when (groupType) {
-            LibraryGroup.BY_SOURCE -> grouping.sortedBy { it.third.lowercase() }
+            LibraryGroup.BY_SOURCE -> grouping.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.third }))
             LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.filter { it.second in map.keys }
             else -> grouping
         }.map { (_, id, name) ->

@@ -249,7 +249,8 @@ class SourceController(bundle: Bundle? = null) :
     }
 
     private fun addToCategories(source: Source) {
-        val categories = preferences.sourcesTabCategories().get().sortedBy { it.lowercase() }
+        val categories = preferences.sourcesTabCategories().get()
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it }))
             .toTypedArray()
 
         if (categories.isEmpty()) {

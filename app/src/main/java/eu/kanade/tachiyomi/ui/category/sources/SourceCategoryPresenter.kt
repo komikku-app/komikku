@@ -34,7 +34,7 @@ class SourceCategoryPresenter(
         super.onCreate(savedState)
 
         preferences.sourcesTabCategories().asFlow().onEach { categories ->
-            this.categories = categories.toList().sortedBy { it.lowercase() }
+            this.categories = categories.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it }))
 
             Observable.just(this.categories)
                 .map { it.map(::SourceCategoryItem) }
