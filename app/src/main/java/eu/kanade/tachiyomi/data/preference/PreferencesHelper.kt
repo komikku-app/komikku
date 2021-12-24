@@ -20,7 +20,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderBottomButton
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
-import eu.kanade.tachiyomi.util.system.MiuiUtil
+import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
@@ -334,7 +334,7 @@ class PreferencesHelper(val context: Context) {
 
     fun extensionInstaller() = flowPrefs.getEnum(
         Keys.extensionInstaller,
-        if (MiuiUtil.isMiui()) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER
+        if (DeviceUtil.isMiui()) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER
     )
 
     fun verboseLogging() = prefs.getBoolean(Keys.verboseLogging, false)
