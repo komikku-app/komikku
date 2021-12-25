@@ -1,18 +1,21 @@
 package exh.eh
 
 import kotlinx.coroutines.delay
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class EHentaiThrottleManager(
-    private val max: Int = THROTTLE_MAX,
-    private val inc: Int = THROTTLE_INC
+    private val max: Duration = THROTTLE_MAX,
+    private val inc: Duration = THROTTLE_INC
 ) {
-    private var lastThrottleTime: Long = 0
-    var throttleTime: Long = 0
+    private var lastThrottleTime = Duration.ZERO
+    var throttleTime = Duration.ZERO
         private set
 
     suspend fun throttle() {
         // Throttle requests if necessary
-        val now = System.currentTimeMillis()
+        val now = System.currentTimeMillis().milliseconds
         val timeDiff = now - lastThrottleTime
         if (timeDiff < throttleTime) {
             delay(throttleTime - timeDiff)
@@ -22,16 +25,16 @@ class EHentaiThrottleManager(
             throttleTime += inc
         }
 
-        lastThrottleTime = System.currentTimeMillis()
+        lastThrottleTime = System.currentTimeMillis().milliseconds
     }
 
     fun resetThrottle() {
-        lastThrottleTime = 0
-        throttleTime = 0
+        lastThrottleTime = Duration.ZERO
+        throttleTime = Duration.ZERO
     }
 
     companion object {
-        const val THROTTLE_MAX = 5500
-        const val THROTTLE_INC = 20
+        val THROTTLE_MAX = 5.5.seconds
+        val THROTTLE_INC = 20.milliseconds
     }
 }

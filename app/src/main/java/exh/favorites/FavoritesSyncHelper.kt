@@ -39,6 +39,7 @@ import okhttp3.Request
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import kotlin.time.Duration.Companion.seconds
 
 class FavoritesSyncHelper(val context: Context) {
     private val db: DatabaseHelper by injectLazy()
@@ -426,7 +427,7 @@ class FavoritesSyncHelper(val context: Context) {
     }
 
     companion object {
-        private const val THROTTLE_WARN = 1000
+        private val THROTTLE_WARN = 1.seconds
     }
 }
 
