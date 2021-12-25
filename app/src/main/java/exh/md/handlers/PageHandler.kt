@@ -9,7 +9,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.log.xLogD
 import exh.md.dto.AtHomeDto
-import exh.md.dto.ChapterDto
 import exh.md.service.MangaDexService
 import exh.md.utils.MdApi
 import exh.md.utils.MdUtil
@@ -34,7 +33,7 @@ class PageHandler(
         return withIOContext {
             val chapterResponse = service.viewChapter(MdUtil.getChapterId(chapter.url))
 
-            if (chapterResponse.data.attributes.externalUrl != null && chapterResponse.data.attributes.data.isEmpty()) {
+            if (chapterResponse.data.attributes.externalUrl != null) {
                 when {
                     chapter.scanlator.equals("mangaplus", true) -> mangaPlusHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
@@ -65,7 +64,7 @@ class PageHandler(
 
                 val atHomeResponse = service.getAtHomeServer(atHomeRequestUrl, headers)
 
-                pageListParse(chapterResponse, atHomeRequestUrl, atHomeResponse, dataSaver)
+                pageListParse(atHomeRequestUrl, atHomeResponse, dataSaver)
             }
         }
     }
@@ -85,16 +84,15 @@ class PageHandler(
     }
 
     private fun pageListParse(
-        chapterDto: ChapterDto,
         atHomeRequestUrl: String,
         atHomeDto: AtHomeDto,
         dataSaver: Boolean,
     ): List<Page> {
-        val hash = chapterDto.data.attributes.hash
+        val hash = atHomeDto.chapter.hash
         val pageArray = if (dataSaver) {
-            chapterDto.data.attributes.dataSaver.map { "/data-saver/$hash/$it" }
+            atHomeDto.chapter.dataSaver.map { "/data-saver/$hash/$it" }
         } else {
-            chapterDto.data.attributes.data.map { "/data/$hash/$it" }
+            atHomeDto.chapter.data.map { "/data/$hash/$it" }
         }
         val now = System.currentTimeMillis()
 
