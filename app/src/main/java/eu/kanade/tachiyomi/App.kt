@@ -57,7 +57,6 @@ import exh.log.XLogLogcatLogger
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.syDebugVersion
-import exh.util.days
 import io.realm.Realm
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -71,6 +70,7 @@ import java.io.File
 import java.security.Security
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.time.Duration.Companion.days
 
 open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 

@@ -1,6 +1,6 @@
 package exh.md.utils
 
-import exh.util.minutes
+import kotlin.time.Duration.Companion.minutes
 
 object MdConstants {
     const val baseUrl = "https://mangadex.org"

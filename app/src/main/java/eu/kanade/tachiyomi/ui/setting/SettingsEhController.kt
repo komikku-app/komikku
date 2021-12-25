@@ -48,13 +48,8 @@ import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.isEhBasedManga
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.EhLoginActivity
-import exh.util.days
 import exh.util.executeOnIO
-import exh.util.hours
-import exh.util.milliseconds
-import exh.util.minutes
 import exh.util.nullIfBlank
-import exh.util.seconds
 import exh.util.trans
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -66,6 +61,11 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.injectLazy
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * EH Settings fragment
@@ -584,7 +584,7 @@ class SettingsEhController : SettingsController() {
                     period.inWholeMilliseconds.let {
                         relativeTime.milliseconds = it
                     }
-                    period = 0.milliseconds
+                    period = Duration.ZERO
                 }
             }
         }

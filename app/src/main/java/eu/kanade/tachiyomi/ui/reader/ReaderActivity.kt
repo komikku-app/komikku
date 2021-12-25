@@ -120,6 +120,7 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Activity containing the reader of Tachiyomi. This activity is mostly a container of the

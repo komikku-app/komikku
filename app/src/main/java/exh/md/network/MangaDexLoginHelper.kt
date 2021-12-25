@@ -9,9 +9,9 @@ import exh.md.dto.LoginRequestDto
 import exh.md.dto.RefreshTokenDto
 import exh.md.service.MangaDexAuthService
 import exh.md.utils.MdUtil
-import exh.util.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.seconds
 
 class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
     val authService by authServiceLazy

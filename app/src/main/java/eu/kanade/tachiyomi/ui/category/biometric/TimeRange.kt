@@ -2,11 +2,11 @@ package eu.kanade.tachiyomi.ui.category.biometric
 
 import android.content.Context
 import android.text.format.DateFormat
-import exh.util.hours
-import exh.util.minutes
 import java.util.Date
 import java.util.SimpleTimeZone
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 data class TimeRange(private val startTime: Duration, private val endTime: Duration) {
     override fun toString(): String {
