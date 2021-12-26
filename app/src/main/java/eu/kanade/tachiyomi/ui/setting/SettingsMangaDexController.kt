@@ -4,8 +4,8 @@ import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.source.Source
+import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.listPreference
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
@@ -45,20 +45,13 @@ class SettingsMangaDexController :
         addPreference(sourcePreference)
 
         listPreference {
+            bindTo(preferences.preferredMangaDexId())
             titleRes = R.string.mangadex_preffered_source
             summaryRes = R.string.mangadex_preffered_source_summary
-            key = PreferenceKeys.preferredMangaDexId
             val mangaDexs = MdUtil.getEnabledMangaDexs(preferences)
             entries = mangaDexs.map { it.toString() }.toTypedArray()
             entryValues = mangaDexs.map { it.id.toString() }.toTypedArray()
         }
-
-        /*switchPreference {
-            key = PreferenceKeys.mangaDexForceLatestCovers
-            titleRes = R.string.mangadex_use_latest_cover
-            summaryRes = R.string.mangadex_use_latest_cover_summary
-            defaultValue = false
-        }*/
 
         preference {
             key = "pref_sync_mangadex_into_this"

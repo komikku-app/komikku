@@ -32,6 +32,7 @@ import eu.kanade.tachiyomi.ui.setting.database.ClearDatabaseController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.editTextPreference
 import eu.kanade.tachiyomi.util.preference.entriesRes
@@ -45,7 +46,6 @@ import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
-import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.isPackageInstalled
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
@@ -215,7 +215,7 @@ class SettingsAdvancedController : SettingsController() {
             titleRes = R.string.label_extensions
 
             listPreference {
-                key = Keys.extensionInstaller
+                bindTo(preferences.extensionInstaller())
                 titleRes = R.string.ext_installer_pref
                 summary = "%s"
                 entriesRes = arrayOf(
@@ -224,11 +224,6 @@ class SettingsAdvancedController : SettingsController() {
                     R.string.ext_installer_shizuku,
                 )
                 entryValues = PreferenceValues.ExtensionInstaller.values().map { it.name }.toTypedArray()
-                defaultValue = if (DeviceUtil.isMiui) {
-                    PreferenceValues.ExtensionInstaller.LEGACY
-                } else {
-                    PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER
-                }.name
 
                 onChange {
                     if (it == PreferenceValues.ExtensionInstaller.SHIZUKU.name &&
@@ -254,12 +249,11 @@ class SettingsAdvancedController : SettingsController() {
             titleRes = R.string.pref_category_display
 
             listPreference {
-                key = Keys.tabletUiMode
+                bindTo(preferences.tabletUiMode())
                 titleRes = R.string.pref_tablet_ui_mode
                 summary = "%s"
                 entriesRes = arrayOf(R.string.automatic_background, R.string.lock_always, R.string.landscape, R.string.lock_never)
                 entryValues = PreferenceValues.TabletUiMode.values().map { it.name }.toTypedArray()
-                defaultValue = PreferenceValues.TabletUiMode.AUTOMATIC.name
 
                 onChange {
                     activity?.toast(R.string.requires_app_restart)
@@ -289,60 +283,52 @@ class SettingsAdvancedController : SettingsController() {
             titleRes = R.string.data_saver
 
             switchPreference {
+                bindTo(preferences.dataSaver())
                 titleRes = R.string.data_saver
                 summaryRes = R.string.data_saver_summary
-                key = Keys.dataSaver
-                defaultValue = false
             }
 
             editTextPreference {
+                bindTo(preferences.dataSaverServer())
                 titleRes = R.string.data_saver_server
-                key = Keys.dataSaverServer
-                defaultValue = ""
                 summaryRes = R.string.data_saver_server_summary
 
                 visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
+                bindTo(preferences.dataSaverDownloader())
                 titleRes = R.string.data_saver_downloader
-                key = Keys.dataSaverDownloaer
-                defaultValue = true
 
                 visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
+                bindTo(preferences.dataSaverIgnoreJpeg())
                 titleRes = R.string.data_saver_ignore_jpeg
-                key = Keys.ignoreJpeg
-                defaultValue = false
 
                 visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
+                bindTo(preferences.dataSaverIgnoreGif())
                 titleRes = R.string.data_saver_ignore_gif
-                key = Keys.ignoreGif
-                defaultValue = true
 
                 visibleIf(preferences.dataSaver()) { it }
             }
 
             intListPreference {
-                titleRes = R.string.data_saver_image_quality
-                key = Keys.dataSaverImageQuality
+                bindTo(preferences.dataSaverImageQuality())
                 entries = arrayOf("10", "20", "40", "50", "70", "80", "90", "95")
                 entryValues = entries
-                defaultValue = "80"
                 summaryRes = R.string.data_saver_image_quality_summary
 
                 visibleIf(preferences.dataSaver()) { it }
             }
 
             switchPreference {
+                bindTo(preferences.dataSaverImageFormatJpeg())
                 titleRes = R.string.data_saver_image_format
-                key = Keys.dataSaverImageFormatJpeg
-                defaultValue = false
                 summaryOn = context.getString(R.string.data_saver_image_format_summary_on)
                 summaryOff = context.getString(R.string.data_saver_image_format_summary_off)
 
@@ -350,9 +336,8 @@ class SettingsAdvancedController : SettingsController() {
             }
 
             switchPreference {
+                bindTo(preferences.dataSaverColorBW())
                 titleRes = R.string.data_saver_color_bw
-                key = Keys.dataSaverColorBW
-                defaultValue = false
 
                 visibleIf(preferences.dataSaver()) { it }
             }
@@ -363,10 +348,9 @@ class SettingsAdvancedController : SettingsController() {
             isPersistent = false
 
             switchPreference {
+                bindTo(preferences.isHentaiEnabled())
                 titleRes = R.string.toggle_hentai_features
                 summaryRes = R.string.toggle_hentai_features_summary
-                key = Keys.eh_is_hentai_enabled
-                defaultValue = true
 
                 onChange {
                     if (preferences.isHentaiEnabled().get()) {
@@ -381,29 +365,26 @@ class SettingsAdvancedController : SettingsController() {
             }
 
             switchPreference {
+                bindTo(preferences.delegateSources())
                 titleRes = R.string.toggle_delegated_sources
-                key = Keys.eh_delegateSources
-                defaultValue = true
                 summary = context.getString(R.string.toggle_delegated_sources_summary, context.getString(R.string.app_name), DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString())
             }
 
             intListPreference {
-                key = Keys.eh_logLevel
+                bindTo(preferences.logLevel())
                 titleRes = R.string.log_level
 
                 entries = EHLogLevel.values().map {
                     "${context.getString(it.nameRes)} (${context.getString(it.description)})"
                 }.toTypedArray()
                 entryValues = EHLogLevel.values().mapIndexed { index, _ -> "$index" }.toTypedArray()
-                defaultValue = "0"
 
                 summaryRes = R.string.log_level_summary
             }
 
             switchPreference {
+                bindTo(preferences.enableSourceBlacklist())
                 titleRes = R.string.enable_source_blacklist
-                key = Keys.eh_enableSourceBlacklist
-                defaultValue = true
                 summary = context.getString(R.string.enable_source_blacklist_summary, context.getString(R.string.app_name))
             }
 

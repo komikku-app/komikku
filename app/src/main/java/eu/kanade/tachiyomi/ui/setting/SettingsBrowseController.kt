@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.repos.RepoController
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
+import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.infoPreference
 import eu.kanade.tachiyomi.util.preference.onChange
@@ -41,22 +42,19 @@ class SettingsBrowseController : SettingsController() {
                 }
             }
             switchPreference {
-                key = Keys.sources_tab_categories_filter
+                bindTo(preferences.sourcesTabCategoriesFilter())
                 titleRes = R.string.pref_source_source_filtering
                 summaryRes = R.string.pref_source_source_filtering_summery
-                defaultValue = false
             }
             switchPreference {
-                key = Keys.useNewSourceNavigation
+                bindTo(preferences.useNewSourceNavigation())
                 titleRes = R.string.pref_source_navigation
                 summaryRes = R.string.pref_source_navigation_summery
-                defaultValue = true
             }
             switchPreference {
-                key = Keys.allowLocalSourceHiddenFolders
+                bindTo(preferences.allowLocalSourceHiddenFolders())
                 titleRes = R.string.pref_local_source_hidden_folders
                 summaryRes = R.string.pref_local_source_hidden_folders_summery
-                defaultValue = false
             }
         }
 
@@ -64,10 +62,9 @@ class SettingsBrowseController : SettingsController() {
             titleRes = R.string.latest
 
             switchPreference {
-                key = Keys.latest_tab_position
+                bindTo(preferences.latestTabInFront())
                 titleRes = R.string.pref_latest_position
                 summaryRes = R.string.pref_latest_position_summery
-                defaultValue = false
             }
         }
         // SY <--
@@ -76,9 +73,8 @@ class SettingsBrowseController : SettingsController() {
             titleRes = R.string.label_extensions
 
             switchPreference {
-                key = Keys.automaticExtUpdates
+                bindTo(preferences.automaticExtUpdates())
                 titleRes = R.string.pref_enable_automatic_extension_updates
-                defaultValue = true
 
                 onChange { newValue ->
                     val checked = newValue as Boolean
@@ -115,10 +111,9 @@ class SettingsBrowseController : SettingsController() {
             titleRes = R.string.pref_category_nsfw_content
 
             switchPreference {
-                key = Keys.showNsfwSource
+                bindTo(preferences.showNsfwSource())
                 titleRes = R.string.pref_show_nsfw_source
                 summaryRes = R.string.requires_app_restart
-                defaultValue = true
 
                 if (context.isAuthenticationSupported() && activity != null) {
                     requireAuthentication(

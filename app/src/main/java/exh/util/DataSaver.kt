@@ -41,8 +41,8 @@ fun DataSaver(source: Source, preferences: PreferencesHelper): DataSaver {
 private class DataSaverImpl(preferences: PreferencesHelper) : DataSaver {
     private val dataSavedServer = preferences.dataSaverServer().get().trimEnd('/')
 
-    private val ignoreJpg = preferences.ignoreJpeg().get()
-    private val ignoreGif = preferences.ignoreGif().get()
+    private val ignoreJpg = preferences.dataSaverIgnoreJpeg().get()
+    private val ignoreGif = preferences.dataSaverIgnoreGif().get()
 
     private val format = preferences.dataSaverImageFormatJpeg().toIntRepresentation()
     private val quality = preferences.dataSaverImageQuality().get()

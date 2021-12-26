@@ -293,7 +293,7 @@ class LibrarySettingsSheet(
                     SortDirectionSetting.DESCENDING
                 }
 
-                if (preferences.categorisedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
+                if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
                     currentCategory?.sortDirection = flag.flag
 
                     db.insertCategory(currentCategory!!).executeAsBlocking()
@@ -319,7 +319,7 @@ class LibrarySettingsSheet(
                     else -> throw NotImplementedError("Unknown display mode")
                 }
 
-                if (preferences.categorisedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
+                if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
                     currentCategory?.sortMode = flag.flag
 
                     db.insertCategory(currentCategory!!).executeAsBlocking()
@@ -364,7 +364,7 @@ class LibrarySettingsSheet(
 
         // Gets user preference of currently selected display mode at current category
         private fun getDisplayModePreference(): DisplayModeSetting {
-            return if (preferences.categorisedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
+            return if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
                 DisplayModeSetting.fromFlag(currentCategory?.displayMode)
             } else {
                 preferences.libraryDisplayMode().get()
@@ -424,7 +424,7 @@ class LibrarySettingsSheet(
                     else -> throw NotImplementedError("Unknown display mode")
                 }
 
-                if (preferences.categorisedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
+                if (preferences.categorizedDisplaySettings().get() && currentCategory != null && currentCategory?.id != 0 /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT /* SY <-- */) {
                     currentCategory?.displayMode = flag.flag
 
                     db.insertCategory(currentCategory!!).executeAsBlocking()

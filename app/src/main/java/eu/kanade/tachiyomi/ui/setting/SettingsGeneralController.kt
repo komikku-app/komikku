@@ -5,6 +5,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -35,9 +36,8 @@ class SettingsGeneralController : SettingsController() {
             summary = "%s"
         }
         switchPreference {
-            key = Keys.showUpdatesNavBadge
+            bindTo(preferences.showUpdatesNavBadge())
             titleRes = R.string.pref_library_update_show_tab_badge
-            defaultValue = false
         }
         switchPreference {
             key = Keys.confirmExit
@@ -61,23 +61,20 @@ class SettingsGeneralController : SettingsController() {
             titleRes = R.string.pref_category_fork
 
             switchPreference {
-                key = Keys.eh_expandFilters
+                bindTo(preferences.expandFilters())
                 titleRes = R.string.toggle_expand_search_filters
-                defaultValue = false
             }
 
             switchPreference {
-                key = Keys.eh_autoSolveCaptchas
+                bindTo(preferences.autoSolveCaptcha())
                 titleRes = R.string.auto_solve_captchas
                 summaryRes = R.string.auto_solve_captchas_summary
-                defaultValue = false
             }
 
             switchPreference {
-                key = Keys.recommendsInOverflow
+                bindTo(preferences.recommendsInOverflow())
                 titleRes = R.string.put_recommends_in_overflow
                 summaryRes = R.string.put_recommends_in_overflow_summary
-                defaultValue = false
             }
         }
         // <-- EXH

@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
+import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -48,7 +49,7 @@ class SettingsDownloadController : SettingsController() {
         val categories = listOf(Category.createDefault(context)) + dbCategories
 
         preference {
-            key = Keys.downloadsDirectory
+            bindTo(preferences.downloadsDirectory())
             titleRes = R.string.pref_download_directory
             onClick {
                 val ctrl = DownloadDirectoriesDialog()
@@ -71,17 +72,15 @@ class SettingsDownloadController : SettingsController() {
 
         // SY -->
         switchPreference {
-            key = Keys.saveChaptersAsCBZ
+            bindTo(preferences.saveChaptersAsCBZ())
             titleRes = R.string.save_chapter_as_cbz
-            defaultValue = false
         }
 
         intListPreference {
+            bindTo(preferences.saveChaptersAsCBZLevel())
             titleRes = R.string.save_chapter_as_cbz_level
-            key = Keys.saveChaptersAsCBZLevel
             entries = arrayOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
             entryValues = entries
-            defaultValue = "0"
 
             visibleIf(preferences.saveChaptersAsCBZ()) { it }
         }
@@ -116,7 +115,7 @@ class SettingsDownloadController : SettingsController() {
                 defaultValue = false
             }
             multiSelectListPreference {
-                key = Keys.removeExcludeCategories
+                bindTo(preferences.removeExcludeCategories())
                 titleRes = R.string.pref_remove_exclude_categories
                 entries = categories.map { it.name }.toTypedArray()
                 entryValues = categories.map { it.id.toString() }.toTypedArray()
@@ -140,12 +139,11 @@ class SettingsDownloadController : SettingsController() {
             titleRes = R.string.pref_category_auto_download
 
             switchPreference {
-                key = Keys.downloadNew
+                bindTo(preferences.downloadNew())
                 titleRes = R.string.pref_download_new
-                defaultValue = false
             }
             preference {
-                key = Keys.downloadNewCategories
+                bindTo(preferences.downloadNewCategories())
                 titleRes = R.string.categories
                 onClick {
                     DownloadCategoriesDialog().showDialog(router)

@@ -262,7 +262,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         // SY -->
         adapter.isLongPressDragEnabled = adapter.canDrag()
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
-        if (preferences.categorisedDisplaySettings().get() && category.id != 0) {
+        if (preferences.categorizedDisplaySettings().get() && category.id != 0) {
             if (SortModeSetting.fromFlag(category.sortMode) == SortModeSetting.DRAG_AND_DROP) {
                 mangaForCategory = mangaForCategory.sortedBy {
                     category.mangaOrder.indexOf(it.manga.id)
@@ -436,7 +436,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         } else {
             db.insertCategory(category).asRxObservable().subscribe()
         }
-        if (preferences.categorisedDisplaySettings().get() && category.id != 0) {
+        if (preferences.categorizedDisplaySettings().get() && category.id != 0) {
             if (SortModeSetting.fromFlag(category.sortMode) != SortModeSetting.DRAG_AND_DROP) {
                 category.sortMode = SortModeSetting.DRAG_AND_DROP.flag
                 category.sortDirection = SortDirectionSetting.ASCENDING.flag
