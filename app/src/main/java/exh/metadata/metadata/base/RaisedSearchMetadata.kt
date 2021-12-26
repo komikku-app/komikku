@@ -4,7 +4,6 @@ import android.content.Context
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.source.model.toSManga
-import exh.metadata.forEach
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.HBrowseSearchMetadata
@@ -73,7 +72,7 @@ abstract class RaisedSearchMetadata {
                 it.namespace
             }.entries
 
-            groupedTags.forEach { namespace, tags ->
+            groupedTags.forEach { (namespace, tags) ->
                 if (tags.isNotEmpty()) {
                     val joinedTags = tags.joinToString(separator = " ", transform = { "<${it.name}>" })
                     if (namespace != null) {
