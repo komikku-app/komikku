@@ -174,7 +174,7 @@
     <string name="auto_solve_captchas_summary">Use HIGHLY EXPERIMENTAL automatic ReCAPTCHA solver. Will be grayed out if unsupported by your device.</string>
     <string name="put_recommends_in_overflow">Recommendations in overflow</string>
     <string name="put_recommends_in_overflow_summary">Put the recommendations button in the overflow menu instead of on the manga page</string>
-    
+
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Navbar</string>
     <string name="pref_hide_updates_button">Show updates in the nav</string>
