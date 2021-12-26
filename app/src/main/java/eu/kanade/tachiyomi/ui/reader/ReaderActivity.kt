@@ -100,7 +100,6 @@ import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.floor
 import exh.util.mangaType
-import exh.util.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
