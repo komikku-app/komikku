@@ -165,7 +165,9 @@ class ApiMangaParser(
     }
 
     fun chapterListParse(chapterListResponse: List<ChapterDataDto>, groupMap: Map<String, String>): List<ChapterInfo> {
+        val now = System.currentTimeMillis()
         return chapterListResponse
+            .filterNot { MdUtil.parseDate(it.attributes.publishAt) > now && it.attributes.externalUrl == null }
             .map {
                 mapChapter(it, groupMap)
             }
