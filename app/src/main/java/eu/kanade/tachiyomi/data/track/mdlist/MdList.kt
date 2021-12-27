@@ -63,13 +63,13 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
                 }
             }
 
-            /*if (track.score.toInt() > 0) {
+            if (remoteTrack.score != track.score) {
                 mdex.updateRating(track)
             }
 
             // mangadex wont update chapters if manga is not follows this prevents unneeded network call
 
-            if (followStatus != FollowStatus.UNFOLLOWED) {
+            /*if (followStatus != FollowStatus.UNFOLLOWED) {
                 if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
                     track.status = FollowStatus.COMPLETED.int
                     mdex.updateFollowStatus(MdUtil.getMangaId(track.tracking_url), FollowStatus.COMPLETED)

@@ -10,6 +10,7 @@ object MdApi {
     const val chapter = "$baseUrl/chapter"
     const val group = "$baseUrl/group"
     const val author = "$baseUrl/author"
+    const val rating = "$baseUrl/rating"
     const val statistics = "$baseUrl/statistics/manga"
     const val chapterImageServer = "$baseUrl/at-home/server"
     const val userFollows = "$baseUrl/user/follows/manga"

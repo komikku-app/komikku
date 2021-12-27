@@ -7,10 +7,12 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.dto.MangaDataDto
+import exh.md.dto.PersonalRatingDto
 import exh.md.dto.ReadingStatusDto
 import exh.md.service.MangaDexAuthService
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import exh.md.utils.asMdMap
 import exh.md.utils.mdListCall
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.util.under
@@ -109,33 +111,21 @@ class FollowsHandler(
             }
             result.isSuccess
         }
-    }
+    }*/
 
     suspend fun updateRating(track: Track): Boolean {
-        return true
         return withIOContext {
-            val mangaID = getMangaId(track.tracking_url)
+            val mangaId = MdUtil.getMangaId(track.tracking_url)
             val result = runCatching {
-                client.newCall(
-                    GET(
-                        "$baseUrl/ajax/actions.ajax.php?function=manga_rating&id=$mangaID&rating=${track.score.toInt()}",
-                        headers
-                    )
-                )
-                    .execute()
-            }
-
-            result.exceptionOrNull()?.let {
-                if (it is EOFException) {
-                    return@withIOContext true
+                if (track.score == 0f) {
+                    service.deleteMangaRating(mangaId)
                 } else {
-                    XLog.e("error updating rating", it)
-                    return@withIOContext false
-                }
+                    service.updateMangaRating(mangaId, track.score.toInt())
+                }.result == "ok"
             }
-            result.isSuccess
+            result.getOrDefault(false)
         }
-    }*/
+    }
 
     /**
      * fetch all manga from all possible pages
@@ -157,11 +147,18 @@ class FollowsHandler(
     suspend fun fetchTrackingInfo(url: String): Track {
         return withIOContext {
             val mangaId = MdUtil.getMangaId(url)
-            val followStatus = FollowStatus.fromDex(service.readingStatusForManga(mangaId).status)
+            val followStatusDef = async {
+                FollowStatus.fromDex(service.readingStatusForManga(mangaId).status)
+            }
+            val ratingDef = async {
+                service.mangasRating(mangaId).ratings.asMdMap<PersonalRatingDto>()[mangaId]
+            }
+            val (followStatus, rating) = followStatusDef.await() to ratingDef.await()
             Track.create(TrackManager.MDLIST).apply {
                 title = ""
                 status = followStatus.int
                 tracking_url = url
+                score = rating?.rating?.toFloat() ?: 0F
             }
         }
     }

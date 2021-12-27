@@ -11,6 +11,8 @@ import exh.md.dto.LoginRequestDto
 import exh.md.dto.LoginResponseDto
 import exh.md.dto.LogoutDto
 import exh.md.dto.MangaListDto
+import exh.md.dto.RatingDto
+import exh.md.dto.RatingResponseDto
 import exh.md.dto.ReadChapterDto
 import exh.md.dto.ReadingStatusDto
 import exh.md.dto.ReadingStatusMapDto
@@ -22,6 +24,7 @@ import exh.md.utils.MdUtil
 import okhttp3.Authenticator
 import okhttp3.CacheControl
 import okhttp3.Headers
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -185,6 +188,46 @@ class MangaDexAuthService(
                 .headers(getHeaders())
                 .cacheControl(CacheControl.FORCE_NETWORK)
                 .build()
+        ).await().parseAs(MdUtil.jsonParser)
+    }
+
+    suspend fun updateMangaRating(mangaId: String, rating: Int): ResultDto {
+        return client.newCall(
+            POST(
+                "${MdApi.rating}/$mangaId",
+                getHeaders(),
+                body = MdUtil.encodeToBody(RatingDto(rating)),
+                cache = CacheControl.FORCE_NETWORK
+            )
+        ).await().parseAs(MdUtil.jsonParser)
+    }
+
+    suspend fun deleteMangaRating(mangaId: String): ResultDto {
+        return client.newCall(
+            Request.Builder()
+                .delete()
+                .url("${MdApi.rating}/$mangaId")
+                .headers(getHeaders())
+                .cacheControl(CacheControl.FORCE_NETWORK)
+                .build()
+        ).await().parseAs(MdUtil.jsonParser)
+    }
+
+    suspend fun mangasRating(vararg mangaIds: String): RatingResponseDto {
+        return client.newCall(
+            GET(
+                MdApi.rating.toHttpUrl()
+                    .newBuilder()
+                    .apply {
+                        mangaIds.forEach {
+                            addQueryParameter("manga[]", it)
+                        }
+                    }
+                    .build()
+                    .toString(),
+                getHeaders(),
+                cache = CacheControl.FORCE_NETWORK
+            )
         ).await().parseAs(MdUtil.jsonParser)
     }
 }
