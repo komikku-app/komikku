@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.MangaDexFabHeaderAdapter
 import exh.md.dto.MangaDto
+import exh.md.dto.StatisticsMangaDto
 import exh.md.handlers.ApiMangaParser
 import exh.md.handlers.BilibiliHandler
 import exh.md.handlers.ComikeyHandler
@@ -58,7 +59,7 @@ import kotlin.reflect.KClass
 @Suppress("OverridingDeprecatedMember")
 class MangaDex(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
-    MetadataSource<MangaDexSearchMetadata, Pair<MangaDto, List<String>>>,
+    MetadataSource<MangaDexSearchMetadata, Triple<MangaDto, List<String>, StatisticsMangaDto>>,
     UrlImportableSource,
     FollowsSource,
     LoginSource,
@@ -206,8 +207,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return MangaDexDescriptionAdapter(controller)
     }
 
-    override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Pair<MangaDto, List<String>>) {
-        apiMangaParser.parseIntoMetadata(metadata, input.first, input.second)
+    override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Triple<MangaDto, List<String>, StatisticsMangaDto>) {
+        apiMangaParser.parseIntoMetadata(metadata, input.first, input.second, input.third)
     }
 
     // LoginSource methods
@@ -265,11 +266,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     // Tracker methods
     /*suspend fun updateReadingProgress(track: Track): Boolean {
         return followsHandler.updateReadingProgress(track)
-    }
+    }*/
 
     suspend fun updateRating(track: Track): Boolean {
         return followsHandler.updateRating(track)
-    }*/
+    }
 
     suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
         return mangaHandler.getTrackingInfo(track)

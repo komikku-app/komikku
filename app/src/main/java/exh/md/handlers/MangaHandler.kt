@@ -15,7 +15,9 @@ import exh.md.utils.MdUtil
 import exh.md.utils.mdListCall
 import exh.metadata.metadata.MangaDexSearchMetadata
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
@@ -27,9 +29,19 @@ class MangaHandler(
     private val followsHandler: FollowsHandler
 ) {
     suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
-        val response = withIOContext { service.viewManga(MdUtil.getMangaId(manga.key)) }
-        val simpleChapters = withIOContext { getSimpleChapters(manga) }
-        return apiMangaParser.parseToManga(manga, response, simpleChapters, sourceId)
+        return coroutineScope {
+            val mangaId = MdUtil.getMangaId(manga.key)
+            val response = async(Dispatchers.IO) { service.viewManga(mangaId) }
+            val simpleChapters = async(Dispatchers.IO) { getSimpleChapters(manga) }
+            val statistics = async(Dispatchers.IO) { service.mangasRating(mangaId).statistics[mangaId] }
+            apiMangaParser.parseToManga(
+                manga,
+                sourceId,
+                response.await(),
+                simpleChapters.await(),
+                statistics.await()
+            )
+        }
     }
 
     fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long): Observable<SManga> {

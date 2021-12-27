@@ -27,7 +27,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
     var langFlag: String? = null
 
     var lastChapterNumber: Int? = null
-    // var rating: String? = null
+    var rating: Float? = null
     // var users: String? = null
 
     var anilistId: String? = null

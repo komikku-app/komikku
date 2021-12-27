@@ -6,6 +6,7 @@ import exh.log.xLogE
 import exh.md.dto.ChapterDataDto
 import exh.md.dto.ChapterDto
 import exh.md.dto.MangaDto
+import exh.md.dto.StatisticsMangaDto
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
 import exh.md.utils.asMdMap
@@ -36,14 +37,20 @@ class ApiMangaParser(
     }?.call()
         ?: error("Could not find no-args constructor for meta class: ${metaClass.qualifiedName}!")
 
-    fun parseToManga(manga: MangaInfo, input: MangaDto, simpleChapters: List<String>, sourceId: Long): MangaInfo {
+    fun parseToManga(
+        manga: MangaInfo,
+        sourceId: Long,
+        input: MangaDto,
+        simpleChapters: List<String>,
+        statistics: StatisticsMangaDto?
+    ): MangaInfo {
         val mangaId = db.getManga(manga.key, sourceId).executeAsBlocking()?.id
         val metadata = if (mangaId != null) {
             val flatMetadata = db.getFlatMetadataForManga(mangaId).executeAsBlocking()
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
-        parseIntoMetadata(metadata, input, simpleChapters)
+        parseIntoMetadata(metadata, input, simpleChapters, statistics)
         if (mangaId != null) {
             metadata.mangaId = mangaId
             db.insertFlatMetadata(metadata.flatten())
@@ -52,7 +59,12 @@ class ApiMangaParser(
         return metadata.createMangaInfo(manga)
     }
 
-    fun parseIntoMetadata(metadata: MangaDexSearchMetadata, mangaDto: MangaDto, simpleChapters: List<String>) {
+    fun parseIntoMetadata(
+        metadata: MangaDexSearchMetadata,
+        mangaDto: MangaDto,
+        simpleChapters: List<String>,
+        statistics: StatisticsMangaDto?
+    ) {
         with(metadata) {
             try {
                 val mangaAttributesDto = mangaDto.data.attributes
@@ -83,12 +95,12 @@ class ApiMangaParser(
                 val lastChapter = mangaAttributesDto.lastChapter?.toFloatOrNull()
                 lastChapterNumber = lastChapter?.floor()
 
-                /*networkManga.rating?.let {
-                    manga.rating = it.bayesian ?: it.mean
-                    manga.users = it.users
-                }*/
+                statistics?.rating?.let {
+                    rating = it.average?.toFloat()
+                    // manga.users = it.users
+                }
 
-                mangaAttributesDto.links?.asMdMap()?.let { links ->
+                mangaAttributesDto.links?.asMdMap<String>()?.let { links ->
                     links["al"]?.let { anilistId = it }
                     links["kt"]?.let { kitsuId = it }
                     links["mal"]?.let { myAnimeListId = it }
