@@ -1,11 +1,15 @@
 package exh.md.handlers
 
-import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.util.lang.withIOContext
+import exh.md.dto.RelationListDto
 import exh.md.dto.SimilarMangaDto
 import exh.md.service.MangaDexService
 import exh.md.service.SimilarService
+import exh.md.utils.MangaDexRelation
 import exh.md.utils.MdUtil
+import exh.metadata.metadata.MangaDexSearchMetadata
 import tachiyomi.source.model.MangaInfo
 
 class SimilarHandler(
@@ -14,14 +18,14 @@ class SimilarHandler(
     private val similarService: SimilarService
 ) {
 
-    suspend fun getSimilar(manga: MangaInfo): MangasPage {
-        val similarDto = similarService.getSimilarManga(MdUtil.getMangaId(manga.key))
+    suspend fun getSimilar(manga: MangaInfo): MetadataMangasPage {
+        val similarDto = withIOContext { similarService.getSimilarManga(MdUtil.getMangaId(manga.key)) }
         return similarDtoToMangaListPage(similarDto)
     }
 
     private suspend fun similarDtoToMangaListPage(
         similarMangaDto: SimilarMangaDto,
-    ): MangasPage {
+    ): MetadataMangasPage {
         val ids = similarMangaDto.matches.map {
             it.id
         }
@@ -30,6 +34,34 @@ class SimilarHandler(
             MdUtil.createMangaEntry(it, lang).toSManga()
         }
 
-        return MangasPage(mangaList, false)
+        return MetadataMangasPage(mangaList, false, List(mangaList.size) { MangaDexSearchMetadata().also { it.relation = MangaDexRelation.SIMILAR } })
+    }
+
+    suspend fun getRelated(manga: MangaInfo): MetadataMangasPage {
+        val relatedListDto = withIOContext { service.relatedManga(MdUtil.getMangaId(manga.key)) }
+        return relatedDtoToMangaListPage(relatedListDto)
+    }
+
+    private suspend fun relatedDtoToMangaListPage(
+        relatedListDto: RelationListDto,
+    ): MetadataMangasPage {
+        val ids = relatedListDto.data
+            .mapNotNull { it.relationships.firstOrNull() }
+            .map { it.id }
+
+        val mangaList = service.viewMangas(ids).data.map {
+            MdUtil.createMangaEntry(it, lang).toSManga()
+        }
+
+        return MetadataMangasPage(
+            mangas = mangaList,
+            hasNextPage = false,
+            mangasMetadata = mangaList.map { manga ->
+                MangaDexSearchMetadata().also {
+                    it.relation = relatedListDto.data.firstOrNull { it.relationships.any { it.id == MdUtil.getMangaId(manga.url) } }
+                        ?.attributes?.relation?.let(MangaDexRelation::fromDex)
+                }
+            }
+        )
     }
 }

@@ -58,6 +58,10 @@ open class SourceCompactGridHolder(private val view: View, private val adapter: 
                 binding.badges.localText.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
                 binding.badges.localText.isVisible = true
             }
+            metadata.relation?.let {
+                binding.badges.localText.setText(it.resId)
+                binding.badges.localText.isVisible = true
+            }
         }
     }
     // SY <--

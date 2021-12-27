@@ -2,6 +2,7 @@ package exh.metadata.metadata
 
 import android.content.Context
 import eu.kanade.tachiyomi.R
+import exh.md.utils.MangaDexRelation
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
@@ -40,6 +41,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
     // var missing_chapters: String? = null
 
     var followStatus: Int? = null
+    var relation: MangaDexRelation? = null
 
     // var maxChapterNumber: Int? = null
 

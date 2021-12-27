@@ -61,6 +61,10 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
                 binding.badges.localText.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
                 binding.badges.localText.isVisible = true
             }
+            metadata.relation?.let {
+                binding.badges.localText.setText(it.resId)
+                binding.badges.localText.isVisible = true
+            }
         }
     }
     // SY <--

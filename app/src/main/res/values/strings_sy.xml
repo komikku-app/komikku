@@ -669,6 +669,24 @@
     <!-- Similar -->
     <string name="similar">Similar to %1$s</string>
     <string name="similar_no_results">No Similar Manga found</string>
+    
+    <!-- Mangadex relations-->
+    <string name="relation_similar">Similar</string>
+    <string name="relation_monochrome">Monochrome</string>
+    <string name="relation_main_story">Main story</string>
+    <string name="relation_adapted_from">Adapted from</string>
+    <string name="relation_based_on">Based on</string>
+    <string name="relation_prequel">Prequel</string>
+    <string name="relation_side_story">Side story</string>
+    <string name="relation_doujinshi">Doujinshi</string>
+    <string name="relation_same_franchise">Same franchise</string>
+    <string name="relation_shared_universe">Shared universe</string>
+    <string name="relation_sequel">Sequel</string>
+    <string name="relation_spin_off">Spin-off</string>
+    <string name="relation_alternate_story">Alternate story</string>
+    <string name="relation_preserialization">Pre-serialization</string>
+    <string name="relation_colored">Colored</string>
+    <string name="relation_serialization">Serialization</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">

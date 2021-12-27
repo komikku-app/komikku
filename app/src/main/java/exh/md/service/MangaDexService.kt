@@ -11,6 +11,7 @@ import exh.md.dto.ChapterDto
 import exh.md.dto.ChapterListDto
 import exh.md.dto.MangaDto
 import exh.md.dto.MangaListDto
+import exh.md.dto.RelationListDto
 import exh.md.dto.ResultDto
 import exh.md.utils.MdApi
 import exh.md.utils.MdConstants
@@ -145,6 +146,21 @@ class MangaDexService(
     ): AtHomeDto {
         return client.newCall(GET(atHomeRequestUrl, headers, CacheControl.FORCE_NETWORK))
             .await()
-            .parseAs()
+            .parseAs(MdUtil.jsonParser)
+    }
+
+    suspend fun relatedManga(id: String): RelationListDto {
+        return client.newCall(
+            GET(
+                MdApi.manga.toHttpUrl().newBuilder()
+                    .apply {
+                        addPathSegment(id)
+                        addPathSegment("relation")
+                    }
+                    .build()
+                    .toString(),
+                cache = CacheControl.FORCE_NETWORK
+            )
+        ).await().parseAs(MdUtil.jsonParser)
     }
 }

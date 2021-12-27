@@ -58,6 +58,10 @@ class SourceListHolder(private val view: View, adapter: FlexibleAdapter<*>) :
                 binding.localText.text = itemView.context.resources.getStringArray(R.array.md_follows_options).asList()[it]
                 binding.localText.isVisible = true
             }
+            metadata.relation?.let {
+                binding.localText.setText(it.resId)
+                binding.localText.isVisible = true
+            }
         }
     }
     // SY <--

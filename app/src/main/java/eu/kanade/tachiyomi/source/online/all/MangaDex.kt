@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
@@ -284,8 +285,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.fetchRandomMangaId()
     }
 
-    suspend fun getMangaSimilar(manga: MangaInfo): MangasPage {
+    suspend fun getMangaSimilar(manga: MangaInfo): MetadataMangasPage {
         return similarHandler.getSimilar(manga)
+    }
+
+    suspend fun getMangaRelated(manga: MangaInfo): MetadataMangasPage {
+        return similarHandler.getRelated(manga)
     }
 
     companion object {
