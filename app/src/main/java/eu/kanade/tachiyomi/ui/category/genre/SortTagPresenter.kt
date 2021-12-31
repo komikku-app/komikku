@@ -2,9 +2,9 @@ package eu.kanade.tachiyomi.ui.category.genre
 
 import android.os.Bundle
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.minusAssign
-import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.util.preference.minusAssign
+import eu.kanade.tachiyomi.util.preference.plusAssign
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import rx.Observable

@@ -2,8 +2,8 @@ package eu.kanade.tachiyomi.ui.category.biometric
 
 import android.os.Bundle
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.data.preference.plusAssign
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.util.preference.plusAssign
 import exh.log.xLogD
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
