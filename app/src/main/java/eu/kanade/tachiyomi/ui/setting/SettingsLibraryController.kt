@@ -256,9 +256,6 @@ class SettingsLibraryController : SettingsController() {
                 }
 
                 fun updateSummary() {
-                    val dbCategories = db.getCategories().executeAsBlocking()
-                    val allCategories = listOf(Category.createDefault(activity!!)) + dbCategories
-
                     val includedCategories = preferences.libraryUpdateCategories().get()
                         .mapNotNull { id -> categories.find { it.id == id.toInt() } }
                         .sortedBy { it.order }
@@ -270,14 +267,14 @@ class SettingsLibraryController : SettingsController() {
                     val includedItemsText = if (includedCategories.isEmpty()) {
                         context.getString(R.string.none)
                     } else {
-                        if (includedCategories.size == allCategories.size) context.getString(R.string.all)
+                        if (includedCategories.size == categories.size) context.getString(R.string.all)
                         else includedCategories.joinToString { it.name }
                     }
 
                     val excludedItemsText = if (excludedCategories.isEmpty()) {
                         context.getString(R.string.none)
                     } else {
-                        if (excludedCategories.size == allCategories.size) context.getString(R.string.all)
+                        if (excludedCategories.size == categories.size) context.getString(R.string.all)
                         else excludedCategories.joinToString { it.name }
                     }
 
