@@ -68,23 +68,10 @@ class SettingsDownloadController : SettingsController() {
             titleRes = R.string.connected_to_wifi
             defaultValue = true
         }
-
-        // SY -->
         switchPreference {
             bindTo(preferences.saveChaptersAsCBZ())
             titleRes = R.string.save_chapter_as_cbz
         }
-
-        intListPreference {
-            bindTo(preferences.saveChaptersAsCBZLevel())
-            titleRes = R.string.save_chapter_as_cbz_level
-            entries = arrayOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-            entryValues = entries
-
-            visibleIf(preferences.saveChaptersAsCBZ()) { it }
-        }
-        // SY <--
-
         preferenceCategory {
             titleRes = R.string.pref_category_delete_chapters
 

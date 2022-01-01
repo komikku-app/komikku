@@ -209,6 +209,8 @@ class PreferencesHelper(val context: Context) {
 
     fun downloadOnlyOverWifi() = prefs.getBoolean(Keys.downloadOnlyOverWifi, true)
 
+    fun saveChaptersAsCBZ() = flowPrefs.getBoolean("save_chapter_as_cbz", false)
+
     fun folderPerManga() = prefs.getBoolean(Keys.folderPerManga, false)
 
     fun numberOfBackups() = flowPrefs.getInt("backup_slots", 1)
@@ -485,10 +487,6 @@ class PreferencesHelper(val context: Context) {
     fun dataSaverExcludedSources() = flowPrefs.getStringSet("data_saver_excluded", emptySet())
 
     fun dataSaverDownloader() = flowPrefs.getBoolean("data_saver_downloader", true)
-
-    fun saveChaptersAsCBZ() = flowPrefs.getBoolean("save_chapter_as_cbz", false)
-
-    fun saveChaptersAsCBZLevel() = flowPrefs.getInt("save_chapter_as_cbz_level", 0)
 
     fun allowLocalSourceHiddenFolders() = flowPrefs.getBoolean("allow_local_source_hidden_folders", false)
 

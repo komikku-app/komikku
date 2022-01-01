@@ -2,19 +2,16 @@ package eu.kanade.tachiyomi.ui.reader.loader
 
 import android.app.Application
 import android.net.Uri
+import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import eu.kanade.tachiyomi.data.download.DownloadProvider
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
-import eu.kanade.tachiyomi.util.system.ImageUtil
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
 import java.io.File
-import java.util.zip.ZipFile
 
 /**
  * Loader used to load a chapter from the downloaded chapters.
@@ -29,54 +26,34 @@ class DownloadPageLoader(
     // Needed to open input streams
     private val context: Application by injectLazy()
 
-    private val downloadProvider by lazy { DownloadProvider(context) }
-
     /**
      * Returns an observable containing the pages found on this downloaded chapter.
      */
     override fun getPages(): Observable<List<ReaderPage>> {
-        val chapterPath = downloadProvider.findChapterDir(chapter.chapter, manga, source)
+        val chapterPath = downloadManager.provider.findChapterDir(chapter.chapter, manga, source)
+        return if (chapterPath?.isFile == true) {
+            getPagesFromArchive(chapterPath)
+        } else {
+            getPagesFromDirectory()
+        }
+    }
 
-        if (chapterPath?.isFile == true) {
-            val zip = if (!File(chapterPath.filePath!!).canRead()) {
-                val tmpFile = File.createTempFile(chapterPath.name!!.replace(".cbz", ""), ".cbz")
-                val buffer = ByteArray(1024)
-                chapterPath.openInputStream().use { input ->
-                    tmpFile.outputStream().use { fileOut ->
-                        while (true) {
-                            val length = input.read(buffer)
-                            if (length <= 0) break
-                            fileOut.write(buffer, 0, length)
-                        }
-                        fileOut.flush()
-                    }
-                }
-                ZipFile(tmpFile.absolutePath)
-            } else ZipFile(chapterPath.filePath)
+    private fun getPagesFromArchive(chapterPath: UniFile): Observable<List<ReaderPage>> {
+        val loader = ZipPageLoader(File(chapterPath.filePath!!))
+        return loader.getPages()
+    }
 
-            return zip.entries().toList()
-                .filter { !it.isDirectory && ImageUtil.isImage(it.name) { zip.getInputStream(it) } }
-                .sortedWith { f1, f2 -> f1.name.compareToCaseInsensitiveNaturalOrder(f2.name) }
-                .mapIndexed { i, entry ->
-                    val streamFn = { zip.getInputStream(entry) }
-                    ReaderPage(i).apply {
-                        stream = streamFn
+    private fun getPagesFromDirectory(): Observable<List<ReaderPage>> {
+        return downloadManager.buildPageList(source, manga, chapter.chapter)
+            .map { pages ->
+                pages.map { page ->
+                    ReaderPage(page.index, page.url, page.imageUrl) {
+                        context.contentResolver.openInputStream(page.uri ?: Uri.EMPTY)!!
+                    }.apply {
                         status = Page.READY
                     }
                 }
-                .let { Observable.just(it) }
-        } else {
-            return downloadManager.buildPageList(source, manga, chapter.chapter)
-                .map { pages ->
-                    pages.map { page ->
-                        ReaderPage(page.index, page.url, page.imageUrl) {
-                            context.contentResolver.openInputStream(page.uri ?: Uri.EMPTY)!!
-                        }.apply {
-                            status = Page.READY
-                        }
-                    }
-                }
-        }
+            }
     }
 
     override fun getPage(page: ReaderPage): Observable<Int> {

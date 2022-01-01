@@ -205,10 +205,6 @@
     <string name="custom_manga_info">Custom manga info</string>
     <string name="all_read_manga">All read manga</string>
 
-    <!-- Download settings -->
-    <string name="save_chapter_as_cbz">Save Chapters as CBZ</string>
-    <string name="save_chapter_as_cbz_level">CBZ Compression level</string>
-
     <!-- Security settings -->
     <string name="biometric_lock_times">Biometric lock times</string>
     <string name="action_edit_biometric_lock_times">Edit lock times</string>

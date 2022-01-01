@@ -90,7 +90,7 @@ class DownloadProvider(private val context: Context) {
     fun findChapterDir(chapter: Chapter, manga: Manga, source: Source): UniFile? {
         val mangaDir = findMangaDir(manga, source)
         return getValidChapterDirNames(chapter).asSequence()
-            .mapNotNull { mangaDir?.findFile(it, true) ?: mangaDir?.findFile("$it.cbz", true) }
+            .mapNotNull { mangaDir?.findFile(it, true) }
             .firstOrNull()
     }
 
@@ -105,7 +105,7 @@ class DownloadProvider(private val context: Context) {
         val mangaDir = findMangaDir(manga, source) ?: return emptyList()
         return chapters.mapNotNull { chapter ->
             getValidChapterDirNames(chapter).asSequence()
-                .mapNotNull { mangaDir.findFile(it) ?: mangaDir.findFile("$it.cbz") }
+                .mapNotNull { mangaDir.findFile(it) }
                 .firstOrNull()
         }
     }
@@ -127,7 +127,7 @@ class DownloadProvider(private val context: Context) {
         return mangaDir.listFiles().orEmpty().asList().filter {
             chapters.find { chp ->
                 getValidChapterDirNames(chp).any { dir ->
-                    mangaDir.findFile(dir) ?: mangaDir.findFile("$dir.cbz") != null
+                    mangaDir.findFile(dir) != null
                 }
             } == null || it.name?.endsWith(Downloader.TMP_DIR_SUFFIX) == true
         }
@@ -174,10 +174,14 @@ class DownloadProvider(private val context: Context) {
      * @param chapter the chapter to query.
      */
     fun getValidChapterDirNames(chapter: Chapter): List<String> {
+        val chapterName = getChapterDirName(chapter)
         return listOf(
-            getChapterDirName(chapter),
+            // Folder of images
+            chapterName,
 
-            // TODO: remove this
+            // Archived chapters
+            "$chapterName.cbz",
+
             // Legacy chapter directory name used in v0.9.2 and before
             DiskUtil.buildValidFilename(chapter.name)
         )

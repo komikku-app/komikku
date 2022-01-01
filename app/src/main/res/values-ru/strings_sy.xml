@@ -204,10 +204,6 @@
     <string name="custom_manga_info">Сведенья пользователя о серии</string>
     <string name="all_read_manga">Все прочитанные серии</string>
 
-    <!-- Download settings -->
-    <string name="save_chapter_as_cbz">Сохранить главы как «CBZ»</string>
-    <string name="save_chapter_as_cbz_level">Степень сжатия «CBZ»</string>
-
     <!-- Security settings -->
     <string name="biometric_lock_times">Биометрическое время блокировки</string>
     <string name="action_edit_biometric_lock_times">Изменить биометрическое время блокировки</string>

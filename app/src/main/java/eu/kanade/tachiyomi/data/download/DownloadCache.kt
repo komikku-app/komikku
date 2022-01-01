@@ -81,7 +81,7 @@ class DownloadCache(
         if (sourceDir != null) {
             val mangaDir = sourceDir.files[provider.getMangaDirName(manga)]
             if (mangaDir != null) {
-                return provider.getValidChapterDirNames(chapter).any { it in mangaDir.files || "$it.cbz" in mangaDir.files }
+                return provider.getValidChapterDirNames(chapter).any { it in mangaDir.files }
             }
         }
         return false
@@ -196,8 +196,6 @@ class DownloadCache(
         provider.getValidChapterDirNames(chapter).forEach {
             if (it in mangaDir.files) {
                 mangaDir.files -= it
-            } else if ("$it.cbz" in mangaDir.files) {
-                mangaDir.files -= "$it.cbz"
             }
         }
     }
@@ -229,8 +227,6 @@ class DownloadCache(
             provider.getValidChapterDirNames(chapter).forEach {
                 if (it in mangaDir.files) {
                     mangaDir.files -= it
-                } else if ("$it.cbz" in mangaDir.files) {
-                    mangaDir.files -= "$it.cbz"
                 }
             }
         }

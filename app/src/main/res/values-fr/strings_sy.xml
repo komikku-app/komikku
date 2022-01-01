@@ -186,10 +186,6 @@
     <string name="pref_local_source_hidden_folders">Dossiers cachés de la source locale</string>
     <string name="pref_local_source_hidden_folders_summery">Autoriser la source locale à lire les dossiers cachés</string>
 
-    <!-- Download settings -->
-    <string name="save_chapter_as_cbz">Enregistrer les chapitres sous CBZ</string>
-    <string name="save_chapter_as_cbz_level">Niveau de compression CBZ</string>
-
     <!-- Security settings -->
     <string name="biometric_lock_times">Temps de verrouillage biométrique</string>
     <string name="action_edit_biometric_lock_times">Modifier les heures de verrouillage</string>

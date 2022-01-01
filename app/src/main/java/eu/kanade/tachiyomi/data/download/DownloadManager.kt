@@ -41,7 +41,7 @@ class DownloadManager(
     /**
      * Downloads provider, used to retrieve the folders where the chapters are or should be stored.
      */
-    private val provider = DownloadProvider(context)
+    val provider = DownloadProvider(context)
 
     /**
      * Cache of downloaded chapters.
@@ -386,12 +386,12 @@ class DownloadManager(
 
         // Assume there's only 1 version of the chapter name formats present
         val oldFolder = oldNames.asSequence()
-            .mapNotNull { mangaDir.findFile(it) ?: mangaDir.findFile("$it.cbz") }
+            .mapNotNull { mangaDir.findFile(it) }
             .firstOrNull()
 
-        if (oldFolder?.renameTo(newName + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "") == true) {
+        if (oldFolder?.renameTo(newName) == true) {
             cache.removeChapter(oldChapter, manga)
-            cache.addChapter(newName + if (oldFolder.name?.endsWith(".cbz") == true) ".cbz" else "", mangaDir, manga)
+            cache.addChapter(newName, mangaDir, manga)
         } else {
             logcat(LogPriority.ERROR) { "Could not rename downloaded chapter: ${oldNames.joinToString()}." }
         }

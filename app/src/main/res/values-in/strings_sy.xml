@@ -205,10 +205,6 @@
     <string name="custom_manga_info">Info manga yang diedit</string>
     <string name="all_read_manga">Semua manga yang dibaca</string>
 
-    <!-- Download settings -->
-    <string name="save_chapter_as_cbz">Simpan bab sebagai CBZ</string>
-    <string name="save_chapter_as_cbz_level">Level kompresi CBZ</string>
-
     <!-- Security settings -->
     <string name="biometric_lock_times">Waktu kunci biometrik</string>
     <string name="action_edit_biometric_lock_times">Edit waktu kunci</string>
