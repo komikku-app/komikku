@@ -83,11 +83,12 @@
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/eh_autoscroll"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
+                        android:gravity="center_horizontal|center_vertical"
                         android:padding="8dp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:text="@string/eh_autoscroll" />
+                        android:text="@string/eh_autoscroll"
+                        android:textColor="?attr/colorOnSurface"/>
 
                     <EditText
                         android:id="@+id/eh_autoscroll_freq"
@@ -95,9 +96,10 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="0.2"
                         android:ems="10"
+                        android:gravity="start|center_vertical"
+                        android:importantForAutofill="no"
                         android:inputType="numberDecimal"
-                        android:maxLength="10"
-                        android:importantForAutofill="no" />
+                        android:maxLength="10"/>
 
                     <Button
                         android:id="@+id/eh_autoscroll_help"
@@ -106,7 +108,9 @@
                         android:layout_height="wrap_content"
                         android:text="\?"
                         android:textColor="?attr/colorOnSurface"
-                        tools:ignore="HardcodedText" />
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText"/>
 
                 </LinearLayout>
 
@@ -122,8 +126,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:textColor="?attr/colorOnSurface"
-                        android:text="@string/eh_retry_all" />
+                        android:fontFamily="sans-serif"
+                        android:text="@string/eh_retry_all"
+                        android:textColor="?attr/colorOnSurface"/>
 
                     <Button
                         android:id="@+id/eh_retry_all_help"
@@ -132,7 +137,9 @@
                         android:layout_height="wrap_content"
                         android:text="\?"
                         android:textColor="?attr/colorOnSurface"
-                        tools:ignore="HardcodedText" />
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText"/>
 
                     <Button
                         android:id="@+id/eh_boost_page"
@@ -140,8 +147,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:textColor="?attr/colorOnSurface"
-                        android:text="@string/eh_boost_page" />
+                        android:fontFamily="sans-serif"
+                        android:text="@string/eh_boost_page"
+                        android:textColor="?attr/colorOnSurface"/>
 
                     <Button
                         android:id="@+id/eh_boost_page_help"
@@ -150,7 +158,9 @@
                         android:layout_height="wrap_content"
                         android:text="\?"
                         android:textColor="?attr/colorOnSurface"
-                        tools:ignore="HardcodedText" />
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText"/>
                 </LinearLayout>
 
             </LinearLayout>
