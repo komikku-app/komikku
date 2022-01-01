@@ -4,6 +4,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.databinding.CategoriesItemBinding
+import eu.kanade.tachiyomi.util.system.dpToPx
 import kotlin.time.ExperimentalTime
 
 /**
@@ -23,6 +24,8 @@ class BiometricTimesHolder(view: View, val adapter: BiometricTimesAdapter) : Fle
      */
     @OptIn(ExperimentalTime::class)
     fun bind(timeRange: TimeRange) {
+        binding.innerContainer.minimumHeight = 48.dpToPx
+
         // Set capitalized title.
         binding.title.text = timeRange.getFormattedString(itemView.context)
         binding.reorder.isVisible = false

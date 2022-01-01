@@ -10,6 +10,7 @@
     app:cardForegroundColor="@color/draggable_card_foreground">
 
     <LinearLayout
+        android:id="@+id/inner_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

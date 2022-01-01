@@ -4,6 +4,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.databinding.CategoriesItemBinding
+import eu.kanade.tachiyomi.util.system.dpToPx
 
 /**
  * Holder used to display category items.
@@ -21,6 +22,8 @@ class SourceCategoryHolder(view: View, val adapter: SourceCategoryAdapter) : Fle
      * @param category The category to bind.
      */
     fun bind(category: String) {
+        binding.innerContainer.minimumHeight = 48.dpToPx
+
         // Set capitalized title.
         binding.title.text = category
         binding.reorder.isVisible = false
