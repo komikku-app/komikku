@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    >
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        >
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:animateLayoutChanges="true"
-            android:padding="16dp">
+            android:padding="16dp"
+            >
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/input_title_view"
@@ -22,112 +28,93 @@
                 android:text="@string/eh_batch_add_title"
                 android:textAppearance="?attr/textAppearanceTitleLarge"
                 android:visibility="visible"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <eu.kanade.tachiyomi.widget.TachiyomiTextInputEditText
                 android:id="@+id/galleries_box"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:ems="10"
                 android:gravity="top"
                 android:hint="@string/eh_batch_add_description"
                 android:inputType="textUri|textMultiLine|textNoSuggestions"
                 android:visibility="visible"
-                app:layout_constraintBottom_toTopOf="@+id/btn_add_galleries"
-                app:layout_constraintLeft_toLeftOf="@+id/input_title_view"
-                app:layout_constraintRight_toRightOf="@+id/input_title_view"
-                app:layout_constraintTop_toBottomOf="@+id/input_title_view" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/input_title_view"/>
 
             <Button
                 android:id="@+id/btn_add_galleries"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="@string/eh_batch_add_button"
                 android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="@+id/galleries_box"
-                app:layout_constraintRight_toRightOf="@+id/galleries_box" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/galleries_box"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/progress_title_view"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginLeft="0dp"
-                android:layout_marginTop="0dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginRight="0dp"
                 android:text="@string/eh_batch_add_adding_galleries"
                 android:textAppearance="?attr/textAppearanceTitleLarge"
                 android:visibility="gone"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progress_bar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="0dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@+id/progress_dismiss_btn"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintLeft_toLeftOf="@+id/progress_log_wrapper"
-                app:layout_constraintRight_toLeftOf="@+id/progress_text" />
+            <LinearLayout
+                android:id="@+id/progress_bar_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/progress_title_view">
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:paddingTop="2dp"
+                    android:visibility="gone"/>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/progress_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.15"
+                    android:background="#00000000"
+                    android:scrollHorizontally="false"
+                    android:textAlignment="center"
+                    android:visibility="gone"/>
+            </LinearLayout>
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/progress_text"
-                android:layout_width="wrap_content"
+                android:id="@+id/progress_log"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end"
-                android:singleLine="true"
-                android:text=""
-                android:textAlignment="textEnd"
+                android:layout_marginTop="12dp"
+                android:textAlignment="center"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:visibility="gone"
-                app:layout_constraintRight_toRightOf="@+id/progress_log_wrapper"
-                app:layout_constraintTop_toTopOf="@+id/progress_bar" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/progress_bar_text"/>
 
             <Button
                 android:id="@+id/progress_dismiss_btn"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_marginBottom="0dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/eh_batch_add_finish"
                 android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/btn_add_galleries"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintLeft_toLeftOf="@+id/progress_log_wrapper"
-                app:layout_constraintRight_toRightOf="@+id/progress_log_wrapper" />
-
-            <ScrollView
-                android:id="@+id/progress_log_wrapper"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@+id/progress_bar"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintLeft_toLeftOf="@+id/progress_title_view"
-                app:layout_constraintRight_toRightOf="@+id/progress_title_view"
-                app:layout_constraintTop_toBottomOf="@+id/progress_title_view"
-                app:layout_constraintVertical_bias="0.0">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/progress_log"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?attr/textAppearanceBodyMedium"
-                    android:visibility="visible" />
-            </ScrollView>
-
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/progress_log"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </androidx.core.widget.NestedScrollView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -3,14 +3,18 @@ package exh.ui.batchadd
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EhFragmentBatchAddBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.plusAssign
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import reactivecircus.flowbinding.android.view.clicks
 import rx.android.schedulers.AndroidSchedulers
 import rx.subscriptions.CompositeSubscription
@@ -40,6 +44,12 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
             }
             .launchIn(viewScope)
 
+        binding.scrollView.applyInsetter {
+            type(navigationBars = true) {
+                padding()
+            }
+        }
+
         val progressSubscriptions = CompositeSubscription()
 
         presenter.currentlyAddingRelay
@@ -54,13 +64,7 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
                         .observeOn(AndroidSchedulers.mainThread())
                         .combineLatest(presenter.progressTotalRelay) { progress, total ->
                             // Show hide dismiss button
-                            binding.progressDismissBtn.visibility =
-                                if (progress == total) {
-                                    View.VISIBLE
-                                } else {
-                                    View.GONE
-                                }
-
+                            binding.progressDismissBtn.isVisible = progress == total
                             formatProgress(progress, total)
                         }.subscribeUntilDestroy {
                             binding.progressText.text = it
@@ -98,10 +102,9 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
     private val EhFragmentBatchAddBinding.progressViews
         get() = listOf(
             progressTitleView,
-            progressLogWrapper,
+            progressLog,
             progressBar,
             progressText,
-            progressDismissBtn
         )
 
     private val EhFragmentBatchAddBinding.inputViews
@@ -111,21 +114,30 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
             btnAddGalleries
         )
 
-    private var List<View>.visibility: Int
+    private var List<View>.isVisible: Boolean
         get() = throw UnsupportedOperationException()
-        set(v) { forEach { it.visibility = v } }
+        set(v) {
+            forEach { it.isVisible = v }
+        }
 
     private fun showProgress(target: EhFragmentBatchAddBinding = binding) {
         target.apply {
-            progressViews.visibility = View.VISIBLE
-            inputViews.visibility = View.GONE
+            viewScope.launch {
+                inputViews.isVisible = false
+                delay(250L)
+                progressViews.isVisible = true
+            }
         }.progressLog.text = ""
     }
 
     private fun hideProgress(target: EhFragmentBatchAddBinding = binding) {
         target.apply {
-            progressViews.visibility = View.GONE
-            inputViews.visibility = View.VISIBLE
+            viewScope.launch {
+                progressViews.isVisible = false
+                binding.progressDismissBtn.isVisible = false
+                delay(250L)
+                inputViews.isVisible = true
+            }
         }.galleriesBox.setText("", TextView.BufferType.EDITABLE)
     }
 
