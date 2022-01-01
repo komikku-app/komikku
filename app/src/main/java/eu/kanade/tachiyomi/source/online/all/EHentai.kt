@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
-import eu.kanade.tachiyomi.annotations.Nsfw
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
@@ -85,7 +84,6 @@ import java.net.URLEncoder
 import java.util.ArrayList
 
 // TODO Consider gallery updating when doing tabbed browsing
-@Nsfw
 class EHentai(
     override val id: Long,
     val exh: Boolean,
