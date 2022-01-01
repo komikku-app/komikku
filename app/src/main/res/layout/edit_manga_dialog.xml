@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -10,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:foreground="?attr/selectableItemBackground"
-        android:layout_marginVertical="10dp">
+        android:layout_marginVertical="15dp">
 
         <ImageView
             android:id="@+id/manga_cover"
@@ -31,19 +32,18 @@
 
         <Spinner
             android:id="@+id/status"
-            android:minHeight="48dp"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:minHeight="48dp"/>
 
     </LinearLayout>
-
-
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp">
 
         <eu.kanade.tachiyomi.widget.TachiyomiTextInputEditText
@@ -52,8 +52,7 @@
             android:layout_height="wrap_content"
             android:inputType="text"
             android:maxLines="1"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
-
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -110,19 +109,21 @@
         android:id="@+id/manga_genres_tags"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_gravity="center_horizontal"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"/>
 
     <Button
         android:id="@+id/reset_tags"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAllCaps="false"
-        android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:text="@string/reset_tags" />
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/reset_tags"
+        android:textAllCaps="false"/>
 
     <View
         android:layout_width="match_parent"

@@ -82,7 +82,7 @@ class EditMangaDialog : DialogController {
             context,
             android.R.layout.simple_spinner_dropdown_item,
             listOf(
-                R.string.manga,
+                R.string.label_default,
                 R.string.ongoing,
                 R.string.completed,
                 R.string.licensed,
@@ -229,9 +229,9 @@ class EditMangaDialog : DialogController {
             setText(R.string.add_tag)
 
             chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_add_24dp)?.apply {
+                isChipIconVisible = true
                 setTint(context.getResourceColor(R.attr.colorAccent))
             }
-            textStartPadding = 0F
 
             clicks().onEach {
                 var newTag: String? = null
