@@ -19,7 +19,7 @@ suspend fun <T> mdListCall(request: suspend (offset: Int) -> ListCallDto<T>): Li
     return results
 }
 
-fun <T> JsonElement.asMdMap(): Map<String, T> {
+inline fun <reified T> JsonElement.asMdMap(): Map<String, T> {
     return runCatching {
         MdUtil.jsonParser.decodeFromJsonElement<Map<String, T>>(jsonObject)
     }.getOrElse { emptyMap() }
