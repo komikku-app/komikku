@@ -13,10 +13,10 @@
         android:background="@drawable/rounded_rectangle"
         app:layout_constraintDimensionRatio="0.75"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_min="100dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_min="100dp"
-        app:layout_constraintHeight_min="100dp">
+        app:layout_constraintWidth_min="100dp">
 
         <ImageView
             android:id="@+id/thumbnail"
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:indeterminate="true"
-            app:indicatorSize="56dp"/>
+            app:indicatorSize="56dp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -59,11 +59,11 @@
                 android:paddingEnd="3dp"
                 android:paddingBottom="1dp"
                 android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textSize="12sp"
                 android:textColor="?attr/colorOnSecondary"
+                android:textSize="12sp"
                 android:visibility="gone"
-                tools:visibility="visible"
-                tools:text="101" />
+                tools:text="101"
+                tools:visibility="visible" />
         </LinearLayout>
 
         <com.google.android.material.textview.MaterialTextView
@@ -78,8 +78,8 @@
             android:shadowDx="0"
             android:shadowDy="0"
             android:shadowRadius="4"
-            android:textColor="@color/md_white_1000"
             android:textAppearance="?attr/textAppearanceTitleSmall"
+            android:textColor="@color/md_white_1000"
             android:textSize="12sp"
             tools:text="Sample name" />
 
@@ -89,8 +89,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"
-            android:indeterminate="true" />
+            android:indeterminate="true"
+            android:visibility="gone" />
 
     </FrameLayout>
 
@@ -118,7 +118,7 @@
             android:textAppearance="?attr/textAppearanceTitleSmall"
             android:textIsSelectable="false"
             app:layout_constraintLeft_toLeftOf="parent"
-            tools:layout_editor_absoluteY="57dp"/>
+            tools:layout_editor_absoluteY="57dp" />
 
         <TextView
             android:id="@+id/manga_last_chapter_label"
@@ -129,7 +129,7 @@
             android:paddingBottom="4dp"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?android:attr/textColorSecondary"
-            android:textIsSelectable="false"/>
+            android:textIsSelectable="false" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,7 +16,7 @@
         app:layout_constraintEnd_toStartOf="@+id/imageView"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -34,7 +34,7 @@
         app:layout_constraintStart_toEndOf="@+id/migration_manga_card_from"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_arrow_forward_24dp"
-        app:tint="?attr/colorOnBackground"/>
+        app:tint="?attr/colorOnBackground" />
 
     <include
         android:id="@+id/migration_manga_card_to"
@@ -46,7 +46,7 @@
         app:layout_constraintEnd_toStartOf="@+id/migration_menu"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/migration_menu"
@@ -64,7 +64,7 @@
         app:layout_constraintStart_toEndOf="@+id/migration_manga_card_to"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_more_24dp"
-        app:tint="?attr/colorOnBackground"/>
+        app:tint="?attr/colorOnBackground" />
 
     <ImageView
         android:id="@+id/skip_manga"
@@ -75,5 +75,5 @@
         app:layout_constraintStart_toStartOf="@+id/migration_menu"
         app:layout_constraintTop_toTopOf="@+id/migration_menu"
         app:srcCompat="@drawable/ic_close_24dp"
-        app:tint="?attr/colorOnBackground"/>
+        app:tint="?attr/colorOnBackground" />
 </androidx.constraintlayout.widget.ConstraintLayout>
