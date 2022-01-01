@@ -99,7 +99,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:paddingBottom="20dp"
         android:gravity="start"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -107,28 +106,30 @@
         app:layout_constraintStart_toStartOf="@id/card"
         app:layout_constraintTop_toBottomOf="@id/card">
 
-
         <TextView
             android:id="@+id/manga_source_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="false"
-            android:textIsSelectable="false"
-            app:layout_constraintLeft_toLeftOf="parent"
             android:ellipsize="end"
             android:maxLines="1"
+            android:paddingTop="4dp"
+            android:paddingBottom="2dp"
             android:textAppearance="?attr/textAppearanceTitleSmall"
-            tools:layout_editor_absoluteY="57dp" />
+            android:textIsSelectable="false"
+            app:layout_constraintLeft_toLeftOf="parent"
+            tools:layout_editor_absoluteY="57dp"/>
 
         <TextView
             android:id="@+id/manga_last_chapter_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="false"
-            android:textIsSelectable="false"
+            android:paddingTop="2dp"
+            android:paddingBottom="4dp"
             android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?android:attr/textColorSecondary" />
-
+            android:textColor="?android:attr/textColorSecondary"
+            android:textIsSelectable="false"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

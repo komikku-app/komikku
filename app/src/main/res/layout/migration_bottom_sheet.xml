@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
     android:orientation="vertical">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:background="@drawable/dialog_rounded_background"
+        android:background="?attr/colorSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,17 +24,18 @@
             android:id="@+id/data_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:text="@string/data_to_include_in_migration"
             android:textAppearance="?attr/textAppearanceTitleSmall"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <HorizontalScrollView
             android:id="@+id/migration_data_scrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:scrollbars="none"
             app:layout_constraintEnd_toEndOf="parent"
@@ -50,33 +51,33 @@
                     android:id="@+id/mig_chapters"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="4dp"
                     android:checked="true"
-                    android:text="@string/chapters" />
+                    android:text="@string/chapters"/>
 
                 <CheckBox
                     android:id="@+id/mig_categories"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="4dp"
                     android:checked="true"
-                    android:text="@string/categories" />
+                    android:text="@string/categories"/>
 
                 <CheckBox
                     android:id="@+id/mig_tracking"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="4dp"
                     android:checked="true"
-                    android:text="@string/track" />
+                    android:text="@string/track"/>
 
                 <CheckBox
                     android:id="@+id/mig_extra"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="4dp"
                     android:checked="true"
-                    android:text="@string/log_extra" />
+                    android:text="@string/log_extra"/>
             </LinearLayout>
         </HorizontalScrollView>
 
@@ -84,12 +85,11 @@
             android:id="@+id/options_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
             android:layout_marginTop="8dp"
             android:text="@string/action_settings"
             android:textAppearance="?attr/textAppearanceTitleSmall"
             app:layout_constraintStart_toStartOf="@+id/migration_data_scrollView"
-            app:layout_constraintTop_toBottomOf="@+id/migration_data_scrollView" />
+            app:layout_constraintTop_toBottomOf="@+id/migration_data_scrollView"/>
 
         <RadioGroup
             android:id="@+id/sourceGroup"
@@ -107,25 +107,24 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="0dp"
                 android:paddingEnd="8dp"
-                android:text="@string/use_first_source" />
+                android:text="@string/use_first_source"/>
 
             <RadioButton
                 android:id="@+id/radioButton2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/use_most_chapters" />
+                android:text="@string/use_most_chapters"/>
         </RadioGroup>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/use_smart_search"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
             android:layout_marginTop="16dp"
             android:text="@string/use_intelligent_search"
             app:layout_constraintEnd_toEndOf="@+id/sourceGroup"
             app:layout_constraintStart_toStartOf="@+id/sourceGroup"
-            app:layout_constraintTop_toBottomOf="@+id/sourceGroup" />
+            app:layout_constraintTop_toBottomOf="@+id/sourceGroup"/>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/extra_search_param"
@@ -135,59 +134,55 @@
             android:text="@string/include_extra_search_parameter"
             app:layout_constraintEnd_toEndOf="@+id/use_smart_search"
             app:layout_constraintStart_toStartOf="@+id/use_smart_search"
-            app:layout_constraintTop_toBottomOf="@+id/use_smart_search" />
+            app:layout_constraintTop_toBottomOf="@+id/use_smart_search"/>
 
         <EditText
             android:id="@+id/extra_search_param_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
             android:ems="10"
             android:hint="@string/search_parameter"
             android:importantForAutofill="no"
             android:inputType="textPersonName"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/extra_search_param"
             app:layout_constraintStart_toStartOf="@+id/extra_search_param"
-            app:layout_constraintTop_toBottomOf="@+id/extra_search_param" />
+            app:layout_constraintTop_toBottomOf="@+id/extra_search_param"/>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/skip_step"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:text="@string/skip_this_step_next_time"
-            app:layout_constraintEnd_toEndOf="@+id/extra_search_param"
-            app:layout_constraintStart_toStartOf="@+id/extra_search_param"
-            app:layout_constraintTop_toBottomOf="@+id/extra_search_param_text" />
+            app:layout_constraintEnd_toEndOf="@+id/Hide_not_found_manga"
+            app:layout_constraintStart_toStartOf="@+id/Hide_not_found_manga"
+            app:layout_constraintTop_toBottomOf="@+id/Hide_not_found_manga"/>
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/Hide_not_found_manga"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:text="@string/hide_not_found_manga"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/skip_step"
-            app:layout_constraintStart_toStartOf="@+id/skip_step"
-            app:layout_constraintTop_toBottomOf="@+id/skip_step" />
+            app:layout_constraintEnd_toEndOf="@+id/extra_search_param"
+            app:layout_constraintStart_toStartOf="@+id/extra_search_param"
+            app:layout_constraintTop_toBottomOf="@+id/extra_search_param_text"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
         android:minWidth="0dp"
         android:text="@string/action_migrate"
         app:icon="@drawable/ic_arrow_forward_24dp"
         app:layout_anchor="@id/constraintLayout"
         app:layout_anchorGravity="bottom|end"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
