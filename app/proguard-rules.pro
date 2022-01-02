@@ -69,17 +69,19 @@
 
 # Keep extension's common dependencies
 -keep,allowoptimization class eu.kanade.tachiyomi.** { public protected *; }
+-keep,allowoptimization class androidx.preference.** { *; }
 -keep,allowoptimization class kotlin.** { public protected *; }
 -keep,allowoptimization class kotlinx.coroutines.** { public protected *; }
 -keep,allowoptimization class okhttp3.** { public protected *; }
+-keep,allowoptimization class okio.** { public protected *; }
 -keep,allowoptimization class rx.** { public protected *; }
 -keep,allowoptimization class org.jsoup.** { public protected *; }
 -keep,allowoptimization class com.google.gson.** { public protected *; }
 -keep,allowoptimization class com.github.salomonbrys.kotson.** { public protected *; }
 -keep,allowoptimization class com.squareup.duktape.** { public protected *; }
--keep,allowoptimization class androidx.preference.** { *; }
--keep,allowoptimization class okio.** { *; }
--keep,allowoptimization class kotlinx.serialization.** { *; }
+-keep,allowoptimization class app.cash.quickjs.** { public protected *; }
+-keep,allowoptimization class uy.kohesive.injekt.** { public protected *; }
+-keep,allowoptimization class kotlinx.serialization.** { public protected *; }
 
 # RxJava 1.1.0
 -dontwarn sun.misc.**
