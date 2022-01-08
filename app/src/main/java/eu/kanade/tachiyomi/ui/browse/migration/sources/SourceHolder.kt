@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.sources
 
 import android.view.View
 import androidx.core.view.isVisible
+import coil.load
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.SourceMainControllerItemBinding
@@ -31,7 +32,7 @@ class SourceHolder(view: View, val adapter: SourceAdapter) :
         binding.subtitle.text = LocaleHelper.getDisplayName(source.lang)
 
         itemView.post {
-            binding.image.setImageDrawable(source.icon())
+            binding.image.load(source.icon())
         }
     }
 }
