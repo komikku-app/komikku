@@ -678,6 +678,7 @@
     <string name="relation_preserialization">Pre-serialization</string>
     <string name="relation_colored">Colored</string>
     <string name="relation_serialization">Serialization</string>
+    <string name="relation_alternate_version">Alternate version</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">
