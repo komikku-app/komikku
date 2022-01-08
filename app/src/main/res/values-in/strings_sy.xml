@@ -324,11 +324,6 @@
     <string name="merged_already">Manga ini sudah tergabung dengan manga saat ini!</string>
     <string name="merge_duplicate">Manga gabungan ini adalah duplikat!</string>
 
-    <!-- Manga info fragment -->
-    <string name="hiatus">Hiatus</string>
-    <string name="cancelled">Dibatalkan</string>
-    <string name="publication_complete">Publikasi Selesai</string>
-
     <!-- Manga Info Edit -->
     <string name="reset_tags">Reset Tagar</string>
     <string name="add_tag">Tambah Tagar</string>

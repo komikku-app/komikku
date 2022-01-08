@@ -87,12 +87,9 @@ interface SManga : Serializable {
         const val ONGOING = 1
         const val COMPLETED = 2
         const val LICENSED = 3
-
-        // SY --> Mangadex specific statuses
-        const val PUBLICATION_COMPLETE = 61
-        const val CANCELLED = 62
-        const val HIATUS = 63
-        // SY <--
+        const val PUBLISHING_FINISHED = 4
+        const val CANCELLED = 5
+        const val ON_HIATUS = 6
 
         fun create(): SManga {
             return SMangaImpl()

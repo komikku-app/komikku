@@ -111,7 +111,7 @@ class ApiMangaParser(
                 // val filteredChapters = filterChapterForChecking(networkApiManga)
 
                 val tempStatus = parseStatus(mangaAttributesDto.status)
-                val publishedOrCancelled = tempStatus == SManga.PUBLICATION_COMPLETE || tempStatus == SManga.CANCELLED
+                val publishedOrCancelled = tempStatus == SManga.PUBLISHING_FINISHED || tempStatus == SManga.CANCELLED
                 status = if (
                     mangaAttributesDto.lastChapter != null &&
                     publishedOrCancelled &&
@@ -170,9 +170,9 @@ class ApiMangaParser(
 
     private fun parseStatus(status: String?) = when (status) {
         "ongoing" -> SManga.ONGOING
-        "completed" -> SManga.PUBLICATION_COMPLETE
+        "completed" -> SManga.PUBLISHING_FINISHED
         "cancelled" -> SManga.CANCELLED
-        "hiatus" -> SManga.HIATUS
+        "hiatus" -> SManga.ON_HIATUS
         else -> SManga.UNKNOWN
     }
 

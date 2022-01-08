@@ -324,11 +324,6 @@
     <string name="merged_already">This manga is already merged with the current manga!</string>
     <string name="merge_duplicate">This merged manga is a duplicate!</string>
 
-    <!-- Manga info fragment -->
-    <string name="hiatus">Hiatus</string>
-    <string name="cancelled">Cancelled</string>
-    <string name="publication_complete">Publication Complete</string>
-
     <!-- Manga Info Edit -->
     <string name="reset_tags">Reset Tags</string>
     <string name="add_tag">Add Tag</string>

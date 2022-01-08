@@ -324,11 +324,6 @@
     <string name="merged_already">Эта серия, уже слита с текущей серией!</string>
     <string name="merge_duplicate">Эта слитая серия является дубликатом!</string>
 
-    <!-- Manga info fragment -->
-    <string name="hiatus">На паузе</string>
-    <string name="cancelled">Отменено</string>
-    <string name="publication_complete">Публикация завершена</string>
-
     <!-- Manga Info Edit -->
     <string name="reset_tags">Сбросить тэги</string>
     <string name="add_tag">Добавить тэг</string>

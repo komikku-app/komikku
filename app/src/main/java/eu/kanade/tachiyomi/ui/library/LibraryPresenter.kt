@@ -831,8 +831,8 @@ class LibraryPresenter(
                 grouping += Triple(SManga.ONGOING.toString(), SManga.ONGOING, context.getString(R.string.ongoing))
                 grouping += Triple(SManga.LICENSED.toString(), SManga.LICENSED, context.getString(R.string.licensed))
                 grouping += Triple(SManga.CANCELLED.toString(), SManga.CANCELLED, context.getString(R.string.cancelled))
-                grouping += Triple(SManga.HIATUS.toString(), SManga.HIATUS, context.getString(R.string.hiatus))
-                grouping += Triple(SManga.PUBLICATION_COMPLETE.toString(), SManga.PUBLICATION_COMPLETE, context.getString(R.string.publication_complete))
+                grouping += Triple(SManga.ON_HIATUS.toString(), SManga.ON_HIATUS, context.getString(R.string.on_hiatus))
+                grouping += Triple(SManga.PUBLISHING_FINISHED.toString(), SManga.PUBLISHING_FINISHED, context.getString(R.string.publishing_finished))
                 grouping += Triple(SManga.COMPLETED.toString(), SManga.COMPLETED, context.getString(R.string.completed))
                 grouping += Triple(SManga.UNKNOWN.toString(), SManga.UNKNOWN, context.getString(R.string.unknown))
             }

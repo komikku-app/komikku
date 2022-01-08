@@ -86,9 +86,9 @@ class EditMangaDialog : DialogController {
                 R.string.ongoing,
                 R.string.completed,
                 R.string.licensed,
-                R.string.publication_complete,
-                R.string.hiatus,
-                R.string.cancelled
+                R.string.publishing_finished,
+                R.string.cancelled,
+                R.string.on_hiatus,
             ).map { context.getString(it) }
         )
 
@@ -100,9 +100,9 @@ class EditMangaDialog : DialogController {
                     SManga.ONGOING -> 1
                     SManga.COMPLETED -> 2
                     SManga.LICENSED -> 3
-                    SManga.PUBLICATION_COMPLETE -> 4
-                    SManga.HIATUS -> 5
-                    SManga.CANCELLED -> 6
+                    SManga.PUBLISHING_FINISHED, 61 -> 4
+                    SManga.CANCELLED, 62 -> 5
+                    SManga.ON_HIATUS, 63 -> 6
                     else -> 0
                 }
             )
@@ -197,9 +197,9 @@ class EditMangaDialog : DialogController {
                     1 -> SManga.ONGOING
                     2 -> SManga.COMPLETED
                     3 -> SManga.LICENSED
-                    4 -> SManga.PUBLICATION_COMPLETE
-                    5 -> SManga.HIATUS
-                    6 -> SManga.CANCELLED
+                    4 -> SManga.PUBLISHING_FINISHED
+                    5 -> SManga.CANCELLED
+                    6 -> SManga.ON_HIATUS
                     else -> null
                 }
             },

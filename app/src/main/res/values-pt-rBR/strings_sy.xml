@@ -304,11 +304,6 @@
     <string name="merge">Juntar</string>
     <string name="merge_with_another_source">Juntar Com Outra</string>
 
-    <!-- Manga info fragment -->
-    <string name="hiatus">Hiato</string>
-    <string name="cancelled">Cancelado</string>
-    <string name="publication_complete">Publicação Finalizada</string>
-
     <!-- Manga Info Edit -->
     <string name="reset_tags">Redefinir Tags</string>
     <string name="add_tag">Adicionar Tag</string>
