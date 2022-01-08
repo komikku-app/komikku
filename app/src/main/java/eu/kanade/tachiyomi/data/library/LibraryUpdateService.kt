@@ -470,10 +470,12 @@ class LibraryUpdateService(
         // may don't like it and they could ban the user.
         // SY -->
         val chapterFilter = if (manga.source == MERGED_SOURCE_ID) {
-            db.getMergedMangaReferences(manga.id!!).executeAsBlocking().filterNot { it.downloadChapters }.mapNotNull { it.mangaId }
+            db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
+                .filterNot { it.downloadChapters }
+                .mapNotNull { it.mangaId } + manga.id!!
         } else emptyList()
         // SY <--
-        downloadManager.downloadChapters(manga, /* SY --> */ chapters.filter { it.manga_id !in chapterFilter } /* SY <-- */, false)
+        downloadManager.downloadChapters(manga, /* SY --> */ chapters.filterNot { it.manga_id in chapterFilter } /* SY <-- */, false)
     }
 
     /**
