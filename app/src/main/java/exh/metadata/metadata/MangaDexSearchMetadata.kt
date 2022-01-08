@@ -85,7 +85,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
                 artists?.let { getString(R.string.artist) to it.joinToString() },
                 langFlag?.let { getString(R.string.language) to it },
                 lastChapterNumber?.let { getString(R.string.last_chapter_number) to it.toString() },
-                // rating?.let { getString(R.string.average_rating) to it },
+                rating?.let { getString(R.string.average_rating) to it.toString() },
                 // users?.let { getString(R.string.total_ratings) to it },
                 status?.let { getString(R.string.status) to it.toString() },
                 // missing_chapters?.let { getString(R.string.missing_chapters) to it },
