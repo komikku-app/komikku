@@ -576,6 +576,8 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
                     if (!preferences.showReadingMode()) {
                         menuToggleToast = toast(newReadingMode.stringRes)
                     }
+
+                    updateCropBordersShortcut()
                 }
             }
         }
@@ -1073,6 +1075,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
 
         val newViewer = ReadingModeType.toViewer(presenter.getMangaReadingMode(), this)
 
+        updateCropBordersShortcut()
         setOrientation(presenter.getMangaOrientationType())
 
         // Destroy previous viewer if there was one
