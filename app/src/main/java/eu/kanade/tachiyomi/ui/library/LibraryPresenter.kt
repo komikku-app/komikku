@@ -866,7 +866,9 @@ class LibraryPresenter(
                             "not tracked"
                         }
                     }
-                    val group = grouping.find { it.first == trackManager.mapTrackingOrder(status, context).toString() }
+                    val group = grouping.find { (_, statusInt) ->
+                        statusInt == (trackManager.trackMap[status] ?: TrackManager.OTHER)
+                    }
                     if (group != null) {
                         map.getOrPut(group.second) { mutableListOf() } += libraryItem
                     } else {

@@ -323,7 +323,7 @@ class LibraryUpdateService(
                                 "not tracked"
                             }
                         }
-                        trackManager.mapTrackingOrder(status, applicationContext) == trackingExtra
+                        (trackManager.trackMap[status] ?: TrackManager.OTHER) == trackingExtra
                     }
                 }
                 LibraryGroup.BY_SOURCE -> {

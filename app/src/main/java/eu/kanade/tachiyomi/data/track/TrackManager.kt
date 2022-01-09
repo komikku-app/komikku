@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.data.track
 
 import android.content.Context
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
@@ -25,8 +26,8 @@ class TrackManager(context: Context) {
 
         // SY -->
         const val READING = 1
-        const val REREADING = 2
-        const val PLANTOREAD = 3
+        const val REPEATING = 2
+        const val PLAN_TO_READ = 3
         const val PAUSED = 4
         const val COMPLETED = 5
         const val DROPPED = 6
@@ -55,18 +56,15 @@ class TrackManager(context: Context) {
     fun hasLoggedServices() = services.any { it.isLogged }
 
     // SY -->
-    fun mapTrackingOrder(status: String, context: Context): Int {
-        with(context) {
-            return when (status) {
-                getString(eu.kanade.tachiyomi.R.string.reading), getString(eu.kanade.tachiyomi.R.string.currently_reading) -> READING
-                getString(eu.kanade.tachiyomi.R.string.repeating) -> REREADING
-                getString(eu.kanade.tachiyomi.R.string.plan_to_read), getString(eu.kanade.tachiyomi.R.string.want_to_read) -> PLANTOREAD
-                getString(eu.kanade.tachiyomi.R.string.on_hold), getString(eu.kanade.tachiyomi.R.string.paused) -> PAUSED
-                getString(eu.kanade.tachiyomi.R.string.completed) -> COMPLETED
-                getString(eu.kanade.tachiyomi.R.string.dropped) -> DROPPED
-                else -> OTHER
-            }
-        }
+    val trackMap by lazy {
+        mapOf(
+            context.getString(R.string.reading) to READING,
+            context.getString(R.string.repeating) to REPEATING,
+            context.getString(R.string.plan_to_read) to PLAN_TO_READ,
+            context.getString(R.string.paused) to PAUSED,
+            context.getString(R.string.completed) to COMPLETED,
+            context.getString(R.string.dropped) to DROPPED
+        )
     }
     // SY <--
 }
