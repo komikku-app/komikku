@@ -767,8 +767,8 @@ class MangaController :
                 .setTitle(R.string.az_recommends)
                 .setSingleChoiceItems(
                     arrayOf(
-                        "MangaDex similar",
-                        "Community recommendations"
+                        activity!!.getString(R.string.mangadex_similar),
+                        activity!!.getString(R.string.community_recommendations)
                     ),
                     -1
                 ) { dialog, index ->

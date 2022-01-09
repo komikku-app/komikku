@@ -271,6 +271,7 @@
     <string name="eh_boost_page">Boost page</string>
     <string name="eh_autoscroll_help">Autoscroll help</string>
     <string name="eh_autoscroll_help_message">Automatically scroll to the next page in the specified interval. Interval is specified in seconds.</string>
+    <string name="eh_autoscroll_freq_invalid">Invalid frequency</string>
     <string name="eh_retry_all_help">Retry all help</string>
     <string name="eh_retry_all_help_message">Re-add all failed pages to the download queue.</string>
     <plurals name="eh_retry_toast">
@@ -652,7 +653,8 @@
     <string name="random">Random</string>
     <string name="mangadex_push_favorites_to_mangadex">Sync library manga to MangaDex</string>
     <string name="mangadex_push_favorites_to_mangadex_summary">Syncs any non MdList tracked manga to MangaDex as reading.</string>
-
+    <string name="mangadex_similar">MangaDex similar</string>
+    <string name="community_recommendations">Community recommendations</string>
 
     <!-- Scanlator filters -->
     <string name="select_scanlators">Scanlator groups to show</string>
@@ -660,7 +662,7 @@
     <!-- Similar -->
     <string name="similar">Similar to %1$s</string>
     <string name="similar_no_results">No Similar Manga found</string>
-    
+
     <!-- Mangadex relations-->
     <string name="relation_similar">Similar</string>
     <string name="relation_monochrome">Monochrome</string>

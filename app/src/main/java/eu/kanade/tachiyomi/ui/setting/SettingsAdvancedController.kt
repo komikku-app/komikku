@@ -319,7 +319,8 @@ class SettingsAdvancedController : SettingsController() {
 
             intListPreference {
                 bindTo(preferences.dataSaverImageQuality())
-                entries = arrayOf("10", "20", "40", "50", "70", "80", "90", "95")
+                titleRes = R.string.data_saver_image_quality
+                entries = arrayOf("10%", "20%", "40%", "50%", "70%", "80%", "90%", "95%")
                 entryValues = entries
                 summaryRes = R.string.data_saver_image_quality_summary
 
