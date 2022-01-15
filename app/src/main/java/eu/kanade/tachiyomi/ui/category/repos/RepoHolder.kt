@@ -22,7 +22,7 @@ class RepoHolder(view: View, val adapter: RepoAdapter) : FlexibleViewHolder(view
      * @param category The category to bind.
      */
     fun bind(category: String) {
-        binding.innerContainer.minimumHeight = 48.dpToPx
+        binding.innerContainer.minimumHeight = 60.dpToPx
 
         // Set capitalized title.
         binding.title.text = category

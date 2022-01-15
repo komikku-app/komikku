@@ -24,7 +24,7 @@ class BiometricTimesHolder(view: View, val adapter: BiometricTimesAdapter) : Fle
      */
     @OptIn(ExperimentalTime::class)
     fun bind(timeRange: TimeRange) {
-        binding.innerContainer.minimumHeight = 48.dpToPx
+        binding.innerContainer.minimumHeight = 60.dpToPx
 
         // Set capitalized title.
         binding.title.text = timeRange.getFormattedString(itemView.context)
