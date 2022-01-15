@@ -690,6 +690,7 @@
     <string name="relation_preserialization">Предсериализация</string>
     <string name="relation_colored">Цветное</string>
     <string name="relation_serialization">Сериализация</string>
+    <string name="relation_alternate_version">Альт. версия</string>
 
     <!-- Humanize time -->
     <plurals name="humanize_year">
