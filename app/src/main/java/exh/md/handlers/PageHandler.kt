@@ -25,6 +25,8 @@ class PageHandler(
     private val mangaPlusHandler: MangaPlusHandler,
     private val comikeyHandler: ComikeyHandler,
     private val bilibiliHandler: BilibiliHandler,
+    private val azukiHandler: AzukiHandler,
+    private val mangaHotHandler: MangaHotHandler,
     private val preferences: PreferencesHelper,
     private val mdList: MdList,
 ) {
@@ -44,6 +46,12 @@ class PageHandler(
                     chapter.scanlator.equals("bilibili comics", true) -> bilibiliHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
                         chapterResponse.data.attributes.chapter.toString()
+                    )
+                    chapter.scanlator.equals("azuki manga", true) -> azukiHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl
+                    )
+                    chapter.scanlator.equals("mangahot", true) -> mangaHotHandler.fetchPageList(
+                        chapterResponse.data.attributes.externalUrl
                     )
                     else -> throw Exception("${chapter.scanlator} not supported")
                 }
@@ -114,6 +122,14 @@ class PageHandler(
             }
             page.imageUrl?.contains("/bfs/comic/", true) == true -> {
                 bilibiliHandler.client.newCall(GET(page.imageUrl!!, bilibiliHandler.headers))
+                    .asObservableSuccess()
+            }
+            page.imageUrl?.contains("azuki", true) == true -> {
+                azukiHandler.client.newCall(GET(page.imageUrl!!, azukiHandler.headers))
+                    .asObservableSuccess()
+            }
+            page.imageUrl?.contains("mangahot", true) == true -> {
+                mangaHotHandler.client.newCall(GET(page.imageUrl!!, mangaHotHandler.headers))
                     .asObservableSuccess()
             }
             else -> superMethod(page)

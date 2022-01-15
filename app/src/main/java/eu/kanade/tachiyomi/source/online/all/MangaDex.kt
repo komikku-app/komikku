@@ -28,10 +28,12 @@ import exh.md.MangaDexFabHeaderAdapter
 import exh.md.dto.MangaDto
 import exh.md.dto.StatisticsMangaDto
 import exh.md.handlers.ApiMangaParser
+import exh.md.handlers.AzukiHandler
 import exh.md.handlers.BilibiliHandler
 import exh.md.handlers.ComikeyHandler
 import exh.md.handlers.FollowsHandler
 import exh.md.handlers.MangaHandler
+import exh.md.handlers.MangaHotHandler
 import exh.md.handlers.MangaPlusHandler
 import exh.md.handlers.PageHandler
 import exh.md.handlers.SimilarHandler
@@ -122,6 +124,12 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     private val bilibiliHandler by lazy {
         BilibiliHandler(network.cloudflareClient)
     }
+    private val azukHandler by lazy {
+        AzukiHandler(network.client)
+    }
+    private val mangaHotHandler by lazy {
+        MangaHotHandler(network.client)
+    }
     private val pageHandler by lazy {
         PageHandler(
             headers,
@@ -129,6 +137,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             mangaPlusHandler,
             comikeyHandler,
             bilibiliHandler,
+            azukHandler,
+            mangaHotHandler,
             preferences,
             mdList
         )
