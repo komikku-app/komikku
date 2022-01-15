@@ -321,7 +321,7 @@ class SettingsAdvancedController : SettingsController() {
                 bindTo(preferences.dataSaverImageQuality())
                 titleRes = R.string.data_saver_image_quality
                 entries = arrayOf("10%", "20%", "40%", "50%", "70%", "80%", "90%", "95%")
-                entryValues = entries
+                entryValues = entries.map { it.trimEnd('%') }.toTypedArray()
                 summaryRes = R.string.data_saver_image_quality_summary
 
                 visibleIf(preferences.dataSaver()) { it }
