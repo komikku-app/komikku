@@ -405,8 +405,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     // SY -->
     private fun getGroupExtra() = when (controller.presenter.groupType) {
         LibraryGroup.BY_DEFAULT -> null
-        LibraryGroup.BY_SOURCE -> category.name
-        LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
+        LibraryGroup.BY_SOURCE, LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
         else -> null
     }
 

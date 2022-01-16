@@ -327,9 +327,13 @@ class LibraryUpdateService(
                     }
                 }
                 LibraryGroup.BY_SOURCE -> {
-                    val sourceExtra = groupExtra.nullIfBlank()
-                    val source = sourceManager.getCatalogueSources().find { it.name == sourceExtra }
-                    if (source != null) libraryManga.filter { it.source == source.id } else emptyList()
+                    val sourceExtra = groupExtra.nullIfBlank()?.toIntOrNull()
+                    val source = libraryManga.map { it.source }
+                        .distinct()
+                        .sorted()
+                        .getOrNull(sourceExtra ?: -1)
+
+                    if (source != null) libraryManga.filter { it.source == source } else emptyList()
                 }
                 LibraryGroup.BY_STATUS -> {
                     val statusExtra = groupExtra?.toIntOrNull() ?: -1

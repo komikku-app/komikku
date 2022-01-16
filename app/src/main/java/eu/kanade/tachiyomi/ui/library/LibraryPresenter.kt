@@ -836,9 +836,14 @@ class LibraryPresenter(
                 grouping += Triple(SManga.COMPLETED.toString(), SManga.COMPLETED, context.getString(R.string.completed))
                 grouping += Triple(SManga.UNKNOWN.toString(), SManga.UNKNOWN, context.getString(R.string.unknown))
             }
-            LibraryGroup.BY_SOURCE -> libraryManga.distinctBy { it.manga.source }.map { it.manga.source }.forEachIndexed { index, sourceLong ->
-                grouping += Triple(sourceLong.toString(), index, sourceManager.getOrStub(sourceLong).name)
-            }
+            LibraryGroup.BY_SOURCE ->
+                libraryManga
+                    .map { it.manga.source }
+                    .distinct()
+                    .sorted()
+                    .forEachIndexed { index, sourceLong ->
+                        grouping += Triple(sourceLong.toString(), index, sourceManager.getOrStub(sourceLong).name)
+                    }
             LibraryGroup.BY_TRACK_STATUS -> {
                 grouping += Triple("1", 1, context.getString(R.string.reading))
                 grouping += Triple("2", 2, context.getString(R.string.repeating))
