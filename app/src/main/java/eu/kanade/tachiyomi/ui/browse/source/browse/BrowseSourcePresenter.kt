@@ -43,6 +43,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.JsonSavedSearch
+import exh.source.isEhBasedSource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
@@ -342,7 +343,13 @@ open class BrowseSourcePresenter(
     }
 
     open fun createPager(query: String, filters: FilterList): Pager {
-        return SourcePager(source, query, filters)
+        // SY -->
+        return if (source.isEhBasedSource()) {
+            EHentaiPager(source, query, filters)
+        } else {
+            SourcePager(source, query, filters)
+        }
+        // SY <--
     }
 
     // SY -->
