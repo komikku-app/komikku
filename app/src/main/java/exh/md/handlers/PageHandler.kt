@@ -35,7 +35,7 @@ class PageHandler(
         return withIOContext {
             val chapterResponse = service.viewChapter(MdUtil.getChapterId(chapter.url))
 
-            if (chapterResponse.data.attributes.externalUrl != null) {
+            if (chapterResponse.data.attributes.externalUrl != null && chapterResponse.data.attributes.pages == 0) {
                 when {
                     chapter.scanlator.equals("mangaplus", true) -> mangaPlusHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
