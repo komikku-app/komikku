@@ -49,17 +49,19 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
         dialog.show()
     }
 
-    private fun refreshList() {
+    private fun refreshList(scroll: Boolean = true) {
         val chapters = presenter.getChapters(activity)
             .sortedWith(getChapterSort(presenter.manga!!))
 
         adapter?.clear()
         adapter?.updateDataSet(chapters)
 
-        (binding.chapterRecycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-            adapter?.getGlobalPositionOf(chapters.find { it.isCurrent }) ?: 0,
-            (binding.chapterRecycler.height / 2).dpToPx
-        )
+        if (scroll) {
+            (binding.chapterRecycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                adapter?.getGlobalPositionOf(chapters.find { it.isCurrent }) ?: 0,
+                (binding.chapterRecycler.height / 2).dpToPx
+            )
+        }
     }
 
     fun destroy() {
@@ -68,6 +70,6 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
 
     override fun bookmarkChapter(chapter: Chapter) {
         presenter.toggleBookmark(chapter)
-        refreshList()
+        refreshList(scroll = false)
     }
 }
