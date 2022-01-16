@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="56dp"
     android:background="@drawable/list_item_selector_background">
@@ -13,26 +12,26 @@
         android:layout_height="56dp"
         android:paddingStart="16dp"
         android:paddingEnd="0dp"
-        tools:src="@mipmap/ic_launcher_round"/>
+        tools:src="@mipmap/ic_launcher_round" />
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:layout_marginStart="72dp"
         android:layout_marginEnd="56dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:layout_gravity="center_vertical"
         android:textAppearance="?attr/textAppearanceTitleSmall"
-        tools:text="Title"/>
+        tools:text="Title" />
 
     <ImageView
         android:id="@+id/reorder"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:scaleType="center"
         android:layout_gravity="end"
+        android:scaleType="center"
         app:srcCompat="@drawable/ic_drag_handle_24dp"
         app:tint="?android:attr/textColorPrimary" />
 
