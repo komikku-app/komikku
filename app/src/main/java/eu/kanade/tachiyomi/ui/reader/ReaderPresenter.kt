@@ -322,7 +322,7 @@ class ReaderPresenter(
             ReaderChapterItem(
                 it.chapter,
                 manga!!,
-                it.chapter == currentChapter?.chapter,
+                it.chapter.id == currentChapter?.chapter?.id,
                 context,
                 preferences.dateFormat(),
                 decimalFormat
@@ -585,10 +585,10 @@ class ReaderPresenter(
     }
 
     // SY -->
-    fun toggleBookmark(chapter: Chapter) {
-        chapter.bookmark = !chapter.bookmark
+    fun toggleBookmark(chapterId: Long, bookmarked: Boolean) {
+        val chapter = chapterList.find { it.chapter.id == chapterId }?.chapter ?: return
+        chapter.bookmark = bookmarked
         db.updateChapterProgress(chapter).executeAsBlocking()
-        chapterList.firstOrNull { it.chapter.id == chapter.id }?.let { it.chapter.bookmark == !chapter.bookmark }
     }
     // SY <--
 

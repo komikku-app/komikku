@@ -69,7 +69,7 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
     }
 
     override fun bookmarkChapter(chapter: Chapter) {
-        presenter.toggleBookmark(chapter)
+        presenter.toggleBookmark(chapter.id!!, !chapter.bookmark)
         refreshList(scroll = false)
     }
 }
