@@ -485,15 +485,17 @@ class LibraryPresenter(
     private fun applyGrouping(map: LibraryMap, categories: List<Category>): Pair<LibraryMap, List<Category>> {
         groupType = preferences.groupLibraryBy().get()
         var editedCategories = categories
-        val libraryMangaAsList = map.flatMap { it.value }.distinctBy { it.manga.id }
         val items = if (groupType == LibraryGroup.BY_DEFAULT) {
             map
         } else if (!libraryIsGrouped) {
             editedCategories = listOf(Category.create("All").apply { this.id = 0 })
-            libraryMangaAsList
-                .groupBy { 0 }
+            mapOf(
+                0 to map.values.flatten().distinctBy { it.manga.id }
+            )
         } else {
-            val (items, customCategories) = getGroupedMangaItems(libraryMangaAsList)
+            val (items, customCategories) = getGroupedMangaItems(
+                map.values.flatten().distinctBy { it.manga.id }
+            )
             editedCategories = customCategories
             items
         }
