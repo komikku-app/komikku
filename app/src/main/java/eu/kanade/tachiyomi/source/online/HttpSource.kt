@@ -59,13 +59,6 @@ abstract class HttpSource : CatalogueSource {
     }
     // SY <--
 
-//    /**
-//     * Preferences that a source may need.
-//     */
-//    val preferences: SharedPreferences by lazy {
-//        Injekt.get<Application>().getSharedPreferences(source.getPreferenceKey(), Context.MODE_PRIVATE)
-//    }
-
     /**
      * Base url of the website without the trailing slash, like: http://mysite.com
      */
