@@ -2,28 +2,30 @@ package exh.eh
 
 object EHTags {
 
-    fun getAllTags() = getFemale0Tags() +
-        getMale0Tags() +
-        getLanguage0Tags() +
-        getReclass0Tags() +
-        getMixed0Tags() +
-        getOther0Tags() +
-        getCosplayer0Tags() +
-        getParody0Tags() +
-        getParody1Tags() +
-        getCharacter0Tags() +
-        getCharacter1Tags() +
-        getCharacter2Tags() +
-        getGroup0Tags() +
-        getGroup1Tags() +
-        getGroup2Tags() +
-        getGroup3Tags() +
-        getArtist0Tags() +
-        getArtist1Tags() +
-        getArtist2Tags() +
-        getArtist3Tags() +
-        getArtist4Tags() +
-        getArtist5Tags()
+    fun getAllTags() = listOf(
+        getFemale0Tags(),
+        getMale0Tags(),
+        getLanguage0Tags(),
+        getReclass0Tags(),
+        getMixed0Tags(),
+        getOther0Tags(),
+        getCosplayer0Tags(),
+        getParody0Tags(),
+        getParody1Tags(),
+        getCharacter0Tags(),
+        getCharacter1Tags(),
+        getCharacter2Tags(),
+        getGroup0Tags(),
+        getGroup1Tags(),
+        getGroup2Tags(),
+        getGroup3Tags(),
+        getArtist0Tags(),
+        getArtist1Tags(),
+        getArtist2Tags(),
+        getArtist3Tags(),
+        getArtist4Tags(),
+        getArtist5Tags(),
+    ).flatten()
 
     fun getReclass0Tags() = listOf(
         "reclass:artistcg",
