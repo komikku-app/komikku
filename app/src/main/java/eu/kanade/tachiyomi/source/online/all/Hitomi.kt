@@ -29,7 +29,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
     UrlImportableSource,
     NamespaceSource {
     override val metaClass = HitomiSearchMetadata::class
-    override val lang = if (id == otherId) "all" else delegate.lang
+    override val lang = delegate.lang
 
     // Support direct URL importing
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
@@ -119,14 +119,6 @@ class Hitomi(delegate: HttpSource, val context: Context) :
             } catch (e: Exception) {
                 null
             }
-        }
-    }
-
-    override fun toString() = "$name (${lang.uppercase()})"
-
-    override fun ensureDelegateCompatible() {
-        if (versionId != delegate.versionId) {
-            throw IncompatibleDelegateException("Delegate source is not compatible (versionId: $versionId <=> ${delegate.versionId})!")
         }
     }
 

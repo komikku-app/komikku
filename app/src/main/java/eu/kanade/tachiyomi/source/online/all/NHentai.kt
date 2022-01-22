@@ -31,7 +31,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
     UrlImportableSource,
     NamespaceSource {
     override val metaClass = NHentaiSearchMetadata::class
-    override val lang = if (id == otherId) "all" else delegate.lang
+    override val lang = delegate.lang
 
     private val sourcePreferences: SharedPreferences by lazy {
         context.getSharedPreferences("source_$id", 0x0000)
@@ -155,14 +155,6 @@ class NHentai(delegate: HttpSource, val context: Context) :
         val url: String? = null,
         val count: Long? = null
     )
-
-    override fun toString() = "$name (${lang.uppercase()})"
-
-    override fun ensureDelegateCompatible() {
-        if (versionId != delegate.versionId) {
-            throw IncompatibleDelegateException("Delegate source is not compatible (versionId: $versionId <=> ${delegate.versionId})!")
-        }
-    }
 
     override val matchingHosts = listOf(
         "nhentai.net"
