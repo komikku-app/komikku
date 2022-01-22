@@ -6,6 +6,8 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.track.EnhancedTrackService
+import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.toSChapter
@@ -24,6 +26,7 @@ class MigrationMangaPresenter(
     private val sourceId: Long,
     private val db: DatabaseHelper = Injekt.get()
 ) : BasePresenter<MigrationMangaController>() {
+    private val enhancedServices by lazy { Injekt.get<TrackManager>().services.filterIsInstance<EnhancedTrackService>() }
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
@@ -43,16 +46,18 @@ class MigrationMangaPresenter(
 
     // SY -->
     fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean) {
+        val prevSource = sourceManager.get(prevManga.source)
         val source = sourceManager.get(manga.source) ?: return
 
         Observable.defer { runAsObservable { source.getChapterList(manga.toMangaInfo()).map { it.toSChapter() } } }.onErrorReturn { emptyList() }
-            .doOnNext { migrateMangaInternal(source, it, prevManga, manga, replace) }
+            .doOnNext { migrateMangaInternal(prevSource, source, it, prevManga, manga, replace) }
             .onErrorReturn { emptyList() }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe()
     }
 
     private fun migrateMangaInternal(
+        prevSource: Source?,
         source: Source,
         sourceChapters: List<SChapter>,
         prevManga: Manga,
@@ -95,12 +100,16 @@ class MigrationMangaPresenter(
             }
             // Update track
             if (migrateTracks) {
-                val tracks = db.getTracks(prevManga).executeAsBlocking()
-                for (track in tracks) {
+                val tracksToUpdate = db.getTracks(prevManga).executeAsBlocking().mapNotNull { track ->
                     track.id = null
                     track.manga_id = manga.id!!
+
+                    val service = enhancedServices
+                        .firstOrNull { prevSource != null && it.isTrackFrom(track, prevManga, prevSource) }
+                    if (service != null) service.migrateTrack(track, manga, source)
+                    else track
                 }
-                db.insertTracks(tracks).executeAsBlocking()
+                db.insertTracks(tracksToUpdate).executeAsBlocking()
             }
 
             if (migrateExtra) {
