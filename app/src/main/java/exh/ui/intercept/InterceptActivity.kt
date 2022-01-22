@@ -79,7 +79,7 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
                     }
                     is InterceptResult.Failure -> {
                         binding.interceptProgress.isVisible = false
-                        binding.interceptStatus.text = this.getString(R.string.error_with_reason, it.reason)
+                        binding.interceptStatus.text = getString(R.string.error_with_reason, it.reason)
                         MaterialAlertDialogBuilder(this)
                             .setTitle(R.string.chapter_error)
                             .setMessage(getString(R.string.could_not_open_manga, it.reason))
@@ -133,7 +133,7 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
             status.value = when (result) {
                 is GalleryAddEvent.Success -> result.manga.id?.let {
                     InterceptResult.Success(it, result.manga, result.chapter)
-                } ?: InterceptResult.Failure(this@InterceptActivity.getString(R.string.manga_id_is_null))
+                } ?: InterceptResult.Failure(getString(R.string.manga_id_is_null))
                 is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
             }
         }
