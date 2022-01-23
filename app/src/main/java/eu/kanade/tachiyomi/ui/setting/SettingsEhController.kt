@@ -40,7 +40,6 @@ import exh.eh.EHentaiUpdateWorker
 import exh.eh.EHentaiUpdateWorkerConstants
 import exh.eh.EHentaiUpdaterStats
 import exh.favorites.FavoritesIntroDialog
-import exh.favorites.LocalFavoritesStorage
 import exh.log.xLogD
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
@@ -49,7 +48,6 @@ import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.EhLoginActivity
 import exh.util.executeOnIO
 import exh.util.nullIfBlank
-import exh.util.trans
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -362,12 +360,8 @@ class SettingsEhController : SettingsController() {
                             .setTitle(R.string.favorites_sync_reset)
                             .setMessage(R.string.favorites_sync_reset_message)
                             .setPositiveButton(android.R.string.ok) { _, _ ->
-                                LocalFavoritesStorage().apply {
-                                    getRealm().use {
-                                        it.trans {
-                                            clearSnapshots(it)
-                                        }
-                                    }
+                                db.inTransaction {
+                                    db.deleteAllFavoriteEntries().executeAsBlocking()
                                 }
                                 activity.toast(context.getString(R.string.sync_state_reset), Toast.LENGTH_LONG)
                             }

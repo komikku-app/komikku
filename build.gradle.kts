@@ -31,9 +31,6 @@ buildscript {
         classpath("com.google.gms:google-services:4.3.10")
         classpath("com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:${BuildPluginsVersion.ABOUTLIB_PLUGIN}")
         classpath(kotlin("serialization", version = BuildPluginsVersion.KOTLIN))
-        // Realm (EH)
-        classpath("io.realm:realm-gradle-plugin:10.8.0")
-
         // Firebase Crashlytics
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.8.0")
     }

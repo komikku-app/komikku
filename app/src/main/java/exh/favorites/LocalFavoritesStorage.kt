@@ -3,91 +3,69 @@ package exh.favorites
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import exh.favorites.sql.models.FavoriteEntry
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.source.isEhBasedManga
-import io.realm.Realm
-import io.realm.RealmConfiguration
 import uy.kohesive.injekt.injectLazy
 
 class LocalFavoritesStorage {
     private val db: DatabaseHelper by injectLazy()
 
-    private val realmConfig = RealmConfiguration.Builder()
-        .name("fav-sync")
-        .deleteRealmIfMigrationNeeded()
-        .build()
+    fun getChangedDbEntries() = db.getFavoriteMangas()
+        .executeAsBlocking()
+        .asSequence()
+        .loadDbCategories()
+        .parseToFavoriteEntries()
+        .getChangedEntries()
 
-    fun getRealm(): Realm = Realm.getInstance(realmConfig)
+    fun getChangedRemoteEntries(entries: List<EHentai.ParsedManga>) = entries
+        .asSequence()
+        .map {
+            it.fav to it.manga.apply {
+                favorite = true
+                date_added = System.currentTimeMillis()
+            }
+        }
+        .parseToFavoriteEntries()
+        .getChangedEntries()
 
-    fun getChangedDbEntries(realm: Realm) =
-        getChangedEntries(
-            realm,
-            parseToFavoriteEntries(
-                loadDbCategories(
-                    db.getFavoriteMangas()
-                        .executeAsBlocking()
-                        .asSequence()
-                )
-            )
-        )
-
-    fun getChangedRemoteEntries(realm: Realm, entries: List<EHentai.ParsedManga>) =
-        getChangedEntries(
-            realm,
-            parseToFavoriteEntries(
-                entries.asSequence().map {
-                    it.fav to it.manga.apply {
-                        favorite = true
-                        date_added = System.currentTimeMillis()
-                    }
-                }
-            )
-        )
-
-    fun snapshotEntries(realm: Realm) {
-        val dbMangas = parseToFavoriteEntries(
-            loadDbCategories(
-                db.getFavoriteMangas()
-                    .executeAsBlocking()
-                    .asSequence()
-            )
-        )
+    fun snapshotEntries() {
+        val dbMangas = db.getFavoriteMangas()
+            .executeAsBlocking()
+            .asSequence()
+            .loadDbCategories()
+            .parseToFavoriteEntries()
 
         // Delete old snapshot
-        realm.delete(FavoriteEntry::class.java)
+        db.deleteAllFavoriteEntries().executeAsBlocking()
 
         // Insert new snapshots
-        realm.copyToRealm(dbMangas.toList())
+        db.insertFavoriteEntries(dbMangas.toList()).executeAsBlocking()
     }
 
-    fun clearSnapshots(realm: Realm) {
-        realm.delete(FavoriteEntry::class.java)
+    fun clearSnapshots() {
+        db.deleteAllFavoriteEntries().executeAsBlocking()
     }
 
-    private fun getChangedEntries(realm: Realm, entries: Sequence<FavoriteEntry>): ChangeSet {
-        val terminated = entries.toList()
+    private fun Sequence<FavoriteEntry>.getChangedEntries(): ChangeSet {
+        val terminated = toList()
+
+        val databaseEntries = db.getFavoriteEntries().executeAsBlocking()
 
         val added = terminated.filter {
-            realm.queryRealmForEntry(it) == null
+            queryListForEntry(databaseEntries, it) == null
         }
 
-        val removed = realm.where(FavoriteEntry::class.java)
-            .findAll()
+        val removed = databaseEntries
             .filter {
                 queryListForEntry(terminated, it) == null
-            }.map {
+            } /*.map {
+                todo see what this does
                 realm.copyFromRealm(it)
-            }
+            }*/
 
         return ChangeSet(added, removed)
     }
-
-    private fun Realm.queryRealmForEntry(entry: FavoriteEntry) =
-        where(FavoriteEntry::class.java)
-            .equalTo(FavoriteEntry::gid.name, entry.gid)
-            .equalTo(FavoriteEntry::token.name, entry.token)
-            .equalTo(FavoriteEntry::category.name, entry.category)
-            .findFirst()
 
     private fun queryListForEntry(list: List<FavoriteEntry>, entry: FavoriteEntry) =
         list.find {
@@ -96,10 +74,10 @@ class LocalFavoritesStorage {
                 it.category == entry.category
         }
 
-    private fun loadDbCategories(manga: Sequence<Manga>): Sequence<Pair<Int, Manga>> {
+    private fun Sequence<Manga>.loadDbCategories(): Sequence<Pair<Int, Manga>> {
         val dbCategories = db.getCategories().executeAsBlocking()
 
-        return manga.filter(this::validateDbManga).mapNotNull {
+        return filter(::validateDbManga).mapNotNull {
             val category = db.getCategoriesForManga(it).executeAsBlocking()
 
             dbCategories.indexOf(
@@ -109,17 +87,17 @@ class LocalFavoritesStorage {
         }
     }
 
-    private fun parseToFavoriteEntries(manga: Sequence<Pair<Int, Manga>>) =
-        manga.filter {
-            validateDbManga(it.second)
-        }.mapNotNull {
-            FavoriteEntry().apply {
-                title = it.second.originalTitle
-                gid = EHentaiSearchMetadata.galleryId(it.second.url)
-                token = EHentaiSearchMetadata.galleryToken(it.second.url)
-                category = it.first
-
-                if (this.category > MAX_CATEGORIES) {
+    private fun Sequence<Pair<Int, Manga>>.parseToFavoriteEntries() =
+        filter { (_, manga) ->
+            validateDbManga(manga)
+        }.mapNotNull { (categoryId, manga) ->
+            FavoriteEntry(
+                title = manga.originalTitle,
+                gid = EHentaiSearchMetadata.galleryId(manga.url),
+                token = EHentaiSearchMetadata.galleryToken(manga.url),
+                category = categoryId
+            ).also {
+                if (it.category > MAX_CATEGORIES) {
                     return@mapNotNull null
                 }
             }

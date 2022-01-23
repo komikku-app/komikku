@@ -21,6 +21,9 @@ import eu.kanade.tachiyomi.data.database.queries.HistoryQueries
 import eu.kanade.tachiyomi.data.database.queries.MangaCategoryQueries
 import eu.kanade.tachiyomi.data.database.queries.MangaQueries
 import eu.kanade.tachiyomi.data.database.queries.TrackQueries
+import exh.favorites.sql.mappers.FavoriteEntryTypeMapping
+import exh.favorites.sql.models.FavoriteEntry
+import exh.favorites.sql.queries.FavoriteEntryQueries
 import exh.merged.sql.mappers.MergedMangaTypeMapping
 import exh.merged.sql.models.MergedMangaReference
 import exh.merged.sql.queries.MergedQueries
@@ -39,7 +42,7 @@ import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
  * This class provides operations to manage the database through its interfaces.
  */
 open class DatabaseHelper(context: Context) :
-    MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQueries, HistoryQueries /* SY --> */, SearchMetadataQueries, SearchTagQueries, SearchTitleQueries, MergedQueries /* SY <-- */ {
+    MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQueries, HistoryQueries /* SY --> */, SearchMetadataQueries, SearchTagQueries, SearchTitleQueries, MergedQueries, FavoriteEntryQueries /* SY <-- */ {
 
     private val configuration = SupportSQLiteOpenHelper.Configuration.builder(context)
         .name(DbOpenCallback.DATABASE_NAME)
@@ -59,6 +62,7 @@ open class DatabaseHelper(context: Context) :
         .addTypeMapping(SearchTag::class.java, SearchTagTypeMapping())
         .addTypeMapping(SearchTitle::class.java, SearchTitleTypeMapping())
         .addTypeMapping(MergedMangaReference::class.java, MergedMangaTypeMapping())
+        .addTypeMapping(FavoriteEntry::class.java, FavoriteEntryTypeMapping())
         // SY <--
         .build()
 

@@ -57,7 +57,6 @@ import exh.log.XLogLogcatLogger
 import exh.log.xLogD
 import exh.log.xLogE
 import exh.syDebugVersion
-import io.realm.Realm
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import logcat.LogPriority
@@ -99,7 +98,6 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         Injekt.importModule(AppModule(this))
 
         setupNotificationChannels()
-        Realm.init(this)
         if ((BuildConfig.DEBUG || BuildConfig.BUILD_TYPE == "releaseTest") && DebugToggles.ENABLE_DEBUG_OVERLAY.enabled) {
             setupDebugOverlay()
         }

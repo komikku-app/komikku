@@ -350,6 +350,26 @@ object EXHMigrations {
                         preferences.libraryUpdateMangaRestriction() -= MANGA_ONGOING
                     }
                 }
+                if (oldVersion under 24) {
+                    try {
+                        sequenceOf(
+                            "fav-sync",
+                            "fav-sync.management",
+                            "fav-sync.lock",
+                            "fav-sync.note"
+                        ).map {
+                            File(context.filesDir, it)
+                        }.filter(File::exists).forEach {
+                            if (it.isDirectory) {
+                                it.deleteRecursively()
+                            } else {
+                                it.delete()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        xLogE("Failed to delete old favorites database", e)
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap

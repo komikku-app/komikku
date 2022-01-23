@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.data.database.tables.HistoryTable
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.database.tables.TrackTable
+import exh.favorites.sql.tables.FavoriteEntryTable
 import exh.merged.sql.tables.MergedTable
 import exh.metadata.sql.tables.SearchMetadataTable
 import exh.metadata.sql.tables.SearchTagTable
@@ -24,7 +25,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = /* SY --> */ 10 /* SY <-- */
+        const val DATABASE_VERSION = /* SY --> */ 11 /* SY <-- */
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -92,6 +93,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         }
         if (oldVersion < 10) {
             db.execSQL(ChapterTable.fixDateUploadIfNeeded)
+        }
+        if (oldVersion < 11) {
+            db.execSQL(FavoriteEntryTable.createTableQuery)
         }
     }
 

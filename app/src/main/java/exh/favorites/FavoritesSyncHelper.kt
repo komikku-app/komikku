@@ -21,19 +21,21 @@ import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
+import exh.favorites.sql.models.FavoriteEntry
 import exh.log.xLog
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
 import exh.util.ignore
-import exh.util.trans
 import exh.util.wifiManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 import okhttp3.FormBody
 import okhttp3.Request
 import uy.kohesive.injekt.Injekt
@@ -47,6 +49,9 @@ class FavoritesSyncHelper(val context: Context) {
     private val prefs: PreferencesHelper by injectLazy()
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private val dispatcher = newSingleThreadContext("Favorites-sync-worker")
 
     private val exh by lazy {
         Injekt.get<SourceManager>().get(EXH_SOURCE_ID) as? EHentai
@@ -74,7 +79,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         status.value = FavoritesSyncStatus.Initializing(context)
 
-        scope.launch(Dispatchers.IO) { beginSync() }
+        scope.launch(dispatcher) { beginSync() }
     }
 
     private suspend fun beginSync() {
@@ -134,32 +139,28 @@ class FavoritesSyncHelper(val context: Context) {
             // Do not update galleries while syncing favorites
             EHentaiUpdateWorker.cancelBackground(context)
 
-            storage.getRealm().use { realm ->
-                realm.trans {
-                    db.inTransaction {
-                        status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context)
-                        val remoteChanges = storage.getChangedRemoteEntries(realm, favorites.first)
-                        val localChanges = if (prefs.exhReadOnlySync().get()) {
-                            null // Do not build local changes if they are not going to be applied
-                        } else {
-                            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context)
-                            storage.getChangedDbEntries(realm)
-                        }
-
-                        // Apply remote categories
-                        status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names), context = context)
-                        applyRemoteCategories(favorites.second)
-
-                        // Apply change sets
-                        applyChangeSetToLocal(errorList, remoteChanges)
-                        if (localChanges != null) {
-                            applyChangeSetToRemote(errorList, localChanges)
-                        }
-
-                        status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_cleaning_up), context = context)
-                        storage.snapshotEntries(realm)
-                    }
+            db.inTransaction {
+                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context)
+                val remoteChanges = storage.getChangedRemoteEntries(favorites.first)
+                val localChanges = if (prefs.exhReadOnlySync().get()) {
+                    null // Do not build local changes if they are not going to be applied
+                } else {
+                    status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context)
+                    storage.getChangedDbEntries()
                 }
+
+                // Apply remote categories
+                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names), context = context)
+                applyRemoteCategories(favorites.second)
+
+                // Apply change sets
+                applyChangeSetToLocal(errorList, remoteChanges)
+                if (localChanges != null) {
+                    applyChangeSetToRemote(errorList, localChanges)
+                }
+
+                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_cleaning_up), context = context)
+                storage.snapshotEntries()
             }
 
             launchUI {
@@ -378,8 +379,7 @@ class FavoritesSyncHelper(val context: Context) {
                 "${exh.baseUrl}${it.getUrl()}",
                 true,
                 exh,
-                throttleManager::throttle,
-                true
+                throttleManager::throttle
             )
 
             if (result is GalleryAddEvent.Fail) {
@@ -424,6 +424,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     fun onDestroy() {
         scope.cancel()
+        dispatcher.close()
     }
 
     companion object {

@@ -25,6 +25,7 @@ import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.asJsoup
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.debug.DebugToggles
 import exh.eh.EHTags
 import exh.eh.EHentaiUpdateHelper
@@ -716,7 +717,7 @@ class EHentai(
         throw UnsupportedOperationException("Unused method was called somehow!")
     }
 
-    fun fetchFavorites(): Pair<List<ParsedManga>, List<String>> {
+    suspend fun fetchFavorites(): Pair<List<ParsedManga>, List<String>> {
         val favoriteUrl = "$baseUrl/favorites.php"
         val result = mutableListOf<ParsedManga>()
         var page = 1
@@ -724,13 +725,15 @@ class EHentai(
         var favNames: List<String>? = null
 
         do {
-            val response2 = client.newCall(
-                exGet(
-                    favoriteUrl,
-                    page = page,
-                    cache = false
-                )
-            ).execute()
+            val response2 = withIOContext {
+                client.newCall(
+                    exGet(
+                        favoriteUrl,
+                        page = page,
+                        cache = false
+                    )
+                ).awaitResponse()
+            }
             val doc = response2.asJsoup()
 
             // Parse favorites
