@@ -3,6 +3,7 @@ package exh.debug
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.util.Log
+import android.widget.TextView
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -39,10 +40,18 @@ class SettingsDebugController : SettingsController() {
                             MaterialAlertDialogBuilder(context)
                                 .setTitle(title.toString())
                                 .setMessage(text)
+                                .create()
                         } catch (t: Throwable) {
                             val text = "Function threw exception:\n\n${Log.getStackTraceString(t)}"
                             MaterialAlertDialogBuilder(context)
                                 .setMessage(text)
+                                .create()
+                        }.also { dialog ->
+                            dialog.setOnShowListener {
+                                dialog.findViewById<TextView>(android.R.id.message)?.apply {
+                                    setTextIsSelectable(true)
+                                }
+                            }
                         }.show()
                     }
                 }
