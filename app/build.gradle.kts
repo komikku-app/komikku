@@ -280,7 +280,7 @@ dependencies {
 
     // Firebase (EH)
     implementation("com.google.firebase:firebase-analytics-ktx:20.0.2")
-    implementation("com.google.firebase:firebase-crashlytics-ktx:18.2.6")
+    implementation("com.google.firebase:firebase-crashlytics-ktx:18.2.7")
 
     // Better logging (EH)
     implementation("com.elvishew:xlog:1.11.0")

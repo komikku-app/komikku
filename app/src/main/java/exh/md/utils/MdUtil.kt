@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.log.xLogD
 import exh.md.dto.LoginBodyTokenDto
+import exh.md.dto.MangaAttributesDto
 import exh.md.dto.MangaDataDto
 import exh.md.network.NoSessionException
 import exh.source.getMainSource
@@ -266,7 +267,7 @@ class MdUtil {
         fun createMangaEntry(json: MangaDataDto, lang: String): MangaInfo {
             return MangaInfo(
                 key = buildMangaUrl(json.id),
-                title = cleanString(getFromLangMap(json.attributes.title.asMdMap(), lang, json.attributes.originalLanguage)),
+                title = cleanString(getTitleFromManga(json.attributes, lang)),
                 cover = json.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
@@ -277,14 +278,30 @@ class MdUtil {
             )
         }
 
-        fun getFromLangMap(langMap: Map<String, String?>, currentLang: String, originalLanguage: String): String {
-            return langMap[currentLang] ?: langMap["en"] ?: langMap[originalLanguage].let {
-                if (it == null && originalLanguage == "ja") {
-                    langMap["jp"]
-                } else {
-                    it
-                }.orEmpty()
-            }
+        fun getTitleFromManga(json: MangaAttributesDto, lang: String): String {
+            return getFromLangMap(json.title.asMdMap(), lang, json.originalLanguage)
+                ?: getAltTitle(json.altTitles, lang, json.originalLanguage)
+                ?: json.title.asMdMap<String>()[json.originalLanguage]
+                ?: json.altTitles.firstNotNullOfOrNull { it[json.originalLanguage] }
+                    .orEmpty()
+        }
+
+        fun getFromLangMap(langMap: Map<String, String>, currentLang: String, originalLanguage: String): String? {
+            return langMap[currentLang]
+                ?: langMap["en"]
+                ?: if (originalLanguage == "ja") {
+                    langMap["ja-ro"]
+                        ?: langMap["jp-ro"]
+                } else null
+        }
+
+        fun getAltTitle(langMaps: List<Map<String, String>>, currentLang: String, originalLanguage: String): String? {
+            return langMaps.firstNotNullOfOrNull { it[currentLang] }
+                ?: langMaps.firstNotNullOfOrNull { it["en"] }
+                ?: if (originalLanguage == "ja") {
+                    langMaps.firstNotNullOfOrNull { it["ja-ro"] }
+                        ?: langMaps.firstNotNullOfOrNull { it["jp-ro"] }
+                } else null
         }
 
         fun cdnCoverUrl(dexId: String, fileName: String): String {
