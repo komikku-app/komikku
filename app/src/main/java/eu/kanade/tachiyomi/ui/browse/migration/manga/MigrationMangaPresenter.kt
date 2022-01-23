@@ -46,8 +46,8 @@ class MigrationMangaPresenter(
 
     // SY -->
     fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean) {
-        val prevSource = sourceManager.get(prevManga.source)
         val source = sourceManager.get(manga.source) ?: return
+        val prevSource = sourceManager.get(prevManga.source)
 
         Observable.defer { runAsObservable { source.getChapterList(manga.toMangaInfo()).map { it.toSChapter() } } }.onErrorReturn { emptyList() }
             .doOnNext { migrateMangaInternal(prevSource, source, it, prevManga, manga, replace) }
@@ -105,7 +105,7 @@ class MigrationMangaPresenter(
                     track.manga_id = manga.id!!
 
                     val service = enhancedServices
-                        .firstOrNull { prevSource != null && it.isTrackFrom(track, prevManga, prevSource) }
+                        .firstOrNull { it.isTrackFrom(track, prevManga, prevSource) }
                     if (service != null) service.migrateTrack(track, manga, source)
                     else track
                 }
