@@ -25,7 +25,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = /* SY --> */ 11 /* SY <-- */
+        const val DATABASE_VERSION = /* SY --> */ 12 /* SY <-- */
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -40,6 +40,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         execSQL(SearchTagTable.createTableQuery)
         execSQL(SearchTitleTable.createTableQuery)
         execSQL(MergedTable.createTableQuery)
+        execSQL(FavoriteEntryTable.createTableQuery)
         // SY <--
 
         // DB indexes
@@ -96,6 +97,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         }
         if (oldVersion < 11) {
             db.execSQL(FavoriteEntryTable.createTableQuery)
+        }
+        if (oldVersion < 12) {
+            db.execSQL(FavoriteEntryTable.fixTableQuery)
         }
     }
 

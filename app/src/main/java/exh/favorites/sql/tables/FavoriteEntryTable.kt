@@ -23,4 +23,10 @@ object FavoriteEntryTable {
             $COL_TOKEN TEXT NOT NULL,
             $COL_CATEGORY INTEGER NOT NULL
             )"""
+
+    val fixTableQuery: String
+        get() = createTableQuery.replace(
+            "CREATE TABLE",
+            "CREATE TABLE IF NOT EXISTS"
+        )
 }
