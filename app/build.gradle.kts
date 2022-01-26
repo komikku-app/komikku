@@ -104,9 +104,9 @@ android {
     }
 
     lint {
-        disable("MissingTranslation", "ExtraTranslation")
-        isAbortOnError = false
-        isCheckReleaseBuilds = false
+        disable.addAll(listOf("MissingTranslation", "ExtraTranslation"))
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 
     compileOptions {
