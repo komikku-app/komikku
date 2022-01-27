@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import exh.util.executeOnIO
 import uy.kohesive.injekt.Injekt
@@ -28,6 +29,7 @@ import uy.kohesive.injekt.injectLazy
 class MigrationSourcesController :
     NucleusController<MigrationSourcesControllerBinding, MigrationSourcesPresenter>(),
     FlexibleAdapter.OnItemClickListener,
+    FlexibleAdapter.OnItemLongClickListener,
     // SY -->
     SourceAdapter.OnAllClickListener {
     // SY <--
@@ -123,6 +125,12 @@ class MigrationSourcesController :
         }
 
         return false
+    }
+
+    override fun onItemLongClick(position: Int) {
+        val item = adapter?.getItem(position) as? SourceItem ?: return
+        val sourceId = item.source.id.toString()
+        activity?.copyToClipboard(sourceId, sourceId)
     }
 
     override fun onAllClick(position: Int) {
