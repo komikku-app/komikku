@@ -82,8 +82,9 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             )
         }
 
+        var file: UniFile? = null
         try {
-            val file: UniFile = (
+            file = (
                 if (isJob) {
                     // Get dir of file and create
                     var dir = UniFile.fromUri(context, uri)
@@ -116,6 +117,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             return fileUri.toString()
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
+            file?.delete()
             throw e
         }
     }
