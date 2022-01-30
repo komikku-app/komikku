@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityCaptchaBinding
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -27,8 +28,6 @@ import exh.log.xLogE
 import exh.source.DelegatedHttpSource
 import exh.util.melt
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -161,9 +160,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 .asObservableSuccess()
                 .subscribeOn(Schedulers.io())
                 .map {
-                    val json = Json.decodeFromString<JsonObject>(it.body!!.string())
-                    it.close()
-                    json["token"]!!.jsonPrimitive.content
+                    it.parseAs<JsonObject>()["token"]!!.jsonPrimitive.content
                 }.melt()
 
             binding.webview.addJavascriptInterface(this@BrowserActionActivity, "exh")
@@ -323,7 +320,14 @@ class BrowserActionActivity : AppCompatActivity() {
                     .build()
             ).asObservableSuccess()
         }.map { response ->
-            Json.decodeFromString<JsonObject>(response.body!!.string())["results"]!!.jsonArray[0].jsonObject["alternatives"]!!.jsonArray[0].jsonObject["transcript"]!!.jsonPrimitive.content.trim()
+            response.parseAs<JsonObject>()["results"]!!
+                .jsonArray[0]
+                .jsonObject["alternatives"]!!
+                .jsonArray[0]
+                .jsonObject["transcript"]!!
+                .jsonPrimitive
+                .content
+                .trim()
         }.toSingle()
     }
 
