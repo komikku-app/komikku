@@ -72,7 +72,9 @@ class MangaSummaryView @JvmOverloads constructor(
                 doOnNextLayout {
                     updateExpandState()
                 }
-                requestLayout()
+                if (!isInLayout) {
+                    requestLayout()
+                }
             }
         }
 
@@ -239,7 +241,10 @@ class MangaSummaryView @JvmOverloads constructor(
     // SY <--
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if (!recalculateHeights) {
+        // Wait until parent view has determined the exact width
+        // because this affect the description line count
+        val measureWidthFreely = MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.EXACTLY
+        if (!recalculateHeights || measureWidthFreely) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
             return
         }

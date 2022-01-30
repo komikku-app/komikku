@@ -362,8 +362,6 @@ class MangaInfoHeaderAdapter(
             binding.mangaCover.loadAnyAutoPause(manga)
 
             // Manga info section
-            binding.mangaSummarySection.isVisible = !manga.description.isNullOrBlank() || !manga.genre.isNullOrBlank()
-            binding.mangaSummarySection.description = manga.description
             // SY -->
             binding.mangaSummarySection.setTags(
                 manga.getGenres(),
@@ -373,6 +371,8 @@ class MangaInfoHeaderAdapter(
                 source
             )
             // SY <--
+            binding.mangaSummarySection.description = manga.description
+            binding.mangaSummarySection.isVisible = !manga.description.isNullOrBlank() || !manga.genre.isNullOrBlank()
         }
 
         /**
