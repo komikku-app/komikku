@@ -1,5 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.8.0" changeDate="Jan 31,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.0(from 0.11.1)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] When Favorites sync takes longer then 5 seconds for a gallery, display the gallery name</changelogtext>
+        <changelogtext>[b]Improved[/b] Replace Favorites Sync realm database with the regular database</changelogtext>
+        <changelogtext>Fix some sources not updating when grouping by source</changelogtext>
+        <changelogtext>[b]New[/b] Search EHentai uploader on click</changelogtext>
+        <changelogtext>Fix EH/ExhHentai duplicate rersults in search</changelogtext>
+        <changelogtext>[b]New[/b] Add EH/ExhHentai popular as the default browse menu</changelogtext>
+        <changelogtext>[b]New[/b] Add a toplists filter for E-Hentai</changelogtext>
+        <changelogtext>[b]Improved[/b] Throw error when ExHentai igneous cookie is mystery</changelogtext>
+        <changelogtext>[b]Improved[/b] Updated E-Hentai tag list for autocomplete view</changelogtext>
+        <changelogtext>[b]Improved[/b] Replace Icon with a better one</changelogtext>
+        <changelogtext>[b]New[/b] Add way to open merged mangas in webview</changelogtext>
+        <changelogtext>Fix merged manga delete after read</changelogtext>
+        <changelogtext>[b]Improved[/b] Improve Hitomi tag list</changelogtext>
+        <changelogtext>[b]Improved[/b] Better support tag search</changelogtext>
+        <changelogtext>Stop excluding Tsumino from library updates</changelogtext>
+        <changelogtext>[b]New[/b] Re-Add MangaDex delegation, includes many features</changelogtext>
+        <changelogtext>[b]Improved[/b] Improve filter by scanlator to handle all sources</changelogtext>
+        <changelogtext>[b]New[/b] Rename manga directory if title changes</changelogtext>
+        <changelogtext>[b]New[/b] Add duel page viewer</changelogtext>
+        <changelogtext>[b]New[/b] Add cancel button in reader chapters dialog</changelogtext>
+        <changelogtext>[b]Improved[/b] Add new websites for Webtoon mode trigger (By @joseph619)</changelogtext>
+        <changelogtext>Fix chapter navigation for pager reader</changelogtext>
+        <changelogtext>Bugfix reader chapter list</changelogtext>
+        <changelogtext>Fix crash when opening reader or webview during migration</changelogtext>
+        <changelogtext>[b]New[/b] Add way to keep the manga when canceling migration</changelogtext>
+        <changelogtext>[b]Improved[/b] Handle the + for configurable sources better(By @curche)</changelogtext>
+        <changelogtext>[b]Removed[/b] Remove pure red theme</changelogtext>
+        <changelogtext>[b]New[/b] Add option to backup all read manga in addition your library</changelogtext>
+        <changelogtext>Sync edited info fields with J2k (By @null-dev)</changelogtext>
+        <changelogtext>[b]New[/b] Add a way to exclude sources from data saver</changelogtext>
+        <changelogtext>[b]New[/b] Add a way to exclude the downloader from data saver</changelogtext>
+        <changelogtext>[b]New[/b] Add biometric time range</changelogtext>
+        <changelogtext>[b]Improved[/b] Updated PT-BR translations(By @Sam-Oak)</changelogtext>
+        <changelogtext>[b]Improved[/b] Updated Russian translations (By @D3xron and @e-shl)</changelogtext>
+        <changelogtext>[b]New[/b] Add Indonesian translation (By @HaruSasaki)</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.7.0" changeDate="Jun 1,2021">
         <changelogtext>[b]Based on Tachiyomi stable 0.11.1(from 0.10.12)[/b]</changelogtext>
         <changelogtext>[b]New[/b] Add reader bottom button customization (by E-SHL)</changelogtext>
