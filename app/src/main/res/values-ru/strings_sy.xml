@@ -176,8 +176,8 @@
 
     <!-- Appearance Settings -->
     <string name="pref_category_navbar">Панель навигации</string>
-    <string name="pref_hide_updates_button">Вкладка «Обновления» на панеле навигации</string>
-    <string name="pref_hide_history_button">Вкладка «История» на панеле навигации</string>
+    <string name="pref_hide_updates_button">Вкладка «Обновления» на панели навигации</string>
+    <string name="pref_hide_history_button">Вкладка «История» на панели навигации</string>
     <string name="pref_show_bottom_bar_labels">Названия вкладок на панели навигации</string>
 
     <!-- Library settings -->
@@ -187,7 +187,7 @@
     <string name="library_settings_sheet_summary">Дополнительные настройки отображения библиотеки</string>
     <string name="library_group_updates">Обновления библиотеки для динамических категорий</string>
     <string name="library_group_updates_global">Всегда запускать глобальные обновления</string>
-    <string name="library_group_updates_all_but_ungrouped">Глобальные обновления только для группы «Не группировать», другие группы используют обновления категорий</string>
+    <string name="library_group_updates_all_but_ungrouped">Глобальные обновления только для группы «Не группировать», остальные группы используют обновления категорий</string>
     <string name="library_group_updates_all">Постоянно запускать обновления категорий</string>
 
     <!-- Browse settings -->
@@ -196,7 +196,7 @@
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
     <string name="pref_source_source_filtering_summery">Фильтровать источники которые находятся в категориях, чтобы источники которые находятся в категориях, не попадали под языковую фильтрацию</string>
     <string name="pref_source_navigation">Убрать кнопку (Последняя)</string>
-    <string name="pref_source_navigation_summery">Убирает кнопку «Последняя» возле источников, взамен, при нажатии на источник, внутри показываются вкладки «Последняя» и «Поисковик»</string>
+    <string name="pref_source_navigation_summery">Убирает кнопку «Последняя» возле источников, взамен, при нажатии на источник отображаются вкладки «Последняя» и «Поисковик»</string>
     <string name="pref_local_source_hidden_folders">Просмотр скрытых папок</string>
     <string name="pref_local_source_hidden_folders_summery">Личный источник может просматривать скрытые папки</string>
 
@@ -335,7 +335,7 @@
 
     <!-- Browse -->
     <!-- Sources Tab -->
-    <string name="find_in_another_source">Найти в другом источнике</string>
+    <string name="find_in_another_source">Найти в других источниках</string>
 
     <!-- Smart Search -->
     <string name="searching_source">Поиск в источнике…</string>
@@ -561,7 +561,7 @@
 
     <!-- More Info Menu -->
     <string name="more_info">Информация</string>
-    <string name="alt_title">Другое название</string>
+    <string name="alt_title">Альт. название</string>
     <string name="id">ID</string>
     <string name="token">Токен</string>
     <string name="is_exhentai_gallery">Галерея ExHentai</string>
@@ -590,7 +590,7 @@
     <string name="thumbnail_image_file_type">Тип изображения миниатюры</string>
     <string name="scanlator">Переводчик</string>
     <string name="url">URL-адрес</string>
-    <string name="alt_titles">Другие названия</string>
+    <string name="alt_titles">Альт. названия</string>
     <string name="uploader_capital">Имя загрузчика с заглавной буквы</string>
     <string name="uploader">Имя загрузчика</string>
     <string name="rating_string">Строка рейтинга</string>
