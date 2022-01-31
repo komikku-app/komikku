@@ -40,9 +40,9 @@ class PageHandler(
                     chapter.scanlator.equals("mangaplus", true) -> mangaPlusHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
                     )
-                    chapter.scanlator.equals("comikey", true) -> comikeyHandler.fetchPageList(
+                    /*chapter.scanlator.equals("comikey", true) -> comikeyHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
-                    )
+                    )*/
                     chapter.scanlator.equals("bilibili comics", true) -> bilibiliHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
                         chapterResponse.data.attributes.chapter.toString()
