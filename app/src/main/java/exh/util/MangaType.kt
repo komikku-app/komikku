@@ -88,16 +88,22 @@ private fun isWebtoonTag(tag: String): Boolean {
 }*/
 
 private fun isManhwaSource(sourceName: String): Boolean {
-    return sourceName.contains("getmanhwa", true) ||
-        sourceName.contains("hiperdex", true) ||
+    return sourceName.contains("hiperdex", true) ||
+        sourceName.contains("hmanhwa", true) ||
+        sourceName.contains("instamanhwa", true) ||
         sourceName.contains("manhwa18", true) ||
-        sourceName.contains("manhwascan", true) ||
-        sourceName.contains("manwahentai.me", true) ||
-        sourceName.contains("manwha club", true) ||
+        sourceName.contains("manhwa68", true) ||
+        sourceName.contains("manhwa365", true) ||
+        sourceName.contains("manhwahentaime", true) ||
+        sourceName.contains("manhwamanga", true) ||
+        sourceName.contains("manhwatop", true) ||
+        sourceName.contains("manhwa club", true) ||
         sourceName.contains("manytoon", true) ||
         sourceName.contains("manwha", true) ||
+        sourceName.contains("readmanhwa", true) ||
+        sourceName.contains("skymanga", true) ||
         sourceName.contains("toonily", true) ||
-        sourceName.contains("readmanhwa", true)
+        sourceName.contains("webtoonxyz", true)
 }
 
 private fun isWebtoonSource(sourceName: String): Boolean {
@@ -111,11 +117,14 @@ private fun isWebtoonSource(sourceName: String): Boolean {
 }
 
 private fun isComicSource(sourceName: String): Boolean {
-    return sourceName.contains("ciayo comics", true) ||
+    return sourceName.contains("8muses", true) ||
+        sourceName.contains("allporncomic", true) ||
+        sourceName.contains("ciayo comics", true) ||
         sourceName.contains("comicextra", true) ||
         sourceName.contains("comicpunch", true) ||
         sourceName.contains("cyanide", true) ||
         sourceName.contains("dilbert", true) ||
+        sourceName.contains("eggporncomics", true) ||
         sourceName.contains("existential comics", true) ||
         sourceName.contains("hiveworks comics", true) ||
         sourceName.contains("milftoon", true) ||
@@ -126,8 +135,8 @@ private fun isComicSource(sourceName: String): Boolean {
         sourceName.contains("patch friday", true) ||
         sourceName.contains("porncomix", true) ||
         sourceName.contains("questionable content", true) ||
+        sourceName.contains("readcomiconline", true) ||
         sourceName.contains("read comics online", true) ||
-        sourceName.contains("readcomicsonline", true) ||
         sourceName.contains("swords comic", true) ||
         sourceName.contains("teabeer comics", true) ||
         sourceName.contains("xkcd", true)
