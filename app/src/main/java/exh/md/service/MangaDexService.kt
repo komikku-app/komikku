@@ -17,6 +17,8 @@ import exh.md.dto.StatisticsDto
 import exh.md.utils.MdApi
 import exh.md.utils.MdConstants
 import exh.md.utils.MdUtil
+import exh.util.dropEmpty
+import exh.util.trimAll
 import okhttp3.CacheControl
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -106,10 +108,14 @@ class MangaDexService(
         ).await().parseAs(MdUtil.jsonParser)
     }
 
+    private fun String.splitString() = replace("\n", "").split(',').trimAll().dropEmpty()
+
     suspend fun viewChapters(
         id: String,
         translatedLanguage: String,
         offset: Int,
+        blockedGroups: String,
+        blockedUploaders: String
     ): ChapterListDto {
         val url = MdApi.manga.toHttpUrl()
             .newBuilder()
@@ -126,6 +132,12 @@ class MangaDexService(
                 addQueryParameter("contentRating[]", "pornographic")
                 addQueryParameter("translatedLanguage[]", translatedLanguage)
                 addQueryParameter("offset", offset.toString())
+                blockedGroups.splitString().forEach {
+                    addQueryParameter("excludedGroups[]", it)
+                }
+                blockedUploaders.splitString().forEach {
+                    addQueryParameter("excludedUploaders[]", it)
+                }
             }
             .build()
             .toString()

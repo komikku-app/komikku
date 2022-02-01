@@ -95,6 +95,8 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     private fun dataSaver() = sourcePreferences.getBoolean(getDataSaverPreferenceKey(mdLang.lang), false)
     private fun usePort443Only() = sourcePreferences.getBoolean(getStandardHttpsPreferenceKey(mdLang.lang), false)
+    private fun blockedGroups() = sourcePreferences.getString(getBlockedGroupsPrefKey(mdLang.lang), "").orEmpty()
+    private fun blockedUploaders() = sourcePreferences.getString(getBlockedGroupsPrefKey(mdLang.lang), "").orEmpty()
 
     private val mangadexService by lazy {
         MangaDexService(client)
@@ -187,11 +189,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return mangaHandler.fetchChapterListObservable(manga)
+        return mangaHandler.fetchChapterListObservable(manga, blockedGroups(), blockedUploaders())
     }
 
     override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
-        return mangaHandler.getChapterList(manga)
+        return mangaHandler.getChapterList(manga, blockedGroups(), blockedUploaders())
     }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
@@ -315,6 +317,18 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
         fun getStandardHttpsPreferenceKey(dexLang: String): String {
             return "${standardHttpsPortPref}_$dexLang"
+        }
+
+        private const val blockedGroupsPref = "blockedGroups"
+
+        fun getBlockedGroupsPrefKey(dexLang: String): String {
+            return "${blockedGroupsPref}_$dexLang"
+        }
+
+        private const val blockedUploaderPref = "blockedUploader"
+
+        fun getBlockedUploaderPrefKey(dexLang: String): String {
+            return "${blockedUploaderPref}_$dexLang"
         }
     }
 }

@@ -50,14 +50,20 @@ class MangaHandler(
         }
     }
 
-    fun fetchChapterListObservable(manga: SManga): Observable<List<SChapter>> = runAsObservable {
-        getChapterList(manga.toMangaInfo()).map { it.toSChapter() }
+    fun fetchChapterListObservable(manga: SManga, blockedGroups: String, blockedUploaders: String): Observable<List<SChapter>> = runAsObservable {
+        getChapterList(manga.toMangaInfo(), blockedGroups, blockedUploaders).map { it.toSChapter() }
     }
 
-    suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
+    suspend fun getChapterList(manga: MangaInfo, blockedGroups: String, blockedUploaders: String): List<ChapterInfo> {
         return withIOContext {
             val results = mdListCall {
-                service.viewChapters(MdUtil.getMangaId(manga.key), lang, it)
+                service.viewChapters(
+                    MdUtil.getMangaId(manga.key),
+                    lang,
+                    it,
+                    blockedGroups,
+                    blockedUploaders
+                )
             }
 
             val groupMap = getGroupMap(results)
