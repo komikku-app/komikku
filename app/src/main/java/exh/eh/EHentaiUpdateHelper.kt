@@ -3,7 +3,6 @@ package exh.eh
 import android.content.Context
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.ChapterImpl
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import exh.util.executeOnIO
@@ -122,7 +121,7 @@ class EHentaiUpdateHelper(context: Context) {
                     curChapters
                 } else {
                     new = true
-                    curChapters + ChapterImpl().apply {
+                    curChapters + Chapter.create().apply {
                         manga_id = accepted.manga.id
                         url = chapter.url
                         name = chapter.name
