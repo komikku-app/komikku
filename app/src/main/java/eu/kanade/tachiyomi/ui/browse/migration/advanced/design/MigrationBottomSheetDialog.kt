@@ -10,7 +10,7 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.Controller
-import com.tfcporciuncula.flow.Preference
+import com.fredporciuncula.flow.preferences.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
