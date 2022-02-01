@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.8.1" changeDate="Feb 1,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.1(from 0.13.0)[/b]</changelogtext>
+        <changelogtext>[b]New[/b] Use MangaDex blocked groups and uploaders from the extension settings</changelogtext>
+        <changelogtext>Fixed delete after read for renamed manga</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.8.0" changeDate="Jan 31,2022">
         <changelogtext>[b]Based on Tachiyomi stable 0.13.0(from 0.11.1)[/b]</changelogtext>
         <changelogtext>[b]New[/b] When Favorites sync takes longer then 5 seconds for a gallery, display the gallery name</changelogtext>
         <changelogtext>[b]Improved[/b] Replace Favorites Sync realm database with the regular database</changelogtext>
         <changelogtext>Fix some sources not updating when grouping by source</changelogtext>
         <changelogtext>[b]New[/b] Search EHentai uploader on click</changelogtext>
-        <changelogtext>Fix EH/ExhHentai duplicate rersults in search</changelogtext>
+        <changelogtext>Fix EH/ExhHentai duplicate results in search</changelogtext>
         <changelogtext>[b]New[/b] Add EH/ExhHentai popular as the default browse menu</changelogtext>
         <changelogtext>[b]New[/b] Add a toplists filter for E-Hentai</changelogtext>
         <changelogtext>[b]Improved[/b] Throw error when ExHentai igneous cookie is mystery</changelogtext>
