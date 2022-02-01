@@ -1,8 +1,8 @@
 package exh.util
 
-fun List<String>.trimAll() = map { it.trim() }
-fun List<String>.dropBlank() = filter { it.isNotBlank() }
-fun List<String>.dropEmpty() = filter { it.isNotEmpty() }
+fun Collection<String>.trimAll() = map { it.trim() }
+fun Collection<String>.dropBlank() = filter { it.isNotBlank() }
+fun Collection<String>.dropEmpty() = filter { it.isNotEmpty() }
 
 private val articleRegex by lazy { "^(an|a|the) ".toRegex(RegexOption.IGNORE_CASE) }
 
@@ -12,7 +12,7 @@ fun String.removeArticles(): String {
 
 fun String.trimOrNull(): String? {
     val trimmed = trim()
-    return if (trimmed.isBlank()) null else trimmed
+    return trimmed.ifBlank { null }
 }
 
 fun String?.nullIfBlank(): String? = if (isNullOrBlank()) {
