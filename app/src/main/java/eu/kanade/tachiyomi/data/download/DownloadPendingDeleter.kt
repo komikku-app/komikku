@@ -155,7 +155,7 @@ class DownloadPendingDeleter(context: Context) {
      * Returns a manga entry from a manga model.
      */
     private fun Manga.toEntry(): MangaEntry {
-        return MangaEntry(id!!, url, title, source)
+        return MangaEntry(id!!, url, originalTitle, source)
     }
 
     /**
