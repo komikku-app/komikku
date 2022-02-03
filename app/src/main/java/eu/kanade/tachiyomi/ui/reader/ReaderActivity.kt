@@ -32,6 +32,7 @@ import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
+import androidx.core.transition.addListener
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -1067,7 +1068,14 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
         val newViewer = ReadingModeType.toViewer(presenter.getMangaReadingMode(), this)
 
         updateCropBordersShortcut()
-        setOrientation(presenter.getMangaOrientationType())
+        if (window.sharedElementEnterTransition is MaterialContainerTransform) {
+            // Wait until transition is complete to avoid crash on API 26
+            window.sharedElementEnterTransition.addListener(
+                onEnd = { setOrientation(presenter.getMangaOrientationType()) }
+            )
+        } else {
+            setOrientation(presenter.getMangaOrientationType())
+        }
 
         // Destroy previous viewer if there was one
         if (prevViewer != null) {
