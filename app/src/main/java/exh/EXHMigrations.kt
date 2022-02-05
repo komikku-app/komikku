@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.data.database.tables.TrackTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_ONGOING
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
+import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
@@ -368,6 +369,12 @@ object EXHMigrations {
                         }
                     } catch (e: Exception) {
                         xLogE("Failed to delete old favorites database", e)
+                    }
+                }
+                if (oldVersion under 27) {
+                    val oldSecureScreen = prefs.getBoolean("secure_screen", false)
+                    if (oldSecureScreen) {
+                        preferences.secureScreen().set(PreferenceValues.SecureScreenMode.ALWAYS)
                     }
                 }
 

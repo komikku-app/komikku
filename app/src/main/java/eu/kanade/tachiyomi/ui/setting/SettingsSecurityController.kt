@@ -8,6 +8,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -15,7 +16,10 @@ import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesController
 import eu.kanade.tachiyomi.ui.security.SecureActivityDelegate
 import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
+import eu.kanade.tachiyomi.util.preference.entriesRes
+import eu.kanade.tachiyomi.util.preference.infoPreference
 import eu.kanade.tachiyomi.util.preference.intListPreference
+import eu.kanade.tachiyomi.util.preference.listPreference
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
 import eu.kanade.tachiyomi.util.preference.requireAuthentication
@@ -92,16 +96,23 @@ class SettingsSecurityController : SettingsController() {
         }
 
         switchPreference {
-            bindTo(preferences.secureScreen())
-            titleRes = R.string.secure_screen
-            summaryRes = R.string.secure_screen_summary
-        }
-
-        switchPreference {
             key = Keys.hideNotificationContent
             titleRes = R.string.hide_notification_content
             defaultValue = false
         }
+
+        listPreference {
+            bindTo(preferences.secureScreen())
+            titleRes = R.string.secure_screen
+            summary = "%s"
+            entriesRes = arrayOf(
+                R.string.lock_always,
+                R.string.pref_incognito_mode,
+                R.string.lock_never,
+            )
+            entryValues = PreferenceValues.SecureScreenMode.values().map { it.name }.toTypedArray()
+        }
+
         // SY -->
         preference {
             key = "pref_edit_lock_times"
@@ -128,6 +139,8 @@ class SettingsSecurityController : SettingsController() {
             }
         }
         // SY <--
+
+        infoPreference(R.string.secure_screen_summary)
     }
 
     // SY -->

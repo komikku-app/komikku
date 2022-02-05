@@ -72,6 +72,12 @@ object PreferenceValues {
         SHIZUKU,
     }
 
+    enum class SecureScreenMode {
+        ALWAYS,
+        INCOGNITO,
+        NEVER,
+    }
+
     // SY -->
     enum class GroupLibraryMode {
         GLOBAL,
