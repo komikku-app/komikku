@@ -34,6 +34,7 @@ import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.util.preference.minusAssign
+import eu.kanade.tachiyomi.util.system.DeviceUtil
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.log.xLogW
@@ -375,6 +376,9 @@ object EXHMigrations {
                     val oldSecureScreen = prefs.getBoolean("secure_screen", false)
                     if (oldSecureScreen) {
                         preferences.secureScreen().set(PreferenceValues.SecureScreenMode.ALWAYS)
+                    }
+                    if (DeviceUtil.isMiui && preferences.extensionInstaller().get() == PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER) {
+                        preferences.extensionInstaller().set(PreferenceValues.ExtensionInstaller.LEGACY)
                     }
                 }
 
