@@ -5,6 +5,7 @@ import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DbProvider
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.MangaChapterHistory
+import eu.kanade.tachiyomi.data.database.resolvers.HistoryChapterIdPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.HistoryLastReadPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaChapterHistoryGetResolver
 import eu.kanade.tachiyomi.data.database.tables.HistoryTable
@@ -96,4 +97,11 @@ interface HistoryQueries : DbProvider {
                 .build()
         )
         .prepare()
+
+    // SY -->
+    fun updateHistoryChapterIds(history: List<History>) = db.put()
+        .objects(history)
+        .withPutResolver(HistoryChapterIdPutResolver())
+        .prepare()
+    // SY <--
 }

@@ -255,7 +255,7 @@ class MangaPresenter(
                                     val ourChapterUrls = chapters.map { it.url }.toSet()
                                     val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
                                     val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
-                                    redirectFlow.tryEmit(
+                                    redirectFlow.emit(
                                         EXHRedirect(
                                             acceptedChain.manga,
                                             update
