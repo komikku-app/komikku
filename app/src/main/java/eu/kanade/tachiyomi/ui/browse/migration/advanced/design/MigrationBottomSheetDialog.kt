@@ -9,7 +9,6 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
-import com.bluelinelabs.conductor.Controller
 import com.fredporciuncula.flow.preferences.Preference
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -19,13 +18,13 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import uy.kohesive.injekt.injectLazy
 
-class MigrationBottomSheetDialog(activity: Activity, private val listener: StartMigrationListener) : BaseBottomSheetDialog(activity) {
+class MigrationBottomSheetDialog(private val activity: Activity, private val listener: StartMigrationListener) : BaseBottomSheetDialog(activity) {
     private val preferences: PreferencesHelper by injectLazy()
 
     lateinit var binding: MigrationBottomSheetBinding
 
     override fun createView(inflater: LayoutInflater): View {
-        binding = MigrationBottomSheetBinding.inflate(inflater)
+        binding = MigrationBottomSheetBinding.inflate(activity.layoutInflater)
         return binding.root
     }
 
@@ -37,7 +36,7 @@ class MigrationBottomSheetDialog(activity: Activity, private val listener: Start
 
         initPreferences()
 
-        binding.fab.setOnClickListener {
+        binding.migrateBtn.setOnClickListener {
             preferences.skipPreMigration().set(binding.skipStep.isChecked)
             preferences.hideNotFoundMigration().set(binding.HideNotFoundManga.isChecked)
             listener.startMigration(
@@ -76,7 +75,7 @@ class MigrationBottomSheetDialog(activity: Activity, private val listener: Start
         binding.HideNotFoundManga.isChecked = preferences.hideNotFoundMigration().get()
         binding.skipStep.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                (listener as? Controller)?.activity?.toast(
+                context.toast(
                     R.string.pre_migration_skip_toast,
                     Toast.LENGTH_LONG
                 )
