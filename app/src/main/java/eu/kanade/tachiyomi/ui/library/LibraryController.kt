@@ -10,6 +10,7 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ActionMode
+import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -275,8 +276,9 @@ class LibraryController(
         super.onDestroyView(view)
     }
 
-    override fun configureTabs(tabs: TabLayout) {
+    override fun configureTabs(tabs: TabLayout): Boolean {
         with(tabs) {
+            isVisible = false
             tabGravity = TabLayout.GRAVITY_START
             tabMode = TabLayout.MODE_SCROLLABLE
         }
@@ -288,6 +290,8 @@ class LibraryController(
         mangaCountVisibilitySubscription = mangaCountVisibilityRelay.subscribe {
             adapter?.notifyDataSetChanged()
         }
+
+        return false
     }
 
     override fun cleanupTabs(tabs: TabLayout) {
@@ -332,22 +336,17 @@ class LibraryController(
         }
 
         // Set the categories
-        adapter.categories = categories
-        adapter.itemsPerCategory = adapter.categories
-            .map { (it.id ?: -1) to (mangaMap[it.id]?.size ?: 0) }
-            .toMap()
+        adapter.updateCategories(categories.map { it to (mangaMap[it.id]?.size ?: 0) })
 
         // Restore active category.
         binding.libraryPager.setCurrentItem(activeCat, false)
 
         // Trigger display of tabs
-        onTabsSettingsChanged()
+        onTabsSettingsChanged(firstLaunch = true)
 
         // Delay the scroll position to allow the view to be properly measured.
-        view.post {
-            if (isAttached) {
-                (activity as? MainActivity)?.binding?.tabs?.setScrollPosition(binding.libraryPager.currentItem, 0f, true)
-            }
+        view.doOnAttach {
+            (activity as? MainActivity)?.binding?.tabs?.setScrollPosition(binding.libraryPager.currentItem, 0f, true)
         }
 
         // Send the manga map to child fragments after the adapter is updated.
@@ -389,9 +388,11 @@ class LibraryController(
     }
     // SY <--
 
-    private fun onTabsSettingsChanged() {
+    private fun onTabsSettingsChanged(firstLaunch: Boolean = false) {
+        if (!firstLaunch) {
+            mangaCountVisibilityRelay.call(preferences.categoryNumberOfItems().get())
+        }
         tabsVisibilityRelay.call(preferences.categoryTabs().get() && adapter?.categories?.size ?: 0 > 1)
-        mangaCountVisibilityRelay.call(preferences.categoryNumberOfItems().get())
         updateTitle()
     }
 

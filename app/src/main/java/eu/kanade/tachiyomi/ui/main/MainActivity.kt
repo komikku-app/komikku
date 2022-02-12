@@ -29,6 +29,7 @@ import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.Router
+import com.bluelinelabs.conductor.RouterTransaction
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import dev.chrisbanes.insetter.applyInsetter
@@ -278,6 +279,11 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
                 EHentaiUpdateWorker.scheduleBackground(this)
             }
             // SY <--
+        } else {
+            // Restore selected nav item
+            router.backstack.firstOrNull()?.tag()?.toIntOrNull()?.let {
+                nav.menu.findItem(it).isChecked = true
+            }
         }
         // SY -->
         if (!preferences.isHentaiEnabled().get()) {
@@ -457,11 +463,12 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
             }
             SHORTCUT_MANGA -> {
                 val extras = intent.extras ?: return false
-                if (router.backstackSize > 1) {
+                val fgController = router.backstack.last()?.controller as? MangaController
+                if (fgController?.manga?.id != extras.getLong(MangaController.MANGA_EXTRA)) {
                     router.popToRoot()
+                    setSelectedNavItem(R.id.nav_library)
+                    router.pushController(RouterTransaction.with(MangaController(extras)))
                 }
-                setSelectedNavItem(R.id.nav_library)
-                router.pushController(MangaController(extras).withFadeTransaction())
             }
             SHORTCUT_DOWNLOADS -> {
                 if (router.backstackSize > 1) {
@@ -607,11 +614,12 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
             from.cleanupTabs(binding.tabs)
         }
         if (to is TabbedController) {
-            to.configureTabs(binding.tabs)
+            if (to.configureTabs(binding.tabs)) {
+                binding.tabs.isVisible = true
+            }
         } else {
-            binding.tabs.setupWithViewPager(null)
+            binding.tabs.isVisible = false
         }
-        binding.tabs.isVisible = to is TabbedController
 
         if (from is FabController) {
             from.cleanupFab(binding.fabLayout.rootFab)
