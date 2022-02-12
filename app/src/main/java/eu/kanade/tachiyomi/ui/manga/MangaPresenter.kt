@@ -274,6 +274,10 @@ class MangaPresenter(
         fetchTrackers()
     }
 
+    fun getDuplicateLibraryManga(manga: Manga): Manga? {
+        return db.getDuplicateLibraryManga(manga).executeAsBlocking()
+    }
+
     // Manga info - start
 
     private fun getMangaObservable(): Observable<Manga> {
