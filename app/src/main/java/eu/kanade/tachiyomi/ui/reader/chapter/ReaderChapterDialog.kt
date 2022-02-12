@@ -15,7 +15,7 @@ import eu.kanade.tachiyomi.util.system.dpToPx
 import kotlinx.coroutines.launch
 
 class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterAdapter.OnBookmarkClickListener {
-    private val binding = ReaderChaptersDialogBinding.inflate(activity.layoutInflater, null, false)
+    private val binding = ReaderChaptersDialogBinding.inflate(activity.layoutInflater)
 
     var presenter: ReaderPresenter = activity.presenter
     var adapter: FlexibleAdapter<ReaderChapterItem>? = null
