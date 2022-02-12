@@ -23,7 +23,7 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
  * @param adapter the adapter handling this holder.
  * @constructor creates a new catalogue holder.
  */
-class SourceComfortableGridHolder(private val view: View, private val adapter: FlexibleAdapter<*> /* SY --> */, private val hasTitle: Boolean /* SY <-- */) :
+class SourceComfortableGridHolder(private val view: View, private val adapter: FlexibleAdapter<*>) :
     SourceHolder<SourceComfortableGridItemBinding>(view, adapter) {
 
     override val binding = SourceComfortableGridItemBinding.bind(view)
@@ -37,9 +37,6 @@ class SourceComfortableGridHolder(private val view: View, private val adapter: F
     override fun onSetValues(manga: Manga) {
         // Set manga title
         binding.title.text = manga.title
-        // SY -->
-        binding.title.isVisible = hasTitle
-        // SY <--
 
         // Set alpha of thumbnail.
         binding.thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f

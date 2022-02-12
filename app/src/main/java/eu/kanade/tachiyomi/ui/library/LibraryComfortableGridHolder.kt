@@ -24,10 +24,7 @@ import reactivecircus.flowbinding.android.view.clicks
  */
 class LibraryComfortableGridHolder(
     private val view: View,
-    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-    // SY -->
-    private val hasTitle: Boolean
-// SY <--
+    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
 ) : LibraryHolder<SourceComfortableGridItemBinding>(view, adapter) {
 
     override val binding = SourceComfortableGridItemBinding.bind(view)
@@ -56,9 +53,6 @@ class LibraryComfortableGridHolder(
         // SY <--
         // Update the title of the manga.
         binding.title.text = item.manga.title
-        // SY -->
-        binding.title.isVisible = hasTitle
-        // SY <--
 
         // For rounded corners
         binding.badges.leftBadges.clipToOutline = true
