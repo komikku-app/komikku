@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit
                 PREF_DOH_CLOUDFLARE -> builder.dohCloudflare()
                 PREF_DOH_GOOGLE -> builder.dohGoogle()
                 PREF_DOH_ADGUARD -> builder.dohAdGuard()
+                PREF_DOH_QUAD9 -> builder.dohAdGuard()
             }
 
             return builder
