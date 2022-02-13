@@ -5,7 +5,6 @@ import android.widget.PopupMenu
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import coil.clear
-import coil.loadAny
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -17,6 +16,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
@@ -86,7 +86,7 @@ class MigrationProcessHolder(
                 }*/
 
                 val searchResult = item.manga.searchResult.get()?.let {
-                    db.getManga(it).executeAsBlocking()
+                    db.getManga(it).executeOnIO()
                 }
                 val resultSource = searchResult?.source?.let {
                     sourceManager.get(it)
@@ -138,7 +138,7 @@ class MigrationProcessHolder(
 
     private suspend fun MigrationMangaCardBinding.attachManga(manga: Manga, source: Source) {
         progress.isVisible = false
-        thumbnail.loadAny(manga)
+        thumbnail.loadAnyAutoPause(manga)
 
         title.text = if (manga.title.isBlank()) {
             view.context.getString(R.string.unknown)
@@ -154,7 +154,7 @@ class MigrationProcessHolder(
             source.toString()
         }
 
-        val chapters = db.getChapters(manga).executeAsBlocking()
+        val chapters = db.getChapters(manga).executeOnIO()
         // For rounded corners
         badges.leftBadges.clipToOutline = true
         badges.rightBadges.clipToOutline = true
