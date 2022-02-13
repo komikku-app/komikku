@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.ui.library
 
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import coil.clear
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -73,6 +75,15 @@ class LibraryCompactGridHolder(
         binding.badges.localText.isVisible = item.isLocal
 
         // SY -->
+        binding.playLayout.updateLayoutParams<ConstraintLayout.LayoutParams> {
+            if (item.sourceLanguage.isNotEmpty()) {
+                topToBottom = binding.badges.root.id
+                topToTop = -1
+            } else {
+                topToBottom = -1
+                topToTop = binding.thumbnail.id
+            }
+        }
         binding.playLayout.isVisible = (item.manga.unreadCount > 0 && item.startReadingButton)
         // SY <--
 
