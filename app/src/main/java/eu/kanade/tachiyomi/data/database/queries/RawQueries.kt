@@ -75,23 +75,23 @@ fun getReadMangaNotInLibraryQuery() =
 """
 
 /**
- * Query to get the manga from the library, with their categories and unread count.
+ * Query to get the manga from the library, with their categories, read and unread count.
  */
 val libraryQuery =
     """
     SELECT M.*, COALESCE(MC.${MangaCategory.COL_CATEGORY_ID}, 0) AS ${Manga.COL_CATEGORY}
     FROM (
-        SELECT ${Manga.TABLE}.*, COALESCE(C.unread, 0) AS ${Manga.COL_UNREAD}, COALESCE(R.read, 0) AS ${Manga.COL_READ}
+        SELECT ${Manga.TABLE}.*, COALESCE(C.unreadCount, 0) AS ${Manga.COMPUTED_COL_UNREAD_COUNT}, COALESCE(R.readCount, 0) AS ${Manga.COMPUTED_COL_READ_COUNT}
             FROM ${Manga.TABLE}
             LEFT JOIN (
-                SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}, COUNT(*) AS unread
+                SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}, COUNT(*) AS unreadCount
                 FROM ${Chapter.TABLE}
                 WHERE ${Chapter.COL_READ} = 0
                 GROUP BY ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}
             ) AS C
             ON ${Manga.TABLE}.${Manga.COL_ID} = C.${Chapter.COL_MANGA_ID}
             LEFT JOIN (
-                SELECT ${Chapter.COL_MANGA_ID}, COUNT(*) AS read
+                SELECT ${Chapter.COL_MANGA_ID}, COUNT(*) AS readCount
                 FROM ${Chapter.TABLE}
                 WHERE ${Chapter.COL_READ} = 1
                 GROUP BY ${Chapter.COL_MANGA_ID}
@@ -100,10 +100,10 @@ val libraryQuery =
             WHERE ${Manga.COL_FAVORITE} = 1 AND ${Manga.COL_SOURCE} <> $MERGED_SOURCE_ID
             GROUP BY ${Manga.TABLE}.${Manga.COL_ID}
         UNION
-        SELECT ${Manga.TABLE}.*, COALESCE(C.unread, 0) AS ${Manga.COL_UNREAD}, COALESCE(R.read, 0) AS ${Manga.COL_READ}
+        SELECT ${Manga.TABLE}.*, COALESCE(C.unreadCount, 0) AS ${Manga.COMPUTED_COL_UNREAD_COUNT}, COALESCE(R.readCount, 0) AS ${Manga.COMPUTED_COL_READ_COUNT}
             FROM ${Manga.TABLE}
             LEFT JOIN (
-                SELECT ${Merged.TABLE}.${Merged.COL_MERGE_ID}, COUNT(*) as unread
+                SELECT ${Merged.TABLE}.${Merged.COL_MERGE_ID}, COUNT(*) as unreadCount
                 FROM ${Merged.TABLE}
                 JOIN ${Chapter.TABLE}
                 ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = ${Merged.TABLE}.${Merged.COL_MANGA_ID}
@@ -112,7 +112,7 @@ val libraryQuery =
             ) AS C
             ON ${Manga.TABLE}.${Manga.COL_ID} = C.${Merged.COL_MERGE_ID}
             LEFT JOIN (
-                SELECT ${Merged.TABLE}.${Merged.COL_MERGE_ID}, COUNT(*) as read
+                SELECT ${Merged.TABLE}.${Merged.COL_MERGE_ID}, COUNT(*) as readCount
                 FROM ${Merged.TABLE}
                 JOIN ${Chapter.TABLE}
                 ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = ${Merged.TABLE}.${Merged.COL_MANGA_ID}

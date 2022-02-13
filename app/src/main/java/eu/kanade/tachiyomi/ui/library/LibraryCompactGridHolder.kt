@@ -91,7 +91,7 @@ class LibraryCompactGridHolder(
         binding.playLayout.updateLayoutParams<FrameLayout.LayoutParams> {
             updateMargins(top = topMargin)
         }
-        binding.playLayout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
+        binding.playLayout.isVisible = (item.manga.unreadCount > 0 && item.startReadingButton)
         // SY <--
 
         // For rounded corners

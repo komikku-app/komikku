@@ -77,7 +77,7 @@ class LibraryComfortableGridHolder(
         binding.badges.localText.isVisible = item.isLocal
 
         // SY -->
-        binding.playLayout.isVisible = (item.manga.unread > 0 && item.startReadingButton)
+        binding.playLayout.isVisible = (item.manga.unreadCount > 0 && item.startReadingButton)
         // SY <--
 
         // For rounded corners

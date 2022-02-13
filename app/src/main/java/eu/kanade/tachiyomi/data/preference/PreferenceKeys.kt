@@ -31,11 +31,11 @@ object PreferenceKeys {
 
     const val filterUnread = "pref_filter_library_unread"
 
+    const val filterStarted = "pref_filter_library_started"
+
     const val filterCompleted = "pref_filter_library_completed"
 
     const val filterTracked = "pref_filter_library_tracked"
-
-    const val filterStarted = "pref_filter_library_started"
 
     const val filterLewd = "pref_filter_library_lewd"
 

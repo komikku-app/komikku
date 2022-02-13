@@ -164,6 +164,7 @@ class LibraryPresenter(
         val downloadedOnly = preferences.downloadedOnly().get()
         val filterDownloaded = preferences.filterDownloaded().get()
         val filterUnread = preferences.filterUnread().get()
+        val filterStarted = preferences.filterStarted().get()
         val filterCompleted = preferences.filterCompleted().get()
         val loggedInServices = trackManager.services.filter { trackService -> trackService.isLogged }
             .associate { trackService ->
@@ -171,25 +172,8 @@ class LibraryPresenter(
             }
         val isNotAnyLoggedIn = !loggedInServices.values.any()
         // SY -->
-        val filterStarted = preferences.filterStarted().get()
         val filterLewd = preferences.filterLewd().get()
         // SY <--
-
-        val filterFnUnread: (LibraryItem) -> Boolean = unread@{ item ->
-            if (filterUnread == State.IGNORE.value) return@unread true
-            val isUnread = item.manga.unread != 0
-
-            return@unread if (filterUnread == State.INCLUDE.value) isUnread
-            else !isUnread
-        }
-
-        val filterFnCompleted: (LibraryItem) -> Boolean = completed@{ item ->
-            if (filterCompleted == State.IGNORE.value) return@completed true
-            val isCompleted = item.manga.status == SManga.COMPLETED
-
-            return@completed if (filterCompleted == State.INCLUDE.value) isCompleted
-            else !isCompleted
-        }
 
         val filterFnDownloaded: (LibraryItem) -> Boolean = downloaded@{ item ->
             if (!downloadedOnly && filterDownloaded == State.IGNORE.value) return@downloaded true
@@ -201,6 +185,30 @@ class LibraryPresenter(
 
             return@downloaded if (downloadedOnly || filterDownloaded == State.INCLUDE.value) isDownloaded
             else !isDownloaded
+        }
+
+        val filterFnUnread: (LibraryItem) -> Boolean = unread@{ item ->
+            if (filterUnread == State.IGNORE.value) return@unread true
+            val isUnread = item.manga.unreadCount != 0
+
+            return@unread if (filterUnread == State.INCLUDE.value) isUnread
+            else !isUnread
+        }
+
+        val filterFnStarted: (LibraryItem) -> Boolean = started@{ item ->
+            if (filterStarted == State.IGNORE.value) return@started true
+            val hasStarted = item.manga.hasStarted
+
+            return@started if (filterStarted == State.INCLUDE.value) hasStarted
+            else !hasStarted
+        }
+
+        val filterFnCompleted: (LibraryItem) -> Boolean = completed@{ item ->
+            if (filterCompleted == State.IGNORE.value) return@completed true
+            val isCompleted = item.manga.status == SManga.COMPLETED
+
+            return@completed if (filterCompleted == State.INCLUDE.value) isCompleted
+            else !isCompleted
         }
 
         val filterFnTracking: (LibraryItem) -> Boolean = tracking@{ item ->
@@ -228,14 +236,6 @@ class LibraryPresenter(
         }
 
         // SY -->
-        val filterFnStarted: (LibraryItem) -> Boolean = started@{ item ->
-            if (filterStarted == State.IGNORE.value) return@started true
-            val hasRead = item.manga.read != 0
-
-            return@started if (filterStarted == State.INCLUDE.value) hasRead
-            else !hasRead
-        }
-
         val filterFnLewd: (LibraryItem) -> Boolean = lewd@{ item ->
             if (filterLewd == State.IGNORE.value) return@lewd true
             val isLewd = item.manga.isLewd()
@@ -247,12 +247,12 @@ class LibraryPresenter(
 
         val filterFn: (LibraryItem) -> Boolean = filter@{ item ->
             return@filter !(
-                !filterFnUnread(item) ||
+                !filterFnDownloaded(item) ||
+                    !filterFnUnread(item) ||
+                    !filterFnStarted(item) ||
                     !filterFnCompleted(item) ||
-                    !filterFnDownloaded(item) ||
                     !filterFnTracking(item) ||
                     // SY -->
-                    !filterFnStarted(item) ||
                     !filterFnLewd(item)
                 // SY <--
                 )
@@ -302,7 +302,7 @@ class LibraryPresenter(
                 }
 
                 item.unreadCount = if (showUnreadBadges) {
-                    item.manga.unread
+                    item.manga.unreadCount
                 } else {
                     // Unset unread count if not enabled
                     -1
@@ -335,10 +335,6 @@ class LibraryPresenter(
             var counter = 0
             db.getLastReadManga().executeAsBlocking().associate { it.id!! to counter++ }
         }
-        val totalChapterManga by lazy {
-            var counter = 0
-            db.getTotalChapterManga().executeAsBlocking().associate { it.id!! to counter++ }
-        }
         val latestChapterManga by lazy {
             var counter = 0
             db.getLatestChapterManga().executeAsBlocking().associate { it.id!! to counter++ }
@@ -367,8 +363,8 @@ class LibraryPresenter(
             (category.id ?: 0) to SortModeSetting.get(preferences, category)
         }
 
-        val defaultSortAscending = SortDirectionSetting.get(preferences, null)
-        val sortAscending = categories.associate { category ->
+        val defaultSortDirection = SortDirectionSetting.get(preferences, null)
+        val sortDirections = categories.associate { category ->
             (category.id ?: 0) to SortDirectionSetting.get(preferences, category)
         }
 
@@ -383,9 +379,9 @@ class LibraryPresenter(
                 defaultSortingMode
             }
             val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortAscending[i1.manga.category] ?: defaultSortAscending
+                sortDirections[i1.manga.category] ?: defaultSortDirection
             } else {
-                defaultSortAscending
+                defaultSortDirection
             } == SortDirectionSetting.ASCENDING
 
             when (sortingMode) {
@@ -401,15 +397,13 @@ class LibraryPresenter(
                 SortModeSetting.LAST_CHECKED -> i2.manga.last_update.compareTo(i1.manga.last_update)
                 SortModeSetting.UNREAD -> when {
                     // Ensure unread content comes first
-                    i1.manga.unread == i2.manga.unread -> 0
-                    i1.manga.unread == 0 -> if (sortAscending) 1 else -1
-                    i2.manga.unread == 0 -> if (sortAscending) -1 else 1
-                    else -> i1.manga.unread.compareTo(i2.manga.unread)
+                    i1.manga.unreadCount == i2.manga.unreadCount -> 0
+                    i1.manga.unreadCount == 0 -> if (sortAscending) 1 else -1
+                    i2.manga.unreadCount == 0 -> if (sortAscending) -1 else 1
+                    else -> i1.manga.unreadCount.compareTo(i2.manga.unreadCount)
                 }
                 SortModeSetting.TOTAL_CHAPTERS -> {
-                    val manga1TotalChapter = totalChapterManga[i1.manga.id!!] ?: 0
-                    val mange2TotalChapter = totalChapterManga[i2.manga.id!!] ?: 0
-                    manga1TotalChapter.compareTo(mange2TotalChapter)
+                    i1.manga.totalChapters.compareTo(i2.manga.totalChapters)
                 }
                 SortModeSetting.LATEST_CHAPTER -> {
                     val manga1latestChapter = latestChapterManga[i1.manga.id!!]
@@ -441,9 +435,9 @@ class LibraryPresenter(
 
         return map.mapValues { entry ->
             val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortAscending[entry.key] ?: defaultSortAscending
+                sortDirections[entry.key] ?: defaultSortDirection
             } else {
-                defaultSortAscending
+                defaultSortDirection
             } == SortDirectionSetting.ASCENDING
 
             val comparator = if (sortAscending) {

@@ -39,17 +39,18 @@ object MangaTable {
 
     const val COL_CHAPTER_FLAGS = "chapter_flags"
 
-    const val COL_UNREAD = "unread"
-
-    // SY ->>
-    const val COL_READ = "read"
-
+    // SY -->
     const val COL_FILTERED_SCANLATORS = "filtered_scanlators"
     // SY <--
 
     const val COL_CATEGORY = "category"
 
     const val COL_COVER_LAST_MODIFIED = "cover_last_modified"
+
+    // Not an actual value but computed when created
+    const val COMPUTED_COL_UNREAD_COUNT = "unread_count"
+
+    const val COMPUTED_COL_READ_COUNT = "read_count"
 
     val createTableQuery: String
         get() =
