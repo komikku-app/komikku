@@ -30,6 +30,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.library.LibrarySort
+import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
@@ -379,6 +380,11 @@ object EXHMigrations {
                     }
                     if (DeviceUtil.isMiui && preferences.extensionInstaller().get() == PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER) {
                         preferences.extensionInstaller().set(PreferenceValues.ExtensionInstaller.LEGACY)
+                    }
+                }
+                if (oldVersion under 28) {
+                    if (prefs.getString("pref_display_mode_library", null) == "NO_TITLE_GRID") {
+                        preferences.libraryDisplayMode().set(DisplayModeSetting.COVER_ONLY_GRID)
                     }
                 }
 
