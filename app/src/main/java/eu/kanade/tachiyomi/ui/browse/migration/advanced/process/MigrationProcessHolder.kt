@@ -155,6 +155,9 @@ class MigrationProcessHolder(
         }
 
         val chapters = db.getChapters(manga).executeAsBlocking()
+        // For rounded corners
+        badges.leftBadges.clipToOutline = true
+        badges.rightBadges.clipToOutline = true
         badges.unreadText.isVisible = true
         badges.unreadText.text = chapters.size.toString()
         val latestChapter = chapters.maxByOrNull { it.chapter_number }?.chapter_number ?: -1f
