@@ -113,7 +113,7 @@ class MigrationProcessHolder(
                     if (adapter.hideNotFound) {
                         adapter.removeManga(bindingAdapterPosition)
                     } else {
-                        binding.migrationMangaCardTo.loadingGroup.isVisible = false
+                        binding.migrationMangaCardTo.progress.isVisible = false
                         binding.migrationMangaCardTo.title.text = view.context.applicationContext
                             .getString(R.string.no_alternatives_found)
                     }
@@ -126,20 +126,18 @@ class MigrationProcessHolder(
     }
 
     private fun MigrationMangaCardBinding.resetManga() {
-        loadingGroup.isVisible = true
+        progress.isVisible = true
         thumbnail.clear()
         thumbnail.setImageDrawable(null)
         title.text = ""
         mangaSourceLabel.text = ""
-        mangaChapters.text = ""
-        mangaChapters.isVisible = false
+        badges.unreadText.text = ""
+        badges.unreadText.isVisible = false
         mangaLastChapterLabel.text = ""
     }
 
     private suspend fun MigrationMangaCardBinding.attachManga(manga: Manga, source: Source) {
-        loadingGroup.isVisible = false
-        // For rounded corners
-        card.clipToOutline = true
+        progress.isVisible = false
         thumbnail.loadAny(manga)
 
         title.text = if (manga.title.isBlank()) {
@@ -148,7 +146,6 @@ class MigrationProcessHolder(
             manga.originalTitle
         }
 
-        gradient.isVisible = true
         mangaSourceLabel.text = if (source.id == MERGED_SOURCE_ID) {
             db.getMergedMangaReferences(manga.id!!).executeOnIO().map {
                 sourceManager.getOrStub(it.mangaSourceId).toString()
@@ -158,8 +155,8 @@ class MigrationProcessHolder(
         }
 
         val chapters = db.getChapters(manga).executeAsBlocking()
-        mangaChapters.isVisible = true
-        mangaChapters.text = chapters.size.toString()
+        badges.unreadText.isVisible = true
+        badges.unreadText.text = chapters.size.toString()
         val latestChapter = chapters.maxByOrNull { it.chapter_number }?.chapter_number ?: -1f
 
         if (latestChapter > 0f) {

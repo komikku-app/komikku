@@ -1,10 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.source.browse
 
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.FrameLayout
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.fredporciuncula.flow.preferences.Preference
 import eu.davidea.flexibleadapter.FlexibleAdapter
@@ -16,7 +12,6 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
-import eu.kanade.tachiyomi.widget.AutofitRecyclerView
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.isEhBasedManga
 import uy.kohesive.injekt.injectLazy
@@ -34,9 +29,9 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         }
         // SY <--
         return when (displayMode.get()) {
-            DisplayModeSetting.LIST -> R.layout.source_list_item
+            DisplayModeSetting.COMPACT_GRID, DisplayModeSetting.COVER_ONLY_GRID -> R.layout.source_compact_grid_item
             DisplayModeSetting.COMFORTABLE_GRID -> R.layout.source_comfortable_grid_item
-            else -> R.layout.source_compact_grid_item
+            DisplayModeSetting.LIST -> R.layout.source_list_item
         }
     }
 
@@ -50,37 +45,14 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         }
         // SY <--
         return when (displayMode.get()) {
-            DisplayModeSetting.LIST -> {
-                SourceListHolder(view, adapter)
+            DisplayModeSetting.COMPACT_GRID, DisplayModeSetting.COVER_ONLY_GRID -> {
+                SourceCompactGridHolder(SourceCompactGridItemBinding.bind(view), adapter)
             }
             DisplayModeSetting.COMFORTABLE_GRID -> {
-                val binding = SourceComfortableGridItemBinding.bind(view)
-                val parent = adapter.recyclerView as AutofitRecyclerView
-                val coverHeight = parent.itemWidth / 3 * 4
-                view.apply {
-                    binding.card.layoutParams = ConstraintLayout.LayoutParams(
-                        MATCH_PARENT,
-                        coverHeight
-                    )
-                }
-                SourceComfortableGridHolder(view, adapter)
+                SourceComfortableGridHolder(SourceComfortableGridItemBinding.bind(view), adapter)
             }
-            else -> {
-                val binding = SourceCompactGridItemBinding.bind(view)
-                val parent = adapter.recyclerView as AutofitRecyclerView
-                val coverHeight = parent.itemWidth / 3 * 4
-                view.apply {
-                    binding.card.layoutParams = FrameLayout.LayoutParams(
-                        MATCH_PARENT,
-                        coverHeight
-                    )
-                    binding.gradient.layoutParams = FrameLayout.LayoutParams(
-                        MATCH_PARENT,
-                        coverHeight / 2,
-                        Gravity.BOTTOM
-                    )
-                }
-                SourceCompactGridHolder(view, adapter)
+            DisplayModeSetting.LIST -> {
+                SourceListHolder(view, adapter)
             }
         }
     }

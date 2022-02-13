@@ -1,17 +1,10 @@
 package eu.kanade.tachiyomi.ui.library
 
-import android.view.View
-import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
-import androidx.core.view.updateMargins
-import androidx.recyclerview.widget.RecyclerView
 import coil.clear
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
-import eu.kanade.tachiyomi.util.system.dpToPx
 import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -19,21 +12,18 @@ import reactivecircus.flowbinding.android.view.clicks
 
 /**
  * Class used to hold the displayed data of a manga in the library, like the cover or the title.
- * All the elements from the layout file "item_source_grid" are available in this class.
+ * All the elements from the layout file "source_compact_grid_item" are available in this class.
  *
- * @param view the inflated view for this holder.
+ * @param binding the inflated view for this holder.
  * @param adapter the adapter handling this holder.
- * @param listener a listener to react to single tap and long tap events.
+ * @param coverOnly true if title should be hidden a.k.a cover only mode.
  * @constructor creates a new library holder.
  */
 class LibraryCompactGridHolder(
-    private val view: View,
-    // SY -->
-    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
-    // SY <--
-) : LibraryHolder<SourceCompactGridItemBinding>(view, adapter) {
-
-    override val binding = SourceCompactGridItemBinding.bind(view)
+    override val binding: SourceCompactGridItemBinding,
+    adapter: FlexibleAdapter<*>,
+    private val coverOnly: Boolean
+) : LibraryHolder<SourceCompactGridItemBinding>(binding.root, adapter) {
 
     // SY -->
     var manga: Manga? = null
@@ -83,23 +73,24 @@ class LibraryCompactGridHolder(
         binding.badges.localText.isVisible = item.isLocal
 
         // SY -->
-        val topMargin = if (item.sourceLanguage.isNotEmpty()) {
-            16.dpToPx
-        } else {
-            0.dpToPx
-        }
-        binding.playLayout.updateLayoutParams<FrameLayout.LayoutParams> {
-            updateMargins(top = topMargin)
-        }
         binding.playLayout.isVisible = (item.manga.unreadCount > 0 && item.startReadingButton)
         // SY <--
 
-        // For rounded corners
-        binding.card.clipToOutline = true
-
         // Update the cover.
         binding.thumbnail.clear()
-        binding.thumbnail.loadAnyAutoPause(item.manga)
+        if (coverOnly) {
+            // Cover only mode: Hides title text unless thumbnail is unavailable
+            if (!item.manga.thumbnail_url.isNullOrEmpty()) {
+                binding.thumbnail.loadAnyAutoPause(item.manga)
+                binding.title.isVisible = false
+            } else {
+                binding.title.text = item.manga.title
+                binding.title.isVisible = true
+            }
+            binding.thumbnail.foreground = null
+        } else {
+            binding.thumbnail.loadAnyAutoPause(item.manga)
+        }
     }
 
     // SY -->

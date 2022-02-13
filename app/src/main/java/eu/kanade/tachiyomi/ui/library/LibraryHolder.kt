@@ -1,10 +1,8 @@
 package eu.kanade.tachiyomi.ui.library
 
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.viewholders.FlexibleViewHolder
 
 /**
@@ -16,9 +14,7 @@ import eu.davidea.viewholders.FlexibleViewHolder
 
 abstract class LibraryHolder<VB : ViewBinding>(
     view: View,
-    // SY -->
-    val adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
-    // SY <--
+    val adapter: FlexibleAdapter<*>
 ) : FlexibleViewHolder(view, adapter) {
 
     abstract val binding: VB
