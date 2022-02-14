@@ -84,7 +84,8 @@ class LibraryComfortableGridHolder(
 
     // SY -->
     private fun playButtonClicked() {
-        manga?.let { (adapter as LibraryCategoryAdapter).controller.startReading(it, (adapter as LibraryCategoryAdapter)) }
+        if (adapter !is LibraryCategoryAdapter) return
+        adapter.controller.startReading(manga ?: return, adapter)
     }
     // SY <--
 }

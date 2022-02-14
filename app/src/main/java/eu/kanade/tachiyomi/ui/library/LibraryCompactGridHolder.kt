@@ -76,12 +76,22 @@ class LibraryCompactGridHolder(
 
         // SY -->
         binding.playLayout.updateLayoutParams<ConstraintLayout.LayoutParams> {
-            if (item.sourceLanguage.isNotEmpty()) {
-                topToBottom = binding.badges.root.id
-                topToTop = -1
-            } else {
-                topToBottom = -1
-                topToTop = binding.thumbnail.id
+            when {
+                coverOnly -> {
+                    topToBottom = -1
+                    topToTop = -1
+                    bottomToBottom = binding.thumbnail.id
+                }
+                item.sourceLanguage.isNotEmpty() -> {
+                    topToBottom = binding.badges.root.id
+                    topToTop = -1
+                    bottomToBottom = -1
+                }
+                else -> {
+                    topToBottom = -1
+                    topToTop = binding.thumbnail.id
+                    bottomToBottom = -1
+                }
             }
         }
         binding.playLayout.isVisible = (item.manga.unreadCount > 0 && item.startReadingButton)
@@ -106,7 +116,8 @@ class LibraryCompactGridHolder(
 
     // SY -->
     private fun playButtonClicked() {
-        manga?.let { (adapter as LibraryCategoryAdapter).controller.startReading(it, (adapter as LibraryCategoryAdapter)) }
+        if (adapter !is LibraryCategoryAdapter) return
+        adapter.controller.startReading(manga ?: return, adapter)
     }
     // SY <--
 }
