@@ -387,6 +387,11 @@ object EXHMigrations {
                         preferences.libraryDisplayMode().set(DisplayModeSetting.COVER_ONLY_GRID)
                     }
                 }
+                if (oldVersion under 29) {
+                    if (prefs.getString("pref_display_mode_catalogue", null) == "NO_TITLE_GRID") {
+                        preferences.libraryDisplayMode().set(DisplayModeSetting.COMPACT_GRID)
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
