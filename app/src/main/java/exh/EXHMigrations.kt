@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.database.tables.TrackTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
-import eu.kanade.tachiyomi.data.preference.MANGA_ONGOING
+import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -350,7 +350,7 @@ object EXHMigrations {
                 if (oldVersion under 23) {
                     val oldUpdateOngoingOnly = prefs.getBoolean("pref_update_only_non_completed_key", true)
                     if (!oldUpdateOngoingOnly) {
-                        preferences.libraryUpdateMangaRestriction() -= MANGA_ONGOING
+                        preferences.libraryUpdateMangaRestriction() -= MANGA_NON_COMPLETED
                     }
                 }
                 if (oldVersion under 24) {
