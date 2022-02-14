@@ -389,7 +389,7 @@ object EXHMigrations {
                 }
                 if (oldVersion under 29) {
                     if (prefs.getString("pref_display_mode_catalogue", null) == "NO_TITLE_GRID") {
-                        preferences.libraryDisplayMode().set(DisplayModeSetting.COMPACT_GRID)
+                        preferences.sourceDisplayMode().set(DisplayModeSetting.COMPACT_GRID)
                     }
                 }
 
