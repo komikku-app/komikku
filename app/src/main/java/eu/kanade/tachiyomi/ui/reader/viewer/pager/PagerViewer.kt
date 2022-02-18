@@ -171,18 +171,27 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     private fun getPageHolder(page: ReaderPage): PagerPageHolder? =
         pager.children
             .filterIsInstance(PagerPageHolder::class.java)
-            .firstOrNull { it.item.first.index == page.index || it.item.second?.index == page.index }
+            .firstOrNull { it.item.first == page || it.item.second == page }
 
     /**
      * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
      */
+    @Suppress("NAME_SHADOWING")
     fun onPageChange(position: Int) {
         val page = adapter.joinedItems.getOrNull(position)
         if (page != null && currentPage != page) {
             val allowPreload = checkAllowPreload(page.first as? ReaderPage)
             val forward = when {
-                currentPage is ReaderPage && page.first is ReaderPage ->
-                    (page.first as ReaderPage).number > (currentPage as ReaderPage).number
+                currentPage is ReaderPage && page.first is ReaderPage -> {
+                    // if both pages have the same number, it's a split page with an InsertPage
+                    val page = page.first as ReaderPage
+                    if (page.number == (currentPage as ReaderPage).number) {
+                        // the InsertPage is always the second in the reading direction
+                        page is InsertPage
+                    } else {
+                        page.number > (currentPage as ReaderPage).number
+                    }
+                }
                 currentPage is ChapterTransition.Prev && page.first is ReaderPage ->
                     false
                 else -> true
