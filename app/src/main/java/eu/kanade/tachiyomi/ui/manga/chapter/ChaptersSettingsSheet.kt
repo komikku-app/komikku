@@ -110,7 +110,7 @@ class ChaptersSettingsSheet(
             override fun onItemClicked(item: Item) {
                 if (item is Item.DrawableSelection) {
                     val scanlators = presenter.allChapterScanlators.toTypedArray()
-                    val filteredScanlators = presenter.manga.filtered_scanlators?.let { MdUtil.getScanlators(it) } ?: scanlators.toSet()
+                    val filteredScanlators = presenter.manga.filtered_scanlators?.let(MdUtil::getScanlators) ?: scanlators.toSet()
                     val selection = scanlators.map {
                         it in filteredScanlators
                     }.toBooleanArray()

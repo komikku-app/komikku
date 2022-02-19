@@ -166,7 +166,13 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         }
     }
 
-    private suspend fun filterManga(queries: List<QueryComponent>, manga: LibraryManga, checkGenre: Boolean = true, searchTags: List<SearchTag>? = null, searchTitles: List<SearchTitle>? = null): Boolean {
+    private fun filterManga(
+        queries: List<QueryComponent>,
+        manga: LibraryManga,
+        checkGenre: Boolean = true,
+        searchTags: List<SearchTag>? = null,
+        searchTitles: List<SearchTitle>? = null
+    ): Boolean {
         val mappedQueries = queries.groupBy { it.excluded }
         val tracks = if (hasLoggedServices) db.getTracks(manga).executeAsBlocking().toList() else null
         val source = sourceManager.get(manga.source)

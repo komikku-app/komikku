@@ -314,7 +314,7 @@ class MangaInfoHeaderAdapter(
                     .filterNot { it in listOf("all", "other") }
 
                 // SY -->
-                val isMergedSource = source?.id == MERGED_SOURCE_ID
+                val isMergedSource = source.id == MERGED_SOURCE_ID
                 // SY <--
                 val hasOneActiveLanguages = enabledLanguages.size == 1
                 val isInEnabledLanguages = source.lang in enabledLanguages

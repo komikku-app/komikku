@@ -1,10 +1,8 @@
 package eu.kanade.tachiyomi.ui.library
 
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
 import coil.clear
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
@@ -23,7 +21,7 @@ import reactivecircus.flowbinding.android.view.clicks
  */
 class LibraryComfortableGridHolder(
     override val binding: SourceComfortableGridItemBinding,
-    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
+    adapter: FlexibleAdapter<*>
 ) : LibraryHolder<SourceComfortableGridItemBinding>(binding.root, adapter) {
 
     // SY -->

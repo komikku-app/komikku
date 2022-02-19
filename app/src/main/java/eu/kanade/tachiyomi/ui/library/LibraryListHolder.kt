@@ -2,11 +2,9 @@ package eu.kanade.tachiyomi.ui.library
 
 import android.view.View
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
 import coil.clear
 import coil.loadAny
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.databinding.SourceListItemBinding
 
 /**
@@ -20,9 +18,7 @@ import eu.kanade.tachiyomi.databinding.SourceListItemBinding
  */
 class LibraryListHolder(
     private val view: View,
-    // SY -->
-    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
-    // SY <--
+    adapter: FlexibleAdapter<*>
 ) : LibraryHolder<SourceListItemBinding>(view, adapter) {
 
     override val binding = SourceListItemBinding.bind(view)
