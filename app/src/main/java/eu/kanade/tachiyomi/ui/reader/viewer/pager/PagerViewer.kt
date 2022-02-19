@@ -179,7 +179,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     @Suppress("NAME_SHADOWING")
     fun onPageChange(position: Int) {
         val page = adapter.joinedItems.getOrNull(position)
-        if (page != null && currentPage != page) {
+        if (page != null && currentPage != page.first) {
             val allowPreload = checkAllowPreload(page.first as? ReaderPage)
             val forward = when {
                 currentPage is ReaderPage && page.first is ReaderPage -> {
