@@ -176,15 +176,14 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     /**
      * Called when a new page (either a [ReaderPage] or [ChapterTransition]) is marked as active
      */
-    @Suppress("NAME_SHADOWING")
     fun onPageChange(position: Int) {
-        val page = adapter.joinedItems.getOrNull(position)
-        if (page != null && currentPage != page.first) {
-            val allowPreload = checkAllowPreload(page.first as? ReaderPage)
+        val pagePair = adapter.joinedItems.getOrNull(position)
+        val page = pagePair?.first
+        if (page != null && currentPage != page) {
+            val allowPreload = checkAllowPreload(page as? ReaderPage)
             val forward = when {
-                currentPage is ReaderPage && page.first is ReaderPage -> {
+                currentPage is ReaderPage && page is ReaderPage -> {
                     // if both pages have the same number, it's a split page with an InsertPage
-                    val page = page.first as ReaderPage
                     if (page.number == (currentPage as ReaderPage).number) {
                         // the InsertPage is always the second in the reading direction
                         page is InsertPage
@@ -192,14 +191,14 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                         page.number > (currentPage as ReaderPage).number
                     }
                 }
-                currentPage is ChapterTransition.Prev && page.first is ReaderPage ->
+                currentPage is ChapterTransition.Prev && page is ReaderPage ->
                     false
                 else -> true
             }
-            currentPage = page.first
-            when (val aPage = page.first) {
-                is ReaderPage -> onReaderPageSelected(aPage, allowPreload, forward, page.second != null)
-                is ChapterTransition -> onTransitionSelected(aPage)
+            currentPage = page
+            when (page) {
+                is ReaderPage -> onReaderPageSelected(page, allowPreload, forward, pagePair.second != null)
+                is ChapterTransition -> onTransitionSelected(page)
             }
         }
     }
