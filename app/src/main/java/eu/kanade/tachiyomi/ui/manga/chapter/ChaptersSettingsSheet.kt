@@ -105,6 +105,7 @@ class ChaptersSettingsSheet(
                 }
                 unread.state = presenter.onlyUnread().value
                 bookmarked.state = presenter.onlyBookmarked().value
+                scanlatorFilters.isVisible = presenter.allChapterScanlators.size > 1
             }
 
             override fun onItemClicked(item: Item) {
