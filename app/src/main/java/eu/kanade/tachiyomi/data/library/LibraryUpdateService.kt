@@ -310,20 +310,16 @@ class LibraryUpdateService(
             when (group) {
                 LibraryGroup.BY_TRACK_STATUS -> {
                     val trackingExtra = groupExtra?.toIntOrNull() ?: -1
-                    libraryManga.filter {
-                        val loggedServices = trackManager.services.filter { it.isLogged }
-                        val status: String = run {
-                            val tracks = db.getTracks(it).executeAsBlocking()
-                            val track = tracks.find { track ->
-                                loggedServices.any { it.id == track?.sync_id }
-                            }
-                            val service = loggedServices.find { it.id == track?.sync_id }
-                            if (track != null && service != null) {
-                                service.getStatus(track.status)
-                            } else {
-                                "not tracked"
-                            }
-                        }
+                    val loggedServices = trackManager.services.filter { it.isLogged }
+                    val tracks = db.getTracks().executeAsBlocking().groupBy { it.manga_id }
+                    val statuses = loggedServices.associate {
+                        it.id to it.getStatusList().associateWith(it::getStatus)
+                    }
+
+                    libraryManga.filter { manga ->
+                        val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
+                            statuses[track.sync_id]?.get(track.status)
+                        } ?: "not tracked"
                         (trackManager.trackMap[status] ?: TrackManager.OTHER) == trackingExtra
                     }
                 }

@@ -821,76 +821,88 @@ class LibraryPresenter(
     }
 
     private fun getGroupedMangaItems(libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
-        val grouping: MutableList<Triple<String, Int, String>> = mutableListOf()
+        val grouping: MutableMap<Number, Pair<Int, String>> = mutableMapOf()
         when (groupType) {
             LibraryGroup.BY_STATUS -> {
-                grouping += Triple(SManga.ONGOING.toString(), SManga.ONGOING, context.getString(R.string.ongoing))
-                grouping += Triple(SManga.LICENSED.toString(), SManga.LICENSED, context.getString(R.string.licensed))
-                grouping += Triple(SManga.CANCELLED.toString(), SManga.CANCELLED, context.getString(R.string.cancelled))
-                grouping += Triple(SManga.ON_HIATUS.toString(), SManga.ON_HIATUS, context.getString(R.string.on_hiatus))
-                grouping += Triple(SManga.PUBLISHING_FINISHED.toString(), SManga.PUBLISHING_FINISHED, context.getString(R.string.publishing_finished))
-                grouping += Triple(SManga.COMPLETED.toString(), SManga.COMPLETED, context.getString(R.string.completed))
-                grouping += Triple(SManga.UNKNOWN.toString(), SManga.UNKNOWN, context.getString(R.string.unknown))
+                grouping.putAll(
+                    listOf(
+                        SManga.ONGOING to context.getString(R.string.ongoing),
+                        SManga.LICENSED to context.getString(R.string.licensed),
+                        SManga.CANCELLED to context.getString(R.string.cancelled),
+                        SManga.ON_HIATUS to context.getString(R.string.ongoing),
+                        SManga.PUBLISHING_FINISHED to context.getString(R.string.publishing_finished),
+                        SManga.COMPLETED to context.getString(R.string.completed),
+                        SManga.UNKNOWN to context.getString(R.string.unknown)
+                    ).associateBy(Pair<Int, *>::first)
+                )
             }
             LibraryGroup.BY_SOURCE ->
                 libraryManga
                     .map { it.manga.source }
                     .distinct()
                     .sorted()
-                    .forEachIndexed { index, sourceLong ->
-                        grouping += Triple(sourceLong.toString(), index, sourceManager.getOrStub(sourceLong).name)
+                    .mapIndexed { index, sourceLong ->
+                        sourceLong to (index to sourceManager.getOrStub(sourceLong).name)
                     }
+                    .let(grouping::putAll)
             LibraryGroup.BY_TRACK_STATUS -> {
-                grouping += Triple("1", 1, context.getString(R.string.reading))
-                grouping += Triple("2", 2, context.getString(R.string.repeating))
-                grouping += Triple("3", 3, context.getString(R.string.plan_to_read))
-                grouping += Triple("4", 4, context.getString(R.string.on_hold))
-                grouping += Triple("5", 5, context.getString(R.string.completed))
-                grouping += Triple("6", 6, context.getString(R.string.dropped))
-                grouping += Triple("7", 7, context.getString(R.string.not_tracked))
+                grouping.putAll(
+                    listOf(
+                        TrackManager.READING to context.getString(R.string.reading),
+                        TrackManager.REPEATING to context.getString(R.string.repeating),
+                        TrackManager.PLAN_TO_READ to context.getString(R.string.plan_to_read),
+                        TrackManager.PAUSED to context.getString(R.string.on_hold),
+                        TrackManager.COMPLETED to context.getString(R.string.completed),
+                        TrackManager.DROPPED to context.getString(R.string.dropped),
+                        TrackManager.OTHER to context.getString(R.string.not_tracked)
+                    ).associateBy(Pair<Int, *>::first)
+                )
             }
         }
         val map: MutableMap<Int, MutableList<LibraryItem>> = mutableMapOf()
 
-        libraryManga.forEach { libraryItem ->
-            when (groupType) {
-                LibraryGroup.BY_TRACK_STATUS -> {
-                    val status: String = run {
-                        val tracks = db.getTracks(libraryItem.manga).executeAsBlocking()
-                        val track = tracks.find { track ->
-                            loggedServices.any { it.id == track?.sync_id }
-                        }
-                        val service = loggedServices.find { it.id == track?.sync_id }
-                        if (track != null && service != null) {
-                            service.getStatus(track.status)
-                        } else {
-                            "not tracked"
-                        }
-                    }
-                    val group = grouping.find { (_, statusInt) ->
+        when (groupType) {
+            LibraryGroup.BY_TRACK_STATUS -> {
+                val tracks = db.getTracks().executeAsBlocking().groupBy { it.manga_id }
+                val statuses = loggedServices.associate {
+                    it.id to it.getStatusList().associateWith(it::getStatus)
+                }
+                libraryManga.forEach { libraryItem ->
+                    val status = tracks[libraryItem.manga.id]?.firstNotNullOfOrNull { track ->
+                        statuses[track.sync_id]?.get(track.status)
+                    } ?: "not tracked"
+                    val group = grouping.values.find { (statusInt) ->
                         statusInt == (trackManager.trackMap[status] ?: TrackManager.OTHER)
                     }
                     if (group != null) {
-                        map.getOrPut(group.second) { mutableListOf() } += libraryItem
+                        map.getOrPut(group.first) { mutableListOf() } += libraryItem
                     } else {
                         map.getOrPut(7) { mutableListOf() } += libraryItem
                     }
                 }
-                LibraryGroup.BY_SOURCE -> {
-                    val group = grouping.find { it.first.toLongOrNull() == libraryItem.manga.source }
+            }
+            LibraryGroup.BY_SOURCE -> {
+                libraryManga.forEach { libraryItem ->
+                    val group = grouping[libraryItem.manga.source]
                     if (group != null) {
-                        map.getOrPut(group.second) { mutableListOf() } += libraryItem
+                        map.getOrPut(group.first) { mutableListOf() } += libraryItem
                     } else {
-                        if (grouping.all { it.second != Int.MAX_VALUE }) grouping += Triple(Int.MAX_VALUE.toString(), Int.MAX_VALUE, context.getString(R.string.unknown))
+                        grouping.getOrPut(Int.MAX_VALUE) {
+                            Int.MAX_VALUE to context.getString(R.string.unknown)
+                        }
                         map.getOrPut(Int.MAX_VALUE) { mutableListOf() } += libraryItem
                     }
                 }
-                else -> {
-                    val group = grouping.find { it.second == libraryItem.manga.status }
+            }
+            else -> {
+                libraryManga.forEach { libraryItem ->
+                    val group = grouping[libraryItem.manga.status]
                     if (group != null) {
-                        map.getOrPut(group.second) { mutableListOf() } += libraryItem
+                        map.getOrPut(group.first) { mutableListOf() } += libraryItem
                     } else {
-                        if (grouping.all { it.second != Int.MAX_VALUE }) grouping += Triple(Int.MAX_VALUE.toString(), Int.MAX_VALUE, context.getString(R.string.unknown))
+                        grouping.getOrPut(Int.MAX_VALUE) {
+                            Int.MAX_VALUE to context.getString(R.string.unknown)
+                        }
                         map.getOrPut(Int.MAX_VALUE) { mutableListOf() } += libraryItem
                     }
                 }
@@ -898,10 +910,10 @@ class LibraryPresenter(
         }
 
         val categories = when (groupType) {
-            LibraryGroup.BY_SOURCE -> grouping.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.third }))
-            LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.filter { it.second in map.keys }
-            else -> grouping
-        }.map { (_, id, name) ->
+            LibraryGroup.BY_SOURCE -> grouping.values.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, Pair<*, String>::second))
+            LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.values.filter { it.first in map.keys }
+            else -> grouping.values
+        }.map { (id, name) ->
             Category.create(name).also { it.id = id }
         }
 
