@@ -66,12 +66,14 @@ class HBrowse(delegate: HttpSource, val context: Context) :
     }
 
     private fun parseIntoTables(doc: Document): Map<String, Map<String, Element>> {
-        return doc.select("#main > .listTable").map { ele ->
+        return doc.select("#main > .listTable").associate { ele ->
             val tableName = ele.previousElementSibling()?.text()?.lowercase().orEmpty()
-            tableName to ele.select("tr").map {
-                it.child(0).text() to it.child(1)
-            }.toMap()
-        }.toMap()
+            tableName to ele.select("tr")
+                .filter { it.childrenSize() > 1 }
+                .associate {
+                    it.child(0).text() to it.child(1)
+                }
+        }
     }
 
     override val matchingHosts = listOf(
