@@ -78,7 +78,7 @@ class EHentaiUpdateHelper(context: Context) {
             if (toDiscard.isNotEmpty()) {
                 // Copy chain chapters to curChapters
                 val (newChapters, new) = getChapterList(accepted, toDiscard, chainsAsChapters)
-                val (history, urlHistory) = getHistory(newChapters, chainsAsChapters, chainsAsHistory)
+                val (history, urlHistory, deleteHistory) = getHistory(newChapters, chainsAsChapters, chainsAsHistory)
 
                 toDiscard.forEach {
                     it.manga.favorite = false
@@ -98,6 +98,10 @@ class EHentaiUpdateHelper(context: Context) {
                     // Insert new chapters for accepted manga
                     val chapterPutResults = db.insertChapters(newAccepted.chapters).executeAsBlocking().results()
 
+                    // Delete the duplicate history first
+                    if (deleteHistory.isNotEmpty()) {
+                        db.deleteHistoryIds(deleteHistory).executeAsBlocking()
+                    }
                     // Get a updated history list
                     val newHistory = urlHistory.mapNotNull { (url, history) ->
                         val result = chapterPutResults.firstNotNullOfOrNull { (chapter, result) ->
@@ -136,28 +140,53 @@ class EHentaiUpdateHelper(context: Context) {
         }
     }
 
+    data class HistoryUpdates(
+        val history: List<History>,
+        val urlHistory: List<Pair<String, History>>,
+        val historyToDelete: List<Long>
+    )
+
     private fun getHistory(
         newChapters: List<Chapter>,
         chainsAsChapters: List<Chapter>,
         chainsAsHistory: List<History>
-    ): Pair<List<History>, List<Pair<String, History>>> {
-        return chainsAsHistory.filter { history ->
-            val oldChapter = chainsAsChapters.find { it.id == history.chapter_id }
-            val newChapter = newChapters.find { it.url == oldChapter?.url }
-            if (oldChapter != newChapter && newChapter?.id != null) {
-                history.chapter_id = newChapter.id!!
-                true
-            } else false
-        } to chainsAsHistory.mapNotNull { history ->
-            val oldChapter = chainsAsChapters.find { it.id == history.chapter_id }
-            val newChapter = newChapters.find { it.url == oldChapter?.url }
-            if (oldChapter != newChapter && newChapter?.id == null) {
-                val url = newChapter?.url ?: return@mapNotNull null
-                url to history
-            } else {
-                null
+    ): HistoryUpdates {
+        val historyMap = chainsAsHistory
+            .groupBy { history ->
+                chainsAsChapters.find { it.id == history.chapter_id }?.url.orEmpty()
             }
+            .filterKeys { it.isNotBlank() }
+        val latestHistory = historyMap.mapValues { entry ->
+            entry.value.maxByOrNull {
+                it.time_read
+            }!!
         }
+        val oldHistory = historyMap.flatMap { entry ->
+            val topEntry = entry.value.maxByOrNull {
+                it.time_read
+            }!!
+            entry.value - topEntry
+        }.mapNotNull { it.id }
+        return HistoryUpdates(
+            latestHistory.filter { (_, history) ->
+                val oldChapter = chainsAsChapters.find { it.id == history.chapter_id }
+                val newChapter = newChapters.find { it.url == oldChapter?.url }
+                if (oldChapter != newChapter && newChapter?.id != null) {
+                    history.chapter_id = newChapter.id!!
+                    true
+                } else false
+            }.mapNotNull { it.value },
+            latestHistory.mapNotNull { (url, history) ->
+                val oldChapter = chainsAsChapters.find { it.id == history.chapter_id }
+                val newChapter = newChapters.find { it.url == oldChapter?.url }
+                if (oldChapter != newChapter && newChapter?.id == null) {
+                    url to history
+                } else {
+                    null
+                }
+            },
+            oldHistory
+        )
     }
 
     private fun getChapterList(

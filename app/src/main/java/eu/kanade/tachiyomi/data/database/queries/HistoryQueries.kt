@@ -103,5 +103,15 @@ interface HistoryQueries : DbProvider {
         .objects(history)
         .withPutResolver(HistoryChapterIdPutResolver())
         .prepare()
+
+    fun deleteHistoryIds(ids: List<Long>) = db.delete()
+        .byQuery(
+            DeleteQuery.builder()
+                .table(HistoryTable.TABLE)
+                .where("${HistoryTable.COL_ID} IN (?)")
+                .whereArgs(ids.joinToString())
+                .build()
+        )
+        .prepare()
     // SY <--
 }
