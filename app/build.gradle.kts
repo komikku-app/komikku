@@ -235,27 +235,26 @@ dependencies {
 
     // SY -->
     // Changelog
-    implementation("com.github.gabrielemariotti.changeloglib:changelog:2.1.0")
+    implementation(sylibs.changelog)
 
     // Text distance (EH)
-    implementation ("info.debatty:java-string-similarity:2.0.0")
+    implementation (sylibs.simularity)
 
     // Firebase (EH)
-    implementation("com.google.firebase:firebase-analytics-ktx:20.0.2")
-    implementation("com.google.firebase:firebase-crashlytics-ktx:18.2.7")
+    implementation(sylibs.firebase.analytics)
+    implementation(sylibs.firebase.crashlytics.ktx)
 
     // Better logging (EH)
-    implementation("com.elvishew:xlog:1.11.0")
+    implementation(sylibs.xlog)
 
     // Debug utils (EH)
-    val debugOverlayVersion = "1.1.3"
-    debugImplementation("com.ms-square:debugoverlay:$debugOverlayVersion")
-    "releaseTestImplementation"("com.ms-square:debugoverlay-no-op:$debugOverlayVersion")
-    releaseImplementation("com.ms-square:debugoverlay-no-op:$debugOverlayVersion")
-    testImplementation("com.ms-square:debugoverlay-no-op:$debugOverlayVersion")
+    debugImplementation(sylibs.debugOverlay.standard)
+    "releaseTestImplementation"(sylibs.debugOverlay.noop)
+    releaseImplementation(sylibs.debugOverlay.noop)
+    testImplementation(sylibs.debugOverlay.noop)
 
     // RatingBar (SY)
-    implementation("me.zhanghai.android.materialratingbar:library:1.4.0")
+    implementation(sylibs.ratingbar)
 }
 
 tasks {

@@ -4,7 +4,7 @@ buildscript {
         classpath(libs.google.services.gradle)
         classpath(libs.aboutlibraries.gradle)
         classpath(kotlinx.serialization.gradle)
-        classpath("com.google.firebase:firebase-crashlytics-gradle:2.8.0")
+        classpath(sylibs.firebase.crashlytics.gradle)
     }
 }
 
