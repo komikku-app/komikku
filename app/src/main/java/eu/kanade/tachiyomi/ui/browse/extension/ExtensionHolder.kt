@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.extension
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
-import coil.clear
+import coil.dispose
 import coil.load
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
@@ -45,7 +45,7 @@ class ExtensionHolder(view: View, val adapter: ExtensionAdapter) :
             // SY <--
         }.uppercase()
 
-        binding.icon.clear()
+        binding.icon.dispose()
         if (extension is Extension.Available) {
             binding.icon.load(extension.iconUrl)
         } else if (extension is Extension.Installed) {

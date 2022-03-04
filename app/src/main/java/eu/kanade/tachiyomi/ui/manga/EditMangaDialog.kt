@@ -9,7 +9,7 @@ import android.widget.ScrollView
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
-import coil.loadAny
+import coil.load
 import coil.transform.RoundedCornersTransformation
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -170,7 +170,7 @@ class EditMangaDialog : DialogController {
 
     fun loadCover() {
         val radius = context.resources.getDimension(R.dimen.card_radius)
-        binding.mangaCover.loadAny(manga) {
+        binding.mangaCover.load(manga) {
             transformations(RoundedCornersTransformation(radius))
         }
     }
@@ -178,7 +178,7 @@ class EditMangaDialog : DialogController {
     fun updateCover(uri: Uri) {
         willResetCover = false
         val radius = context.resources.getDimension(R.dimen.card_radius)
-        binding.mangaCover.loadAny(uri) {
+        binding.mangaCover.load(uri) {
             transformations(RoundedCornersTransformation(radius))
         }
         customCoverUri = uri

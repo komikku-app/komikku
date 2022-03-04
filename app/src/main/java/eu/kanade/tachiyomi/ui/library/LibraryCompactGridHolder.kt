@@ -3,11 +3,11 @@ package eu.kanade.tachiyomi.ui.library
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import coil.clear
+import coil.dispose
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
-import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
+import eu.kanade.tachiyomi.util.view.loadAutoPause
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -98,11 +98,11 @@ class LibraryCompactGridHolder(
         // SY <--
 
         // Update the cover.
-        binding.thumbnail.clear()
+        binding.thumbnail.dispose()
         if (coverOnly) {
             // Cover only mode: Hides title text unless thumbnail is unavailable
             if (!item.manga.thumbnail_url.isNullOrEmpty()) {
-                binding.thumbnail.loadAnyAutoPause(item.manga)
+                binding.thumbnail.loadAutoPause(item.manga)
                 binding.title.isVisible = false
             } else {
                 binding.title.text = item.manga.title
@@ -110,7 +110,7 @@ class LibraryCompactGridHolder(
             }
             binding.thumbnail.foreground = null
         } else {
-            binding.thumbnail.loadAnyAutoPause(item.manga)
+            binding.thumbnail.loadAutoPause(item.manga)
         }
     }
 

@@ -22,6 +22,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.disk.DiskCache
 import coil.util.DebugLogger
 import com.elvishew.xlog.LogConfiguration
 import com.elvishew.xlog.LogLevel
@@ -35,8 +36,8 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.ms_square.debugoverlay.DebugOverlay
 import com.ms_square.debugoverlay.modules.FpsModule
-import eu.kanade.tachiyomi.data.coil.ByteBufferFetcher
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
+import eu.kanade.tachiyomi.data.coil.MangaCoverKeyer
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
@@ -150,17 +151,20 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this).apply {
-            componentRegistry {
+            val callFactoryInit = { Injekt.get<NetworkHelper>().client }
+            val diskCacheInit = { CoilDiskCache.get(this@App) }
+            components {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    add(ImageDecoderDecoder(this@App))
+                    add(ImageDecoderDecoder.Factory())
                 } else {
-                    add(GifDecoder())
+                    add(GifDecoder.Factory())
                 }
-                add(TachiyomiImageDecoder(this@App.resources))
-                add(ByteBufferFetcher())
-                add(MangaCoverFetcher())
+                add(TachiyomiImageDecoder.Factory())
+                add(MangaCoverFetcher.Factory(lazy(callFactoryInit), lazy(diskCacheInit)))
+                add(MangaCoverKeyer())
             }
-            okHttpClient(Injekt.get<NetworkHelper>().coilClient)
+            callFactory(callFactoryInit)
+            diskCache(diskCacheInit)
             crossfade((300 * this@App.animatorDurationScale).toInt())
             allowRgb565(getSystemService<ActivityManager>()!!.isLowRamDevice)
             if (preferences.verboseLogging()) logger(DebugLogger())
@@ -296,3 +300,24 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 }
 
 private const val ACTION_DISABLE_INCOGNITO_MODE = "tachi.action.DISABLE_INCOGNITO_MODE"
+
+/**
+ * Direct copy of Coil's internal SingletonDiskCache so that [MangaCoverFetcher] can access it.
+ */
+internal object CoilDiskCache {
+
+    private const val FOLDER_NAME = "image_cache"
+    private var instance: DiskCache? = null
+
+    @Synchronized
+    fun get(context: Context): DiskCache {
+        return instance ?: run {
+            val safeCacheDir = context.cacheDir.apply { mkdirs() }
+            // Create the singleton disk cache instance.
+            DiskCache.Builder()
+                .directory(safeCacheDir.resolve(FOLDER_NAME))
+                .build()
+                .also { instance = it }
+        }
+    }
+}

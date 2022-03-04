@@ -21,7 +21,7 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.base.controller.getMainAppBarHeight
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
+import eu.kanade.tachiyomi.util.view.loadAutoPause
 import exh.merged.sql.models.MergedMangaReference
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.MERGED_SOURCE_ID
@@ -358,8 +358,8 @@ class MangaInfoHeaderAdapter(
             setFavoriteButtonState(manga.favorite)
 
             // Set cover if changed.
-            binding.backdrop.loadAnyAutoPause(manga)
-            binding.mangaCover.loadAnyAutoPause(manga)
+            binding.backdrop.loadAutoPause(manga)
+            binding.mangaCover.loadAutoPause(manga)
 
             // Manga info section
             // SY -->

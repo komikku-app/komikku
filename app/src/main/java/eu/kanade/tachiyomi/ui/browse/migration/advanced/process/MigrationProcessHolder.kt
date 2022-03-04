@@ -4,7 +4,7 @@ import android.view.View
 import android.widget.PopupMenu
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import coil.clear
+import coil.dispose
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -16,7 +16,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.view.loadAnyAutoPause
+import eu.kanade.tachiyomi.util.view.loadAutoPause
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.source.MERGED_SOURCE_ID
 import exh.util.executeOnIO
@@ -127,7 +127,7 @@ class MigrationProcessHolder(
 
     private fun MigrationMangaCardBinding.resetManga() {
         progress.isVisible = true
-        thumbnail.clear()
+        thumbnail.dispose()
         thumbnail.setImageDrawable(null)
         title.text = ""
         mangaSourceLabel.text = ""
@@ -138,7 +138,7 @@ class MigrationProcessHolder(
 
     private suspend fun MigrationMangaCardBinding.attachManga(manga: Manga, source: Source) {
         progress.isVisible = false
-        thumbnail.loadAnyAutoPause(manga)
+        thumbnail.loadAutoPause(manga)
 
         title.text = if (manga.title.isBlank()) {
             view.context.getString(R.string.unknown)

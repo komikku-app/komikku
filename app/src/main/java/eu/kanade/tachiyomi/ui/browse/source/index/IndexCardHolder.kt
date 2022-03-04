@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.source.index
 
 import android.view.View
 import androidx.core.view.isVisible
-import coil.clear
+import coil.dispose
 import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -54,10 +54,10 @@ class IndexCardHolder(view: View, adapter: IndexCardAdapter) :
     }
 
     fun setImage(manga: Manga) {
-        binding.cover.clear()
+        binding.cover.dispose()
         if (!manga.thumbnail_url.isNullOrEmpty()) {
-            val crossfadeDuration = itemView.context.imageLoader.defaults.transition.let {
-                if (it is CrossfadeTransition) it.durationMillis else 0
+            val crossfadeDuration = itemView.context.imageLoader.defaults.transitionFactory.let {
+                if (it is CrossfadeTransition.Factory) it.durationMillis else 0
             }
             val request = ImageRequest.Builder(itemView.context)
                 .data(manga)

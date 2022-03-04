@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.manga.merged
 
 import android.view.View
-import coil.loadAny
+import coil.load
 import coil.transform.RoundedCornersTransformation
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.R
@@ -40,7 +40,7 @@ class EditMergedMangaHolder(view: View, val adapter: EditMergedMangaAdapter) : F
         reference = item.mergedMangaReference
         item.mergedManga?.let {
             val radius = itemView.context.resources.getDimension(R.dimen.card_radius)
-            binding.cover.loadAny(it) {
+            binding.cover.load(it) {
                 transformations(RoundedCornersTransformation(radius))
             }
         }
