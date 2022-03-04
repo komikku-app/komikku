@@ -20,7 +20,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupConst
-import eu.kanade.tachiyomi.data.backup.BackupCreateService
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.backup.BackupRestoreService
 import eu.kanade.tachiyomi.data.backup.ValidatorParseException
@@ -70,7 +69,7 @@ class SettingsBackupController : SettingsController() {
                     context.toast(R.string.restore_miui_warning, Toast.LENGTH_LONG)
                 }
 
-                if (!BackupCreateService.isRunning(context)) {
+                if (!BackupCreatorJob.isManualJobRunning(context)) {
                     val ctrl = CreateBackupDialog()
                     ctrl.targetController = this@SettingsBackupController
                     ctrl.showDialog(router)
@@ -197,11 +196,7 @@ class SettingsBackupController : SettingsController() {
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 
                     activity.contentResolver.takePersistableUriPermission(uri, flags)
-                    BackupCreateService.start(
-                        activity,
-                        uri,
-                        backupFlags,
-                    )
+                    BackupCreatorJob.startNow(activity, uri, backupFlags)
                 }
                 CODE_BACKUP_RESTORE -> {
                     RestoreBackupDialog(uri).showDialog(router)
@@ -256,13 +251,13 @@ class SettingsBackupController : SettingsController() {
                     selected.forEachIndexed { i, checked ->
                         if (checked) {
                             when (i) {
-                                1 -> flags = flags or BackupCreateService.BACKUP_CATEGORY
-                                2 -> flags = flags or BackupCreateService.BACKUP_CHAPTER
-                                3 -> flags = flags or BackupCreateService.BACKUP_TRACK
-                                4 -> flags = flags or BackupCreateService.BACKUP_HISTORY
+                                1 -> flags = flags or BackupConst.BACKUP_CATEGORY
+                                2 -> flags = flags or BackupConst.BACKUP_CHAPTER
+                                3 -> flags = flags or BackupConst.BACKUP_TRACK
+                                4 -> flags = flags or BackupConst.BACKUP_HISTORY
                                 // SY -->
-                                5 -> flags = flags or BackupCreateService.BACKUP_CUSTOM_INFO
-                                6 -> flags = flags or BackupCreateService.BACKUP_READ_MANGA
+                                5 -> flags = flags or BackupConst.BACKUP_CUSTOM_INFO
+                                6 -> flags = flags or BackupConst.BACKUP_READ_MANGA
                                 // SY <--
                             }
                         }
