@@ -40,8 +40,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.onAnimationsFinished
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.parcelize.Parcelize
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 
 /**
  * This controller shows and manages the different catalogues enabled by the user.
@@ -56,11 +55,8 @@ class SourceController(bundle: Bundle? = null) :
     SourceAdapter.OnSourceClickListener,
     /*SY -->*/ ChangeSourceCategoriesDialog.Listener /*SY <--*/ {
 
-    private val preferences: PreferencesHelper = Injekt.get()
+    private val preferences: PreferencesHelper by injectLazy()
 
-    /**
-     * Adapter containing sources.
-     */
     private var adapter: SourceAdapter? = null
 
     // EXH -->
@@ -172,18 +168,10 @@ class SourceController(bundle: Bundle? = null) :
         val isPinned = item.header?.code?.equals(SourcePresenter.PINNED_KEY) ?: false
 
         val items = mutableListOf(
-            Pair(
-                activity.getString(if (isPinned) R.string.action_unpin else R.string.action_pin),
-                { toggleSourcePin(item.source) }
-            )
+            activity.getString(if (isPinned) R.string.action_unpin else R.string.action_pin) to { toggleSourcePin(item.source) }
         )
         if (item.source !is LocalSource) {
-            items.add(
-                Pair(
-                    activity.getString(R.string.action_disable),
-                    { disableSource(item.source) }
-                )
-            )
+            items.add(activity.getString(R.string.action_disable) to { disableSource(item.source) })
         }
 
         // SY -->
@@ -191,27 +179,24 @@ class SourceController(bundle: Bundle? = null) :
 
         if (item.source.supportsLatest) {
             items.add(
-                Pair(
-                    activity.getString(if (isWatched) R.string.unwatch else R.string.watch),
-                    { watchCatalogue(item.source, isWatched) }
-                )
+                activity.getString(if (isWatched) R.string.unwatch else R.string.watch) to {
+                    watchCatalogue(item.source, isWatched)
+                }
             )
         }
 
         items.add(
-            Pair(
-                activity.getString(R.string.categories),
-                { addToCategories(item.source) }
-            )
+            activity.getString(R.string.categories) to { addToCategories(item.source) }
         )
 
         if (preferences.dataSaver().get()) {
             val isExcluded = item.source.id.toString() in preferences.dataSaverExcludedSources().get()
             items.add(
-                Pair(
-                    activity.getString(if (isExcluded) R.string.data_saver_stop_exclude else R.string.data_saver_exclude),
-                    { excludeFromDataSaver(item.source, isExcluded) }
-                )
+                activity.getString(
+                    if (isExcluded) R.string.data_saver_stop_exclude else R.string.data_saver_exclude
+                ) to {
+                    excludeFromDataSaver(item.source, isExcluded)
+                }
             )
         }
         // SY <--
