@@ -392,6 +392,9 @@ object EXHMigrations {
                         preferences.sourceDisplayMode().set(DisplayModeSetting.COMPACT_GRID)
                     }
                 }
+                if (oldVersion under 30) {
+                    BackupCreatorJob.setupTask(context)
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
