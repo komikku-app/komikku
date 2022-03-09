@@ -267,10 +267,12 @@ class MangaSummaryView @JvmOverloads constructor(
             minLines = DESC_MIN_LINES
 
             setOnLongClickListener {
-                context.copyToClipboard(
-                    context.getString(R.string.description),
-                    text.toString()
-                )
+                description?.let {
+                    context.copyToClipboard(
+                        context.getString(R.string.description),
+                        it.toString()
+                    )
+                }
                 true
             }
         }
