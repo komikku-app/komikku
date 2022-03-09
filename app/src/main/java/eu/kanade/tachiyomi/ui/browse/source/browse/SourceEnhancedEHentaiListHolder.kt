@@ -3,17 +3,13 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 import android.view.View
 import androidx.core.view.isVisible
 import coil.dispose
-import coil.imageLoader
-import coil.request.CachePolicy
-import coil.request.ImageRequest
-import coil.transition.CrossfadeTransition
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceEnhancedEhentaiListItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
-import eu.kanade.tachiyomi.widget.StateImageViewTarget
+import eu.kanade.tachiyomi.util.view.loadAutoPause
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -50,10 +46,11 @@ class SourceEnhancedEHentaiListHolder(view: View, adapter: FlexibleAdapter<*>) :
         binding.thumbnail.alpha = if (manga.favorite) 0.3f else 1.0f
 
         // For rounded corners
-        binding.badges.clipToOutline = true
+        binding.badges.leftBadges.clipToOutline = true
+        binding.badges.rightBadges.clipToOutline = true
 
         // Set favorite badge
-        binding.favoriteText.isVisible = manga.favorite
+        binding.badges.favoriteText.isVisible = manga.favorite
 
         setImage(manga)
     }
@@ -103,21 +100,9 @@ class SourceEnhancedEHentaiListHolder(view: View, adapter: FlexibleAdapter<*>) :
     }
 
     override fun setImage(manga: Manga) {
-        // For rounded corners
-        binding.card.clipToOutline = true
-
         binding.thumbnail.dispose()
-        if (!manga.thumbnail_url.isNullOrEmpty()) {
-            val crossfadeDuration = itemView.context.imageLoader.defaults.transitionFactory.let {
-                if (it is CrossfadeTransition.Factory) it.durationMillis else 0
-            }
-            val request = ImageRequest.Builder(itemView.context)
-                .data(manga)
-                .setParameter(MangaCoverFetcher.USE_CUSTOM_COVER, false)
-                .diskCachePolicy(CachePolicy.DISABLED)
-                .target(StateImageViewTarget(binding.thumbnail, binding.progress, crossfadeDuration))
-                .build()
-            itemView.context.imageLoader.enqueue(request)
+        binding.thumbnail.loadAutoPause(manga) {
+            setParameter(MangaCoverFetcher.USE_CUSTOM_COVER, false)
         }
     }
 }

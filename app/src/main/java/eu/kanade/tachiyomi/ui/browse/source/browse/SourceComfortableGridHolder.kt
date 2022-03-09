@@ -2,15 +2,12 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import androidx.core.view.isVisible
 import coil.dispose
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.transition.CrossfadeTransition
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
-import eu.kanade.tachiyomi.widget.StateImageViewTarget
+import eu.kanade.tachiyomi.util.view.loadAutoPause
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 
@@ -67,16 +64,8 @@ class SourceComfortableGridHolder(
 
     override fun setImage(manga: Manga) {
         binding.thumbnail.dispose()
-        if (!manga.thumbnail_url.isNullOrEmpty()) {
-            val crossfadeDuration = binding.root.context.imageLoader.defaults.transitionFactory.let {
-                if (it is CrossfadeTransition.Factory) it.durationMillis else 0
-            }
-            val request = ImageRequest.Builder(binding.root.context)
-                .data(manga)
-                .setParameter(MangaCoverFetcher.USE_CUSTOM_COVER, false)
-                .target(StateImageViewTarget(binding.thumbnail, binding.progress, crossfadeDuration))
-                .build()
-            itemView.context.imageLoader.enqueue(request)
+        binding.thumbnail.loadAutoPause(manga) {
+            setParameter(MangaCoverFetcher.USE_CUSTOM_COVER, false)
         }
     }
 }
