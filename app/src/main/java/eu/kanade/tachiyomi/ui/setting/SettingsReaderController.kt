@@ -104,6 +104,7 @@ class SettingsReaderController : SettingsController() {
                 entriesRes = arrayOf(
                     R.string.rotation_free,
                     R.string.rotation_portrait,
+                    R.string.rotation_reverse_portrait,
                     R.string.rotation_landscape,
                     R.string.rotation_force_portrait,
                     R.string.rotation_force_landscape,
