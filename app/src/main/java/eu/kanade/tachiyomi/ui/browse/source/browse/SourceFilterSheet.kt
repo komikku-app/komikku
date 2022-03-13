@@ -157,7 +157,7 @@ class SourceFilterSheet(
                         }
                     }
                 }
-                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.text.toString() }))
+                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.text.toString() })
         }
 
         fun hideFilterButton() {
