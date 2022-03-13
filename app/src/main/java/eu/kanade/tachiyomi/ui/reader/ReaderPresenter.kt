@@ -737,7 +737,12 @@ class ReaderPresenter(
         notifier.onClear()
 
         // Pictures directory.
-        val destDir = getPicturesDir(context)
+        val baseDir = getPicturesDir(context).absolutePath
+        val destDir = if (preferences.folderPerManga()) {
+            File(baseDir + File.separator + DiskUtil.buildValidFilename(manga.title))
+        } else {
+            File(baseDir)
+        }
 
         // Copy file in background.
         Observable.fromCallable { saveImages(firstPage, secondPage, isLTR, bg, destDir, manga) }
