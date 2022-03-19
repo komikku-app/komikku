@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.reader
 import android.app.Application
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import com.jakewharton.rxrelay.BehaviorRelay
@@ -14,6 +15,9 @@ import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.data.saver.Image
+import eu.kanade.tachiyomi.data.saver.ImageSaver
+import eu.kanade.tachiyomi.data.saver.Location
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.job.DelayedTrackingStore
 import eu.kanade.tachiyomi.data.track.job.DelayedTrackingUpdateJob
@@ -35,11 +39,12 @@ import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
-import eu.kanade.tachiyomi.util.storage.getPicturesDir
-import eu.kanade.tachiyomi.util.storage.getTempShareDir
+import eu.kanade.tachiyomi.util.storage.cacheImageDir
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.updateCoverLastModified
@@ -61,7 +66,7 @@ import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.File
+import uy.kohesive.injekt.injectLazy
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Date
@@ -116,6 +121,8 @@ class ReaderPresenter(
      * Relay used when loading prev/next chapter needed to lock the UI (with a dialog).
      */
     private val isLoadingAdjacentChapterRelay = BehaviorRelay.create<Boolean>()
+
+    private val imageSaver: ImageSaver by injectLazy()
 
     /**
      * Chapter list for the active manga. It's retrieved lazily and should be accessed for the first
@@ -666,64 +673,48 @@ class ReaderPresenter(
     }
 
     /**
-     * Saves the image of this [page] in the given [directory] and returns the file location.
-     */
-    private fun saveImage(page: ReaderPage, directory: File, manga: Manga): File {
-        val stream = page.stream!!
-        val type = ImageUtil.findImageType(stream) ?: throw Exception("Not an image")
-
-        directory.mkdirs()
-
-        val chapter = page.chapter.chapter
-
-        // Build destination file.
-        val filenameSuffix = " - ${page.number}.${type.extension}"
-        val filename = DiskUtil.buildValidFilename(
-            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize())
-        ) + filenameSuffix
-
-        val destFile = File(directory, filename)
-        stream().use { input ->
-            destFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-        return destFile
-    }
-
-    /**
      * Saves the image of this [page] on the pictures directory and notifies the UI of the result.
      * There's also a notification to allow sharing the image somewhere else or deleting it.
      */
     fun saveImage(page: ReaderPage) {
         if (page.status != Page.READY) return
         val manga = manga ?: return
-        val context = Injekt.get<Application>()
 
+        val context = Injekt.get<Application>()
         val notifier = SaveImageNotifier(context)
         notifier.onClear()
 
+        // Generate filename
+        val chapter = page.chapter.chapter
+        val filenameSuffix = " - ${page.number}"
+        val filename = DiskUtil.buildValidFilename(
+            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize())
+        ) + filenameSuffix
+
         // Pictures directory.
-        val baseDir = getPicturesDir(context).absolutePath
-        val destDir = if (preferences.folderPerManga()) {
-            File(baseDir + File.separator + DiskUtil.buildValidFilename(manga.title))
-        } else {
-            File(baseDir)
-        }
+        val relativePath = if (preferences.folderPerManga()) DiskUtil.buildValidFilename(manga.title) else ""
 
         // Copy file in background.
-        Observable.fromCallable { saveImage(page, destDir, manga) }
-            .doOnNext { file ->
-                DiskUtil.scanMedia(context, file)
-                notifier.onComplete(file)
+
+        try {
+            presenterScope.launchIO {
+                val uri = imageSaver.save(
+                    image = Image.Page(
+                        inputStream = page.stream!!,
+                        name = filename,
+                        location = Location.Pictures.create(relativePath)
+                    )
+                )
+                launchUI {
+                    DiskUtil.scanMedia(context, uri)
+                    notifier.onComplete(uri)
+                    view!!.onSaveImageResult(SaveImageResult.Success(uri))
+                }
             }
-            .doOnError { notifier.onError(it.message) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, file -> view.onSaveImageResult(SaveImageResult.Success(file)) },
-                { view, error -> view.onSaveImageResult(SaveImageResult.Error(error)) }
-            )
+        } catch (e: Throwable) {
+            notifier.onError(e.message)
+            view!!.onSaveImageResult(SaveImageResult.Error(e))
+        }
     }
 
     // SY -->
@@ -731,35 +722,45 @@ class ReaderPresenter(
         if (firstPage.status != Page.READY) return
         if (secondPage.status != Page.READY) return
         val manga = manga ?: return
-        val context = Injekt.get<Application>()
 
+        val context = Injekt.get<Application>()
         val notifier = SaveImageNotifier(context)
         notifier.onClear()
 
         // Pictures directory.
-        val baseDir = getPicturesDir(context).absolutePath
-        val destDir = if (preferences.folderPerManga()) {
-            File(baseDir + File.separator + DiskUtil.buildValidFilename(manga.title))
-        } else {
-            File(baseDir)
-        }
+        val relativePath = if (preferences.folderPerManga()) DiskUtil.buildValidFilename(manga.title) else ""
 
         // Copy file in background.
-        Observable.fromCallable { saveImages(firstPage, secondPage, isLTR, bg, destDir, manga) }
-            .doOnNext { file ->
-                DiskUtil.scanMedia(context, file)
-                notifier.onComplete(file)
+        try {
+            presenterScope.launchIO {
+                val uri = saveImages(
+                    page1 = firstPage,
+                    page2 = secondPage,
+                    isLTR = isLTR,
+                    bg = bg,
+                    location = Location.Pictures.create(relativePath),
+                    manga = manga
+                )
+                launchUI {
+                    DiskUtil.scanMedia(context, uri)
+                    notifier.onComplete(uri)
+                    view!!.onSaveImageResult(SaveImageResult.Success(uri))
+                }
             }
-            .doOnError { notifier.onError(it.message) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, file -> view.onSaveImageResult(SaveImageResult.Success(file)) },
-                { view, error -> view.onSaveImageResult(SaveImageResult.Error(error)) }
-            )
+        } catch (e: Throwable) {
+            notifier.onError(e.message)
+            view!!.onSaveImageResult(SaveImageResult.Error(e))
+        }
     }
 
-    private fun saveImages(page1: ReaderPage, page2: ReaderPage, isLTR: Boolean, @ColorInt bg: Int, directory: File, manga: Manga): File {
+    private suspend fun saveImages(
+        page1: ReaderPage,
+        page2: ReaderPage,
+        isLTR: Boolean,
+        @ColorInt bg: Int,
+        location: Location,
+        manga: Manga
+    ): Uri {
         val stream1 = page1.stream!!
         ImageUtil.findImageType(stream1) ?: throw Exception("Not an image")
         val stream2 = page2.stream!!
@@ -770,9 +771,6 @@ class ReaderPresenter(
         val imageBytes2 = stream2().readBytes()
         val imageBitmap2 = BitmapFactory.decodeByteArray(imageBytes2, 0, imageBytes2.size)
 
-        val stream = ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, bg)
-        directory.mkdirs()
-
         val chapter = page1.chapter.chapter
 
         // Build destination file.
@@ -781,13 +779,13 @@ class ReaderPresenter(
             "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize())
         ) + filenameSuffix
 
-        val destFile = File(directory, filename)
-        stream.use { input ->
-            destFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-        return destFile
+        return imageSaver.save(
+            image = Image.Page(
+                inputStream = { ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, bg) },
+                name = filename,
+                location = location
+            )
+        )
     }
     // SY <--
 
@@ -801,18 +799,27 @@ class ReaderPresenter(
     fun shareImage(page: ReaderPage) {
         if (page.status != Page.READY) return
         val manga = manga ?: return
+
         val context = Injekt.get<Application>()
+        val destDir = context.cacheImageDir
 
-        val destDir = getTempShareDir(context)
-
-        Observable.fromCallable { destDir.deleteRecursively() } // Keep only the last shared file
-            .map { saveImage(page, destDir, manga) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, file -> view.onShareImageResult(file, page) },
-                { _, _ -> /* Empty */ }
-            )
+        try {
+            presenterScope.launchIO {
+                destDir.deleteRecursively()
+                val uri = imageSaver.save(
+                    image = Image.Page(
+                        inputStream = page.stream!!,
+                        name = manga.title,
+                        location = Location.Cache
+                    )
+                )
+                launchUI {
+                    view!!.onShareImageResult(uri, page)
+                }
+            }
+        } catch (e: Throwable) {
+            logcat(LogPriority.ERROR, e)
+        }
     }
 
     // SY -->
@@ -820,18 +827,28 @@ class ReaderPresenter(
         if (firstPage.status != Page.READY) return
         if (secondPage.status != Page.READY) return
         val manga = manga ?: return
+
         val context = Injekt.get<Application>()
+        val destDir = context.cacheImageDir
 
-        val destDir = getTempShareDir(context)
-
-        Observable.fromCallable { destDir.deleteRecursively() } // Keep only the last shared file
-            .map { saveImages(firstPage, secondPage, isLTR, bg, destDir, manga) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, file -> view.onShareImageResult(file, firstPage, secondPage) },
-                { _, _ -> /* Empty */ }
-            )
+        try {
+            presenterScope.launchIO {
+                destDir.deleteRecursively()
+                val uri = saveImages(
+                    page1 = firstPage,
+                    page2 = secondPage,
+                    isLTR = isLTR,
+                    bg = bg,
+                    location = Location.Cache,
+                    manga = manga
+                )
+                launchUI {
+                    view!!.onShareImageResult(uri, firstPage, secondPage)
+                }
+            }
+        } catch (e: Throwable) {
+            logcat(LogPriority.ERROR, e)
+        }
     }
     // SY <--
 
@@ -881,7 +898,7 @@ class ReaderPresenter(
      * Results of the save image feature.
      */
     sealed class SaveImageResult {
-        class Success(val file: File) : SaveImageResult()
+        class Success(val uri: Uri) : SaveImageResult()
         class Error(val error: Throwable) : SaveImageResult()
     }
 
