@@ -84,6 +84,10 @@ class ChaptersSettingsSheet(
             return filterGroup.items.any { it.state != State.IGNORE.value } || presenter.manga.filtered_scanlators != null
         }
 
+        fun updateScanlatorFilter() {
+            filterGroup.updateScanlatorFilter()
+        }
+
         inner class FilterGroup : Group {
 
             private val downloaded = Item.TriStateGroup(R.string.action_filter_downloaded, this)
@@ -105,6 +109,10 @@ class ChaptersSettingsSheet(
                 }
                 unread.state = presenter.onlyUnread().value
                 bookmarked.state = presenter.onlyBookmarked().value
+                updateScanlatorFilter()
+            }
+
+            fun updateScanlatorFilter() {
                 scanlatorFilters.isVisible = presenter.allChapterScanlators.size > 1
             }
 

@@ -1110,6 +1110,7 @@ class MangaController :
         }
 
         updateFabVisibility()
+        settingsSheet?.filters?.updateScanlatorFilter()
     }
 
     private fun fetchChaptersFromSource(manualFetch: Boolean = false) {
