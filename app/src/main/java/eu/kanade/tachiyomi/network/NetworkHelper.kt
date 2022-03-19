@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
                 .cookieJar(cookieManager)
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
+                .fastFallback(true)
                 .addInterceptor(UserAgentInterceptor())
 
             if (BuildConfig.DEBUG) {
