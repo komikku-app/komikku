@@ -50,10 +50,10 @@ internal class ExtensionGithubApi {
         }
     }
 
-    suspend fun checkForUpdates(context: Context): List<Extension.Installed> {
+    suspend fun checkForUpdates(context: Context): List<Extension.Installed>? {
         // Limit checks to once a day at most
         if (Date().time < preferences.lastExtCheck().get() + TimeUnit.DAYS.toMillis(1)) {
-            return emptyList()
+            return null
         }
 
         val extensions = findExtensions()
