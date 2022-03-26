@@ -250,7 +250,7 @@ class LocalSource(private val context: Context) : CatalogueSource, UnmeteredSour
                         }
                     }
 
-                    name = getCleanChapterTitle(name, manga.title)
+                    name = getCleanChapterTitle(name)
                     ChapterRecognition.parseChapterNumber(this, sManga)
                 }
             }
@@ -267,12 +267,10 @@ class LocalSource(private val context: Context) : CatalogueSource, UnmeteredSour
     override suspend fun getPageList(chapter: ChapterInfo) = throw Exception("Unused")
 
     /**
-     * Strips the manga title from a chapter name and trim whitespace/delimiter characters.
+     * Trim whitespace/delimiter characters from chapter names.
      */
-    private fun getCleanChapterTitle(chapterName: String, mangaTitle: String): String {
-        return chapterName
-            .replace(mangaTitle, "")
-            .trim(*WHITESPACE_CHARS.toCharArray(), '-', '_', ',', ':')
+    private fun getCleanChapterTitle(chapterName: String): String {
+        return chapterName.trim(*WHITESPACE_CHARS.toCharArray(), '-', '_', ',', ':')
     }
 
     private fun isSupportedFile(extension: String): Boolean {
