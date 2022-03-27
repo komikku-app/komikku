@@ -37,7 +37,6 @@ import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
-import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet.FilterNavigationView.Companion.MAX_SAVED_SEARCHES
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
@@ -84,6 +83,7 @@ open class BrowseSourceController(bundle: Bundle) :
         searchQuery: String? = null,
         // SY -->
         smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        savedSearch: Long? = null,
         filterList: String? = null
         // SY <--
     ) : this(
@@ -97,6 +97,10 @@ open class BrowseSourceController(bundle: Bundle) :
             // SY -->
             if (smartSearchConfig != null) {
                 putParcelable(SMART_SEARCH_CONFIG_KEY, smartSearchConfig)
+            }
+
+            if (savedSearch != null) {
+                putLong(SAVED_SEARCH_CONFIG_KEY, savedSearch)
             }
 
             if (filterList != null) {
@@ -154,7 +158,8 @@ open class BrowseSourceController(bundle: Bundle) :
         return BrowseSourcePresenter(
             args.getLong(SOURCE_ID_KEY),
             args.getString(SEARCH_QUERY_KEY),
-            filters = args.getString(FILTERS_CONFIG_KEY)
+            filters = args.getString(FILTERS_CONFIG_KEY),
+            savedSearch = args.getLong(SAVED_SEARCH_CONFIG_KEY, 0).takeUnless { it == 0L }
         )
         // SY <--
     }
@@ -177,6 +182,10 @@ open class BrowseSourceController(bundle: Bundle) :
             dialog.showDialog(router)
         }
         // SY <--
+    }
+
+    fun setSavedSearches(savedSearches: List<EXHSavedSearch>) {
+        filterSheet?.setSavedSearches(savedSearches)
     }
 
     open fun initFilterSheet() {
@@ -207,6 +216,7 @@ open class BrowseSourceController(bundle: Bundle) :
             // EXH -->
             onSaveClicked = {
                 filterSheet?.context?.let {
+                    val names = presenter.loadSearches().map { it.name }
                     var searchName = ""
                     MaterialAlertDialogBuilder(it)
                         .setTitle(R.string.save_search)
@@ -214,27 +224,18 @@ open class BrowseSourceController(bundle: Bundle) :
                             searchName = input
                         }
                         .setPositiveButton(R.string.action_save) { _, _ ->
-                            val oldSavedSearches = presenter.loadSearches()
-                            if (searchName.isNotBlank() &&
-                                oldSavedSearches.size < MAX_SAVED_SEARCHES
-                            ) {
-                                val newSearches = oldSavedSearches + EXHSavedSearch(
-                                    searchName.trim(),
-                                    presenter.query,
-                                    presenter.sourceFilters
-                                )
-                                presenter.saveSearches(newSearches)
-                                filterSheet?.setSavedSearches(newSearches)
+                            if (searchName.isNotBlank() && searchName !in names) {
+                                presenter.saveSearch(searchName.trim(), presenter.query, presenter.sourceFilters)
+                            } else {
+                                it.toast(R.string.save_search_invalid_name)
                             }
                         }
                         .setNegativeButton(R.string.action_cancel, null)
                         .show()
                 }
             },
-            onSavedSearchClicked = cb@{ indexToSearch ->
-                val savedSearches = presenter.loadSearches()
-
-                val search = savedSearches.getOrNull(indexToSearch)
+            onSavedSearchClicked = cb@{ idOfSearch ->
+                val search = presenter.loadSearch(idOfSearch)
 
                 if (search == null) {
                     filterSheet?.context?.let {
@@ -261,32 +262,14 @@ open class BrowseSourceController(bundle: Bundle) :
                 presenter.restartPager(search.query, if (allDefault) FilterList() else presenter.sourceFilters)
                 activity?.invalidateOptionsMenu()
             },
-            onSavedSearchDeleteClicked = cb@{ indexToDelete, name ->
-                val savedSearches = presenter.loadSearches()
-
-                val search = savedSearches.getOrNull(indexToDelete)
-
-                if (search == null || search.name != name) {
-                    filterSheet?.context?.let {
-                        MaterialAlertDialogBuilder(it)
-                            .setTitle(R.string.save_search_failed_to_delete)
-                            .setMessage(R.string.save_search_failed_to_delete_message)
-                            .show()
-                    }
-                    return@cb
-                }
-
+            onSavedSearchDeleteClicked = cb@{ idToDelete, name ->
                 filterSheet?.context?.let {
                     MaterialAlertDialogBuilder(it)
                         .setTitle(R.string.save_search_delete)
-                        .setMessage(it.getString(R.string.save_search_delete_message, search.name))
+                        .setMessage(it.getString(R.string.save_search_delete_message, name))
                         .setPositiveButton(R.string.action_cancel, null)
                         .setNegativeButton(android.R.string.ok) { _, _ ->
-                            val newSearches = savedSearches.filterIndexed { index, _ ->
-                                index != indexToDelete
-                            }
-                            presenter.saveSearches(newSearches)
-                            filterSheet?.setSavedSearches(newSearches)
+                            presenter.deleteSearch(idToDelete)
                         }
                         .show()
                 }
@@ -836,6 +819,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
         // SY -->
         const val SMART_SEARCH_CONFIG_KEY = "smartSearchConfig"
+        const val SAVED_SEARCH_CONFIG_KEY = "savedSearch"
         const val FILTERS_CONFIG_KEY = "filters"
         // SY <--
     }

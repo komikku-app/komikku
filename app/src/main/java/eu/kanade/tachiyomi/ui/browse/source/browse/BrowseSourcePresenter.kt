@@ -42,8 +42,9 @@ import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
-import exh.savedsearches.JsonSavedSearch
+import exh.savedsearches.models.SavedSearch
 import exh.source.isEhBasedSource
+import exh.util.nullIfBlank
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
@@ -73,6 +74,7 @@ open class BrowseSourcePresenter(
     searchQuery: String? = null,
     // SY -->
     private val filters: String? = null,
+    private val savedSearch: Long? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get(),
@@ -134,21 +136,45 @@ open class BrowseSourcePresenter(
         sourceFilters = source.getFilterList()
 
         // SY -->
+        val savedSearchFilters = savedSearch
         val jsonFilters = filters
-        if (jsonFilters != null) {
+        if (savedSearchFilters != null) {
             runCatching {
-                val filters = Json.decodeFromString<JsonSavedSearch>(jsonFilters)
-                filterSerializer.deserialize(sourceFilters, filters.filters)
+                val savedSearch = db.getSavedSearch(savedSearchFilters).executeAsBlocking() ?: return@runCatching
+                query = savedSearch.query.orEmpty()
+                val filtersJson = savedSearch.filtersJson
+                    ?: return@runCatching
+                val filters = Json.decodeFromString<JsonArray>(filtersJson)
+                filterSerializer.deserialize(sourceFilters, filters)
+                appliedFilters = sourceFilters
+            }
+        } else if (jsonFilters != null) {
+            runCatching {
+                val filters = Json.decodeFromString<JsonArray>(jsonFilters)
+                filterSerializer.deserialize(sourceFilters, filters)
+                appliedFilters = sourceFilters
             }
         }
-        val allDefault = sourceFilters == source.getFilterList()
+
+        db.getSavedSearches(source.id)
+            .asRxObservable()
+            .map {
+                loadSearches(it)
+            }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeLatestCache(
+                { controller, savedSearches ->
+                    controller.setSavedSearches(savedSearches)
+                }
+            )
         // SY <--
 
         if (savedState != null) {
             query = savedState.getString(::query.name, "")
         }
 
-        restartPager(/* SY -->*/ filters = if (allDefault) this.appliedFilters else sourceFilters /* SY <--*/)
+        restartPager()
     }
 
     override fun onSave(state: Bundle) {
@@ -319,7 +345,7 @@ open class BrowseSourcePresenter(
             .forEach { service ->
                 launchIO {
                     try {
-                        service.match(manga)?.let { track ->
+                        service.match(source, manga)?.let { track ->
                             track.manga_id = manga.id!!
                             (service as TrackService).bind(track)
                             db.insertTrack(track).executeAsBlocking()
@@ -456,48 +482,84 @@ open class BrowseSourcePresenter(
     }
 
     // EXH -->
-    fun saveSearches(searches: List<EXHSavedSearch>) {
-        val otherSerialized = prefs.savedSearches().get().filterNot {
-            it.startsWith("${source.id}:")
-        }.toSet()
-        val newSerialized = searches.map {
-            "${source.id}:" + Json.encodeToString(
-                JsonSavedSearch(
-                    it.name,
-                    it.query,
-                    if (it.filterList != null) {
-                        filterSerializer.serialize(it.filterList)
-                    } else JsonArray(emptyList())
+    fun saveSearch(name: String, query: String, filterList: FilterList) {
+        launchIO {
+            kotlin.runCatching {
+                val savedSearch = SavedSearch(
+                    id = null,
+                    source = source.id,
+                    name = name.trim(),
+                    query = query.nullIfBlank(),
+                    filtersJson = filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) }
                 )
-            )
+
+                db.insertSavedSearch(savedSearch).executeAsBlocking()
+            }
         }
-        prefs.savedSearches().set(otherSerialized + newSerialized)
     }
 
-    fun loadSearches(): List<EXHSavedSearch> {
-        return prefs.savedSearches().get().mapNotNull {
-            val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
-            if (id != source.id) return@mapNotNull null
-            val content = try {
-                Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+    fun deleteSearch(searchId: Long) {
+        launchIO {
+            db.deleteSavedSearch(searchId).executeAsBlocking()
+        }
+    }
+
+    fun loadSearch(searchId: Long): EXHSavedSearch? {
+        val search = db.getSavedSearch(searchId).executeAsBlocking() ?: return null
+        return EXHSavedSearch(
+            id = search.id!!,
+            name = search.name,
+            query = search.query.orEmpty(),
+            filterList = runCatching {
+                val originalFilters = source.getFilterList()
+                filterSerializer.deserialize(
+                    filters = originalFilters,
+                    json = search.filtersJson
+                        ?.let { Json.decodeFromString<JsonArray>(it) }
+                        ?: return@runCatching null
+                )
+                originalFilters
+            }.getOrNull()
+        )
+    }
+
+    fun loadSearches(searches: List<SavedSearch> = db.getSavedSearches(source.id).executeAsBlocking()): List<EXHSavedSearch> {
+        return searches.map {
+            val filtersJson = it.filtersJson ?: return@map EXHSavedSearch(
+                id = it.id!!,
+                name = it.name,
+                query = it.query.orEmpty(),
+                filterList = null
+            )
+            val filters = try {
+                Json.decodeFromString<JsonArray>(filtersJson)
             } catch (e: Exception) {
-                return@mapNotNull null
-            }
+                xLogE("Failed to load saved search!", e)
+                null
+            } ?: return@map EXHSavedSearch(
+                id = it.id!!,
+                name = it.name,
+                query = it.query.orEmpty(),
+                filterList = null
+            )
+
             try {
                 val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content.filters)
+                filterSerializer.deserialize(originalFilters, filters)
                 EXHSavedSearch(
-                    content.name,
-                    content.query,
-                    originalFilters
+                    id = it.id!!,
+                    name = it.name,
+                    query = it.query.orEmpty(),
+                    filterList = originalFilters
                 )
             } catch (t: RuntimeException) {
                 // Load failed
                 xLogE("Failed to load saved search!", t)
                 EXHSavedSearch(
-                    content.name,
-                    content.query,
-                    null
+                    id = it.id!!,
+                    name = it.name,
+                    query = it.query.orEmpty(),
+                    filterList = null
                 )
             }
         }

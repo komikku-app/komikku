@@ -355,6 +355,7 @@
     <string name="save_search_delete">Delete saved search query?</string>
     <string name="save_search_delete_message">Are you sure you wish to delete your saved search query: \'%1$s\'?</string>
     <string name="save_search_invalid">Saved search invalid, filters have changed</string>
+    <string name="save_search_invalid_name">Invalid saved search name</string>
 
     <!-- Source Categories -->
     <string name="no_source_categories">No source categories available</string>

@@ -40,6 +40,7 @@ import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
+import exh.savedsearches.models.SavedSearch
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.HBROWSE_SOURCE_ID
@@ -47,11 +48,17 @@ import exh.source.MERGED_SOURCE_ID
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.TSUMINO_SOURCE_ID
+import exh.util.nullIfBlank
 import exh.util.under
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -394,6 +401,26 @@ object EXHMigrations {
                 }
                 if (oldVersion under 30) {
                     BackupCreatorJob.setupTask(context)
+                }
+                if (oldVersion under 31) {
+                    val savedSearches = prefs.getStringSet("eh_saved_searches", emptySet())?.mapNotNull {
+                        kotlin.runCatching {
+                            val content = Json.decodeFromString<JsonObject>(it.substringAfter(':'))
+                            SavedSearch(
+                                id = null,
+                                source = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null,
+                                content["name"]!!.jsonPrimitive.content,
+                                content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
+                                Json.encodeToString(content["filters"]!!.jsonArray)
+                            )
+                        }.getOrNull()
+                    }?.ifEmpty { null }
+                    if (savedSearches != null) {
+                        db.insertSavedSearches(savedSearches)
+                    }
+                    prefs.edit(commit = true) {
+                        remove("eh_saved_searches")
+                    }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)

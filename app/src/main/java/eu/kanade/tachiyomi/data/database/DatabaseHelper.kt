@@ -36,13 +36,16 @@ import exh.metadata.sql.models.SearchTitle
 import exh.metadata.sql.queries.SearchMetadataQueries
 import exh.metadata.sql.queries.SearchTagQueries
 import exh.metadata.sql.queries.SearchTitleQueries
+import exh.savedsearches.mappers.SavedSearchTypeMapping
+import exh.savedsearches.models.SavedSearch
+import exh.savedsearches.queries.SavedSearchQueries
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 
 /**
  * This class provides operations to manage the database through its interfaces.
  */
 open class DatabaseHelper(context: Context) :
-    MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQueries, HistoryQueries /* SY --> */, SearchMetadataQueries, SearchTagQueries, SearchTitleQueries, MergedQueries, FavoriteEntryQueries /* SY <-- */ {
+    MangaQueries, ChapterQueries, TrackQueries, CategoryQueries, MangaCategoryQueries, HistoryQueries /* SY --> */, SearchMetadataQueries, SearchTagQueries, SearchTitleQueries, MergedQueries, FavoriteEntryQueries, SavedSearchQueries /* SY <-- */ {
 
     private val configuration = SupportSQLiteOpenHelper.Configuration.builder(context)
         .name(DbOpenCallback.DATABASE_NAME)
@@ -63,6 +66,7 @@ open class DatabaseHelper(context: Context) :
         .addTypeMapping(SearchTitle::class.java, SearchTitleTypeMapping())
         .addTypeMapping(MergedMangaReference::class.java, MergedMangaTypeMapping())
         .addTypeMapping(FavoriteEntry::class.java, FavoriteEntryTypeMapping())
+        .addTypeMapping(SavedSearch::class.java, SavedSearchTypeMapping())
         // SY <--
         .build()
 

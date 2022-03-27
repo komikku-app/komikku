@@ -38,13 +38,11 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
-import exh.savedsearches.JsonSavedSearch
+import exh.savedsearches.models.SavedSearch
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.executeOnIO
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import exh.util.nullIfBlank
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
 import okio.buffer
@@ -164,14 +162,12 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      * @return list of [BackupSavedSearch] to be backed up
      */
     private fun backupSavedSearches(): List<BackupSavedSearch> {
-        return preferences.savedSearches().get().mapNotNull {
-            val sourceId = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
-            val content = Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+        return databaseHelper.getSavedSearches().executeAsBlocking().map {
             BackupSavedSearch(
-                content.name,
-                content.query,
-                content.filters.toString(),
-                sourceId
+                it.name,
+                it.query.orEmpty(),
+                it.filtersJson ?: "[]",
+                it.source
             )
         }
     }
@@ -431,34 +427,25 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
     // SY -->
     internal fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
-        val currentSavedSearches = preferences.savedSearches().get().mapNotNull {
-            val sourceId = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
-            val content = try {
-                Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
-            } catch (e: Exception) {
-                return@mapNotNull null
-            }
-            BackupSavedSearch(
-                content.name,
-                content.query,
-                content.filters.toString(),
-                sourceId
-            )
-        }
+        val currentSavedSearches = databaseHelper.getSavedSearches()
+            .executeAsBlocking()
 
         val newSavedSearches = backupSavedSearches.filter { backupSavedSearch ->
             currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
         }.map {
-            "${it.source}:" + Json.encodeToString(
-                JsonSavedSearch(
-                    it.name,
-                    it.query,
-                    Json.decodeFromString(it.filterList)
-                )
+            SavedSearch(
+                id = null,
+                it.source,
+                it.name,
+                it.query.nullIfBlank(),
+                filtersJson = it.filterList.nullIfBlank()
+                    ?.takeUnless { it == "[]" }
             )
-        }.toSet()
+        }.ifEmpty { null }
 
-        preferences.savedSearches().set(newSavedSearches + preferences.savedSearches().get())
+        if (newSavedSearches != null) {
+            databaseHelper.insertSavedSearches(newSavedSearches)
+        }
     }
 
     /**

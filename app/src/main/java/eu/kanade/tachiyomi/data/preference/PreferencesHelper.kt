@@ -411,8 +411,6 @@ class PreferencesHelper(val context: Context) {
 
     fun ehLastVersionCode() = flowPrefs.getInt("eh_last_version_code", 0)
 
-    fun savedSearches() = flowPrefs.getStringSet("eh_saved_searches", emptySet())
-
     fun logLevel() = flowPrefs.getInt(Keys.eh_logLevel, 0)
 
     fun enableSourceBlacklist() = flowPrefs.getBoolean("eh_enable_source_blacklist", true)

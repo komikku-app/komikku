@@ -24,7 +24,6 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
-import exh.savedsearches.JsonSavedSearch
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -196,25 +195,21 @@ open class IndexController :
             onFilterClicked = {
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
                 filterSheet?.dismiss()
-                val json = if (allDefault) {
-                    null
+                if (allDefault) {
+                    onBrowseClick(
+                        presenter.query.nullIfBlank()
+                    )
                 } else {
-                    Json.encodeToString(
-                        JsonSavedSearch(
-                            "",
-                            "",
-                            filterSerializer.serialize(presenter.sourceFilters)
-                        )
+                    onBrowseClick(
+                        presenter.query.nullIfBlank(),
+                        filters = Json.encodeToString(filterSerializer.serialize(presenter.sourceFilters))
                     )
                 }
-                onBrowseClick(presenter.query.nullIfBlank(), json)
             },
             onResetClicked = {},
             onSaveClicked = {},
-            onSavedSearchClicked = cb@{ indexToSearch ->
-                val savedSearches = presenter.loadSearches()
-
-                val search = savedSearches.getOrNull(indexToSearch)
+            onSavedSearchClicked = cb@{ idOfSearch ->
+                val search = presenter.loadSearch(idOfSearch)
 
                 if (search == null) {
                     filterSheet?.context?.let {
@@ -237,14 +232,10 @@ open class IndexController :
                 filterSheet?.dismiss()
 
                 if (!allDefault) {
-                    val json = Json.encodeToString(
-                        JsonSavedSearch(
-                            "",
-                            "",
-                            filterSerializer.serialize(presenter.sourceFilters)
-                        )
+                    onBrowseClick(
+                        search = presenter.query.nullIfBlank(),
+                        savedSearch = search.id
                     )
-                    onBrowseClick(presenter.query.nullIfBlank(), json)
                 }
             },
             onSavedSearchDeleteClicked = { _, _ -> }
@@ -325,8 +316,8 @@ open class IndexController :
         super.onDestroyView(view)
     }
 
-    fun onBrowseClick(search: String? = null, filters: String? = null) {
-        router.replaceTopController(BrowseSourceController(presenter.source, search, filterList = filters).withFadeTransaction())
+    fun onBrowseClick(search: String? = null, savedSearch: Long? = null, filters: String? = null) {
+        router.replaceTopController(BrowseSourceController(presenter.source, search, savedSearch = savedSearch, filterList = filters).withFadeTransaction())
     }
 
     private fun onLatestClick() {

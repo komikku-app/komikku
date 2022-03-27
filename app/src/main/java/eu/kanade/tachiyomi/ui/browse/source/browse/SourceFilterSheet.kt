@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
-import exh.util.under
 
 class SourceFilterSheet(
     activity: Activity,
@@ -32,8 +31,8 @@ class SourceFilterSheet(
     private val onResetClicked: () -> Unit,
     // EXH -->
     private val onSaveClicked: () -> Unit,
-    var onSavedSearchClicked: (Int) -> Unit = {},
-    var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
+    var onSavedSearchClicked: (Long) -> Unit = {},
+    var onSavedSearchDeleteClicked: (Long, String) -> Unit = { _, _ -> }
     // EXH <--
 ) : BaseBottomSheetDialog(activity) {
 
@@ -97,9 +96,9 @@ class SourceFilterSheet(
         // SY -->
         var onSaveClicked = {}
 
-        var onSavedSearchClicked: (Int) -> Unit = {}
+        var onSavedSearchClicked: (Long) -> Unit = {}
 
-        var onSavedSearchDeleteClicked: (Int, String) -> Unit = { _, _ -> }
+        var onSavedSearchDeleteClicked: (Long, String) -> Unit = { _, _ -> }
 
         private val savedSearchesAdapter = SavedSearchesAdapter(getSavedSearchesChips(searches))
         // SY <--
@@ -143,17 +142,13 @@ class SourceFilterSheet(
         }
 
         private fun getSavedSearchesChips(searches: List<EXHSavedSearch>): List<Chip> {
-            recycler.post {
-                binding.saveSearchBtn.isVisible = searches.size under MAX_SAVED_SEARCHES
-            }
-            return searches.withIndex()
-                .sortedBy { it.value.name }
-                .map { (index, search) ->
+            return searches
+                .map { search ->
                     Chip(context).apply {
                         text = search.name
-                        setOnClickListener { onSavedSearchClicked(index) }
+                        setOnClickListener { onSavedSearchClicked(search.id) }
                         setOnLongClickListener {
-                            onSavedSearchDeleteClicked(index, search.name); true
+                            onSavedSearchDeleteClicked(search.id, search.name); true
                         }
                     }
                 }
@@ -162,10 +157,6 @@ class SourceFilterSheet(
 
         fun hideFilterButton() {
             binding.filterBtn.isVisible = false
-        }
-
-        companion object {
-            const val MAX_SAVED_SEARCHES = 500 // if you want more than this, fuck you, i guess
         }
         // EXH <--
     }

@@ -7,18 +7,15 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
-import exh.log.xLogE
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
-import exh.savedsearches.JsonSavedSearch
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -30,11 +27,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.injectLazy
-import java.lang.RuntimeException
 import java.util.UUID
 
 @Suppress("unused")
@@ -171,7 +164,7 @@ object DebugFunctions {
         it.favorite && db.getSearchMetadataForManga(it.id!!).executeAsBlocking() == null
     }
 
-    fun clearSavedSearches() = prefs.savedSearches().set(emptySet())
+    fun clearSavedSearches() = db.deleteAllSavedSearches().executeAsBlocking()
 
     fun listAllSources() = sourceManager.getCatalogueSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.uppercase()})"
@@ -249,7 +242,7 @@ object DebugFunctions {
         )
     }
 
-    fun copyEHentaiSavedSearchesToExhentai() {
+    /*fun copyEHentaiSavedSearchesToExhentai() {
         runBlocking {
             val source = sourceManager.get(EH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
             val newSource = sourceManager.get(EXH_SOURCE_ID) as? CatalogueSource ?: return@runBlocking
@@ -325,7 +318,7 @@ object DebugFunctions {
             }
             prefs.savedSearches().set((otherSerialized + newSerialized).toSet())
         }
-    }
+    }*/
 
     fun fixReaderViewerBackupBug() {
         db.inTransaction {

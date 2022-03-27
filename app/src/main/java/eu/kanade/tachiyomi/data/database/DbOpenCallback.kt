@@ -13,6 +13,7 @@ import exh.merged.sql.tables.MergedTable
 import exh.metadata.sql.tables.SearchMetadataTable
 import exh.metadata.sql.tables.SearchTagTable
 import exh.metadata.sql.tables.SearchTitleTable
+import exh.savedsearches.tables.SavedSearchTable
 
 class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
 
@@ -25,7 +26,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         /**
          * Version of the database.
          */
-        const val DATABASE_VERSION = /* SY --> */ 12 /* SY <-- */
+        const val DATABASE_VERSION = /* SY --> */ 13 /* SY <-- */
     }
 
     override fun onCreate(db: SupportSQLiteDatabase) = with(db) {
@@ -41,6 +42,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         execSQL(SearchTitleTable.createTableQuery)
         execSQL(MergedTable.createTableQuery)
         execSQL(FavoriteEntryTable.createTableQuery)
+        execSQL(SavedSearchTable.createTableQuery)
         // SY <--
 
         // DB indexes
@@ -100,6 +102,9 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         }
         if (oldVersion < 12) {
             db.execSQL(FavoriteEntryTable.fixTableQuery)
+        }
+        if (oldVersion < 13) {
+            db.execSQL(SavedSearchTable.createTableQuery)
         }
     }
 

@@ -19,7 +19,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
-import exh.savedsearches.JsonSavedSearch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -37,6 +36,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -212,30 +212,61 @@ open class IndexPresenter(
 
     private val filterSerializer = FilterSerializer()
 
+    fun loadSearch(searchId: Long): EXHSavedSearch? {
+        val search = db.getSavedSearch(searchId).executeAsBlocking() ?: return null
+        return EXHSavedSearch(
+            id = search.id!!,
+            name = search.name,
+            query = search.query.orEmpty(),
+            filterList = runCatching {
+                val originalFilters = source.getFilterList()
+                filterSerializer.deserialize(
+                    filters = originalFilters,
+                    json = search.filtersJson
+                        ?.let { Json.decodeFromString<JsonArray>(it) }
+                        ?: return@runCatching null
+                )
+                originalFilters
+            }.getOrNull()
+        )
+    }
+
     fun loadSearches(): List<EXHSavedSearch> {
-        return preferences.savedSearches().get().mapNotNull {
-            val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
-            if (id != source.id) return@mapNotNull null
-            val content = try {
-                Json.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
+        return db.getSavedSearches(source.id).executeAsBlocking().map {
+            val filtersJson = it.filtersJson ?: return@map EXHSavedSearch(
+                id = it.id!!,
+                name = it.name,
+                query = it.query.orEmpty(),
+                filterList = null
+            )
+            val filters = try {
+                Json.decodeFromString<JsonArray>(filtersJson)
             } catch (e: Exception) {
-                return@mapNotNull null
-            }
+                null
+            } ?: return@map EXHSavedSearch(
+                id = it.id!!,
+                name = it.name,
+                query = it.query.orEmpty(),
+                filterList = null
+            )
+
             try {
                 val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, content.filters)
+                filterSerializer.deserialize(originalFilters, filters)
                 EXHSavedSearch(
-                    content.name,
-                    content.query,
-                    originalFilters
+                    id = it.id!!,
+                    name = it.name,
+                    query = it.query.orEmpty(),
+                    filterList = originalFilters
                 )
             } catch (t: RuntimeException) {
                 // Load failed
                 xLogE("Failed to load saved search!", t)
                 EXHSavedSearch(
-                    content.name,
-                    content.query,
-                    null
+                    id = it.id!!,
+                    name = it.name,
+                    query = it.query.orEmpty(),
+                    filterList = null
                 )
             }
         }

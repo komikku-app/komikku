@@ -28,11 +28,16 @@ import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import exh.eh.EHentaiThrottleManager
 import exh.merged.sql.models.MergedMangaReference
-import exh.savedsearches.JsonSavedSearch
+import exh.savedsearches.models.SavedSearch
 import exh.source.MERGED_SOURCE_ID
+import exh.util.nullIfBlank
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import kotlin.math.max
@@ -287,34 +292,26 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
     internal fun restoreSavedSearches(jsonSavedSearches: String) {
         val backupSavedSearches = jsonSavedSearches.split("***").toSet()
 
+        val currentSavedSearches = databaseHelper.getSavedSearches().executeAsBlocking()
+
         val newSavedSearches = backupSavedSearches.mapNotNull {
             runCatching {
-                val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
-                val content = parser.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
-                id to content
+                val content = parser.decodeFromString<JsonObject>(it.substringAfter(':'))
+                SavedSearch(
+                    id = null,
+                    source = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null,
+                    content["name"]!!.jsonPrimitive.content,
+                    content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
+                    Json.encodeToString(content["filters"]!!.jsonArray)
+                )
             }.getOrNull()
-        }.toMutableSet()
+        }.filter { backupSavedSearch ->
+            currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
+        }.ifEmpty { null }
 
-        val currentSources = newSavedSearches.map(Pair<Long, *>::first).toSet()
-
-        newSavedSearches += preferences.savedSearches().get().mapNotNull {
-            kotlin.runCatching {
-                val id = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null
-                val content = parser.decodeFromString<JsonSavedSearch>(it.substringAfter(':'))
-                id to content
-            }.getOrNull()
+        if (newSavedSearches != null) {
+            databaseHelper.insertSavedSearches(newSavedSearches)
         }
-
-        val otherSerialized = preferences.savedSearches().get().mapNotNull {
-            val sourceId = it.substringBefore(":").toLongOrNull() ?: return@mapNotNull null
-            if (sourceId in currentSources) return@mapNotNull null
-            it
-        }.toSet()
-
-        val newSerialized = newSavedSearches.map { (source, savedSearch) ->
-            "$source:" + Json.encodeToString(savedSearch)
-        }.toSet()
-        preferences.savedSearches().set(otherSerialized + newSerialized)
     }
 
     /**
