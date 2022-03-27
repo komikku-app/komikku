@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.latest
+package eu.kanade.tachiyomi.ui.browse.feed
 
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -6,10 +6,10 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 /**
  * Adapter that holds the manga items from search results.
  *
- * @param controller instance of [LatestController].
+ * @param controller instance of [FeedController].
  */
-class LatestCardAdapter(controller: LatestController) :
-    FlexibleAdapter<LatestCardItem>(null, controller, true) {
+class FeedCardAdapter(controller: FeedController) :
+    FlexibleAdapter<FeedCardItem>(null, controller, true) {
 
     /**
      * Listen for browse item clicks.
@@ -18,7 +18,7 @@ class LatestCardAdapter(controller: LatestController) :
 
     /**
      * Listener which should be called when user clicks browse.
-     * Note: Should only be handled by [LatestController]
+     * Note: Should only be handled by [FeedController]
      */
     interface OnMangaClickListener {
         fun onMangaClick(manga: Manga)

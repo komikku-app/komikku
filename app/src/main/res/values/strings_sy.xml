@@ -192,8 +192,8 @@
     <string name="library_group_updates_all">Launch category updates all the time</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_position">Latest tab position</string>
-    <string name="pref_latest_position_summery">Do you want the latest tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if you\'re on data or a metered network</string>
+    <string name="pref_feed_position">Feed tab position</string>
+    <string name="pref_feed_position_summery">Do you want the feed tab to be the first tab in browse? This will make it the default tab when opening browse, not recommended if you\'re on data or a metered network</string>
     <string name="pref_source_source_filtering">Filter sources in categories</string>
     <string name="pref_source_source_filtering_summery">Filter the sources that are in categories, making the sources not get put under the language if they are in a category</string>
     <string name="pref_source_navigation">Replace latest button</string>
@@ -361,11 +361,11 @@
     <string name="no_source_categories">No source categories available</string>
     <string name="invalid_category_name">Invalid category name</string>
 
-    <!-- Latest Tab -->
-    <string name="watch">Watch</string>
-    <string name="unwatch">Unwatch</string>
-    <string name="too_many_watched">Too many watched sources, cannot add more then 5</string>
-    <string name="latest_tab_empty">You don\'t have any watched sources, go to the sources tab and long press a source to watch it</string>
+    <!-- Feed Tab -->
+    <string name="feed">Feed</string>
+    <string name="feed_delete">Delete feed item?</string>
+    <string name="too_many_in_feed">Too many sources in your feed, cannot add more then 10</string>
+    <string name="feed_tab_empty">You don\'t have any sources in your feed, go to the sources tab and long press a source to watch it</string>
 
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Tag sorting tags</string>

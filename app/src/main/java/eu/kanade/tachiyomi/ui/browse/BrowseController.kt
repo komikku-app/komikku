@@ -20,7 +20,7 @@ import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.RxController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionController
-import eu.kanade.tachiyomi.ui.browse.latest.LatestController
+import eu.kanade.tachiyomi.ui.browse.feed.FeedController
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourcesController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -116,9 +116,9 @@ class BrowseController :
 
         // SY -->
         private val tabTitles = (
-            if (preferences.latestTabInFront().get()) {
+            if (preferences.feedTabInFront().get()) {
                 listOf(
-                    R.string.latest,
+                    R.string.feed,
                     R.string.label_sources,
                     R.string.label_extensions,
                     R.string.label_migration
@@ -127,7 +127,7 @@ class BrowseController :
             } else {
                 listOf(
                     R.string.label_sources,
-                    R.string.latest,
+                    R.string.feed,
                     R.string.label_extensions,
                     R.string.label_migration
                 )
@@ -144,8 +144,8 @@ class BrowseController :
             if (!router.hasRootController()) {
                 val controller: Controller = when (position) {
                     // SY -->
-                    SOURCES_CONTROLLER -> if (preferences.latestTabInFront().get()) LatestController() else SourceController()
-                    LATEST_CONTROLLER -> if (!preferences.latestTabInFront().get()) LatestController() else SourceController()
+                    SOURCES_CONTROLLER -> if (preferences.feedTabInFront().get()) FeedController() else SourceController()
+                    FEED_CONTROLLER -> if (!preferences.feedTabInFront().get()) FeedController() else SourceController()
                     // SY <--
                     EXTENSIONS_CONTROLLER -> ExtensionController()
                     MIGRATION_CONTROLLER -> MigrationSourcesController()
@@ -166,7 +166,7 @@ class BrowseController :
         const val SOURCES_CONTROLLER = 0
 
         // SY -->
-        const val LATEST_CONTROLLER = 1
+        const val FEED_CONTROLLER = 1
         const val EXTENSIONS_CONTROLLER = 2
         const val MIGRATION_CONTROLLER = 3
         // SY <--

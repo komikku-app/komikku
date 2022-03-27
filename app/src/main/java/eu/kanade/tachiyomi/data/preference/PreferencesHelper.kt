@@ -439,9 +439,7 @@ class PreferencesHelper(val context: Context) {
         "false,false,false,false,false,false,false,false,false,false"
     )
 
-    fun latestTabSources() = flowPrefs.getStringSet("latest_tab_sources", mutableSetOf())
-
-    fun latestTabInFront() = flowPrefs.getBoolean("latest_tab_position", false)
+    fun feedTabInFront() = flowPrefs.getBoolean("latest_tab_position", false)
 
     fun sourcesTabCategories() = flowPrefs.getStringSet("sources_tab_categories", mutableSetOf())
 

@@ -175,16 +175,6 @@ class SourceController(bundle: Bundle? = null) :
         }
 
         // SY -->
-        val isWatched = item.source.id.toString() in preferences.latestTabSources().get()
-
-        if (item.source.supportsLatest) {
-            items.add(
-                activity.getString(if (isWatched) R.string.unwatch else R.string.watch) to {
-                    watchCatalogue(item.source, isWatched)
-                }
-            )
-        }
-
         items.add(
             activity.getString(R.string.categories) to { addToCategories(item.source) }
         )
@@ -222,18 +212,6 @@ class SourceController(bundle: Bundle? = null) :
     }
 
     // SY -->
-    private fun watchCatalogue(source: Source, isWatched: Boolean) {
-        if (isWatched) {
-            preferences.latestTabSources() -= source.id.toString()
-        } else {
-            if (preferences.latestTabSources().get().size + 1 !in 0..5) {
-                applicationContext?.toast(R.string.too_many_watched)
-                return
-            }
-            preferences.latestTabSources() += source.id.toString()
-        }
-    }
-
     private fun addToCategories(source: Source) {
         val categories = preferences.sourcesTabCategories().get()
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it }))

@@ -373,8 +373,4 @@ object DebugFunctions {
             )
         }
     }
-
-    fun unwatchAllSources() {
-        prefs.latestTabSources().delete()
-    }
 }

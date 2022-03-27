@@ -1,5 +1,6 @@
-package eu.kanade.tachiyomi.ui.browse.latest
+package eu.kanade.tachiyomi.ui.browse.feed
 
+import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -9,12 +10,12 @@ import eu.kanade.tachiyomi.databinding.LatestControllerCardBinding
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 
 /**
- * Holder that binds the [LatestItem] containing catalogue cards.
+ * Holder that binds the [FeedItem] containing catalogue cards.
  *
- * @param view view of [LatestItem]
- * @param adapter instance of [LatestAdapter]
+ * @param view view of [FeedItem]
+ * @param adapter instance of [FeedAdapter]
  */
-class LatestHolder(view: View, val adapter: LatestAdapter) :
+class FeedHolder(view: View, val adapter: FeedAdapter) :
     FlexibleViewHolder(view, adapter) {
 
     private val binding = LatestControllerCardBinding.bind(view)
@@ -22,9 +23,9 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
     /**
      * Adapter containing manga from search results.
      */
-    private val mangaAdapter = LatestCardAdapter(adapter.controller)
+    private val mangaAdapter = FeedCardAdapter(adapter.controller)
 
-    private var lastBoundResults: List<LatestCardItem>? = null
+    private var lastBoundResults: List<FeedCardItem>? = null
 
     init {
         // Set layout horizontal.
@@ -33,8 +34,18 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
 
         binding.titleWrapper.setOnClickListener {
             adapter.getItem(bindingAdapterPosition)?.let {
-                adapter.titleClickListener.onTitleClick(it.source)
+                if (it.savedSearch != null) {
+                    adapter.feedClickListener.onSavedSearchClick(it.savedSearch, it.source ?: return@let)
+                } else {
+                    adapter.feedClickListener.onSourceClick(it.source ?: return@let)
+                }
             }
+        }
+        binding.titleWrapper.setOnLongClickListener {
+            adapter.getItem(bindingAdapterPosition)?.let {
+                adapter.feedClickListener.onRemoveClick(it.feed)
+            }
+            true
         }
     }
 
@@ -43,15 +54,23 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
      *
      * @param item item of card.
      */
-    fun bind(item: LatestItem) {
-        val source = item.source
+    @SuppressLint("SetTextI18n")
+    fun bind(item: FeedItem) {
         val results = item.results
 
         val titlePrefix = if (item.highlighted) "▶ " else ""
 
-        binding.title.text = titlePrefix + source.name
+        binding.title.text = titlePrefix + if (item.savedSearch != null) {
+            item.savedSearch.name
+        } else {
+            item.source?.name ?: item.feed.source.toString()
+        }
         binding.subtitle.isVisible = true
-        binding.subtitle.text = LocaleHelper.getDisplayName(source.lang)
+        binding.subtitle.text = if (item.savedSearch != null) {
+            item.source?.name ?: item.feed.source.toString()
+        } else {
+            LocaleHelper.getDisplayName(item.source?.lang)
+        }
 
         when {
             results == null -> {
@@ -88,11 +107,11 @@ class LatestHolder(view: View, val adapter: LatestAdapter) :
      * @param manga the manga to find.
      * @return the holder of the manga or null if it's not bound.
      */
-    private fun getHolder(manga: Manga): LatestCardHolder? {
+    private fun getHolder(manga: Manga): FeedCardHolder? {
         mangaAdapter.allBoundViewHolders.forEach { holder ->
             val item = mangaAdapter.getItem(holder.bindingAdapterPosition)
             if (item != null && item.manga.id!! == manga.id!!) {
-                return holder as LatestCardHolder
+                return holder as FeedCardHolder
             }
         }
 

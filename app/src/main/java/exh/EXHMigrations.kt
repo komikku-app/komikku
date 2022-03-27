@@ -40,6 +40,7 @@ import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
+import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
@@ -416,10 +417,21 @@ object EXHMigrations {
                         }.getOrNull()
                     }?.ifEmpty { null }
                     if (savedSearches != null) {
-                        db.insertSavedSearches(savedSearches)
+                        db.insertSavedSearches(savedSearches).executeAsBlocking()
+                    }
+                    val feed = prefs.getStringSet("latest_tab_sources", emptySet())?.map {
+                        FeedSavedSearch(
+                            id = null,
+                            source = it.toLong(),
+                            savedSearch = null
+                        )
+                    }?.ifEmpty { null }
+                    if (feed != null) {
+                        db.insertFeedSavedSearches(feed).executeAsBlocking()
                     }
                     prefs.edit(commit = true) {
                         remove("eh_saved_searches")
+                        remove("latest_tab_sources")
                     }
                 }
 

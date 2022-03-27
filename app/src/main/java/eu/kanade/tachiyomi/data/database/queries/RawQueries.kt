@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.data.database.queries
 
 import eu.kanade.tachiyomi.data.database.resolvers.SourceIdMangaCountGetResolver
+import exh.savedsearches.tables.FeedSavedSearchTable
+import exh.savedsearches.tables.SavedSearchTable
 import exh.source.MERGED_SOURCE_ID
 import eu.kanade.tachiyomi.data.database.tables.CategoryTable as Category
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable as Chapter
@@ -72,6 +74,19 @@ fun getReadMangaNotInLibraryQuery() =
     WHERE ${Manga.COL_FAVORITE} = 0 AND ${Manga.COL_ID} IN(
         SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} FROM ${Chapter.TABLE} WHERE ${Chapter.COL_READ} = 1 OR ${Chapter.COL_LAST_PAGE_READ} != 0
     )
+"""
+
+/**
+ * Query to get the manga merged into a merged manga
+ */
+fun getFeedSavedSearchQuery() =
+    """
+    SELECT ${SavedSearchTable.TABLE}.*
+    FROM (
+        SELECT ${FeedSavedSearchTable.COL_SAVED_SEARCH_ID} FROM ${FeedSavedSearchTable.TABLE}
+    ) AS M
+    JOIN ${SavedSearchTable.TABLE}
+    ON ${SavedSearchTable.TABLE}.${SavedSearchTable.COL_ID} = M.${FeedSavedSearchTable.COL_SAVED_SEARCH_ID}
 """
 
 /**

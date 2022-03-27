@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.latest
+package eu.kanade.tachiyomi.ui.browse.feed
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
@@ -8,16 +8,23 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchItem
+import exh.savedsearches.models.FeedSavedSearch
+import exh.savedsearches.models.SavedSearch
 
 /**
  * Item that contains search result information.
  *
- * @param source the source for the search results.
+ * @param feed the source for the search results.
  * @param results the search results.
  * @param highlighted whether this search item should be highlighted/marked in the catalogue search view.
  */
-class LatestItem(val source: CatalogueSource, val results: List<LatestCardItem>?, val highlighted: Boolean = false) :
-    AbstractFlexibleItem<LatestHolder>() {
+class FeedItem(
+    val feed: FeedSavedSearch,
+    val savedSearch: SavedSearch?,
+    val source: CatalogueSource?,
+    val results: List<FeedCardItem>?,
+    val highlighted: Boolean = false
+) : AbstractFlexibleItem<FeedHolder>() {
 
     /**
      * Set view.
@@ -29,12 +36,12 @@ class LatestItem(val source: CatalogueSource, val results: List<LatestCardItem>?
     }
 
     /**
-     * Create view holder (see [LatestAdapter].
+     * Create view holder (see [FeedAdapter].
      *
      * @return holder of view.
      */
-    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): LatestHolder {
-        return LatestHolder(view, adapter as LatestAdapter)
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): FeedHolder {
+        return FeedHolder(view, adapter as FeedAdapter)
     }
 
     /**
@@ -42,7 +49,7 @@ class LatestItem(val source: CatalogueSource, val results: List<LatestCardItem>?
      */
     override fun bindViewHolder(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-        holder: LatestHolder,
+        holder: FeedHolder,
         position: Int,
         payloads: List<Any?>?
     ) {
@@ -56,7 +63,7 @@ class LatestItem(val source: CatalogueSource, val results: List<LatestCardItem>?
      */
     override fun equals(other: Any?): Boolean {
         if (other is GlobalSearchItem) {
-            return source.id == other.source.id
+            return feed.id == other.source.id
         }
         return false
     }
@@ -67,6 +74,6 @@ class LatestItem(val source: CatalogueSource, val results: List<LatestCardItem>?
      * @return hashcode
      */
     override fun hashCode(): Int {
-        return source.id.toInt()
+        return feed.id!!.toInt()
     }
 }

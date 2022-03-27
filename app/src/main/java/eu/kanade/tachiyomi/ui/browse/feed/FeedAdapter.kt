@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.latest
+package eu.kanade.tachiyomi.ui.browse.feed
 
 import android.os.Bundle
 import android.os.Parcelable
@@ -6,16 +6,18 @@ import android.util.SparseArray
 import androidx.recyclerview.widget.RecyclerView
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.source.CatalogueSource
+import exh.savedsearches.models.FeedSavedSearch
+import exh.savedsearches.models.SavedSearch
 
 /**
  * Adapter that holds the search cards.
  *
- * @param controller instance of [LatestController].
+ * @param controller instance of [FeedController].
  */
-class LatestAdapter(val controller: LatestController) :
-    FlexibleAdapter<LatestItem>(null, controller, true) {
+class FeedAdapter(val controller: FeedController) :
+    FlexibleAdapter<FeedItem>(null, controller, true) {
 
-    val titleClickListener: OnTitleClickListener = controller
+    val feedClickListener: OnFeedClickListener = controller
 
     /**
      * Bundle where the view state of the holders is saved.
@@ -71,8 +73,10 @@ class LatestAdapter(val controller: LatestController) :
         }
     }
 
-    interface OnTitleClickListener {
-        fun onTitleClick(source: CatalogueSource)
+    interface OnFeedClickListener {
+        fun onSourceClick(source: CatalogueSource)
+        fun onSavedSearchClick(savedSearch: SavedSearch, source: CatalogueSource)
+        fun onRemoveClick(feedSavedSearch: FeedSavedSearch)
     }
 
     private companion object {

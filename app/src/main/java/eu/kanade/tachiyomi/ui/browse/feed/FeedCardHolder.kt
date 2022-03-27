@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.latest
+package eu.kanade.tachiyomi.ui.browse.feed
 
 import android.view.View
 import androidx.core.view.isVisible
@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.GlobalSearchControllerCardItemBinding
 import eu.kanade.tachiyomi.util.view.loadAutoPause
 
-class LatestCardHolder(view: View, adapter: LatestCardAdapter) :
+class FeedCardHolder(view: View, adapter: FeedCardAdapter) :
     FlexibleViewHolder(view, adapter) {
 
     private val binding = GlobalSearchControllerCardItemBinding.bind(view)

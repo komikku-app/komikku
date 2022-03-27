@@ -13,6 +13,7 @@ import exh.merged.sql.tables.MergedTable
 import exh.metadata.sql.tables.SearchMetadataTable
 import exh.metadata.sql.tables.SearchTagTable
 import exh.metadata.sql.tables.SearchTitleTable
+import exh.savedsearches.tables.FeedSavedSearchTable
 import exh.savedsearches.tables.SavedSearchTable
 
 class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
@@ -43,6 +44,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         execSQL(MergedTable.createTableQuery)
         execSQL(FavoriteEntryTable.createTableQuery)
         execSQL(SavedSearchTable.createTableQuery)
+        execSQL(FeedSavedSearchTable.createTableQuery)
         // SY <--
 
         // DB indexes
@@ -59,6 +61,7 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         execSQL(SearchTitleTable.createMangaIdIndexQuery)
         execSQL(SearchTitleTable.createTitleIndexQuery)
         execSQL(MergedTable.createIndexQuery)
+        execSQL(FeedSavedSearchTable.createSavedSearchIdIndexQuery)
         // SY <--
     }
 
@@ -105,6 +108,8 @@ class DbOpenCallback : SupportSQLiteOpenHelper.Callback(DATABASE_VERSION) {
         }
         if (oldVersion < 13) {
             db.execSQL(SavedSearchTable.createTableQuery)
+            db.execSQL(FeedSavedSearchTable.createTableQuery)
+            db.execSQL(FeedSavedSearchTable.createSavedSearchIdIndexQuery)
         }
     }
 

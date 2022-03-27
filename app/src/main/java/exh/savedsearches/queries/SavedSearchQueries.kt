@@ -49,6 +49,17 @@ interface SavedSearchQueries : DbProvider {
         )
         .prepare()
 
+    fun getSavedSearches(ids: List<Long>) = db.get()
+        .listOfObjects(SavedSearch::class.java)
+        .withQuery(
+            Query.builder()
+                .table(SavedSearchTable.TABLE)
+                .where("${SavedSearchTable.COL_ID} IN (?)")
+                .whereArgs(ids.joinToString())
+                .build()
+        )
+        .prepare()
+
     fun insertSavedSearch(savedSearch: SavedSearch) = db.put().`object`(savedSearch).prepare()
 
     fun insertSavedSearches(savedSearches: List<SavedSearch>) = db.put().objects(savedSearches).prepare()

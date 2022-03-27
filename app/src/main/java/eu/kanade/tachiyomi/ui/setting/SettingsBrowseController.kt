@@ -59,12 +59,12 @@ class SettingsBrowseController : SettingsController() {
         }
 
         preferenceCategory {
-            titleRes = R.string.latest
+            titleRes = R.string.feed
 
             switchPreference {
-                bindTo(preferences.latestTabInFront())
-                titleRes = R.string.pref_latest_position
-                summaryRes = R.string.pref_latest_position_summery
+                bindTo(preferences.feedTabInFront())
+                titleRes = R.string.pref_feed_position
+                summaryRes = R.string.pref_feed_position_summery
             }
         }
         // SY <--

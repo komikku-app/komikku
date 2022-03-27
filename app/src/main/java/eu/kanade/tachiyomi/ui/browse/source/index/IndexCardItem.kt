@@ -7,7 +7,6 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.ui.browse.latest.LatestCardItem
 
 class IndexCardItem(val manga: Manga) : AbstractFlexibleItem<IndexCardHolder>() {
 
@@ -29,7 +28,7 @@ class IndexCardItem(val manga: Manga) : AbstractFlexibleItem<IndexCardHolder>() 
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other is LatestCardItem) {
+        if (other is IndexCardItem) {
             return manga.id == other.manga.id
         }
         return false
