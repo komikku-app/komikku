@@ -137,7 +137,12 @@ open class SourceFeedPresenter(
         val savedSearches = db.getSourceSavedSearchesFeed(source.id).executeAsBlocking()
             .associateBy { it.id!! }
 
-        return listOf(SourceFeed.Latest, SourceFeed.Browse) + db.getSourceFeedSavedSearches(source.id).executeAsBlocking()
+        return listOfNotNull(
+            if (source.supportsLatest) {
+                SourceFeed.Latest
+            } else null,
+            SourceFeed.Browse
+        ) + db.getSourceFeedSavedSearches(source.id).executeAsBlocking()
             .map { SourceFeed.SourceSavedSearch(it, savedSearches[it.savedSearch]!!) }
     }
 

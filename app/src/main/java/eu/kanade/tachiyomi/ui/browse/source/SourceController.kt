@@ -144,7 +144,7 @@ class SourceController(bundle: Bundle? = null) :
             Mode.CATALOGUE -> {
                 // Open the catalogue view.
                 // SY -->
-                if (source.supportsLatest && preferences.useNewSourceNavigation().get()) {
+                if (preferences.useNewSourceNavigation().get()) {
                     openSourceFeed(source)
                 } else openSource(source, BrowseSourceController(source))
                 // SY <--
