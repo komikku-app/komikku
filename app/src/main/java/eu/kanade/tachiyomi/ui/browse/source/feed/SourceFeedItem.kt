@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.ui.browse.feed
+package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
@@ -6,9 +6,6 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.source.CatalogueSource
-import exh.savedsearches.models.FeedSavedSearch
-import exh.savedsearches.models.SavedSearch
 
 /**
  * Item that contains search result information.
@@ -17,13 +14,11 @@ import exh.savedsearches.models.SavedSearch
  * @param results the search results.
  * @param highlighted whether this search item should be highlighted/marked in the catalogue search view.
  */
-class FeedItem(
-    val feed: FeedSavedSearch,
-    val savedSearch: SavedSearch?,
-    val source: CatalogueSource?,
-    val results: List<FeedCardItem>?,
+class SourceFeedItem(
+    val sourceFeed: SourceFeed,
+    val results: List<SourceFeedCardItem>?,
     val highlighted: Boolean = false
-) : AbstractFlexibleItem<FeedHolder>() {
+) : AbstractFlexibleItem<SourceFeedHolder>() {
 
     /**
      * Set view.
@@ -35,12 +30,12 @@ class FeedItem(
     }
 
     /**
-     * Create view holder (see [FeedAdapter].
+     * Create view holder (see [SourceFeedAdapter].
      *
      * @return holder of view.
      */
-    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): FeedHolder {
-        return FeedHolder(view, adapter as FeedAdapter)
+    override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): SourceFeedHolder {
+        return SourceFeedHolder(view, adapter as SourceFeedAdapter)
     }
 
     /**
@@ -48,7 +43,7 @@ class FeedItem(
      */
     override fun bindViewHolder(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
-        holder: FeedHolder,
+        holder: SourceFeedHolder,
         position: Int,
         payloads: List<Any?>?
     ) {
@@ -61,8 +56,8 @@ class FeedItem(
      * @return items are equal?
      */
     override fun equals(other: Any?): Boolean {
-        if (other is FeedItem) {
-            return feed.id == other.feed.id
+        if (other is SourceFeedItem) {
+            return sourceFeed == other.sourceFeed
         }
         return false
     }
@@ -73,6 +68,6 @@ class FeedItem(
      * @return hashcode
      */
     override fun hashCode(): Int {
-        return feed.id!!.toInt()
+        return sourceFeed.hashCode()
     }
 }

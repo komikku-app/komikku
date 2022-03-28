@@ -167,12 +167,12 @@ open class FeedController :
      * @param source used to find holder containing source
      * @return the holder of the manga or null if it's not bound.
      */
-    private fun getHolder(source: CatalogueSource): FeedHolder? {
+    private fun getHolder(feed: FeedSavedSearch): FeedHolder? {
         val adapter = adapter ?: return null
 
         adapter.allBoundViewHolders.forEach { holder ->
             val item = adapter.getItem(holder.bindingAdapterPosition)
-            if (item != null && source.id == item.feed.id) {
+            if (item != null && feed.id == item.feed.id) {
                 return holder as FeedHolder
             }
         }
@@ -200,8 +200,8 @@ open class FeedController :
      *
      * @param manga the initialized manga.
      */
-    fun onMangaInitialized(source: CatalogueSource, manga: Manga) {
-        getHolder(source)?.setImage(manga)
+    fun onMangaInitialized(feed: FeedSavedSearch, manga: Manga) {
+        getHolder(feed)?.setImage(manga)
     }
 
     /**

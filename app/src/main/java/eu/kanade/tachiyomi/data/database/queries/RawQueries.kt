@@ -77,13 +77,26 @@ fun getReadMangaNotInLibraryQuery() =
 """
 
 /**
- * Query to get the manga merged into a merged manga
+ * Query to get the global feed saved searches
  */
-fun getFeedSavedSearchQuery() =
+fun getGlobalFeedSavedSearchQuery() =
     """
     SELECT ${SavedSearchTable.TABLE}.*
     FROM (
-        SELECT ${FeedSavedSearchTable.COL_SAVED_SEARCH_ID} FROM ${FeedSavedSearchTable.TABLE}
+        SELECT ${FeedSavedSearchTable.COL_SAVED_SEARCH_ID} FROM ${FeedSavedSearchTable.TABLE} WHERE ${FeedSavedSearchTable.COL_GLOBAL} = 1
+    ) AS M
+    JOIN ${SavedSearchTable.TABLE}
+    ON ${SavedSearchTable.TABLE}.${SavedSearchTable.COL_ID} = M.${FeedSavedSearchTable.COL_SAVED_SEARCH_ID}
+"""
+
+/**
+ * Query to get the source feed saved searches
+ */
+fun getSourceFeedSavedSearchQuery() =
+    """
+    SELECT ${SavedSearchTable.TABLE}.*
+    FROM (
+        SELECT ${FeedSavedSearchTable.COL_SAVED_SEARCH_ID} FROM ${FeedSavedSearchTable.TABLE} WHERE ${FeedSavedSearchTable.COL_GLOBAL} = 0 AND ${FeedSavedSearchTable.COL_SOURCE} = ?
     ) AS M
     JOIN ${SavedSearchTable.TABLE}
     ON ${SavedSearchTable.TABLE}.${SavedSearchTable.COL_ID} = M.${FeedSavedSearchTable.COL_SAVED_SEARCH_ID}

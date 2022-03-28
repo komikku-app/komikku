@@ -8,5 +8,8 @@ data class FeedSavedSearch(
     var source: Long,
 
     // If -1 then get latest, if set get the saved search
-    var savedSearch: Long?
+    var savedSearch: Long?,
+
+    // If the feed is a global or source specific feed
+    var global: Boolean
 )

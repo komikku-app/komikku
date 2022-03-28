@@ -29,8 +29,8 @@ import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
+import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
-import eu.kanade.tachiyomi.ui.browse.source.index.IndexController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.category.sources.ChangeSourceCategoriesDialog
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -145,7 +145,7 @@ class SourceController(bundle: Bundle? = null) :
                 // Open the catalogue view.
                 // SY -->
                 if (source.supportsLatest && preferences.useNewSourceNavigation().get()) {
-                    openIndexSource(source)
+                    openSourceFeed(source)
                 } else openSource(source, BrowseSourceController(source))
                 // SY <--
             }
@@ -307,11 +307,11 @@ class SourceController(bundle: Bundle? = null) :
 
     // SY -->
     /**
-     * Opens a catalogue with the index controller.
+     * Opens a catalogue with the source feed controller.
      */
-    private fun openIndexSource(source: CatalogueSource) {
+    private fun openSourceFeed(source: CatalogueSource) {
         preferences.lastUsedSource().set(source.id)
-        parentController!!.router.pushController(IndexController(source).withFadeTransaction())
+        parentController!!.router.pushController(SourceFeedController(source).withFadeTransaction())
     }
     // SY <--
 

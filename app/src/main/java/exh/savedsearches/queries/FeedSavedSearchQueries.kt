@@ -4,40 +4,32 @@ import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.Query
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DbProvider
-import eu.kanade.tachiyomi.data.database.queries.getFeedSavedSearchQuery
+import eu.kanade.tachiyomi.data.database.queries.getGlobalFeedSavedSearchQuery
+import eu.kanade.tachiyomi.data.database.queries.getSourceFeedSavedSearchQuery
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import exh.savedsearches.tables.FeedSavedSearchTable
 
 interface FeedSavedSearchQueries : DbProvider {
-    fun getFeedSavedSearches() = db.get()
+    fun getGlobalFeedSavedSearches() = db.get()
         .listOfObjects(FeedSavedSearch::class.java)
         .withQuery(
             Query.builder()
                 .table(FeedSavedSearchTable.TABLE)
+                .where("${FeedSavedSearchTable.COL_GLOBAL} = 1")
                 .orderBy(FeedSavedSearchTable.COL_ID)
                 .build()
         )
         .prepare()
 
-    fun getFeedSavedSearch(id: Long) = db.get()
-        .`object`(FeedSavedSearch::class.java)
-        .withQuery(
-            Query.builder()
-                .table(FeedSavedSearchTable.TABLE)
-                .where("${FeedSavedSearchTable.COL_ID} = ?")
-                .whereArgs(id)
-                .build()
-        )
-        .prepare()
-
-    fun getFeedSavedSearches(ids: List<Long>) = db.get()
+    fun getSourceFeedSavedSearches(sourceId: Long) = db.get()
         .listOfObjects(FeedSavedSearch::class.java)
         .withQuery(
             Query.builder()
                 .table(FeedSavedSearchTable.TABLE)
-                .where("${FeedSavedSearchTable.COL_ID} IN (?)")
-                .whereArgs(ids.joinToString())
+                .where("${FeedSavedSearchTable.COL_SOURCE} = ? AND ${FeedSavedSearchTable.COL_GLOBAL} = 0")
+                .whereArgs(sourceId)
+                .orderBy(FeedSavedSearchTable.COL_ID)
                 .build()
         )
         .prepare()
@@ -64,11 +56,21 @@ interface FeedSavedSearchQueries : DbProvider {
     )
         .prepare()
 
-    fun getSavedSearchesFeed() = db.get()
+    fun getGlobalSavedSearchesFeed() = db.get()
         .listOfObjects(SavedSearch::class.java)
         .withQuery(
             RawQuery.builder()
-                .query(getFeedSavedSearchQuery())
+                .query(getGlobalFeedSavedSearchQuery())
+                .build()
+        )
+        .prepare()
+
+    fun getSourceSavedSearchesFeed(sourceId: Long) = db.get()
+        .listOfObjects(SavedSearch::class.java)
+        .withQuery(
+            RawQuery.builder()
+                .query(getSourceFeedSavedSearchQuery())
+                .args(sourceId)
                 .build()
         )
         .prepare()

@@ -423,7 +423,8 @@ object EXHMigrations {
                         FeedSavedSearch(
                             id = null,
                             source = it.toLong(),
-                            savedSearch = null
+                            savedSearch = null,
+                            global = true
                         )
                     }?.ifEmpty { null }
                     if (feed != null) {
