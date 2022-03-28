@@ -98,7 +98,7 @@ open class SourceFeedController :
      */
     override fun onMangaClick(manga: Manga) {
         // Open MangaController.
-        parentController?.router?.pushController(MangaController(manga, true).withFadeTransaction())
+        router.pushController(MangaController(manga, true).withFadeTransaction())
     }
 
     /**
