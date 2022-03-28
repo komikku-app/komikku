@@ -192,8 +192,6 @@
     <string name="library_group_updates_all">Hanya jalankan pembaruan kategori</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_position">Posisi tab Terbaru</string>
-    <string name="pref_latest_position_summery">Apakah Anda ingin tab Terbaru menjadi tab pertama dalam penelusuran? Ini akan menjadikannya tab bawaan saat membuka jelajah, tidak disarankan jika Anda menggunakan data atau sedang menghemat data</string>
     <string name="pref_source_source_filtering">Filter Sumber dalam kategori</string>
     <string name="pref_source_source_filtering_summery">Saring sumber-sumber yang ada dalam kategori, agar sumber-sumber tersebut tidak dimasukkan ke dalam kategori bahasa jika berada dalam suatu kategori</string>
     <string name="pref_source_navigation">Ganti tombol Terbaru</string>
@@ -358,12 +356,6 @@
     <!-- Source Categories -->
     <string name="no_source_categories">Tak ada kategori sumber yang tersedia</string>
     <string name="invalid_category_name">Nama kategori tidak valid</string>
-
-    <!-- Latest Tab -->
-    <string name="watch">Tonton</string>
-    <string name="unwatch">Berhenti tonton</string>
-    <string name="too_many_watched">Terlalu banyak sumber yang ditonton, batasnya adalah 5</string>
-    <string name="latest_tab_empty">Kamu tidak memiliki sumber yang ditonton, buka tab sumber dan tekan lama sumber untuk menontonnya</string>
 
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Penyortir Tagar</string>

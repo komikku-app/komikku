@@ -179,8 +179,6 @@
     <string name="library_group_updates_all">Lancer des mises à jour de catégorie tout le temps</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_position">Dernière position de l\'onglet</string>
-    <string name="pref_latest_position_summery">Voulez-vous que le dernier onglet soit le premier onglet de la navigation? Cela en fera l\'onglet par défaut lors de l\'ouverture de la navigation, non recommandé si vous êtes sur des données ou un réseau mesuré</string>
     <string name="pref_source_navigation">Remplacer le dernier bouton</string>
     <string name="pref_source_navigation_summery">Remplacer le dernier bouton par une vue de navigation personnalisée qui inclut à la fois la dernière et la navigation</string>
     <string name="pref_local_source_hidden_folders">Dossiers cachés de la source locale</string>
@@ -266,12 +264,6 @@
     <!-- Source Categories -->
     <string name="no_source_categories">Aucune catégorie de source disponible</string>
     <string name="invalid_category_name">Nom de catégorie non valide</string>
-
-    <!-- Latest Tab -->
-    <string name="watch">Regarder</string>
-    <string name="unwatch">Non regarder</string>
-    <string name="too_many_watched">Trop de sources regardées, impossible d\'en ajouter plus de 5</string>
-    <string name="latest_tab_empty">Vous n\'avez pas de sources regardées, allez dans l\'onglet sources et appuyez longuement sur une source pour la regarder</string>
 
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Tag de tri des Tags</string>

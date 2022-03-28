@@ -345,7 +345,7 @@ open class BrowseSourcePresenter(
             .forEach { service ->
                 launchIO {
                     try {
-                        service.match(source, manga)?.let { track ->
+                        service.match(manga)?.let { track ->
                             track.manga_id = manga.id!!
                             (service as TrackService).bind(track)
                             db.insertTrack(track).executeAsBlocking()

@@ -188,8 +188,6 @@
     <string name="library_group_updates_all">Iniciar atualizações de categoria o tempo todo</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_position">Posição da aba Recentes</string>
-    <string name="pref_latest_position_summery">Deseja que a aba Recentes seja a primeira em Navegar? Isto a fará aba padrão ao abrir em Navegar, não recomendado se usa dados móveis ou uma rede medida.</string>
     <string name="pref_source_source_filtering">Filtrar fontes nas categorias</string>
     <string name="pref_source_source_filtering_summery">Filtre as fontes que estão em categorias, evitando de pô-las sob seu idioma se estiverem numa categoria</string>
     <string name="pref_source_navigation">Substituir o botão Recentes</string>
@@ -329,12 +327,6 @@
     <!-- Source Categories -->
     <string name="no_source_categories">Sem categorias de fonte disponíveis</string>
     <string name="invalid_category_name">Nome de categoria inválido</string>
-
-    <!-- Latest Tab -->
-    <string name="watch">Seguir</string>
-    <string name="unwatch">Deixar de seguir</string>
-    <string name="too_many_watched">Muitas fontes seguidas, não pode seguir mais de 5</string>
-    <string name="latest_tab_empty">Você não tem fontes seguidas, vá à aba Fontes e pressione e segure uma fonte para seguí-la</string>
 
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Tags de ordenação de tag</string>

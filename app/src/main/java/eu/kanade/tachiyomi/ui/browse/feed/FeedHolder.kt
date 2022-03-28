@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.LatestControllerCardBinding
+import eu.kanade.tachiyomi.databinding.GlobalSearchControllerCardBinding
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 
 /**
@@ -18,7 +18,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 class FeedHolder(view: View, val adapter: FeedAdapter) :
     FlexibleViewHolder(view, adapter) {
 
-    private val binding = LatestControllerCardBinding.bind(view)
+    private val binding = GlobalSearchControllerCardBinding.bind(view)
 
     /**
      * Adapter containing manga from search results.

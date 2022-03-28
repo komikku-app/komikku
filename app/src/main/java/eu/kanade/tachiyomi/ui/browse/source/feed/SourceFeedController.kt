@@ -13,7 +13,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.LatestControllerBinding
+import eu.kanade.tachiyomi.databinding.GlobalSearchControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -40,7 +40,7 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * [SourceFeedCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
 open class SourceFeedController :
-    SearchableNucleusController<LatestControllerBinding, SourceFeedPresenter>,
+    SearchableNucleusController<GlobalSearchControllerBinding, SourceFeedPresenter>,
     FabController,
     SourceFeedCardAdapter.OnMangaClickListener,
     SourceFeedAdapter.OnFeedClickListener {
@@ -131,7 +131,7 @@ open class SourceFeedController :
         }
     }
 
-    override fun createBinding(inflater: LayoutInflater): LatestControllerBinding = LatestControllerBinding.inflate(inflater)
+    override fun createBinding(inflater: LayoutInflater): GlobalSearchControllerBinding = GlobalSearchControllerBinding.inflate(inflater)
 
     /**
      * Called when the view is created

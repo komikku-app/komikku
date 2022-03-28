@@ -11,7 +11,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.LatestControllerBinding
+import eu.kanade.tachiyomi.databinding.GlobalSearchControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
@@ -28,7 +28,7 @@ import exh.savedsearches.models.SavedSearch
  * [FeedCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
 open class FeedController :
-    NucleusController<LatestControllerBinding, FeedPresenter>(),
+    NucleusController<GlobalSearchControllerBinding, FeedPresenter>(),
     FeedCardAdapter.OnMangaClickListener,
     FeedAdapter.OnFeedClickListener {
 
@@ -123,7 +123,7 @@ open class FeedController :
         onMangaClick(manga)
     }
 
-    override fun createBinding(inflater: LayoutInflater): LatestControllerBinding = LatestControllerBinding.inflate(inflater)
+    override fun createBinding(inflater: LayoutInflater): GlobalSearchControllerBinding = GlobalSearchControllerBinding.inflate(inflater)
 
     /**
      * Called when the view is created

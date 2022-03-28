@@ -191,8 +191,6 @@
     <string name="library_group_updates_all">Постоянно запускать обновления категорий</string>
 
     <!-- Browse settings -->
-    <string name="pref_latest_position">Позиция вкладки (Последняя)</string>
-    <string name="pref_latest_position_summery">Поместить вкладку «Последняя» на место первой вкладки в «Поисковик»? Это сделает её вкладкой по умолчанию при открытии «Поисковик», не рекомендуется, если вы используете ограниченные сети(Моб. Данные)</string>
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
     <string name="pref_source_source_filtering_summery">Фильтровать источники которые находятся в категориях, чтобы источники которые находятся в категориях, не попадали под языковую фильтрацию</string>
     <string name="pref_source_navigation">Убрать кнопку (Последняя)</string>
@@ -357,12 +355,6 @@
     <!-- Source Categories -->
     <string name="no_source_categories">Отсутствуют категории для источников</string>
     <string name="invalid_category_name">Недопустимое имя категории!</string>
-
-    <!-- Latest Tab -->
-    <string name="watch">Отслеживать</string>
-    <string name="unwatch">Не отслеживать</string>
-    <string name="too_many_watched">Слишком много отслеживаемых источников, нельзя добавить больше пяти</string>
-    <string name="latest_tab_empty">Нет отслеживаемых источников для отображения, перейдите во вкладку «Источники», после, нажмите на источник и удерживайте, затем выберите «Отслеживать».</string>
 
     <!-- Sort by tags -->
     <string name="pref_tag_sorting">Сортировка тэгов</string>
