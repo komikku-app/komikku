@@ -232,7 +232,11 @@ open class SourceFeedController :
                     )
                 }
             },
-            onSavedSearchDeleteClicked = { idOfSearch, name ->
+            onSavedSearchDeleteClicked = cb@{ idOfSearch, name ->
+                if (presenter.hasTooManyFeeds()) {
+                    activity?.toast(R.string.too_many_in_feed)
+                    return@cb
+                }
                 MaterialAlertDialogBuilder(activity!!)
                     .setTitle(R.string.feed)
                     .setMessage(activity!!.getString(R.string.feed_add, name))
