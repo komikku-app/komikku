@@ -365,7 +365,7 @@
     <string name="feed">Feed</string>
     <string name="feed_delete">Delete feed item?</string>
     <string name="too_many_in_feed">Too many sources in your feed, cannot add more then 10</string>
-    <string name="feed_tab_empty">You don\'t have any sources in your feed, go to the sources tab and long press a source to watch it</string>
+    <string name="feed_tab_empty">You don\'t have any sources in your feed, navigate to the top right to add one</string>
     <string name="feed_add">Add %1$s to feed?</string>
 
     <!-- Sort by tags -->
