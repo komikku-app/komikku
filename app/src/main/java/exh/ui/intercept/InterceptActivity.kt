@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.base.activity.BaseViewBindingActivity
+import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -24,8 +24,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() {
+class InterceptActivity : BaseActivity() {
     private var statusJob: Job? = null
+
+    lateinit var binding: EhActivityInterceptBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,6 +139,10 @@ class InterceptActivity : BaseViewBindingActivity<EhActivityInterceptBinding>() 
                 is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
             }
         }
+    }
+
+    init {
+        registerSecureActivity(this)
     }
 }
 

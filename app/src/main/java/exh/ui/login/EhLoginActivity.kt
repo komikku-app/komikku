@@ -19,7 +19,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.activity.BaseViewBindingActivity
+import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
@@ -36,7 +36,9 @@ import java.util.Locale
 /**
  * LoginController
  */
-class EhLoginActivity : BaseViewBindingActivity<EhActivityLoginBinding>() {
+class EhLoginActivity : BaseActivity() {
+    lateinit var binding: EhActivityLoginBinding
+
     val preferenceManager: PreferencesHelper by injectLazy()
 
     val sourceManager: SourceManager by injectLazy()

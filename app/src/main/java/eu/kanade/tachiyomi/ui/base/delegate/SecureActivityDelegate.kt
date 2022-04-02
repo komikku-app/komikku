@@ -1,11 +1,22 @@
-package eu.kanade.tachiyomi.ui.security
+package eu.kanade.tachiyomi.ui.base.delegate
 
 import android.content.Intent
-import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_ALL_DAYS
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_FRIDAY
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_MONDAY
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_SATURDAY
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_SUNDAY
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_THURSDAY
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_TUESDAY
+import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_WEDNESDAY
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
+import eu.kanade.tachiyomi.ui.security.UnlockActivity
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
 import eu.kanade.tachiyomi.util.view.setSecureScreen
 import kotlinx.coroutines.flow.combine
@@ -17,37 +28,66 @@ import java.util.Date
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-class SecureActivityDelegate(private val activity: FragmentActivity) {
+interface SecureActivityDelegate {
+    fun registerSecureActivity(activity: AppCompatActivity)
+
+    companion object {
+        var locked: Boolean = true
+
+        const val LOCK_SUNDAY = 0x40
+        const val LOCK_MONDAY = 0x20
+        const val LOCK_TUESDAY = 0x10
+        const val LOCK_WEDNESDAY = 0x8
+        const val LOCK_THURSDAY = 0x4
+        const val LOCK_FRIDAY = 0x2
+        const val LOCK_SATURDAY = 0x1
+        const val LOCK_ALL_DAYS = 0x7F
+    }
+}
+
+class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObserver {
+
+    private lateinit var activity: AppCompatActivity
 
     private val preferences: PreferencesHelper by injectLazy()
 
-    fun onCreate() {
+    override fun registerSecureActivity(activity: AppCompatActivity) {
+        this.activity = activity
+        activity.lifecycle.addObserver(this)
+    }
+
+    override fun onCreate(owner: LifecycleOwner) {
+        setSecureScreen()
+    }
+
+    override fun onResume(owner: LifecycleOwner) {
+        setAppLock()
+    }
+
+    private fun setSecureScreen() {
         val secureScreenFlow = preferences.secureScreen().asFlow()
         val incognitoModeFlow = preferences.incognitoMode().asFlow()
         combine(secureScreenFlow, incognitoModeFlow) { secureScreen, incognitoMode ->
-            secureScreen == PreferenceValues.SecureScreenMode.ALWAYS || secureScreen == PreferenceValues.SecureScreenMode.INCOGNITO && incognitoMode
+            secureScreen == PreferenceValues.SecureScreenMode.ALWAYS ||
+                secureScreen == PreferenceValues.SecureScreenMode.INCOGNITO && incognitoMode
         }
             .onEach { activity.window.setSecureScreen(it) }
             .launchIn(activity.lifecycleScope)
     }
 
-    fun onResume() {
-        if (preferences.useAuthenticator().get()) {
-            if (activity.isAuthenticationSupported()) {
-                if (isAppLocked()) {
-                    activity.startActivity(Intent(activity, UnlockActivity::class.java))
-                    activity.overridePendingTransition(0, 0)
-                }
-            } else {
-                preferences.useAuthenticator().set(false)
-            }
+    private fun setAppLock() {
+        if (!preferences.useAuthenticator().get()) return
+        if (activity.isAuthenticationSupported()) {
+            if (!isAppLocked()) return
+            activity.startActivity(Intent(activity, UnlockActivity::class.java))
+            activity.overridePendingTransition(0, 0)
+        } else {
+            preferences.useAuthenticator().set(false)
         }
     }
 
     private fun isAppLocked(): Boolean {
-        if (!locked) {
-            return false
-        }
+        if (!SecureActivityDelegate.locked) return false
 
         // SY -->
         val today: Calendar = Calendar.getInstance()
@@ -80,18 +120,5 @@ class SecureActivityDelegate(private val activity: FragmentActivity) {
 
         return preferences.lockAppAfter().get() <= 0 ||
             Date().time >= preferences.lastAppUnlock().get() + 60 * 1000 * preferences.lockAppAfter().get()
-    }
-
-    companion object {
-        var locked: Boolean = true
-
-        const val LOCK_SUNDAY = 0x40
-        const val LOCK_MONDAY = 0x20
-        const val LOCK_TUESDAY = 0x10
-        const val LOCK_WEDNESDAY = 0x8
-        const val LOCK_THURSDAY = 0x4
-        const val LOCK_FRIDAY = 0x2
-        const val LOCK_SATURDAY = 0x1
-        const val LOCK_ALL_DAYS = 0x7F
     }
 }

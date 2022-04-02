@@ -41,7 +41,7 @@ import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
 import eu.kanade.tachiyomi.data.updater.AppUpdateResult
 import eu.kanade.tachiyomi.databinding.MainActivityBinding
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
-import eu.kanade.tachiyomi.ui.base.activity.BaseViewBindingActivity
+import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NoAppBarElevationController
@@ -85,7 +85,9 @@ import logcat.LogPriority
 import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
 
-class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
+class MainActivity : BaseActivity() {
+
+    lateinit var binding: MainActivityBinding
 
     private lateinit var router: Router
 
@@ -694,12 +696,18 @@ class MainActivity : BaseViewBindingActivity<MainActivityBinding>() {
     private val nav: NavigationBarView
         get() = binding.bottomNav ?: binding.sideNav!!
 
+    // SY -->
     private fun setNavLabelVisibility() {
         if (preferences.bottomBarLabels().get()) {
             nav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_LABELED
         } else {
             nav.labelVisibilityMode = NavigationBarView.LABEL_VISIBILITY_SELECTED
         }
+    }
+    // SY <--
+
+    init {
+        registerSecureActivity(this)
     }
 
     companion object {
