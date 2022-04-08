@@ -27,6 +27,6 @@ class MangaThumbnailPutResolver : PutResolver<Manga>() {
         .build()
 
     fun mapToContentValues(manga: Manga) = contentValuesOf(
-        MangaTable.COL_THUMBNAIL_URL to manga.thumbnail_url
+        MangaTable.COL_THUMBNAIL_URL to manga.thumbnail_url,
     )
 }

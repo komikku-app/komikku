@@ -425,7 +425,7 @@ class SettingsAdvancedController : SettingsController() {
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     (targetController as? SettingsAdvancedController)?.cleanupDownloads(
                         selected[1],
-                        selected[2]
+                        selected[2],
                     )
                 }
                 .setNegativeButton(android.R.string.cancel, null)
@@ -467,7 +467,7 @@ class SettingsAdvancedController : SettingsController() {
                     else resources!!.getQuantityString(
                         R.plurals.cleanup_done,
                         foldersCleared,
-                        foldersCleared
+                        foldersCleared,
                     )
                 activity.toast(cleanupString, Toast.LENGTH_LONG)
             }

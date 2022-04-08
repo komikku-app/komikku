@@ -114,7 +114,7 @@ class SettingsBackupController : SettingsController() {
                     R.string.update_12hour,
                     R.string.update_24hour,
                     R.string.update_48hour,
-                    R.string.update_weekly
+                    R.string.update_weekly,
                 )
                 entryValues = arrayOf("0", "6", "12", "24", "48", "168")
                 summary = "%s"
@@ -231,7 +231,7 @@ class SettingsBackupController : SettingsController() {
                 R.string.history,
                 // SY -->
                 R.string.custom_manga_info,
-                R.string.all_read_manga
+                R.string.all_read_manga,
                 // SY <--
             )
                 .map { activity.getString(it) }
@@ -272,7 +272,7 @@ class SettingsBackupController : SettingsController() {
 
     class RestoreBackupDialog(bundle: Bundle? = null) : DialogController(bundle) {
         constructor(uri: Uri) : this(
-            bundleOf(KEY_URI to uri)
+            bundleOf(KEY_URI to uri),
         )
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {

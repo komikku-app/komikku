@@ -17,7 +17,7 @@ import exh.ui.metadata.MetadataViewController
 import java.util.Date
 
 class NHentaiDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<NHentaiDescriptionAdapter.NHentaiDescriptionViewHolder>() {
 
@@ -70,12 +70,12 @@ class NHentaiDescriptionAdapter(
                 binding.genre,
                 binding.id,
                 binding.pages,
-                binding.whenPosted
+                binding.whenPosted,
             ).forEach { textView ->
                 textView.setOnLongClickListener {
                     itemView.context.copyToClipboard(
                         textView.text.toString(),
-                        textView.text.toString()
+                        textView.text.toString(),
                     )
                     true
                 }
@@ -84,8 +84,8 @@ class NHentaiDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

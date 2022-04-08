@@ -71,13 +71,13 @@ class EightMuses(delegate: HttpSource, val context: Context) :
             tags += RaisedTag(
                 EightMusesSearchMetadata.ARTIST_NAMESPACE,
                 breadcrumbs.selectFirst("li:nth-child(2) > a")!!.text(),
-                EightMusesSearchMetadata.TAG_TYPE_DEFAULT
+                EightMusesSearchMetadata.TAG_TYPE_DEFAULT,
             )
             tags += input.select(".album-tags a").map {
                 RaisedTag(
                     EightMusesSearchMetadata.TAGS_NAMESPACE,
                     it.text(),
-                    EightMusesSearchMetadata.TAG_TYPE_DEFAULT
+                    EightMusesSearchMetadata.TAG_TYPE_DEFAULT,
                 )
             }
         }
@@ -86,7 +86,7 @@ class EightMuses(delegate: HttpSource, val context: Context) :
     override val matchingHosts = listOf(
         "www.8muses.com",
         "comics.8muses.com",
-        "8muses.com"
+        "8muses.com",
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String {

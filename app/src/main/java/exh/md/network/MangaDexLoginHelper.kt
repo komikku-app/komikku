@@ -56,7 +56,7 @@ class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val pr
                 MdUtil.updateLoginToken(
                     loginResponseDto.token,
                     preferences,
-                    mdList
+                    mdList,
                 )
                 true
             } else {

@@ -86,8 +86,8 @@ class SourceFilterController : SettingsController() {
                             }
                             true
                         }
-                    }
-                )
+                    },
+                ),
             )
         }
     }
@@ -204,7 +204,7 @@ class SourceFilterController : SettingsController() {
                     activity?.invalidateOptionsMenu()
                     return true
                 }
-            }
+            },
         )
     }
 

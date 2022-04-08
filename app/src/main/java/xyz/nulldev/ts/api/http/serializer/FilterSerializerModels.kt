@@ -35,7 +35,7 @@ class HeaderSerializer(override val serializer: FilterSerializer) : Serializer<F
     override val clazz = Filter.Header::class
 
     override fun mappings() = listOf(
-        Pair(NAME, Filter.Header::name)
+        Pair(NAME, Filter.Header::name),
     )
 
     companion object {
@@ -48,7 +48,7 @@ class SeparatorSerializer(override val serializer: FilterSerializer) : Serialize
     override val clazz = Filter.Separator::class
 
     override fun mappings() = listOf(
-        Pair(NAME, Filter.Separator::name)
+        Pair(NAME, Filter.Separator::name),
     )
 
     companion object {
@@ -71,7 +71,7 @@ class SelectSerializer(override val serializer: FilterSerializer) : Serializer<F
 
     override fun mappings() = listOf(
         Pair(NAME, Filter.Select<Any>::name),
-        Pair(STATE, Filter.Select<Any>::state)
+        Pair(STATE, Filter.Select<Any>::state),
     )
 
     companion object {
@@ -87,7 +87,7 @@ class TextSerializer(override val serializer: FilterSerializer) : Serializer<Fil
 
     override fun mappings() = listOf(
         Pair(NAME, Filter.Text::name),
-        Pair(STATE, Filter.Text::state)
+        Pair(STATE, Filter.Text::state),
     )
 
     companion object {
@@ -102,7 +102,7 @@ class CheckboxSerializer(override val serializer: FilterSerializer) : Serializer
 
     override fun mappings() = listOf(
         Pair(NAME, Filter.CheckBox::name),
-        Pair(STATE, Filter.CheckBox::state)
+        Pair(STATE, Filter.CheckBox::state),
     )
 
     companion object {
@@ -117,7 +117,7 @@ class TriStateSerializer(override val serializer: FilterSerializer) : Serializer
 
     override fun mappings() = listOf(
         Pair(NAME, Filter.TriState::name),
-        Pair(STATE, Filter.TriState::state)
+        Pair(STATE, Filter.TriState::state),
     )
 
     companion object {
@@ -139,7 +139,7 @@ class GroupSerializer(override val serializer: FilterSerializer) : Serializer<Fi
                         serializer.serialize(it as Filter<Any?>)
                     } else {
                         JsonNull
-                    }
+                    },
                 )
             }
         }
@@ -155,7 +155,7 @@ class GroupSerializer(override val serializer: FilterSerializer) : Serializer<Fi
     }
 
     override fun mappings() = listOf(
-        Pair(NAME, Filter.Group<Any?>::name)
+        Pair(NAME, Filter.Group<Any?>::name),
     )
 
     companion object {
@@ -181,7 +181,7 @@ class SortSerializer(override val serializer: FilterSerializer) : Serializer<Fil
                     put(STATE_INDEX, index)
                     put(STATE_ASCENDING, ascending)
                 }
-            } ?: JsonNull
+            } ?: JsonNull,
         )
     }
 
@@ -190,13 +190,13 @@ class SortSerializer(override val serializer: FilterSerializer) : Serializer<Fil
         filter.state = (json[STATE] as? JsonObject)?.let {
             Filter.Sort.Selection(
                 it[STATE_INDEX]!!.jsonPrimitive.int,
-                it[STATE_ASCENDING]!!.jsonPrimitive.boolean
+                it[STATE_ASCENDING]!!.jsonPrimitive.boolean,
             )
         }
     }
 
     override fun mappings() = listOf(
-        Pair(NAME, Filter.Sort::name)
+        Pair(NAME, Filter.Sort::name),
     )
 
     companion object {
@@ -228,7 +228,7 @@ class AutoCompleteSerializer(override val serializer: FilterSerializer) : Serial
     }
 
     override fun mappings() = listOf(
-        Pair(NAME, Filter.AutoComplete::name)
+        Pair(NAME, Filter.AutoComplete::name),
     )
 
     companion object {

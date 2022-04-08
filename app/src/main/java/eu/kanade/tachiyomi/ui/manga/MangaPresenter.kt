@@ -93,7 +93,7 @@ class MangaPresenter(
     private val trackManager: TrackManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
-    private val sourceManager: SourceManager = Injekt.get()
+    private val sourceManager: SourceManager = Injekt.get(),
 ) : BasePresenter<MangaController>() {
 
     /**
@@ -198,7 +198,7 @@ class MangaPresenter(
                 this.meta = meta
                 // SY <--
                 view.onNextMangaInfo(manga, source, meta)
-            })
+            },)
 
         getTrackingObservable()
             .observeOn(AndroidSchedulers.mainThread())
@@ -214,7 +214,7 @@ class MangaPresenter(
                     filteredAndSortedChapters = chapters
                     view?.onNextChapters(chapters)
                 },
-                { _, error -> logcat(LogPriority.ERROR, error) }
+                { _, error -> logcat(LogPriority.ERROR, error) },
             )
 
         // Manga info - end
@@ -257,15 +257,15 @@ class MangaPresenter(
                                     redirectFlow.emit(
                                         EXHRedirect(
                                             acceptedChain.manga,
-                                            update
-                                        )
+                                            update,
+                                        ),
                                     )
                                 }
                             }.launchIn(presenterScope)
                     }
                     // SY <--
                 }
-                .subscribe { chaptersRelay.call(it) }
+                .subscribe { chaptersRelay.call(it) },
         )
 
         // Chapters list - end
@@ -345,7 +345,7 @@ class MangaPresenter(
         tags: List<String>?,
         status: Int?,
         uri: Uri?,
-        resetCover: Boolean = false
+        resetCover: Boolean = false,
     ) {
         if (manga.source == LocalSource.ID) {
             manga.title = if (title.isNullOrBlank()) manga.url else title.trim()
@@ -370,7 +370,7 @@ class MangaPresenter(
                 artist?.trimOrNull(),
                 description?.trimOrNull(),
                 genre,
-                status.takeUnless { it == manga.originalStatus }
+                status.takeUnless { it == manga.originalStatus },
             )
             customMangaManager.saveMangaInfo(manga)
         }
@@ -389,7 +389,7 @@ class MangaPresenter(
                 .subscribeLatestCache(
                     { view, _ ->
                         view.setRefreshing()
-                    }
+                    },
                 )
             fetchMangaFromSource(manualFetch = true)
         } else {
@@ -399,7 +399,7 @@ class MangaPresenter(
                 .subscribeLatestCache(
                     { view, _ ->
                         view.onNextMangaInfo(manga, source, meta)
-                    }
+                    },
                 )
         }
     }
@@ -425,8 +425,8 @@ class MangaPresenter(
                     mergeUrl = originalManga.url,
                     mangaId = manga.id!!,
                     mangaUrl = manga.url,
-                    mangaSourceId = manga.source
-                )
+                    mangaSourceId = manga.source,
+                ),
             )
 
             if (children.isEmpty() || children.all { it.mangaSourceId != MERGED_SOURCE_ID }) {
@@ -441,7 +441,7 @@ class MangaPresenter(
                     mergeUrl = originalManga.url,
                     mangaId = originalManga.id!!,
                     mangaUrl = originalManga.url,
-                    mangaSourceId = MERGED_SOURCE_ID
+                    mangaSourceId = MERGED_SOURCE_ID,
                 )
             }
 
@@ -495,7 +495,7 @@ class MangaPresenter(
                 mergeUrl = mergedManga.url,
                 mangaId = originalManga.id!!,
                 mangaUrl = originalManga.url,
-                mangaSourceId = originalManga.source
+                mangaSourceId = originalManga.source,
             )
 
             val newMangaReference = MergedMangaReference(
@@ -509,7 +509,7 @@ class MangaPresenter(
                 mergeUrl = mergedManga.url,
                 mangaId = manga.id!!,
                 mangaUrl = manga.url,
-                mangaSourceId = manga.source
+                mangaSourceId = manga.source,
             )
 
             val mergedMangaReference = MergedMangaReference(
@@ -523,7 +523,7 @@ class MangaPresenter(
                 mergeUrl = mergedManga.url,
                 mangaId = mergedManga.id!!,
                 mangaUrl = mergedManga.url,
-                mangaSourceId = MERGED_SOURCE_ID
+                mangaSourceId = MERGED_SOURCE_ID,
             )
 
             db.insertMergedMangas(listOf(originalMangaReference, newMangaReference, mergedMangaReference)).executeAsBlocking()
@@ -706,7 +706,7 @@ class MangaPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
                 { view, _ -> view.onSetCoverSuccess() },
-                { view, e -> view.onSetCoverError(e) }
+                { view, e -> view.onSetCoverError(e) },
             )
     }
 
@@ -721,7 +721,7 @@ class MangaPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
                 { view, _ -> view.onSetCoverSuccess() },
-                { view, e -> view.onSetCoverError(e) }
+                { view, e -> view.onSetCoverError(e) },
             )
     }
 
@@ -747,7 +747,7 @@ class MangaPresenter(
                 },
                 { _, error ->
                     logcat(LogPriority.ERROR, error)
-                }
+                },
             )
 
         observeDownloadsPageSubscription?.let { remove(it) }

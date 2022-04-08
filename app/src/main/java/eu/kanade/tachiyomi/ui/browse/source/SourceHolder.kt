@@ -46,7 +46,7 @@ class SourceHolder(view: View, val adapter: SourceAdapter /* SY --> */, private 
             item.source.id == LocalSource.ID -> binding.image.load(R.mipmap.ic_local_source)
         }
 
-        binding.sourceLatest.isVisible = source.supportsLatest/* SY --> */ && showLatest /* SY <-- */
+        binding.sourceLatest.isVisible = source.supportsLatest/* SY --> */ && showLatest // SY <--
 
         binding.pin.isVisible = showPins
         if (item.isPinned) {

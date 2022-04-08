@@ -41,7 +41,7 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
             cover = cover ?: manga.cover,
             artist = artist,
             genres = genres,
-            description = description
+            description = description,
         )
     }
 
@@ -52,7 +52,7 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
                 hbUrl?.let { getString(R.string.url) to it },
                 thumbnail?.let { getString(R.string.thumbnail_url) to it },
                 title?.let { getString(R.string.title) to it },
-                length?.let { getString(R.string.page_count) to it.toString() }
+                length?.let { getString(R.string.page_count) to it.toString() },
             )
         }
     }

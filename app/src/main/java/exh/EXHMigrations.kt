@@ -108,7 +108,7 @@ object EXHMigrations {
                                 Query.builder()
                                     .table(MangaTable.TABLE)
                                     .where("${MangaTable.COL_SOURCE} = $HBROWSE_SOURCE_ID")
-                                    .build()
+                                    .build(),
                             )
                             .prepare()
                             .executeAsBlocking()
@@ -145,7 +145,7 @@ object EXHMigrations {
                                 Query.builder()
                                     .table(MangaTable.TABLE)
                                     .where("${MangaTable.COL_SOURCE} = $MERGED_SOURCE_ID")
-                                    .build()
+                                    .build(),
                             )
                             .prepare()
                             .executeAsBlocking()
@@ -172,7 +172,7 @@ object EXHMigrations {
                                         mergeUrl = mergedManga.first.url,
                                         mangaId = mergedManga.first.id!!,
                                         mangaUrl = mergedManga.first.url,
-                                        mangaSourceId = MERGED_SOURCE_ID
+                                        mangaSourceId = MERGED_SOURCE_ID,
                                     )
                                     mergedManga.second.children.distinct().forEachIndexed { index, mangaSource ->
                                         val load = mangaSource.load(db, sourceManager) ?: return@forEachIndexed
@@ -187,7 +187,7 @@ object EXHMigrations {
                                             mergeUrl = mergedManga.first.url,
                                             mangaId = load.manga.id!!,
                                             mangaUrl = load.manga.url,
-                                            mangaSourceId = load.source.id
+                                            mangaSourceId = load.source.id,
                                         )
                                     }
                                 }
@@ -206,7 +206,7 @@ object EXHMigrations {
                                         Query.builder()
                                             .table(ChapterTable.TABLE)
                                             .where("${ChapterTable.COL_MANGA_ID} IN (${mergedMangas.filter { it.id != null }.joinToString { it.id.toString() }})")
-                                            .build()
+                                            .build(),
                                     )
                                     .prepare()
                                     .executeAsBlocking()
@@ -216,7 +216,7 @@ object EXHMigrations {
                                         Query.builder()
                                             .table(ChapterTable.TABLE)
                                             .where("${ChapterTable.COL_MANGA_ID} IN (${loadedMangaList.filter { it.manga.id != null }.joinToString { it.manga.id.toString() }})")
-                                            .build()
+                                            .build(),
                                     )
                                     .prepare()
                                     .executeAsBlocking()
@@ -291,7 +291,7 @@ object EXHMigrations {
                             .table(TrackTable.TABLE)
                             .where("${TrackTable.COL_SYNC_ID} = ?")
                             .whereArgs(6)
-                            .build()
+                            .build(),
                     )
                 }
                 if (oldVersion under 18) {
@@ -367,7 +367,7 @@ object EXHMigrations {
                             "fav-sync",
                             "fav-sync.management",
                             "fav-sync.lock",
-                            "fav-sync.note"
+                            "fav-sync.note",
                         ).map {
                             File(context.filesDir, it)
                         }.filter(File::exists).forEach {
@@ -412,7 +412,7 @@ object EXHMigrations {
                                 source = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null,
                                 content["name"]!!.jsonPrimitive.content,
                                 content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
-                                Json.encodeToString(content["filters"]!!.jsonArray)
+                                Json.encodeToString(content["filters"]!!.jsonArray),
                             )
                         }.getOrNull()
                     }?.ifEmpty { null }
@@ -424,7 +424,7 @@ object EXHMigrations {
                             id = null,
                             source = it.toLong(),
                             savedSearch = null,
-                            global = true
+                            global = true,
                         )
                     }?.ifEmpty { null }
                     if (feed != null) {
@@ -518,13 +518,13 @@ object EXHMigrations {
         @SerialName("u")
         val url: String,
         @SerialName("m")
-        val mangaUrl: String
+        val mangaUrl: String,
     )
 
     @Serializable
     private data class MangaConfig(
         @SerialName("c")
-        val children: List<MangaSource>
+        val children: List<MangaSource>,
     ) {
         companion object {
             fun readFromUrl(url: String): MangaConfig? {
@@ -546,7 +546,7 @@ object EXHMigrations {
         @SerialName("s")
         val source: Long,
         @SerialName("u")
-        val url: String
+        val url: String,
     ) {
         fun load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource? {
             val manga = db.getManga(url, source).executeAsBlocking() ?: return null
@@ -573,10 +573,10 @@ object EXHMigrations {
                     UPDATE ${MangaTable.TABLE}
                         SET ${MangaTable.COL_SOURCE} = $newId
                         WHERE ${MangaTable.COL_SOURCE} = $oldId
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 .affectsTables(MangaTable.TABLE)
-                .build()
+                .build(),
         )
     }
 }

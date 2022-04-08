@@ -27,6 +27,6 @@ object FavoriteEntryTable {
     val fixTableQuery: String
         get() = createTableQuery.replace(
             "CREATE TABLE",
-            "CREATE TABLE IF NOT EXISTS"
+            "CREATE TABLE IF NOT EXISTS",
         )
 }

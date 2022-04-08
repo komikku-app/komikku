@@ -25,7 +25,7 @@ interface ChapterQueries : DbProvider {
                 .table(ChapterTable.TABLE)
                 .where("${ChapterTable.COL_MANGA_ID} = ?")
                 .whereArgs(mangaId)
-                .build()
+                .build(),
         )
         .prepare()
     // SY <--
@@ -37,7 +37,7 @@ interface ChapterQueries : DbProvider {
                 .query(getRecentsQuery())
                 .args(date.time)
                 .observesTables(ChapterTable.TABLE)
-                .build()
+                .build(),
         )
         .withGetResolver(MangaChapterGetResolver.INSTANCE)
         .prepare()
@@ -49,7 +49,7 @@ interface ChapterQueries : DbProvider {
                 .table(ChapterTable.TABLE)
                 .where("${ChapterTable.COL_ID} = ?")
                 .whereArgs(id)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -60,7 +60,7 @@ interface ChapterQueries : DbProvider {
                 .table(ChapterTable.TABLE)
                 .where("${ChapterTable.COL_URL} = ?")
                 .whereArgs(url)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -71,7 +71,7 @@ interface ChapterQueries : DbProvider {
                 .table(ChapterTable.TABLE)
                 .where("${ChapterTable.COL_URL} = ? AND ${ChapterTable.COL_MANGA_ID} = ?")
                 .whereArgs(url, mangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -83,7 +83,7 @@ interface ChapterQueries : DbProvider {
                 .table(ChapterTable.TABLE)
                 .where("${ChapterTable.COL_URL} = ?")
                 .whereArgs(url)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -94,7 +94,7 @@ interface ChapterQueries : DbProvider {
                 .table(ChapterTable.TABLE)
                 .where("${ChapterTable.COL_URL} IN (?) AND (${ChapterTable.COL_READ} = 1 OR ${ChapterTable.COL_LAST_PAGE_READ} != 0)")
                 .whereArgs(urls.joinToString { "\"$it\"" })
-                .build()
+                .build(),
         )
         .prepare()
     // SY <--

@@ -22,7 +22,7 @@ class CustomMangaManager(val context: Context) {
 
         val json = try {
             Json.decodeFromString<MangaList>(
-                editJson.bufferedReader().use { it.readText() }
+                editJson.bufferedReader().use { it.readText() },
             )
         } catch (e: Exception) {
             null
@@ -67,13 +67,13 @@ class CustomMangaManager(val context: Context) {
             artist,
             description,
             genre?.split(", "),
-            status
+            status,
         )
     }
 
     @Serializable
     data class MangaList(
-        val mangas: List<MangaJson>? = null
+        val mangas: List<MangaJson>? = null,
     )
 
     @Serializable
@@ -84,7 +84,7 @@ class CustomMangaManager(val context: Context) {
         val artist: String? = null,
         val description: String? = null,
         val genre: List<String>? = null,
-        val status: Int? = null
+        val status: Int? = null,
     ) {
 
         fun toManga() = MangaImpl().apply {

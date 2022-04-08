@@ -84,7 +84,8 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Headers used for requests.
      */
-    /* SY --> */ open /* SY <-- */ val headers: Headers by lazy { headersBuilder().build() }
+    /* SY --> */
+    open /* SY <-- */ val headers: Headers by lazy { headersBuilder().build() }
 
     /**
      * Default network client for doing requests.
@@ -191,14 +192,16 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page number to retrieve.
      */
-    /* SY --> protected <-- SY */ abstract fun latestUpdatesRequest(page: Int): Request
+    /* SY --> protected <-- SY */
+    abstract fun latestUpdatesRequest(page: Int): Request
 
     /**
      * Parses the response from the site and returns a [MangasPage] object.
      *
      * @param response the response from the site.
      */
-    /* SY --> protected <-- SY */ abstract fun latestUpdatesParse(response: Response): MangasPage
+    /* SY --> protected <-- SY */
+    abstract fun latestUpdatesParse(response: Response): MangasPage
 
     /**
      * Returns an observable with the updated details for a manga. Normally it's not needed to
@@ -330,7 +333,8 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param page the page whose source image has to be downloaded.
      */
-    /* SY --> */ open /* SY <-- */ fun fetchImage(page: Page): Observable<Response> {
+    /* SY --> */
+    open /* SY <-- */ fun fetchImage(page: Page): Observable<Response> {
         return client.newCallWithProgress(imageRequest(page), page)
             .asObservableSuccess()
     }

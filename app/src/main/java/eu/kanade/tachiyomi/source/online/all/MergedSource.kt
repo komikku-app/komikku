@@ -76,7 +76,7 @@ class MergedSource : HttpSource() {
             val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga } ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
             val dbManga = mangaInfoReference?.let { db.getManga(it.mangaUrl, it.mangaSourceId).executeOnIO()?.toMangaInfo() }
             (dbManga ?: mergedManga.toMangaInfo()).copy(
-                key = manga.key
+                key = manga.key,
             )
         }
     }
@@ -163,7 +163,7 @@ class MergedSource : HttpSource() {
                                 if (ifDownloadNewChapters && reference.downloadChapters) {
                                     downloadManager.downloadChapters(
                                         loadedManga,
-                                        results.first
+                                        results.first,
                                     )
                                 }
                                 results

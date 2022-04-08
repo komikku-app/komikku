@@ -27,7 +27,7 @@ import exh.merged.sql.tables.MergedTable.TABLE
 class MergedMangaTypeMapping : SQLiteTypeMapping<MergedMangaReference>(
     MergedMangaPutResolver(),
     MergedMangaGetResolver(),
-    MergedMangaDeleteResolver()
+    MergedMangaDeleteResolver(),
 )
 
 class MergedMangaPutResolver : DefaultPutResolver<MergedMangaReference>() {
@@ -53,7 +53,7 @@ class MergedMangaPutResolver : DefaultPutResolver<MergedMangaReference>() {
         COL_MERGE_URL to obj.mergeUrl,
         COL_MANGA_ID to obj.mangaId,
         COL_MANGA_URL to obj.mangaUrl,
-        COL_MANGA_SOURCE to obj.mangaSourceId
+        COL_MANGA_SOURCE to obj.mangaSourceId,
     )
 }
 
@@ -70,7 +70,7 @@ class MergedMangaGetResolver : DefaultGetResolver<MergedMangaReference>() {
         mergeUrl = cursor.getString(cursor.getColumnIndexOrThrow(COL_MERGE_URL)),
         mangaId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COL_MANGA_ID)),
         mangaUrl = cursor.getString(cursor.getColumnIndexOrThrow(COL_MANGA_URL)),
-        mangaSourceId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_SOURCE))
+        mangaSourceId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_SOURCE)),
     )
 }
 

@@ -20,7 +20,7 @@ import exh.metadata.sql.tables.SearchMetadataTable.TABLE
 class SearchMetadataTypeMapping : SQLiteTypeMapping<SearchMetadata>(
     SearchMetadataPutResolver(),
     SearchMetadataGetResolver(),
-    SearchMetadataDeleteResolver()
+    SearchMetadataDeleteResolver(),
 )
 
 class SearchMetadataPutResolver : DefaultPutResolver<SearchMetadata>() {
@@ -52,7 +52,7 @@ class SearchMetadataGetResolver : DefaultGetResolver<SearchMetadata>() {
             uploader = cursor.getString(cursor.getColumnIndexOrThrow(COL_UPLOADER)),
             extra = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXTRA)),
             indexedExtra = cursor.getString(cursor.getColumnIndexOrThrow(COL_INDEXED_EXTRA)),
-            extraVersion = cursor.getInt(cursor.getColumnIndexOrThrow(COL_EXTRA_VERSION))
+            extraVersion = cursor.getInt(cursor.getColumnIndexOrThrow(COL_EXTRA_VERSION)),
         )
 }
 

@@ -23,7 +23,7 @@ import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class ApiMangaParser(
-    private val lang: String
+    private val lang: String,
 ) {
     val db: DatabaseHelper by injectLazy()
 
@@ -42,7 +42,7 @@ class ApiMangaParser(
         sourceId: Long,
         input: MangaDto,
         simpleChapters: List<String>,
-        statistics: StatisticsMangaDto?
+        statistics: StatisticsMangaDto?,
     ): MangaInfo {
         val mangaId = db.getManga(manga.key, sourceId).executeAsBlocking()?.id
         val metadata = if (mangaId != null) {
@@ -63,13 +63,13 @@ class ApiMangaParser(
         metadata: MangaDexSearchMetadata,
         mangaDto: MangaDto,
         simpleChapters: List<String>,
-        statistics: StatisticsMangaDto?
+        statistics: StatisticsMangaDto?,
     ) {
         with(metadata) {
             try {
                 val mangaAttributesDto = mangaDto.data.attributes
                 mdUuid = mangaDto.data.id
-                title = MdUtil.cleanString(MdUtil.getTitleFromManga(mangaAttributesDto, lang,))
+                title = MdUtil.cleanString(MdUtil.getTitleFromManga(mangaAttributesDto, lang))
                 altTitles = mangaAttributesDto.altTitles.mapNotNull { it[lang] }.nullIfEmpty()
 
                 val mangaRelationshipsDto = mangaDto.data.relationships
@@ -85,8 +85,8 @@ class ApiMangaParser(
                     MdUtil.getFromLangMap(
                         langMap = mangaAttributesDto.description.asMdMap(),
                         currentLang = lang,
-                        originalLanguage = mangaAttributesDto.originalLanguage
-                    ).orEmpty()
+                        originalLanguage = mangaAttributesDto.originalLanguage,
+                    ).orEmpty(),
                 )
 
                 authors = mangaRelationshipsDto.filter { relationshipDto ->

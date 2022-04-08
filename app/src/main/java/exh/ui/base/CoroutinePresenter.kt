@@ -18,7 +18,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 @Suppress("DEPRECATION", "unused")
 open class CoroutinePresenter<V>(
-    scope: CoroutineScope = MainScope()
+    scope: CoroutineScope = MainScope(),
 ) : Presenter<V>(), CoroutineScope by scope {
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use launchInView, Flow.inView, Flow.mapView")

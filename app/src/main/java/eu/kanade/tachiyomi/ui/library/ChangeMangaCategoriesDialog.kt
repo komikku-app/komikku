@@ -25,7 +25,7 @@ class ChangeMangaCategoriesDialog<T>(bundle: Bundle? = null) :
         target: T,
         mangas: List<Manga>,
         categories: List<Category>,
-        preselected: Array<Int>
+        preselected: Array<Int>,
     ) : this() {
         this.mangas = mangas
         this.categories = categories
@@ -43,7 +43,7 @@ class ChangeMangaCategoriesDialog<T>(bundle: Bundle? = null) :
                     setQuadStateMultiChoiceItems(
                         items = categories.map { it.name },
                         isActionList = false,
-                        initialSelected = preselected.toIntArray()
+                        initialSelected = preselected.toIntArray(),
                     ) { selections ->
                         selected = selections
                     }

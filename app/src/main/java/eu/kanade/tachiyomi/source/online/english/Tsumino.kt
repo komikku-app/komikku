@@ -124,7 +124,7 @@ class Tsumino(delegate: HttpSource, val context: Context) :
                 tags.addAll(
                     tagElements.map {
                         RaisedTag("tags", it.attr("data-define").trim(), TAG_TYPE_DEFAULT)
-                    }
+                    },
                 )
             }
         }
@@ -132,7 +132,7 @@ class Tsumino(delegate: HttpSource, val context: Context) :
 
     override val matchingHosts = listOf(
         "www.tsumino.com",
-        "tsumino.com"
+        "tsumino.com",
     )
 
     companion object {

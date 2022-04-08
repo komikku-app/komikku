@@ -82,7 +82,7 @@ class LocalFavoritesStorage {
 
             dbCategories.indexOf(
                 category.firstOrNull()
-                    ?: return@mapNotNull null
+                    ?: return@mapNotNull null,
             ) to it
         }
     }
@@ -95,7 +95,7 @@ class LocalFavoritesStorage {
                 title = manga.originalTitle,
                 gid = EHentaiSearchMetadata.galleryId(manga.url),
                 token = EHentaiSearchMetadata.galleryToken(manga.url),
-                category = categoryId
+                category = categoryId,
             ).also {
                 if (it.category > MAX_CATEGORIES) {
                     return@mapNotNull null
@@ -113,5 +113,5 @@ class LocalFavoritesStorage {
 
 data class ChangeSet(
     val added: List<FavoriteEntry>,
-    val removed: List<FavoriteEntry>
+    val removed: List<FavoriteEntry>,
 )

@@ -76,7 +76,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
                                 tags += RaisedTag(
                                     "artist",
                                     it.text().lowercase(),
-                                    RaisedSearchMetadata.TAG_TYPE_VIRTUAL
+                                    RaisedSearchMetadata.TAG_TYPE_VIRTUAL,
                                 )
                             }
                         }
@@ -85,7 +85,7 @@ class PervEden(delegate: HttpSource, val context: Context) :
                                 tags += RaisedTag(
                                     null,
                                     it.text().lowercase(),
-                                    PervEdenSearchMetadata.TAG_TYPE_DEFAULT
+                                    PervEdenSearchMetadata.TAG_TYPE_DEFAULT,
                                 )
                             }
                         }

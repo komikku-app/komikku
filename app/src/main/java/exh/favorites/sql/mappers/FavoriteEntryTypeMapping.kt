@@ -20,7 +20,7 @@ import exh.favorites.sql.tables.FavoriteEntryTable.TABLE
 class FavoriteEntryTypeMapping : SQLiteTypeMapping<FavoriteEntry>(
     FavoriteEntryPutResolver(),
     FavoriteEntryGetResolver(),
-    FavoriteEntryDeleteResolver()
+    FavoriteEntryDeleteResolver(),
 )
 
 class FavoriteEntryPutResolver : DefaultPutResolver<FavoriteEntry>() {
@@ -40,7 +40,7 @@ class FavoriteEntryPutResolver : DefaultPutResolver<FavoriteEntry>() {
         COL_TITLE to obj.title,
         COL_GID to obj.gid,
         COL_TOKEN to obj.token,
-        COL_CATEGORY to obj.category
+        COL_CATEGORY to obj.category,
     )
 }
 
@@ -51,7 +51,7 @@ class FavoriteEntryGetResolver : DefaultGetResolver<FavoriteEntry>() {
         title = cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)),
         gid = cursor.getString(cursor.getColumnIndexOrThrow(COL_GID)),
         token = cursor.getString(cursor.getColumnIndexOrThrow(COL_TOKEN)),
-        category = cursor.getInt(cursor.getColumnIndexOrThrow(COL_CATEGORY))
+        category = cursor.getInt(cursor.getColumnIndexOrThrow(COL_CATEGORY)),
     )
 }
 

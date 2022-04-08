@@ -77,7 +77,7 @@ suspend fun Call.awaitResponse(): Response {
                     if (continuation.isCancelled) return
                     continuation.resumeWithException(e)
                 }
-            }
+            },
         )
 
         continuation.invokeOnCancellation {

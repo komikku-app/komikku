@@ -15,7 +15,7 @@ import eu.kanade.tachiyomi.ui.setting.SettingsEhController
 import uy.kohesive.injekt.injectLazy
 
 class LanguagesDialog(
-    bundle: Bundle? = null
+    bundle: Bundle? = null,
 ) : DialogController(bundle) {
 
     var binding: EhDialogLanguagesBinding? = null
@@ -163,7 +163,7 @@ class LanguagesDialog(
                 "${thaiOriginal.isChecked}*${thaiTranslated.isChecked}*${thaiRewrite.isChecked}",
                 "${vietnameseOriginal.isChecked}*${vietnameseTranslated.isChecked}*${vietnameseRewrite.isChecked}",
                 "${notAvailableOriginal.isChecked}*${notAvailableTranslated.isChecked}*${notAvailableRewrite.isChecked}",
-                "${otherOriginal.isChecked}*${otherTranslated.isChecked}*${otherRewrite.isChecked}"
+                "${otherOriginal.isChecked}*${otherTranslated.isChecked}*${otherRewrite.isChecked}",
             ).joinToString("\n")
         }
 

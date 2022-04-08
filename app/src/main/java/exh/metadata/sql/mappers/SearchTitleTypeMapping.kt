@@ -19,7 +19,7 @@ import exh.metadata.sql.tables.SearchTitleTable.TABLE
 class SearchTitleTypeMapping : SQLiteTypeMapping<SearchTitle>(
     SearchTitlePutResolver(),
     SearchTitleGetResolver(),
-    SearchTitleDeleteResolver()
+    SearchTitleDeleteResolver(),
 )
 
 class SearchTitlePutResolver : DefaultPutResolver<SearchTitle>() {
@@ -48,7 +48,7 @@ class SearchTitleGetResolver : DefaultGetResolver<SearchTitle>() {
         id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID)),
         mangaId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_ID)),
         title = cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)),
-        type = cursor.getInt(cursor.getColumnIndexOrThrow(COL_TYPE))
+        type = cursor.getInt(cursor.getColumnIndexOrThrow(COL_TYPE)),
     )
 }
 

@@ -63,7 +63,7 @@ class TrackManager(context: Context) {
             context.getString(R.string.plan_to_read) to PLAN_TO_READ,
             context.getString(R.string.paused) to PAUSED,
             context.getString(R.string.completed) to COMPLETED,
-            context.getString(R.string.dropped) to DROPPED
+            context.getString(R.string.dropped) to DROPPED,
         )
     }
     // SY <--

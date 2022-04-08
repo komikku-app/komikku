@@ -38,7 +38,7 @@ class SourceCategoryRenameDialog<T>(bundle: Bundle? = null) : DialogController(b
             .setTitle(R.string.action_rename_category)
             .setTextInput(
                 hint = resources?.getString(R.string.name),
-                prefill = currentName
+                prefill = currentName,
             ) { input ->
                 currentName = input
             }

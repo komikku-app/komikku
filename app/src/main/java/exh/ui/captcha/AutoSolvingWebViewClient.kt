@@ -11,7 +11,7 @@ class AutoSolvingWebViewClient(
     activity: BrowserActionActivity,
     verifyComplete: (String) -> Boolean,
     injectScript: String?,
-    headers: Map<String, String>
+    headers: Map<String, String>,
 ) : HeadersInjectingWebViewClient(activity, verifyComplete, injectScript, headers) {
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -25,7 +25,7 @@ class AutoSolvingWebViewClient(
             return WebResourceResponse(
                 "text/html",
                 "UTF-8",
-                doc.toString().byteInputStream().buffered()
+                doc.toString().byteInputStream().buffered(),
             )
         }
         return super.shouldInterceptRequest(view, request)

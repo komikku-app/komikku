@@ -10,7 +10,7 @@ data class MangaPlusResponse(
 
 @Serializable
 data class SuccessResult(
-    @ProtoNumber(10) val mangaViewer: MangaViewer? = null
+    @ProtoNumber(10) val mangaViewer: MangaViewer? = null,
 )
 
 @Serializable
@@ -24,5 +24,5 @@ data class MangaPage(
     @ProtoNumber(1) val imageUrl: String,
     @ProtoNumber(2) val width: Int,
     @ProtoNumber(3) val height: Int,
-    @ProtoNumber(5) val encryptionKey: String? = null
+    @ProtoNumber(5) val encryptionKey: String? = null,
 )

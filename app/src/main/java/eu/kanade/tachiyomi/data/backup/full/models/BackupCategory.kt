@@ -13,7 +13,7 @@ class BackupCategory(
     // Bump by 100 to specify this is a 0.x value
     @ProtoNumber(100) var flags: Int = 0,
     // SY specific values
-    @ProtoNumber(600) var mangaOrder: List<Long> = emptyList()
+    @ProtoNumber(600) var mangaOrder: List<Long> = emptyList(),
 ) {
     fun getCategoryImpl(): CategoryImpl {
         return CategoryImpl().apply {
@@ -30,7 +30,7 @@ class BackupCategory(
                 name = category.name,
                 order = category.order,
                 flags = category.flags,
-                mangaOrder = category.mangaOrder
+                mangaOrder = category.mangaOrder,
             )
         }
     }

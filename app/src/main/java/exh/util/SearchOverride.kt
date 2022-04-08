@@ -28,7 +28,7 @@ fun UrlImportableSource.urlImportFetchSearchManga(context: Context, query: Strin
                         } else {
                             emptyList()
                         },
-                        false
+                        false,
                     )
                 }
         }

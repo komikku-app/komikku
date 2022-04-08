@@ -21,7 +21,7 @@ import exh.savedsearches.tables.SavedSearchTable.TABLE
 class SavedSearchTypeMapping : SQLiteTypeMapping<SavedSearch>(
     SavedSearchPutResolver(),
     SavedSearchGetResolver(),
-    SavedSearchDeleteResolver()
+    SavedSearchDeleteResolver(),
 )
 
 class SavedSearchPutResolver : DefaultPutResolver<SavedSearch>() {
@@ -41,7 +41,7 @@ class SavedSearchPutResolver : DefaultPutResolver<SavedSearch>() {
         COL_SOURCE to obj.source,
         COL_NAME to obj.name,
         COL_QUERY to obj.query,
-        COL_FILTERS_JSON to obj.filtersJson
+        COL_FILTERS_JSON to obj.filtersJson,
     )
 }
 
@@ -52,7 +52,7 @@ class SavedSearchGetResolver : DefaultGetResolver<SavedSearch>() {
         source = cursor.getLong(cursor.getColumnIndexOrThrow(COL_SOURCE)),
         name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
         query = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COL_QUERY)),
-        filtersJson = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COL_FILTERS_JSON))
+        filtersJson = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COL_FILTERS_JSON)),
     )
 }
 

@@ -59,7 +59,7 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
         if (scroll) {
             (binding.chapterRecycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                 adapter?.getGlobalPositionOf(chapters.find { it.isCurrent }) ?: 0,
-                (binding.chapterRecycler.height / 2).dpToPx
+                (binding.chapterRecycler.height / 2).dpToPx,
             )
         }
     }

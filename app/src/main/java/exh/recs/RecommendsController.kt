@@ -20,8 +20,8 @@ class RecommendsController(bundle: Bundle) : BrowseSourceController(bundle) {
     constructor(manga: Manga, source: CatalogueSource) : this(
         bundleOf(
             MANGA_ID to manga.id!!,
-            SOURCE_ID_KEY to source.id
-        )
+            SOURCE_ID_KEY to source.id,
+        ),
     )
 
     override fun getTitle(): String? {
@@ -54,9 +54,9 @@ class RecommendsController(bundle: Bundle) : BrowseSourceController(bundle) {
         router.pushController(
             SourceController(
                 bundleOf(
-                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig
-                )
-            ).withFadeTransaction()
+                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig,
+                ),
+            ).withFadeTransaction(),
         )
     }
 

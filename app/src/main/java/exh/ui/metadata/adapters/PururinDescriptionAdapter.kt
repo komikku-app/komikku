@@ -17,7 +17,7 @@ import exh.ui.metadata.MetadataViewController
 import kotlin.math.round
 
 class PururinDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<PururinDescriptionAdapter.PururinDescriptionViewHolder>() {
 
@@ -66,12 +66,12 @@ class PururinDescriptionAdapter(
                 binding.pages,
                 binding.rating,
                 binding.size,
-                binding.uploader
+                binding.uploader,
             ).forEach { textView ->
                 textView.setOnLongClickListener {
                     itemView.context.copyToClipboard(
                         textView.text.toString(),
-                        textView.text.toString()
+                        textView.text.toString(),
                     )
                     true
                 }
@@ -80,8 +80,8 @@ class PururinDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

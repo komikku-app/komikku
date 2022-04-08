@@ -33,7 +33,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
         get() = targetController as MangaController
 
     constructor(target: MangaController, manga: Manga) : super(
-        bundleOf(KEY_MANGA to manga.id!!)
+        bundleOf(KEY_MANGA to manga.id!!),
     ) {
         targetController = target
         this.manga = manga

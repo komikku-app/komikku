@@ -56,7 +56,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
     override suspend fun parseIntoMetadata(metadata: NHentaiSearchMetadata, input: Response) {
         val json = GALLERY_JSON_REGEX.find(input.body?.string().orEmpty())!!.groupValues[1].replace(
-            UNICODE_ESCAPE_REGEX
+            UNICODE_ESCAPE_REGEX,
         ) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
         val jsonResponse = jsonParser.decodeFromString<JsonResponse>(json)
 
@@ -100,7 +100,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
                         RaisedSearchMetadata.TAG_TYPE_VIRTUAL
                     } else {
                         NHentaiSearchMetadata.TAG_TYPE_DEFAULT
-                    }
+                    },
                 )
             }
         }
@@ -120,21 +120,21 @@ class NHentai(delegate: HttpSource, val context: Context) :
         @SerialName("num_pages")
         val numPages: Int? = null,
         @SerialName("num_favorites")
-        val numFavorites: Long? = null
+        val numFavorites: Long? = null,
     )
 
     @Serializable
     data class JsonTitle(
         val english: String? = null,
         val japanese: String? = null,
-        val pretty: String? = null
+        val pretty: String? = null,
     )
 
     @Serializable
     data class JsonImages(
         val pages: List<JsonPage> = emptyList(),
         val cover: JsonPage? = null,
-        val thumbnail: JsonPage? = null
+        val thumbnail: JsonPage? = null,
     )
 
     @Serializable
@@ -144,7 +144,7 @@ class NHentai(delegate: HttpSource, val context: Context) :
         @SerialName("w")
         val width: Long? = null,
         @SerialName("h")
-        val height: Long? = null
+        val height: Long? = null,
     )
 
     @Serializable
@@ -153,11 +153,11 @@ class NHentai(delegate: HttpSource, val context: Context) :
         val type: String? = null,
         val name: String? = null,
         val url: String? = null,
-        val count: Long? = null
+        val count: Long? = null,
     )
 
     override val matchingHosts = listOf(
-        "nhentai.net"
+        "nhentai.net",
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {

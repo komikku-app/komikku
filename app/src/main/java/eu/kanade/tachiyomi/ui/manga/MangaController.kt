@@ -142,9 +142,9 @@ class MangaController :
             FROM_SOURCE_EXTRA to fromSource,
             // SY -->
             SMART_SEARCH_CONFIG_EXTRA to smartSearchConfig,
-            UPDATE_EXTRA to update
+            UPDATE_EXTRA to update,
             // SY <--
-        )
+        ),
     ) {
         this.manga = manga
         if (manga != null) {
@@ -153,7 +153,7 @@ class MangaController :
     }
 
     constructor(mangaId: Long) : this(
-        Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking()
+        Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking(),
     )
 
     @Suppress("unused")
@@ -163,8 +163,8 @@ class MangaController :
     constructor(redirect: MangaPresenter.EXHRedirect) : super(
         bundleOf(
             MANGA_EXTRA to (redirect.manga.id ?: 0),
-            UPDATE_EXTRA to redirect.update
-        )
+            UPDATE_EXTRA to redirect.update,
+        ),
     ) {
         this.manga = redirect.manga
         if (manga != null) {
@@ -236,7 +236,7 @@ class MangaController :
 
     // EXH -->
     val smartSearchConfig: SourceController.SmartSearchConfig? = args.getParcelable(
-        SMART_SEARCH_CONFIG_EXTRA
+        SMART_SEARCH_CONFIG_EXTRA,
     )
 
     private var editMangaDialog: EditMangaDialog? = null
@@ -273,7 +273,7 @@ class MangaController :
     override fun createPresenter(): MangaPresenter {
         return MangaPresenter(
             manga!!,
-            source!!
+            source!!,
         )
     }
 
@@ -324,8 +324,8 @@ class MangaController :
                     mangaInfoAdapter,
                     mangaInfoButtonsAdapter,
                     chaptersHeaderAdapter,
-                    chaptersAdapter
-                )
+                    chaptersAdapter,
+                ),
             )
 
             // Skips directly to chapters list if navigated to from the library
@@ -334,7 +334,7 @@ class MangaController :
                     val mainActivityAppBar = (activity as? MainActivity)?.binding?.appbar
                     (it.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                         1,
-                        mainActivityAppBar?.height ?: 0
+                        mainActivityAppBar?.height ?: 0,
                     )
                     mainActivityAppBar?.isLifted = true
                 }
@@ -369,8 +369,8 @@ class MangaController :
         binding.infoRecycler?.adapter = ConcatAdapter(
             listOfNotNull(
                 mangaInfoAdapter,
-                mangaInfoButtonsAdapter
-            )
+                mangaInfoButtonsAdapter,
+            ),
         )
         binding.chaptersRecycler?.adapter = ConcatAdapter(chaptersHeaderAdapter, chaptersAdapter)
 
@@ -497,7 +497,7 @@ class MangaController :
 
         // Hide options for non-library manga
         menu.findItem(R.id.action_edit_categories).isVisible = presenter.manga.favorite && presenter.getCategories().isNotEmpty()
-        menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite /* SY --> */ && presenter.manga.source != MERGED_SOURCE_ID /* SY <-- */
+        menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite /* SY --> */ && presenter.manga.source != MERGED_SOURCE_ID // SY <--
 
         // SY -->
         menu.findItem(R.id.action_edit).isVisible = presenter.manga.favorite || isLocalSource
@@ -511,14 +511,14 @@ class MangaController :
         when (item.itemId) {
             R.id.action_share -> shareManga()
             R.id.download_next, R.id.download_next_5, R.id.download_next_10,
-            R.id.download_custom, R.id.download_unread, R.id.download_all
+            R.id.download_custom, R.id.download_unread, R.id.download_all,
             -> downloadChapters(item.itemId)
 
             // SY -->
             R.id.action_edit -> {
                 editMangaDialog = EditMangaDialog(
                     this,
-                    presenter.manga
+                    presenter.manga,
                 )
                 editMangaDialog?.showDialog(router)
             }
@@ -529,7 +529,7 @@ class MangaController :
             R.id.action_merged -> {
                 editMergedSettingsDialog = EditMergedSettingsDialog(
                     this,
-                    presenter.manga
+                    presenter.manga,
                 )
                 editMergedSettingsDialog?.showDialog(router)
             }
@@ -611,7 +611,7 @@ class MangaController :
             .setSingleChoiceItems(
                 mergedManga.mapIndexed { index, _ -> sources[index].toString() }
                     .toTypedArray(),
-                -1
+                -1,
             ) { dialog, index ->
                 dialog.dismiss()
                 openMangaInWebView(mergedManga[index], sources[index] as? HttpSource)
@@ -676,11 +676,11 @@ class MangaController :
             val source = sourceManager.getOrStub(libraryManga.source)
             MaterialAlertDialogBuilder(it).apply {
                 setMessage(activity?.getString(R.string.confirm_manga_add_duplicate, source.name))
-                setPositiveButton(activity?.getString(R.string.action_add)) { _, _, ->
+                setPositiveButton(activity?.getString(R.string.action_add)) { _, _ ->
                     addToLibrary(newManga)
                 }
-                setNegativeButton(activity?.getString(R.string.action_cancel)) { _, _, -> }
-                setNeutralButton(activity?.getString(R.string.action_show_manga)) { _, _, ->
+                setNegativeButton(activity?.getString(R.string.action_cancel)) { _, _ -> }
+                setNeutralButton(activity?.getString(R.string.action_show_manga)) { _, _ ->
                     router.pushController(MangaController(libraryManga).withFadeTransaction())
                 }
                 setCancelable(true)
@@ -764,9 +764,9 @@ class MangaController :
         router?.pushController(
             SourceController(
                 bundleOf(
-                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig
-                )
-            ).withFadeTransaction().tag(SMART_SEARCH_SOURCE_TAG)
+                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig,
+                ),
+            ).withFadeTransaction().tag(SMART_SEARCH_SOURCE_TAG),
         )
     }
 
@@ -782,8 +782,8 @@ class MangaController :
                 MangaController(
                     mergedManga,
                     true,
-                    update = true
-                ).withFadeTransaction()
+                    update = true,
+                ).withFadeTransaction(),
             )
             applicationContext?.toast(R.string.manga_merged)
         } catch (e: Exception) {
@@ -804,9 +804,9 @@ class MangaController :
                 .setSingleChoiceItems(
                     arrayOf(
                         activity!!.getString(R.string.mangadex_similar),
-                        activity!!.getString(R.string.community_recommendations)
+                        activity!!.getString(R.string.community_recommendations),
                     ),
-                    -1
+                    -1,
                 ) { dialog, index ->
                     dialog.dismiss()
                     when (index) {
@@ -863,7 +863,7 @@ class MangaController :
                     super.postDestroy(controller)
                     dialog = null
                 }
-            }
+            },
         )
         dialog?.showDialog(router)
     }
@@ -905,7 +905,7 @@ class MangaController :
                 previousController.search(query)
             }
             is UpdatesController,
-            is HistoryController -> {
+            is HistoryController, -> {
                 // Manually navigate to LibraryController
                 router.handleBack()
                 (router.activity as MainActivity).setSelectedNavItem(R.id.nav_library)
@@ -978,7 +978,7 @@ class MangaController :
                     super.postDestroy(controller)
                     dialog = null
                 }
-            }
+            },
         )
         dialog?.showDialog(router)
     }
@@ -993,8 +993,8 @@ class MangaController :
                         image = Image.Cover(
                             bitmap = coverBitmap,
                             name = manga.title,
-                            location = Location.Cache
-                        )
+                            location = Location.Cache,
+                        ),
                     )
                     launchUI {
                         startActivity(uri.toShareIntent(activity))
@@ -1017,8 +1017,8 @@ class MangaController :
                         image = Image.Cover(
                             bitmap = coverBitmap,
                             name = manga.title,
-                            location = Location.Pictures.create()
-                        )
+                            location = Location.Pictures.create(),
+                        ),
                     )
                     launchUI {
                         activity.toast(R.string.cover_saved)
@@ -1048,9 +1048,9 @@ class MangaController :
             startActivityForResult(
                 Intent.createChooser(
                     intent,
-                    resources?.getString(R.string.file_select_cover)
+                    resources?.getString(R.string.file_select_cover),
                 ),
-                REQUEST_IMAGE_OPEN
+                REQUEST_IMAGE_OPEN,
             )
         } else {
             activity?.toast(R.string.notification_first_add_to_library)
@@ -1098,7 +1098,7 @@ class MangaController :
         PreMigrationController.navigateToMigration(
             preferences.skipPreMigration().get(),
             router,
-            listOf(presenter.manga.id!!)
+            listOf(presenter.manga.id!!),
         )
         // SY <--
     }
@@ -1172,7 +1172,7 @@ class MangaController :
                 val activityOptions = ActivityOptions.makeSceneTransitionAnimation(
                     activity,
                     sharedElement,
-                    ReaderActivity.SHARED_ELEMENT_NAME
+                    ReaderActivity.SHARED_ELEMENT_NAME,
                 )
                 startActivity(
                     intent.apply {
@@ -1477,7 +1477,7 @@ class MangaController :
     private fun showCustomDownloadDialog() {
         DownloadCustomChaptersDialog(
             this,
-            presenter.allChapters.size
+            presenter.allChapters.size,
         ).showDialog(router)
     }
 

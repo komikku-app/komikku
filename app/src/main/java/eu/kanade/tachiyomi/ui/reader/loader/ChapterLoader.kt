@@ -29,7 +29,7 @@ class ChapterLoader(
     // SY -->
     private val sourceManager: SourceManager,
     private val mergedReferences: List<MergedMangaReference>,
-    private val mergedManga: Map<Long, Manga>
+    private val mergedManga: Map<Long, Manga>,
 // SY <--
 ) {
 
@@ -68,7 +68,7 @@ class ChapterLoader(
                 // otherwise use the requested page.
                 if (!chapter.chapter.read /* --> EH */ || prefs
                     .preserveReadingPosition()
-                    .get() /* <-- EH */
+                    .get() // <-- EH
                 ) {
                     chapter.requestedPage = chapter.chapter.last_page_read
                 }

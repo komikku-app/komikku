@@ -13,7 +13,7 @@ open class ReaderPage(
     /** Value to check if a page is can be doubled up, but can't because the next page is too wide */
     var isolatedPage: Boolean = false,
     // SY <--
-    var stream: (() -> InputStream)? = null
+    var stream: (() -> InputStream)? = null,
 
 ) : Page(index, url, imageUrl, null) {
 

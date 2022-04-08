@@ -36,7 +36,7 @@ val MANGADEX_LOGIN_PATCH: EHInterceptor = { request, response, sourceId ->
                     "Login",
                     (Injekt.get<SourceManager>().get(sourceId) as? HttpSource)?.headers?.toMultimap()?.mapValues {
                         it.value.joinToString(",")
-                    } ?: emptyMap()
+                    } ?: emptyMap(),
                 )
             }
         }
@@ -81,6 +81,6 @@ val MANGADEX_SOURCE_IDS = listOf(
     3781216447842245147,
     4774459486579224459,
     4710920497926776490,
-    5779037855201976894
+    5779037855201976894,
 )
 const val MANGADEX_DOMAIN = "mangadex.org"

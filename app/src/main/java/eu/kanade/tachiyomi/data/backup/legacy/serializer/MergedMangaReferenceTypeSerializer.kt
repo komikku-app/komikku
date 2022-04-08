@@ -34,7 +34,7 @@ object MergedMangaTypeSerializer : KSerializer<MergedMangaReference> {
                 add(value.getChapterUpdates)
                 add(value.isInfoManga)
                 add(value.downloadChapters)
-            }
+            },
         )
     }
 
@@ -52,7 +52,7 @@ object MergedMangaTypeSerializer : KSerializer<MergedMangaReference> {
             isInfoManga = array[6].jsonPrimitive.boolean,
             downloadChapters = array[7].jsonPrimitive.boolean,
             mangaId = null,
-            mergeId = null
+            mergeId = null,
         )
     }
 }

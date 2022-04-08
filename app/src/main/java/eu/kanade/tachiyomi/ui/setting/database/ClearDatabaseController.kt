@@ -151,7 +151,7 @@ class ClearDatabaseController :
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val item = arrayOf(
                 activity!!.getString(R.string.clear_database_confirmation),
-                activity!!.getString(R.string.clear_db_exclude_read)
+                activity!!.getString(R.string.clear_db_exclude_read),
             )
             val selected = booleanArrayOf(true, true)
             return MaterialAlertDialogBuilder(activity!!)

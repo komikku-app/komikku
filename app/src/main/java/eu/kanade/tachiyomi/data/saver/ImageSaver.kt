@@ -20,7 +20,7 @@ import java.io.File
 import java.io.InputStream
 
 class ImageSaver(
-    val context: Context
+    val context: Context,
 ) {
 
     @SuppressLint("InlinedApi")
@@ -47,13 +47,13 @@ class ImageSaver(
             put(
                 MediaStore.Images.Media.RELATIVE_PATH,
                 "${Environment.DIRECTORY_PICTURES}/${context.getString(R.string.app_name)}/" +
-                    (image.location as Location.Pictures).relativePath
+                    (image.location as Location.Pictures).relativePath,
             )
         }
 
         val picture = context.contentResolver.insert(
             pictureDir,
-            contentValues
+            contentValues,
         ) ?: throw IOException("Couldn't create file")
 
         data().use { input ->
@@ -83,18 +83,18 @@ class ImageSaver(
 
 sealed class Image(
     open val name: String,
-    open val location: Location
+    open val location: Location,
 ) {
     data class Cover(
         val bitmap: Bitmap,
         override val name: String,
-        override val location: Location
+        override val location: Location,
     ) : Image(name, location)
 
     data class Page(
         val inputStream: () -> InputStream,
         override val name: String,
-        override val location: Location
+        override val location: Location,
     ) : Image(name, location)
 
     val data: () -> InputStream
@@ -129,12 +129,12 @@ sealed class Location {
             is Pictures -> {
                 val file = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    context.getString(R.string.app_name)
+                    context.getString(R.string.app_name),
                 )
                 if (relativePath.isNotEmpty()) {
                     return File(
                         file,
-                        relativePath
+                        relativePath,
                     )
                 }
                 file

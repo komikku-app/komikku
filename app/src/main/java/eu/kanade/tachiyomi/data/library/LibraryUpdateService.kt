@@ -92,7 +92,7 @@ class LibraryUpdateService(
     val preferences: PreferencesHelper = Injekt.get(),
     val downloadManager: DownloadManager = Injekt.get(),
     val trackManager: TrackManager = Injekt.get(),
-    val coverCache: CoverCache = Injekt.get()
+    val coverCache: CoverCache = Injekt.get(),
 ) : Service() {
 
     private lateinit var wakeLock: PowerManager.WakeLock
@@ -420,7 +420,7 @@ class LibraryUpdateService(
                                                     // Convert to the manga that contains new chapters
                                                     newUpdates.add(
                                                         manga to newChapters.sortedByDescending { ch -> ch.source_order }
-                                                            .toTypedArray()
+                                                            .toTypedArray(),
                                                     )
                                                 }
                                             }
@@ -646,7 +646,7 @@ class LibraryUpdateService(
         notifier.showProgressNotification(
             updatingManga,
             completed.get(),
-            mangaToUpdate.size
+            mangaToUpdate.size,
         )
 
         block(manga)
@@ -660,7 +660,7 @@ class LibraryUpdateService(
         notifier.showProgressNotification(
             updatingManga,
             completed.get(),
-            mangaToUpdate.size
+            mangaToUpdate.size,
         )
     }
 
@@ -693,7 +693,7 @@ class LibraryUpdateService(
                     dbManga = Manga.create(
                         networkManga.url,
                         networkManga.title,
-                        mangaDex.id
+                        mangaDex.id,
                     )
                     dbManga.date_added = System.currentTimeMillis()
                 }

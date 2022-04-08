@@ -20,7 +20,7 @@ class MetadataViewPresenter(
     val manga: Manga,
     val source: Source,
     val preferences: PreferencesHelper = Injekt.get(),
-    private val db: DatabaseHelper = Injekt.get()
+    private val db: DatabaseHelper = Injekt.get(),
 ) : CoroutinePresenter<MetadataViewController>() {
 
     val meta = MutableStateFlow<RaisedSearchMetadata?>(null)

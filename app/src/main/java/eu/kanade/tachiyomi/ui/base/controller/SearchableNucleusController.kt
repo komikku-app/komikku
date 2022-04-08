@@ -21,8 +21,7 @@ import reactivecircus.flowbinding.appcompat.queryTextEvents
 /**
  * Implementation of the NucleusController that has a built-in ViewSearch
  */
-abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*>>
-(bundle: Bundle? = null) : NucleusController<VB, P>(bundle) {
+abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*>>(bundle: Bundle? = null) : NucleusController<VB, P>(bundle) {
 
     enum class SearchViewState { LOADING, LOADED, COLLAPSING, FOCUSED }
 
@@ -45,7 +44,7 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
         menuId: Int,
         searchItemId: Int,
         @StringRes queryHint: Int? = null,
-        restoreCurrentQuery: Boolean = true
+        restoreCurrentQuery: Boolean = true,
     ) {
         // Inflate menu
         inflater.inflate(menuId, menu)
@@ -58,7 +57,7 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
 
         // Remove formatting from pasted text
         val searchAutoComplete: SearchView.SearchAutoComplete = searchView.findViewById(
-            R.id.search_src_text
+            R.id.search_src_text,
         )
         searchAutoComplete.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -69,7 +68,7 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
                 editable.getSpans(0, editable.length, CharacterStyle::class.java)
                     .forEach { editable.removeSpan(it) }
             }
-        })
+        },)
 
         searchView.queryTextEvents()
             .onEach {
@@ -150,7 +149,7 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
                     onSearchMenuItemActionCollapse(item)
                     return true
                 }
-            }
+            },
         )
     }
 

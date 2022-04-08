@@ -32,7 +32,7 @@ class EHConfigurator(val context: Context) {
         action: String,
         name: String,
         set: String,
-        sp: Int
+        sp: Int,
     ) =
         configuratorClient.newCall(
             requestWithCreds(sp)
@@ -42,9 +42,9 @@ class EHConfigurator(val context: Context) {
                         .add("profile_action", action)
                         .add("profile_name", name)
                         .add("profile_set", set)
-                        .build()
+                        .build(),
                 )
-                .build()
+                .build(),
         )
             .await()
 
@@ -58,7 +58,7 @@ class EHConfigurator(val context: Context) {
         val perksPage = configuratorClient.newCall(
             ehSource.requestWithCreds()
                 .url(HATH_PERKS_URL)
-                .build()
+                .build(),
         )
             .await().asJsoup()
 
@@ -117,7 +117,7 @@ class EHConfigurator(val context: Context) {
             "create",
             PROFILE_NAME,
             slot.toString(),
-            1
+            1,
         )
 
         // Build new profile
@@ -128,7 +128,7 @@ class EHConfigurator(val context: Context) {
             source.requestWithCreds(sp = slot)
                 .url(source.uconfigUrl)
                 .post(form)
-                .build()
+                .build(),
         ).await()
 
         // Persist slot + sk

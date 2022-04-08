@@ -47,7 +47,7 @@ class MangaCoverFetcher(
     private val options: Options,
     private val coverCache: CoverCache,
     private val callFactoryLazy: Lazy<Call.Factory>,
-    private val diskCacheLazy: Lazy<DiskCache>
+    private val diskCacheLazy: Lazy<DiskCache>,
 ) : Fetcher {
 
     // For non-custom cover
@@ -75,7 +75,7 @@ class MangaCoverFetcher(
         return SourceResult(
             source = ImageSource(file = file.toOkioPath(), diskCacheKey = diskCacheKey),
             mimeType = "image/*",
-            dataSource = DataSource.DISK
+            dataSource = DataSource.DISK,
         )
     }
 
@@ -104,7 +104,7 @@ class MangaCoverFetcher(
                 return SourceResult(
                     source = snapshot.toImageSource(),
                     mimeType = "image/*",
-                    dataSource = DataSource.DISK
+                    dataSource = DataSource.DISK,
                 )
             }
 
@@ -124,7 +124,7 @@ class MangaCoverFetcher(
                     return SourceResult(
                         source = snapshot.toImageSource(),
                         mimeType = "image/*",
-                        dataSource = DataSource.NETWORK
+                        dataSource = DataSource.NETWORK,
                     )
                 }
 
@@ -132,7 +132,7 @@ class MangaCoverFetcher(
                 return SourceResult(
                     source = ImageSource(source = responseBody.source(), context = options.context),
                     mimeType = "image/*",
-                    dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK
+                    dataSource = if (response.cacheResponse != null) DataSource.DISK else DataSource.NETWORK,
                 )
             } catch (e: Exception) {
                 responseBody.closeQuietly()
@@ -273,7 +273,7 @@ class MangaCoverFetcher(
 
     class Factory(
         private val callFactoryLazy: Lazy<Call.Factory>,
-        private val diskCacheLazy: Lazy<DiskCache>
+        private val diskCacheLazy: Lazy<DiskCache>,
     ) : Fetcher.Factory<Manga> {
 
         private val coverCache: CoverCache by injectLazy()

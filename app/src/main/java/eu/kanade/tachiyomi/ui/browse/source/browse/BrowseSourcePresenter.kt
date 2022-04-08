@@ -79,7 +79,7 @@ open class BrowseSourcePresenter(
     private val sourceManager: SourceManager = Injekt.get(),
     private val db: DatabaseHelper = Injekt.get(),
     private val prefs: PreferencesHelper = Injekt.get(),
-    private val coverCache: CoverCache = Injekt.get()
+    private val coverCache: CoverCache = Injekt.get(),
 ) : BasePresenter<BrowseSourceController>() {
 
     /**
@@ -166,7 +166,7 @@ open class BrowseSourcePresenter(
             .subscribeLatestCache(
                 { controller, savedSearches ->
                     controller.setSavedSearches(savedSearches)
-                }
+                },
             )
         // SY <--
 
@@ -223,7 +223,7 @@ open class BrowseSourcePresenter(
                 },
                 { _, error ->
                     logcat(LogPriority.ERROR, error)
-                }
+                },
             )
 
         // Request first page.
@@ -490,7 +490,7 @@ open class BrowseSourcePresenter(
                     source = source.id,
                     name = name.trim(),
                     query = query.nullIfBlank(),
-                    filtersJson = filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) }
+                    filtersJson = filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) },
                 )
 
                 db.insertSavedSearch(savedSearch).executeAsBlocking()
@@ -516,10 +516,10 @@ open class BrowseSourcePresenter(
                     filters = originalFilters,
                     json = search.filtersJson
                         ?.let { Json.decodeFromString<JsonArray>(it) }
-                        ?: return@runCatching null
+                        ?: return@runCatching null,
                 )
                 originalFilters
-            }.getOrNull()
+            }.getOrNull(),
         )
     }
 
@@ -529,7 +529,7 @@ open class BrowseSourcePresenter(
                 id = it.id!!,
                 name = it.name,
                 query = it.query.orEmpty(),
-                filterList = null
+                filterList = null,
             )
             val filters = try {
                 Json.decodeFromString<JsonArray>(filtersJson)
@@ -540,7 +540,7 @@ open class BrowseSourcePresenter(
                 id = it.id!!,
                 name = it.name,
                 query = it.query.orEmpty(),
-                filterList = null
+                filterList = null,
             )
 
             try {
@@ -550,7 +550,7 @@ open class BrowseSourcePresenter(
                     id = it.id!!,
                     name = it.name,
                     query = it.query.orEmpty(),
-                    filterList = originalFilters
+                    filterList = originalFilters,
                 )
             } catch (t: RuntimeException) {
                 // Load failed
@@ -559,7 +559,7 @@ open class BrowseSourcePresenter(
                     id = it.id!!,
                     name = it.name,
                     query = it.query.orEmpty(),
-                    filterList = null
+                    filterList = null,
                 )
             }
         }

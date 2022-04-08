@@ -116,7 +116,7 @@ object Notifications {
                 buildNotificationChannelGroup(GROUP_APK_UPDATES) {
                     setName(context.getString(R.string.label_recent_updates))
                 },
-            )
+            ),
         )
 
         notificationService.createNotificationChannelsCompat(
@@ -182,7 +182,7 @@ object Notifications {
                     setGroup(GROUP_APK_UPDATES)
                     setName(context.getString(R.string.channel_ext_updates))
                 },
-            )
+            ),
         )
     }
 }

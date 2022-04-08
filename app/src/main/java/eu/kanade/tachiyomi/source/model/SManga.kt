@@ -56,19 +56,19 @@ interface SManga : Serializable {
         // EXH <--
 
         if (other.author != null) {
-            author = /* SY --> */ other.originalAuthor /* SY <-- */
+            author = /* SY --> */ other.originalAuthor // SY <--
         }
 
         if (other.artist != null) {
-            artist = /* SY --> */ other.originalArtist /* SY <-- */
+            artist = /* SY --> */ other.originalArtist // SY <--
         }
 
         if (other.description != null) {
-            description = /* SY --> */ other.originalDescription /* SY <-- */
+            description = /* SY --> */ other.originalDescription // SY <--
         }
 
         if (other.genre != null) {
-            genre = /* SY --> */ other.originalGenre /* SY <-- */
+            genre = /* SY --> */ other.originalGenre // SY <--
         }
 
         if (other.thumbnail_url != null) {
@@ -106,7 +106,7 @@ fun SManga.toMangaInfo(): MangaInfo {
         description = this.description ?: "",
         genres = this.genre?.split(", ") ?: emptyList(),
         status = this.status,
-        cover = this.thumbnail_url ?: ""
+        cover = this.thumbnail_url ?: "",
     )
 }
 

@@ -7,14 +7,14 @@ import kotlinx.serialization.protobuf.ProtoNumber
 @Serializable
 data class BackupSearchTitle(
     @ProtoNumber(1) var title: String,
-    @ProtoNumber(2) var type: Int
+    @ProtoNumber(2) var type: Int,
 ) {
     fun getSearchTitle(mangaId: Long): SearchTitle {
         return SearchTitle(
             id = null,
             mangaId = mangaId,
             title = title,
-            type = type
+            type = type,
         )
     }
 
@@ -22,7 +22,7 @@ data class BackupSearchTitle(
         fun copyFrom(searchTitle: SearchTitle): BackupSearchTitle {
             return BackupSearchTitle(
                 title = searchTitle.title,
-                type = searchTitle.type
+                type = searchTitle.type,
             )
         }
     }

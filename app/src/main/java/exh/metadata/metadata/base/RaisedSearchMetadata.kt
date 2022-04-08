@@ -100,7 +100,7 @@ abstract class RaisedSearchMetadata {
                 uploader,
                 extra,
                 indexedExtra,
-                0
+                0,
             ),
             tags.map {
                 SearchTag(
@@ -108,7 +108,7 @@ abstract class RaisedSearchMetadata {
                     mangaId,
                     it.namespace,
                     it.name,
-                    it.type
+                    it.type,
                 )
             },
             titles.map {
@@ -116,9 +116,9 @@ abstract class RaisedSearchMetadata {
                     null,
                     mangaId,
                     it.title,
-                    it.type
+                    it.type,
                 )
-            }
+            },
         )
     }
 

@@ -89,7 +89,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override val baseHttpClient: OkHttpClient = delegate.client.newBuilder()
         .authenticator(
-            TokenAuthenticator(loginHelper)
+            TokenAuthenticator(loginHelper),
         )
         .build()
 
@@ -142,7 +142,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             azukHandler,
             mangaHotHandler,
             preferences,
-            mdList
+            mdList,
         )
     }
 
@@ -243,7 +243,7 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     override suspend fun login(
         username: String,
         password: String,
-        twoFactorCode: String?
+        twoFactorCode: String?,
     ): Boolean {
         val result = loginHelper.login(username, password)
         return if (result) {

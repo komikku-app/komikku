@@ -32,7 +32,7 @@ class MangaSummaryView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     @AttrRes defStyleAttr: Int = 0,
-    @StyleRes defStyleRes: Int = 0
+    @StyleRes defStyleRes: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes) {
 
     private val binding = MangaSummaryBinding.inflate(LayoutInflater.from(context), this, true)
@@ -84,13 +84,13 @@ class MangaSummaryView @JvmOverloads constructor(
         meta: RaisedSearchMetadata?,
         onClick: (item: String) -> Unit,
         onLongClick: (item: String) -> Unit,
-        source: Source
+        source: Source,
     ) {
         binding.tagChipsShrunk.setChipsExtended(
             items,
             onClick,
             onLongClick,
-            source.id
+            source.id,
         )
         // binding.tagChipsExpanded.setChips(items, onClick)
         setChipsWithNamespace(
@@ -98,7 +98,7 @@ class MangaSummaryView @JvmOverloads constructor(
             meta,
             onClick,
             onLongClick,
-            source
+            source,
         )
     }
     // SY <--
@@ -117,7 +117,7 @@ class MangaSummaryView @JvmOverloads constructor(
 
         val toggleDrawable = ContextCompat.getDrawable(
             context,
-            if (expanded) R.drawable.anim_caret_up else R.drawable.anim_caret_down
+            if (expanded) R.drawable.anim_caret_up else R.drawable.anim_caret_down,
         )
         toggleMore.setImageDrawable(toggleDrawable)
 
@@ -180,7 +180,7 @@ class MangaSummaryView @JvmOverloads constructor(
         meta: RaisedSearchMetadata?,
         onClick: (item: String) -> Unit,
         onLongClick: (item: String) -> Unit,
-        source: Source
+        source: Source,
     ) {
         val namespaceTags = when {
             meta != null -> {
@@ -195,7 +195,7 @@ class MangaSummaryView @JvmOverloads constructor(
                             },
                             onClick,
                             onLongClick,
-                            source
+                            source,
                         )
                     }
             }
@@ -218,7 +218,7 @@ class MangaSummaryView @JvmOverloads constructor(
                                 tags,
                                 onClick,
                                 onLongClick,
-                                source
+                                source,
                             )
                         }
                 } else {
@@ -228,8 +228,8 @@ class MangaSummaryView @JvmOverloads constructor(
                             genre.map { it to null },
                             onClick,
                             onLongClick,
-                            source
-                        )
+                            source,
+                        ),
                     )
                 }
             }
@@ -270,7 +270,7 @@ class MangaSummaryView @JvmOverloads constructor(
                 description?.let {
                     context.copyToClipboard(
                         context.getString(R.string.description),
-                        it.toString()
+                        it.toString(),
                     )
                 }
                 true
@@ -291,7 +291,7 @@ class MangaSummaryView @JvmOverloads constructor(
             binding.descriptionText,
             binding.descriptionScrim,
             binding.toggleMoreScrim,
-            binding.toggleMore
+            binding.toggleMore,
         ).forEach {
             it.setOnClickListener { expanded = !expanded }
         }

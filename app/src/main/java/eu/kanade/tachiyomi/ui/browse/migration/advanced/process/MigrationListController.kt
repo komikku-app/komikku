@@ -179,7 +179,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                             if (searchResult != null && !(searchResult.url == mangaObj.url && source.id == mangaObj.source)) {
                                                 val localManga = smartSearchEngine.networkToLocalManga(
                                                     searchResult,
-                                                    source.id
+                                                    source.id,
                                                 )
 
                                                 val chapters = if (source is EHentai) {
@@ -309,8 +309,8 @@ class MigrationListController(bundle: Bundle? = null) :
                     res.getQuantityString(
                         R.plurals.manga_migrated,
                         manualMigrations,
-                        manualMigrations
-                    )
+                        manualMigrations,
+                    ),
                 )
             }
             if (adapter?.hideNotFound == false) {
@@ -459,7 +459,7 @@ class MigrationListController(bundle: Bundle? = null) :
             menuMigrate.icon = VectorDrawableCompat.create(
                 resources!!,
                 R.drawable.ic_done_24dp,
-                null
+                null,
             )
         }
 
@@ -487,13 +487,13 @@ class MigrationListController(bundle: Bundle? = null) :
                 this,
                 true,
                 totalManga,
-                mangaSkipped
+                mangaSkipped,
             ).showDialog(router)
             R.id.action_migrate_manga -> MigrationMangaDialog(
                 this,
                 false,
                 totalManga,
-                mangaSkipped
+                mangaSkipped,
             ).showDialog(router)
             else -> return super.onOptionsItemSelected(item)
         }
@@ -524,8 +524,8 @@ class MigrationListController(bundle: Bundle? = null) :
         fun create(config: MigrationProcedureConfig): MigrationListController {
             return MigrationListController(
                 bundleOf(
-                    CONFIG_EXTRA to config
-                )
+                    CONFIG_EXTRA to config,
+                ),
             )
         }
     }

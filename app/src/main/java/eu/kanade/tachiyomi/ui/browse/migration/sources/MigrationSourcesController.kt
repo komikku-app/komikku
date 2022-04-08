@@ -150,7 +150,7 @@ class MigrationSourcesController :
                             router
                         }
                     },
-                    sourceMangas
+                    sourceMangas,
                 )
             }
         }

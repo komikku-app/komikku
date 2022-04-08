@@ -18,7 +18,7 @@ import java.util.Locale
 import kotlin.math.round
 
 class PervEdenDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<PervEdenDescriptionAdapter.PervEdenDescriptionViewHolder>() {
 
@@ -60,12 +60,12 @@ class PervEdenDescriptionAdapter(
             listOf(
                 binding.genre,
                 binding.language,
-                binding.rating
+                binding.rating,
             ).forEach { textView ->
                 textView.setOnLongClickListener {
                     itemView.context.copyToClipboard(
                         textView.text.toString(),
-                        textView.text.toString()
+                        textView.text.toString(),
                     )
                     true
                 }
@@ -74,8 +74,8 @@ class PervEdenDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

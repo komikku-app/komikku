@@ -31,7 +31,7 @@ class EditMergedMangaItem(val mergedManga: Manga?, val mergedMangaReference: Mer
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>?,
         holder: EditMergedMangaHolder,
         position: Int,
-        payloads: MutableList<Any>?
+        payloads: MutableList<Any>?,
     ) {
         holder.bind(this)
     }

@@ -15,7 +15,7 @@ interface SearchTitleQueries : DbProvider {
                 .table(SearchTitleTable.TABLE)
                 .where("${SearchTitleTable.COL_MANGA_ID} = ?")
                 .whereArgs(mangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -25,7 +25,7 @@ interface SearchTitleQueries : DbProvider {
                 .table(SearchTitleTable.TABLE)
                 .where("${SearchTitleTable.COL_MANGA_ID} = ?")
                 .whereArgs(mangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -38,7 +38,7 @@ interface SearchTitleQueries : DbProvider {
     fun deleteAllSearchTitle() = db.delete().byQuery(
         DeleteQuery.builder()
             .table(SearchTitleTable.TABLE)
-            .build()
+            .build(),
     )
         .prepare()
 

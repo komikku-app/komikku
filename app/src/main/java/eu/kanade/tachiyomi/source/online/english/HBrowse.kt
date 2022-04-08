@@ -56,7 +56,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
                             tags += RaisedTag(
                                 lowercaseNs,
                                 it.text(),
-                                HBrowseSearchMetadata.TAG_TYPE_DEFAULT
+                                HBrowseSearchMetadata.TAG_TYPE_DEFAULT,
                             )
                         }
                     }
@@ -78,7 +78,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
 
     override val matchingHosts = listOf(
         "www.hbrowse.com",
-        "hbrowse.com"
+        "hbrowse.com",
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {

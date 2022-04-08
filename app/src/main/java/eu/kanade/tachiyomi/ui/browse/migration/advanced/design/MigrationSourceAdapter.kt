@@ -8,11 +8,11 @@ import uy.kohesive.injekt.injectLazy
 
 class MigrationSourceAdapter(
     var items: List<MigrationSourceItem>,
-    controllerPre: PreMigrationController
+    controllerPre: PreMigrationController,
 ) : FlexibleAdapter<MigrationSourceItem>(
     items,
     controllerPre,
-    true
+    true,
 ) {
     val preferences: PreferencesHelper by injectLazy()
     val sourceManager: SourceManager by injectLazy()
@@ -25,8 +25,8 @@ class MigrationSourceAdapter(
             ArrayList(
                 currentItems.map {
                     it.asParcelable()
-                }
-            )
+                },
+            ),
         )
     }
 

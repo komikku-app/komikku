@@ -24,7 +24,7 @@ class MangaDexSimilarPager(val manga: Manga, val source: MangaDex) : Pager() {
             MetadataMangasPage(
                 relatedPage.mangas + similarPage.mangas,
                 false,
-                relatedPage.mangasMetadata + similarPage.mangasMetadata
+                relatedPage.mangasMetadata + similarPage.mangasMetadata,
             )
         }
 

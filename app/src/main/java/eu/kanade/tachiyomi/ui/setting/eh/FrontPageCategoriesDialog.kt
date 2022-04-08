@@ -15,7 +15,7 @@ import eu.kanade.tachiyomi.ui.setting.SettingsEhController
 import uy.kohesive.injekt.injectLazy
 
 class FrontPageCategoriesDialog(
-    bundle: Bundle? = null
+    bundle: Bundle? = null,
 ) : DialogController(bundle) {
 
     var binding: EhDialogCategoriesBinding? = null
@@ -75,8 +75,8 @@ class FrontPageCategoriesDialog(
                     (!imageSetCheckbox.isChecked),
                     (!cosplayCheckbox.isChecked),
                     (!asianPornCheckbox.isChecked),
-                    (!miscCheckbox.isChecked)
-                ).joinToString(separator = ",") { it.toString() }
+                    (!miscCheckbox.isChecked),
+                ).joinToString(separator = ",") { it.toString() },
             )
         }
         with(targetController as? SettingsEhController ?: return) {

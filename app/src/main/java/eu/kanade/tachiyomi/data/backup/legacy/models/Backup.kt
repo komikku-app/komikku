@@ -21,7 +21,7 @@ data class Backup(
     // SY Specific values
     @SerialName("mergedmangareferences")
     var mergedMangaReferences: List<@Contextual MergedMangaReference>? = null,
-    var savedSearches: String? = null
+    var savedSearches: String? = null,
 ) {
     companion object {
         const val CURRENT_VERSION = 2
@@ -39,5 +39,5 @@ data class MangaObject(
     var chapters: List<@Contextual Chapter>? = null,
     var categories: List<String>? = null,
     var track: List<@Contextual Track>? = null,
-    var history: List<@Contextual DHistory>? = null
+    var history: List<@Contextual DHistory>? = null,
 )

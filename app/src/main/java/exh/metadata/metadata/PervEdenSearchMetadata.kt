@@ -60,7 +60,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
             artist = artist ?: manga.artist,
             status = status,
             genres = genres,
-            description = description
+            description = description,
         )
     }
 

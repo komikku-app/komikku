@@ -8,7 +8,7 @@ open class HeadersInjectingWebViewClient(
     activity: BrowserActionActivity,
     verifyComplete: (String) -> Boolean,
     injectScript: String?,
-    private val headers: Map<String, String>
+    private val headers: Map<String, String>,
 ) : BasicWebViewClient(activity, verifyComplete, injectScript) {
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -72,7 +72,7 @@ open class HeadersInjectingWebViewClient(
             502 to "Bad Gateway",
             503 to "Service Unavailable",
             504 to "Gateway Time-out",
-            505 to "HTTP Version not supported"
+            505 to "HTTP Version not supported",
         )
     }
 }

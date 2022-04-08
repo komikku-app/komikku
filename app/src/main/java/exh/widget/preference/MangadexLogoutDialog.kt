@@ -26,8 +26,8 @@ class MangadexLogoutDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     constructor(source: Source) : this(
         bundleOf(
-            "key" to source.id
-        )
+            "key" to source.id,
+        ),
     )
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {

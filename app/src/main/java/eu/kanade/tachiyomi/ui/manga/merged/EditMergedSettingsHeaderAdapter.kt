@@ -25,7 +25,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
         binding = EditMergedSettingsHeaderBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
-            false
+            false,
         )
         return HeaderViewHolder(binding.root)
     }
@@ -45,8 +45,8 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                     itemView.context.getString(R.string.no_dedupe),
                     itemView.context.getString(R.string.dedupe_priority).let { null },
                     itemView.context.getString(R.string.dedupe_most_chapters),
-                    itemView.context.getString(R.string.dedupe_highest_chapter)
-                )
+                    itemView.context.getString(R.string.dedupe_highest_chapter),
+                ),
             )
             dedupeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.dedupeModeSpinner.adapter = dedupeAdapter
@@ -58,7 +58,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                         MergedMangaReference.CHAPTER_SORT_MOST_CHAPTERS -> 1
                         MergedMangaReference.CHAPTER_SORT_HIGHEST_CHAPTER_NUMBER -> 2
                         else -> 0
-                    }
+                    },
                 )
             }
             binding.dedupeModeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -66,7 +66,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                     parent: AdapterView<*>?,
                     view: View?,
                     position: Int,
-                    id: Long
+                    id: Long,
                 ) {
                     controller.mergeReference?.chapterSortMode = when (position) {
                         0 -> MergedMangaReference.CHAPTER_SORT_NO_DEDUPE
@@ -91,7 +91,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                 android.R.layout.simple_spinner_item,
                 mergedMangas.map {
                     sourceManager.getOrStub(it.second.mangaSourceId).toString() + " " + it.first?.title
-                }
+                },
             )
             mangaInfoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.mangaInfoSpinner.adapter = mangaInfoAdapter
@@ -107,7 +107,7 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
                     parent: AdapterView<*>?,
                     view: View?,
                     position: Int,
-                    id: Long
+                    id: Long,
                 ) {
                     val mergedInfoManga = controller.mergedMangas
                         .find { mergedManga ->

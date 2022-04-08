@@ -58,7 +58,7 @@ class PreMigrationController(bundle: Bundle? = null) :
 
         val ourAdapter = adapter ?: MigrationSourceAdapter(
             getEnabledSources().map { MigrationSourceItem(it, isEnabled(it.id.toString())) },
-            this
+            this,
         )
         adapter = ourAdapter
         binding.recycler.layoutManager = LinearLayoutManager(view.context)
@@ -98,9 +98,9 @@ class PreMigrationController(bundle: Bundle? = null) :
             MigrationListController.create(
                 MigrationProcedureConfig(
                     config.toList(),
-                    extraSearchParams = extraParam
-                )
-            ).withFadeTransaction().tag(MigrationListController.TAG)
+                    extraSearchParams = extraParam,
+                ),
+            ).withFadeTransaction().tag(MigrationListController.TAG),
         )
     }
 
@@ -187,19 +187,19 @@ class PreMigrationController(bundle: Bundle? = null) :
             router.pushController(
                 if (skipPre) {
                     MigrationListController.create(
-                        MigrationProcedureConfig(mangaIds, null)
+                        MigrationProcedureConfig(mangaIds, null),
                     )
                 } else {
                     create(mangaIds)
-                }.withFadeTransaction().tag(if (skipPre) MigrationListController.TAG else null)
+                }.withFadeTransaction().tag(if (skipPre) MigrationListController.TAG else null),
             )
         }
 
         fun create(mangaIds: List<Long>): PreMigrationController {
             return PreMigrationController(
                 bundleOf(
-                    MANGA_IDS_EXTRA to mangaIds.toLongArray()
-                )
+                    MANGA_IDS_EXTRA to mangaIds.toLongArray(),
+                ),
             )
         }
     }

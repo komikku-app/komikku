@@ -33,7 +33,7 @@ class Text : QueryComponent() {
                 // Can't make it match a single word in Realm :(
                 StringBuilder(" ").append(rBaseBuilder()).append(" ").toString(),
                 StringBuilder(" ").append(rBaseBuilder()).toString(),
-                rBaseBuilder().append(" ").toString()
+                rBaseBuilder().append(" ").toString(),
             )
         }
         return lenientTagQueries!!

@@ -22,7 +22,7 @@ class EHentaiUpdateHelper(context: Context) {
     val parentLookupTable =
         MemAutoFlushingLookupTable(
             File(context.filesDir, "exh-plt.maftable"),
-            GalleryEntry.Serializer()
+            GalleryEntry.Serializer(),
         )
     private val db: DatabaseHelper by injectLazy()
 
@@ -55,7 +55,7 @@ class EHentaiUpdateHelper(context: Context) {
                             ChapterChain(
                                 manga.await() ?: return@coroutineScope null,
                                 chapterList.await(),
-                                history.await()
+                                history.await(),
                             )
                         }
                     }
@@ -143,13 +143,13 @@ class EHentaiUpdateHelper(context: Context) {
     data class HistoryUpdates(
         val history: List<History>,
         val urlHistory: List<Pair<String, History>>,
-        val historyToDelete: List<Long>
+        val historyToDelete: List<Long>,
     )
 
     private fun getHistory(
         newChapters: List<Chapter>,
         chainsAsChapters: List<Chapter>,
-        chainsAsHistory: List<History>
+        chainsAsHistory: List<History>,
     ): HistoryUpdates {
         val historyMap = chainsAsHistory
             .groupBy { history ->
@@ -185,14 +185,14 @@ class EHentaiUpdateHelper(context: Context) {
                     null
                 }
             },
-            oldHistory
+            oldHistory,
         )
     }
 
     private fun getChapterList(
         accepted: ChapterChain,
         toDiscard: List<ChapterChain>,
-        chainsAsChapters: List<Chapter>
+        chainsAsChapters: List<Chapter>,
     ): Pair<List<Chapter>, Boolean> {
         var new = false
         return toDiscard
@@ -256,7 +256,7 @@ data class GalleryEntry(val gId: String, val gToken: String) {
             val colonIndex = string.indexOf(':')
             return GalleryEntry(
                 string.substring(0, colonIndex),
-                string.substring(colonIndex + 1, string.length)
+                string.substring(colonIndex + 1, string.length),
             )
         }
     }

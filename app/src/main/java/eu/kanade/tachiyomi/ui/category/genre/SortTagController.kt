@@ -220,7 +220,7 @@ class SortTagController :
                     (activity as? MainActivity)?.binding?.rootCoordinator!!,
                     R.string.snack_tags_deleted,
                     R.string.action_undo,
-                    3000
+                    3000,
                 )
                 mode.finish()
             }

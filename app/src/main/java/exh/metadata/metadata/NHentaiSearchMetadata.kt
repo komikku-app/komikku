@@ -81,7 +81,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             artist = artist ?: manga.artist,
             genres = genres,
             status = status,
-            description = description
+            description = description,
         )
     }
 

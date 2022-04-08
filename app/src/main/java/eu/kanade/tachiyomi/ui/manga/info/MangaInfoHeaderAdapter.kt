@@ -151,7 +151,7 @@ class MangaInfoHeaderAdapter(
                         text = view.context.resources.getQuantityString(
                             R.plurals.num_trackers,
                             trackCount,
-                            trackCount
+                            trackCount,
                         )
                         isActivated = true
                     } else {
@@ -190,7 +190,7 @@ class MangaInfoHeaderAdapter(
                 .onEach {
                     controller.activity?.copyToClipboard(
                         view.context.getString(R.string.title),
-                        binding.mangaFullTitle.text.toString()
+                        binding.mangaFullTitle.text.toString(),
                     )
                 }
                 .launchIn(controller.viewScope)
@@ -207,7 +207,7 @@ class MangaInfoHeaderAdapter(
                     val author = binding.mangaAuthor.text.toString()
                     controller.activity?.copyToClipboard(
                         author,
-                        SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = author) ?: author
+                        SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = author) ?: author,
                     )
                     // SY <--
                 }
@@ -228,7 +228,7 @@ class MangaInfoHeaderAdapter(
                     val artist = binding.mangaArtist.text.toString()
                     controller.activity?.copyToClipboard(
                         artist,
-                        SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist
+                        SourceTagsUtil.getWrappedTag(source.id, namespace = "artist", tag = artist) ?: artist,
                     )
                     // SY <--
                 }
@@ -263,7 +263,7 @@ class MangaInfoHeaderAdapter(
                 R.string.action_share,
                 R.string.action_save,
                 // Can only edit cover for library manga
-                if (manga.favorite) R.string.action_edit else null
+                if (manga.favorite) R.string.action_edit else null,
             ).map(controller.activity!!::getString).toTypedArray()
 
             MaterialAlertDialogBuilder(controller.activity!!)
@@ -322,11 +322,11 @@ class MangaInfoHeaderAdapter(
                     // SY -->
                     isMergedSource && hasOneActiveLanguages -> getMergedSourcesString(
                         enabledLanguages,
-                        true
+                        true,
                     )
                     isMergedSource -> getMergedSourcesString(
                         enabledLanguages,
-                        false
+                        false,
                     )
                     // SY <--
                     // For edge cases where user disables a source they got manga of in their library.
@@ -368,7 +368,7 @@ class MangaInfoHeaderAdapter(
                 meta,
                 controller::performGenreSearch,
                 controller::performGlobalSearch,
-                source
+                source,
             )
             // SY <--
             binding.mangaSummarySection.description = manga.description

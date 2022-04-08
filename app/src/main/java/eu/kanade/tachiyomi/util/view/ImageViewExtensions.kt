@@ -38,7 +38,7 @@ fun ImageView.setVectorCompat(@DrawableRes drawable: Int, @AttrRes tint: Int? = 
 fun ImageView.loadAutoPause(
     data: Any?,
     loader: ImageLoader = context.imageLoader,
-    builder: ImageRequest.Builder.() -> Unit = {}
+    builder: ImageRequest.Builder.() -> Unit = {},
 ) {
     load(data, loader) {
         placeholder(ColorDrawable(context.getColor(R.color.cover_placeholder)))
@@ -55,7 +55,7 @@ fun ImageView.loadAutoPause(
             },
             onStart = { request -> originalListener?.onStart(request) },
             onCancel = { request -> originalListener?.onCancel(request) },
-            onError = { request, throwable -> originalListener?.onError(request, throwable) }
+            onError = { request, throwable -> originalListener?.onError(request, throwable) },
         )
     }
 }

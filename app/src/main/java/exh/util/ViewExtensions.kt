@@ -30,7 +30,7 @@ fun Context.makeSearchChip(
     onLongClick: (item: String) -> Unit = {},
     sourceId: Long,
     namespace: String? = null,
-    type: Int? = null
+    type: Int? = null,
 ): Chip {
     return Chip(this).apply {
         text = item

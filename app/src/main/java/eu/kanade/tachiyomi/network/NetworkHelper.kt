@@ -12,7 +12,8 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-/* SY --> */ open /* SY <-- */ class NetworkHelper(context: Context) {
+/* SY --> */
+open /* SY <-- */ class NetworkHelper(context: Context) {
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -20,7 +21,8 @@ import java.util.concurrent.TimeUnit
 
     private val cacheSize = 5L * 1024 * 1024 // 5 MiB
 
-    /* SY --> */ open /* SY <-- */val cookieManager = AndroidCookieJar()
+    /* SY --> */
+    open /* SY <-- */val cookieManager = AndroidCookieJar()
 
     private val baseClientBuilder: OkHttpClient.Builder
         get() {
@@ -48,9 +50,11 @@ import java.util.concurrent.TimeUnit
             return builder
         }
 
-    /* SY --> */ open /* SY <-- */val client by lazy { baseClientBuilder.cache(Cache(cacheDir, cacheSize)).build() }
+    /* SY --> */
+    open /* SY <-- */val client by lazy { baseClientBuilder.cache(Cache(cacheDir, cacheSize)).build() }
 
-    /* SY --> */ open /* SY <-- */val cloudflareClient by lazy {
+    /* SY --> */
+    open /* SY <-- */val cloudflareClient by lazy {
         client.newBuilder()
             .addInterceptor(CloudflareInterceptor(context))
             .build()

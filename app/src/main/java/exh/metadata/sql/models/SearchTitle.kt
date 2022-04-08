@@ -14,5 +14,5 @@ data class SearchTitle(
     val title: String,
 
     // Title type, useful for distinguishing between main/alt titles
-    val type: Int
+    val type: Int,
 )

@@ -6,5 +6,5 @@ data class EXHSavedSearch(
     val id: Long,
     val name: String,
     val query: String,
-    val filterList: FilterList?
+    val filterList: FilterList?,
 )

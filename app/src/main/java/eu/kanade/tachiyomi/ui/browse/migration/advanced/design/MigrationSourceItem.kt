@@ -30,7 +30,7 @@ class MigrationSourceItem(val source: HttpSource, var sourceEnabled: Boolean) : 
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: MigrationSourceHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(source, sourceEnabled)
     }
@@ -67,7 +67,7 @@ class MigrationSourceItem(val source: HttpSource, var sourceEnabled: Boolean) : 
 
             return MigrationSourceItem(
                 source,
-                migrationSource.sourceEnabled
+                migrationSource.sourceEnabled,
             )
         }
     }

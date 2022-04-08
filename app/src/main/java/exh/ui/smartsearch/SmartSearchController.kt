@@ -23,7 +23,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
 
     private val source = sourceManager.get(bundle?.getLong(ARG_SOURCE_ID, -1) ?: -1) as? CatalogueSource
     private val smartSearchConfig: SourceController.SmartSearchConfig? = bundle?.getParcelable(
-        ARG_SMART_SEARCH_CONFIG
+        ARG_SMART_SEARCH_CONFIG,
     )
 
     override fun getTitle() = source?.name.orEmpty()
@@ -55,7 +55,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
                     val transaction = BrowseSourceController(
                         source,
                         smartSearchConfig.origTitle,
-                        smartSearchConfig
+                        smartSearchConfig,
                     ).withFadeTransaction()
                     router.replaceTopController(transaction)
                 }

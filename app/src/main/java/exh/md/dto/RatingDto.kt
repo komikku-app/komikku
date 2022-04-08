@@ -5,13 +5,13 @@ import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class RatingResponseDto(
-    val ratings: JsonElement
+    val ratings: JsonElement,
 )
 
 @Serializable
 data class PersonalRatingDto(
     val rating: Int,
-    val createdAt: String
+    val createdAt: String,
 )
 
 @Serializable

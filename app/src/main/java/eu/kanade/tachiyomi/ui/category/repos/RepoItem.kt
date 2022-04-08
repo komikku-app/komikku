@@ -46,7 +46,7 @@ class RepoItem(val repo: String) : AbstractFlexibleItem<RepoHolder>() {
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: RepoHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(repo)
     }

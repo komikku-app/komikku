@@ -16,7 +16,7 @@ import exh.ui.metadata.MetadataViewController
 import java.util.Date
 
 class HitomiDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<HitomiDescriptionAdapter.HitomiDescriptionViewHolder>() {
 
@@ -51,12 +51,12 @@ class HitomiDescriptionAdapter(
             listOf(
                 binding.genre,
                 binding.language,
-                binding.whenPosted
+                binding.whenPosted,
             ).forEach { textView ->
                 textView.setOnLongClickListener {
                     itemView.context.copyToClipboard(
                         textView.text.toString(),
-                        textView.text.toString()
+                        textView.text.toString(),
                     )
                     true
                 }
@@ -65,8 +65,8 @@ class HitomiDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

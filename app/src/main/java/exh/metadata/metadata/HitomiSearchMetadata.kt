@@ -52,7 +52,7 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
             genres = genres,
             artist = artist,
             status = status,
-            description = description
+            description = description,
         )
     }
 
@@ -65,7 +65,7 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
                 artists.nullIfEmpty()?.joinToString()?.let { getString(R.string.artist) to it },
                 genre?.let { getString(R.string.genre) to it },
                 language?.let { getString(R.string.language) to it },
-                uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }
+                uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
             )
         }
     }

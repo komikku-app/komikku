@@ -26,7 +26,7 @@ class MangaHandler(
     private val lang: String,
     private val service: MangaDexService,
     private val apiMangaParser: ApiMangaParser,
-    private val followsHandler: FollowsHandler
+    private val followsHandler: FollowsHandler,
 ) {
     suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
         return coroutineScope {
@@ -39,7 +39,7 @@ class MangaHandler(
                 sourceId,
                 response.await(),
                 simpleChapters.await(),
-                statistics.await()
+                statistics.await(),
             )
         }
     }
@@ -62,7 +62,7 @@ class MangaHandler(
                     lang,
                     it,
                     blockedGroups,
-                    blockedUploaders
+                    blockedUploaders,
                 )
             }
 

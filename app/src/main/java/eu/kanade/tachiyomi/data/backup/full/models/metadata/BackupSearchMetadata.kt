@@ -9,7 +9,7 @@ data class BackupSearchMetadata(
     @ProtoNumber(1) var uploader: String? = null,
     @ProtoNumber(2) var extra: String,
     @ProtoNumber(3) var indexedExtra: String? = null,
-    @ProtoNumber(4) var extraVersion: Int
+    @ProtoNumber(4) var extraVersion: Int,
 ) {
     fun getSearchMetadata(mangaId: Long): SearchMetadata {
         return SearchMetadata(
@@ -17,7 +17,7 @@ data class BackupSearchMetadata(
             uploader = uploader,
             extra = extra,
             indexedExtra = indexedExtra,
-            extraVersion = extraVersion
+            extraVersion = extraVersion,
         )
     }
 
@@ -27,7 +27,7 @@ data class BackupSearchMetadata(
                 uploader = searchMetadata.uploader,
                 extra = searchMetadata.extra,
                 indexedExtra = searchMetadata.indexedExtra,
-                extraVersion = searchMetadata.extraVersion
+                extraVersion = searchMetadata.extraVersion,
             )
         }
     }

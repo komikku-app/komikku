@@ -15,7 +15,7 @@ import uy.kohesive.injekt.injectLazy
 @Suppress("OverridingDeprecatedMember", "DEPRECATION")
 class EnhancedHttpSource(
     val originalSource: HttpSource,
-    val enhancedSource: HttpSource
+    val enhancedSource: HttpSource,
 ) : HttpSource() {
     private val prefs: PreferencesHelper by injectLazy()
 

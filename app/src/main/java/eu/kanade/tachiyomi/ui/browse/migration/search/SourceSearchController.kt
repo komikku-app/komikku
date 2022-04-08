@@ -13,15 +13,15 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class SourceSearchController(
-    bundle: Bundle
+    bundle: Bundle,
 ) : BrowseSourceController(bundle) {
 
     constructor(targetController: MigrationListController, manga: Manga, source: CatalogueSource, searchQuery: String? = null) : this(
         bundleOf(
             SOURCE_ID_KEY to source.id,
             MANGA_KEY to manga,
-            SEARCH_QUERY_KEY to searchQuery
-        )
+            SEARCH_QUERY_KEY to searchQuery,
+        ),
     ) {
         this.targetController = targetController
     }

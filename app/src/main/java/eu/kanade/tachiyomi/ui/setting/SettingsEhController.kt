@@ -121,7 +121,7 @@ class SettingsEhController : SettingsController() {
                 summaryRes = R.string.use_hentai_at_home_summary
                 entriesRes = arrayOf(
                     R.string.use_hentai_at_home_option_1,
-                    R.string.use_hentai_at_home_option_2
+                    R.string.use_hentai_at_home_option_2,
                 )
                 entryValues = arrayOf("0", "1")
 
@@ -299,7 +299,7 @@ class SettingsEhController : SettingsController() {
                     R.string.eh_image_quality_1600,
                     R.string.eh_image_quality_1280,
                     R.string.eh_image_quality_980,
-                    R.string.eh_image_quality_780
+                    R.string.eh_image_quality_780,
                 )
                 entryValues = arrayOf(
                     "auto",
@@ -307,7 +307,7 @@ class SettingsEhController : SettingsController() {
                     "ovrs_1600",
                     "high",
                     "med",
-                    "low"
+                    "low",
                 )
 
                 onChange { preferences.imageQuality().reconfigure() }
@@ -387,7 +387,7 @@ class SettingsEhController : SettingsController() {
                     R.string.time_between_batches_6_hours,
                     R.string.time_between_batches_12_hours,
                     R.string.time_between_batches_24_hours,
-                    R.string.time_between_batches_48_hours
+                    R.string.time_between_batches_48_hours,
                 )
                 entryValues = arrayOf("0", "1", "2", "3", "6", "12", "24", "48")
 
@@ -491,7 +491,7 @@ class SettingsEhController : SettingsController() {
                                 metaInRelativeDuration(2.days),
                                 metaInRelativeDuration(7.days),
                                 metaInRelativeDuration(30.days),
-                                metaInRelativeDuration(365.days)
+                                metaInRelativeDuration(365.days),
                             )
                         } finally {
                             progress.dismiss()
@@ -589,7 +589,7 @@ class SettingsEhController : SettingsController() {
         var hours: Long? = null,
         var minutes: Long? = null,
         var seconds: Long? = null,
-        var milliseconds: Long? = null
+        var milliseconds: Long? = null,
     )
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

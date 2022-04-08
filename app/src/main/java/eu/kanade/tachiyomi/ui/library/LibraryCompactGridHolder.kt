@@ -24,7 +24,7 @@ import reactivecircus.flowbinding.android.view.clicks
 class LibraryCompactGridHolder(
     override val binding: SourceCompactGridItemBinding,
     adapter: FlexibleAdapter<*>,
-    private val coverOnly: Boolean
+    private val coverOnly: Boolean,
 ) : LibraryHolder<SourceCompactGridItemBinding>(binding.root, adapter) {
 
     // SY -->

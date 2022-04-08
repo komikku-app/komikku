@@ -17,7 +17,7 @@ fun Manga.mangaType(context: Context): String {
             MangaType.TYPE_MANHUA -> R.string.manhua
             MangaType.TYPE_COMIC -> R.string.comic
             else -> R.string.manga
-        }
+        },
     ).lowercase(Locale.getDefault())
 }
 

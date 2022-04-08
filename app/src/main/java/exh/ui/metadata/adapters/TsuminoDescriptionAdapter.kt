@@ -18,7 +18,7 @@ import java.util.Date
 import kotlin.math.round
 
 class TsuminoDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<TsuminoDescriptionAdapter.TsuminoDescriptionViewHolder>() {
 
@@ -67,12 +67,12 @@ class TsuminoDescriptionAdapter(
                 binding.pages,
                 binding.rating,
                 binding.uploader,
-                binding.whenPosted
+                binding.whenPosted,
             ).forEach { textView ->
                 textView.setOnLongClickListener {
                     itemView.context.copyToClipboard(
                         textView.text.toString(),
-                        textView.text.toString()
+                        textView.text.toString(),
                     )
                     true
                 }
@@ -81,8 +81,8 @@ class TsuminoDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

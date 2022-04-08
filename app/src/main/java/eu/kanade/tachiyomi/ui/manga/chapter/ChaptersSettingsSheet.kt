@@ -22,7 +22,7 @@ import kotlinx.coroutines.supervisorScope
 class ChaptersSettingsSheet(
     private val router: Router,
     private val presenter: MangaPresenter,
-    private val onGroupClickListener: (ExtendedNavigationView.Group) -> Unit
+    private val onGroupClickListener: (ExtendedNavigationView.Group) -> Unit,
 ) : TabbedBottomSheetDialog(router.activity!!) {
 
     val filters = Filter(router.activity!!)
@@ -43,13 +43,13 @@ class ChaptersSettingsSheet(
     override fun getTabViews(): List<View> = listOf(
         filters,
         sort,
-        display
+        display,
     )
 
     override fun getTabTitles(): List<Int> = listOf(
         R.string.action_filter,
         R.string.action_sort,
-        R.string.action_display
+        R.string.action_display,
     )
 
     private fun showPopupMenu(view: View) {
@@ -61,7 +61,7 @@ class ChaptersSettingsSheet(
                         SetChapterSettingsDialog(presenter.manga).showDialog(router)
                     }
                 }
-            }
+            },
         )
     }
 

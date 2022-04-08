@@ -69,7 +69,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
      */
     fun deleteTimeRanges(timeRanges: List<TimeRange>) {
         preferences.authenticatorTimeRanges().set(
-            this.timeRanges.filterNot { it in timeRanges }.map { it.toPreferenceString() }.toSet()
+            this.timeRanges.filterNot { it in timeRanges }.map { it.toPreferenceString() }.toSet(),
         )
     }
 

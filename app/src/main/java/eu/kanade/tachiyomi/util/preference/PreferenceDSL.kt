@@ -44,7 +44,7 @@ inline fun PreferenceGroup.infoPreference(@StringRes infoRes: Int): Preference {
             iconTint = context.getResourceColor(android.R.attr.textColorHint)
             summaryRes = infoRes
             isSelectable = false
-        }
+        },
     )
 }
 
@@ -142,7 +142,7 @@ inline fun SwitchPreferenceCompat.requireAuthentication(activity: FragmentActivi
                 callback = object : AuthenticatorUtil.AuthenticationCallback() {
                     override fun onAuthenticationSucceeded(
                         activity: FragmentActivity?,
-                        result: BiometricPrompt.AuthenticationResult
+                        result: BiometricPrompt.AuthenticationResult,
                     ) {
                         super.onAuthenticationSucceeded(activity, result)
                         isChecked = newValue as Boolean
@@ -151,12 +151,12 @@ inline fun SwitchPreferenceCompat.requireAuthentication(activity: FragmentActivi
                     override fun onAuthenticationError(
                         activity: FragmentActivity?,
                         errorCode: Int,
-                        errString: CharSequence
+                        errString: CharSequence,
                     ) {
                         super.onAuthenticationError(activity, errorCode, errString)
                         activity?.toast(errString.toString())
                     }
-                }
+                },
             )
         }
 

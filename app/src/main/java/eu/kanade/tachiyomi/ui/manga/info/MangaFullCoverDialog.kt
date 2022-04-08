@@ -59,7 +59,7 @@ class MangaFullCoverDialog : DialogController {
                 }
                 true
             }
-            menu?.findItem(R.id.action_edit_cover)?.isVisible = /* SY --> */ false /* manga?.favorite ?: false SY <-- */
+            menu?.findItem(R.id.action_edit_cover)?.isVisible = /* SY --> */ false // manga?.favorite ?: false SY <--
         }
 
         setImage(manga)
@@ -107,8 +107,8 @@ class MangaFullCoverDialog : DialogController {
                 binding?.container?.setImage(
                     it,
                     ReaderPageImageView.Config(
-                        zoomDuration = 500
-                    )
+                        zoomDuration = 500,
+                    ),
                 )
             }
             .build()

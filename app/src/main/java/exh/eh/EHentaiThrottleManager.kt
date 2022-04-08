@@ -7,7 +7,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class EHentaiThrottleManager(
     private val max: Duration = THROTTLE_MAX,
-    private val inc: Duration = THROTTLE_INC
+    private val inc: Duration = THROTTLE_INC,
 ) {
     private var lastThrottleTime = Duration.ZERO
     var throttleTime = Duration.ZERO

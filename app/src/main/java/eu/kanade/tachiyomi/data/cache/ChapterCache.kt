@@ -93,7 +93,7 @@ class ChapterCache(private val context: Context) {
             File(context.cacheDir, PARAMETER_CACHE_DIRECTORY),
             PARAMETER_APP_VERSION,
             PARAMETER_VALUE_COUNT,
-            cacheSize * 1024 * 1024
+            cacheSize * 1024 * 1024,
         )
     }
     // <-- EH

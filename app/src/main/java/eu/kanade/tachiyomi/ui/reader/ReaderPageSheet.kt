@@ -18,7 +18,7 @@ class ReaderPageSheet(
     private val page: ReaderPage,
     private val extraPage: ReaderPage? = null,
     private val isLTR: Boolean = false,
-    private val bg: Int? = null
+    private val bg: Int? = null,
 ) : BaseBottomSheetDialog(activity) {
 
     private lateinit var binding: ReaderPageSheetBinding

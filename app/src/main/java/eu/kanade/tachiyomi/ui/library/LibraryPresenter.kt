@@ -66,7 +66,7 @@ class LibraryPresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     // SY -->
-    private val customMangaManager: CustomMangaManager = Injekt.get()
+    private val customMangaManager: CustomMangaManager = Injekt.get(),
     // SY <--
 ) : BasePresenter<LibraryController>() {
 
@@ -151,7 +151,7 @@ class LibraryPresenter(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache({ view, (categories, mangaMap) ->
                     view.onNextLibraryUpdate(categories, mangaMap)
-                })
+                },)
         }
     }
 
@@ -484,11 +484,11 @@ class LibraryPresenter(
         } else if (!libraryIsGrouped) {
             editedCategories = listOf(Category.create("All").apply { this.id = 0 })
             mapOf(
-                0 to map.values.flatten().distinctBy { it.manga.id }
+                0 to map.values.flatten().distinctBy { it.manga.id },
             )
         } else {
             val (items, customCategories) = getGroupedMangaItems(
-                map.values.flatten().distinctBy { it.manga.id }
+                map.values.flatten().distinctBy { it.manga.id },
             )
             editedCategories = customCategories
             items
@@ -523,7 +523,7 @@ class LibraryPresenter(
                     LibraryItem(
                         libraryManga,
                         shouldSetFromCategory,
-                        defaultLibraryDisplayMode
+                        defaultLibraryDisplayMode,
                     )
                 }.groupBy { it.manga.category }
             }
@@ -645,7 +645,8 @@ class LibraryPresenter(
                             downloadManager.downloadChapters(mergedManga, chapters)
                         }
                 } else {
-                    /* SY --> */ val chapters = if (manga.isEhBasedManga()) {
+                    /* SY --> */
+                    val chapters = if (manga.isEhBasedManga()) {
                         db.getChapters(manga).executeOnIO().minByOrNull { it.source_order }?.let { chapter ->
                             if (!chapter.read) listOf(chapter) else emptyList()
                         } ?: emptyList()
@@ -677,7 +678,7 @@ class LibraryPresenter(
                     manga.artist.takeUnless { it == manga.originalArtist },
                     manga.description.takeUnless { it == manga.originalDescription },
                     manga.genre.takeUnless { it == manga.originalGenre }?.let { manga.getGenres() },
-                    manga.status.takeUnless { it == manga.originalStatus }
+                    manga.status.takeUnless { it == manga.originalStatus },
                 )
             }
             if (mangaJson != null) {
@@ -832,8 +833,8 @@ class LibraryPresenter(
                         SManga.ON_HIATUS to context.getString(R.string.ongoing),
                         SManga.PUBLISHING_FINISHED to context.getString(R.string.publishing_finished),
                         SManga.COMPLETED to context.getString(R.string.completed),
-                        SManga.UNKNOWN to context.getString(R.string.unknown)
-                    ).associateBy(Pair<Int, *>::first)
+                        SManga.UNKNOWN to context.getString(R.string.unknown),
+                    ).associateBy(Pair<Int, *>::first),
                 )
             }
             LibraryGroup.BY_SOURCE ->
@@ -854,8 +855,8 @@ class LibraryPresenter(
                         TrackManager.PAUSED to context.getString(R.string.on_hold),
                         TrackManager.COMPLETED to context.getString(R.string.completed),
                         TrackManager.DROPPED to context.getString(R.string.dropped),
-                        TrackManager.OTHER to context.getString(R.string.not_tracked)
-                    ).associateBy(Pair<Int, *>::first)
+                        TrackManager.OTHER to context.getString(R.string.not_tracked),
+                    ).associateBy(Pair<Int, *>::first),
                 )
             }
         }

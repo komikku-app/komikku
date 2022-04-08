@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class EHentaiUpdaterStats(
     val startTime: Long,
     val possibleUpdates: Int,
-    val updateCount: Int
+    val updateCount: Int,
 )

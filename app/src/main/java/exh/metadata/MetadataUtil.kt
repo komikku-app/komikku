@@ -62,7 +62,7 @@ object MetadataUtil {
         "(wip)",
         "{wip}",
         "<wip>",
-        "wip"
+        "wip",
     )
 
     val EX_DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)

@@ -27,6 +27,6 @@ class HistoryChapterIdPutResolver : PutResolver<History>() {
 
     fun mapToContentValues(history: History) =
         contentValuesOf(
-            HistoryTable.COL_CHAPTER_ID to history.chapter_id
+            HistoryTable.COL_CHAPTER_ID to history.chapter_id,
         )
 }

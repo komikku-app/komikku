@@ -38,20 +38,20 @@ class PageHandler(
             if (chapterResponse.data.attributes.externalUrl != null && chapterResponse.data.attributes.pages == 0) {
                 when {
                     chapter.scanlator.equals("mangaplus", true) -> mangaPlusHandler.fetchPageList(
-                        chapterResponse.data.attributes.externalUrl
+                        chapterResponse.data.attributes.externalUrl,
                     )
                     /*chapter.scanlator.equals("comikey", true) -> comikeyHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl
                     )*/
                     chapter.scanlator.equals("bilibili comics", true) -> bilibiliHandler.fetchPageList(
                         chapterResponse.data.attributes.externalUrl,
-                        chapterResponse.data.attributes.chapter.toString()
+                        chapterResponse.data.attributes.chapter.toString(),
                     )
                     chapter.scanlator.equals("azuki manga", true) -> azukiHandler.fetchPageList(
-                        chapterResponse.data.attributes.externalUrl
+                        chapterResponse.data.attributes.externalUrl,
                     )
                     chapter.scanlator.equals("mangahot", true) -> mangaHotHandler.fetchPageList(
-                        chapterResponse.data.attributes.externalUrl
+                        chapterResponse.data.attributes.externalUrl,
                     )
                     else -> throw Exception("${chapter.scanlator} not supported")
                 }

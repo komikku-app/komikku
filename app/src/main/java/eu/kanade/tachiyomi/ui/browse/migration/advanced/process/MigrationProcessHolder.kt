@@ -28,7 +28,7 @@ import java.text.DecimalFormat
 
 class MigrationProcessHolder(
     private val view: View,
-    private val adapter: MigrationProcessAdapter
+    private val adapter: MigrationProcessAdapter,
 ) : FlexibleViewHolder(view, adapter) {
     private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
@@ -52,11 +52,11 @@ class MigrationProcessHolder(
 
             binding.migrationMenu.setVectorCompat(
                 R.drawable.ic_more_24dp,
-                R.attr.colorOnPrimary
+                R.attr.colorOnPrimary,
             )
             binding.skipManga.setVectorCompat(
                 R.drawable.ic_close_24dp,
-                R.attr.colorOnPrimary
+                R.attr.colorOnPrimary,
             )
             binding.migrationMenu.isInvisible = true
             binding.skipManga.isVisible = true
@@ -68,8 +68,8 @@ class MigrationProcessHolder(
                         adapter.controller.router.pushController(
                             MangaController(
                                 manga,
-                                true
-                            ).withFadeTransaction()
+                                true,
+                            ).withFadeTransaction(),
                         )
                     }
                     .launchIn(adapter.controller.viewScope)
@@ -104,8 +104,8 @@ class MigrationProcessHolder(
                             adapter.controller.router.pushController(
                                 MangaController(
                                     searchResult,
-                                    true
-                                ).withFadeTransaction()
+                                    true,
+                                ).withFadeTransaction(),
                             )
                         }
                         .launchIn(adapter.controller.viewScope)
@@ -165,12 +165,12 @@ class MigrationProcessHolder(
         if (latestChapter > 0f) {
             mangaLastChapterLabel.text = root.context.getString(
                 R.string.latest_,
-                DecimalFormat("#.#").format(latestChapter)
+                DecimalFormat("#.#").format(latestChapter),
             )
         } else {
             mangaLastChapterLabel.text = root.context.getString(
                 R.string.latest_,
-                root.context.getString(R.string.unknown)
+                root.context.getString(R.string.unknown),
             )
         }
     }

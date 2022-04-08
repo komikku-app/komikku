@@ -38,8 +38,8 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
                 holder.itemView.context,
                 android.R.layout.simple_dropdown_item_1line,
                 filter.values,
-                filter.excludePrefix
-            )
+                filter.excludePrefix,
+            ),
         )
         holder.autoComplete.threshold = 3
 

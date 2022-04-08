@@ -15,7 +15,7 @@ class MigratingManga(
     private val db: DatabaseHelper,
     private val sourceManager: SourceManager,
     val mangaId: Long,
-    parentContext: CoroutineContext
+    parentContext: CoroutineContext,
 ) {
     val searchResult = DeferredField<Long?>()
 

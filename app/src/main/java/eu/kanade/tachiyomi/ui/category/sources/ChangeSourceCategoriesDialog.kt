@@ -21,7 +21,7 @@ class ChangeSourceCategoriesDialog<T>(bundle: Bundle? = null) :
         target: T,
         source: Source,
         categories: Array<String>,
-        selection: BooleanArray
+        selection: BooleanArray,
     ) : this() {
         this.source = source
         this.categories = categories
@@ -34,7 +34,7 @@ class ChangeSourceCategoriesDialog<T>(bundle: Bundle? = null) :
             .setTitle(R.string.action_move_category)
             .setMultiChoiceItems(
                 categories,
-                selection
+                selection,
             ) { _, which, selected ->
                 selection[which] = selected
             }

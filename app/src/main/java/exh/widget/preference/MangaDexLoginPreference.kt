@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 class MangaDexLoginPreference @JvmOverloads constructor(
     context: Context,
     val source: MangaDex,
-    attrs: AttributeSet? = null
+    attrs: AttributeSet? = null,
 ) : Preference(context, attrs) {
 
     init {

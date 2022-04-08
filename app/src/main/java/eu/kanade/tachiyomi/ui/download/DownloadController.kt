@@ -197,7 +197,9 @@ class DownloadController :
                 onUpdateDownloadedPages(download)
             }
             Download.State.ERROR -> unsubscribeProgress(download)
-            else -> { /* unused */ }
+            else -> {
+                /* unused */
+            }
         }
     }
 
@@ -310,7 +312,7 @@ class DownloadController :
                         R.string.action_pause
                     } else {
                         R.string.action_resume
-                    }
+                    },
                 )
 
                 setIconResource(
@@ -318,7 +320,7 @@ class DownloadController :
                         R.drawable.ic_pause_24dp
                     } else {
                         R.drawable.ic_play_arrow_24dp
-                    }
+                    },
                 )
             }
         }

@@ -125,7 +125,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     meta.gId,
                     meta.gToken,
                     failuresThisIteration,
-                    modifiedThisIteration.size
+                    modifiedThisIteration.size,
                 )
 
                 if (manga.id in modifiedThisIteration) {
@@ -147,7 +147,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                             manga.id,
                             meta.gId,
                             meta.gToken,
-                            failuresThisIteration
+                            failuresThisIteration,
                         )
                     }
 
@@ -160,7 +160,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                         manga.id,
                         meta.gId,
                         meta.gToken,
-                        failuresThisIteration
+                        failuresThisIteration,
                     )
 
                     continue
@@ -186,9 +186,9 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     EHentaiUpdaterStats(
                         startTime,
                         allMeta.size,
-                        updatedThisIteration
-                    )
-                )
+                        updatedThisIteration,
+                    ),
+                ),
             )
 
             if (updatedManga.isNotEmpty()) {
@@ -256,7 +256,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     interval.toLong(),
                     TimeUnit.HOURS,
                     10,
-                    TimeUnit.MINUTES
+                    TimeUnit.MINUTES,
                 )
                     .addTag(TAG)
                     .setConstraints(constraints)

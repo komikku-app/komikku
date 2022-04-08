@@ -12,7 +12,7 @@ interface FavoriteEntryQueries : DbProvider {
         .withQuery(
             Query.builder()
                 .table(FavoriteEntryTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -24,7 +24,7 @@ interface FavoriteEntryQueries : DbProvider {
         .byQuery(
             DeleteQuery.builder()
                 .table(FavoriteEntryTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 }

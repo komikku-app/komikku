@@ -15,8 +15,8 @@ class MangaDexFollowsController(bundle: Bundle) : BrowseSourceController(bundle)
 
     constructor(source: CatalogueSource) : this(
         bundleOf(
-            SOURCE_ID_KEY to source.id
-        )
+            SOURCE_ID_KEY to source.id,
+        ),
     )
 
     override fun getTitle(): String? {

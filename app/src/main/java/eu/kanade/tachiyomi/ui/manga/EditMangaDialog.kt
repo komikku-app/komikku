@@ -48,7 +48,7 @@ class EditMangaDialog : DialogController {
     private val context: Context get() = binding.root.context
 
     constructor(target: MangaController, manga: Manga) : super(
-        bundleOf(KEY_MANGA to manga.id!!)
+        bundleOf(KEY_MANGA to manga.id!!),
     ) {
         targetController = target
         this.manga = manga
@@ -89,7 +89,7 @@ class EditMangaDialog : DialogController {
                 R.string.publishing_finished,
                 R.string.cancelled,
                 R.string.on_hiatus,
-            ).map { context.getString(it) }
+            ).map { context.getString(it) },
         )
 
         binding.status.adapter = statusAdapter
@@ -104,7 +104,7 @@ class EditMangaDialog : DialogController {
                     SManga.CANCELLED, 62 -> 5
                     SManga.ON_HIATUS, 63 -> 6
                     else -> 0
-                }
+                },
             )
         }
 
@@ -146,8 +146,8 @@ class EditMangaDialog : DialogController {
                         R.string.description_hint,
                         manga.originalDescription?.replace(
                             "\n",
-                            " "
-                        )?.chop(20)
+                            " ",
+                        )?.chop(20),
                     )
             }
         }
@@ -204,7 +204,7 @@ class EditMangaDialog : DialogController {
                 }
             },
             customCoverUri,
-            willResetCover
+            willResetCover,
         )
     }
 

@@ -302,7 +302,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
                     source = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null,
                     content["name"]!!.jsonPrimitive.content,
                     content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
-                    Json.encodeToString(content["filters"]!!.jsonArray)
+                    Json.encodeToString(content["filters"]!!.jsonArray),
                 )
             }.getOrNull()
         }.filter { backupSavedSearch ->

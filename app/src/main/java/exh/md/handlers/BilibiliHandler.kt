@@ -87,7 +87,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
         return POST(
             "$baseUrl/$BASE_API_ENDPOINT/ComicDetail?device=pc&platform=web",
             headers = newHeaders,
-            body = requestBody
+            body = requestBody,
         )
     }
 
@@ -136,7 +136,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
         return POST(
             "$baseUrl/$BASE_API_ENDPOINT/GetImageIndex?device=pc&platform=web",
             headers = newHeaders,
-            body = requestBody
+            body = requestBody,
         )
     }
 
@@ -173,7 +173,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
         return POST(
             "$baseUrl/$BASE_API_ENDPOINT/ImageToken?device=pc&platform=web",
             headers = newHeaders,
-            body = requestBody
+            body = requestBody,
         )
     }
 
@@ -187,24 +187,24 @@ class BilibiliHandler(currentClient: OkHttpClient) {
     @Serializable
     data class BilibiliPageDto(
         val token: String,
-        val url: String
+        val url: String,
     )
 
     @Serializable
     data class BilibiliResultDto<T>(
         val code: Int = 0,
         val data: T? = null,
-        @SerialName("msg") val message: String = ""
+        @SerialName("msg") val message: String = "",
     )
 
     @Serializable
     data class BilibiliReader(
-        val images: List<BilibiliImageDto> = emptyList()
+        val images: List<BilibiliImageDto> = emptyList(),
     )
 
     @Serializable
     data class BilibiliImageDto(
-        val path: String
+        val path: String,
     )
 
     @Serializable
@@ -218,7 +218,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
         @SerialName("season_id") val seasonId: Int = 0,
         val styles: List<String> = emptyList(),
         val title: String,
-        @SerialName("vertical_cover") val verticalCover: String = ""
+        @SerialName("vertical_cover") val verticalCover: String = "",
     )
 
     @Serializable
@@ -227,7 +227,7 @@ class BilibiliHandler(currentClient: OkHttpClient) {
         @SerialName("is_locked") val isLocked: Boolean,
         @SerialName("ord") val order: Float,
         @SerialName("pub_time") val publicationTime: String,
-        val title: String
+        val title: String,
     )
 
     companion object {

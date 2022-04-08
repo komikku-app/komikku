@@ -15,7 +15,7 @@ import uy.kohesive.injekt.api.get
  * Presenter of [SourceCategoryController]. Used to manage the categories of the library.
  */
 class SourceCategoryPresenter(
-    private val db: DatabaseHelper = Injekt.get()
+    private val db: DatabaseHelper = Injekt.get(),
 ) : BasePresenter<SourceCategoryController>() {
 
     /**
@@ -79,7 +79,7 @@ class SourceCategoryPresenter(
 
         preferences.sourcesTabSourcesInCategories().set(sources.toSet())
         preferences.sourcesTabCategories().set(
-            this.categories.filterNot { it in categories }.toSet()
+            this.categories.filterNot { it in categories }.toSet(),
         )
     }
 

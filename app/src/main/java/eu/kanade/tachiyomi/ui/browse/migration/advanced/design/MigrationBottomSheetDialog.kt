@@ -42,7 +42,7 @@ class MigrationBottomSheetDialog(private val activity: Activity, private val lis
             listener.startMigration(
                 if (binding.useSmartSearch.isChecked && binding.extraSearchParamText.text.isNotBlank()) {
                     binding.extraSearchParamText.toString()
-                } else null
+                } else null,
             )
             dismiss()
         }
@@ -77,7 +77,7 @@ class MigrationBottomSheetDialog(private val activity: Activity, private val lis
             if (isChecked) {
                 context.toast(
                     R.string.pre_migration_skip_toast,
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG,
                 )
             }
         }

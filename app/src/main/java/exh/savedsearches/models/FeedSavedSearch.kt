@@ -11,5 +11,5 @@ data class FeedSavedSearch(
     var savedSearch: Long?,
 
     // If the feed is a global or source specific feed
-    var global: Boolean
+    var global: Boolean,
 )

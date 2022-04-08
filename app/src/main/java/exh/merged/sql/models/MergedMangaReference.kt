@@ -32,7 +32,7 @@ data class MergedMangaReference(
     val mangaUrl: String,
 
     // source of the manga that is merged into this merge
-    val mangaSourceId: Long
+    val mangaSourceId: Long,
 ) {
     companion object {
         const val CHAPTER_SORT_NONE = 0

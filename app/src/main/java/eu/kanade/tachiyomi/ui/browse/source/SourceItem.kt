@@ -20,7 +20,7 @@ data class SourceItem(
     val isPinned: Boolean = false,
     // SY -->
     val showLatest: Boolean,
-    val showPins: Boolean
+    val showPins: Boolean,
     // SY <--
 ) :
     AbstractSectionableItem<SourceHolder, LangItem>(header) {
@@ -37,7 +37,7 @@ data class SourceItem(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: SourceHolder,
         position: Int,
-        payloads: MutableList<Any>
+        payloads: MutableList<Any>,
     ) {
         holder.bind(this)
     }

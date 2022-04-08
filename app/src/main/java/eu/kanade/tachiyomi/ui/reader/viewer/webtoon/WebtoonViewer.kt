@@ -67,7 +67,8 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     /**
      * Currently active item. It can be a chapter page or a chapter transition.
      */
-    /* [EXH] private */ var currentPage: Any? = null
+    /* [EXH] private */
+    var currentPage: Any? = null
 
     /**
      * Subscriptions to keep while this viewer is used.
@@ -104,7 +105,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
                         }
                     }
                 }
-            }
+            },
         )
         recycler.tapListener = f@{ event ->
             if (!config.tappingEnabled) {
@@ -292,7 +293,8 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     /**
      * Scrolls down by [scrollDistance].
      */
-    /* [EXH] private */ fun scrollDown() {
+    /* [EXH] private */
+    fun scrollDown() {
         // SY -->
         if (!isContinuous && tapByPage) {
             val currentPage = currentPage
@@ -347,11 +349,13 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
 
             KeyEvent.KEYCODE_DPAD_LEFT,
             KeyEvent.KEYCODE_DPAD_UP,
-            KeyEvent.KEYCODE_PAGE_UP -> if (isUp) scrollUp()
+            KeyEvent.KEYCODE_PAGE_UP,
+            -> if (isUp) scrollUp()
 
             KeyEvent.KEYCODE_DPAD_RIGHT,
             KeyEvent.KEYCODE_DPAD_DOWN,
-            KeyEvent.KEYCODE_PAGE_DOWN -> if (isUp) scrollDown()
+            KeyEvent.KEYCODE_PAGE_DOWN,
+            -> if (isUp) scrollDown()
             else -> return false
         }
         return true
@@ -374,7 +378,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
         adapter.refresh()
         adapter.notifyItemRangeChanged(
             max(0, position - 3),
-            min(position + 3, adapter.itemCount - 1)
+            min(position + 3, adapter.itemCount - 1),
         )
     }
 }

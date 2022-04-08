@@ -17,5 +17,5 @@ data class SearchTag(
     val name: String,
 
     // Tag type
-    val type: Int
+    val type: Int,
 )

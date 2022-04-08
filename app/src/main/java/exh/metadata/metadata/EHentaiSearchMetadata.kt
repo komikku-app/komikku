@@ -85,7 +85,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
             description = description,
             genres = genres,
             status = status,
-            cover = cover ?: manga.cover
+            cover = cover ?: manga.cover,
         )
     }
 

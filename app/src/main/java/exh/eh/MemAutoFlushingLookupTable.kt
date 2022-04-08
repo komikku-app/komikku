@@ -35,7 +35,7 @@ import kotlin.coroutines.CoroutineContext
 class MemAutoFlushingLookupTable<T>(
     file: File,
     private val serializer: EntrySerializer<T>,
-    private val debounceTimeMs: Long = 3000
+    private val debounceTimeMs: Long = 3000,
 ) : CoroutineScope, Closeable {
     /**
      * The context of this scope.

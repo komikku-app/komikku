@@ -97,7 +97,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
                             tags += RaisedTag(
                                 namespace,
                                 searchUrl.lastPathSegment!!.substringBefore("."),
-                                if (namespace != PururinSearchMetadata.TAG_NAMESPACE_CATEGORY) PururinSearchMetadata.TAG_TYPE_DEFAULT else RaisedSearchMetadata.TAG_TYPE_VIRTUAL
+                                if (namespace != PururinSearchMetadata.TAG_NAMESPACE_CATEGORY) PururinSearchMetadata.TAG_TYPE_DEFAULT else RaisedSearchMetadata.TAG_TYPE_VIRTUAL,
                             )
                         }
                     }
@@ -108,7 +108,7 @@ class Pururin(delegate: HttpSource, val context: Context) :
 
     override val matchingHosts = listOf(
         "pururin.io",
-        "www.pururin.io"
+        "www.pururin.io",
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String {

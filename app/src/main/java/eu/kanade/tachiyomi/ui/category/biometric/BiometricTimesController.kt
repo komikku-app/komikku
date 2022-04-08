@@ -196,7 +196,7 @@ class BiometricTimesController :
                     (activity as? MainActivity)?.binding?.rootCoordinator!!,
                     R.string.biometric_lock_time_deleted_snack,
                     R.string.action_undo,
-                    3000
+                    3000,
                 )
 
                 mode.finish()

@@ -155,7 +155,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 Request.Builder()
                     // Rob demo credentials
                     .url("https://speech-to-text-demo.ng.bluemix.net/api/v1/credentials")
-                    .build()
+                    .build(),
             )
                 .asObservableSuccess()
                 .subscribeOn(Schedulers.io())
@@ -206,14 +206,14 @@ class BrowserActionActivity : AppCompatActivity() {
                         {
                             getAudioButtonLocation(loopId)
                         },
-                        250
+                        250,
                     )
                 } else {
                     binding.webview.postDelayed(
                         {
                             doStageCheckbox(loopId)
                         },
-                        250
+                        250,
                     )
                 }
             }
@@ -236,7 +236,7 @@ class BrowserActionActivity : AppCompatActivity() {
                         {
                             getAudioButtonLocation(loopId)
                         },
-                        250
+                        250,
                     )
                 }
             }
@@ -254,20 +254,20 @@ class BrowserActionActivity : AppCompatActivity() {
                                         it!!
                                             .replace(TRANSCRIPT_CLEANER_REGEX, "")
                                             .replace(SPACE_DEDUPE_REGEX, " ")
-                                            .trim()
+                                            .trim(),
                                     )
                                 }
                             },
                             {
                                 runBlocking { captchaSolveFail() }
-                            }
+                            },
                         )
                 } else {
                     binding.webview.postDelayed(
                         {
                             doStageDownloadAudio(loopId)
                         },
-                        250
+                        250,
                     )
                 }
             }
@@ -287,7 +287,7 @@ class BrowserActionActivity : AppCompatActivity() {
             httpClient.newCall(
                 Request.Builder()
                     .url(url)
-                    .build()
+                    .build(),
             ).asObservableSuccess().map {
                 token to it
             }
@@ -300,7 +300,7 @@ class BrowserActionActivity : AppCompatActivity() {
                         "https://stream.watsonplatform.net/speech-to-text/api/v1/recognize".toHttpUrlOrNull()!!
                             .newBuilder()
                             .addQueryParameter("watson-token", token)
-                            .build()
+                            .build(),
                     )
                     .post(
                         MultipartBody.Builder()
@@ -312,12 +312,12 @@ class BrowserActionActivity : AppCompatActivity() {
                                 audioFile.toRequestBody(
                                     "audio/mp3".toMediaTypeOrNull(),
                                     0,
-                                    audioFile.size
-                                )
+                                    audioFile.size,
+                                ),
                             )
-                            .build()
+                            .build(),
                     )
-                    .build()
+                    .build(),
             ).asObservableSuccess()
         }.map { response ->
             response.parseAs<JsonObject>()["results"]!!
@@ -358,7 +358,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 }
             })();
             """.trimIndent().replace("\n", ""),
-            null
+            null,
         )
     }
 
@@ -393,7 +393,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 }
             })();
             """.trimIndent().replace("\n", ""),
-            null
+            null,
         )
     }
 
@@ -421,7 +421,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 }
             })();
             """.trimIndent().replace("\n", ""),
-            null
+            null,
         )
     }
 
@@ -452,7 +452,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 }
             })();
             """.trimIndent().replace("\n", ""),
-            null
+            null,
         )
     }
 
@@ -488,7 +488,7 @@ class BrowserActionActivity : AppCompatActivity() {
                     {
                         runValidateCaptcha(loopId)
                     },
-                    250
+                    250,
                 )
             }
         }
@@ -520,7 +520,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 }
             })();
             """.trimIndent().replace("\n", ""),
-            null
+            null,
         )
     }
 
@@ -685,7 +685,7 @@ class BrowserActionActivity : AppCompatActivity() {
             cookies: Map<String, String>,
             script: String?,
             url: String,
-            autoSolveSubmitBtnSelector: String? = null
+            autoSolveSubmitBtnSelector: String? = null,
         ) {
             val intent = baseIntent(context).apply {
                 putExtra(SOURCE_ID_EXTRA, source.id)
@@ -701,7 +701,7 @@ class BrowserActionActivity : AppCompatActivity() {
         fun launchUniversal(
             context: Context,
             source: HttpSource,
-            url: String
+            url: String,
         ) {
             val intent = baseIntent(context).apply {
                 putExtra(SOURCE_ID_EXTRA, source.id)
@@ -714,7 +714,7 @@ class BrowserActionActivity : AppCompatActivity() {
         fun launchUniversal(
             context: Context,
             sourceId: Long,
-            url: String
+            url: String,
         ) {
             val intent = baseIntent(context).apply {
                 putExtra(SOURCE_ID_EXTRA, sourceId)
@@ -729,7 +729,7 @@ class BrowserActionActivity : AppCompatActivity() {
             completionVerifier: ActionCompletionVerifier,
             script: String?,
             url: String,
-            actionName: String
+            actionName: String,
         ) {
             val intent = baseIntent(context).apply {
                 putExtra(SOURCE_ID_EXTRA, completionVerifier.id)
@@ -747,7 +747,7 @@ class BrowserActionActivity : AppCompatActivity() {
             script: String?,
             url: String,
             actionName: String,
-            headers: Map<String, String>? = emptyMap()
+            headers: Map<String, String>? = emptyMap(),
         ) {
             val intent = baseIntent(context).apply {
                 putExtra(HEADERS_EXTRA, HashMap(headers!!))

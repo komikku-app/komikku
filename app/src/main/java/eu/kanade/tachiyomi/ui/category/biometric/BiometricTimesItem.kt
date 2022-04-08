@@ -48,7 +48,7 @@ class BiometricTimesItem(val timeRange: TimeRange) : AbstractFlexibleItem<Biomet
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: BiometricTimesHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(timeRange)
     }

@@ -46,8 +46,8 @@ class MangaDexFabHeaderAdapter(val controller: BaseController<*>, val source: Ca
                     controller.router.replaceTopController(
                         BrowseSourceController(
                             source,
-                            "id:$randomMangaUrl"
-                        ).withFadeTransaction()
+                            "id:$randomMangaUrl",
+                        ).withFadeTransaction(),
                     )
                     onClick()
                 }.launchIn(controller.viewScope)

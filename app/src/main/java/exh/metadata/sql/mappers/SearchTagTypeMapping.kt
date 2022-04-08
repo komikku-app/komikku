@@ -20,7 +20,7 @@ import exh.metadata.sql.tables.SearchTagTable.TABLE
 class SearchTagTypeMapping : SQLiteTypeMapping<SearchTag>(
     SearchTagPutResolver(),
     SearchTagGetResolver(),
-    SearchTagDeleteResolver()
+    SearchTagDeleteResolver(),
 )
 
 class SearchTagPutResolver : DefaultPutResolver<SearchTag>() {
@@ -51,7 +51,7 @@ class SearchTagGetResolver : DefaultGetResolver<SearchTag>() {
         mangaId = cursor.getLong(cursor.getColumnIndexOrThrow(COL_MANGA_ID)),
         namespace = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAMESPACE)),
         name = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
-        type = cursor.getInt(cursor.getColumnIndexOrThrow(COL_TYPE))
+        type = cursor.getInt(cursor.getColumnIndexOrThrow(COL_TYPE)),
     )
 }
 

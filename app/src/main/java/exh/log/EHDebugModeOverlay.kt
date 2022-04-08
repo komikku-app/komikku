@@ -34,7 +34,7 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
         val view = LinearLayout(root.context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             )
             setPadding(4.dpToPx, 0, 4.dpToPx, 4.dpToPx)
         }
@@ -46,7 +46,7 @@ class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(n
             text = HtmlCompat.fromHtml(buildInfo(), HtmlCompat.FROM_HTML_MODE_LEGACY)
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             )
         }
 

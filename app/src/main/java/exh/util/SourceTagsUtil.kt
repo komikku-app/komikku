@@ -17,7 +17,7 @@ object SourceTagsUtil {
         sourceId: Long?,
         namespace: String? = null,
         tag: String? = null,
-        fullTag: String? = null
+        fullTag: String? = null,
     ): String? {
         return if (
             sourceId == EXH_SOURCE_ID ||
@@ -89,7 +89,7 @@ object SourceTagsUtil {
             tag
         }.substringBefore(':', missingDelimiterValue = "").trimOrNull(),
         tag.substringAfter(':', missingDelimiterValue = tag).trim(),
-        if (tag.startsWith("-")) TAG_TYPE_EXCLUDE else TAG_TYPE_DEFAULT
+        if (tag.startsWith("-")) TAG_TYPE_EXCLUDE else TAG_TYPE_DEFAULT,
     )
 
     private const val TAG_TYPE_EXCLUDE = 69 // why not

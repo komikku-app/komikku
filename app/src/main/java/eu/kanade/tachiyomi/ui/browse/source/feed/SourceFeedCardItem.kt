@@ -22,7 +22,7 @@ class SourceFeedCardItem(val manga: Manga) : AbstractFlexibleItem<SourceFeedCard
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: SourceFeedCardHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(manga)
     }

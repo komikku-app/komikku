@@ -35,7 +35,7 @@ interface MangaQueries : DbProvider {
             RawQuery.builder()
                 .query(libraryQuery)
                 .observesTables(MangaTable.TABLE, ChapterTable.TABLE, MangaCategoryTable.TABLE, CategoryTable.TABLE)
-                .build()
+                .build(),
         )
         .withGetResolver(LibraryMangaGetResolver.INSTANCE)
         .prepare()
@@ -51,7 +51,7 @@ interface MangaQueries : DbProvider {
                     manga.source,
                 )
                 .limit(1)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -78,7 +78,7 @@ interface MangaQueries : DbProvider {
                 .table(MangaTable.TABLE)
                 .where("${MangaTable.COL_URL} = ? AND ${MangaTable.COL_SOURCE} = ?")
                 .whereArgs(url, sourceId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -89,7 +89,7 @@ interface MangaQueries : DbProvider {
                 .table(MangaTable.TABLE)
                 .where("${MangaTable.COL_ID} = ?")
                 .whereArgs(id)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -99,7 +99,7 @@ interface MangaQueries : DbProvider {
             RawQuery.builder()
                 .query(getSourceIdsWithNonLibraryMangaQuery())
                 .observesTables(MangaTable.TABLE)
-                .build()
+                .build(),
         )
         .withGetResolver(SourceIdMangaCountGetResolver.INSTANCE)
         .prepare()
@@ -110,7 +110,7 @@ interface MangaQueries : DbProvider {
         .withQuery(
             Query.builder()
                 .table(MangaTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -119,7 +119,7 @@ interface MangaQueries : DbProvider {
         .withQuery(
             RawQuery.builder()
                 .query(getReadMangaNotInLibraryQuery())
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -209,11 +209,11 @@ interface MangaQueries : DbProvider {
                     ${MangaTable.COL_FAVORITE} = ? AND ${MangaTable.COL_SOURCE} IN (${Queries.placeholders(sourceIds.size)}) AND ${MangaTable.COL_ID} NOT IN (
                         SELECT ${MergedTable.COL_MANGA_ID} FROM ${MergedTable.TABLE} WHERE ${MergedTable.COL_MANGA_ID} != ${MergedTable.COL_MERGE_ID}
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 // SY <--
                 .whereArgs(0, *sourceIds.toTypedArray())
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -229,10 +229,10 @@ interface MangaQueries : DbProvider {
                     ) AND ${MangaTable.COL_ID} NOT IN (
                         SELECT ${ChapterTable.COL_MANGA_ID} FROM ${ChapterTable.TABLE} WHERE ${ChapterTable.COL_READ} = 1 OR ${ChapterTable.COL_LAST_PAGE_READ} != 0
                     )
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 .whereArgs(0, *sourceIds.toTypedArray())
-                .build()
+                .build(),
         )
         .prepare()
     // SY <--
@@ -241,7 +241,7 @@ interface MangaQueries : DbProvider {
         .byQuery(
             DeleteQuery.builder()
                 .table(MangaTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -251,7 +251,7 @@ interface MangaQueries : DbProvider {
             RawQuery.builder()
                 .query(getLastReadMangaQuery())
                 .observesTables(MangaTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -261,7 +261,7 @@ interface MangaQueries : DbProvider {
             RawQuery.builder()
                 .query(getTotalChapterMangaQuery())
                 .observesTables(MangaTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -271,7 +271,7 @@ interface MangaQueries : DbProvider {
             RawQuery.builder()
                 .query(getLatestChapterMangaQuery())
                 .observesTables(MangaTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -281,7 +281,7 @@ interface MangaQueries : DbProvider {
             RawQuery.builder()
                 .query(getChapterFetchDateMangaQuery())
                 .observesTables(MangaTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -296,9 +296,9 @@ interface MangaQueries : DbProvider {
                     INNER JOIN ${SearchMetadataTable.TABLE}
                         ON ${MangaTable.TABLE}.${MangaTable.COL_ID} = ${SearchMetadataTable.TABLE}.${SearchMetadataTable.COL_MANGA_ID}
                     ORDER BY ${MangaTable.TABLE}.${MangaTable.COL_ID}
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -313,9 +313,9 @@ interface MangaQueries : DbProvider {
                         ON ${MangaTable.TABLE}.${MangaTable.COL_ID} = ${SearchMetadataTable.TABLE}.${SearchMetadataTable.COL_MANGA_ID}
                     WHERE ${MangaTable.TABLE}.${MangaTable.COL_FAVORITE} = 1
                     ORDER BY ${MangaTable.TABLE}.${MangaTable.COL_ID}
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -330,9 +330,9 @@ interface MangaQueries : DbProvider {
                         ON ${MangaTable.TABLE}.${MangaTable.COL_ID} = ${SearchMetadataTable.TABLE}.${SearchMetadataTable.COL_MANGA_ID}
                     WHERE ${MangaTable.TABLE}.${MangaTable.COL_FAVORITE} = 1
                     ORDER BY ${MangaTable.TABLE}.${MangaTable.COL_ID}
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
-                .build()
+                .build(),
         )
         .prepare()
     // SY <--

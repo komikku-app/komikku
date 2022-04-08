@@ -175,7 +175,7 @@ object Entry {
                 GenreConfigItem("ct_imageset", list[6]),
                 GenreConfigItem("ct_cosplay", list[7]),
                 GenreConfigItem("ct_asianporn", list[8]),
-                GenreConfigItem("ct_misc", list[9])
+                GenreConfigItem("ct_misc", list[9]),
             )
         }
 
@@ -208,7 +208,7 @@ object Entry {
                 Thai(config[13]),
                 Vietnamese(config[14]),
                 NotAvailable(config[15]),
-                Other(config[16])
+                Other(config[16]),
             ).flatMap { it.configs }
         }
 
@@ -219,7 +219,7 @@ object Entry {
             open val configs: List<LanguageConfigItem>
                 get() = listOf(
                     LanguageConfigItem(translatedKey, values[1]),
-                    LanguageConfigItem(rewriteKey, values[2])
+                    LanguageConfigItem(rewriteKey, values[2]),
                 )
 
             protected class LanguageConfigItem(override val key: String, value: Boolean) : ConfigItem {

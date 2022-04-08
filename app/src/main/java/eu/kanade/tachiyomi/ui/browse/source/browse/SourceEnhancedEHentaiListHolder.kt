@@ -88,7 +88,7 @@ class SourceEnhancedEHentaiListHolder(view: View, adapter: FlexibleAdapter<*>) :
         val locale = SourceTagsUtil.getLocaleSourceUtil(
             metadata.tags
                 .firstOrNull { it.namespace == EHentaiSearchMetadata.EH_LANGUAGE_NAMESPACE }
-                ?.name
+                ?.name,
         )
         val pageCount = metadata.length
 

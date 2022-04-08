@@ -115,7 +115,7 @@ open class SourceManager(private val context: Context) {
             xLogD("Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
             val enhancedSource = EnhancedHttpSource(
                 source,
-                delegate.newSourceClass.constructors.find { it.parameters.size == 2 }!!.call(source, context)
+                delegate.newSourceClass.constructors.find { it.parameters.size == 2 }!!.call(source, context),
             )
 
             currentDelegatedSources[enhancedSource.originalSource.id] = DelegatedSource(
@@ -123,7 +123,7 @@ open class SourceManager(private val context: Context) {
                 enhancedSource.originalSource.id,
                 enhancedSource.originalSource::class.qualifiedName ?: delegate.originalSourceQualifiedClassName,
                 (enhancedSource.enhancedSource as DelegatedHttpSource)::class,
-                delegate.factory
+                delegate.factory,
             )
             enhancedSource
         } else source
@@ -147,13 +147,13 @@ open class SourceManager(private val context: Context) {
     }
 
     private fun createInternalSources(): List<Source> = listOf(
-        LocalSource(context)
+        LocalSource(context),
     )
 
     // SY -->
     private fun createEHSources(): List<Source> {
         val sources = listOf<HttpSource>(
-            EHentai(EH_SOURCE_ID, false, context)
+            EHentai(EH_SOURCE_ID, false, context),
         )
         return if (prefs.enableExhentai().get()) {
             sources + EHentai(EXH_SOURCE_ID, true, context)
@@ -198,59 +198,59 @@ open class SourceManager(private val context: Context) {
                 "Pururin",
                 PURURIN_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.pururin.Pururin",
-                Pururin::class
+                Pururin::class,
             ),
             DelegatedSource(
                 "Tsumino",
                 TSUMINO_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.tsumino.Tsumino",
-                Tsumino::class
+                Tsumino::class,
             ),
             DelegatedSource(
                 "MangaDex",
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.mangadex",
                 MangaDex::class,
-                true
+                true,
             ),
             DelegatedSource(
                 "HBrowse",
                 HBROWSE_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.hbrowse.HBrowse",
-                HBrowse::class
+                HBrowse::class,
             ),
             DelegatedSource(
                 "8Muses",
                 EIGHTMUSES_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.eightmuses.EightMuses",
-                EightMuses::class
+                EightMuses::class,
             ),
             DelegatedSource(
                 "Hitomi",
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.hitomi.Hitomi",
                 Hitomi::class,
-                true
+                true,
             ),
             DelegatedSource(
                 "PervEden English",
                 PERV_EDEN_EN_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.en.perveden.Perveden",
-                PervEden::class
+                PervEden::class,
             ),
             DelegatedSource(
                 "PervEden Italian",
                 PERV_EDEN_IT_SOURCE_ID,
                 "eu.kanade.tachiyomi.extension.it.perveden.Perveden",
-                PervEden::class
+                PervEden::class,
             ),
             DelegatedSource(
                 "NHentai",
                 fillInSourceId,
                 "eu.kanade.tachiyomi.extension.all.nhentai.NHentai",
                 NHentai::class,
-                true
-            )
+                true,
+            ),
         ).associateBy { it.originalSourceQualifiedClassName }
 
         val currentDelegatedSources = ListenMutableMap(mutableMapOf<Long, DelegatedSource>(), ::handleSourceLibrary)
@@ -260,7 +260,7 @@ open class SourceManager(private val context: Context) {
             val sourceId: Long,
             val originalSourceQualifiedClassName: String,
             val newSourceClass: KClass<out DelegatedHttpSource>,
-            val factory: Boolean = false
+            val factory: Boolean = false,
         )
     }
 

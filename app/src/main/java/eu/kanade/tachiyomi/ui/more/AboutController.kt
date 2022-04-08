@@ -133,7 +133,7 @@ class AboutController : SettingsController(), NoAppBarElevationController {
             val outputDf = DateFormat.getDateTimeInstance(
                 DateFormat.MEDIUM,
                 DateFormat.SHORT,
-                Locale.getDefault()
+                Locale.getDefault(),
             )
             outputDf.timeZone = TimeZone.getDefault()
 

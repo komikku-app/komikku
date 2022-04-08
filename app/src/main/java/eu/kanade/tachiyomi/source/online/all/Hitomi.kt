@@ -68,7 +68,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                                 HitomiSearchMetadata.TAG_TYPE_DEFAULT
                             } else {
                                 RaisedSearchMetadata.TAG_TYPE_VIRTUAL
-                            }
+                            },
                         )
                     }
                     "type" -> {
@@ -93,7 +93,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                             RaisedTag(
                                 "character",
                                 it,
-                                HitomiSearchMetadata.TAG_TYPE_DEFAULT
+                                HitomiSearchMetadata.TAG_TYPE_DEFAULT,
                             )
                         }
                     }
@@ -107,7 +107,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
                             RaisedTag(
                                 ns,
                                 it.text().dropLast(if (ns == "misc") 0 else 2),
-                                HitomiSearchMetadata.TAG_TYPE_DEFAULT
+                                HitomiSearchMetadata.TAG_TYPE_DEFAULT,
                             )
                         }
                     }
@@ -123,7 +123,7 @@ class Hitomi(delegate: HttpSource, val context: Context) :
     }
 
     override val matchingHosts = listOf(
-        "hitomi.la"
+        "hitomi.la",
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {

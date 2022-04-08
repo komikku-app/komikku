@@ -17,7 +17,7 @@ import eu.kanade.tachiyomi.R
 class SourceFeedItem(
     val sourceFeed: SourceFeed,
     val results: List<SourceFeedCardItem>?,
-    val highlighted: Boolean = false
+    val highlighted: Boolean = false,
 ) : AbstractFlexibleItem<SourceFeedHolder>() {
 
     /**
@@ -45,7 +45,7 @@ class SourceFeedItem(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: SourceFeedHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(this)
     }

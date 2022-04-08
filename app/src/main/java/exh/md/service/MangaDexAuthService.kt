@@ -32,7 +32,7 @@ class MangaDexAuthService(
     private val client: OkHttpClient,
     private val headers: Headers,
     private val preferences: PreferencesHelper,
-    private val mdList: MdList
+    private val mdList: MdList,
 ) {
     private val noAuthenticatorClient = client.newBuilder()
         .authenticator(Authenticator.NONE)
@@ -41,7 +41,7 @@ class MangaDexAuthService(
     fun getHeaders() = MdUtil.getAuthHeaders(
         headers,
         preferences,
-        mdList
+        mdList,
     )
 
     suspend fun login(request: LoginRequestDto): LoginResponseDto {
@@ -49,8 +49,8 @@ class MangaDexAuthService(
             POST(
                 MdApi.login,
                 body = MdUtil.encodeToBody(request),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -59,8 +59,8 @@ class MangaDexAuthService(
             POST(
                 MdApi.logout,
                 getHeaders(),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -69,8 +69,8 @@ class MangaDexAuthService(
             GET(
                 MdApi.checkToken,
                 getHeaders(),
-                CacheControl.FORCE_NETWORK
-            )
+                CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -80,8 +80,8 @@ class MangaDexAuthService(
                 MdApi.refreshToken,
                 getHeaders(),
                 body = MdUtil.encodeToBody(request),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -90,8 +90,8 @@ class MangaDexAuthService(
             GET(
                 "${MdApi.userFollows}?limit=100&offset=$offset&includes[]=${MdConstants.Types.coverArt}",
                 getHeaders(),
-                CacheControl.FORCE_NETWORK
-            )
+                CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -100,8 +100,8 @@ class MangaDexAuthService(
             GET(
                 "${MdApi.manga}/$mangaId/status",
                 getHeaders(),
-                CacheControl.FORCE_NETWORK
-            )
+                CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -110,8 +110,8 @@ class MangaDexAuthService(
             GET(
                 "${MdApi.manga}/$mangaId/read",
                 getHeaders(),
-                CacheControl.FORCE_NETWORK
-            )
+                CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -124,8 +124,8 @@ class MangaDexAuthService(
                 "${MdApi.manga}/$mangaId/status",
                 getHeaders(),
                 body = MdUtil.encodeToBody(readingStatusDto),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -134,8 +134,8 @@ class MangaDexAuthService(
             GET(
                 MdApi.readingStatusForAllManga,
                 getHeaders(),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -144,8 +144,8 @@ class MangaDexAuthService(
             GET(
                 "${MdApi.readingStatusForAllManga}?status=$status",
                 getHeaders(),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -154,8 +154,8 @@ class MangaDexAuthService(
             POST(
                 "${MdApi.chapter}/$chapterId/read",
                 getHeaders(),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -166,7 +166,7 @@ class MangaDexAuthService(
                 .delete()
                 .headers(getHeaders())
                 .cacheControl(CacheControl.FORCE_NETWORK)
-                .build()
+                .build(),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -175,8 +175,8 @@ class MangaDexAuthService(
             POST(
                 "${MdApi.manga}/$mangaId/follow",
                 getHeaders(),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -187,7 +187,7 @@ class MangaDexAuthService(
                 .delete()
                 .headers(getHeaders())
                 .cacheControl(CacheControl.FORCE_NETWORK)
-                .build()
+                .build(),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -197,8 +197,8 @@ class MangaDexAuthService(
                 "${MdApi.rating}/$mangaId",
                 getHeaders(),
                 body = MdUtil.encodeToBody(RatingDto(rating)),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -209,7 +209,7 @@ class MangaDexAuthService(
                 .url("${MdApi.rating}/$mangaId")
                 .headers(getHeaders())
                 .cacheControl(CacheControl.FORCE_NETWORK)
-                .build()
+                .build(),
         ).await().parseAs(MdUtil.jsonParser)
     }
 
@@ -226,8 +226,8 @@ class MangaDexAuthService(
                     .build()
                     .toString(),
                 getHeaders(),
-                cache = CacheControl.FORCE_NETWORK
-            )
+                cache = CacheControl.FORCE_NETWORK,
+            ),
         ).await().parseAs(MdUtil.jsonParser)
     }
 }

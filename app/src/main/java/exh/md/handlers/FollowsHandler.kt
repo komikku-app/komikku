@@ -20,7 +20,7 @@ import kotlinx.coroutines.async
 
 class FollowsHandler(
     private val lang: String,
-    private val service: MangaDexAuthService
+    private val service: MangaDexAuthService,
 ) {
 
     /**
@@ -48,7 +48,7 @@ class FollowsHandler(
      */
     private fun followsParseMangaPage(
         response: List<MangaDataDto>,
-        statuses: Map<String, String?>
+        statuses: Map<String, String?>,
     ): List<Pair<SManga, MangaDexSearchMetadata>> {
         val comparator = compareBy<Pair<SManga, MangaDexSearchMetadata>> { it.second.followStatus }
             .thenBy { it.first.title }
@@ -56,7 +56,7 @@ class FollowsHandler(
         return response.map {
             MdUtil.createMangaEntry(
                 it,
-                lang
+                lang,
             ).toSManga() to MangaDexSearchMetadata().apply {
                 followStatus = FollowStatus.fromDex(statuses[it.id]).int
             }

@@ -214,8 +214,10 @@ class EhLoginActivity : BaseActivity() {
     fun checkLoginCookies(url: String): Boolean {
         getCookies(url)?.let { parsed ->
             return parsed.count {
-                (it.name.equals(MEMBER_ID_COOKIE, ignoreCase = true) ||
-                    it.name.equals(PASS_HASH_COOKIE, ignoreCase = true)) &&
+                (
+                    it.name.equals(MEMBER_ID_COOKIE, ignoreCase = true) ||
+                        it.name.equals(PASS_HASH_COOKIE, ignoreCase = true)
+                    ) &&
                     it.value.isNotBlank()
             } >= 2
         }

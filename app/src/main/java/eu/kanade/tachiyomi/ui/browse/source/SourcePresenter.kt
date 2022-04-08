@@ -23,7 +23,7 @@ class SourcePresenter(
     val sourceManager: SourceManager = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
     // SY -->
-    private val controllerMode: SourceController.Mode
+    private val controllerMode: SourceController.Mode,
     // SY <--
 ) : BasePresenter<SourceController>() {
 
@@ -86,8 +86,8 @@ class SourcePresenter(
                                             LangItem("custom|" + SourceAndCategory.second),
                                             isPinned,
                                             showLatest,
-                                            showPins
-                                        )
+                                            showPins,
+                                        ),
                                     )
                                 }
                             }

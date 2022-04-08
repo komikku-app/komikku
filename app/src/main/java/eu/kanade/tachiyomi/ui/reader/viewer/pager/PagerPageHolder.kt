@@ -37,7 +37,7 @@ class PagerPageHolder(
     readerThemedContext: Context,
     val viewer: PagerViewer,
     val page: ReaderPage,
-    private var extraPage: ReaderPage? = null
+    private var extraPage: ReaderPage? = null,
 ) : ReaderPageImageView(readerThemedContext), ViewPagerAdapter.PositionableView {
 
     /**
@@ -322,7 +322,7 @@ class PagerPageHolder(
                             cropBorders = viewer.config.imageCropBorders,
                             zoomStartPosition = viewer.config.imageZoomType,
                             landscapeZoom = viewer.config.landscapeZoom,
-                        )
+                        ),
                     )
                     if (!isAnimated) {
                         pageBackground = background

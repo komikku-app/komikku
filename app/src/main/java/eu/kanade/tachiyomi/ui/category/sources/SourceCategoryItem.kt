@@ -46,7 +46,7 @@ class SourceCategoryItem(val category: String) : AbstractFlexibleItem<SourceCate
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: SourceCategoryHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(category)
     }

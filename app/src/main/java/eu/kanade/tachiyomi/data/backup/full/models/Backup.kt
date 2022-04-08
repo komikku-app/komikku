@@ -11,5 +11,5 @@ data class Backup(
     @ProtoNumber(100) var backupBrokenSources: List<BrokenBackupSource> = emptyList(),
     @ProtoNumber(101) var backupSources: List<BackupSource> = emptyList(),
     // SY specific values
-    @ProtoNumber(600) var backupSavedSearches: List<BackupSavedSearch> = emptyList()
+    @ProtoNumber(600) var backupSavedSearches: List<BackupSavedSearch> = emptyList(),
 )

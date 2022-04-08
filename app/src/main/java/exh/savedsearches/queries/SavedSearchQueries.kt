@@ -14,7 +14,7 @@ interface SavedSearchQueries : DbProvider {
                 .table(SavedSearchTable.TABLE)
                 .where("${SavedSearchTable.COL_SOURCE} = ?")
                 .whereArgs(source)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -24,7 +24,7 @@ interface SavedSearchQueries : DbProvider {
                 .table(SavedSearchTable.TABLE)
                 .where("${SavedSearchTable.COL_SOURCE} = ?")
                 .whereArgs(source)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -34,7 +34,7 @@ interface SavedSearchQueries : DbProvider {
             Query.builder()
                 .table(SavedSearchTable.TABLE)
                 .orderBy(SavedSearchTable.COL_ID)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -45,7 +45,7 @@ interface SavedSearchQueries : DbProvider {
                 .table(SavedSearchTable.TABLE)
                 .where("${SavedSearchTable.COL_ID} = ?")
                 .whereArgs(id)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -56,7 +56,7 @@ interface SavedSearchQueries : DbProvider {
                 .table(SavedSearchTable.TABLE)
                 .where("${SavedSearchTable.COL_ID} IN (?)")
                 .whereArgs(ids.joinToString())
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -72,13 +72,13 @@ interface SavedSearchQueries : DbProvider {
                 .table(SavedSearchTable.TABLE)
                 .where("${SavedSearchTable.COL_ID} = ?")
                 .whereArgs(id)
-                .build()
+                .build(),
         ).prepare()
 
     fun deleteAllSavedSearches() = db.delete().byQuery(
         DeleteQuery.builder()
             .table(SavedSearchTable.TABLE)
-            .build()
+            .build(),
     )
         .prepare()
 

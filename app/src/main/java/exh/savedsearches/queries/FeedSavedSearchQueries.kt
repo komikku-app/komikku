@@ -18,7 +18,7 @@ interface FeedSavedSearchQueries : DbProvider {
                 .table(FeedSavedSearchTable.TABLE)
                 .where("${FeedSavedSearchTable.COL_GLOBAL} = 1")
                 .orderBy(FeedSavedSearchTable.COL_ID)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -30,7 +30,7 @@ interface FeedSavedSearchQueries : DbProvider {
                 .where("${FeedSavedSearchTable.COL_SOURCE} = ? AND ${FeedSavedSearchTable.COL_GLOBAL} = 0")
                 .whereArgs(sourceId)
                 .orderBy(FeedSavedSearchTable.COL_ID)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -46,13 +46,13 @@ interface FeedSavedSearchQueries : DbProvider {
                 .table(FeedSavedSearchTable.TABLE)
                 .where("${FeedSavedSearchTable.COL_ID} = ?")
                 .whereArgs(id)
-                .build()
+                .build(),
         ).prepare()
 
     fun deleteAllFeedSavedSearches() = db.delete().byQuery(
         DeleteQuery.builder()
             .table(FeedSavedSearchTable.TABLE)
-            .build()
+            .build(),
     )
         .prepare()
 
@@ -61,7 +61,7 @@ interface FeedSavedSearchQueries : DbProvider {
         .withQuery(
             RawQuery.builder()
                 .query(getGlobalFeedSavedSearchQuery())
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -71,7 +71,7 @@ interface FeedSavedSearchQueries : DbProvider {
             RawQuery.builder()
                 .query(getSourceFeedSavedSearchQuery())
                 .args(sourceId)
-                .build()
+                .build(),
         )
         .prepare()
 

@@ -20,8 +20,8 @@ import uy.kohesive.injekt.api.get
 class MetadataViewController : NucleusController<MetadataViewControllerBinding, MetadataViewPresenter> {
     constructor(manga: Manga?) : super(
         bundleOf(
-            MangaController.MANGA_EXTRA to (manga?.id ?: 0)
-        )
+            MangaController.MANGA_EXTRA to (manga?.id ?: 0),
+        ),
     ) {
         this.manga = manga
         if (manga != null) {
@@ -30,7 +30,7 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
     }
 
     constructor(mangaId: Long) : this(
-        Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking()
+        Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking(),
     )
 
     @Suppress("unused")
@@ -50,7 +50,7 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
     override fun createPresenter(): MetadataViewPresenter {
         return MetadataViewPresenter(
             manga!!,
-            source!!
+            source!!,
         )
     }
 

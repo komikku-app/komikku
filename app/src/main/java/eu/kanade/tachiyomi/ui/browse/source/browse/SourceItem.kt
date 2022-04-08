@@ -37,7 +37,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
 
     override fun createViewHolder(
         view: View,
-        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
+        adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
     ): SourceHolder<*> {
         // SY -->
         if (manga.isEhBasedManga() && preferences.enhancedEHentaiView().get()) {
@@ -61,7 +61,7 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: SourceHolder<*>,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.onSetValues(manga)
         // SY -->

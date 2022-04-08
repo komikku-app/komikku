@@ -15,7 +15,7 @@ interface SearchTagQueries : DbProvider {
                 .table(SearchTagTable.TABLE)
                 .where("${SearchTagTable.COL_MANGA_ID} = ?")
                 .whereArgs(mangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -25,7 +25,7 @@ interface SearchTagQueries : DbProvider {
                 .table(SearchTagTable.TABLE)
                 .where("${SearchTagTable.COL_MANGA_ID} = ?")
                 .whereArgs(mangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -38,7 +38,7 @@ interface SearchTagQueries : DbProvider {
     fun deleteAllSearchTags() = db.delete().byQuery(
         DeleteQuery.builder()
             .table(SearchTagTable.TABLE)
-            .build()
+            .build(),
     )
         .prepare()
 

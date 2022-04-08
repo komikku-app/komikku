@@ -32,7 +32,7 @@ class MangaInfoPutResolver(val reset: Boolean = false) : PutResolver<Manga>() {
         MangaTable.COL_AUTHOR to manga.originalAuthor,
         MangaTable.COL_ARTIST to manga.originalArtist,
         MangaTable.COL_DESCRIPTION to manga.originalDescription,
-        MangaTable.COL_STATUS to manga.originalStatus
+        MangaTable.COL_STATUS to manga.originalStatus,
     )
 
     private fun resetToContentValues(manga: Manga) = contentValuesOf(
@@ -41,7 +41,7 @@ class MangaInfoPutResolver(val reset: Boolean = false) : PutResolver<Manga>() {
         MangaTable.COL_AUTHOR to manga.author?.split(splitter)?.lastOrNull(),
         MangaTable.COL_ARTIST to manga.artist?.split(splitter)?.lastOrNull(),
         MangaTable.COL_DESCRIPTION to manga.description?.split(splitter)?.lastOrNull(),
-        MangaTable.COL_STATUS to manga.status.nullIfZero()?.toString()?.split(splitter)?.lastOrNull()
+        MangaTable.COL_STATUS to manga.status.nullIfZero()?.toString()?.split(splitter)?.lastOrNull(),
     )
 
     companion object {

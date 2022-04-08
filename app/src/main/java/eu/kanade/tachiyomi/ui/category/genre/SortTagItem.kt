@@ -46,7 +46,7 @@ class SortTagItem(val tag: String) : AbstractFlexibleItem<SortTagHolder>() {
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: SortTagHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(tag)
     }

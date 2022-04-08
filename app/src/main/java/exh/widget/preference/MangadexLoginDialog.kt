@@ -42,8 +42,8 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
     constructor(source: LoginSource) : this(
         bundleOf(
-            "key" to source.id
-        )
+            "key" to source.id,
+        ),
     )
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {
@@ -104,7 +104,7 @@ class MangadexLoginDialog(bundle: Bundle? = null) : DialogController(bundle) {
                 val result = source.login(
                     username,
                     password,
-                    twoFactor.toString()
+                    twoFactor.toString(),
                 )
                 if (result) {
                     dialog?.dismiss()

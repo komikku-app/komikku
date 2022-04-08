@@ -16,7 +16,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.ui.metadata.MetadataViewController
 
 class EHentaiDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<EHentaiDescriptionAdapter.EHentaiDescriptionViewHolder>() {
 
@@ -82,12 +82,12 @@ class EHentaiDescriptionAdapter(
                 binding.pages,
                 binding.rating,
                 binding.uploader,
-                binding.visible
+                binding.visible,
             ).forEach { textView ->
                 textView.setOnLongClickListener {
                     itemView.context.copyToClipboard(
                         textView.text.toString(),
-                        textView.text.toString()
+                        textView.text.toString(),
                     )
                     true
                 }
@@ -100,8 +100,8 @@ class EHentaiDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

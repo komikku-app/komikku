@@ -84,7 +84,7 @@ open class BrowseSourceController(bundle: Bundle) :
         // SY -->
         smartSearchConfig: SourceController.SmartSearchConfig? = null,
         savedSearch: Long? = null,
-        filterList: String? = null
+        filterList: String? = null,
         // SY <--
     ) : this(
         Bundle().apply {
@@ -107,7 +107,7 @@ open class BrowseSourceController(bundle: Bundle) :
                 putString(FILTERS_CONFIG_KEY, filterList)
             }
             // SY <--
-        }
+        },
     )
 
     private val preferences: PreferencesHelper by injectLazy()
@@ -115,7 +115,8 @@ open class BrowseSourceController(bundle: Bundle) :
     /**
      * Adapter containing the list of manga from the catalogue.
      */
-    /* SY --> */ protected /* SY <-- */ var adapter: FlexibleAdapter<IFlexible<*>>? = null
+    /* SY --> */
+    protected /* SY <-- */ var adapter: FlexibleAdapter<IFlexible<*>>? = null
 
     private var actionFab: ExtendedFloatingActionButton? = null
     private var actionFabScrollListener: RecyclerView.OnScrollListener? = null
@@ -159,7 +160,7 @@ open class BrowseSourceController(bundle: Bundle) :
             args.getLong(SOURCE_ID_KEY),
             args.getString(SEARCH_QUERY_KEY),
             filters = args.getString(FILTERS_CONFIG_KEY),
-            savedSearch = args.getLong(SAVED_SEARCH_CONFIG_KEY, 0).takeUnless { it == 0L }
+            savedSearch = args.getLong(SAVED_SEARCH_CONFIG_KEY, 0).takeUnless { it == 0L },
         )
         // SY <--
     }
@@ -273,7 +274,7 @@ open class BrowseSourceController(bundle: Bundle) :
                         }
                         .show()
                 }
-            }
+            },
             // EXH <--
         )
         filterSheet?.setFilters(presenter.filterItems)
@@ -388,7 +389,7 @@ open class BrowseSourceController(bundle: Bundle) :
                 }
 
                 true
-            }
+            },
         )
 
         val displayItem = when (preferences.sourceDisplayMode().get()) {
@@ -452,7 +453,7 @@ open class BrowseSourceController(bundle: Bundle) :
     // SY -->
     private fun openSourceSettings() {
         router.pushController(
-            SourcePreferencesController(presenter.source.id).withFadeTransaction()
+            SourcePreferencesController(presenter.source.id).withFadeTransaction(),
         )
     }
     // SY <--
@@ -543,13 +544,14 @@ open class BrowseSourceController(bundle: Bundle) :
      *
      * @param error the error received.
      */
-    /* SY --> */ open /* SY <-- */fun onAddPageError(error: Throwable) {
+    /* SY --> */
+    open /* SY <-- */fun onAddPageError(error: Throwable) {
         // SY -->
         xLogW("> Failed to load next catalogue page!", error)
         xLogW(
             "> (source.id: %s, source.name: %s)",
             presenter.source.id,
-            presenter.source.name
+            presenter.source.name,
         )
         // SY <--
 
@@ -573,13 +575,13 @@ open class BrowseSourceController(bundle: Bundle) :
         if (adapter.isEmpty) {
             val actions = if (presenter.source is LocalSource) {
                 listOf(
-                    EmptyView.Action(R.string.local_source_help_guide, R.drawable.ic_help_24dp) { openLocalSourceHelpGuide() }
+                    EmptyView.Action(R.string.local_source_help_guide, R.drawable.ic_help_24dp) { openLocalSourceHelpGuide() },
                 )
             } else {
                 listOf(
                     EmptyView.Action(R.string.action_retry, R.drawable.ic_refresh_24dp, retryAction),
                     EmptyView.Action(R.string.action_open_in_web_view, R.drawable.ic_public_24dp) { openInWebView() },
-                    EmptyView.Action(R.string.label_help, R.drawable.ic_help_24dp) { activity?.openInBrowser(MoreController.URL_HELP) }
+                    EmptyView.Action(R.string.label_help, R.drawable.ic_help_24dp) { activity?.openInBrowser(MoreController.URL_HELP) },
                 )
             }
 
@@ -720,8 +722,8 @@ open class BrowseSourceController(bundle: Bundle) :
             MangaController(
                 item.manga,
                 true,
-                args.getParcelable(MangaController.SMART_SEARCH_CONFIG_EXTRA)
-            ).withFadeTransaction()
+                args.getParcelable(MangaController.SMART_SEARCH_CONFIG_EXTRA),
+            ).withFadeTransaction(),
         )
         return false
     }

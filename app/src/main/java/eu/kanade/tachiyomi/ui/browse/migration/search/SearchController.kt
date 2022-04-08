@@ -24,27 +24,27 @@ import uy.kohesive.injekt.api.get
 
 class SearchController(
     private var manga: Manga? = null,
-    private var sources: List<CatalogueSource>? = null
+    private var sources: List<CatalogueSource>? = null,
 ) : GlobalSearchController(
     manga?.originalTitle,
     bundle = bundleOf(
         OLD_MANGA to manga?.id,
-        SOURCES to sources?.map { it.id }?.toLongArray()
-    )
+        SOURCES to sources?.map { it.id }?.toLongArray(),
+    ),
 ) {
     constructor(targetController: MigrationListController?, mangaId: Long, sources: LongArray) :
         this(
             Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking(),
-            sources.map { Injekt.get<SourceManager>().getOrStub(it) }.filterIsInstance<CatalogueSource>()
+            sources.map { Injekt.get<SourceManager>().getOrStub(it) }.filterIsInstance<CatalogueSource>(),
         ) {
-            this.targetController = targetController
-        }
+        this.targetController = targetController
+    }
 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(
         null,
         bundle.getLong(OLD_MANGA),
-        bundle.getLongArray(SOURCES) ?: LongArray(0)
+        bundle.getLongArray(SOURCES) ?: LongArray(0),
     )
 
     /**
@@ -58,7 +58,7 @@ class SearchController(
         return SearchPresenter(
             initialQuery,
             manga!!,
-            sources
+            sources,
         )
     }
 
@@ -93,7 +93,7 @@ class SearchController(
             searchView.onActionViewExpanded() // Required to show the query in the view
             searchView.setQuery(presenter.query, false)
             true
-        })
+        },)
 
         searchView.queryTextEvents()
             .filter { it is QueryTextEvent.QuerySubmitted }

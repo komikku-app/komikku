@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
 data class FlatMetadata(
     val metadata: SearchMetadata,
     val tags: List<SearchTag>,
-    val titles: List<SearchTitle>
+    val titles: List<SearchTitle>,
 ) {
     inline fun <reified T : RaisedSearchMetadata> raise(): T = raise(T::class)
 

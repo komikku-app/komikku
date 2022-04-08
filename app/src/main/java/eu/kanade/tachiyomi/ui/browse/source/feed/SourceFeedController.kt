@@ -47,14 +47,14 @@ open class SourceFeedController :
 
     constructor(source: CatalogueSource?) : super(
         bundleOf(
-            SOURCE_EXTRA to (source?.id ?: 0)
-        )
+            SOURCE_EXTRA to (source?.id ?: 0),
+        ),
     ) {
         this.source = source
     }
 
     constructor(sourceId: Long) : this(
-        Injekt.get<SourceManager>().get(sourceId) as? CatalogueSource
+        Injekt.get<SourceManager>().get(sourceId) as? CatalogueSource,
     )
 
     @Suppress("unused")
@@ -191,12 +191,12 @@ open class SourceFeedController :
                 filterSheet?.dismiss()
                 if (allDefault) {
                     onBrowseClick(
-                        presenter.query.nullIfBlank()
+                        presenter.query.nullIfBlank(),
                     )
                 } else {
                     onBrowseClick(
                         presenter.query.nullIfBlank(),
-                        filters = Json.encodeToString(filterSerializer.serialize(presenter.sourceFilters))
+                        filters = Json.encodeToString(filterSerializer.serialize(presenter.sourceFilters)),
                     )
                 }
             },
@@ -228,7 +228,7 @@ open class SourceFeedController :
                 if (!allDefault) {
                     onBrowseClick(
                         search = presenter.query.nullIfBlank(),
-                        savedSearch = search.id
+                        savedSearch = search.id,
                     )
                 }
             },
@@ -245,7 +245,7 @@ open class SourceFeedController :
                     }
                     .setNegativeButton(android.R.string.cancel, null)
                     .show()
-            }
+            },
         )
         filterSheet?.setFilters(presenter.filterItems)
 

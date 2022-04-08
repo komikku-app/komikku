@@ -34,7 +34,7 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
             cover = cover ?: manga.cover,
             artist = artist,
             genres = genres,
-            description = description
+            description = description,
         )
     }
 
@@ -44,7 +44,7 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
                 title?.let { getString(R.string.title) to it },
                 path.nullIfEmpty()?.joinToString("/", prefix = "/")
                     ?.let { getString(R.string.path) to it },
-                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it }
+                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
             )
         }
     }

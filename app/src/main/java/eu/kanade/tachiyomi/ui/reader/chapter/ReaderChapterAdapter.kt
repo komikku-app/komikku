@@ -4,7 +4,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.data.database.models.Chapter
 
 class ReaderChapterAdapter(
-    dialog: OnBookmarkClickListener
+    dialog: OnBookmarkClickListener,
 ) : FlexibleAdapter<ReaderChapterItem>(null, dialog, true) {
 
     /**

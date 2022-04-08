@@ -76,7 +76,7 @@ class InterceptActivity : BaseActivity() {
                                     .setAction(MainActivity.SHORTCUT_MANGA)
                                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                     .putExtra(MangaController.MANGA_EXTRA, it.mangaId)
-                            }
+                            },
                         )
                     }
                     is InterceptResult.Failure -> {

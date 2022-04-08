@@ -103,7 +103,7 @@ class MdList(private val context: Context, id: Int) : TrackService(id) {
                     FollowStatus.READING.int
                 } else FollowStatus.PLAN_TO_READ.int
             }
-        }
+        },
     )
 
     override suspend fun refresh(track: Track): Track {

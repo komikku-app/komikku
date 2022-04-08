@@ -95,7 +95,7 @@ data class BackupManga(
                 artist = customArtist,
                 description = customDescription,
                 genre = customGenre,
-                status = customStatus.takeUnless { it == 0 }
+                status = customStatus.takeUnless { it == 0 },
             )
         }
         return null
@@ -127,7 +127,7 @@ data class BackupManga(
                 viewer = manga.readingModeType,
                 viewer_flags = manga.viewer_flags,
                 chapterFlags = manga.chapter_flags,
-                filtered_scanlators = manga.filtered_scanlators
+                filtered_scanlators = manga.filtered_scanlators,
                 // SY -->
             ).also { backupManga ->
                 customMangaManager?.getManga(manga)?.let {

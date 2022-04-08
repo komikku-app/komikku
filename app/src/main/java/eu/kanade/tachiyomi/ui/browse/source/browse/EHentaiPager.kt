@@ -33,13 +33,13 @@ open class EHentaiPager(source: CatalogueSource, query: String, filters: FilterL
                     if (mangasPage is MetadataMangasPage) {
                         mangasPage.copy(
                             mangas = mangasPage.mangas.subList(startIndex, lastIndex),
-                            mangasMetadata = mangasPage.mangasMetadata.subList(startIndex, lastIndex)
+                            mangasMetadata = mangasPage.mangasMetadata.subList(startIndex, lastIndex),
                         )
                     } else {
                         mangasPage.copy(
-                            mangas = mangasPage.mangas.subList(startIndex, lastIndex)
+                            mangas = mangasPage.mangas.subList(startIndex, lastIndex),
                         )
-                    }
+                    },
                 )
             } else {
                 onPageReceived(mangasPage)

@@ -31,7 +31,7 @@ class EnhancedFilePrinter internal constructor(
     private val fileNameGenerator: FileNameGenerator,
     private val backupStrategy: BackupStrategy,
     private val cleanStrategy: CleanStrategy,
-    private val flattener: Flattener
+    private val flattener: Flattener,
 ) : Printer {
     /**
      * Log writer.
@@ -191,7 +191,7 @@ class EnhancedFilePrinter internal constructor(
                 fileNameGenerator ?: DefaultsFactory.createFileNameGenerator(),
                 backupStrategy ?: DefaultsFactory.createBackupStrategy(),
                 cleanStrategy ?: DefaultsFactory.createCleanStrategy(),
-                flattener ?: DefaultsFactory.createFlattener2()
+                flattener ?: DefaultsFactory.createFlattener2(),
             )
         }
 

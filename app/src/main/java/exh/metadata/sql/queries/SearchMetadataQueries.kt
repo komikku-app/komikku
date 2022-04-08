@@ -15,7 +15,7 @@ interface SearchMetadataQueries : DbProvider {
                 .table(SearchMetadataTable.TABLE)
                 .where("${SearchMetadataTable.COL_MANGA_ID} = ?")
                 .whereArgs(mangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -24,7 +24,7 @@ interface SearchMetadataQueries : DbProvider {
         .withQuery(
             Query.builder()
                 .table(SearchMetadataTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -35,7 +35,7 @@ interface SearchMetadataQueries : DbProvider {
                 .table(SearchMetadataTable.TABLE)
                 .where("${SearchMetadataTable.COL_INDEXED_EXTRA} = ?")
                 .whereArgs(extra)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -46,7 +46,7 @@ interface SearchMetadataQueries : DbProvider {
     fun deleteAllSearchMetadata() = db.delete().byQuery(
         DeleteQuery.builder()
             .table(SearchMetadataTable.TABLE)
-            .build()
+            .build(),
     )
         .prepare()
 }

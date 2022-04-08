@@ -30,7 +30,7 @@ class FilterSerializer {
         CheckboxSerializer(this),
         TriStateSerializer(this),
         GroupSerializer(this),
-        SortSerializer(this)
+        SortSerializer(this),
     )
 
     fun serialize(filters: FilterList) = buildJsonArray {

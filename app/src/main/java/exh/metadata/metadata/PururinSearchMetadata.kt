@@ -49,7 +49,7 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
             cover = cover ?: manga.cover,
             artist = artist,
             genres = genres,
-            description = description
+            description = description,
         )
     }
 

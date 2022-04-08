@@ -70,7 +70,7 @@ class SettingsMangaDexController :
                     // .setMessage(R.string.mangadex_sync_follows_to_library_message)
                     .setMultiChoiceItems(
                         items,
-                        selection
+                        selection,
                     ) { _, which, selected ->
                         selection[which] = selected
                     }
@@ -78,11 +78,11 @@ class SettingsMangaDexController :
                         preferences.mangadexSyncToLibraryIndexes().set(
                             items.filterIndexed { index, _ -> selection[index] }
                                 .mapIndexed { index, _ -> (index + 1).toString() }
-                                .toSet()
+                                .toSet(),
                         )
                         LibraryUpdateService.start(
                             context,
-                            target = LibraryUpdateService.Target.SYNC_FOLLOWS
+                            target = LibraryUpdateService.Target.SYNC_FOLLOWS,
                         )
                     }
                     .setNegativeButton(android.R.string.cancel, null)
@@ -97,7 +97,7 @@ class SettingsMangaDexController :
             onClick {
                 LibraryUpdateService.start(
                     context,
-                    target = LibraryUpdateService.Target.PUSH_FAVORITES
+                    target = LibraryUpdateService.Target.PUSH_FAVORITES,
                 )
             }
         }

@@ -383,7 +383,7 @@ object ImageUtil {
 
         return GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
-            gradient
+            gradient,
         )
     }
 
@@ -401,7 +401,7 @@ object ImageUtil {
         imageBitmap2: Bitmap,
         isLTR: Boolean,
         @ColorInt background: Int = Color.WHITE,
-        progressCallback: ((Int) -> Unit)? = null
+        progressCallback: ((Int) -> Unit)? = null,
     ): ByteArrayInputStream {
         val height = imageBitmap.height
         val width = imageBitmap.width
@@ -415,7 +415,7 @@ object ImageUtil {
             if (isLTR) 0 else width2,
             (maxHeight - imageBitmap.height) / 2,
             (if (isLTR) 0 else width2) + imageBitmap.width,
-            imageBitmap.height + (maxHeight - imageBitmap.height) / 2
+            imageBitmap.height + (maxHeight - imageBitmap.height) / 2,
         )
         canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
         progressCallback?.invoke(98)
@@ -423,7 +423,7 @@ object ImageUtil {
             if (!isLTR) 0 else width,
             (maxHeight - imageBitmap2.height) / 2,
             (if (!isLTR) 0 else width) + imageBitmap2.width,
-            imageBitmap2.height + (maxHeight - imageBitmap2.height) / 2
+            imageBitmap2.height + (maxHeight - imageBitmap2.height) / 2,
         )
         canvas.drawBitmap(imageBitmap2, imageBitmap2.rect, bottomPart, null)
         progressCallback?.invoke(99)

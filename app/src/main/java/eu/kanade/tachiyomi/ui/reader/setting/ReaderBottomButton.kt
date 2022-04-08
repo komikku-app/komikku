@@ -22,7 +22,7 @@ enum class ReaderBottomButton(val value: String, @StringRes val stringRes: Int) 
             WebView,
             CropBordersPager,
             CropBordersContinuesVertical,
-            PageLayout
+            PageLayout,
         ).map { it.value }.toSet()
     }
 }

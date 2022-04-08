@@ -37,13 +37,13 @@ class PreferencesHelper(val context: Context) {
     private val defaultDownloadsDir = File(
         Environment.getExternalStorageDirectory().absolutePath + File.separator +
             context.getString(R.string.app_name),
-        "downloads"
+        "downloads",
     ).toUri()
 
     private val defaultBackupDir = File(
         Environment.getExternalStorageDirectory().absolutePath + File.separator +
             context.getString(R.string.app_name),
-        "backup"
+        "backup",
     ).toUri()
 
     fun startScreen() = prefs.getInt(Keys.startScreen, 1)
@@ -70,12 +70,12 @@ class PreferencesHelper(val context: Context) {
 
     fun themeMode() = flowPrefs.getEnum(
         "pref_theme_mode_key",
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { Values.ThemeMode.system } else { Values.ThemeMode.light }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { Values.ThemeMode.system } else { Values.ThemeMode.light },
     )
 
     fun appTheme() = flowPrefs.getEnum(
         "pref_app_theme",
-        if (DeviceUtil.isDynamicColorAvailable) { Values.AppTheme.MONET } else { Values.AppTheme.DEFAULT }
+        if (DeviceUtil.isDynamicColorAvailable) { Values.AppTheme.MONET } else { Values.AppTheme.DEFAULT },
     )
 
     fun themeDarkAmoled() = flowPrefs.getBoolean("pref_theme_dark_amoled_key", false)
@@ -327,7 +327,7 @@ class PreferencesHelper(val context: Context) {
 
     fun extensionInstaller() = flowPrefs.getEnum(
         "extension_installer",
-        if (DeviceUtil.isMiui) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER
+        if (DeviceUtil.isMiui) Values.ExtensionInstaller.LEGACY else Values.ExtensionInstaller.PACKAGEINSTALLER,
     )
 
     fun verboseLogging() = prefs.getBoolean(Keys.verboseLogging, false)
@@ -431,12 +431,12 @@ class PreferencesHelper(val context: Context) {
 
     fun exhSettingsLanguages() = flowPrefs.getString(
         "eh_settings_languages",
-        "false*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false"
+        "false*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false\nfalse*false*false",
     )
 
     fun exhEnabledCategories() = flowPrefs.getString(
         "eh_enabled_categories",
-        "false,false,false,false,false,false,false,false,false,false"
+        "false,false,false,false,false,false,false,false,false,false",
     )
 
     fun feedTabInFront() = flowPrefs.getBoolean("latest_tab_position", false)

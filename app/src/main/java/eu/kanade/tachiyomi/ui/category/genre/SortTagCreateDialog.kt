@@ -34,7 +34,7 @@ class SortTagCreateDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
             .setTitle(R.string.action_add_category)
             .setTextInput(
                 hint = resources?.getString(R.string.name),
-                prefill = currentName
+                prefill = currentName,
             ) { input ->
                 currentName = input
             }

@@ -35,7 +35,7 @@ class SourceCategoryCreateDialog<T>(bundle: Bundle? = null) : DialogController(b
             .setNegativeButton(android.R.string.cancel, null)
             .setTextInput(
                 hint = resources?.getString(R.string.name),
-                prefill = currentName
+                prefill = currentName,
             ) { input ->
                 currentName = input
             }

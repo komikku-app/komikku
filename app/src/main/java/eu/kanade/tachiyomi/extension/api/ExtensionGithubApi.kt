@@ -105,7 +105,7 @@ internal class ExtensionGithubApi {
                     apkName = it.apk,
                     iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.apk.replace(".apk", ".png")}",
                     // SY -->
-                    repoUrl = repoUrl
+                    repoUrl = repoUrl,
                     // SY <--
                 )
             }
@@ -116,18 +116,18 @@ internal class ExtensionGithubApi {
             AvailableExtensionSources(
                 name = it.name,
                 id = it.id,
-                baseUrl = it.baseUrl
+                baseUrl = it.baseUrl,
             )
         }
     }
 
     fun getApkUrl(extension: Extension.Available): String {
-        return /* SY --> */ "${extension.repoUrl}/apk/${extension.apkName}" /* SY <-- */
+        return /* SY --> */ "${extension.repoUrl}/apk/${extension.apkName}" // SY <--
     }
 
     // SY -->
     private fun Extension.isBlacklisted(
-        blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get()
+        blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get(),
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
@@ -155,6 +155,6 @@ private data class ExtensionJsonObject(
 private data class ExtensionSourceJsonObject(
     val name: String,
     val id: Long,
-    val baseUrl: String
+    val baseUrl: String,
 
 )

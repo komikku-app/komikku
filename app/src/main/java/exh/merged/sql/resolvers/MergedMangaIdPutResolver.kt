@@ -26,6 +26,6 @@ class MergedMangaIdPutResolver : PutResolver<MergedMangaReference>() {
         .build()
 
     fun mapToContentValues(mergedMangaReference: MergedMangaReference) = contentValuesOf(
-        MergedTable.COL_MANGA_ID to mergedMangaReference.mangaId
+        MergedTable.COL_MANGA_ID to mergedMangaReference.mangaId,
     )
 }

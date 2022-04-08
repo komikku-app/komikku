@@ -35,7 +35,7 @@ class RepoCreateDialog<T>(bundle: Bundle? = null) : DialogController(bundle)
             .setMessage(R.string.action_add_repo_message)
             .setTextInput(
                 hint = resources?.getString(R.string.name),
-                prefill = currentName
+                prefill = currentName,
             ) { input ->
                 currentName = input
             }

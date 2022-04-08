@@ -18,16 +18,16 @@ object BlacklistedSources {
         5980349886941016589,
         6073266008352078708,
         5499077866612745456,
-        6140480779421365791
+        6140480779421365791,
     )
 
     val BLACKLISTED_EXT_SOURCES = EHENTAI_EXT_SOURCES
 
     val BLACKLISTED_EXTENSIONS = arrayOf(
-        "eu.kanade.tachiyomi.extension.all.ehentai"
+        "eu.kanade.tachiyomi.extension.all.ehentai",
     )
 
     var HIDDEN_SOURCES = setOf(
-        MERGED_SOURCE_ID
+        MERGED_SOURCE_ID,
     )
 }

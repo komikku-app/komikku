@@ -20,7 +20,7 @@ import exh.savedsearches.tables.FeedSavedSearchTable.TABLE
 class FeedSavedSearchTypeMapping : SQLiteTypeMapping<FeedSavedSearch>(
     FeedSavedSearchPutResolver(),
     FeedSavedSearchGetResolver(),
-    FeedSavedSearchDeleteResolver()
+    FeedSavedSearchDeleteResolver(),
 )
 
 class FeedSavedSearchPutResolver : DefaultPutResolver<FeedSavedSearch>() {
@@ -39,7 +39,7 @@ class FeedSavedSearchPutResolver : DefaultPutResolver<FeedSavedSearch>() {
         COL_ID to obj.id,
         COL_SOURCE to obj.source,
         COL_SAVED_SEARCH_ID to obj.savedSearch,
-        COL_GLOBAL to obj.global
+        COL_GLOBAL to obj.global,
     )
 }
 
@@ -49,7 +49,7 @@ class FeedSavedSearchGetResolver : DefaultGetResolver<FeedSavedSearch>() {
         id = cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID)),
         source = cursor.getLong(cursor.getColumnIndexOrThrow(COL_SOURCE)),
         savedSearch = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COL_SAVED_SEARCH_ID)),
-        global = cursor.getInt(cursor.getColumnIndexOrThrow(COL_GLOBAL)) == 1
+        global = cursor.getInt(cursor.getColumnIndexOrThrow(COL_GLOBAL)) == 1,
     )
 }
 

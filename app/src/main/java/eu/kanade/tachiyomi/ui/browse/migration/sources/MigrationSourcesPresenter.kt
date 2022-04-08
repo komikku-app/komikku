@@ -21,7 +21,7 @@ import java.util.Locale
 
 class MigrationSourcesPresenter(
     private val sourceManager: SourceManager = Injekt.get(),
-    private val db: DatabaseHelper = Injekt.get()
+    private val db: DatabaseHelper = Injekt.get(),
 ) : BasePresenter<MigrationSourcesController>() {
 
     private val preferences: PreferencesHelper by injectLazy()

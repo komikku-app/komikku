@@ -14,7 +14,7 @@ import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.ui.metadata.MetadataViewController
 
 class HBrowseDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<HBrowseDescriptionAdapter.HBrowseDescriptionViewHolder>() {
 
@@ -44,7 +44,7 @@ class HBrowseDescriptionAdapter(
             binding.pages.setOnLongClickListener {
                 itemView.context.copyToClipboard(
                     binding.pages.text.toString(),
-                    binding.pages.text.toString()
+                    binding.pages.text.toString(),
                 )
                 true
             }
@@ -52,8 +52,8 @@ class HBrowseDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

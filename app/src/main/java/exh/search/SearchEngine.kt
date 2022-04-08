@@ -10,7 +10,7 @@ class SearchEngine {
 
     fun textToSubQueries(
         namespace: String?,
-        component: Text?
+        component: Text?,
     ): Pair<String, List<String>>? {
         val maybeLenientComponent = component?.let {
             if (!it.exact) {

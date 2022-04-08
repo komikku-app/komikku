@@ -44,7 +44,7 @@ class SourcePreferencesController(bundle: Bundle? = null) :
     private var preferenceScreen: PreferenceScreen? = null
 
     constructor(sourceId: Long) : this(
-        bundleOf(SOURCE_ID to sourceId)
+        bundleOf(SOURCE_ID to sourceId),
     )
 
     override fun createBinding(inflater: LayoutInflater): SourcePreferencesControllerBinding {
@@ -70,7 +70,7 @@ class SourcePreferencesController(bundle: Bundle? = null) :
         val themedContext by lazy { getPreferenceThemeContext() }
         val manager = PreferenceManager(themedContext)
         val dataStore = SharedPreferencesDataStore(
-            context.getSharedPreferences(source.getPreferenceKey(), Context.MODE_PRIVATE)
+            context.getSharedPreferences(source.getPreferenceKey(), Context.MODE_PRIVATE),
         )
         manager.preferenceDataStore = dataStore
         manager.onDisplayPreferenceDialogListener = this
@@ -169,7 +169,7 @@ class SourcePreferencesController(bundle: Bundle? = null) :
                     .newInstance(preference.getKey())
             else -> throw IllegalArgumentException(
                 "Tried to display dialog for unknown " +
-                    "preference type. Did you forget to override onDisplayPreferenceDialog()?"
+                    "preference type. Did you forget to override onDisplayPreferenceDialog()?",
             )
         }
         f.targetController = this

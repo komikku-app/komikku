@@ -27,7 +27,7 @@ class SelectionHeader : AbstractHeaderItem<SelectionHeader.Holder>() {
     override fun createViewHolder(view: View, adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>): Holder {
         return Holder(
             view,
-            adapter
+            adapter,
         )
     }
 
@@ -39,7 +39,7 @@ class SelectionHeader : AbstractHeaderItem<SelectionHeader.Holder>() {
         holder: Holder,
         position: Int,
         // SY -->
-        payloads: MutableList<Any?>?
+        payloads: MutableList<Any?>?,
         // SY <--
     ) {
         // Intentionally empty

@@ -23,7 +23,7 @@ import reactivecircus.flowbinding.android.view.clicks
  */
 class LibraryComfortableGridHolder(
     override val binding: SourceComfortableGridItemBinding,
-    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>
+    adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
 ) : LibraryHolder<SourceComfortableGridItemBinding>(binding.root, adapter) {
 
     // SY -->

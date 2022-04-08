@@ -13,7 +13,7 @@ class FilterHandler {
             SortFilter(sortableList.map { it.first }.toTypedArray()),
             TagList(getTags()),
             TagInclusionMode(),
-            TagExclusionMode()
+            TagExclusionMode(),
         ).toMutableList()
 
         if (true) { // preferencesHelper.showR18Filter()) {
@@ -32,7 +32,7 @@ class FilterHandler {
         Demographic("Shounen"),
         Demographic("Shoujo"),
         Demographic("Seinen"),
-        Demographic("Josei")
+        Demographic("Josei"),
     )
 
     private class Status(name: String) : Filter.CheckBox(name)
@@ -54,7 +54,7 @@ class FilterHandler {
         ContentRating("Safe"),
         ContentRating("Suggestive"),
         ContentRating("Erotica"),
-        ContentRating("Pornographic")
+        ContentRating("Pornographic"),
     )
 
     private class OriginalLanguage(name: String, val isoCode: String) : Filter.CheckBox(name)
@@ -147,7 +147,7 @@ class FilterHandler {
         Tag("8c86611e-fab7-4986-9dec-d1a2f44acdd5", "Virtual Reality"),
         Tag("e197df38-d0e7-43b5-9b09-2842d0c326dd", "Web Comic"),
         Tag("acc803a4-c95a-4c22-86fc-eb6b582d82a2", "Wuxia"),
-        Tag("631ef465-9aba-4afb-b0fc-ea10efe274a8", "Zombies")
+        Tag("631ef465-9aba-4afb-b0fc-ea10efe274a8", "Zombies"),
     )
 
     private class TagInclusionMode :

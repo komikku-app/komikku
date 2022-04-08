@@ -16,7 +16,7 @@ data class BackupMergedMangaReference(
     @ProtoNumber(5) var downloadChapters: Boolean,
     @ProtoNumber(6) var mergeUrl: String,
     @ProtoNumber(7) var mangaUrl: String,
-    @ProtoNumber(8) var mangaSourceId: Long
+    @ProtoNumber(8) var mangaSourceId: Long,
 ) {
     fun getMergedMangaReference(): MergedMangaReference {
         return MergedMangaReference(
@@ -30,7 +30,7 @@ data class BackupMergedMangaReference(
             mangaSourceId = mangaSourceId,
             mergeId = null,
             mangaId = null,
-            id = null
+            id = null,
         )
     }
 
@@ -44,7 +44,7 @@ data class BackupMergedMangaReference(
                 downloadChapters = mergedMangaReference.downloadChapters,
                 mergeUrl = mergedMangaReference.mergeUrl,
                 mangaUrl = mergedMangaReference.mangaUrl,
-                mangaSourceId = mergedMangaReference.mangaSourceId
+                mangaSourceId = mergedMangaReference.mangaSourceId,
             )
         }
     }

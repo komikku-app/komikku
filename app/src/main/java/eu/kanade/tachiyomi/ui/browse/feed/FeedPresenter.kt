@@ -41,7 +41,7 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 open class FeedPresenter(
     val sourceManager: SourceManager = Injekt.get(),
     val db: DatabaseHelper = Injekt.get(),
-    val preferences: PreferencesHelper = Injekt.get()
+    val preferences: PreferencesHelper = Injekt.get(),
 ) : BasePresenter<FeedController>() {
 
     /**
@@ -104,8 +104,8 @@ open class FeedPresenter(
                     id = null,
                     source = source.id,
                     savedSearch = savedSearch?.id,
-                    global = true
-                )
+                    global = true,
+                ),
             ).executeAsBlocking()
         }
     }
@@ -130,7 +130,7 @@ open class FeedPresenter(
         feed: FeedSavedSearch,
         savedSearch: SavedSearch?,
         source: CatalogueSource?,
-        results: List<FeedCardItem>?
+        results: List<FeedCardItem>?,
     ): FeedItem {
         return FeedItem(feed, savedSearch, source, results)
     }
@@ -148,7 +148,7 @@ open class FeedPresenter(
                 feed,
                 savedSearch,
                 sourceManager.get(feed.source) as? CatalogueSource,
-                null
+                null,
             )
         }
         var items = initialItems
@@ -176,7 +176,7 @@ open class FeedPresenter(
                         Observable.just(createCatalogueSearchItem(feed, null, null, emptyList()))
                     }
                 },
-                5
+                5,
             )
             .observeOn(AndroidSchedulers.mainThread())
             // Update matching source with the obtained results
@@ -193,7 +193,7 @@ open class FeedPresenter(
                 },
                 { _, error ->
                     logcat(LogPriority.ERROR, error)
-                }
+                },
             )
     }
 
@@ -205,7 +205,7 @@ open class FeedPresenter(
             val originalFilters = source.getFilterList()
             filterSerializer.deserialize(
                 filters = originalFilters,
-                json = Json.decodeFromString(filters)
+                json = Json.decodeFromString(filters),
             )
             originalFilters
         }.getOrElse { FilterList() }
@@ -242,7 +242,7 @@ open class FeedPresenter(
                 },
                 { error ->
                     logcat(LogPriority.ERROR, error)
-                }
+                },
             )
     }
 

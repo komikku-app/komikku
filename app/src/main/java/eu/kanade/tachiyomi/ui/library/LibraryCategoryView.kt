@@ -147,7 +147,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                                 ) ||
                                 preferences.groupLibraryUpdateType().get() == PreferenceValues.GroupLibraryMode.GLOBAL -> R.string.updating_library
                             else -> R.string.updating_category
-                        }
+                        },
                     )
                 }
                 // SY <--

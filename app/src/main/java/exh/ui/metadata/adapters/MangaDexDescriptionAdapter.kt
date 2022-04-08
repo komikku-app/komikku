@@ -18,7 +18,7 @@ import exh.ui.metadata.MetadataViewController
 import kotlin.math.round
 
 class MangaDexDescriptionAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<MangaDexDescriptionAdapter.MangaDexDescriptionViewHolder>() {
 
@@ -54,7 +54,7 @@ class MangaDexDescriptionAdapter(
             binding.rating.setOnLongClickListener {
                 itemView.context.copyToClipboard(
                     binding.rating.text.toString(),
-                    binding.rating.text.toString()
+                    binding.rating.text.toString(),
                 )
                 true
             }
@@ -62,8 +62,8 @@ class MangaDexDescriptionAdapter(
             binding.moreInfo.setOnClickListener {
                 controller.router?.pushController(
                     MetadataViewController(
-                        controller.manga
-                    ).withFadeTransaction()
+                        controller.manga,
+                    ).withFadeTransaction(),
                 )
             }
         }

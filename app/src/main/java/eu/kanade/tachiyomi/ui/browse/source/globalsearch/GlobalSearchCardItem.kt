@@ -23,7 +23,7 @@ class GlobalSearchCardItem(val manga: Manga) : AbstractFlexibleItem<GlobalSearch
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: GlobalSearchCardHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(manga)
     }

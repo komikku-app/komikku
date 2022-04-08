@@ -150,7 +150,8 @@ class Anilist : API("https://graphql.anilist.co/") {
                     |}
                 |}
             |}
-            |""".trimMargin()
+            |
+            """.trimMargin()
         val variables = buildJsonObject {
             put("search", search)
         }
@@ -172,8 +173,8 @@ class Anilist : API("https://graphql.anilist.co/") {
                 { languageContains(it.jsonObject, "romaji", search) },
                 { languageContains(it.jsonObject, "english", search) },
                 { languageContains(it.jsonObject, "native", search) },
-                { countOccurrence(it.jsonObject["synonyms"]!!.jsonArray, search) > 0 }
-            )
+                { countOccurrence(it.jsonObject["synonyms"]!!.jsonArray, search) > 0 },
+            ),
         ).last().jsonObject
 
         return result["recommendations"]?.jsonObject?.get("edges")?.jsonArray?.map {
@@ -193,7 +194,7 @@ class Anilist : API("https://graphql.anilist.co/") {
 open class RecommendsPager(
     private val manga: Manga,
     private val smart: Boolean = true,
-    private var preferredApi: API = API.MYANIMELIST
+    private var preferredApi: API = API.MYANIMELIST,
 ) : Pager() {
     override suspend fun requestNextPage() {
         if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
@@ -223,7 +224,7 @@ open class RecommendsPager(
     companion object {
         val API_MAP = mapOf(
             API.MYANIMELIST to MyAnimeList(),
-            API.ANILIST to Anilist()
+            API.ANILIST to Anilist(),
         )
 
         enum class API { MYANIMELIST, ANILIST }

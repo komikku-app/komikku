@@ -14,7 +14,7 @@ import uy.kohesive.injekt.api.get
  * Presenter of [RepoController]. Used to manage the repos for the extensions.
  */
 class RepoPresenter(
-    private val preferences: PreferencesHelper = Injekt.get()
+    private val preferences: PreferencesHelper = Injekt.get(),
 ) : BasePresenter<RepoController>() {
     /**
      * List containing repos.
@@ -67,7 +67,7 @@ class RepoPresenter(
      */
     fun deleteRepos(repos: List<String>) {
         preferences.extensionRepos().set(
-            this.repos.filterNot { it in repos }.toSet()
+            this.repos.filterNot { it in repos }.toSet(),
         )
     }
 

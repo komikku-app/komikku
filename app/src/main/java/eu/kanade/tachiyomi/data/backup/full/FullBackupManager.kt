@@ -70,14 +70,14 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 getReadManga()
             } else {
                 emptyList()
-            } + getMergedManga() /* SY <-- */
+            } + getMergedManga() // SY <--
 
             backup = Backup(
                 backupManga(databaseManga, flags),
                 backupCategories(),
                 emptyList(),
                 backupExtensionInfo(databaseManga),
-                backupSavedSearches()
+                backupSavedSearches(),
             )
         }
 
@@ -167,7 +167,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 it.name,
                 it.query.orEmpty(),
                 it.filtersJson ?: "[]",
-                it.source
+                it.source,
             )
         }
     }
@@ -439,7 +439,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 it.name,
                 it.query.nullIfBlank(),
                 filtersJson = it.filterList.nullIfBlank()
-                    ?.takeUnless { it == "[]" }
+                    ?.takeUnless { it == "[]" },
             )
         }.ifEmpty { null }
 

@@ -15,7 +15,7 @@ import kotlinx.coroutines.cancel
 import uy.kohesive.injekt.injectLazy
 
 class MigrationProcessAdapter(
-    val controller: MigrationListController
+    val controller: MigrationListController,
 ) : FlexibleAdapter<MigrationProcessItem>(null, controller, true) {
     private val db: DatabaseHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
@@ -62,7 +62,7 @@ class MigrationProcessAdapter(
                         migrateMangaInternal(
                             manga.manga() ?: return@forEach,
                             toMangaObj,
-                            !copy
+                            !copy,
                         )
                     }
                 }
@@ -80,7 +80,7 @@ class MigrationProcessAdapter(
                 migrateMangaInternal(
                     manga.manga() ?: return@launchUI,
                     toMangaObj,
-                    !copy
+                    !copy,
                 )
             }
             removeManga(position)
@@ -107,7 +107,7 @@ class MigrationProcessAdapter(
     private fun migrateMangaInternal(
         prevManga: Manga,
         manga: Manga,
-        replace: Boolean
+        replace: Boolean,
     ) {
         controller.config ?: return
         val flags = preferences.migrateFlags().get()

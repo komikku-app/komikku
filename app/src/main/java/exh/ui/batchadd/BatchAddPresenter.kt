@@ -78,7 +78,7 @@ class BatchAddPresenter : BasePresenter<BatchAddController>() {
                             is GalleryAddEvent.Success -> context.getString(R.string.batch_add_ok)
                             is GalleryAddEvent.Fail -> context.getString(R.string.batch_add_error)
                         }
-                        ) + " " + result.logMessage
+                        ) + " " + result.logMessage,
                 )
             }
 

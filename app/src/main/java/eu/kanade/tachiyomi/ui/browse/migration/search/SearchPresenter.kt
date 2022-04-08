@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
 class SearchPresenter(
     initialQuery: String? = "",
     private val manga: Manga,
-    sources: List<CatalogueSource>? = null
+    sources: List<CatalogueSource>? = null,
 ) : GlobalSearchPresenter(initialQuery, sourcesToUse = sources) {
 
     override fun getEnabledSources(): List<CatalogueSource> {

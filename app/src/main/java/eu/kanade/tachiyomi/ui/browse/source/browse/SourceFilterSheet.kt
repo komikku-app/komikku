@@ -32,7 +32,7 @@ class SourceFilterSheet(
     // EXH -->
     private val onSaveClicked: () -> Unit,
     var onSavedSearchClicked: (Long) -> Unit = {},
-    var onSavedSearchDeleteClicked: (Long, String) -> Unit = { _, _ -> }
+    var onSavedSearchDeleteClicked: (Long, String) -> Unit = { _, _ -> },
     // EXH <--
 ) : BaseBottomSheetDialog(activity) {
 
@@ -42,7 +42,7 @@ class SourceFilterSheet(
         searches = searches,
         source = source,
         controller = controller,
-        dismissSheet = ::dismiss
+        dismissSheet = ::dismiss,
         // SY <--
     )
 
@@ -85,7 +85,7 @@ class SourceFilterSheet(
         searches: List<EXHSavedSearch> = emptyList(),
         source: CatalogueSource? = null,
         controller: BaseController<*>? = null,
-        dismissSheet: (() -> Unit)? = null
+        dismissSheet: (() -> Unit)? = null,
         // SY <--
     ) :
         SimpleNavigationView(context, attrs) {
@@ -109,7 +109,7 @@ class SourceFilterSheet(
         private val binding = SourceFilterSheetBinding.inflate(
             LayoutInflater.from(context),
             null,
-            false
+            false,
         )
 
         init {
@@ -121,8 +121,8 @@ class SourceFilterSheet(
                             ?.getFilterHeader(it) { dismissSheet?.invoke() }
                     },
                     savedSearchesAdapter,
-                    adapter
-                )
+                    adapter,
+                ),
             )
             // SY <--
             recycler.setHasFixedSize(true)

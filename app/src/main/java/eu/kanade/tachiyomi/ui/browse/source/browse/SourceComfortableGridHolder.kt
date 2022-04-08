@@ -21,7 +21,7 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
  */
 class SourceComfortableGridHolder(
     override val binding: SourceComfortableGridItemBinding,
-    adapter: FlexibleAdapter<*>
+    adapter: FlexibleAdapter<*>,
 ) : SourceHolder<SourceComfortableGridItemBinding>(binding.root, adapter) {
 
     /**

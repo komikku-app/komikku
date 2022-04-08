@@ -26,7 +26,7 @@ interface MergedQueries : DbProvider {
                 .table(MergedTable.TABLE)
                 .where("${MergedTable.COL_MERGE_ID} = ?")
                 .whereArgs(mergedMangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -37,7 +37,7 @@ interface MergedQueries : DbProvider {
                 .table(MergedTable.TABLE)
                 .where("${MergedTable.COL_MERGE_URL} = ?")
                 .whereArgs(mergedMangaUrl)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -47,7 +47,7 @@ interface MergedQueries : DbProvider {
                 .table(MergedTable.TABLE)
                 .where("${MergedTable.COL_MERGE_ID} = ?")
                 .whereArgs(mergedMangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -57,7 +57,7 @@ interface MergedQueries : DbProvider {
             RawQuery.builder()
                 .query(getMergedMangaQuery())
                 .args(mergedMangaId)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -67,7 +67,7 @@ interface MergedQueries : DbProvider {
             RawQuery.builder()
                 .query(getMergedMangaFromUrlQuery())
                 .args(mergedMangaUrl)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -76,7 +76,7 @@ interface MergedQueries : DbProvider {
         .withQuery(
             RawQuery.builder()
                 .query(getAllMergedMangaQuery())
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -86,7 +86,7 @@ interface MergedQueries : DbProvider {
                 .table(MergedTable.TABLE)
                 .where("${MergedTable.COL_MERGE_URL} = ?")
                 .whereArgs(mergedMangaUrl)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -96,7 +96,7 @@ interface MergedQueries : DbProvider {
             Query.builder()
                 .table(MergedTable.TABLE)
                 .orderBy(MergedTable.COL_ID)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -107,7 +107,7 @@ interface MergedQueries : DbProvider {
                 .query(getMergedChaptersQuery())
                 .args(mergedMangaId)
                 .observesTables(ChapterTable.TABLE, MergedTable.TABLE)
-                .build()
+                .build(),
         )
         .prepare()
 
@@ -126,7 +126,7 @@ interface MergedQueries : DbProvider {
     fun deleteAllMergedManga() = db.delete().byQuery(
         DeleteQuery.builder()
             .table(MergedTable.TABLE)
-            .build()
+            .build(),
     )
         .prepare()
 

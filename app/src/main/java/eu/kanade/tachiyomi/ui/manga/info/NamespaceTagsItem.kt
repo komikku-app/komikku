@@ -13,7 +13,7 @@ class NamespaceTagsItem(
     val tags: List<Pair<String, Int?>>,
     val onClick: (item: String) -> Unit,
     val onLongClick: (item: String) -> Unit,
-    val source: Source
+    val source: Source,
 ) :
     AbstractFlexibleItem<NamespaceTagsHolder>() {
 
@@ -29,7 +29,7 @@ class NamespaceTagsItem(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: NamespaceTagsHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(this)
     }

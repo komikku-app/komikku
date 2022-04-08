@@ -39,7 +39,7 @@ class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boole
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: ViewHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(this)
     }

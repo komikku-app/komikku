@@ -36,7 +36,7 @@ private val DELEGATED_METADATA_SOURCES by lazy {
         EightMuses::class,
         Hitomi::class,
         PervEden::class,
-        NHentai::class
+        NHentai::class,
     )
 }
 
@@ -52,7 +52,7 @@ var mangaDexSourceIds: List<Long> = emptyList()
 var LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
     EH_SOURCE_ID,
     EXH_SOURCE_ID,
-    PURURIN_SOURCE_ID
+    PURURIN_SOURCE_ID,
 )
 
 fun handleSourceLibrary() {
@@ -87,7 +87,7 @@ fun handleSourceLibrary() {
     LIBRARY_UPDATE_EXCLUDED_SOURCES = listOf(
         EH_SOURCE_ID,
         EXH_SOURCE_ID,
-        PURURIN_SOURCE_ID
+        PURURIN_SOURCE_ID,
     ) + hitomiSourceIds + nHentaiSourceIds
 }
 

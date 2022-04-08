@@ -8,13 +8,13 @@ import exh.md.utils.MdUtil
 import okhttp3.OkHttpClient
 
 class SimilarService(
-    private val client: OkHttpClient
+    private val client: OkHttpClient,
 ) {
     suspend fun getSimilarManga(mangaId: String): SimilarMangaDto {
         return client.newCall(
             GET(
-                "${MdUtil.similarBaseApi}$mangaId.json"
-            )
+                "${MdUtil.similarBaseApi}$mangaId.json",
+            ),
         ).await().parseAs()
     }
 }

@@ -23,7 +23,7 @@ import uy.kohesive.injekt.api.get
 class PagerConfig(
     private val viewer: PagerViewer,
     scope: CoroutineScope,
-    preferences: PreferencesHelper = Injekt.get()
+    preferences: PreferencesHelper = Injekt.get(),
 ) : ViewerConfig(preferences, scope) {
 
     var theme = preferences.readerTheme().get()
@@ -79,7 +79,7 @@ class PagerConfig(
                     theme = it
                     automaticBackground = it == 3
                 },
-                { imagePropertyChangedListener?.invoke() }
+                { imagePropertyChangedListener?.invoke() },
             )
 
         preferences.imageScaleType()
@@ -113,7 +113,7 @@ class PagerConfig(
                 {
                     imagePropertyChangedListener?.invoke()
                     dualPageSplitChangedListener?.invoke(it)
-                }
+                },
             )
 
         preferences.dualPageInvertPaged()
@@ -130,7 +130,7 @@ class PagerConfig(
                 {
                     themeToColor(it)
                     reloadChapterListener?.invoke(doublePages)
-                }
+                },
             )
         preferences.pageLayout()
             .register(
@@ -146,7 +146,7 @@ class PagerConfig(
                         doublePages = it == PageLayout.DOUBLE_PAGES && dualPageSplit == false
                     }
                     reloadChapterListener?.invoke(doublePages)
-                }
+                },
             )
 
         preferences.invertDoublePages()

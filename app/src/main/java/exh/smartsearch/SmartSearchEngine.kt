@@ -15,7 +15,7 @@ import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class SmartSearchEngine(
-    private val extraSearchParams: String? = null
+    private val extraSearchParams: String? = null,
 ) {
     private val db: DatabaseHelper by injectLazy()
 
@@ -90,7 +90,7 @@ class SmartSearchEngine(
             splitSortedByLargest.take(2),
             splitSortedByLargest.take(1),
             splitCleanedTitle.take(2),
-            splitCleanedTitle.take(1)
+            splitCleanedTitle.take(1),
         )
 
         return searchQueries.map {
@@ -121,7 +121,7 @@ class SmartSearchEngine(
             '(' to ')',
             '[' to ']',
             '<' to '>',
-            '{' to '}'
+            '{' to '}',
         )
         var openingBracketPairs = bracketPairs.mapIndexed { index, (opening, _) ->
             opening to index

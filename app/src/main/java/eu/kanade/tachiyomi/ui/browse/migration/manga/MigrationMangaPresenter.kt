@@ -24,7 +24,7 @@ import uy.kohesive.injekt.api.get
 
 class MigrationMangaPresenter(
     private val sourceId: Long,
-    private val db: DatabaseHelper = Injekt.get()
+    private val db: DatabaseHelper = Injekt.get(),
 ) : BasePresenter<MigrationMangaController>() {
     private val enhancedServices by lazy { Injekt.get<TrackManager>().services.filterIsInstance<EnhancedTrackService>() }
 
@@ -62,7 +62,7 @@ class MigrationMangaPresenter(
         sourceChapters: List<SChapter>,
         prevManga: Manga,
         manga: Manga,
-        replace: Boolean
+        replace: Boolean,
     ) {
         val flags = Injekt.get<PreferencesHelper>().migrateFlags().get()
         val migrateChapters = MigrationFlags.hasChapters(flags)

@@ -15,7 +15,7 @@ import tachiyomi.source.model.MangaInfo
 class SimilarHandler(
     private val lang: String,
     private val service: MangaDexService,
-    private val similarService: SimilarService
+    private val similarService: SimilarService,
 ) {
 
     suspend fun getSimilar(manga: MangaInfo): MetadataMangasPage {
@@ -61,7 +61,7 @@ class SimilarHandler(
                     it.relation = relatedListDto.data.firstOrNull { it.relationships.any { it.id == MdUtil.getMangaId(manga.url) } }
                         ?.attributes?.relation?.let(MangaDexRelation::fromDex)
                 }
-            }
+            },
         )
     }
 }

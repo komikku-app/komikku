@@ -53,7 +53,8 @@ class SourceController(bundle: Bundle? = null) :
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     SourceAdapter.OnSourceClickListener,
-    /*SY -->*/ ChangeSourceCategoriesDialog.Listener /*SY <--*/ {
+    /*SY -->*/
+    ChangeSourceCategoriesDialog.Listener /*SY <--*/ {
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -153,9 +154,9 @@ class SourceController(bundle: Bundle? = null) :
                 SmartSearchController(
                     bundleOf(
                         SmartSearchController.ARG_SOURCE_ID to source.id,
-                        SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig
-                    )
-                ).withFadeTransaction()
+                        SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig,
+                    ),
+                ).withFadeTransaction(),
             )
         }
         // SY <--
@@ -168,7 +169,7 @@ class SourceController(bundle: Bundle? = null) :
         val isPinned = item.header?.code?.equals(SourcePresenter.PINNED_KEY) ?: false
 
         val items = mutableListOf(
-            activity.getString(if (isPinned) R.string.action_unpin else R.string.action_pin) to { toggleSourcePin(item.source) }
+            activity.getString(if (isPinned) R.string.action_unpin else R.string.action_pin) to { toggleSourcePin(item.source) },
         )
         if (item.source !is LocalSource) {
             items.add(activity.getString(R.string.action_disable) to { disableSource(item.source) })
@@ -176,17 +177,17 @@ class SourceController(bundle: Bundle? = null) :
 
         // SY -->
         items.add(
-            activity.getString(R.string.categories) to { addToCategories(item.source) }
+            activity.getString(R.string.categories) to { addToCategories(item.source) },
         )
 
         if (preferences.dataSaver().get()) {
             val isExcluded = item.source.id.toString() in preferences.dataSaverExcludedSources().get()
             items.add(
                 activity.getString(
-                    if (isExcluded) R.string.data_saver_stop_exclude else R.string.data_saver_exclude
+                    if (isExcluded) R.string.data_saver_stop_exclude else R.string.data_saver_exclude,
                 ) to {
                     excludeFromDataSaver(item.source, isExcluded)
-                }
+                },
             )
         }
         // SY <--
@@ -258,7 +259,7 @@ class SourceController(bundle: Bundle? = null) :
         }
 
         preferences.sourcesTabSourcesInCategories().set(
-            preferenceSources.sorted().toSet()
+            preferenceSources.sorted().toSet(),
         )
         presenter.updateSources()
     }
@@ -327,7 +328,7 @@ class SourceController(bundle: Bundle? = null) :
             R.id.action_settings -> {
                 parentController!!.router.pushController(
                     SourceFilterController()
-                        .withFadeTransaction()
+                        .withFadeTransaction(),
                 )
             }
         }
@@ -381,7 +382,7 @@ class SourceController(bundle: Bundle? = null) :
                 R.menu.browse_sources,
                 R.id.action_search,
                 R.string.action_global_search_hint,
-                false // GlobalSearch handles the searching here
+                false, // GlobalSearch handles the searching here
             )
         }
     }
@@ -390,7 +391,7 @@ class SourceController(bundle: Bundle? = null) :
         // SY -->
         if (mode == Mode.CATALOGUE) {
             parentController!!.router.pushController(
-                GlobalSearchController(query).withFadeTransaction()
+                GlobalSearchController(query).withFadeTransaction(),
             )
         }
         // SY <--

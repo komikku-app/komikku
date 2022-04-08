@@ -144,10 +144,10 @@ object DebugFunctions {
                         """
                         UPDATE ${MangaTable.TABLE}
                             SET ${MangaTable.COL_FAVORITE} = 1
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
                     .affectsTables(MangaTable.TABLE)
-                    .build()
+                    .build(),
             )
         }
     }
@@ -235,10 +235,10 @@ object DebugFunctions {
                     UPDATE ${MangaTable.TABLE}
                         SET ${MangaTable.COL_SOURCE} = $to
                         WHERE ${MangaTable.COL_SOURCE} = $from
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 .affectsTables(MangaTable.TABLE)
-                .build()
+                .build(),
         )
     }
 
@@ -329,10 +329,10 @@ object DebugFunctions {
                         UPDATE ${MangaTable.TABLE}
                             SET ${MangaTable.COL_VIEWER} = 0
                             WHERE ${MangaTable.COL_VIEWER} = -1
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
                     .affectsTables(MangaTable.TABLE)
-                    .build()
+                    .build(),
             )
         }
     }
@@ -345,10 +345,10 @@ object DebugFunctions {
                         """
                         UPDATE ${MangaTable.TABLE}
                             SET ${MangaTable.COL_VIEWER} = 0
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
                     .affectsTables(MangaTable.TABLE)
-                    .build()
+                    .build(),
             )
         }
     }
@@ -366,10 +366,10 @@ object DebugFunctions {
                         UPDATE ${MangaTable.TABLE}
                             SET ${MangaTable.COL_SOURCE} = ${NHentai.otherId}
                             WHERE ${MangaTable.COL_FAVORITE} = 1 AND ${MangaTable.COL_SOURCE} in ($sources)
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
                     .affectsTables(MangaTable.TABLE)
-                    .build()
+                    .build(),
             )
         }
     }

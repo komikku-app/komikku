@@ -52,7 +52,7 @@ sealed class SourceFeed {
 open class SourceFeedPresenter(
     val source: CatalogueSource,
     val db: DatabaseHelper = Injekt.get(),
-    val preferences: PreferencesHelper = Injekt.get()
+    val preferences: PreferencesHelper = Injekt.get(),
 ) : BasePresenter<SourceFeedController>() {
 
     /**
@@ -121,8 +121,8 @@ open class SourceFeedPresenter(
                     id = null,
                     source = source.id,
                     savedSearch = savedSearchId,
-                    global = false
-                )
+                    global = false,
+                ),
             ).executeAsBlocking()
         }
     }
@@ -141,7 +141,7 @@ open class SourceFeedPresenter(
             if (source.supportsLatest) {
                 SourceFeed.Latest
             } else null,
-            SourceFeed.Browse
+            SourceFeed.Browse,
         ) + db.getSourceFeedSavedSearches(source.id).executeAsBlocking()
             .map { SourceFeed.SourceSavedSearch(it, savedSearches[it.savedSearch]!!) }
     }
@@ -151,7 +151,7 @@ open class SourceFeedPresenter(
      */
     protected open fun createCatalogueSearchItem(
         sourceFeed: SourceFeed,
-        results: List<SourceFeedCardItem>?
+        results: List<SourceFeedCardItem>?,
     ): SourceFeedItem {
         return SourceFeedItem(sourceFeed, results)
     }
@@ -167,7 +167,7 @@ open class SourceFeedPresenter(
         val initialItems = getSourcesToGetFeed().map {
             createCatalogueSearchItem(
                 it,
-                null
+                null,
             )
         }
         var items = initialItems
@@ -183,7 +183,7 @@ open class SourceFeedPresenter(
                             is SourceFeed.SourceSavedSearch -> source.fetchSearchManga(
                                 page = 1,
                                 query = sourceFeed.savedSearch.query.orEmpty(),
-                                filters = getFilterList(sourceFeed.savedSearch, source)
+                                filters = getFilterList(sourceFeed.savedSearch, source),
                             )
                         }
                     }
@@ -194,7 +194,7 @@ open class SourceFeedPresenter(
                         .doOnNext { fetchImage(it, source, sourceFeed) } // Load manga covers.
                         .map { list -> createCatalogueSearchItem(sourceFeed, list.map { SourceFeedCardItem(it) }) }
                 },
-                5
+                5,
             )
             .observeOn(AndroidSchedulers.mainThread())
             // Update matching source with the obtained results
@@ -211,7 +211,7 @@ open class SourceFeedPresenter(
                 },
                 { _, error ->
                     logcat(LogPriority.ERROR, error)
-                }
+                },
             )
     }
 
@@ -223,7 +223,7 @@ open class SourceFeedPresenter(
             val originalFilters = source.getFilterList()
             filterSerializer.deserialize(
                 filters = originalFilters,
-                json = Json.decodeFromString(filters)
+                json = Json.decodeFromString(filters),
             )
             originalFilters
         }.getOrElse { FilterList() }
@@ -260,7 +260,7 @@ open class SourceFeedPresenter(
                 },
                 { error ->
                     logcat(LogPriority.ERROR, error)
-                }
+                },
             )
     }
 
@@ -312,10 +312,10 @@ open class SourceFeedPresenter(
                     filters = originalFilters,
                     json = search.filtersJson
                         ?.let { Json.decodeFromString<JsonArray>(it) }
-                        ?: return@runCatching null
+                        ?: return@runCatching null,
                 )
                 originalFilters
-            }.getOrNull()
+            }.getOrNull(),
         )
     }
 
@@ -325,7 +325,7 @@ open class SourceFeedPresenter(
                 id = it.id!!,
                 name = it.name,
                 query = it.query.orEmpty(),
-                filterList = null
+                filterList = null,
             )
             val filters = try {
                 Json.decodeFromString<JsonArray>(filtersJson)
@@ -335,7 +335,7 @@ open class SourceFeedPresenter(
                 id = it.id!!,
                 name = it.name,
                 query = it.query.orEmpty(),
-                filterList = null
+                filterList = null,
             )
 
             try {
@@ -345,7 +345,7 @@ open class SourceFeedPresenter(
                     id = it.id!!,
                     name = it.name,
                     query = it.query.orEmpty(),
-                    filterList = originalFilters
+                    filterList = originalFilters,
                 )
             } catch (t: RuntimeException) {
                 // Load failed
@@ -354,7 +354,7 @@ open class SourceFeedPresenter(
                     id = it.id!!,
                     name = it.name,
                     query = it.query.orEmpty(),
-                    filterList = null
+                    filterList = null,
                 )
             }
         }

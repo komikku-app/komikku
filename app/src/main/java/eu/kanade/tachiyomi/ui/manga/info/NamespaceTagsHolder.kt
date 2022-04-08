@@ -13,7 +13,7 @@ import exh.util.makeSearchChip
 
 class NamespaceTagsHolder(
     view: View,
-    adapter: FlexibleAdapter<*>
+    adapter: FlexibleAdapter<*>,
 ) : FlexibleViewHolder(view, adapter) {
     val binding = MangaInfoGenreGroupingBinding.bind(view)
 
@@ -24,7 +24,7 @@ class NamespaceTagsHolder(
             binding.namespace.addView(
                 Chip(binding.root.context).apply {
                     text = namespace
-                }
+                },
             )
             binding.tags.updateLayoutParams<LinearLayout.LayoutParams> {
                 marginStart = 8.dpToPx
@@ -45,7 +45,7 @@ class NamespaceTagsHolder(
                 item.onLongClick,
                 item.source.id,
                 namespace,
-                type
+                type,
             )
         }.forEach {
             binding.tags.addView(it)

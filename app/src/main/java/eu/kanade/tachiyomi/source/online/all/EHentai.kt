@@ -88,7 +88,7 @@ import java.util.ArrayList
 class EHentai(
     override val id: Long,
     val exh: Boolean,
-    val context: Context
+    val context: Context,
 ) : HttpSource(),
     MetadataSource<EHentaiSearchMetadata, Document>,
     UrlImportableSource,
@@ -134,7 +134,7 @@ class EHentai(
 
             ParsedManga(
                 fav = FAVORITES_BORDER_HEX_COLORS.indexOf(
-                    favElement?.attr("style")?.substring(14, 17)
+                    favElement?.attr("style")?.substring(14, 17),
                 ),
                 manga = Manga.create(id).apply {
                     // Get title
@@ -155,9 +155,9 @@ class EHentai(
                                             element.hasClass("gtl") -> TAG_TYPE_LIGHT
                                             element.hasClass("gtw") -> TAG_TYPE_WEAK
                                             else -> TAG_TYPE_NORMAL
-                                        }
+                                        },
                                     )
-                                }
+                                },
                             )
                         }
                     } else {
@@ -169,7 +169,7 @@ class EHentai(
                                 parsedTags += RaisedTag(
                                     namespace,
                                     element.attr("title").substringAfter(":").trim(),
-                                    TAG_TYPE_NORMAL
+                                    TAG_TYPE_NORMAL,
                                 )
                             }
                         }
@@ -196,7 +196,7 @@ class EHentai(
                             genreString = parsedGenre?.text()
                                 ?.nullIfBlank()
                                 ?.lowercase()
-                                ?.replace(" ", "")
+                                ?.replace(" ", ""),
                         )
 
                         val info = body.selectFirst(".gl2c")!!
@@ -220,7 +220,7 @@ class EHentai(
                             length = getPageCount(extraInfoList.getOrNull(2))
                         }
                     }
-                }
+                },
             )
         }
 
@@ -301,7 +301,7 @@ class EHentai(
         while (true) {
             val gid = EHentaiSearchMetadata.galleryId(url).toInt()
             val cachedParent = updateHelper.parentLookupTable.get(
-                gid
+                gid,
             )
             if (cachedParent == null) {
                 throttleFunc()
@@ -316,8 +316,8 @@ class EHentai(
                         gid,
                         GalleryEntry(
                             EHentaiSearchMetadata.galleryId(parentLink),
-                            EHentaiSearchMetadata.galleryToken(parentLink)
-                        )
+                            EHentaiSearchMetadata.galleryToken(parentLink),
+                        ),
                     )
                     url = EHentaiSearchMetadata.normalizeUrl(parentLink)
                 } else break
@@ -325,7 +325,7 @@ class EHentai(
                 this@EHentai.xLogD("Parent cache hit: %s!", gid)
                 url = EHentaiSearchMetadata.idAndTokenToUrl(
                     cachedParent.gId,
-                    cachedParent.gToken
+                    cachedParent.gToken,
                 )
             }
         }
@@ -338,8 +338,8 @@ class EHentai(
             dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(
                 doc.select("#gdd .gdt1").find { el ->
                     el.text().lowercase() == "posted:"
-                }!!.nextElementSibling()!!.text()
-            )!!.time
+                }!!.nextElementSibling()!!.text(),
+            )!!.time,
         )
         // Build and append the rest of the galleries
         return if (DebugToggles.INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS.enabled) {
@@ -353,7 +353,7 @@ class EHentai(
                     key = EHentaiSearchMetadata.normalizeUrl(link),
                     name = "v${index + 2}: $name",
                     number = index + 2f,
-                    dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time
+                    dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time,
                 )
             }.reversed() + self
         }
@@ -376,14 +376,14 @@ class EHentai(
         }!!
         .doOnNext { pages ->
             if (pages.any { it.url == "https://$domain/img/509.gif" }) throw Exception(
-                "Hit page limit"
+                "Hit page limit",
             )
         }
 
     private fun fetchChapterPage(
         chapter: SChapter,
         np: String,
-        pastUrls: List<String> = emptyList()
+        pastUrls: List<String> = emptyList(),
     ): Observable<List<String>> {
         val urls = ArrayList(pastUrls)
         return chapterPageCall(np).flatMap {
@@ -508,7 +508,7 @@ class EHentai(
                     }
                 }
                 headers.build()
-            } else headers
+            } else headers,
         ).let {
             if (cache) {
                 it
@@ -543,8 +543,8 @@ class EHentai(
                             Observable.just(
                                 manga.apply {
                                     initialized = true
-                                }
-                            )
+                                },
+                            ),
                         )
                     }
                 } else {
@@ -673,7 +673,7 @@ class EHentai(
                                 element.hasClass("gtl") -> TAG_TYPE_LIGHT
                                 element.hasClass("gtw") -> TAG_TYPE_WEAK
                                 else -> TAG_TYPE_NORMAL
-                            }
+                            },
                         )
                     }
                 }
@@ -730,8 +730,8 @@ class EHentai(
                     exGet(
                         favoriteUrl,
                         page = page,
-                        cache = false
-                    )
+                        cache = false,
+                    ),
                 ).awaitResponse()
             }
             val doc = response2.asJsoup()
@@ -827,13 +827,13 @@ class EHentai(
                 arrayOf(
                     Filter.Header("Note: Will ignore other parameters!"),
                     ToplistOptions(),
-                    Filter.Separator()
+                    Filter.Separator(),
                 )
             },
             AutoCompleteTags(
                 EHTags.getNamespaces0Tags().map { "$it:" } + EHTags.getAllTags(),
                 EHTags.getNamespaces0Tags().map { "$it:" },
-                excludePrefix
+                excludePrefix,
             ),
             if (preferences.exhWatchedListDefaultState().get()) {
                 Watched(isEnabled = true)
@@ -842,7 +842,7 @@ class EHentai(
             },
             GenreGroup(),
             AdvancedGroup(),
-            ReverseFilter()
+            ReverseFilter(),
         )
     }
 
@@ -868,7 +868,7 @@ class EHentai(
 
     class ToplistOptions : Filter.Select<ToplistOption>(
         "Toplists",
-        ToplistOption.values()
+        ToplistOption.values(),
     )
 
     class GenreOption(name: String, val genreId: Int) : Filter.CheckBox(name, false)
@@ -885,8 +885,8 @@ class EHentai(
                 GenreOption("Image Set", 32),
                 GenreOption("Cosplay", 64),
                 GenreOption("Asian Porn", 128),
-                GenreOption("Misc", 1)
-            )
+                GenreOption("Misc", 1),
+            ),
         ),
         UriFilter {
         override fun addToUri(builder: Uri.Builder) {
@@ -954,7 +954,7 @@ class EHentai(
             values = tags,
             skipAutoFillTags = skipAutoFillTags,
             excludePrefix = excludePrefix,
-            state = emptyList()
+            state = emptyList(),
         )
 
     class MinPagesOption : PageOption("Minimum Pages", "f_spf")
@@ -968,8 +968,8 @@ class EHentai(
                 "2 stars",
                 "3 stars",
                 "4 stars",
-                "5 stars"
-            )
+                "5 stars",
+            ),
         ),
         UriFilter {
         override fun addToUri(builder: Uri.Builder) {
@@ -993,8 +993,8 @@ class EHentai(
             AdvancedOption("Show Expunged Galleries", "f_sh"),
             RatingOption(),
             MinPagesOption(),
-            MaxPagesOption()
-        )
+            MaxPagesOption(),
+        ),
     )
 
     class ReverseFilter : Filter.CheckBox("Reverse search results")
@@ -1010,10 +1010,10 @@ class EHentai(
     // === URL IMPORT STUFF
 
     override val matchingHosts: List<String> = if (exh) listOf(
-        "exhentai.org"
+        "exhentai.org",
     ) else listOf(
         "g.e-hentai.org",
-        "e-hentai.org"
+        "e-hentai.org",
     )
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
@@ -1050,9 +1050,9 @@ class EHentai(
                             add(gallery.toInt())
                             add(pageToken)
                             add(pageNum.toInt())
-                        }
+                        },
                     )
-                }
+                },
             )
         }
 
@@ -1061,8 +1061,8 @@ class EHentai(
                 Request.Builder()
                     .url(EH_API_BASE)
                     .post(json.toString().toRequestBody(JSON))
-                    .build()
-            ).execute().body!!.string()
+                    .build(),
+            ).execute().body!!.string(),
         )
 
         val obj = outJson["tokenlist"]!!.jsonArray.first().jsonObject
@@ -1092,7 +1092,7 @@ class EHentai(
             "4bf",
             "00f",
             "508",
-            "e8e"
+            "e8e",
         )
 
         fun buildCookies(cookies: Map<String, String>) = cookies.entries.joinToString(separator = "; ") {

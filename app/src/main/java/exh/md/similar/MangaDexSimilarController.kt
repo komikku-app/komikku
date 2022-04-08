@@ -18,8 +18,8 @@ class MangaDexSimilarController(bundle: Bundle) : BrowseSourceController(bundle)
         bundleOf(
             MANGA_ID to manga.id!!,
             MANGA_TITLE to manga.title,
-            SOURCE_ID_KEY to source.id
-        )
+            SOURCE_ID_KEY to source.id,
+        ),
     )
 
     private val mangaTitle = args.getString(MANGA_TITLE)

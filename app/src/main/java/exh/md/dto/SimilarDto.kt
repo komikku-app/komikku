@@ -33,7 +33,7 @@ data class RelationDto(
 
 @Serializable
 data class RelationMangaDto(
-    val id: String
+    val id: String,
 )
 
 @Serializable

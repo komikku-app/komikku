@@ -231,7 +231,7 @@ class MainActivity : BaseActivity() {
                     from: Controller?,
                     isPush: Boolean,
                     container: ViewGroup,
-                    handler: ControllerChangeHandler
+                    handler: ControllerChangeHandler,
                 ) {
                     syncActivityViewWithController(to, from, isPush)
                 }
@@ -241,10 +241,10 @@ class MainActivity : BaseActivity() {
                     from: Controller?,
                     isPush: Boolean,
                     container: ViewGroup,
-                    handler: ControllerChangeHandler
+                    handler: ControllerChangeHandler,
                 ) {
                 }
-            }
+            },
         )
         if (!router.hasRootController()) {
             // Set start screen
@@ -548,7 +548,7 @@ class MainActivity : BaseActivity() {
         // Color taken from m3_appbar_background
         window.statusBarColor = ColorUtils.compositeColors(
             getColor(R.color.m3_appbar_overlay_color),
-            getThemeColor(R.attr.colorSurface)
+            getThemeColor(R.attr.colorSurface),
         )
         super.onSupportActionModeStarted(mode)
     }

@@ -23,7 +23,7 @@ import uy.kohesive.injekt.injectLazy
 class LibrarySettingsSheet(
     router: Router,
     private val trackManager: TrackManager = Injekt.get(),
-    onGroupClickListener: (ExtendedNavigationView.Group) -> Unit
+    onGroupClickListener: (ExtendedNavigationView.Group) -> Unit,
 ) : TabbedBottomSheetDialog(router.activity!!) {
 
     val filters: Filter
@@ -62,14 +62,14 @@ class LibrarySettingsSheet(
         filters,
         sort,
         display,
-        grouping
+        grouping,
     )
 
     override fun getTabTitles(): List<Int> = listOf(
         R.string.action_filter,
         R.string.action_sort,
         R.string.action_display,
-        R.string.group
+        R.string.group,
     )
 
     /**
@@ -213,7 +213,7 @@ class LibrarySettingsSheet(
             override val header = null
 
             override val items =
-                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, chapterFetchDate, dateAdded /* SY --> */, dragAndDrop) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() /* SY <-- */
+                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, chapterFetchDate, dateAdded /* SY --> */, dragAndDrop) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() // SY <--
             override val footer = null
 
             override fun initModels() {
@@ -521,7 +521,7 @@ class LibrarySettingsSheet(
                 val groupingItems = mutableListOf(
                     LibraryGroup.BY_DEFAULT,
                     LibraryGroup.BY_SOURCE,
-                    LibraryGroup.BY_STATUS
+                    LibraryGroup.BY_STATUS,
                 )
                 if (trackManager.hasLoggedServices()) {
                     groupingItems.add(LibraryGroup.BY_TRACK_STATUS)
@@ -534,7 +534,7 @@ class LibrarySettingsSheet(
                         id,
                         this,
                         LibraryGroup.groupTypeStringRes(id, hasCategories),
-                        LibraryGroup.groupTypeDrawableRes(id)
+                        LibraryGroup.groupTypeDrawableRes(id),
                     )
                 }
             }

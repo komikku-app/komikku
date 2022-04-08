@@ -32,7 +32,7 @@ class HttpPageLoader(
     private val source: HttpSource,
     private val chapterCache: ChapterCache = Injekt.get(),
     // SY -->
-    private val preferences: PreferencesHelper = Injekt.get()
+    private val preferences: PreferencesHelper = Injekt.get(),
 // SY <--
 ) : PageLoader() {
 
@@ -46,7 +46,7 @@ class HttpPageLoader(
      */
     private val subscriptions = CompositeSubscription()
 
-    private val preloadSize = /* SY --> */ preferences.preloadSize().get() /* SY <-- */
+    private val preloadSize = /* SY --> */ preferences.preloadSize().get() // SY <--
 
     // SY -->
     private val dataSaver = DataSaver(source, preferences)
@@ -68,7 +68,7 @@ class HttpPageLoader(
                         if (error !is InterruptedException) {
                             logcat(LogPriority.ERROR, error)
                         }
-                    }
+                    },
                 )
             // EXH -->
         }
@@ -208,7 +208,7 @@ class HttpPageLoader(
      */
     private class PriorityPage(
         val page: ReaderPage,
-        val priority: Int
+        val priority: Int,
     ) : Comparable<PriorityPage> {
         companion object {
             private val idGenerator = AtomicInteger()
@@ -296,7 +296,7 @@ class HttpPageLoader(
                         if (error !is InterruptedException) {
                             logcat(LogPriority.ERROR, error)
                         }
-                    }
+                    },
                 )
         }
     }

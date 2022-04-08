@@ -113,7 +113,7 @@ class BatchAddController : NucleusController<EhFragmentBatchAddBinding, BatchAdd
         get() = listOf(
             inputTitleView,
             galleriesBox,
-            btnAddGalleries
+            btnAddGalleries,
         )
 
     private var List<View>.isVisible: Boolean

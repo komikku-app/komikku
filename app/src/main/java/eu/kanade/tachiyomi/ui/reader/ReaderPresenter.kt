@@ -115,7 +115,8 @@ class ReaderPresenter(
     /**
      * Relay for currently active viewer chapters.
      */
-    /* [EXH] private */ val viewerChaptersRelay = BehaviorRelay.create<ViewerChapters>()
+    /* [EXH] private */
+    val viewerChaptersRelay = BehaviorRelay.create<ViewerChapters>()
 
     /**
      * Relay used when loading prev/next chapter needed to lock the UI (with a dialog).
@@ -272,7 +273,7 @@ class ReaderPresenter(
                 { _, _ ->
                     // Ignore onNext event
                 },
-                ReaderActivity::setInitialChapterError
+                ReaderActivity::setInitialChapterError,
             )
     }
 
@@ -312,7 +313,7 @@ class ReaderPresenter(
                 { _, _ ->
                     // Ignore onNext event
                 },
-                ReaderActivity::setInitialChapterError
+                ReaderActivity::setInitialChapterError,
             )
     }
 
@@ -322,7 +323,7 @@ class ReaderPresenter(
         val decimalFormat = DecimalFormat(
             "#.###",
             DecimalFormatSymbols()
-                .apply { decimalSeparator = '.' }
+                .apply { decimalSeparator = '.' },
         )
 
         return chapterList.map {
@@ -332,7 +333,7 @@ class ReaderPresenter(
                 it.chapter.id == currentChapter?.chapter?.id,
                 context,
                 preferences.dateFormat(),
-                decimalFormat
+                decimalFormat,
             )
         }
     }
@@ -347,7 +348,7 @@ class ReaderPresenter(
      */
     private fun getLoadObservable(
         loader: ChapterLoader,
-        chapter: ReaderChapter
+        chapter: ReaderChapter,
     ): Observable<ViewerChapters> {
         return loader.loadChapter(chapter)
             .andThen(
@@ -357,9 +358,9 @@ class ReaderPresenter(
                     ViewerChapters(
                         chapter,
                         chapterList.getOrNull(chapterPos - 1),
-                        chapterList.getOrNull(chapterPos + 1)
+                        chapterList.getOrNull(chapterPos + 1),
                     )
-                }
+                },
             )
             .observeOn(AndroidSchedulers.mainThread())
             .doOnNext { newChapters ->
@@ -415,7 +416,7 @@ class ReaderPresenter(
                 },
                 { _, _ ->
                     // Ignore onError event, viewers handle that state
-                }
+                },
             )
     }
 
@@ -638,7 +639,7 @@ class ReaderPresenter(
                     view.setManga(manga)
                     view.setChapters(currChapters)
                 }
-            })
+            },)
     }
 
     /**
@@ -669,7 +670,7 @@ class ReaderPresenter(
                 if (currChapters != null) {
                     view.setOrientation(getMangaOrientationType())
                 }
-            })
+            },)
     }
 
     /**
@@ -682,7 +683,7 @@ class ReaderPresenter(
         val chapter = page.chapter.chapter
         val filenameSuffix = " - ${page.number}"
         return DiskUtil.buildValidFilename(
-            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize())
+            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize()),
         ) + filenameSuffix
     }
 
@@ -711,8 +712,8 @@ class ReaderPresenter(
                     image = Image.Page(
                         inputStream = page.stream!!,
                         name = filename,
-                        location = Location.Pictures.create(relativePath)
-                    )
+                        location = Location.Pictures.create(relativePath),
+                    ),
                 )
                 launchUI {
                     DiskUtil.scanMedia(context, uri)
@@ -748,7 +749,7 @@ class ReaderPresenter(
                     isLTR = isLTR,
                     bg = bg,
                     location = Location.Pictures.create(relativePath),
-                    manga = manga
+                    manga = manga,
                 )
                 launchUI {
                     DiskUtil.scanMedia(context, uri)
@@ -768,7 +769,7 @@ class ReaderPresenter(
         isLTR: Boolean,
         @ColorInt bg: Int,
         location: Location,
-        manga: Manga
+        manga: Manga,
     ): Uri {
         val stream1 = page1.stream!!
         ImageUtil.findImageType(stream1) ?: throw Exception("Not an image")
@@ -785,15 +786,15 @@ class ReaderPresenter(
         // Build destination file.
         val filenameSuffix = " - ${page1.number}-${page2.number}.jpg"
         val filename = DiskUtil.buildValidFilename(
-            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize())
+            "${manga.title} - ${chapter.name}".takeBytes(MAX_FILE_NAME_BYTES - filenameSuffix.byteSize()),
         ) + filenameSuffix
 
         return imageSaver.save(
             image = Image.Page(
                 inputStream = { ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, bg) },
                 name = filename,
-                location = location
-            )
+                location = location,
+            ),
         )
     }
     // SY <--
@@ -821,8 +822,8 @@ class ReaderPresenter(
                     image = Image.Page(
                         inputStream = page.stream!!,
                         name = filename,
-                        location = Location.Cache
-                    )
+                        location = Location.Cache,
+                    ),
                 )
                 launchUI {
                     view!!.onShareImageResult(uri, page)
@@ -851,7 +852,7 @@ class ReaderPresenter(
                     isLTR = isLTR,
                     bg = bg,
                     location = Location.Cache,
-                    manga = manga
+                    manga = manga,
                 )
                 launchUI {
                     view!!.onShareImageResult(uri, firstPage, secondPage)
@@ -894,7 +895,7 @@ class ReaderPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeFirst(
                 { view, result -> view.onSetAsCoverResult(result) },
-                { view, _ -> view.onSetAsCoverResult(SetAsCoverResult.Error) }
+                { view, _ -> view.onSetAsCoverResult(SetAsCoverResult.Error) },
             )
     }
 

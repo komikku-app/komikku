@@ -15,7 +15,7 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class MangaInfoButtonsAdapter(
-    private val controller: MangaController
+    private val controller: MangaController,
 ) :
     RecyclerView.Adapter<MangaInfoButtonsAdapter.HeaderViewHolder>() {
 

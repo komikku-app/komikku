@@ -50,7 +50,8 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     /**
      * Currently active item. It can be a chapter page or a chapter transition.
      */
-    /* [EXH] private */ var currentPage: Any? = null
+    /* [EXH] private */
+    var currentPage: Any? = null
 
     /**
      * Viewer chapters to set when the pager enters idle mode. Otherwise, if the view was settling
@@ -95,7 +96,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         pager.adapter = adapter
         pager.addOnPageChangeListener(
             // SY -->
-            pagerListener
+            pagerListener,
             // SY <--
         )
         pager.tapListener = f@{ event ->
@@ -312,7 +313,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 val joinedItem = adapter.joinedItems.firstOrNull { it.first == page || it.second == page }
                 activity.onPageSelected(
                     joinedItem?.first as? ReaderPage ?: page,
-                    joinedItem?.second != null
+                    joinedItem?.second != null,
                 )
             }
         } else {

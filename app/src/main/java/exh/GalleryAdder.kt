@@ -51,7 +51,7 @@ class GalleryAdder {
         url: String,
         fav: Boolean = false,
         forceSource: UrlImportableSource? = null,
-        throttleFunc: suspend () -> Unit = {}
+        throttleFunc: suspend () -> Unit = {},
     ): GalleryAddEvent {
         logger.d(context.getString(R.string.gallery_adder_importing_manga, url, fav.toString(), forceSource))
         try {
@@ -177,7 +177,7 @@ class GalleryAdder {
 
             return GalleryAddEvent.Fail.Error(
                 url,
-                ((e.message ?: "Unknown error!") + " (Gallery: $url)").trim()
+                ((e.message ?: "Unknown error!") + " (Gallery: $url)").trim(),
             )
         }
     }
@@ -192,7 +192,7 @@ sealed class GalleryAddEvent {
         override val galleryUrl: String,
         val manga: Manga,
         val context: Context,
-        val chapter: Chapter? = null
+        val chapter: Chapter? = null,
     ) : GalleryAddEvent() {
         override val galleryTitle = manga.title
         override val logMessage = context.getString(R.string.batch_add_success_log_message, galleryTitle)
@@ -205,7 +205,7 @@ sealed class GalleryAddEvent {
 
         open class Error(
             override val galleryUrl: String,
-            override val logMessage: String
+            override val logMessage: String,
         ) : Fail()
 
         class NotFound(galleryUrl: String, context: Context) :

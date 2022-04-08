@@ -70,7 +70,7 @@ class MangaDexSearchMetadata : RaisedSearchMetadata() {
             artist = artist ?: manga.artist,
             status = status ?: manga.status,
             genres = genres,
-            description = description ?: manga.description
+            description = description ?: manga.description,
         )
     }
 

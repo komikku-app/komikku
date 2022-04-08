@@ -32,7 +32,7 @@ sealed class Filter<T>(val name: String, var state: T) {
         val values: List<String>,
         val skipAutoFillTags: List<String> = emptyList(),
         val excludePrefix: String? = null,
-        state: List<String>
+        state: List<String>,
     ) : Filter<List<String>>(name, state)
     // SY <--
 

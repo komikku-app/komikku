@@ -64,7 +64,7 @@ sealed class LogLevel(val int: Int, val androidLevel: Int) {
             Info,
             Debug,
             Verbose,
-            All
+            All,
         )
     }
 }

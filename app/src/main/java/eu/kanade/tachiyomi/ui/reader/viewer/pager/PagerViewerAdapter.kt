@@ -195,7 +195,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
 
         val placeAtIndex = when (viewer) {
             is L2RPagerViewer,
-            is VerticalPagerViewer -> currentIndex + 1
+            is VerticalPagerViewer, -> currentIndex + 1
             else -> currentIndex
         }
 
@@ -278,7 +278,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                                 if (index > -1) (
                                     items.take(index).indexOfLast { it?.fullPage == true }
                                     ) else -1
-                                )
+                                ),
                         )
                         // Add a shifted page to the first place there isnt a full page
                         (fullPageBeforeIndex until items.size).forEach {
@@ -317,7 +317,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                 // Step 5: chunk em
                 if (items.isNotEmpty()) {
                     subJoinedItems.addAll(
-                        items.chunked(2).map { Pair(it.first()!!, it.getOrNull(1)) }
+                        items.chunked(2).map { Pair(it.first()!!, it.getOrNull(1)) },
                     )
                 }
                 otherItems.getOrNull(pagedIndex)?.let {
@@ -370,7 +370,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                     oldCurrent?.second
                         ?: oldCurrent?.first
                     ) as? ReaderPage
-                )?.index ?: 0
+                )?.index ?: 0,
         )
 
         // The listener may be removed when we split a page, so the ui may not have updated properly

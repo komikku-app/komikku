@@ -17,7 +17,7 @@ import uy.kohesive.injekt.injectLazy
 
 abstract class LoginDialogPreference(
     @StringRes private val usernameLabelRes: Int? = null,
-    bundle: Bundle? = null
+    bundle: Bundle? = null,
 ) : DialogController(bundle) {
 
     var binding: PrefAccountLoginBinding? = null
@@ -36,7 +36,8 @@ abstract class LoginDialogPreference(
             .create()
     }
 
-    /* SY --> */ open /* SY <-- */ fun onViewCreated(view: View) {
+    /* SY --> */
+    open /* SY <-- */ fun onViewCreated(view: View) {
         if (usernameLabelRes != null) {
             binding!!.usernameLabel.hint = view.context.getString(usernameLabelRes)
         }

@@ -43,7 +43,7 @@ class SettingsReaderController : SettingsController() {
                 R.string.right_to_left_viewer,
                 R.string.vertical_viewer,
                 R.string.webtoon_viewer,
-                R.string.vertical_plus_viewer
+                R.string.vertical_plus_viewer,
             )
             entryValues = ReadingModeType.values().drop(1)
                 .map { value -> "${value.flagValue}" }.toTypedArray()
@@ -184,13 +184,13 @@ class SettingsReaderController : SettingsController() {
                     R.string.tapping_inverted_none,
                     R.string.tapping_inverted_horizontal,
                     R.string.tapping_inverted_vertical,
-                    R.string.tapping_inverted_both
+                    R.string.tapping_inverted_both,
                 )
                 entryValues = arrayOf(
                     TappingInvertMode.NONE.name,
                     TappingInvertMode.HORIZONTAL.name,
                     TappingInvertMode.VERTICAL.name,
-                    TappingInvertMode.BOTH.name
+                    TappingInvertMode.BOTH.name,
                 )
                 summary = "%s"
 
@@ -205,7 +205,7 @@ class SettingsReaderController : SettingsController() {
                     R.string.scale_type_fit_width,
                     R.string.scale_type_fit_height,
                     R.string.scale_type_original_size,
-                    R.string.scale_type_smart_fit
+                    R.string.scale_type_smart_fit,
                 )
                 entryValues = arrayOf("1", "2", "3", "4", "5", "6")
                 summary = "%s"
@@ -222,7 +222,7 @@ class SettingsReaderController : SettingsController() {
                     R.string.zoom_start_automatic,
                     R.string.zoom_start_left,
                     R.string.zoom_start_right,
-                    R.string.zoom_start_center
+                    R.string.zoom_start_center,
                 )
                 entryValues = arrayOf("1", "2", "3", "4")
                 summary = "%s"
@@ -272,13 +272,13 @@ class SettingsReaderController : SettingsController() {
                     R.string.tapping_inverted_none,
                     R.string.tapping_inverted_horizontal,
                     R.string.tapping_inverted_vertical,
-                    R.string.tapping_inverted_both
+                    R.string.tapping_inverted_both,
                 )
                 entryValues = arrayOf(
                     TappingInvertMode.NONE.name,
                     TappingInvertMode.HORIZONTAL.name,
                     TappingInvertMode.VERTICAL.name,
-                    TappingInvertMode.BOTH.name
+                    TappingInvertMode.BOTH.name,
                 )
                 summary = "%s"
 
@@ -293,7 +293,7 @@ class SettingsReaderController : SettingsController() {
                     R.string.webtoon_side_padding_10,
                     R.string.webtoon_side_padding_15,
                     R.string.webtoon_side_padding_20,
-                    R.string.webtoon_side_padding_25
+                    R.string.webtoon_side_padding_25,
                 )
                 entryValues = arrayOf("0", "5", "10", "15", "20", "25")
                 summary = "%s"
@@ -305,7 +305,7 @@ class SettingsReaderController : SettingsController() {
                     R.string.pref_highest,
                     R.string.pref_high,
                     R.string.pref_low,
-                    R.string.pref_lowest
+                    R.string.pref_lowest,
                 )
                 entryValues = PreferenceValues.ReaderHideThreshold.values()
                     .map { it.name }
@@ -412,7 +412,7 @@ class SettingsReaderController : SettingsController() {
                     R.string.reader_preload_amount_12_pages,
                     R.string.reader_preload_amount_14_pages,
                     R.string.reader_preload_amount_16_pages,
-                    R.string.reader_preload_amount_20_pages
+                    R.string.reader_preload_amount_20_pages,
                 )
                 summaryRes = R.string.reader_preload_amount_summary
             }
@@ -444,7 +444,7 @@ class SettingsReaderController : SettingsController() {
                     "3500",
                     "4000",
                     "4500",
-                    "5000"
+                    "5000",
                 )
                 entries = arrayOf(
                     "50 MB",
@@ -462,7 +462,7 @@ class SettingsReaderController : SettingsController() {
                     "3.5 GB",
                     "4 GB",
                     "4.5 GB",
-                    "5 GB"
+                    "5 GB",
                 )
                 summaryRes = R.string.reader_cache_size_summary
             }
@@ -508,7 +508,7 @@ class SettingsReaderController : SettingsController() {
                 entriesRes = arrayOf(
                     R.string.single_page,
                     R.string.double_pages,
-                    R.string.automatic_orientation
+                    R.string.automatic_orientation,
                 )
                 entryValues = arrayOf("0", "1", "2")
             }
@@ -537,7 +537,7 @@ class SettingsReaderController : SettingsController() {
                 .setTitle(R.string.reader_bottom_buttons)
                 .setMultiChoiceItems(
                     values.map { activity!!.getString(it.stringRes) }.toTypedArray(),
-                    selection
+                    selection,
                 ) { _, which, selected ->
                     selection[which] = selected
                 }

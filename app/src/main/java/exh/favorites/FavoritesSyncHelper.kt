@@ -125,14 +125,14 @@ class FavoritesSyncHelper(val context: Context) {
             wakeLock = ignore {
                 context.powerManager.newWakeLock(
                     PowerManager.PARTIAL_WAKE_LOCK,
-                    "teh:ExhFavoritesSyncWakelock"
+                    "teh:ExhFavoritesSyncWakelock",
                 )
             }
             ignore { wifiLock?.release() }
             wifiLock = ignore {
                 context.wifiManager.createWifiLock(
                     WifiManager.WIFI_MODE_FULL_HIGH_PERF,
-                    "teh:ExhFavoritesSyncWifi"
+                    "teh:ExhFavoritesSyncWifi",
                 )
             }
 
@@ -249,7 +249,7 @@ class FavoritesSyncHelper(val context: Context) {
                 .add("favnote", "")
                 .add("apply", "Add to Favorites")
                 .add("update", "1")
-                .build()
+                .build(),
         )
 
         if (!explicitlyRetryExhRequest(10, request)) {
@@ -299,7 +299,7 @@ class FavoritesSyncHelper(val context: Context) {
 
             val request = POST(
                 url = "https://exhentai.org/favorites.php",
-                body = formBody.build()
+                body = formBody.build(),
             )
 
             if (!explicitlyRetryExhRequest(10, request)) {
@@ -320,7 +320,7 @@ class FavoritesSyncHelper(val context: Context) {
             status.value = FavoritesSyncStatus.Processing(
                 context.getString(R.string.favorites_sync_adding_to_remote, index + 1, changeSet.added.size),
                 needWarnThrottle(),
-                context
+                context,
             )
 
             throttleManager.throttle()
@@ -340,7 +340,7 @@ class FavoritesSyncHelper(val context: Context) {
             // Consider both EX and EH sources
             listOf(
                 db.getManga(url, EXH_SOURCE_ID),
-                db.getManga(url, EH_SOURCE_ID)
+                db.getManga(url, EH_SOURCE_ID),
             ).forEach {
                 val manga = it.executeAsBlocking()
 
@@ -368,7 +368,7 @@ class FavoritesSyncHelper(val context: Context) {
                 context.getString(R.string.favorites_sync_add_to_local, index + 1, changeSet.added.size),
                 needWarnThrottle(),
                 context,
-                it.title
+                it.title,
             )
 
             throttleManager.throttle()
@@ -379,7 +379,7 @@ class FavoritesSyncHelper(val context: Context) {
                 "${exh.baseUrl}${it.getUrl()}",
                 true,
                 exh,
-                throttleManager::throttle
+                throttleManager::throttle,
             )
 
             if (result is GalleryAddEvent.Fail) {
@@ -404,7 +404,7 @@ class FavoritesSyncHelper(val context: Context) {
             } else if (result is GalleryAddEvent.Success) {
                 insertedMangaCategories += MangaCategory.create(
                     result.manga,
-                    categories[it.category]
+                    categories[it.category],
                 ) to result.manga
             }
         }
@@ -439,7 +439,7 @@ sealed class FavoritesSyncStatus(val message: String) {
         class MangaInMultipleCategories(
             val manga: Manga,
             val categories: List<Category>,
-            context: Context
+            context: Context,
         ) :
             BadLibraryState(context.getString(R.string.favorites_sync_manga_in_multiple_categories, manga.title, categories.joinToString { it.name }))
     }
@@ -449,7 +449,7 @@ sealed class FavoritesSyncStatus(val message: String) {
             context.getString(R.string.favorites_sync_processing_throttle, message)
         } else {
             message
-        }
+        },
     ) {
         val delayedMessage get() = if (title != null) this.message + "\n\n" + title else null
     }

@@ -22,7 +22,7 @@ class FeedItem(
     val savedSearch: SavedSearch?,
     val source: CatalogueSource?,
     val results: List<FeedCardItem>?,
-    val highlighted: Boolean = false
+    val highlighted: Boolean = false,
 ) : AbstractFlexibleItem<FeedHolder>() {
 
     /**
@@ -50,7 +50,7 @@ class FeedItem(
         adapter: FlexibleAdapter<IFlexible<RecyclerView.ViewHolder>>,
         holder: FeedHolder,
         position: Int,
-        payloads: List<Any?>?
+        payloads: List<Any?>?,
     ) {
         holder.bind(this)
     }

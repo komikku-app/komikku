@@ -79,11 +79,11 @@ class MdUtil {
             "English :",
             "[English]:",
             "English Translaton:",
-            "[B][ENG][/B]"
+            "[B][ENG][/B]",
         )
 
         val bbCodeToRemove = listOf(
-            "list", "*", "hr", "u", "b", "i", "s", "center", "spoiler="
+            "list", "*", "hr", "u", "b", "i", "s", "center", "spoiler=",
         )
         val descriptionLanguages = listOf(
             "=FRANCAIS=",
@@ -274,7 +274,7 @@ class MdUtil {
                     ?.fileName
                     ?.let { coverFileName ->
                         cdnCoverUrl(json.id, coverFileName)
-                    }.orEmpty()
+                    }.orEmpty(),
             )
         }
 
@@ -331,7 +331,7 @@ class MdUtil {
         fun getAuthHeaders(headers: Headers, preferences: PreferencesHelper, mdList: MdList) =
             headers.newBuilder().add(
                 "Authorization",
-                "Bearer " + (sessionToken(preferences, mdList) ?: throw NoSessionException())
+                "Bearer " + (sessionToken(preferences, mdList) ?: throw NoSessionException()),
             ).build()
 
         fun getEnabledMangaDex(preferences: PreferencesHelper, sourceManager: SourceManager = Injekt.get()): MangaDex? {

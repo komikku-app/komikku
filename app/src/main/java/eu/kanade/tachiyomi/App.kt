@@ -122,7 +122,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                             this@App,
                             0,
                             Intent(ACTION_DISABLE_INCOGNITO_MODE),
-                            PendingIntent.FLAG_ONE_SHOT
+                            PendingIntent.FLAG_ONE_SHOT,
                         )
                         setContentIntent(pendingIntent)
                     }
@@ -141,7 +141,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                         PreferenceValues.ThemeMode.light -> AppCompatDelegate.MODE_NIGHT_NO
                         PreferenceValues.ThemeMode.dark -> AppCompatDelegate.MODE_NIGHT_YES
                         PreferenceValues.ThemeMode.system -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                    }
+                    },
                 )
             }.launchIn(ProcessLifecycleOwner.get().lifecycleScope)
 
@@ -230,7 +230,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         val logFolder = File(
             Environment.getExternalStorageDirectory().absolutePath + File.separator +
                 getString(R.string.app_name),
-            "logs"
+            "logs",
         )
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
@@ -241,7 +241,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                     override fun generateFileName(logLevel: Int, timestamp: Long): String {
                         return super.generateFileName(
                             logLevel,
-                            timestamp
+                            timestamp,
                         ) + "-${BuildConfig.BUILD_TYPE}.log"
                     }
                 }
@@ -259,7 +259,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
 
         XLog.init(
             logConfig,
-            *printers.toTypedArray()
+            *printers.toTypedArray(),
         )
 
         xLogD("Application booting...")
@@ -274,7 +274,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                 Device name: ${Build.DEVICE}
                 Device model: ${Build.MODEL}
                 Device product name: ${Build.PRODUCT}
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
