@@ -100,11 +100,6 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             // SY <--
         )
         pager.tapListener = f@{ event ->
-            if (!config.tappingEnabled) {
-                activity.toggleMenu()
-                return@f
-            }
-
             val pos = PointF(event.rawX / pager.width, event.rawY / pager.height)
             val navigator = config.navigator
 
@@ -145,7 +140,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
 
         config.navigationModeChangedListener = {
             val showOnStart = config.navigationOverlayOnStart || config.forceNavigationOverlay
-            activity.binding.navigationOverlay.setNavigation(config.navigator, config.tappingEnabled, showOnStart)
+            activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
         }
     }
 

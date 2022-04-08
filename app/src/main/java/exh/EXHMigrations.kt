@@ -435,6 +435,13 @@ object EXHMigrations {
                         remove("latest_tab_sources")
                     }
                 }
+                if (oldVersion under 32) {
+                    val oldReaderTap = prefs.getBoolean("reader_tap", false)
+                    if (!oldReaderTap) {
+                        preferences.navigationModePager().set(5)
+                        preferences.navigationModeWebtoon().set(5)
+                    }
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap

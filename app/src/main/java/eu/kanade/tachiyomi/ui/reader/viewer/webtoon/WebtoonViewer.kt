@@ -108,11 +108,6 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             },
         )
         recycler.tapListener = f@{ event ->
-            if (!config.tappingEnabled) {
-                activity.toggleMenu()
-                return@f
-            }
-
             val pos = PointF(event.rawX / recycler.width, event.rawY / recycler.height)
             val navigator = config.navigator
 
@@ -147,7 +142,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
 
         config.navigationModeChangedListener = {
             val showOnStart = config.navigationOverlayOnStart || config.forceNavigationOverlay
-            activity.binding.navigationOverlay.setNavigation(config.navigator, config.tappingEnabled, showOnStart)
+            activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
         }
 
         // SY -->

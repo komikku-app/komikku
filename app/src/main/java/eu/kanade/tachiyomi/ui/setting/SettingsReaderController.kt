@@ -174,8 +174,6 @@ class SettingsReaderController : SettingsController() {
                     entryValues = values.indices.map { index -> "$index" }.toTypedArray()
                 }
                 summary = "%s"
-
-                visibleIf(preferences.readWithTapping()) { it }
             }
             listPreference {
                 bindTo(preferences.pagerNavInverted())
@@ -193,8 +191,6 @@ class SettingsReaderController : SettingsController() {
                     TappingInvertMode.BOTH.name,
                 )
                 summary = "%s"
-
-                visibleIf(preferences.readWithTapping()) { it }
             }
             intListPreference {
                 bindTo(preferences.imageScaleType())
@@ -263,7 +259,6 @@ class SettingsReaderController : SettingsController() {
                     entryValues = values.indices.map { index -> "$index" }.toTypedArray()
                 }
                 summary = "%s"
-                visibleIf(preferences.readWithTapping()) { it }
             }
             listPreference {
                 bindTo(preferences.webtoonNavInverted())
@@ -281,8 +276,6 @@ class SettingsReaderController : SettingsController() {
                     TappingInvertMode.BOTH.name,
                 )
                 summary = "%s"
-
-                visibleIf(preferences.readWithTapping()) { it }
             }
             intListPreference {
                 bindTo(preferences.webtoonSidePadding())
@@ -357,10 +350,6 @@ class SettingsReaderController : SettingsController() {
         preferenceCategory {
             titleRes = R.string.pref_reader_navigation
 
-            switchPreference {
-                bindTo(preferences.readWithTapping())
-                titleRes = R.string.pref_read_with_tapping
-            }
             switchPreference {
                 bindTo(preferences.readWithVolumeKeys())
                 titleRes = R.string.pref_read_with_volume_keys
