@@ -231,7 +231,7 @@ interface MangaQueries : DbProvider {
                     )
                     """.trimIndent()
                 )
-                .whereArgs(0)
+                .whereArgs(0, *sourceIds.toTypedArray())
                 .build()
         )
         .prepare()
