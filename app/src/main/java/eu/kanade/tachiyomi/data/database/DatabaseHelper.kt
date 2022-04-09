@@ -53,9 +53,8 @@ open class DatabaseHelper(context: Context) :
     TrackQueries,
     CategoryQueries,
     MangaCategoryQueries,
-    HistoryQueries
+    HistoryQueries,
     /* SY --> */
-    ,
     SearchMetadataQueries,
     SearchTagQueries,
     SearchTitleQueries,
@@ -63,8 +62,7 @@ open class DatabaseHelper(context: Context) :
     FavoriteEntryQueries,
     SavedSearchQueries,
     FeedSavedSearchQueries
-/* SY <-- */
-{
+/* SY <-- */ {
 
     private val configuration = SupportSQLiteOpenHelper.Configuration.builder(context)
         .name(DbOpenCallback.DATABASE_NAME)
