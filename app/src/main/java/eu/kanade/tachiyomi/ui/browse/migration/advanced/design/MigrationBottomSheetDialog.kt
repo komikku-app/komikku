@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.app.Activity
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.fredporciuncula.flow.preferences.Preference
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
@@ -46,6 +48,9 @@ class MigrationBottomSheetDialog(private val activity: Activity, private val lis
             )
             dismiss()
         }
+
+        behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels
+        behavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     /**

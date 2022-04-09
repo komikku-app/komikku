@@ -23,6 +23,7 @@
             android:id="@+id/data_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingTop="8dp"
             android:layout_marginStart="8dp"
             android:text="@string/data_to_include_in_migration"
             android:textAppearance="?attr/textAppearanceTitleMedium"
@@ -200,6 +201,16 @@
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/migrate_btn_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="12dp"
+        android:background="?android:attr/divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/migrate_btn" />
 
     <Button
         android:id="@+id/migrate_btn"
