@@ -156,5 +156,4 @@ private data class ExtensionSourceJsonObject(
     val name: String,
     val id: Long,
     val baseUrl: String,
-
 )
