@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.system.getInstallerPackageName
 import exh.syDebugVersion
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
@@ -34,14 +35,19 @@ class AppUpdateChecker {
 
                     // Check if latest version is different from current version
                     if (/* SY --> */ isNewVersionSY(it.version) /* SY <-- */) {
-                        AppUpdateResult.NewUpdate(it)
+                        if (context.getInstallerPackageName() == "org.fdroid.fdroid") {
+                            AppUpdateResult.NewUpdateFdroidInstallation
+                        } else {
+                            AppUpdateResult.NewUpdate(it)
+                        }
                     } else {
                         AppUpdateResult.NoNewUpdate
                     }
                 }
 
-            if (result is AppUpdateResult.NewUpdate) {
-                AppUpdateNotifier(context).promptUpdate(result.release)
+            when (result) {
+                is AppUpdateResult.NewUpdate -> AppUpdateNotifier(context).promptUpdate(result.release)
+                is AppUpdateResult.NewUpdateFdroidInstallation -> AppUpdateNotifier(context).promptFdroidUpdate()
             }
 
             result
