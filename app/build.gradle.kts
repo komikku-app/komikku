@@ -25,8 +25,8 @@ android {
         applicationId = "eu.kanade.tachiyomi.sy"
         minSdk = AndroidConfig.minSdk
         targetSdk = AndroidConfig.targetSdk
-        versionCode = 32
-        versionName = "1.8.1"
+        versionCode = 33
+        versionName = "1.8.2"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getGitSha()}\"")
