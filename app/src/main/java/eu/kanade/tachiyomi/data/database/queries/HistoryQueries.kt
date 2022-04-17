@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.data.database.DbProvider
 import eu.kanade.tachiyomi.data.database.models.History
 import eu.kanade.tachiyomi.data.database.models.MangaChapterHistory
 import eu.kanade.tachiyomi.data.database.resolvers.HistoryChapterIdPutResolver
-import eu.kanade.tachiyomi.data.database.resolvers.HistoryLastReadPutResolver
+import eu.kanade.tachiyomi.data.database.resolvers.HistoryUpsertResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaChapterHistoryGetResolver
 import eu.kanade.tachiyomi.data.database.tables.HistoryTable
 import java.util.Date
@@ -65,9 +65,9 @@ interface HistoryQueries : DbProvider {
      * Inserts history object if not yet in database
      * @param history history object
      */
-    fun updateHistoryLastRead(history: History) = db.put()
+    fun upsertHistoryLastRead(history: History) = db.put()
         .`object`(history)
-        .withPutResolver(HistoryLastReadPutResolver())
+        .withPutResolver(HistoryUpsertResolver())
         .prepare()
 
     /**
@@ -75,12 +75,40 @@ interface HistoryQueries : DbProvider {
      * Inserts history object if not yet in database
      * @param historyList history object list
      */
-    fun updateHistoryLastRead(historyList: List<History>) = db.put()
+    fun upsertHistoryLastRead(historyList: List<History>) = db.put()
         .objects(historyList)
-        .withPutResolver(HistoryLastReadPutResolver())
+        .withPutResolver(HistoryUpsertResolver())
         .prepare()
 
-    fun deleteHistory() = db.delete()
+    fun resetHistoryLastRead(historyId: Long) = db.executeSQL()
+        .withQuery(
+            RawQuery.builder()
+                .query(
+                    """
+                UPDATE ${HistoryTable.TABLE} 
+                SET history_last_read = 0
+                WHERE ${HistoryTable.COL_ID} = $historyId  
+                    """.trimIndent()
+                )
+                .build()
+        )
+        .prepare()
+
+    fun resetHistoryLastRead(historyIds: List<Long>) = db.executeSQL()
+        .withQuery(
+            RawQuery.builder()
+                .query(
+                    """
+                UPDATE ${HistoryTable.TABLE} 
+                SET history_last_read = 0
+                WHERE ${HistoryTable.COL_ID} in ${historyIds.joinToString(",", "(", ")")}  
+                    """.trimIndent()
+                )
+                .build()
+        )
+        .prepare()
+
+    fun dropHistoryTable() = db.delete()
         .byQuery(
             DeleteQuery.builder()
                 .table(HistoryTable.TABLE)
