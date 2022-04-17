@@ -217,6 +217,7 @@ dependencies {
         exclude(group = "androidx.viewpager", module = "viewpager")
     }
     implementation(libs.insetter)
+    implementation(libs.markwon)
 
     // Conductor
     implementation(libs.bundles.conductor)
