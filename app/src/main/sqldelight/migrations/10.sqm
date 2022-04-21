@@ -1,0 +1,7 @@
+CREATE TABLE eh_favorites (
+    _id INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    gid TEXT NOT NULL,
+    token TEXT NOT NULL,
+    category INTEGER NOT NULL
+);

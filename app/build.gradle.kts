@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
     id("com.github.zellius.shortcut-helper")
+    id("com.squareup.sqldelight")
 }
 
 if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
@@ -130,6 +131,9 @@ dependencies {
     implementation(androidx.paging.runtime)
     implementation(androidx.paging.compose)
 
+    implementation(libs.sqldelight.android.driver)
+    implementation(libs.sqldelight.coroutines)
+    implementation(libs.sqldelight.android.paging)
 
     implementation(kotlinx.reflect)
 

@@ -1,0 +1,16 @@
+CREATE TABLE saved_search(
+    _id INTEGER NOT NULL PRIMARY KEY,
+    source INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    query TEXT,
+    filters_json TEXT
+);
+CREATE TABLE feed_saved_search (
+    _id INTEGER NOT NULL PRIMARY KEY,
+    source INTEGER NOT NULL,
+    saved_search INTEGER,
+    global INTEGER AS Boolean NOT NULL,
+    FOREIGN KEY(saved_search) REFERENCES saved_search (_id)
+    ON DELETE CASCADE
+);
+CREATE INDEX feed_saved_search_saved_search_index ON feed_saved_search(saved_search);

@@ -1,0 +1,7 @@
+CREATE TABLE saved_search(
+    _id INTEGER NOT NULL PRIMARY KEY,
+    source INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    query TEXT,
+    filters_json TEXT
+);

@@ -1,0 +1,11 @@
+CREATE TABLE search_titles (
+    _id INTEGER NOT NULL PRIMARY KEY,
+    manga_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    type INTEGER AS Int NOT NULL,
+    FOREIGN KEY(manga_id) REFERENCES mangas (_id)
+    ON DELETE CASCADE
+);
+
+CREATE INDEX search_titles_manga_id_index ON search_titles(manga_id);
+CREATE INDEX search_titles_title_index ON search_titles(title);
