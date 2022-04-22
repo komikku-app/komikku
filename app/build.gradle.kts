@@ -7,7 +7,6 @@ plugins {
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
     id("com.github.zellius.shortcut-helper")
-    id("com.squareup.sqldelight")
 }
 
 if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
@@ -93,7 +92,6 @@ android {
 
     buildFeatures {
         viewBinding = true
-        compose = true
 
         // Disable some unused things
         aidl = false
@@ -107,10 +105,6 @@ android {
         checkReleaseBuilds = false
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = compose.versions.compose.get()
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -122,19 +116,6 @@ android {
 }
 
 dependencies {
-    implementation(compose.foundation)
-    implementation(compose.material3.core)
-    implementation(compose.material3.adapter)
-    implementation(compose.animation)
-    implementation(compose.ui.tooling)
-
-    implementation(androidx.paging.runtime)
-    implementation(androidx.paging.compose)
-
-    implementation(libs.sqldelight.android.driver)
-    implementation(libs.sqldelight.coroutines)
-    implementation(libs.sqldelight.android.paging)
-
     implementation(kotlinx.reflect)
 
     implementation(kotlinx.bundles.coroutines)
@@ -288,9 +269,6 @@ tasks {
             "-Xopt-in=kotlinx.coroutines.InternalCoroutinesApi",
             "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
             "-Xopt-in=coil.annotation.ExperimentalCoilApi",
-            "-Xopt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-Xopt-in=androidx.compose.ui.ExperimentalComposeUiApi",
-            "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             "-Xopt-in=kotlin.time.ExperimentalTime",
         )
     }

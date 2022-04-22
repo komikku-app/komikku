@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.data.backup.legacy
 
 import android.content.Context
 import android.net.Uri
-import eu.kanade.data.exh.savedSearchMapper
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.legacy.models.Backup.Companion.CURRENT_VERSION
@@ -207,7 +206,7 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
                 }
             }
         }
-        databaseHelper.upsertHistoryLastRead(historyToBeUpdated).executeAsBlocking()
+        databaseHelper.updateHistoryLastRead(historyToBeUpdated).executeAsBlocking()
     }
 
     /**
@@ -290,37 +289,28 @@ class LegacyBackupManager(context: Context, version: Int = CURRENT_VERSION) : Ab
     }
 
     // SY -->
-    internal suspend fun restoreSavedSearches(jsonSavedSearches: String) {
+    internal fun restoreSavedSearches(jsonSavedSearches: String) {
         val backupSavedSearches = jsonSavedSearches.split("***").toSet()
 
-        val currentSavedSearches = databaseHandler.awaitList {
-            saved_searchQueries.selectAll(savedSearchMapper)
-        }
+        val currentSavedSearches = databaseHelper.getSavedSearches().executeAsBlocking()
 
-        databaseHandler.await(true) {
-            backupSavedSearches.mapNotNull {
-                runCatching {
-                    val content = parser.decodeFromString<JsonObject>(it.substringAfter(':'))
-                    SavedSearch(
-                        id = null,
-                        source = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null,
-                        content["name"]!!.jsonPrimitive.content,
-                        content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
-                        Json.encodeToString(content["filters"]!!.jsonArray),
-                    )
-                }.getOrNull()
-            }.filter { backupSavedSearch ->
-                currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
-            }.forEach {
-                saved_searchQueries.insertSavedSearch(
-                    _id = null,
-                    source = it.source,
-                    name = it.name,
-                    query = it.query.nullIfBlank(),
-                    filters_json = it.filtersJson.nullIfBlank()
-                        ?.takeUnless { it == "[]" },
+        val newSavedSearches = backupSavedSearches.mapNotNull {
+            runCatching {
+                val content = parser.decodeFromString<JsonObject>(it.substringAfter(':'))
+                SavedSearch(
+                    id = null,
+                    source = it.substringBefore(':').toLongOrNull() ?: return@mapNotNull null,
+                    content["name"]!!.jsonPrimitive.content,
+                    content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
+                    Json.encodeToString(content["filters"]!!.jsonArray),
                 )
-            }
+            }.getOrNull()
+        }.filter { backupSavedSearch ->
+            currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
+        }.ifEmpty { null }
+
+        if (newSavedSearches != null) {
+            databaseHelper.insertSavedSearches(newSavedSearches)
         }
     }
 

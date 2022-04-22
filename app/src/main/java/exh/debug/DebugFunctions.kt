@@ -3,7 +3,6 @@ package exh.debug
 import android.app.Application
 import androidx.work.WorkManager
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
@@ -35,7 +34,6 @@ import java.util.UUID
 object DebugFunctions {
     val app: Application by injectLazy()
     val db: DatabaseHelper by injectLazy()
-    val database: DatabaseHandler by injectLazy()
     val prefs: PreferencesHelper by injectLazy()
     val sourceManager: SourceManager by injectLazy()
 
@@ -166,7 +164,7 @@ object DebugFunctions {
         it.favorite && db.getSearchMetadataForManga(it.id!!).executeAsBlocking() == null
     }
 
-    fun clearSavedSearches() = runBlocking { database.await { saved_searchQueries.deleteAll() } }
+    fun clearSavedSearches() = db.deleteAllSavedSearches().executeAsBlocking()
 
     fun listAllSources() = sourceManager.getCatalogueSources().joinToString("\n") {
         "${it.id}: ${it.name} (${it.lang.uppercase()})"

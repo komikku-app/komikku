@@ -13,4 +13,14 @@ object SavedSearchTable {
     const val COL_QUERY = "query"
 
     const val COL_FILTERS_JSON = "filters_json"
+
+    val createTableQuery: String
+        get() =
+            """CREATE TABLE $TABLE(
+            $COL_ID INTEGER NOT NULL PRIMARY KEY,
+            $COL_SOURCE INTEGER NOT NULL,
+            $COL_NAME TEXT NOT NULL,
+            $COL_QUERY TEXT,
+            $COL_FILTERS_JSON TEXT
+            )"""
 }

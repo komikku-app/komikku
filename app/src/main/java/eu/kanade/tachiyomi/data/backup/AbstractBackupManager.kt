@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.data.backup
 
 import android.content.Context
 import android.net.Uri
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -21,7 +20,6 @@ import uy.kohesive.injekt.injectLazy
 abstract class AbstractBackupManager(protected val context: Context) {
 
     internal val databaseHelper: DatabaseHelper by injectLazy()
-    internal val databaseHandler: DatabaseHandler by injectLazy()
     internal val sourceManager: SourceManager by injectLazy()
     internal val trackManager: TrackManager by injectLazy()
     protected val preferences: PreferencesHelper by injectLazy()

@@ -137,7 +137,7 @@ class MigrationProcessAdapter(
                 }
             }
             db.insertChapters(dbChapters).executeAsBlocking()
-            db.upsertHistoryLastRead(historyList).executeAsBlocking()
+            db.updateHistoryLastRead(historyList).executeAsBlocking()
         }
         // Update categories
         if (MigrationFlags.hasCategories(flags)) {

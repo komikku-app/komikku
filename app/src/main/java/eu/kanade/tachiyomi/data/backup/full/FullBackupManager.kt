@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.data.backup.full
 import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
-import eu.kanade.data.exh.savedSearchMapper
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CATEGORY
@@ -40,11 +39,11 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.savedsearches.models.SavedSearch
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.executeOnIO
 import exh.util.nullIfBlank
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
 import okio.buffer
@@ -168,15 +167,13 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      * @return list of [BackupSavedSearch] to be backed up
      */
     private fun backupSavedSearches(): List<BackupSavedSearch> {
-        return runBlocking {
-            databaseHandler.awaitList { saved_searchQueries.selectAll(savedSearchMapper) }.map {
-                BackupSavedSearch(
-                    it.name,
-                    it.query.orEmpty(),
-                    it.filtersJson ?: "[]",
-                    it.source,
-                )
-            }
+        return databaseHelper.getSavedSearches().executeAsBlocking().map {
+            BackupSavedSearch(
+                it.name,
+                it.query.orEmpty(),
+                it.filtersJson ?: "[]",
+                it.source,
+            )
         }
     }
     // SY <--
@@ -360,7 +357,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 }
             }
         }
-        databaseHelper.upsertHistoryLastRead(historyToBeUpdated).executeAsBlocking()
+        databaseHelper.updateHistoryLastRead(historyToBeUpdated).executeAsBlocking()
     }
 
     /**
@@ -434,24 +431,25 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     }
 
     // SY -->
-    internal suspend fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
-        val currentSavedSearches = databaseHandler.awaitList {
-            saved_searchQueries.selectAll(savedSearchMapper)
-        }
+    internal fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
+        val currentSavedSearches = databaseHelper.getSavedSearches()
+            .executeAsBlocking()
 
-        databaseHandler.await(true) {
-            backupSavedSearches.filter { backupSavedSearch ->
-                currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
-            }.forEach {
-                saved_searchQueries.insertSavedSearch(
-                    _id = null,
-                    source = it.source,
-                    name = it.name,
-                    query = it.query.nullIfBlank(),
-                    filters_json = it.filterList.nullIfBlank()
-                        ?.takeUnless { it == "[]" },
-                )
-            }
+        val newSavedSearches = backupSavedSearches.filter { backupSavedSearch ->
+            currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
+        }.map {
+            SavedSearch(
+                id = null,
+                it.source,
+                it.name,
+                it.query.nullIfBlank(),
+                filtersJson = it.filterList.nullIfBlank()
+                    ?.takeUnless { it == "[]" },
+            )
+        }.ifEmpty { null }
+
+        if (newSavedSearches != null) {
+            databaseHelper.insertSavedSearches(newSavedSearches)
         }
     }
 

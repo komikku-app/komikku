@@ -18,7 +18,6 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
@@ -67,45 +66,41 @@ open class FeedController :
     }
 
     private fun addFeed() {
-        viewScope.launchUI {
-            if (presenter.hasTooManyFeeds()) {
-                activity?.toast(R.string.too_many_in_feed)
-                return@launchUI
-            }
-            val items = presenter.getEnabledSources()
-            val itemsStrings = items.map { it.toString() }
-            var selectedIndex = 0
-
-            MaterialAlertDialogBuilder(activity!!)
-                .setTitle(R.string.feed)
-                .setSingleChoiceItems(itemsStrings.toTypedArray(), selectedIndex) { _, which ->
-                    selectedIndex = which
-                }
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    addFeedSearch(items[selectedIndex])
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
+        if (presenter.hasTooManyFeeds()) {
+            activity?.toast(R.string.too_many_in_feed)
+            return
         }
+        val items = presenter.getEnabledSources()
+        val itemsStrings = items.map { it.toString() }
+        var selectedIndex = 0
+
+        MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.feed)
+            .setSingleChoiceItems(itemsStrings.toTypedArray(), selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                addFeedSearch(items[selectedIndex])
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun addFeedSearch(source: CatalogueSource) {
-        viewScope.launchUI {
-            val items = presenter.getSourceSavedSearches(source)
-            val itemsStrings = listOf(activity!!.getString(R.string.latest)) + items.map { it.name }
-            var selectedIndex = 0
+        val items = presenter.getSourceSavedSearches(source)
+        val itemsStrings = listOf(activity!!.getString(R.string.latest)) + items.map { it.name }
+        var selectedIndex = 0
 
-            MaterialAlertDialogBuilder(activity!!)
-                .setTitle(R.string.feed)
-                .setSingleChoiceItems(itemsStrings.toTypedArray(), selectedIndex) { _, which ->
-                    selectedIndex = which
-                }
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    presenter.createFeed(source, items.getOrNull(selectedIndex - 1))
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        }
+        MaterialAlertDialogBuilder(activity!!)
+            .setTitle(R.string.feed)
+            .setSingleChoiceItems(itemsStrings.toTypedArray(), selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                presenter.createFeed(source, items.getOrNull(selectedIndex - 1))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     /**

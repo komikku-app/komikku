@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.data.database.queries
 
 import eu.kanade.tachiyomi.data.database.resolvers.SourceIdMangaCountGetResolver
+import exh.savedsearches.tables.FeedSavedSearchTable
+import exh.savedsearches.tables.SavedSearchTable
 import exh.source.MERGED_SOURCE_ID
 import eu.kanade.tachiyomi.data.database.tables.CategoryTable as Category
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable as Chapter
@@ -72,6 +74,32 @@ fun getReadMangaNotInLibraryQuery() =
     WHERE ${Manga.COL_FAVORITE} = 0 AND ${Manga.COL_ID} IN(
         SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} FROM ${Chapter.TABLE} WHERE ${Chapter.COL_READ} = 1 OR ${Chapter.COL_LAST_PAGE_READ} != 0
     )
+"""
+
+/**
+ * Query to get the global feed saved searches
+ */
+fun getGlobalFeedSavedSearchQuery() =
+    """
+    SELECT ${SavedSearchTable.TABLE}.*
+    FROM (
+        SELECT ${FeedSavedSearchTable.COL_SAVED_SEARCH_ID} FROM ${FeedSavedSearchTable.TABLE} WHERE ${FeedSavedSearchTable.COL_GLOBAL} = 1
+    ) AS M
+    JOIN ${SavedSearchTable.TABLE}
+    ON ${SavedSearchTable.TABLE}.${SavedSearchTable.COL_ID} = M.${FeedSavedSearchTable.COL_SAVED_SEARCH_ID}
+"""
+
+/**
+ * Query to get the source feed saved searches
+ */
+fun getSourceFeedSavedSearchQuery() =
+    """
+    SELECT ${SavedSearchTable.TABLE}.*
+    FROM (
+        SELECT ${FeedSavedSearchTable.COL_SAVED_SEARCH_ID} FROM ${FeedSavedSearchTable.TABLE} WHERE ${FeedSavedSearchTable.COL_GLOBAL} = 0 AND ${FeedSavedSearchTable.COL_SOURCE} = ?
+    ) AS M
+    JOIN ${SavedSearchTable.TABLE}
+    ON ${SavedSearchTable.TABLE}.${SavedSearchTable.COL_ID} = M.${FeedSavedSearchTable.COL_SAVED_SEARCH_ID}
 """
 
 /**
@@ -162,8 +190,7 @@ fun getRecentMangasQuery(search: String = "") =
     SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID},${Chapter.TABLE}.${Chapter.COL_ID} as ${History.COL_CHAPTER_ID}, MAX(${History.TABLE}.${History.COL_LAST_READ}) as ${History.COL_LAST_READ}
     FROM ${Chapter.TABLE} JOIN ${History.TABLE}
     ON ${Chapter.TABLE}.${Chapter.COL_ID} = ${History.TABLE}.${History.COL_CHAPTER_ID}
-    GROUP BY ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}
-    ) AS max_last_read
+    GROUP BY ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}) AS max_last_read
     ON ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = max_last_read.${Chapter.COL_MANGA_ID}
     WHERE ${History.TABLE}.${History.COL_LAST_READ} > ?
     AND max_last_read.${History.COL_CHAPTER_ID} = ${History.TABLE}.${History.COL_CHAPTER_ID}
