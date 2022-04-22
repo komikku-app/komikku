@@ -87,7 +87,7 @@ class SettingsAdvancedController : SettingsController() {
             key = Keys.verboseLogging
             titleRes = R.string.pref_verbose_logging
             summaryRes = R.string.pref_verbose_logging_summary
-            defaultValue = false
+            defaultValue = isDevFlavor
 
             onChange {
                 activity?.toast(R.string.requires_app_restart)
