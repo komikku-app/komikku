@@ -23,6 +23,9 @@ CREATE TABLE mangas(
     filtered_scanlators TEXT
 );
 
+CREATE INDEX library_favorite_index ON mangas(favorite) WHERE favorite = 1;
+CREATE INDEX mangas_url_index ON mangas(url);
+
 getMangaById:
 SELECT *
 FROM mangas
