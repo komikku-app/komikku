@@ -24,6 +24,8 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
@@ -184,7 +186,7 @@ open class SourceFeedController :
             // SY -->
             this,
             presenter.source,
-            presenter.loadSearches(),
+            emptyList(),
             // SY <--
             onFilterClicked = {
                 val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
@@ -202,51 +204,60 @@ open class SourceFeedController :
             },
             onResetClicked = {},
             onSaveClicked = {},
-            onSavedSearchClicked = cb@{ idOfSearch ->
-                val search = presenter.loadSearch(idOfSearch)
+            onSavedSearchClicked = { idOfSearch ->
+                viewScope.launchUI {
+                    val search = presenter.loadSearch(idOfSearch)
 
-                if (search == null) {
-                    filterSheet?.context?.let {
-                        MaterialAlertDialogBuilder(it)
-                            .setTitle(R.string.save_search_failed_to_load)
-                            .setMessage(R.string.save_search_failed_to_load_message)
+                    if (search == null) {
+                        filterSheet?.context?.let {
+                            MaterialAlertDialogBuilder(it)
+                                .setTitle(R.string.save_search_failed_to_load)
+                                .setMessage(R.string.save_search_failed_to_load_message)
+                                .show()
+                        }
+                        return@launchUI
+                    }
+
+                    if (search.filterList == null) {
+                        activity?.toast(R.string.save_search_invalid)
+                        return@launchUI
+                    }
+
+                    presenter.sourceFilters = FilterList(search.filterList)
+                    filterSheet?.setFilters(presenter.filterItems)
+                    val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
+                    filterSheet?.dismiss()
+
+                    if (!allDefault) {
+                        onBrowseClick(
+                            search = presenter.query.nullIfBlank(),
+                            savedSearch = search.id,
+                        )
+                    }
+                }
+            },
+            onSavedSearchDeleteClicked = { idOfSearch, name ->
+                viewScope.launchUI {
+                    if (presenter.hasTooManyFeeds()) {
+                        activity?.toast(R.string.too_many_in_feed)
+                        return@launchUI
+                    }
+                    withUIContext {
+                        MaterialAlertDialogBuilder(activity!!)
+                            .setTitle(R.string.feed)
+                            .setMessage(activity!!.getString(R.string.feed_add, name))
+                            .setPositiveButton(R.string.action_add) { _, _ ->
+                                presenter.createFeed(idOfSearch)
+                            }
+                            .setNegativeButton(android.R.string.cancel, null)
                             .show()
                     }
-                    return@cb
                 }
-
-                if (search.filterList == null) {
-                    activity?.toast(R.string.save_search_invalid)
-                    return@cb
-                }
-
-                presenter.sourceFilters = FilterList(search.filterList)
-                filterSheet?.setFilters(presenter.filterItems)
-                val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
-                filterSheet?.dismiss()
-
-                if (!allDefault) {
-                    onBrowseClick(
-                        search = presenter.query.nullIfBlank(),
-                        savedSearch = search.id,
-                    )
-                }
-            },
-            onSavedSearchDeleteClicked = cb@{ idOfSearch, name ->
-                if (presenter.hasTooManyFeeds()) {
-                    activity?.toast(R.string.too_many_in_feed)
-                    return@cb
-                }
-                MaterialAlertDialogBuilder(activity!!)
-                    .setTitle(R.string.feed)
-                    .setMessage(activity!!.getString(R.string.feed_add, name))
-                    .setPositiveButton(R.string.action_add) { _, _ ->
-                        presenter.createFeed(idOfSearch)
-                    }
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show()
             },
         )
+        launchUI {
+            filterSheet?.setSavedSearches(presenter.loadSearches())
+        }
         filterSheet?.setFilters(presenter.filterItems)
 
         // TODO: [ExtendedFloatingActionButton] hide/show methods don't work properly

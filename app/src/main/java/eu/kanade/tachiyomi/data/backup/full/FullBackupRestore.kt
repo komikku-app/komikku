@@ -76,7 +76,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
     }
 
     // SY -->
-    private fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
+    private suspend fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
         backupManager.restoreSavedSearches(backupSavedSearches)
 
         restoreProgress += 1

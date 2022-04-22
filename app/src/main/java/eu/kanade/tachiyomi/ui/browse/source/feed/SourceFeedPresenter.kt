@@ -2,6 +2,9 @@ package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.os.Bundle
 import eu.davidea.flexibleadapter.items.IFlexible
+import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.exh.feedSavedSearchMapper
+import eu.kanade.data.exh.savedSearchMapper
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
@@ -16,11 +19,15 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Companion.toItems
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.log.xLogE
 import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -46,11 +53,12 @@ sealed class SourceFeed {
  * Function calls should be done from here. UI calls should be done from the controller.
  *
  * @param source the source.
- * @param db manages the database calls.
+ * @param database manages the database calls.
  * @param preferences manages the preference calls.
  */
 open class SourceFeedPresenter(
     val source: CatalogueSource,
+    val database: DatabaseHandler = Injekt.get(),
     val db: DatabaseHelper = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
 ) : BasePresenter<SourceFeedController>() {
@@ -90,14 +98,11 @@ open class SourceFeedPresenter(
 
         sourceFilters = source.getFilterList()
 
-        db.getSourceFeedSavedSearches(source.id)
-            .asRxObservable()
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnEach {
+        database.subscribeToList { feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id, savedSearchMapper) }
+            .onEach {
                 getFeed()
             }
-            .subscribe()
-            .let(::add)
+            .launchIn(presenterScope)
     }
 
     override fun onDestroy() {
@@ -106,35 +111,39 @@ open class SourceFeedPresenter(
         super.onDestroy()
     }
 
-    fun hasTooManyFeeds(): Boolean {
-        return db.getSourceFeedSavedSearches(source.id).executeAsBlocking().size > 10
+    suspend fun hasTooManyFeeds(): Boolean {
+        return withIOContext {
+            database.awaitList {
+                feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id)
+            }.size > 10
+        }
     }
 
-    fun getSourceSavedSearches(): List<SavedSearch> {
-        return db.getSavedSearches(source.id).executeAsBlocking()
+    suspend fun getSourceSavedSearches(): List<SavedSearch> {
+        return database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
     }
 
     fun createFeed(savedSearchId: Long) {
         launchIO {
-            db.insertFeedSavedSearch(
-                FeedSavedSearch(
-                    id = null,
+            database.await {
+                feed_saved_searchQueries.insertFeedSavedSearch(
+                    _id = null,
                     source = source.id,
-                    savedSearch = savedSearchId,
-                    global = false,
-                ),
-            ).executeAsBlocking()
+                    saved_search = savedSearchId,
+                    global = false
+                )
+            }
         }
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
         launchIO {
-            db.deleteFeedSavedSearch(feed).executeAsBlocking()
+            database.await { feed_saved_searchQueries.deleteById(feed.id ?: return@await) }
         }
     }
 
-    private fun getSourcesToGetFeed(): List<SourceFeed> {
-        val savedSearches = db.getSourceSavedSearchesFeed(source.id).executeAsBlocking()
+    private suspend fun getSourcesToGetFeed(): List<SourceFeed> {
+        val savedSearches = database.awaitList { feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id, savedSearchMapper) }
             .associateBy { it.id!! }
 
         return listOfNotNull(
@@ -142,7 +151,7 @@ open class SourceFeedPresenter(
                 SourceFeed.Latest
             } else null,
             SourceFeed.Browse,
-        ) + db.getSourceFeedSavedSearches(source.id).executeAsBlocking()
+        ) + database.awaitList { feed_saved_searchQueries.selectBySource(source.id, feedSavedSearchMapper) }
             .map { SourceFeed.SourceSavedSearch(it, savedSearches[it.savedSearch]!!) }
     }
 
@@ -159,7 +168,7 @@ open class SourceFeedPresenter(
     /**
      * Initiates get manga per feed.
      */
-    fun getFeed() {
+    suspend fun getFeed() {
         // Create image fetch subscription
         initializeFetchImageSubscription()
 
@@ -300,62 +309,69 @@ open class SourceFeedPresenter(
         return localManga
     }
 
-    fun loadSearch(searchId: Long): EXHSavedSearch? {
-        val search = db.getSavedSearch(searchId).executeAsBlocking() ?: return null
-        return EXHSavedSearch(
-            id = search.id!!,
-            name = search.name,
-            query = search.query.orEmpty(),
-            filterList = runCatching {
-                val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(
-                    filters = originalFilters,
-                    json = search.filtersJson
-                        ?.let { Json.decodeFromString<JsonArray>(it) }
-                        ?: return@runCatching null,
-                )
-                originalFilters
-            }.getOrNull(),
-        )
+    suspend fun loadSearch(searchId: Long): EXHSavedSearch? {
+        return withIOContext {
+            val search = database.awaitOneOrNull {
+                saved_searchQueries.selectById(searchId, savedSearchMapper)
+            } ?: return@withIOContext null
+            EXHSavedSearch(
+                id = search.id!!,
+                name = search.name,
+                query = search.query.orEmpty(),
+                filterList = runCatching {
+                    val originalFilters = source.getFilterList()
+                    filterSerializer.deserialize(
+                        filters = originalFilters,
+                        json = search.filtersJson
+                            ?.let { Json.decodeFromString<JsonArray>(it) }
+                            ?: return@runCatching null,
+                    )
+                    originalFilters
+                }.getOrNull(),
+            )
+        }
     }
 
-    fun loadSearches(): List<EXHSavedSearch> {
-        return db.getSavedSearches(source.id).executeAsBlocking().map {
-            val filtersJson = it.filtersJson ?: return@map EXHSavedSearch(
-                id = it.id!!,
-                name = it.name,
-                query = it.query.orEmpty(),
-                filterList = null,
-            )
-            val filters = try {
-                Json.decodeFromString<JsonArray>(filtersJson)
-            } catch (e: Exception) {
-                null
-            } ?: return@map EXHSavedSearch(
-                id = it.id!!,
-                name = it.name,
-                query = it.query.orEmpty(),
-                filterList = null,
-            )
-
-            try {
-                val originalFilters = source.getFilterList()
-                filterSerializer.deserialize(originalFilters, filters)
-                EXHSavedSearch(
-                    id = it.id!!,
-                    name = it.name,
-                    query = it.query.orEmpty(),
-                    filterList = originalFilters,
-                )
-            } catch (t: RuntimeException) {
-                // Load failed
-                xLogE("Failed to load saved search!", t)
-                EXHSavedSearch(
+    suspend fun loadSearches(): List<EXHSavedSearch> {
+        return withIOContext {
+            database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }.map {
+                val filtersJson = it.filtersJson ?: return@map EXHSavedSearch(
                     id = it.id!!,
                     name = it.name,
                     query = it.query.orEmpty(),
                     filterList = null,
                 )
+                val filters = try {
+                    Json.decodeFromString<JsonArray>(filtersJson)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    null
+                } ?: return@map EXHSavedSearch(
+                    id = it.id!!,
+                    name = it.name,
+                    query = it.query.orEmpty(),
+                    filterList = null,
+                )
+
+                try {
+                    val originalFilters = source.getFilterList()
+                    filterSerializer.deserialize(originalFilters, filters)
+                    EXHSavedSearch(
+                        id = it.id!!,
+                        name = it.name,
+                        query = it.query.orEmpty(),
+                        filterList = originalFilters,
+                    )
+                } catch (t: RuntimeException) {
+                    // Load failed
+                    xLogE("Failed to load saved search!", t)
+                    EXHSavedSearch(
+                        id = it.id!!,
+                        name = it.name,
+                        query = it.query.orEmpty(),
+                        filterList = null,
+                    )
+                }
             }
         }
     }

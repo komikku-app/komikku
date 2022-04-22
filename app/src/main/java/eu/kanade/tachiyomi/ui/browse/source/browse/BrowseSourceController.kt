@@ -44,6 +44,7 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.more.MoreController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.preference.asImmediateFlow
 import eu.kanade.tachiyomi.util.system.connectivityManager
 import eu.kanade.tachiyomi.util.system.openInBrowser
@@ -201,7 +202,7 @@ open class BrowseSourceController(bundle: Bundle) :
             // SY -->
             this,
             presenter.source,
-            presenter.loadSearches(),
+            emptyList(),
             // SY <--
             onFilterClicked = {
                 showProgressBar()
@@ -216,54 +217,58 @@ open class BrowseSourceController(bundle: Bundle) :
             },
             // EXH -->
             onSaveClicked = {
-                filterSheet?.context?.let {
-                    val names = presenter.loadSearches().map { it.name }
-                    var searchName = ""
-                    MaterialAlertDialogBuilder(it)
-                        .setTitle(R.string.save_search)
-                        .setTextInput(hint = it.getString(R.string.save_search_hint)) { input ->
-                            searchName = input
-                        }
-                        .setPositiveButton(R.string.action_save) { _, _ ->
-                            if (searchName.isNotBlank() && searchName !in names) {
-                                presenter.saveSearch(searchName.trim(), presenter.query, presenter.sourceFilters)
-                            } else {
-                                it.toast(R.string.save_search_invalid_name)
-                            }
-                        }
-                        .setNegativeButton(R.string.action_cancel, null)
-                        .show()
-                }
-            },
-            onSavedSearchClicked = cb@{ idOfSearch ->
-                val search = presenter.loadSearch(idOfSearch)
-
-                if (search == null) {
+                viewScope.launchUI {
                     filterSheet?.context?.let {
+                        val names = presenter.loadSearches().map { it.name }
+                        var searchName = ""
                         MaterialAlertDialogBuilder(it)
-                            .setTitle(R.string.save_search_failed_to_load)
-                            .setMessage(R.string.save_search_failed_to_load_message)
+                            .setTitle(R.string.save_search)
+                            .setTextInput(hint = it.getString(R.string.save_search_hint)) { input ->
+                                searchName = input
+                            }
+                            .setPositiveButton(R.string.action_save) { _, _ ->
+                                if (searchName.isNotBlank() && searchName !in names) {
+                                    presenter.saveSearch(searchName.trim(), presenter.query, presenter.sourceFilters)
+                                } else {
+                                    it.toast(R.string.save_search_invalid_name)
+                                }
+                            }
+                            .setNegativeButton(R.string.action_cancel, null)
                             .show()
                     }
-                    return@cb
                 }
-
-                if (search.filterList == null) {
-                    activity?.toast(R.string.save_search_invalid)
-                    return@cb
-                }
-
-                presenter.sourceFilters = FilterList(search.filterList)
-                filterSheet?.setFilters(presenter.filterItems)
-                val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
-
-                showProgressBar()
-                adapter?.clear()
-                filterSheet?.dismiss()
-                presenter.restartPager(search.query, if (allDefault) FilterList() else presenter.sourceFilters)
-                activity?.invalidateOptionsMenu()
             },
-            onSavedSearchDeleteClicked = cb@{ idToDelete, name ->
+            onSavedSearchClicked = { idOfSearch ->
+                viewScope.launchUI {
+                    val search = presenter.loadSearch(idOfSearch)
+
+                    if (search == null) {
+                        filterSheet?.context?.let {
+                            MaterialAlertDialogBuilder(it)
+                                .setTitle(R.string.save_search_failed_to_load)
+                                .setMessage(R.string.save_search_failed_to_load_message)
+                                .show()
+                        }
+                        return@launchUI
+                    }
+
+                    if (search.filterList == null) {
+                        activity?.toast(R.string.save_search_invalid)
+                        return@launchUI
+                    }
+
+                    presenter.sourceFilters = FilterList(search.filterList)
+                    filterSheet?.setFilters(presenter.filterItems)
+                    val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
+
+                    showProgressBar()
+                    adapter?.clear()
+                    filterSheet?.dismiss()
+                    presenter.restartPager(search.query, if (allDefault) FilterList() else presenter.sourceFilters)
+                    activity?.invalidateOptionsMenu()
+                }
+            },
+            onSavedSearchDeleteClicked = { idToDelete, name ->
                 filterSheet?.context?.let {
                     MaterialAlertDialogBuilder(it)
                         .setTitle(R.string.save_search_delete)
@@ -277,6 +282,9 @@ open class BrowseSourceController(bundle: Bundle) :
             },
             // EXH <--
         )
+        launchUI {
+            filterSheet?.setSavedSearches(presenter.loadSearches())
+        }
         filterSheet?.setFilters(presenter.filterItems)
 
         filterSheet?.setOnShowListener { actionFab?.hide() }
