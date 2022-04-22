@@ -9,3 +9,22 @@ CREATE TABLE search_titles (
 
 CREATE INDEX search_titles_manga_id_index ON search_titles(manga_id);
 CREATE INDEX search_titles_title_index ON search_titles(title);
+
+selectByMangaId:
+SELECT * FROM search_titles
+WHERE manga_id = ?;
+
+deleteByManga:
+DELETE FROM search_titles WHERE manga_id = ?;
+
+insert:
+INSERT INTO search_titles (_id, manga_id, title, type) VALUES (?, ?, ?, ?);
+
+insertNew:
+INSERT INTO search_titles (manga_id, title, type) VALUES (?, ?, ?);
+
+insertItem:
+INSERT INTO search_titles (_id, manga_id, title, type) VALUES ?;
+
+deleteAll:
+DELETE FROM search_titles;

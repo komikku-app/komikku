@@ -10,3 +10,26 @@ CREATE TABLE search_tags (
 
 CREATE INDEX search_tags_manga_id_index ON search_tags(manga_id);
 CREATE INDEX search_tags_namespace_name_index ON search_tags(namespace, name);
+
+
+selectByMangaId:
+SELECT * FROM search_tags
+WHERE manga_id = ?;
+
+deleteByManga:
+DELETE FROM search_tags WHERE manga_id = ?;
+
+insert:
+INSERT INTO search_tags (_id, manga_id, namespace, name, type)
+VALUES (?, ?, ?, ?, ?);
+
+insertNew:
+INSERT INTO search_tags (manga_id, namespace, name, type)
+VALUES (?, ?, ?, ?);
+
+insertItem:
+INSERT INTO search_tags (_id, manga_id, namespace, name, type)
+VALUES ?;
+
+deleteAll:
+DELETE FROM search_titles;

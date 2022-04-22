@@ -17,3 +17,69 @@ CREATE TABLE merged(
 );
 
 CREATE INDEX merged_merge_id_index ON merged(merge_id);
+
+selectByMergeId:
+SELECT * FROM merged WHERE merge_id = ?;
+
+selectByMergeUrl:
+SELECT * FROM merged WHERE merge_url = ?;
+
+deleteByMergeId:
+DELETE FROM merged WHERE merge_id = ?;
+
+selectMergedMangasById:
+SELECT mangas.*
+FROM (
+    SELECT manga_id FROM merged WHERE merge_id = ?
+) AS M
+JOIN mangas
+ON mangas._id = M.manga_id;
+
+selectMergedMangasByUrl:
+SELECT mangas.*
+FROM (
+    SELECT manga_id FROM merged WHERE merge_url = ?
+) AS M
+JOIN mangas
+ON mangas._id = M.manga_id;
+
+selectAllMergedMangas:
+SELECT mangas.*
+FROM (
+    SELECT manga_id FROM merged
+) AS M
+JOIN mangas
+ON mangas._id = M.manga_id;
+
+deleteByMergeUrl:
+DELETE FROM merged WHERE merge_url = ?;
+
+selectAll:
+SELECT * FROM merged;
+
+selectChaptersByMergedId:
+SELECT chapters.*
+FROM (
+    SELECT manga_id FROM merged WHERE merge_id = ?
+) AS M
+JOIN chapters
+ON chapters.manga_id = M.manga_id;
+
+insertMerged:
+INSERT INTO merged (_id, info_manga, get_chapter_updates, chapter_sort_mode, chapter_priority, download_chapters, merge_id, merge_url, manga_id, manga_url, manga_source)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateSettingsById:
+UPDATE merged
+SET
+    get_chapter_updates = ?,
+    download_chapters = ?,
+    info_manga = ?,
+    chapter_priority = ?
+WHERE _id = ?;
+
+deleteById:
+DELETE FROM merged WHERE _id = ?;
+
+deleteBy:
+DELETE FROM merged;
