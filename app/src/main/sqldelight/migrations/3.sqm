@@ -1,0 +1,19 @@
+DROP TABLE merged;
+CREATE TABLE merged(
+    _id INTEGER NOT NULL PRIMARY KEY,
+    info_manga INTEGER AS Boolean NOT NULL,
+    get_chapter_updates INTEGER AS Boolean NOT NULL,
+    chapter_sort_mode INTEGER NOT NULL,
+    chapter_priority INTEGER NOT NULL,
+    download_chapters INTEGER AS Boolean NOT NULL,
+    merge_id INTEGER NOT NULL,
+    merge_url TEXT NOT NULL,
+    manga_id INTEGER,
+    manga_url TEXT NOT NULL,
+    COL_MANGA_SOURCE INTEGER NOT NULL,
+    FOREIGN KEY(manga_id) REFERENCES mangas (_id)
+    ON DELETE SET NULL,
+    FOREIGN KEY(merge_id) REFERENCES mangas (_id)
+    ON DELETE CASCADE
+);
+CREATE INDEX merged_merge_id_index ON merged(merge_id);

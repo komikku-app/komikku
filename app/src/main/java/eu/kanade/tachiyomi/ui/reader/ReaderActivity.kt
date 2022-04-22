@@ -127,12 +127,17 @@ import kotlin.time.Duration.Companion.seconds
 class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
 
     companion object {
-        fun newIntent(context: Context, manga: Manga, chapter: Chapter): Intent {
+
+        fun newIntent(context: Context, mangaId: Long?, chapterId: Long?): Intent {
             return Intent(context, ReaderActivity::class.java).apply {
-                putExtra("manga", manga.id)
-                putExtra("chapter", chapter.id)
+                putExtra("manga", mangaId)
+                putExtra("chapter", chapterId)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
+        }
+
+        fun newIntent(context: Context, manga: Manga, chapter: Chapter): Intent {
+            return newIntent(context, manga.id, chapter.id)
         }
 
         const val SHIFT_DOUBLE_PAGES = "shiftingDoublePages"

@@ -1,0 +1,41 @@
+CREATE TABLE feed_saved_search (
+    _id INTEGER NOT NULL PRIMARY KEY,
+    source INTEGER NOT NULL,
+    saved_search INTEGER,
+    global INTEGER AS Boolean NOT NULL,
+    FOREIGN KEY(saved_search) REFERENCES saved_search (_id)
+    ON DELETE CASCADE
+);
+
+CREATE INDEX feed_saved_search_saved_search_index ON feed_saved_search(saved_search);
+
+selectAllGlobal:
+SELECT * FROM feed_saved_search WHERE global = 1;
+
+selectBySource:
+SELECT * FROM feed_saved_search WHERE source = ? AND global = 0;
+
+insertFeedSavedSearch:
+INSERT INTO feed_saved_search (_id, source, saved_search, global) VALUES (?, ?, ?, ?);
+
+deleteById:
+DELETE FROM feed_saved_search WHERE _id = ?;
+
+deleteAll:
+DELETE FROM feed_saved_search;
+
+selectGlobalFeedSavedSearch:
+SELECT saved_search.*
+FROM (
+    SELECT saved_search FROM feed_saved_search WHERE global = 1
+) AS M
+JOIN saved_search
+ON saved_search._id = M.saved_search;
+
+selectSourceFeedSavedSearch:
+SELECT saved_search.*
+FROM (
+    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = ?
+) AS M
+JOIN saved_search
+ON saved_search._id = M.saved_search;

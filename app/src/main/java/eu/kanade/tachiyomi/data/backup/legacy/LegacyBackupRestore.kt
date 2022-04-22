@@ -73,7 +73,7 @@ class LegacyBackupRestore(context: Context, notifier: BackupNotifier) : Abstract
     }
 
     // SY -->
-    private fun restoreSavedSearches(savedSearches: String) {
+    private suspend fun restoreSavedSearches(savedSearches: String) {
         backupManager.restoreSavedSearches(savedSearches)
 
         restoreProgress += 1
