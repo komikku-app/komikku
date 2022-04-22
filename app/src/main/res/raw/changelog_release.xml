@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.8.2" changeDate="Apr 22,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.4(from 0.13.3)[/b]</changelogtext>
+        <changelogtext>Added chinese simplified translation(By Howard20181)</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.8.2" changeDate="Apr 15,2022">
         <changelogtext>[b]Based on Tachiyomi stable 0.13.3(from 0.13.1)[/b]</changelogtext>
         <changelogtext>[b]New[/b] Replace Latest tab with Feed menu for using saved searches</changelogtext>
