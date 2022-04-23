@@ -13,7 +13,6 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.R

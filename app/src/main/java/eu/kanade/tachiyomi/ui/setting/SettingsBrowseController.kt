@@ -5,7 +5,6 @@ import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.repos.RepoController
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
 import eu.kanade.tachiyomi.util.preference.bindTo
