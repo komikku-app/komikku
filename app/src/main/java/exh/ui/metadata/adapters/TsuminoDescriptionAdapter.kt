@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterTsBinding
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -82,7 +83,7 @@ class TsuminoDescriptionAdapter(
                 controller.router?.pushController(
                     MetadataViewController(
                         controller.manga,
-                    ).withFadeTransaction(),
+                    ),
                 )
             }
         }

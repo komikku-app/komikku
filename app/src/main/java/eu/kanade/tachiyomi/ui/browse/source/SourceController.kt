@@ -25,8 +25,8 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
@@ -156,7 +156,7 @@ class SourceController(bundle: Bundle? = null) :
                         SmartSearchController.ARG_SOURCE_ID to source.id,
                         SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig,
                     ),
-                ).withFadeTransaction(),
+                ),
             )
         }
         // SY <--
@@ -303,7 +303,7 @@ class SourceController(bundle: Bundle? = null) :
         if (!preferences.incognitoMode().get()) {
             preferences.lastUsedSource().set(source.id)
         }
-        parentController!!.router.pushController(controller.withFadeTransaction())
+        parentController!!.router.pushController(controller)
     }
 
     // SY -->
@@ -312,7 +312,7 @@ class SourceController(bundle: Bundle? = null) :
      */
     private fun openSourceFeed(source: CatalogueSource) {
         preferences.lastUsedSource().set(source.id)
-        parentController!!.router.pushController(SourceFeedController(source).withFadeTransaction())
+        parentController!!.router.pushController(SourceFeedController(source))
     }
     // SY <--
 
@@ -326,10 +326,7 @@ class SourceController(bundle: Bundle? = null) :
         when (item.itemId) {
             // Initialize option to open catalogue settings.
             R.id.action_settings -> {
-                parentController!!.router.pushController(
-                    SourceFilterController()
-                        .withFadeTransaction(),
-                )
+                parentController!!.router.pushController(SourceFilterController())
             }
         }
         return super.onOptionsItemSelected(item)
@@ -391,7 +388,7 @@ class SourceController(bundle: Bundle? = null) :
         // SY -->
         if (mode == Mode.CATALOGUE) {
             parentController!!.router.pushController(
-                GlobalSearchController(query).withFadeTransaction(),
+                GlobalSearchController(query),
             )
         }
         // SY <--

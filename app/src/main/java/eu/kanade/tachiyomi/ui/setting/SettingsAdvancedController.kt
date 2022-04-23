@@ -30,7 +30,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.SourceManager.Companion.DELEGATED_SOURCES
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.openInBrowser
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.setting.database.ClearDatabaseController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -158,7 +158,7 @@ class SettingsAdvancedController : SettingsController() {
                 summaryRes = R.string.pref_clear_database_summary
 
                 onClick {
-                    router.pushController(ClearDatabaseController().withFadeTransaction())
+                    router.pushController(ClearDatabaseController())
                 }
             }
         }
@@ -413,7 +413,7 @@ class SettingsAdvancedController : SettingsController() {
                 key = "pref_open_debug_menu"
                 titleRes = R.string.open_debug_menu
                 summary = HtmlCompat.fromHtml(context.getString(R.string.open_debug_menu_summary), HtmlCompat.FROM_HTML_MODE_LEGACY)
-                onClick { router.pushController(SettingsDebugController().withFadeTransaction()) }
+                onClick { router.pushController(SettingsDebugController()) }
             }
         }
         // <-- EXH

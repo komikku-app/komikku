@@ -4,6 +4,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.category.repos.RepoController
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
@@ -38,7 +39,7 @@ class SettingsBrowseController : SettingsController() {
                 summary = context.resources.getQuantityString(R.plurals.num_categories, catCount, catCount)
 
                 onClick {
-                    router.pushController(SourceCategoryController().withFadeTransaction())
+                    router.pushController(SourceCategoryController())
                 }
             }
             switchPreference {
@@ -91,7 +92,7 @@ class SettingsBrowseController : SettingsController() {
                 summary = context.resources.getQuantityString(R.plurals.num_repos, catCount, catCount)
 
                 onClick {
-                    router.pushController(RepoController().withFadeTransaction())
+                    router.pushController(RepoController())
                 }
             }
             // SY <--

@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationSourcesControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
@@ -119,9 +119,9 @@ class MigrationSourcesController :
         val controller = MigrationMangaController(item.source.id, item.source.name)
         val parentController = parentController
         if (parentController is BrowseController) {
-            parentController.router.pushController(controller.withFadeTransaction())
+            parentController.router.pushController(controller)
         } else {
-            router.pushController(controller.withFadeTransaction())
+            router.pushController(controller)
         }
 
         return false

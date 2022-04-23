@@ -31,7 +31,7 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -251,9 +251,7 @@ class LibraryController(
 
         binding.btnGlobalSearch.clicks()
             .onEach {
-                router.pushController(
-                    GlobalSearchController(presenter.query).withFadeTransaction(),
-                )
+                router.pushController(GlobalSearchController(presenter.query))
             }
             .launchIn(viewScope)
     }
@@ -586,7 +584,7 @@ class LibraryController(
         // Notify the presenter a manga is being opened.
         presenter.onOpenManga()
 
-        router.pushController(MangaController(manga).withFadeTransaction())
+        router.pushController(MangaController(manga))
     }
 
     /**

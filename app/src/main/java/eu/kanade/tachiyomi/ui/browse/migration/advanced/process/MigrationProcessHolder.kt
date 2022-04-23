@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.databinding.MigrationMangaCardBinding
 import eu.kanade.tachiyomi.databinding.MigrationProcessItemBinding
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -69,7 +70,7 @@ class MigrationProcessHolder(
                             MangaController(
                                 manga,
                                 true,
-                            ).withFadeTransaction(),
+                            ),
                         )
                     }
                     .launchIn(adapter.controller.viewScope)
@@ -105,7 +106,7 @@ class MigrationProcessHolder(
                                 MangaController(
                                     searchResult,
                                     true,
-                                ).withFadeTransaction(),
+                                ),
                             )
                         }
                         .launchIn(adapter.controller.viewScope)

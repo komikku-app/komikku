@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchPresenter
@@ -108,7 +108,7 @@ class SearchController(
     override fun onTitleClick(source: CatalogueSource) {
         presenter.preferences.lastUsedSource().set(source.id)
 
-        router.pushController(SourceSearchController(targetController as? MigrationListController ?: return, manga!!, source, presenter.query).withFadeTransaction())
+        router.pushController(SourceSearchController(targetController as? MigrationListController ?: return, manga!!, source, presenter.query))
     }
 
     companion object {

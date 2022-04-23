@@ -21,7 +21,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.databinding.PrefLibraryColumnsBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.category.genre.SortTagController
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsSheet
@@ -129,7 +129,7 @@ class SettingsLibraryController : SettingsController() {
                 summary = context.resources.getQuantityString(R.plurals.num_categories, catCount, catCount)
 
                 onClick {
-                    router.pushController(CategoryController().withFadeTransaction())
+                    router.pushController(CategoryController())
                 }
             }
 
@@ -336,7 +336,7 @@ class SettingsLibraryController : SettingsController() {
                 val count = preferences.sortTagsForLibrary().get().size
                 summary = context.resources.getQuantityString(R.plurals.pref_tag_sorting_desc, count, count)
                 onClick {
-                    router.pushController(SortTagController().withFadeTransaction())
+                    router.pushController(SortTagController())
                 }
             }
         }

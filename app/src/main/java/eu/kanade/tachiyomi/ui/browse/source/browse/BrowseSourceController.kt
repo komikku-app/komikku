@@ -34,7 +34,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LoginSource
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
-import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
@@ -460,9 +460,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
     // SY -->
     private fun openSourceSettings() {
-        router.pushController(
-            SourcePreferencesController(presenter.source.id).withFadeTransaction(),
-        )
+        router.pushController(SourcePreferencesController(presenter.source.id))
     }
     // SY <--
 
@@ -731,7 +729,7 @@ open class BrowseSourceController(bundle: Bundle) :
                 item.manga,
                 true,
                 args.getParcelable(MangaController.SMART_SEARCH_CONFIG_EXTRA),
-            ).withFadeTransaction(),
+            ),
         )
         return false
     }

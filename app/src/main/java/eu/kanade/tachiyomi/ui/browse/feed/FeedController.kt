@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.GlobalSearchControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
@@ -115,7 +116,7 @@ open class FeedController :
      */
     override fun onMangaClick(manga: Manga) {
         // Open MangaController.
-        parentController?.router?.pushController(MangaController(manga, true).withFadeTransaction())
+        parentController?.router?.pushController(MangaController(manga, true))
     }
 
     /**
@@ -214,12 +215,12 @@ open class FeedController :
      */
     override fun onSourceClick(source: CatalogueSource) {
         presenter.preferences.lastUsedSource().set(source.id)
-        parentController?.router?.pushController(LatestUpdatesController(source).withFadeTransaction())
+        parentController?.router?.pushController(LatestUpdatesController(source))
     }
 
     override fun onSavedSearchClick(savedSearch: SavedSearch, source: CatalogueSource) {
         presenter.preferences.lastUsedSource().set(savedSearch.source)
-        parentController?.router?.pushController(BrowseSourceController(source, savedSearch = savedSearch.id).withFadeTransaction())
+        parentController?.router?.pushController(BrowseSourceController(source, savedSearch = savedSearch.id))
     }
 
     override fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {

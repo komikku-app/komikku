@@ -62,6 +62,7 @@ import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.getMainAppBarHeight
 import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
@@ -684,7 +685,7 @@ class MangaController :
                 }
                 setNegativeButton(activity?.getString(R.string.action_cancel)) { _, _ -> }
                 setNeutralButton(activity?.getString(R.string.action_show_manga)) { _, _ ->
-                    router.pushController(MangaController(libraryManga).withFadeTransaction())
+                    router.pushController(MangaController(libraryManga))
                 }
                 setCancelable(true)
             }.create().show()
@@ -813,13 +814,13 @@ class MangaController :
                 ) { dialog, index ->
                     dialog.dismiss()
                     when (index) {
-                        0 -> router.pushController(MangaDexSimilarController(presenter.manga, source as CatalogueSource).withFadeTransaction())
-                        1 -> router.pushController(RecommendsController(presenter.manga, source as CatalogueSource).withFadeTransaction())
+                        0 -> router.pushController(MangaDexSimilarController(presenter.manga, source as CatalogueSource))
+                        1 -> router.pushController(RecommendsController(presenter.manga, source as CatalogueSource))
                     }
                 }
                 .show()
         } else if (source is CatalogueSource) {
-            router.pushController(RecommendsController(presenter.manga, source).withFadeTransaction())
+            router.pushController(RecommendsController(presenter.manga, source))
         }
     }
     // AZ <--
@@ -889,7 +890,7 @@ class MangaController :
      * @param query the search query to pass to the search controller
      */
     fun performGlobalSearch(query: String) {
-        router.pushController(GlobalSearchController(query).withFadeTransaction())
+        router.pushController(GlobalSearchController(query))
     }
 
     /**

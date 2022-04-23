@@ -7,6 +7,7 @@ import androidx.core.os.bundleOf
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.SourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
@@ -56,7 +57,7 @@ class RecommendsController(bundle: Bundle) : BrowseSourceController(bundle) {
                 bundleOf(
                     SourceController.SMART_SEARCH_CONFIG to smartSearchConfig,
                 ),
-            ).withFadeTransaction(),
+            ),
         )
     }
 

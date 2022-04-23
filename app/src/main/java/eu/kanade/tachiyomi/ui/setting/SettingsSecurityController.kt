@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesController
@@ -120,7 +121,7 @@ class SettingsSecurityController : SettingsController() {
             visibleIf(preferences.useAuthenticator()) { it }
 
             onClick {
-                router.pushController(BiometricTimesController().withFadeTransaction())
+                router.pushController(BiometricTimesController())
             }
         }
         preference {

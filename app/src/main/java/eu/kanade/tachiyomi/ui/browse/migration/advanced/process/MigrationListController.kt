@@ -28,7 +28,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.ui.base.changehandler.OneWayFadeChangeHandler
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationMangaDialog
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
@@ -336,7 +338,7 @@ class MigrationListController(bundle: Bundle? = null) :
                     }
                     val searchController = SearchController(manga, validSources)
                     searchController.targetController = this@MigrationListController
-                    router.pushController(searchController.withFadeTransaction())
+                    router.pushController(searchController)
                 }
             }
             R.id.action_skip -> adapter?.removeManga(position)
@@ -420,7 +422,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                 it.controller !is MigrationListController &&
                                 it.controller !is PreMigrationController
                         } + MangaController(manga).withFadeTransaction()
-                        router.setBackstack(newStack, FadeChangeHandler())
+                        router.setBackstack(newStack, OneWayFadeChangeHandler())
                         return@launchUI
                     }
                 }
