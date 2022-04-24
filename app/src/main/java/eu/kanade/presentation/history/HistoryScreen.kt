@@ -197,9 +197,7 @@ fun HistoryItem(
                 .weight(1f)
                 .padding(start = horizontalPadding, end = 8.dp),
         ) {
-            val textStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            val textStyle = MaterialTheme.typography.bodyMedium
             Text(
                 text = history.title,
                 maxLines = 2,
@@ -218,7 +216,7 @@ fun HistoryItem(
                         history.readAt?.toTimestampString() ?: ""
                     },
                     modifier = Modifier.padding(top = 4.dp),
-                    style = textStyle
+                    style = textStyle,
                 )
             }
         }

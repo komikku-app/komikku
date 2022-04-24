@@ -68,9 +68,7 @@ fun AboutScreen(
             item {
                 PreferenceRow(
                     title = stringResource(R.string.check_for_updates),
-                    onClick = {
-                        checkVersion()
-                    },
+                    onClick = checkVersion,
                 )
             }
         }
