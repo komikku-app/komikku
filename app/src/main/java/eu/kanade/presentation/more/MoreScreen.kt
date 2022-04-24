@@ -52,6 +52,25 @@ fun MoreScreen(
             LogoHeader()
         }
 
+        item {
+            SwitchPreference(
+                preference = presenter.downloadedOnly,
+                title = stringResource(R.string.label_downloaded_only),
+                subtitle = stringResource(R.string.downloaded_only_summary),
+                painter = rememberVectorPainter(Icons.Outlined.CloudOff),
+            )
+        }
+        item {
+            SwitchPreference(
+                preference = presenter.incognitoMode,
+                title = stringResource(R.string.pref_incognito_mode),
+                subtitle = stringResource(R.string.pref_incognito_mode_summary),
+                painter = painterResource(R.drawable.ic_glasses_24dp),
+            )
+        }
+
+        item { Divider() }
+
         // SY -->
         if (!presenter.showNavUpdates.value) {
             item {
@@ -72,25 +91,6 @@ fun MoreScreen(
             }
         }
         // SY <--
-
-        item {
-            SwitchPreference(
-                preference = presenter.downloadedOnly,
-                title = stringResource(R.string.label_downloaded_only),
-                subtitle = stringResource(R.string.downloaded_only_summary),
-                painter = rememberVectorPainter(Icons.Outlined.CloudOff),
-            )
-        }
-        item {
-            SwitchPreference(
-                preference = presenter.incognitoMode,
-                title = stringResource(R.string.pref_incognito_mode),
-                subtitle = stringResource(R.string.pref_incognito_mode_summary),
-                painter = painterResource(R.drawable.ic_glasses_24dp),
-            )
-        }
-
-        item { Divider() }
 
         item {
             PreferenceRow(
@@ -128,6 +128,7 @@ fun MoreScreen(
                 onClick = { onClickBackupAndRestore() },
             )
         }
+        // SY -->
         item {
             PreferenceRow(
                 title = stringResource(R.string.eh_batch_add),
@@ -135,6 +136,7 @@ fun MoreScreen(
                 onClick = onClickBatchAdd,
             )
         }
+        // SY <--
 
         item { Divider() }
 
