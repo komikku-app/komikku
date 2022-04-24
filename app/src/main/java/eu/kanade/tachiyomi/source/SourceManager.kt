@@ -33,9 +33,12 @@ import exh.source.handleSourceLibrary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import rx.Observable
 import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
@@ -44,6 +47,9 @@ open class SourceManager(private val context: Context) {
 
     private val sourcesMap = mutableMapOf<Long, Source>()
     private val stubSourcesMap = mutableMapOf<Long, StubSource>()
+
+    private val _catalogueSources: MutableStateFlow<List<CatalogueSource>> = MutableStateFlow(listOf())
+    val catalogueSources: Flow<List<CatalogueSource>> = _catalogueSources
 
     // SY -->
     private val prefs: PreferencesHelper by injectLazy()
@@ -137,13 +143,21 @@ open class SourceManager(private val context: Context) {
         if (!sourcesMap.containsKey(source.id)) {
             sourcesMap[source.id] = newSource
         }
+        triggerCatalogueSources()
     }
 
     internal fun unregisterSource(source: Source) {
         sourcesMap.remove(source.id)
+        triggerCatalogueSources()
         // SY -->
         currentDelegatedSources.remove(source.id)
         // SY <--
+    }
+
+    private fun triggerCatalogueSources() {
+        _catalogueSources.update {
+            sourcesMap.values.filterIsInstance<CatalogueSource>()
+        }
     }
 
     private fun createInternalSources(): List<Source> = listOf(

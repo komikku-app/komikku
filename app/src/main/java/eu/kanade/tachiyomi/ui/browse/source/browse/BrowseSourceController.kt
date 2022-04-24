@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
+import eu.kanade.domain.source.model.Source
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -80,8 +81,8 @@ open class BrowseSourceController(bundle: Bundle) :
     ChangeMangaCategoriesDialog.Listener {
 
     constructor(
-        source: CatalogueSource,
-        searchQuery: String? = null,
+        sourceId: Long,
+        query: String? = null,
         // SY -->
         smartSearchConfig: SourceController.SmartSearchConfig? = null,
         savedSearch: Long? = null,
@@ -89,10 +90,9 @@ open class BrowseSourceController(bundle: Bundle) :
         // SY <--
     ) : this(
         Bundle().apply {
-            putLong(SOURCE_ID_KEY, source.id)
-
-            if (searchQuery != null) {
-                putString(SEARCH_QUERY_KEY, searchQuery)
+            putLong(SOURCE_ID_KEY, sourceId)
+            if (query != null) {
+                putString(SEARCH_QUERY_KEY, query)
             }
 
             // SY -->
@@ -109,6 +109,38 @@ open class BrowseSourceController(bundle: Bundle) :
             }
             // SY <--
         },
+    )
+
+    constructor(
+        source: CatalogueSource,
+        query: String? = null,
+        // SY -->
+        smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        savedSearch: Long? = null,
+        filterList: String? = null,
+        // SY <--
+    ) : this(
+        source.id,
+        query,
+        smartSearchConfig,
+        savedSearch,
+        filterList
+    )
+
+    constructor(
+        source: Source,
+        query: String? = null,
+        // SY -->
+        smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        savedSearch: Long? = null,
+        filterList: String? = null,
+        // SY <--
+    ) : this(
+        source.id,
+        query,
+        smartSearchConfig,
+        savedSearch,
+        filterList
     )
 
     private val preferences: PreferencesHelper by injectLazy()

@@ -1,16 +1,23 @@
 package eu.kanade.tachiyomi.ui.browse.source
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.LocalSource
-import eu.kanade.tachiyomi.source.SourceManager
+import android.os.Bundle
+import eu.kanade.domain.source.interactor.DisableSource
+import eu.kanade.domain.source.interactor.GetEnabledSources
+import eu.kanade.domain.source.interactor.GetShowLatest
+import eu.kanade.domain.source.interactor.GetSourceCategories
+import eu.kanade.domain.source.interactor.SetSourceCategories
+import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
+import eu.kanade.domain.source.interactor.ToggleSourcePin
+import eu.kanade.domain.source.model.Pin
+import eu.kanade.domain.source.model.Source
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
+import eu.kanade.tachiyomi.util.lang.launchIO
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.TreeMap
@@ -20,146 +27,130 @@ import java.util.TreeMap
  * Function calls should be done from here. UI calls should be done from the controller.
  */
 class SourcePresenter(
-    val sourceManager: SourceManager = Injekt.get(),
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val getEnabledSources: GetEnabledSources = Injekt.get(),
+    private val disableSource: DisableSource = Injekt.get(),
+    private val toggleSourcePin: ToggleSourcePin = Injekt.get(),
     // SY -->
+    private val getSourceCategories: GetSourceCategories = Injekt.get(),
+    private val getShowLatest: GetShowLatest = Injekt.get(),
+    private val toggleExcludeFromDataSaver: ToggleExcludeFromDataSaver = Injekt.get(),
+    private val setSourceCategories: SetSourceCategories = Injekt.get(),
     private val controllerMode: SourceController.Mode,
     // SY <--
 ) : BasePresenter<SourceController>() {
 
-    var sources = getEnabledSources()
+    private val _state: MutableStateFlow<SourceState> = MutableStateFlow(SourceState.EMPTY)
+    val state: StateFlow<SourceState> = _state.asStateFlow()
 
-    /**
-     * Unsubscribe and create a new subscription to fetch enabled sources.
-     */
-    private fun loadSources() {
-        val pinnedSources = mutableListOf<SourceItem>()
-        val pinnedSourceIds = preferences.pinnedSources().get()
-
+    override fun onCreate(savedState: Bundle?) {
+        super.onCreate(savedState)
+        presenterScope.launchIO {
+            getEnabledSources.subscribe()
+                .catch { exception ->
+                    _state.update { state ->
+                        state.copy(sources = listOf(), error = exception)
+                    }
+                }
+                .collectLatest(::collectLatestSources)
+        }
         // SY -->
-        val categories = preferences.sourcesTabCategories().get()
-            .sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER, { it }))
-            .map {
-                SourceCategory(it)
+        presenterScope.launchIO {
+            getSourceCategories.subscribe()
+                .catch { exception ->
+                    _state.update { state ->
+                        state.copy(sources = listOf(), error = exception)
+                    }
+                }
+                .collectLatest(::updateCategories)
+        }
+        presenterScope.launchIO {
+            _state.update { state ->
+                state.copy(
+                    showPin = controllerMode == SourceController.Mode.CATALOGUE,
+                )
             }
-
-        val sourcesAndCategoriesCombined = preferences.sourcesTabSourcesInCategories().get()
-        val sourcesAndCategories = if (sourcesAndCategoriesCombined.isNotEmpty()) sourcesAndCategoriesCombined.map {
-            val temp = it.split("|")
-            temp[0] to temp[1]
-        } else null
-
-        val sourcesInCategories = sourcesAndCategories?.map { it.first }
+        }
+        presenterScope.launchIO {
+            getShowLatest.subscribe(mode = controllerMode)
+                .catch { exception ->
+                    _state.update { state ->
+                        state.copy(sources = listOf(), error = exception)
+                    }
+                }
+                .collectLatest(::updateShowLatest)
+        }
         // SY <--
+    }
 
-        val map = TreeMap<String, MutableList<CatalogueSource>> { d1, d2 ->
+    private suspend fun collectLatestSources(sources: List<Source>) {
+        val map = TreeMap<String, MutableList<Source>> { d1, d2 ->
             // Catalogues without a lang defined will be placed at the end
             when {
+                d1 == LAST_USED_KEY && d2 != LAST_USED_KEY -> -1
+                d2 == LAST_USED_KEY && d1 != LAST_USED_KEY -> 1
+                d1 == PINNED_KEY && d2 != PINNED_KEY -> -1
+                d2 == PINNED_KEY && d1 != PINNED_KEY -> 1
                 d1 == "" && d2 != "" -> 1
                 d2 == "" && d1 != "" -> -1
                 else -> d1.compareTo(d2)
             }
         }
-        val byLang = sources.groupByTo(map) { it.lang }
-        var sourceItems = byLang.flatMap {
-            val langItem = LangItem(it.key)
-            it.value.map { source ->
+        val byLang = sources.groupByTo(map) {
+            when {
                 // SY -->
-                val showPins = controllerMode == SourceController.Mode.CATALOGUE
-                val showLatest = showPins && !preferences.useNewSourceNavigation().get()
+                it.category != null -> it.category
                 // SY <--
-                val isPinned = source.id.toString() in pinnedSourceIds
-                if (isPinned) {
-                    pinnedSources.add(SourceItem(source, LangItem(PINNED_KEY), isPinned /* SY --> */, showLatest, showPins /* SY <-- */))
-                }
-
-                // SY -->
-                if (sourcesInCategories != null && source.id.toString() in sourcesInCategories) {
-                    sourcesAndCategories
-                        .filter { SourcesAndCategory -> SourcesAndCategory.first == source.id.toString() }
-                        .forEach { SourceAndCategory ->
-                            categories.forEach { dataClass ->
-                                if (dataClass.category.trim() == SourceAndCategory.second.trim()) {
-                                    dataClass.sources.add(
-                                        SourceItem(
-                                            source,
-                                            LangItem("custom|" + SourceAndCategory.second),
-                                            isPinned,
-                                            showLatest,
-                                            showPins,
-                                        ),
-                                    )
-                                }
-                            }
-                        }
-                }
-                // SY <--
-
-                SourceItem(source, langItem, isPinned /* SY --> */, showLatest, showPins /* SY <-- */)
+                it.isUsedLast -> LAST_USED_KEY
+                Pin.Actual in it.pin -> PINNED_KEY
+                else -> it.lang
             }
         }
-
-        if (preferences.sourcesTabCategoriesFilter().get()) {
-            sourcesInCategories?.let { sourcesIds -> sourceItems = sourceItems.filterNot { it.source.id.toString() in sourcesIds } }
+        _state.update { state ->
+            state.copy(
+                sources = byLang.flatMap {
+                    listOf(
+                        UiModel.Header(it.key, it.value.firstOrNull()?.category != null),
+                        *it.value.map { source ->
+                            UiModel.Item(source)
+                        }.toTypedArray()
+                    )
+                },
+                error = null
+            )
         }
-
-        // SY -->
-        categories.forEach {
-            sourceItems = it.sources.sortedBy { sourceItem -> sourceItem.source.name.lowercase() } + sourceItems
-        }
-        // SY <--
-
-        if (pinnedSources.isNotEmpty()) {
-            sourceItems = pinnedSources + sourceItems
-        }
-
-        view?.setSources(sourceItems)
     }
 
-    private fun loadLastUsedSource() {
-        // Immediate initial load
-        preferences.lastUsedSource().get().let { updateLastUsedSource(it) }
-
-        // Subsequent updates
-        preferences.lastUsedSource().asFlow()
-            .drop(1)
-            .onStart { delay(500) }
-            .distinctUntilChanged()
-            .onEach { updateLastUsedSource(it) }
-            .launchIn(presenterScope)
-    }
-
-    private fun updateLastUsedSource(sourceId: Long) {
-        val source = (sourceManager.get(sourceId) as? CatalogueSource)?.let {
-            val isPinned = it.id.toString() in preferences.pinnedSources().get()
-            // SY -->
-            val showPins = controllerMode == SourceController.Mode.CATALOGUE
-            val showLatest = showPins && !preferences.useNewSourceNavigation().get()
-            // SY <--
-            SourceItem(it, null, isPinned /* SY --> */, showLatest, showPins /* SY <-- */)
+    // SY -->
+    private suspend fun updateCategories(categories: Set<String>) {
+        _state.update { state ->
+            state.copy(
+                sourceCategories = categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it })
+            )
         }
-        source?.let { view?.setLastUsedSource(it) }
+    }
+    private suspend fun updateShowLatest(showLatest: Boolean) {
+        _state.update { state ->
+            state.copy(
+                showLatest = showLatest
+            )
+        }
+    }
+    // SY <--
+
+    fun disableSource(source: Source) {
+        disableSource.await(source)
     }
 
-    fun updateSources() {
-        sources = getEnabledSources()
-        loadSources()
-        loadLastUsedSource()
+    fun togglePin(source: Source) {
+        toggleSourcePin.await(source)
     }
 
-    /**
-     * Returns a list of enabled sources ordered by language and name.
-     *
-     * @return list containing enabled sources.
-     */
-    private fun getEnabledSources(): List<CatalogueSource> {
-        val languages = preferences.enabledLanguages().get()
-        val disabledSourceIds = preferences.disabledSources().get()
+    fun toggleExcludeFromDataSaver(source: Source) {
+        toggleExcludeFromDataSaver.await(source)
+    }
 
-        return sourceManager.getVisibleCatalogueSources()
-            .filter { it.lang in languages || it.id == LocalSource.ID }
-            .filterNot { it.id.toString() in disabledSourceIds }
-            .sortedBy { "(${it.lang}) ${it.name.lowercase()}" }
+    fun setSourceCategories(source: Source, categories: List<String>) {
+        setSourceCategories.await(source, categories)
     }
 
     companion object {
@@ -168,6 +159,29 @@ class SourcePresenter(
     }
 }
 
-// SY -->
-data class SourceCategory(val category: String, var sources: MutableList<SourceItem> = mutableListOf())
-// SY <--
+sealed class UiModel {
+    data class Item(val source: Source) : UiModel()
+    data class Header(val language: String, val isCategory: Boolean) : UiModel()
+}
+
+data class SourceState(
+    val sources: List<UiModel>,
+    val error: Throwable?,
+    val sourceCategories: List<String>,
+    val showLatest: Boolean,
+    val showPin: Boolean
+) {
+
+    val isLoading: Boolean
+        get() = sources.isEmpty() && error == null
+
+    val hasError: Boolean
+        get() = error != null
+
+    val isEmpty: Boolean
+        get() = sources.isEmpty()
+
+    companion object {
+        val EMPTY = SourceState(listOf(), null, emptyList(), true, true)
+    }
+}

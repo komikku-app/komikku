@@ -1,64 +1,38 @@
 package eu.kanade.tachiyomi.ui.browse.source
 
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-import android.app.Dialog
 import android.os.Bundle
 import android.os.Parcelable
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.bluelinelabs.conductor.ControllerChangeHandler
-import com.bluelinelabs.conductor.ControllerChangeType
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import dev.chrisbanes.insetter.applyInsetter
-import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.davidea.flexibleadapter.items.IFlexible
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import com.bluelinelabs.conductor.Controller
+import eu.kanade.domain.source.model.Source
+import eu.kanade.presentation.source.SourceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.databinding.SourceMainControllerBinding
-import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.LocalSource
-import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.ui.base.controller.DialogController
-import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
+import eu.kanade.tachiyomi.ui.base.controller.SearchableComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
-import eu.kanade.tachiyomi.ui.browse.BrowseController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
-import eu.kanade.tachiyomi.ui.category.sources.ChangeSourceCategoriesDialog
 import eu.kanade.tachiyomi.ui.main.MainActivity
-import eu.kanade.tachiyomi.util.preference.minusAssign
-import eu.kanade.tachiyomi.util.preference.plusAssign
-import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.util.view.onAnimationsFinished
-import exh.ui.smartsearch.SmartSearchController
 import kotlinx.parcelize.Parcelize
 import uy.kohesive.injekt.injectLazy
 
 /**
  * This controller shows and manages the different catalogues enabled by the user.
  * This controller should only handle UI actions, IO actions should be done by [SourcePresenter]
- * [SourceAdapter.OnSourceClickListener] call function data on browse item click.
- * [SourceAdapter.OnLatestClickListener] call function data on latest item click
  */
-class SourceController(bundle: Bundle? = null) :
-    SearchableNucleusController<SourceMainControllerBinding, SourcePresenter>(bundle),
-    FlexibleAdapter.OnItemClickListener,
-    FlexibleAdapter.OnItemLongClickListener,
-    SourceAdapter.OnSourceClickListener,
-    /*SY -->*/
-    ChangeSourceCategoriesDialog.Listener /*SY <--*/ {
+class SourceController(bundle: Bundle? = null) : SearchableComposeController<SourcePresenter>(bundle) {
 
     private val preferences: PreferencesHelper by injectLazy()
-
-    private var adapter: SourceAdapter? = null
 
     // EXH -->
     private val smartSearchConfig: SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG)
@@ -81,240 +55,56 @@ class SourceController(bundle: Bundle? = null) :
         // SY <--
     }
 
-    override fun createPresenter(): SourcePresenter {
-        return SourcePresenter(/* SY --> */ controllerMode = mode /* SY <-- */)
-    }
+    override fun createPresenter(): SourcePresenter =
+        SourcePresenter(/* SY --> */ controllerMode = mode /* SY <-- */)
 
-    override fun createBinding(inflater: LayoutInflater) = SourceMainControllerBinding.inflate(inflater)
+    @Composable
+    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+        SourceScreen(
+            nestedScrollInterop = nestedScrollInterop,
+            presenter = presenter,
+            onClickItem = { source ->
+                if (preferences.useNewSourceNavigation().get()) {
+                    openSource(source, SourceFeedController(source.id))
+                } else {
+                    openSource(source, BrowseSourceController(source))
+                }
+            },
+            onClickDisable = { source ->
+                presenter.disableSource(source)
+            },
+            onClickLatest = { source ->
+                openSource(source, LatestUpdatesController(source))
+            },
+            onClickPin = { source ->
+                presenter.togglePin(source)
+            },
+            onClickSetCategories = { source, categories ->
+                presenter.setSourceCategories(source, categories)
+            },
+            onClickToggleDataSaver = { source ->
+                presenter.toggleExcludeFromDataSaver(source)
+            },
+        )
+        LaunchedEffect(Unit) {
+            (activity as? MainActivity)?.ready = true
+        }
+    }
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
-
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-
-        adapter = SourceAdapter(this)
-
-        // Create recycler and set adapter.
-        binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.adapter = adapter
-        binding.recycler.onAnimationsFinished {
-            (activity as? MainActivity)?.ready = true
-        }
-        adapter?.fastScroller = binding.fastScroller
-
         requestPermissionsSafe(arrayOf(WRITE_EXTERNAL_STORAGE), 301)
-
-        // SY -->
-        if (mode == Mode.CATALOGUE) {
-            // Update list on extension changes (e.g. new installation)
-            (parentController as BrowseController).extensionListUpdateRelay
-                .skip(1) // Skip first update when ExtensionController created
-                .subscribeUntilDestroy {
-                    presenter.updateSources()
-                }
-        }
-        // SY <--
-    }
-
-    override fun onDestroyView(view: View) {
-        adapter = null
-        super.onDestroyView(view)
-    }
-
-    override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
-        super.onChangeStarted(handler, type)
-        if (type.isPush) {
-            presenter.updateSources()
-        }
-    }
-
-    override fun onItemClick(view: View, position: Int): Boolean {
-        onItemClick(position)
-        return false
-    }
-
-    private fun onItemClick(position: Int) {
-        val item = adapter?.getItem(position) as? SourceItem ?: return
-        val source = item.source
-        // SY -->
-        when (mode) {
-            Mode.CATALOGUE -> {
-                // Open the catalogue view.
-                // SY -->
-                if (preferences.useNewSourceNavigation().get()) {
-                    openSourceFeed(source)
-                } else openSource(source, BrowseSourceController(source))
-                // SY <--
-            }
-            Mode.SMART_SEARCH -> router.pushController(
-                SmartSearchController(
-                    bundleOf(
-                        SmartSearchController.ARG_SOURCE_ID to source.id,
-                        SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig,
-                    ),
-                ),
-            )
-        }
-        // SY <--
-    }
-
-    override fun onItemLongClick(position: Int) {
-        val activity = activity ?: return
-        val item = adapter?.getItem(position) as? SourceItem ?: return
-
-        val isPinned = item.header?.code?.equals(SourcePresenter.PINNED_KEY) ?: false
-
-        val items = mutableListOf(
-            activity.getString(if (isPinned) R.string.action_unpin else R.string.action_pin) to { toggleSourcePin(item.source) },
-        )
-        if (item.source !is LocalSource) {
-            items.add(activity.getString(R.string.action_disable) to { disableSource(item.source) })
-        }
-
-        // SY -->
-        items.add(
-            activity.getString(R.string.categories) to { addToCategories(item.source) },
-        )
-
-        if (preferences.dataSaver().get()) {
-            val isExcluded = item.source.id.toString() in preferences.dataSaverExcludedSources().get()
-            items.add(
-                activity.getString(
-                    if (isExcluded) R.string.data_saver_stop_exclude else R.string.data_saver_exclude,
-                ) to {
-                    excludeFromDataSaver(item.source, isExcluded)
-                },
-            )
-        }
-        // SY <--
-
-        SourceOptionsDialog(item.source.toString(), items).showDialog(router)
-    }
-
-    private fun disableSource(source: Source) {
-        preferences.disabledSources() += source.id.toString()
-
-        presenter.updateSources()
-    }
-
-    private fun toggleSourcePin(source: Source) {
-        val isPinned = source.id.toString() in preferences.pinnedSources().get()
-        if (isPinned) {
-            preferences.pinnedSources() -= source.id.toString()
-        } else {
-            preferences.pinnedSources() += source.id.toString()
-        }
-
-        presenter.updateSources()
-    }
-
-    // SY -->
-    private fun addToCategories(source: Source) {
-        val categories = preferences.sourcesTabCategories().get()
-            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it }))
-            .toTypedArray()
-
-        if (categories.isEmpty()) {
-            applicationContext?.toast(R.string.no_source_categories)
-            return
-        }
-
-        val preferenceSources = preferences.sourcesTabSourcesInCategories().get().toMutableList()
-        val sources = preferenceSources.map { it.split("|")[0] }
-
-        if (source.id.toString() in sources) {
-            val sourceCategories = preferenceSources
-                .map { item -> item.split("|").let { it.component1() to it.component2() } }
-                .filter { it.first == source.id.toString() }
-                .map { it.second }
-
-            val selection = categories.map { it in sourceCategories }
-                .toBooleanArray()
-
-            ChangeSourceCategoriesDialog(this, source, categories, selection)
-                .showDialog(router)
-        } else {
-            ChangeSourceCategoriesDialog(this, source, categories, categories.map { false }.toBooleanArray())
-                .showDialog(router)
-        }
-    }
-
-    override fun updateCategoriesForSource(source: Source, categories: List<String>) {
-        var preferenceSources = preferences.sourcesTabSourcesInCategories().get().toMutableList()
-        val sources = preferenceSources.map { it.split("|")[0] }
-
-        if (source.id.toString() in sources) {
-            preferenceSources = preferenceSources
-                .map { it.split("|") }
-                .filter { it[0] != source.id.toString() }
-                .map { it[0] + "|" + it[1] }.toMutableList()
-        }
-
-        categories.forEach {
-            preferenceSources.add(source.id.toString() + "|" + it)
-        }
-
-        preferences.sourcesTabSourcesInCategories().set(
-            preferenceSources.sorted().toSet(),
-        )
-        presenter.updateSources()
-    }
-
-    private fun excludeFromDataSaver(source: Source, isExcluded: Boolean) {
-        if (isExcluded) {
-            preferences.dataSaverExcludedSources() -= source.id.toString()
-        } else {
-            preferences.dataSaverExcludedSources() += source.id.toString()
-        }
-    }
-    // SY <--
-
-    /**
-     * Called when browse is clicked in [SourceAdapter]
-     */
-    override fun onBrowseClick(position: Int) {
-        onItemClick(position)
-    }
-
-    /**
-     * Called when latest is clicked in [SourceAdapter]
-     */
-    override fun onLatestClick(position: Int) {
-        val item = adapter?.getItem(position) as? SourceItem ?: return
-        openSource(item.source, LatestUpdatesController(item.source))
-    }
-
-    /**
-     * Called when pin icon is clicked in [SourceAdapter]
-     */
-    override fun onPinClick(position: Int) {
-        val item = adapter?.getItem(position) as? SourceItem ?: return
-        toggleSourcePin(item.source)
     }
 
     /**
      * Opens a catalogue with the given controller.
      */
-    private fun openSource(source: CatalogueSource, controller: BrowseSourceController) {
+    private fun openSource(source: Source, controller: Controller) {
         if (!preferences.incognitoMode().get()) {
             preferences.lastUsedSource().set(source.id)
         }
         parentController!!.router.pushController(controller)
     }
-
-    // SY -->
-    /**
-     * Opens a catalogue with the source feed controller.
-     */
-    private fun openSourceFeed(source: CatalogueSource) {
-        preferences.lastUsedSource().set(source.id)
-        parentController!!.router.pushController(SourceFeedController(source))
-    }
-    // SY <--
 
     /**
      * Called when an option menu item has been selected by the user.
@@ -323,51 +113,13 @@ class SourceController(bundle: Bundle? = null) :
      * @return True if this event has been consumed, false if it has not.
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             // Initialize option to open catalogue settings.
             R.id.action_settings -> {
                 parentController!!.router.pushController(SourceFilterController())
+                true
             }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    /**
-     * Called to update adapter containing sources.
-     */
-    fun setSources(sources: List<IFlexible<*>>) {
-        adapter?.updateDataSet(sources)
-    }
-
-    /**
-     * Called to set the last used catalogue at the top of the view.
-     */
-    fun setLastUsedSource(item: SourceItem?) {
-        adapter?.removeAllScrollableHeaders()
-        if (item != null) {
-            adapter?.addScrollableHeader(item)
-            adapter?.addScrollableHeader(LangItem(SourcePresenter.LAST_USED_KEY))
-        }
-    }
-
-    class SourceOptionsDialog(bundle: Bundle? = null) : DialogController(bundle) {
-
-        private lateinit var source: String
-        private lateinit var items: List<Pair<String, () -> Unit>>
-
-        constructor(source: String, items: List<Pair<String, () -> Unit>>) : this() {
-            this.source = source
-            this.items = items
-        }
-
-        override fun onCreateDialog(savedViewState: Bundle?): Dialog {
-            return MaterialAlertDialogBuilder(activity!!)
-                .setTitle(source)
-                .setItems(items.map { it.first }.toTypedArray()) { dialog, which ->
-                    items[which].second()
-                    dialog.dismiss()
-                }
-                .create()
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

@@ -72,13 +72,17 @@ class ExtensionManager(
         }
 
     fun getAppIconForSource(source: Source): Drawable? {
-        val pkgName = installedExtensions.find { ext -> ext.sources.any { it.id == source.id } }?.pkgName
+        return getAppIconForSource(source.id)
+    }
+
+    fun getAppIconForSource(sourceId: Long): Drawable? {
+        val pkgName = installedExtensions.find { ext -> ext.sources.any { it.id == sourceId } }?.pkgName
         if (pkgName != null) {
             return iconMap[pkgName] ?: iconMap.getOrPut(pkgName) { context.packageManager.getApplicationIcon(pkgName) }
         }
 
         // SY -->
-        return when (source.id) {
+        return when (sourceId) {
             EH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
             EXH_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_ehentai_source)
             MERGED_SOURCE_ID -> ContextCompat.getDrawable(context, R.mipmap.ic_merged_source)
