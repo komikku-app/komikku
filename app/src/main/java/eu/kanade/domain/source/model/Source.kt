@@ -31,12 +31,12 @@ data class Source(
                 ?.asImageBitmap()
         }
 
-    val key: () -> Long = {
+    val key: () -> String = {
         when {
-            isUsedLast -> id shr 16
-            Pin.Forced in pin -> id shr 32
-            category != null -> id shr 48 + category.hashCode()
-            else -> id
+            isUsedLast -> "$id-lastused"
+            Pin.Forced in pin -> "$id-forced"
+            category != null -> "$id-$category"
+            else -> "$id"
         }
     }
 }

@@ -82,7 +82,7 @@ class SourcePresenter(
         // SY <--
     }
 
-    private suspend fun collectLatestSources(sources: List<Source>) {
+    private fun collectLatestSources(sources: List<Source>) {
         val map = TreeMap<String, MutableList<Source>> { d1, d2 ->
             // Catalogues without a lang defined will be placed at the end
             when {
@@ -121,14 +121,14 @@ class SourcePresenter(
     }
 
     // SY -->
-    private suspend fun updateCategories(categories: Set<String>) {
+    private fun updateCategories(categories: Set<String>) {
         _state.update { state ->
             state.copy(
                 sourceCategories = categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it })
             )
         }
     }
-    private suspend fun updateShowLatest(showLatest: Boolean) {
+    private fun updateShowLatest(showLatest: Boolean) {
         _state.update { state ->
             state.copy(
                 showLatest = showLatest
