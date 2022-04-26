@@ -58,8 +58,7 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:elevation="0dp" />
+                android:layout_height="?attr/actionBarSize" />
 
             <LinearLayout
                 android:id="@+id/eh_utils"
