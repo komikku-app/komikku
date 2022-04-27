@@ -2,9 +2,7 @@ package eu.kanade.presentation.source
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,7 +17,6 @@ import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -32,19 +29,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.source.model.Pin
 import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.components.EmptyScreen
+import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.PreferenceRow
+import eu.kanade.presentation.source.components.BaseSourceItem
 import eu.kanade.presentation.theme.header
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.tachiyomi.R
@@ -67,7 +64,7 @@ fun SourceScreen(
     val state by presenter.state.collectAsState()
 
     when {
-        state.isLoading -> CircularProgressIndicator()
+        state.isLoading -> LoadingScreen()
         state.hasError -> Text(text = state.error!!.message!!)
         state.isEmpty -> EmptyScreen(message = "")
         else -> SourceList(
@@ -134,7 +131,7 @@ fun SourceList(
                 }
                 is UiModel.Item -> SourceItem(
                     modifier = Modifier.animateItemPlacement(),
-                    item = model.source,
+                    source = model.source,
                     showLatest = showLatest,
                     showPin = showPin,
                     onClickItem = onClickItem,
@@ -204,7 +201,7 @@ fun SourceHeader(
 @Composable
 fun SourceItem(
     modifier: Modifier = Modifier,
-    item: Source,
+    source: Source,
     // SY -->
     showLatest: Boolean,
     showPin: Boolean,
@@ -214,54 +211,32 @@ fun SourceItem(
     onClickLatest: (Source) -> Unit,
     onClickPin: (Source) -> Unit
 ) {
-    Row(
-        modifier = modifier
-            .combinedClickable(
-                onClick = { onClickItem(item) },
-                onLongClick = { onLongClickItem(item) }
-            )
-            .padding(horizontal = horizontalPadding, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SourceIcon(source = item)
-        Column(
-            modifier = Modifier
-                .padding(horizontal = horizontalPadding)
-                .weight(1f)
-        ) {
-            Text(
-                text = item.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = LocaleHelper.getDisplayName(item.lang),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        if (item.supportsLatest /* SY --> */ && showLatest /* SY <-- */) {
-            TextButton(onClick = { onClickLatest(item) }) {
-                Text(
-                    text = stringResource(id = R.string.latest),
-                    style = LocalTextStyle.current.copy(
-                        color = MaterialTheme.colorScheme.primary
-                    ),
+    BaseSourceItem(
+        modifier = modifier,
+        source = source,
+        onClickItem = { onClickItem(source) },
+        onLongClickItem = { onLongClickItem(source) },
+        action = { source ->
+            if (source.supportsLatest /* SY --> */ && showLatest /* SY <-- */) {
+                TextButton(onClick = { onClickLatest(source) }) {
+                    Text(
+                        text = stringResource(id = R.string.latest),
+                        style = LocalTextStyle.current.copy(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+            }
+            // SY -->
+            if (showPin) {
+                SourcePinButton(
+                    isPinned = Pin.Pinned in source.pin,
+                    onClick = { onClickPin(source) }
                 )
             }
-        }
-
-        // SY -->
-        if (showPin) {
-            SourcePinButton(
-                isPinned = Pin.Pinned in item.pin,
-                onClick = { onClickPin(item) },
-            )
-        }
-        // SY <--
-    }
+            // SY <--
+        },
+    )
 }
 
 @Composable

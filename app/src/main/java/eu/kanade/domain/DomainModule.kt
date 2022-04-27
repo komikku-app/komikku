@@ -12,6 +12,8 @@ import eu.kanade.domain.source.interactor.DisableSource
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
+import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
+import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.interactor.ToggleSourcePin
@@ -33,10 +35,12 @@ class DomainModule : InjektModule {
         addFactory { RemoveHistoryById(get()) }
         addFactory { RemoveHistoryByMangaId(get()) }
 
-        addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get()) }
+        addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
         addFactory { GetEnabledSources(get(), get()) }
         addFactory { DisableSource(get()) }
         addFactory { ToggleSourcePin(get()) }
+        addFactory { GetSourcesWithFavoriteCount(get(), get()) }
+        addFactory { SetMigrateSorting(get()) }
 
         // SY -->
         addFactory { GetSourceCategories(get()) }
