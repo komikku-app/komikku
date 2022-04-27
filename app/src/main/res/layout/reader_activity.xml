@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
             android:background="?attr/colorPrimary"
-            app:elevation="0dp" >
+            app:elevation="0dp">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
@@ -68,6 +68,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:visibility="gone"
+                app:elevation="0dp"
                 tools:visibility="visible">
 
                 <LinearLayout
@@ -157,7 +158,8 @@
             android:background="?attr/colorPrimary"
             android:descendantFocusability="blocksDescendants"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:translationY="0dp">
 
             <ImageButton
                 android:id="@+id/left_chapter"
@@ -185,9 +187,9 @@
                 android:id="@+id/page_seekbar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:maxHeight="?attr/actionBarSize"
-                android:minHeight="?attr/actionBarSize"
-                android:layout_weight="1" />
+                android:minHeight="?attr/actionBarSize" />
 
             <TextView
                 android:id="@+id/right_page_text"
