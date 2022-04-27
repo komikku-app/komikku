@@ -42,7 +42,6 @@ import androidx.paging.compose.items
 import eu.kanade.domain.history.model.HistoryWithRelations
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.MangaCover
-import eu.kanade.presentation.components.MangaCoverAspect
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -185,12 +184,11 @@ fun HistoryItem(
             .padding(horizontal = horizontalPadding, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MangaCover(
+        MangaCover.Book(
             modifier = Modifier
                 .fillMaxHeight()
                 .clickable(onClick = onClickCover),
             data = history.thumbnailUrl,
-            aspect = MangaCoverAspect.COVER
         )
         Column(
             modifier = Modifier
