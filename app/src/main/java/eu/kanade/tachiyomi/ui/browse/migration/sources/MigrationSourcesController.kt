@@ -27,8 +27,7 @@ class MigrationSourcesController : ComposeController<MigrationSourcesPresenter>(
         setHasOptionsMenu(true)
     }
 
-    override fun createPresenter(): MigrationSourcesPresenter =
-        MigrationSourcesPresenter()
+    override fun createPresenter() = MigrationSourcesPresenter()
 
     @Composable
     override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
