@@ -407,6 +407,7 @@ class Downloader(
             .onErrorReturn {
                 page.progress = 0
                 page.status = Page.ERROR
+                notifier.onError(it.message, download.chapter.name, download.manga.title)
                 page
             }
     }
