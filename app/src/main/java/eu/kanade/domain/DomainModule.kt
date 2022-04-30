@@ -11,15 +11,18 @@ import eu.kanade.domain.history.interactor.RemoveHistoryByMangaId
 import eu.kanade.domain.history.repository.HistoryRepository
 import eu.kanade.domain.manga.interactor.GetFavoritesBySourceId
 import eu.kanade.domain.manga.repository.MangaRepository
-import eu.kanade.domain.source.interactor.DisableSource
 import eu.kanade.domain.source.interactor.GetEnabledSources
+import eu.kanade.domain.source.interactor.GetLanguagesWithSources
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
+import eu.kanade.domain.source.interactor.ToggleLanguage
+import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
+import eu.kanade.domain.source.interactor.ToggleSources
 import eu.kanade.domain.source.repository.SourceRepository
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
@@ -41,17 +44,20 @@ class DomainModule : InjektModule {
         addFactory { RemoveHistoryByMangaId(get()) }
 
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
+        addFactory { GetLanguagesWithSources(get(), get()) }
         addFactory { GetEnabledSources(get(), get()) }
-        addFactory { DisableSource(get()) }
+        addFactory { ToggleSource(get()) }
         addFactory { ToggleSourcePin(get()) }
         addFactory { GetSourcesWithFavoriteCount(get(), get()) }
         addFactory { SetMigrateSorting(get()) }
+        addFactory { ToggleLanguage(get()) }
 
         // SY -->
         addFactory { GetSourceCategories(get()) }
         addFactory { GetShowLatest(get()) }
         addFactory { ToggleExcludeFromDataSaver(get()) }
         addFactory { SetSourceCategories(get()) }
+        addFactory { ToggleSources(get()) }
         // SY <--
     }
 }

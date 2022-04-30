@@ -71,7 +71,7 @@ class SourceController(bundle: Bundle? = null) : SearchableComposeController<Sou
                 }
             },
             onClickDisable = { source ->
-                presenter.disableSource(source)
+                presenter.toggleSource(source)
             },
             onClickLatest = { source ->
                 openSource(source, LatestUpdatesController(source))

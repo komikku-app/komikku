@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import rx.Observable
@@ -50,6 +51,8 @@ open class SourceManager(private val context: Context) {
 
     private val _catalogueSources: MutableStateFlow<List<CatalogueSource>> = MutableStateFlow(listOf())
     val catalogueSources: Flow<List<CatalogueSource>> = _catalogueSources
+    val onlineSources: Flow<List<HttpSource>> =
+        _catalogueSources.map { sources -> sources.filterIsInstance<HttpSource>() }
 
     // SY -->
     private val prefs: PreferencesHelper by injectLazy()
