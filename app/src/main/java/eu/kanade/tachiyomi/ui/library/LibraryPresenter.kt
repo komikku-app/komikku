@@ -42,7 +42,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.Collator
 import java.util.Collections
-import java.util.Comparator
 import java.util.Locale
 
 /**

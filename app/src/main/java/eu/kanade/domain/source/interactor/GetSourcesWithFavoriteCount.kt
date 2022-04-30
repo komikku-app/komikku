@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.combine
 import java.text.Collator
 import java.util.Collections
 import java.util.Locale
-import kotlin.Comparator
 
 class GetSourcesWithFavoriteCount(
     private val repository: SourceRepository,
