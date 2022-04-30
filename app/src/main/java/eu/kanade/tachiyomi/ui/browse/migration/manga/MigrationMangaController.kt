@@ -1,31 +1,19 @@
 package eu.kanade.tachiyomi.ui.browse.migration.manga
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.LinearLayoutManager
-import dev.chrisbanes.insetter.applyInsetter
-import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.presentation.source.MigrateMangaScreen
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.databinding.MigrationMangaControllerBinding
-import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.ComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MigrationMangaController :
-    NucleusController<MigrationMangaControllerBinding, MigrationMangaPresenter>,
-    FlexibleAdapter.OnItemClickListener,
-    MigrationMangaAdapter.OnCoverClickListener,
-    // SY -->
-    MigrationInterface {
-    // SY <--
-
-    private var adapter: MigrationMangaAdapter? = null
+class MigrationMangaController : ComposeController<MigrationMangaPresenter> {
 
     constructor(sourceId: Long, sourceName: String?) : super(
         bundleOf(
@@ -43,72 +31,30 @@ class MigrationMangaController :
     private val sourceId: Long = args.getLong(SOURCE_ID_EXTRA)
     private val sourceName: String? = args.getString(SOURCE_NAME_EXTRA)
 
-    override fun getTitle(): String? {
-        return sourceName
-    }
+    override fun getTitle(): String? = sourceName
 
-    override fun createPresenter(): MigrationMangaPresenter {
-        return MigrationMangaPresenter(sourceId)
-    }
+    override fun createPresenter(): MigrationMangaPresenter = MigrationMangaPresenter(sourceId)
 
-    override fun createBinding(inflater: LayoutInflater) = MigrationMangaControllerBinding.inflate(inflater)
-
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
-
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
+    @Composable
+    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+        MigrateMangaScreen(
+            nestedScrollInterop = nestedScrollInterop,
+            presenter = presenter,
+            onClickItem = {
+                PreMigrationController.navigateToMigration(
+                    Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+                    router,
+                    listOf(it.id),
+                )
+            },
+            onClickCover = {
+                router.pushController(MangaController(it.id))
             }
-        }
-
-        adapter = MigrationMangaAdapter(this)
-        binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.adapter = adapter
-        adapter?.fastScroller = binding.fastScroller
-    }
-
-    override fun onDestroyView(view: View) {
-        adapter = null
-        super.onDestroyView(view)
-    }
-
-    fun setManga(manga: List<MigrationMangaItem>) {
-        adapter?.updateDataSet(manga)
-    }
-
-    override fun onItemClick(view: View, position: Int): Boolean {
-        val item = adapter?.getItem(position) as? MigrationMangaItem ?: return false
-        // SY -->
-        PreMigrationController.navigateToMigration(
-            Injekt.get<PreferencesHelper>().skipPreMigration().get(),
-            router,
-            listOf(item.manga.id!!),
         )
-        // SY <--
-        return false
     }
-
-    override fun onCoverClick(position: Int) {
-        val mangaItem = adapter?.getItem(position) as? MigrationMangaItem ?: return
-        router.pushController(MangaController(mangaItem.manga))
-    }
-
-    // SY -->
-    override fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean): Manga? {
-        presenter.migrateManga(prevManga, manga, replace)
-        return null
-    }
-    // SY <--
 
     companion object {
         const val SOURCE_ID_EXTRA = "source_id_extra"
         const val SOURCE_NAME_EXTRA = "source_name_extra"
     }
 }
-
-// SY -->
-interface MigrationInterface {
-    fun migrateManga(prevManga: Manga, manga: Manga, replace: Boolean): Manga?
-}
-// SY <--

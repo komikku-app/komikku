@@ -14,7 +14,7 @@ import nucleus.presenter.Presenter
 /**
  * Compose controller with a Nucleus presenter.
  */
-abstract class ComposeController<P : Presenter<*>> : NucleusController<ComposeControllerBinding, P>() {
+abstract class ComposeController<P : Presenter<*>>(bundle: Bundle? = null) : NucleusController<ComposeControllerBinding, P>(bundle) {
 
     override fun createBinding(inflater: LayoutInflater): ComposeControllerBinding =
         ComposeControllerBinding.inflate(inflater)
