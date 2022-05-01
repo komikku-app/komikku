@@ -198,10 +198,10 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
     private fun setEhUtilsVisibility(visible: Boolean) {
         if (visible) {
             binding.ehUtils.visible()
-            binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_up_white_32dp)
+            binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_down_white_32dp)
         } else {
             binding.ehUtils.gone()
-            binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_down_white_32dp)
+            binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_up_white_32dp)
         }
     }
     // <-- EH
@@ -622,7 +622,7 @@ class ReaderActivity : BaseRxActivity<ReaderActivityBinding, ReaderPresenter>() 
      * Reset menu padding and system bar
      */
     private fun resetDefaultMenuAndBar() {
-        binding.readerMenu.setPadding(0, 0, 0, 0)
+        // binding.readerMenu.setPadding(0, 5, 0, 5)
         window.defaultBar()
     }
 
