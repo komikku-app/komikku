@@ -41,6 +41,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import rx.Observable
+import tachiyomi.source.model.ChapterInfo
+import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
 
@@ -176,19 +178,33 @@ open class SourceManager(private val context: Context) {
             sources + EHentai(EXH_SOURCE_ID, true, context)
         } else sources
     }
+
     // SY <--
 
+    @Suppress("OverridingDeprecatedMember")
     inner class StubSource(override val id: Long) : Source {
 
         override val name: String
             get() = id.toString()
 
+        override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+            throw getSourceNotInstalledException()
+        }
+
         override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
             return Observable.error(getSourceNotInstalledException())
         }
 
+        override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
+            throw getSourceNotInstalledException()
+        }
+
         override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
             return Observable.error(getSourceNotInstalledException())
+        }
+
+        override suspend fun getPageList(chapter: ChapterInfo): List<tachiyomi.source.model.Page> {
+            throw getSourceNotInstalledException()
         }
 
         override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
