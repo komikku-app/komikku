@@ -137,7 +137,7 @@ fun AboutScreen(
                 LinkIcon(
                     label = "GitHub",
                     painter = painterResource(R.drawable.ic_github_24dp),
-                    url = "https://github.com/tachiyomiorg",
+                    url = "https://github.com/jobobby04/tachiyomisy",
                 )
             }
         }
