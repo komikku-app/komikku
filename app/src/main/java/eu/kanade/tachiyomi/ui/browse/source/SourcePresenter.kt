@@ -10,14 +10,17 @@ import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.model.Pin
 import eu.kanade.domain.source.model.Source
+import eu.kanade.presentation.source.SourceUiModel
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.lang.launchIO
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.TreeMap
@@ -39,50 +42,28 @@ class SourcePresenter(
     // SY <--
 ) : BasePresenter<SourceController>() {
 
-    private val _state: MutableStateFlow<SourceState> = MutableStateFlow(SourceState.EMPTY)
+    private val _state: MutableStateFlow<SourceState> = MutableStateFlow(SourceState.Loading)
     val state: StateFlow<SourceState> = _state.asStateFlow()
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
-        presenterScope.launchIO {
-            getEnabledSources.subscribe()
-                .catch { exception ->
-                    _state.update { state ->
-                        state.copy(sources = listOf(), error = exception)
-                    }
-                }
-                .collectLatest(::collectLatestSources)
-        }
         // SY -->
-        presenterScope.launchIO {
-            getSourceCategories.subscribe()
-                .catch { exception ->
-                    _state.update { state ->
-                        state.copy(sources = listOf(), error = exception)
-                    }
-                }
-                .collectLatest(::updateCategories)
-        }
-        presenterScope.launchIO {
-            _state.update { state ->
-                state.copy(
-                    showPin = controllerMode == SourceController.Mode.CATALOGUE,
-                )
+        combine(
+            getEnabledSources.subscribe(),
+            getSourceCategories.subscribe(),
+            getShowLatest.subscribe(controllerMode),
+            flowOf(controllerMode == SourceController.Mode.CATALOGUE),
+            ::collectLatestSources
+        )
+            .catch { exception ->
+                _state.emit(SourceState.Error(exception))
             }
-        }
-        presenterScope.launchIO {
-            getShowLatest.subscribe(mode = controllerMode)
-                .catch { exception ->
-                    _state.update { state ->
-                        state.copy(sources = listOf(), error = exception)
-                    }
-                }
-                .collectLatest(::updateShowLatest)
-        }
+            .flowOn(Dispatchers.IO)
+            .launchIn(presenterScope)
         // SY <--
     }
 
-    private fun collectLatestSources(sources: List<Source>) {
+    private suspend fun collectLatestSources(sources: List<Source>, categories: Set<String>, showLatest: Boolean, showPin: Boolean) {
         val map = TreeMap<String, MutableList<Source>> { d1, d2 ->
             // Catalogues without a lang defined will be placed at the end
             when {
@@ -105,37 +86,24 @@ class SourcePresenter(
                 else -> it.lang
             }
         }
-        _state.update { state ->
-            state.copy(
-                sources = byLang.flatMap {
-                    listOf(
-                        UiModel.Header(it.key, it.value.firstOrNull()?.category != null),
-                        *it.value.map { source ->
-                            UiModel.Item(source)
-                        }.toTypedArray()
-                    )
-                },
-                error = null
-            )
-        }
-    }
 
-    // SY -->
-    private fun updateCategories(categories: Set<String>) {
-        _state.update { state ->
-            state.copy(
-                sourceCategories = categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it })
+        val uiModels = byLang.flatMap {
+            listOf(
+                SourceUiModel.Header(it.key, it.value.firstOrNull()?.category != null),
+                *it.value.map { source ->
+                    SourceUiModel.Item(source)
+                }.toTypedArray(),
             )
         }
-    }
-    private fun updateShowLatest(showLatest: Boolean) {
-        _state.update { state ->
-            state.copy(
-                showLatest = showLatest
+        _state.emit(
+            SourceState.Success(
+                uiModels,
+                categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it }),
+                showLatest,
+                showPin
             )
-        }
+        )
     }
-    // SY <--
 
     fun toggleSource(source: Source) {
         toggleSource.await(source)
@@ -159,29 +127,13 @@ class SourcePresenter(
     }
 }
 
-sealed class UiModel {
-    data class Item(val source: Source) : UiModel()
-    data class Header(val language: String, val isCategory: Boolean) : UiModel()
-}
-
-data class SourceState(
-    val sources: List<UiModel>,
-    val error: Throwable?,
-    val sourceCategories: List<String>,
-    val showLatest: Boolean,
-    val showPin: Boolean
-) {
-
-    val isLoading: Boolean
-        get() = sources.isEmpty() && error == null
-
-    val hasError: Boolean
-        get() = error != null
-
-    val isEmpty: Boolean
-        get() = sources.isEmpty()
-
-    companion object {
-        val EMPTY = SourceState(listOf(), null, emptyList(), true, true)
-    }
+sealed class SourceState {
+    object Loading : SourceState()
+    data class Error(val error: Throwable) : SourceState()
+    data class Success(
+        val uiModels: List<SourceUiModel>,
+        val sourceCategories: List<String>,
+        val showLatest: Boolean,
+        val showPin: Boolean
+    ) : SourceState()
 }

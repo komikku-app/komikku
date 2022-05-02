@@ -47,7 +47,7 @@ import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcePresenter
-import eu.kanade.tachiyomi.ui.browse.source.UiModel
+import eu.kanade.tachiyomi.ui.browse.source.SourceState
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 
 @Composable
@@ -63,16 +63,15 @@ fun SourceScreen(
 ) {
     val state by presenter.state.collectAsState()
 
-    when {
-        state.isLoading -> LoadingScreen()
-        state.hasError -> Text(text = state.error!!.message!!)
-        state.isEmpty -> EmptyScreen(message = "")
-        else -> SourceList(
+    when (state) {
+        is SourceState.Loading -> LoadingScreen()
+        is SourceState.Error -> Text(text = (state as SourceState.Error).error.message!!)
+        is SourceState.Success -> SourceList(
             nestedScrollConnection = nestedScrollInterop,
-            list = state.sources,
-            categories = state.sourceCategories,
-            showPin = state.showPin,
-            showLatest = state.showLatest,
+            list = (state as SourceState.Success).uiModels,
+            categories = (state as SourceState.Success).sourceCategories,
+            showPin = (state as SourceState.Success).showPin,
+            showLatest = (state as SourceState.Success).showLatest,
             onClickItem = onClickItem,
             onClickDisable = onClickDisable,
             onClickLatest = onClickLatest,
@@ -86,7 +85,7 @@ fun SourceScreen(
 @Composable
 fun SourceList(
     nestedScrollConnection: NestedScrollConnection,
-    list: List<UiModel>,
+    list: List<SourceUiModel>,
     categories: List<String>,
     showPin: Boolean,
     showLatest: Boolean,
@@ -97,6 +96,11 @@ fun SourceList(
     onClickSetCategories: (Source, List<String>) -> Unit,
     onClickToggleDataSaver: (Source) -> Unit
 ) {
+    if (list.isEmpty()) {
+        EmptyScreen(textResource = R.string.source_empty_screen)
+        return
+    }
+
     val (sourceState, setSourceState) = remember { mutableStateOf<Source?>(null) }
     // SY -->
     val (sourceCategoriesState, setSourceCategoriesState) = remember { mutableStateOf<Source?>(null) }
@@ -110,26 +114,26 @@ fun SourceList(
             items = list,
             contentType = {
                 when (it) {
-                    is UiModel.Header -> "header"
-                    is UiModel.Item -> "item"
+                    is SourceUiModel.Header -> "header"
+                    is SourceUiModel.Item -> "item"
                 }
             },
             key = {
                 when (it) {
-                    is UiModel.Header -> it.hashCode()
-                    is UiModel.Item -> it.source.key()
+                    is SourceUiModel.Header -> it.hashCode()
+                    is SourceUiModel.Item -> it.source.key()
                 }
             }
         ) { model ->
             when (model) {
-                is UiModel.Header -> {
+                is SourceUiModel.Header -> {
                     SourceHeader(
                         modifier = Modifier.animateItemPlacement(),
                         language = model.language,
                         isCategory = model.isCategory
                     )
                 }
-                is UiModel.Item -> SourceItem(
+                is SourceUiModel.Item -> SourceItem(
                     modifier = Modifier.animateItemPlacement(),
                     source = model.source,
                     showLatest = showLatest,
@@ -335,6 +339,11 @@ fun SourceOptionsDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
     )
+}
+
+sealed class SourceUiModel {
+    data class Item(val source: Source) : SourceUiModel()
+    data class Header(val language: String, val isCategory: Boolean) : SourceUiModel()
 }
 
 // SY -->
