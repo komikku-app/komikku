@@ -70,7 +70,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:background="?attr/colorPrimary"
-            android:descendantFocusability="blocksDescendants"
             android:gravity="center"
             android:orientation="vertical"
             android:animateLayoutChanges="true"
@@ -84,6 +83,7 @@
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:translationY="0dp"
+                android:minHeight="?attr/actionBarSize"
                 >
 
                 <ImageButton
@@ -147,6 +147,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+
+
                     android:orientation="horizontal">
 
                     <Switch
