@@ -8,7 +8,6 @@ import com.github.salomonbrys.kotson.nullLong
 import com.github.salomonbrys.kotson.nullObj
 import com.github.salomonbrys.kotson.nullString
 import com.google.gson.JsonParser
-import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -40,7 +39,7 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
     override val metaClass = NHentaiSearchMetadata::class
 
     override val client: OkHttpClient = network.cloudflareClient.newBuilder().build()
-    
+
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         // TODO There is currently no way to get the most popular mangas
         // TODO Instead, we delegate this to the latest updates thing to avoid confusing users with an empty screen
