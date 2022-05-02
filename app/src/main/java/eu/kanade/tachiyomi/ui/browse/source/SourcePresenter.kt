@@ -56,7 +56,7 @@ class SourcePresenter(
             ::collectLatestSources
         )
             .catch { exception ->
-                _state.emit(SourceState.Error(exception))
+                _state.value = SourceState.Error(exception)
             }
             .flowOn(Dispatchers.IO)
             .launchIn(presenterScope)
@@ -95,13 +95,11 @@ class SourcePresenter(
                 }.toTypedArray(),
             )
         }
-        _state.emit(
-            SourceState.Success(
-                uiModels,
-                categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it }),
-                showLatest,
-                showPin
-            )
+        _state.value = SourceState.Success(
+            uiModels,
+            categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it }),
+            showLatest,
+            showPin
         )
     }
 
