@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.hippo.unifile.UniFile
 import eu.kanade.data.exh.savedSearchMapper
+import eu.kanade.tachiyomi.Database
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.AbstractBackupManager
 import eu.kanade.tachiyomi.data.backup.BackupConst.BACKUP_CATEGORY
@@ -44,12 +45,13 @@ import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.executeOnIO
 import exh.util.nullIfBlank
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.protobuf.ProtoBuf
 import logcat.LogPriority
 import okio.buffer
 import okio.gzip
 import okio.sink
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.FileOutputStream
 import kotlin.math.max
 
@@ -168,15 +170,14 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      * @return list of [BackupSavedSearch] to be backed up
      */
     private fun backupSavedSearches(): List<BackupSavedSearch> {
-        return runBlocking {
-            databaseHandler.awaitList { saved_searchQueries.selectAll(savedSearchMapper) }.map {
-                BackupSavedSearch(
-                    it.name,
-                    it.query.orEmpty(),
-                    it.filtersJson ?: "[]",
-                    it.source,
-                )
-            }
+        // TODO: Database handler please
+        return Injekt.get<Database>().saved_searchQueries.selectAll(savedSearchMapper).executeAsList().map {
+            BackupSavedSearch(
+                it.name,
+                it.query.orEmpty(),
+                it.filtersJson ?: "[]",
+                it.source,
+            )
         }
     }
     // SY <--
