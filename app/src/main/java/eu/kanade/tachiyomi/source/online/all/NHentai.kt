@@ -8,7 +8,6 @@ import com.github.salomonbrys.kotson.nullLong
 import com.github.salomonbrys.kotson.nullObj
 import com.github.salomonbrys.kotson.nullString
 import com.google.gson.JsonParser
-import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -27,6 +26,7 @@ import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.NHentaiSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedTag
 import exh.util.urlImportFetchSearchManga
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
@@ -37,6 +37,8 @@ import rx.Observable
 
 class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata, Response>, UrlImportableSource {
     override val metaClass = NHentaiSearchMetadata::class
+
+    override val client: OkHttpClient = network.cloudflareClient.newBuilder().build()
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         // TODO There is currently no way to get the most popular mangas
@@ -279,16 +281,8 @@ class NHentai(context: Context) : HttpSource(), LewdSource<NHentaiSearchMetadata
         context.getString(R.string.app_name)
     }
 
-    fun nhGet(url: String, tag: Any? = null) = GET(url)
+    fun nhGet(url: String, tag: Any? = null) = GET(url, headers)
         .newBuilder()
-        .header(
-            "User-Agent",
-            "Mozilla/5.0 (X11; Linux x86_64) " +
-                "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/56.0.2924.87 " +
-                "Safari/537.36 " +
-                "$appName/${BuildConfig.VERSION_CODE}"
-        )
         .tag(tag).build()
 
     override val id = NHENTAI_SOURCE_ID
