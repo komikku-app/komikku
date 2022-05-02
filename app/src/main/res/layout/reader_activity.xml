@@ -59,9 +59,13 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
-                android:paddingBottom="5dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingTop="0dp"
+                android:paddingRight="0dp"
+                android:paddingLeft="0dp"
+                android:paddingBottom="2dp"
+                app:buttonGravity="bottom" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <LinearLayout
