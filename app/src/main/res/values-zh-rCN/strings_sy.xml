@@ -36,7 +36,7 @@
     <!-- EH Settings -->
     <string name="ehentai_prefs_account_settings">E-Hentai 网站账户设置</string>
     <string name="enable_exhentai">启用 ExHentai</string>
-    <string name="requires_login">要求登录</string>
+    <string name="requires_login">需要登录</string>
     <string name="use_hentai_at_home">使用 Hentai@Home 网络</string>
     <string name="use_hentai_at_home_summary">如果可用，您是否希望通过 Hentai@Home 网络加载图像？禁用此选项将减少您能够浏览的页面数量。\n选项：\n- 任何客户端（推荐）\n- 使用默认端口的客户端（可能会比较慢。如果防火墙或代理阻止非标准端口的出站，则应启用）</string>
     <string name="use_hentai_at_home_option_1">任何客户端（推荐）</string>
@@ -47,14 +47,14 @@
     <string name="use_original_images">使用原图</string>
     <string name="use_original_images_on">目前使用的是原图</string>
     <string name="use_original_images_off">目前使用的是重采样图像</string>
-    <string name="watched_tags">查看 Tags</string>
-    <string name="watched_tags_summary">在 WebView 中查看 E/ExHentai 关注的 Tags</string>
-    <string name="watched_tags_exh">ExHentai 关注的 Tags</string>
-    <string name="watched_tags_eh">E-Hentai 关注的 Tags</string>
+    <string name="watched_tags">查看标签</string>
+    <string name="watched_tags_summary">在网页视图中查看 E/ExHentai 关注的标签</string>
+    <string name="watched_tags_exh">ExHentai 关注的标签</string>
+    <string name="watched_tags_eh">E-Hentai 关注的标签</string>
     <string name="tag_filtering_threshold">标签过滤阈值</string>
     <string name="tag_filtering_threshhold_error">必须介于 -9999 和 0！</string>
     <string name="tag_filtering_threshhold_summary">你可以通过在 \"我的 Tags E/ExHentai\" 页面添加负的权重来软过滤标签。如果一个画廊的标签加起来的权重低于这个值，它就会被过滤掉。这个阈值可以在 -9999 和 0 之间设置。 目前：%1$d</string>
-    <string name="tag_watching_threshhold">Tags 关注阈值</string>
+    <string name="tag_watching_threshhold">标签关注阈值</string>
     <string name="tag_watching_threshhold_error">必须介于 0 和 9999！</string>
     <string name="tag_watching_threshhold_summary">如果最近上传的画廊至少有一个权重为正的被关注标签，并且其被关注标签的权重之和达到这个值或更高，就会被列入被关注的屏幕。这个阈值可以在 0 到 9999 之间设置。目前：%1$d</string>
     <string name="language_filtering">语言过滤</string>
@@ -71,8 +71,8 @@
     <string name="favorites_sync">E-Hentai 收藏同步</string>
     <string name="disable_favorites_uploading">禁用收藏上传</string>
     <string name="disable_favorites_uploading_summary">仅从 ExHentai 下载收藏夹。应用中对收藏夹的任何更改都不会被上传。防止 ExHentai 上的收藏夹意外丢失。请注意，删除的内容仍会被下载（如果您在 ExHentai 上删除了一个收藏夹，它也会在应用程序中被删除）。</string>
-    <string name="show_favorite_sync_notes">显示收藏夹同步信息</string>
-    <string name="show_favorite_sync_notes_summary">显示一些关于收藏夹同步功能的信息</string>
+    <string name="show_favorite_sync_notes">显示收藏夹同步注意事项</string>
+    <string name="show_favorite_sync_notes_summary">显示一些关于收藏夹同步功能的注意事项</string>
     <string name="ignore_sync_errors">尽可能忽略同步错误</string>
     <string name="ignore_sync_errors_summary">在同步过程中遇到错误时，不要立即中止。当同步完成时，错误仍然会显示。在某些情况下可能会导致收藏夹的丢失。在同步大型资料库时很有用。</string>
     <string name="force_sync_state_reset">强制重置同步状态</string>
@@ -119,8 +119,8 @@
     <string name="developer_tools">开发者工具</string>
     <string name="toggle_hentai_features">启用集成的 hentai 特性</string>
     <string name="toggle_hentai_features_summary">这是一个试验性功能，如果关闭则关闭所有 hentai 特性</string>
-    <string name="toggle_delegated_sources">启用委托来源</string>
-    <string name="toggle_delegated_sources_summary">应用 %1$s 增强到来源如果已安装: %2$s</string>
+    <string name="toggle_delegated_sources">启用代理来源</string>
+    <string name="toggle_delegated_sources_summary">应用 %1$s 代理到下列来源如果已安装: %2$s</string>
     <string name="log_level">日志级别</string>
     <string name="log_level_summary">更改此选项会影响应用性能。变更在完全重启应用后生效。现在的值：%s</string>
     <string name="enable_source_blacklist">启用来源黑名单</string>
@@ -257,11 +257,11 @@
 
     <!-- Reader -->
     <!-- Reader Actions -->
-    <string name="eh_autoscroll">自动滚动</string>
+    <string name="eh_autoscroll">自动翻页</string>
     <string name="eh_retry_all">全部重试</string>
     <string name="eh_boost_page">加速页面</string>
     <string name="eh_autoscroll_help">自动翻页帮助</string>
-    <string name="eh_autoscroll_help_message">在指定的时间间隔内自动滚动到下一页。间隔的单位是秒。</string>
+    <string name="eh_autoscroll_help_message">在指定的时间间隔内自动翻到下一页。间隔的单位是秒。</string>
     <string name="eh_autoscroll_freq_invalid">无效频次</string>
     <string name="eh_retry_all_help">重试所有帮助</string>
     <string name="eh_retry_all_help_message">重新添加失败的页面到下载队列</string>
@@ -269,7 +269,7 @@
         <item quantity="other">重试 %1$d 个失败的页面……</item>
     </plurals>
     <string name="eh_boost_page_help">加速页面帮助</string>
-    <string name="eh_boost_page_help_message">通常情况下，下载器在同一时间只能下载特定数量的页面。这意味着你需要等待一个页面的下载，但不会立即开始下载该页面，直到有一个空闲的下载槽。激活“Boost 页面”将迫使下载器立即开始下载，而不管是否有可用的下载槽。</string>
+    <string name="eh_boost_page_help_message">通常情况下，下载器在同一时间只能下载特定数量的页面。这意味着你需要等待一个页面的下载，但不会立即开始下载该页面，直到有一个空闲的下载槽。激活“加速页面”将迫使下载器立即开始下载，而不管是否有可用的下载槽。</string>
     <string name="eh_boost_page_invalid">该页面无法加速（无效页面）！</string>
     <string name="eh_boost_page_errored">页面加载失败，请按重试按钮！</string>
     <string name="eh_boost_page_downloading">该页面已经在下载了！</string>
@@ -375,7 +375,7 @@
 
     <!-- Extension Repos -->
     <string name="information_empty_repos">你没有额外的仓库。点击加号按钮以创建一个用于添加外部扩展。</string>
-    <string name="action_add_repo">增加仓库</string>
+    <string name="action_add_repo">添加仓库</string>
     <string name="action_add_repo_message">在 Tachiyomi 中添加额外的仓库，仓库的格式是 \'username/repo\'，username是仓库所有者，repo是仓库名称。</string>
     <string name="action_edit_repos">编辑仓库</string>
     <plurals name="num_repos">
@@ -458,9 +458,9 @@
     <string name="favorites_sync_network_error">同步网络错误！</string>
     <string name="favorites_sync_removing_galleries">从远程服务器移除 %1$d 画廊</string>
     <string name="favorites_sync_unable_to_delete">无法从远程服务器上删除画廊！</string>
-    <string name="favorites_sync_adding_to_remote">增加 %1$d 个画廊（已完成 %2$d 个） 到远程服务器</string>
+    <string name="favorites_sync_adding_to_remote">添加 %1$d 个画廊（已完成 %2$d 个） 到远程服务器</string>
     <string name="favorites_sync_remove_from_local">从远程服务器移除 %1$d 个画廊（已移除 %2$d 个）</string>
-    <string name="favorites_sync_add_to_local">增加 %1$d 个画廊（已完成 %2$d 个） 到本地数据库</string>
+    <string name="favorites_sync_add_to_local">添加 %1$d 个画廊（已完成 %2$d 个） 到本地数据库</string>
     <string name="favorites_sync_remote_not_exist">远程画廊不存在，跳过：%1$s！</string>
     <string name="favorites_sync_failed_to_add_to_local">向本地数据库添加画廊失败：</string>
     <string name="favorites_sync_failed_to_add_to_local_error">\'%1$s\' %2$s</string>
@@ -476,7 +476,7 @@
 
     <!-- Gallery Adder -->
     <!-- Batch Add -->
-    <string name="eh_batch_add">批量添加</string>
+    <string name="eh_batch_add">批量导入</string>
     <string name="eh_batch_add_description">示例：\n\nhttp://e-hentai.org/g/12345/1a2b3c4e\nhttp://g.e-hentai.org/g/67890/6f7g8h9i\nhttp://exhentai.org/g/13579/1a3b5c7e\nhttps://exhentai.org/g/24680/2f4g6h8i\n\n它还支持 E-H 访问过的导出数据\n</string>
     <string name="eh_batch_add_title">输入要添加的画廊（每行一个）：</string>
     <string name="eh_batch_add_button">添加画廊</string>
@@ -484,7 +484,7 @@
     <string name="eh_batch_add_finish">完成</string>
     <string name="batch_add_no_valid_galleries">没有可添加的画廊！</string>
     <string name="batch_add_no_valid_galleries_message">你必须选择至少一个画廊以添加！</string>
-    <string name="batch_add">批量增加</string>
+    <string name="batch_add">批量导入</string>
     <string name="batch_add_summary">\n摘要：\n已添加：%1$d 个画廊\n失败：%2$d 个画廊</string>
     <string name="batch_add_success_log_message">已添加漫画：%1$s</string>
     <string name="batch_add_unknown_type_log_message">未知漫画类型的漫画：%1$s</string>
@@ -522,13 +522,13 @@
 
 
     <!-- Gallery types -->
-    <string name="doujinshi">Doujinshi</string>
+    <string name="doujinshi">同人志</string>
     <string name="artist_cg">艺术 CG</string>
     <string name="game_cg">游戏 CG</string>
-    <string name="western">Western</string>
+    <string name="western">欧美</string>
     <string name="non_h">Non-H</string>
     <string name="image_set">图片集</string>
-    <string name="cosplay">Cosplay</string>
+    <string name="cosplay">角色扮演</string>
     <string name="asian_porn">亚洲色情</string>
     <string name="misc">杂项</string>
     <string name="artbook">Artbook</string>
