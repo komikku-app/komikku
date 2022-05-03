@@ -173,7 +173,6 @@ object EXHMigrations {
                         preferences.libraryUpdateInterval().set(12)
                         LibraryUpdateJob.setupTask(context)
                     }
-
                 }
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
 
