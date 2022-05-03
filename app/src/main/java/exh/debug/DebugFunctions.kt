@@ -4,6 +4,7 @@ import android.app.Application
 import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.system.jobScheduler
@@ -21,6 +22,8 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 object DebugFunctions {
@@ -32,6 +35,10 @@ object DebugFunctions {
     fun forceUpgradeMigration() {
         prefs.eh_lastVersionCode().set(0)
         EXHMigrations.upgrade(prefs)
+    }
+
+    fun forceLibraryUpdateJobSetup() {
+        LibraryUpdateJob.setupTask(Injekt.get<Application>())
     }
 
     fun resetAgedFlagInEXHManga() {
