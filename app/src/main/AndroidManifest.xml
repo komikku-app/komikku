@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="eu.kanade.tachiyomi">
 
-    <uses-sdk tools:overrideLibrary="dev.rikka.shizuku" />
+    <uses-sdk tools:overrideLibrary="rikka.shizuku.shared,rikka.shizuku.provider,rikka.shizuku.api,rikka.shizuku.aidl" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Environment
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import androidx.core.net.toUri
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -24,8 +23,6 @@ import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.File
-import java.util.concurrent.TimeUnit
 
 /**
  * The installer which installs, updates and uninstalls the extensions.

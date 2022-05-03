@@ -120,7 +120,7 @@ class WebViewActivity : BaseWebViewActivity() {
     }
 
     private fun openInBrowser() {
-        openInBrowser(binding.webview.url)
+        openInBrowser(binding.webview.url ?: return)
     }
 
     companion object {

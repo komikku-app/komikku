@@ -101,7 +101,7 @@ class BackupCreateService : Service() {
         if (intent == null) return START_NOT_STICKY
 
         try {
-            val uri = intent.getParcelableExtra<Uri>(BackupConst.EXTRA_URI)
+            val uri = intent.getParcelableExtra<Uri>(BackupConst.EXTRA_URI)!!
             val backupFlags = intent.getIntExtra(BackupConst.EXTRA_FLAGS, 0)
             val backupType = intent.getIntExtra(BackupConst.EXTRA_TYPE, BackupConst.BACKUP_TYPE_LEGACY)
             val backupManager = when (backupType) {

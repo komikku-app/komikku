@@ -7,6 +7,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.util.system.getUriSize
 import eu.kanade.tachiyomi.util.system.toast
+import java.io.BufferedReader
+import java.io.InputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,8 +16,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 import timber.log.Timber
-import java.io.BufferedReader
-import java.io.InputStream
 
 class ShizukuInstaller(private val service: Service) : Installer(service) {
 

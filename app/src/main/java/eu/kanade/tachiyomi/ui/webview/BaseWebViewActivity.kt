@@ -72,7 +72,7 @@ open class BaseWebViewActivity : BaseActivity<WebviewActivityBinding>() {
                 }
             }
         } else {
-            binding.webview.restoreState(bundle)
+            binding.webview.restoreState(bundle ?: return)
         }
     }
 

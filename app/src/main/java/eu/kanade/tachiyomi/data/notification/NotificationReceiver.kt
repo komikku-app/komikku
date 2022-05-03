@@ -57,21 +57,21 @@ class NotificationReceiver : BroadcastReceiver() {
             ACTION_SHARE_IMAGE ->
                 shareImage(
                     context,
-                    intent.getStringExtra(EXTRA_FILE_LOCATION),
+                    intent.getStringExtra(EXTRA_FILE_LOCATION)!!,
                     intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
                 )
             // Delete image from path and dismiss notification
             ACTION_DELETE_IMAGE ->
                 deleteImage(
                     context,
-                    intent.getStringExtra(EXTRA_FILE_LOCATION),
+                    intent.getStringExtra(EXTRA_FILE_LOCATION)!!,
                     intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
                 )
             // Share backup file
             ACTION_SHARE_BACKUP ->
                 shareBackup(
                     context,
-                    intent.getParcelableExtra(EXTRA_URI),
+                    intent.getParcelableExtra(EXTRA_URI)!!,
                     intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
                 )
             ACTION_CANCEL_RESTORE -> cancelRestore(

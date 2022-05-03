@@ -12,9 +12,9 @@ import eu.kanade.tachiyomi.ui.base.holder.SlicedHolder
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import io.github.mthli.slice.Slice
+import kotlinx.android.synthetic.main.extension_card_item.cancel_button
 import kotlinx.android.synthetic.main.extension_card_item.card
 import kotlinx.android.synthetic.main.extension_card_item.ext_button
-import kotlinx.android.synthetic.main.extension_card_item.cancel_button
 import kotlinx.android.synthetic.main.extension_card_item.ext_title
 import kotlinx.android.synthetic.main.extension_card_item.image
 import kotlinx.android.synthetic.main.extension_card_item.lang
@@ -38,7 +38,6 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
         cancel_button.setOnClickListener {
             adapter.buttonClickListener.onCancelButtonClick(bindingAdapterPosition)
         }
-
     }
 
     fun bind(item: ExtensionItem) {
@@ -74,37 +73,37 @@ class ExtensionHolder(view: View, override val adapter: ExtensionAdapter) :
         val installStep = item.installStep
         setText(
             when (installStep) {
-                InstallStep.Pending -> R.string.ext_pending
-                InstallStep.Downloading -> R.string.ext_downloading
-                InstallStep.Installing -> R.string.ext_installing
-                InstallStep.Installed -> R.string.ext_installed
-                InstallStep.Error -> R.string.action_retry
+                InstallStep.Pending -> context.getString(R.string.ext_pending)
+                InstallStep.Downloading -> context.getString(R.string.ext_downloading)
+                InstallStep.Installing -> context.getString(R.string.ext_installing)
+                InstallStep.Installed -> context.getString(R.string.ext_installed)
+                InstallStep.Error -> context.getString(R.string.action_retry)
                 InstallStep.Idle -> {
                     when (extension) {
                         is Extension.Installed -> {
                             when {
                                 extension.hasUpdate -> {
-                                    setText(R.string.ext_update)
+                                    context.getString(R.string.ext_update)
                                 }
                                 extension.isObsolete -> {
                                     setTextColor(context.getResourceColor(R.attr.colorError))
-                                    setText(R.string.ext_obsolete)
+                                    context.getString(R.string.ext_obsolete)
                                 }
                                 extension.isUnofficial -> {
                                     setTextColor(context.getResourceColor(R.attr.colorError))
-                                    setText(R.string.ext_unofficial)
+                                    context.getString(R.string.ext_unofficial)
                                 }
                                 extension.isRedundant -> {
                                     setTextColor(context.getResourceColor(R.attr.colorError))
-                                    setText(R.string.ext_redundant)
+                                    context.getString(R.string.ext_redundant)
                                 }
                                 else -> {
-                                    setText(context.getString(R.string.ext_details).plusRepo(extension))
+                                    context.getString(R.string.ext_details).plusRepo(extension)
                                 }
                             }
                         }
-                        is Extension.Untrusted -> R.string.ext_trust
-                        is Extension.Available -> R.string.ext_install
+                        is Extension.Untrusted -> context.getString(R.string.ext_trust)
+                        is Extension.Available -> context.getString(R.string.ext_install)
                     }
                 }
             }
