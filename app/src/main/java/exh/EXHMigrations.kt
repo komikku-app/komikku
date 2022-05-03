@@ -314,11 +314,11 @@ object EXHMigrations {
                     val newSortingMode = when (oldSortingMode) {
                         LibrarySort.ALPHA -> SortModeSetting.ALPHABETICAL
                         LibrarySort.LAST_READ -> SortModeSetting.LAST_READ
-                        LibrarySort.LAST_CHECKED -> SortModeSetting.LAST_CHECKED
-                        LibrarySort.UNREAD -> SortModeSetting.UNREAD
+                        LibrarySort.LAST_CHECKED -> SortModeSetting.LAST_MANGA_UPDATE
+                        LibrarySort.UNREAD -> SortModeSetting.UNREAD_COUNT
                         LibrarySort.TOTAL -> SortModeSetting.TOTAL_CHAPTERS
                         LibrarySort.LATEST_CHAPTER -> SortModeSetting.LATEST_CHAPTER
-                        LibrarySort.CHAPTER_FETCH_DATE -> SortModeSetting.DATE_FETCHED
+                        LibrarySort.CHAPTER_FETCH_DATE -> SortModeSetting.CHAPTER_FETCH_DATE
                         LibrarySort.DATE_ADDED -> SortModeSetting.DATE_ADDED
                         LibrarySort.DRAG_AND_DROP -> SortModeSetting.DRAG_AND_DROP
                         LibrarySort.TAG_LIST -> SortModeSetting.TAG_LIST
