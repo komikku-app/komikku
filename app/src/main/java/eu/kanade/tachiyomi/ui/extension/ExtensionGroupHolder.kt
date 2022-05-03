@@ -5,8 +5,8 @@ import android.view.View
 import androidx.core.view.isVisible
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.tachiyomi.ui.base.holder.BaseFlexibleViewHolder
-import kotlinx.android.synthetic.main.extension_card_header.title
 import kotlinx.android.synthetic.main.extension_card_header.action_button
+import kotlinx.android.synthetic.main.extension_card_header.title
 
 class ExtensionGroupHolder(view: View, adapter: FlexibleAdapter<*>) :
     BaseFlexibleViewHolder(view, adapter) {
