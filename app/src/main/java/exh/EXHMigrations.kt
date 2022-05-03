@@ -166,6 +166,15 @@ object EXHMigrations {
                     trackManager.myAnimeList.logout()
                 }
 
+                if (oldVersion < 8670) {
+                    // Handle removed 3, 4, 6, and 8 hour library update intervals
+                    val updateInterval = preferences.libraryUpdateInterval().get()
+                    if (updateInterval != 0 && updateInterval < 12) {
+                        preferences.libraryUpdateInterval().set(12)
+                        LibraryUpdateJob.setupTask(context)
+                    }
+
+                }
                 // TODO BE CAREFUL TO NOT FUCK UP MergedSources IF CHANGING URLs
 
                 preferences.eh_lastVersionCode().set(BuildConfig.VERSION_CODE)

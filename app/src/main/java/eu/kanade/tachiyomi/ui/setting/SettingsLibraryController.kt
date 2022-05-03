@@ -94,11 +94,10 @@ class SettingsLibraryController : SettingsController() {
                 key = Keys.libraryUpdateInterval
                 titleRes = R.string.pref_library_update_interval
                 entriesRes = arrayOf(
-                    R.string.update_never, R.string.update_1hour,
-                    R.string.update_2hour, R.string.update_3hour, R.string.update_6hour,
+                    R.string.update_never,
                     R.string.update_12hour, R.string.update_24hour, R.string.update_48hour
                 )
-                entryValues = arrayOf("0", "1", "2", "3", "6", "12", "24", "48")
+                entryValues = arrayOf("0", "12", "24", "48")
                 defaultValue = "24"
                 summary = "%s"
 
