@@ -41,7 +41,7 @@ class GetEnabledSources(
             sources
                 .filter { it.lang in enabledLanguages || it.id == LocalSource.ID }
                 .filterNot { it.id.toString() in disabledSources || it.id in BlacklistedSources.HIDDEN_SOURCES }
-                .sortedBy { it.name }
+                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
                 .flatMap {
                     val flag = if ("${it.id}" in pinnedSourceIds) Pins.pinned else Pins.unpinned
                     // SY -->
