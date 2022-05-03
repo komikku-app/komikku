@@ -157,13 +157,20 @@ class SettingsAdvancedController : SettingsController() {
                 key = Keys.extensionInstaller
                 titleRes = R.string.ext_installer_pref
                 summary = "%s"
-                entriesRes = arrayOf(
-                    R.string.ext_installer_legacy,
-                    R.string.ext_installer_packageinstaller,
-                    R.string.ext_installer_shizuku
-                )
+                entriesRes = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    arrayOf(
+                        R.string.ext_installer_legacy,
+                        R.string.ext_installer_packageinstaller,
+                        R.string.ext_installer_shizuku
+                    )
+                } else {
+                    arrayOf(
+                        R.string.ext_installer_legacy,
+                        R.string.ext_installer_packageinstaller
+                    )
+                }
                 entryValues = PreferenceValues.ExtensionInstaller.values().map { it.name }.toTypedArray()
-                defaultValue = if (MiuiUtil.isMiui()) {
+                defaultValue = if (MiuiUtil.isMiui() || (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)) {
                     PreferenceValues.ExtensionInstaller.LEGACY
                 } else {
                     PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER
