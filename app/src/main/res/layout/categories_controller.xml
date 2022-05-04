@@ -17,7 +17,7 @@
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         app:layout_anchor="@id/recycler"
-        style="@style/Theme.Widget.FAB"/>
+        style="@style/Theme.Widget.FAB"
         app:srcCompat="@drawable/ic_add_24dp" />
 
     <eu.kanade.tachiyomi.widget.EmptyView
