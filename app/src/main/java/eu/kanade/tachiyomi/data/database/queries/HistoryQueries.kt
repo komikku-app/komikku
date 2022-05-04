@@ -52,16 +52,6 @@ interface HistoryQueries : DbProvider {
         .withPutResolver(HistoryUpsertResolver())
         .prepare()
 
-    fun deleteHistoryNoLastRead() = db.delete()
-        .byQuery(
-            DeleteQuery.builder()
-                .table(HistoryTable.TABLE)
-                .where("${HistoryTable.COL_LAST_READ} = ?")
-                .whereArgs(0)
-                .build(),
-        )
-        .prepare()
-
     // SY -->
     fun updateHistoryChapterIds(history: List<History>) = db.put()
         .objects(history)
