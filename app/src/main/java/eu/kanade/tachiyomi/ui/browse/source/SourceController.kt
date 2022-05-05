@@ -10,6 +10,7 @@ import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.core.os.bundleOf
 import com.bluelinelabs.conductor.Controller
 import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.source.SourceScreen
@@ -23,6 +24,7 @@ import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import exh.ui.smartsearch.SmartSearchController
 import kotlinx.parcelize.Parcelize
 import uy.kohesive.injekt.injectLazy
 
@@ -64,10 +66,19 @@ class SourceController(bundle: Bundle? = null) : SearchableComposeController<Sou
             nestedScrollInterop = nestedScrollInterop,
             presenter = presenter,
             onClickItem = { source ->
-                if (preferences.useNewSourceNavigation().get()) {
-                    openSource(source, SourceFeedController(source.id))
-                } else {
-                    openSource(source, BrowseSourceController(source))
+                when {
+                    mode == Mode.SMART_SEARCH -> {
+                        router.pushController(
+                            SmartSearchController(
+                                bundleOf(
+                                    SmartSearchController.ARG_SOURCE_ID to source.id,
+                                    SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig,
+                                ),
+                            )
+                        )
+                    }
+                    preferences.useNewSourceNavigation().get() -> openSource(source, SourceFeedController(source.id))
+                    else -> openSource(source, BrowseSourceController(source))
                 }
             },
             onClickDisable = { source ->
