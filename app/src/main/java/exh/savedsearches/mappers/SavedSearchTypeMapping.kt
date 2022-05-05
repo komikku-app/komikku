@@ -10,13 +10,28 @@ import com.pushtorefresh.storio.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio.sqlite.queries.UpdateQuery
+import exh.savedsearches.mappers.SavedSearchTable.COL_FILTERS_JSON
+import exh.savedsearches.mappers.SavedSearchTable.COL_ID
+import exh.savedsearches.mappers.SavedSearchTable.COL_NAME
+import exh.savedsearches.mappers.SavedSearchTable.COL_QUERY
+import exh.savedsearches.mappers.SavedSearchTable.COL_SOURCE
+import exh.savedsearches.mappers.SavedSearchTable.TABLE
 import exh.savedsearches.models.SavedSearch
-import exh.savedsearches.tables.SavedSearchTable.COL_FILTERS_JSON
-import exh.savedsearches.tables.SavedSearchTable.COL_ID
-import exh.savedsearches.tables.SavedSearchTable.COL_NAME
-import exh.savedsearches.tables.SavedSearchTable.COL_QUERY
-import exh.savedsearches.tables.SavedSearchTable.COL_SOURCE
-import exh.savedsearches.tables.SavedSearchTable.TABLE
+
+private object SavedSearchTable {
+
+    const val TABLE = "saved_search"
+
+    const val COL_ID = "_id"
+
+    const val COL_SOURCE = "source"
+
+    const val COL_NAME = "name"
+
+    const val COL_QUERY = "query"
+
+    const val COL_FILTERS_JSON = "filters_json"
+}
 
 class SavedSearchTypeMapping : SQLiteTypeMapping<SavedSearch>(
     SavedSearchPutResolver(),

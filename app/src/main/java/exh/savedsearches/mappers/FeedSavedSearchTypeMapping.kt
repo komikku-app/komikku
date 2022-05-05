@@ -10,12 +10,25 @@ import com.pushtorefresh.storio.sqlite.operations.put.DefaultPutResolver
 import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.InsertQuery
 import com.pushtorefresh.storio.sqlite.queries.UpdateQuery
+import exh.savedsearches.mappers.FeedSavedSearchTable.COL_GLOBAL
+import exh.savedsearches.mappers.FeedSavedSearchTable.COL_ID
+import exh.savedsearches.mappers.FeedSavedSearchTable.COL_SAVED_SEARCH_ID
+import exh.savedsearches.mappers.FeedSavedSearchTable.COL_SOURCE
+import exh.savedsearches.mappers.FeedSavedSearchTable.TABLE
 import exh.savedsearches.models.FeedSavedSearch
-import exh.savedsearches.tables.FeedSavedSearchTable.COL_GLOBAL
-import exh.savedsearches.tables.FeedSavedSearchTable.COL_ID
-import exh.savedsearches.tables.FeedSavedSearchTable.COL_SAVED_SEARCH_ID
-import exh.savedsearches.tables.FeedSavedSearchTable.COL_SOURCE
-import exh.savedsearches.tables.FeedSavedSearchTable.TABLE
+
+private object FeedSavedSearchTable {
+
+    const val TABLE = "feed_saved_search"
+
+    const val COL_ID = "_id"
+
+    const val COL_SOURCE = "source"
+
+    const val COL_SAVED_SEARCH_ID = "saved_search"
+
+    const val COL_GLOBAL = "global"
+}
 
 class FeedSavedSearchTypeMapping : SQLiteTypeMapping<FeedSavedSearch>(
     FeedSavedSearchPutResolver(),
