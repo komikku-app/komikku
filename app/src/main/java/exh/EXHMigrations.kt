@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package exh
 
 import android.content.Context
@@ -310,7 +312,6 @@ object EXHMigrations {
                     val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
                     val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
 
-                    @Suppress("DEPRECATION")
                     val newSortingMode = when (oldSortingMode) {
                         LibrarySort.ALPHA -> SortModeSetting.ALPHABETICAL
                         LibrarySort.LAST_READ -> SortModeSetting.LAST_READ
