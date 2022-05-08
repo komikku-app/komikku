@@ -13,7 +13,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.core.os.bundleOf
 import com.bluelinelabs.conductor.Controller
 import eu.kanade.domain.source.model.Source
-import eu.kanade.presentation.source.SourceScreen
+import eu.kanade.presentation.browse.SourceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.SearchableComposeController

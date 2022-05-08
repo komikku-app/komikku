@@ -5,7 +5,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import eu.kanade.presentation.source.MigrateSourceScreen
+import eu.kanade.presentation.browse.MigrateSourceScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
