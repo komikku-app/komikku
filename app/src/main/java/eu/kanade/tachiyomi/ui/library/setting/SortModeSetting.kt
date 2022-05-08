@@ -13,7 +13,17 @@ enum class SortModeSetting(val flag: Int) {
     CHAPTER_FETCH_DATE(0b00011000),
     DATE_ADDED(0b00011100),
     DRAG_AND_DROP(0b00100000),
-    TAG_LIST(0b00100100);
+    TAG_LIST(0b00100100),
+
+    @Deprecated("Use LAST_MANGA_UPDATE")
+    LAST_CHECKED(0b00001000),
+
+    @Deprecated("Use UNREAD_COUNT")
+    UNREAD(0b00001100),
+
+    @Deprecated("Use CHAPTER_FETCH_DATE")
+    DATE_FETCHED(0b00011000),
+    ;
 
     companion object {
         // Mask supports for more sorting flags if necessary

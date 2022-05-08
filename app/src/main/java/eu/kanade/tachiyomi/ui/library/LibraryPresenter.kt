@@ -433,6 +433,7 @@ class LibraryPresenter(
                     manga1IndexOfTag.compareTo(manga2IndexOfTag)
                 }
                 // SY <--
+                else -> throw IllegalStateException("Invalid SortModeSetting: $sortingMode")
             }
         }
 

@@ -444,6 +444,17 @@ object EXHMigrations {
                         preferences.navigationModeWebtoon().set(5)
                     }
                 }
+                if (oldVersion under 35) {
+                    // Handle renamed enum values
+                    @Suppress("DEPRECATION")
+                    val newSortingMode = when (val oldSortingMode = preferences.librarySortingMode().get()) {
+                        SortModeSetting.LAST_CHECKED -> SortModeSetting.LAST_MANGA_UPDATE
+                        SortModeSetting.UNREAD -> SortModeSetting.UNREAD_COUNT
+                        SortModeSetting.DATE_FETCHED -> SortModeSetting.CHAPTER_FETCH_DATE
+                        else -> oldSortingMode
+                    }
+                    preferences.librarySortingMode().set(newSortingMode)
+                }
 
                 // if (oldVersion under 1) { } (1 is current release version)
                 // do stuff here when releasing changed crap
