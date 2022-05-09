@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.presentation.util.horizontalPadding
@@ -40,8 +41,11 @@ fun PreferenceRow(
     onLongClick: () -> Unit = {},
     subtitle: String? = null,
     action: @Composable (() -> Unit)? = null,
+    // SY -->
+    subtitleAnnotated: AnnotatedString? = null
+    // SY <--
 ) {
-    val height = if (subtitle != null) 72.dp else 56.dp
+    val height = if (subtitle != null /* SY --> */ || subtitleAnnotated != null/* SY <-- */) 72.dp else 56.dp
 
     val titleTextStyle = MaterialTheme.typography.bodyLarge
     val subtitleTextStyle = MaterialTheme.typography.bodyMedium.copy(
@@ -84,6 +88,15 @@ fun PreferenceRow(
                     style = subtitleTextStyle,
                 )
             }
+            // SY -->
+            if (subtitleAnnotated != null) {
+                Text(
+                    modifier = Modifier.padding(top = 4.dp),
+                    text = subtitleAnnotated,
+                    style = subtitleTextStyle,
+                )
+            }
+            // SY <--
         }
         if (action != null) {
             Box(Modifier.widthIn(min = 56.dp)) {
@@ -100,6 +113,9 @@ fun SwitchPreference(
     title: String,
     subtitle: String? = null,
     painter: Painter? = null,
+    // SY -->
+    subtitleAnnotated: AnnotatedString? = null
+    // SY <--
 ) {
     PreferenceRow(
         modifier = modifier,
@@ -112,5 +128,8 @@ fun SwitchPreference(
             Text(preference.value.toString())
         },
         onClick = { preference.value = !preference.value },
+        // SY -->
+        subtitleAnnotated = subtitleAnnotated
+        // SY <--
     )
 }

@@ -1,74 +1,186 @@
 package exh.debug
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.util.Log
-import android.widget.TextView
-import androidx.core.text.HtmlCompat
-import androidx.preference.PreferenceScreen
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.tachiyomi.ui.setting.SettingsController
-import eu.kanade.tachiyomi.util.preference.defaultValue
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.unit.dp
+import eu.kanade.core.prefs.PreferenceMutableState
+import eu.kanade.presentation.components.Divider
+import eu.kanade.presentation.components.PreferenceRow
+import eu.kanade.presentation.components.SwitchPreference
+import eu.kanade.tachiyomi.ui.base.controller.BasicComposeController
 import eu.kanade.tachiyomi.util.preference.onClick
 import eu.kanade.tachiyomi.util.preference.preference
-import eu.kanade.tachiyomi.util.preference.preferenceCategory
-import eu.kanade.tachiyomi.util.preference.switchPreference
 import exh.util.capitalize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
+import kotlin.reflect.KFunction
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredFunctions
 
-class SettingsDebugController : SettingsController() {
-    @SuppressLint("SetTextI18n")
-    override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
-        title = "DEBUG MENU"
+class SettingsDebugController : BasicComposeController() {
 
-        preferenceCategory {
-            title = "Functions"
+    override fun getTitle(): String {
+        return "DEBUG MENU"
+    }
 
-            DebugFunctions::class.declaredFunctions.filter {
-                it.visibility == KVisibility.PUBLIC
-            }.forEach {
-                preference {
-                    title = it.name.replace("(.)(\\p{Upper})".toRegex(), "$1 $2").lowercase(Locale.getDefault()).capitalize(Locale.getDefault())
-                    isPersistent = false
+    data class DebugToggle(val name: String, val pref: PreferenceMutableState<Boolean>, val default: Boolean)
 
-                    onClick {
-                        try {
-                            val result = it.call(DebugFunctions)
-                            val text = "Function returned result:\n\n$result"
-                            MaterialAlertDialogBuilder(context)
-                                .setTitle(title.toString())
-                                .setMessage(text)
-                                .create()
-                        } catch (t: Throwable) {
-                            val text = "Function threw exception:\n\n${Log.getStackTraceString(t)}"
-                            MaterialAlertDialogBuilder(context)
-                                .setMessage(text)
-                                .create()
-                        }.also { dialog ->
-                            dialog.setOnShowListener {
-                                dialog.findViewById<TextView>(android.R.id.message)?.apply {
-                                    setTextIsSelectable(true)
-                                }
-                            }
-                        }.show()
-                    }
+    @Composable
+    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+        val functions by produceState<List<Pair<KFunction<*>, String>>?>(initialValue = null) {
+            value = withContext(Dispatchers.Default) {
+                DebugFunctions::class.declaredFunctions.filter {
+                    it.visibility == KVisibility.PUBLIC
+                }.map {
+                    it to it.name.replace("(.)(\\p{Upper})".toRegex(), "$1 $2")
+                        .lowercase(Locale.getDefault()).capitalize(Locale.getDefault())
                 }
             }
         }
-
-        preferenceCategory {
-            title = "Toggles"
-
-            DebugToggles.values().forEach {
-                switchPreference {
-                    title = it.name.replace('_', ' ').lowercase(Locale.getDefault()).capitalize(Locale.getDefault())
-                    key = it.prefKey
-                    defaultValue = it.default
-                    summaryOn = if (it.default) "" else MODIFIED_TEXT
-                    summaryOff = if (it.default) MODIFIED_TEXT else ""
+        val toggles by produceState(initialValue = emptyList()) {
+            value = withContext(Dispatchers.Default) {
+                DebugToggles.values().map { DebugToggle(it.name, it.asPref(viewScope), it.default) }
+            }
+        }
+        if (functions != null) {
+            val scope = rememberCoroutineScope()
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .nestedScroll(nestedScrollInterop)
+            ) {
+                var running by remember { mutableStateOf(false) }
+                var result by remember { mutableStateOf<Pair<String, String>?>(null) }
+                LazyColumn(Modifier.fillMaxSize()) {
+                    item {
+                        Text(
+                            text = "Functions",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    items(functions.orEmpty()) { (func, name) ->
+                        PreferenceRow(
+                            title = name,
+                            onClick = {
+                                scope.launch(Dispatchers.Default) {
+                                    val text = try {
+                                        running = true
+                                        "Function returned result:\n\n${func.call(DebugFunctions)}"
+                                    } catch (e: Exception) {
+                                        "Function threw exception:\n\n${Log.getStackTraceString(e)}"
+                                    } finally {
+                                        running = false
+                                    }
+                                    result = name to text
+                                }
+                            },
+                        )
+                    }
+                    item {
+                        Divider()
+                    }
+                    item {
+                        Text(
+                            text = "Toggles",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    items(toggles) { (name, pref, default) ->
+                        SwitchPreference(
+                            preference = pref,
+                            title = name.replace('_', ' ')
+                                .lowercase(Locale.getDefault())
+                                .capitalize(Locale.getDefault()),
+                            subtitleAnnotated = if (pref.value != default) {
+                                AnnotatedString("MODIFIED", SpanStyle(color = Color.Red))
+                            } else null
+                        )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                    }
                 }
+                AnimatedVisibility(
+                    running && result == null,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(color = Color.White.copy(alpha = 0.3F))
+                            .pointerInput(running && result == null) {
+                                forEachGesture {
+                                    awaitPointerEventScope {
+                                        waitForUpOrCancellation()?.consume()
+                                    }
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                if (result != null) {
+                    AlertDialog(
+                        onDismissRequest = { result = null },
+                        title = {
+                            Text(text = result?.first.orEmpty())
+                        },
+                        confirmButton = {},
+                        text = {
+                            SelectionContainer {
+                                Text(text = result?.second.orEmpty())
+                            }
+                        }
+                    )
+                }
+            }
+        } else {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
         }
     }
@@ -76,9 +188,5 @@ class SettingsDebugController : SettingsController() {
     override fun onActivityStopped(activity: Activity) {
         super.onActivityStopped(activity)
         router.popCurrentController()
-    }
-
-    companion object {
-        private val MODIFIED_TEXT = HtmlCompat.fromHtml("<font color='red'>MODIFIED</font>", HtmlCompat.FROM_HTML_MODE_LEGACY)
     }
 }
