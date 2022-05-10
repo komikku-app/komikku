@@ -22,6 +22,6 @@ val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, 
             status = status,
             thumbnailUrl = thumbnailUrl,
             initialized = initialized,
-            filteredScanlators = filteredScanlators
+            filteredScanlators = filteredScanlators,
         )
     }

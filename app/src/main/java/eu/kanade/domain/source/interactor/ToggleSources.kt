@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.preference.plusAssign
 
 class ToggleSources(
-    private val preferences: PreferencesHelper
+    private val preferences: PreferencesHelper,
 ) {
 
     fun await(isEnable: Boolean, sources: List<Source>) {

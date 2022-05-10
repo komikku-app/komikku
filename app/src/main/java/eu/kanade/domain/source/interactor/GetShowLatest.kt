@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class GetShowLatest(
-    private val preferences: PreferencesHelper
+    private val preferences: PreferencesHelper,
 ) {
 
     fun subscribe(mode: SourceController.Mode): Flow<Boolean> {

@@ -124,7 +124,7 @@ open class BrowseSourceController(bundle: Bundle) :
         query,
         smartSearchConfig,
         savedSearch,
-        filterList
+        filterList,
     )
 
     constructor(
@@ -140,7 +140,7 @@ open class BrowseSourceController(bundle: Bundle) :
         query,
         smartSearchConfig,
         savedSearch,
-        filterList
+        filterList,
     )
 
     private val preferences: PreferencesHelper by injectLazy()

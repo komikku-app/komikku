@@ -47,7 +47,7 @@ fun MigrateSourceScreen(
                 list = (state as MigrateSourceState.Success).sources,
                 onClickItem = onClickItem,
                 onLongClickItem = onLongClickItem,
-                onClickAll = onClickAll
+                onClickAll = onClickAll,
             )
     }
 }
@@ -75,7 +75,7 @@ fun MigrateSourceList(
                 modifier = Modifier
                     .animateItemPlacement()
                     .padding(horizontal = horizontalPadding, vertical = 8.dp),
-                style = MaterialTheme.typography.header
+                style = MaterialTheme.typography.header,
             )
         }
 
@@ -83,7 +83,7 @@ fun MigrateSourceList(
             items = list,
             key = { (source, _) ->
                 source.id
-            }
+            },
         ) { (source, count) ->
             MigrateSourceItem(
                 modifier = Modifier.animateItemPlacement(),
@@ -91,7 +91,7 @@ fun MigrateSourceList(
                 count = count,
                 onClickItem = { onClickItem(source) },
                 onLongClickItem = { onLongClickItem(source) },
-                onClickAll = { onClickAll(source) }
+                onClickAll = { onClickAll(source) },
             )
         }
     }
@@ -118,10 +118,10 @@ fun MigrateSourceItem(
                 Text(
                     text = stringResource(id = R.string.all),
                     style = LocalTextStyle.current.copy(
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
                 )
             }
-        }
+        },
     )
 }

@@ -53,7 +53,7 @@ class SourcePresenter(
             getSourceCategories.subscribe(),
             getShowLatest.subscribe(controllerMode),
             flowOf(controllerMode == SourceController.Mode.CATALOGUE),
-            ::collectLatestSources
+            ::collectLatestSources,
         )
             .catch { exception ->
                 _state.value = SourceState.Error(exception)
@@ -99,7 +99,7 @@ class SourcePresenter(
             uiModels,
             categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it }),
             showLatest,
-            showPin
+            showPin,
         )
     }
 
@@ -132,6 +132,6 @@ sealed class SourceState {
         val uiModels: List<SourceUiModel>,
         val sourceCategories: List<String>,
         val showLatest: Boolean,
-        val showPin: Boolean
+        val showPin: Boolean,
     ) : SourceState()
 }

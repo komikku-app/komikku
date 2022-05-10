@@ -17,19 +17,19 @@ class GetLanguagesWithSources(
         return combine(
             preferences.enabledLanguages().asFlow(),
             preferences.disabledSources().asFlow(),
-            repository.getOnlineSources()
+            repository.getOnlineSources(),
         ) { enabledLanguage, disabledSource, onlineSources ->
             val sortedSources = onlineSources.filterNot { it.id in BlacklistedSources.HIDDEN_SOURCES }.sortedWith(
                 compareBy<Source> { it.id.toString() in disabledSource }
-                    .thenBy(String.CASE_INSENSITIVE_ORDER) { it.name }
+                    .thenBy(String.CASE_INSENSITIVE_ORDER) { it.name },
             )
 
             sortedSources.groupBy { it.lang }
                 .toSortedMap(
                     compareBy(
                         { it !in enabledLanguage },
-                        { LocaleHelper.getDisplayName(it) }
-                    )
+                        { LocaleHelper.getDisplayName(it) },
+                    ),
                 )
         }
     }

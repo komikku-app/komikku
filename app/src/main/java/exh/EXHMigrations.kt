@@ -416,7 +416,7 @@ object EXHMigrations {
                                         source = it.substringBefore(':').toLongOrNull() ?: return@forEach,
                                         name = content["name"]!!.jsonPrimitive.content,
                                         query = content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
-                                        filters_json = Json.encodeToString(content["filters"]!!.jsonArray)
+                                        filters_json = Json.encodeToString(content["filters"]!!.jsonArray),
                                     )
                                 }
                             }

@@ -37,8 +37,8 @@ class SearchController(
             Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking(),
             sources.map { Injekt.get<SourceManager>().getOrStub(it) }.filterIsInstance<CatalogueSource>(),
         ) {
-            this.targetController = targetController
-        }
+        this.targetController = targetController
+    }
 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(

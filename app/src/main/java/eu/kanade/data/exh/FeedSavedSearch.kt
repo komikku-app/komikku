@@ -8,6 +8,6 @@ val feedSavedSearchMapper: (Long, Long, Long?, Boolean) -> FeedSavedSearch =
             id = id,
             source = source,
             savedSearch = savedSearch,
-            global = global
+            global = global,
         )
     }

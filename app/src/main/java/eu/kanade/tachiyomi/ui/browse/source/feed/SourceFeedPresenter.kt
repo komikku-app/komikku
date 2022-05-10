@@ -130,7 +130,7 @@ open class SourceFeedPresenter(
                     _id = null,
                     source = source.id,
                     saved_search = savedSearchId,
-                    global = false
+                    global = false,
                 )
             }
         }

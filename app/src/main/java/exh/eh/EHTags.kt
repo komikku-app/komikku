@@ -27,7 +27,7 @@ object EHTags {
         Character.getTags(),
         Group.getTags(),
         Artist.getTags(),
-        Artist2.getTags()
+        Artist2.getTags(),
     ).flatten().flatten()
 
     fun getNamespaces0Tags() = listOf(

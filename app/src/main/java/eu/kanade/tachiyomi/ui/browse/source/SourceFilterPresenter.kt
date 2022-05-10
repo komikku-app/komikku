@@ -53,8 +53,8 @@ class SourceFilterPresenter(
             val toggleHeader = listOf(
                 FilterUiModel.ToggleHeader(
                     it.value,
-                    it.value.none { (id) -> id.toString() in disabledSources }
-                )
+                    it.value.none { (id) -> id.toString() in disabledSources },
+                ),
             )
             // SY <--
 
@@ -62,7 +62,7 @@ class SourceFilterPresenter(
             header + toggleHeader + it.value.map { source ->
                 FilterUiModel.Item(
                     source,
-                    source.id.toString() !in preferences.disabledSources().get()
+                    source.id.toString() !in preferences.disabledSources().get(),
                 )
             }
         }

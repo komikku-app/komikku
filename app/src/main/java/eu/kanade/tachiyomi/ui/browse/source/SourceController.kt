@@ -74,7 +74,7 @@ class SourceController(bundle: Bundle? = null) : SearchableComposeController<Sou
                                     SmartSearchController.ARG_SOURCE_ID to source.id,
                                     SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig,
                                 ),
-                            )
+                            ),
                         )
                     }
                     preferences.useNewSourceNavigation().get() -> openSource(source, SourceFeedController(source.id))

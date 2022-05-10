@@ -9,6 +9,6 @@ val savedSearchMapper: (Long, Long, String, String?, String?) -> SavedSearch =
             source = source,
             name = name,
             query = query,
-            filtersJson = filtersJson
+            filtersJson = filtersJson,
         )
     }

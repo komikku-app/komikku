@@ -42,7 +42,7 @@ fun PreferenceRow(
     subtitle: String? = null,
     action: @Composable (() -> Unit)? = null,
     // SY -->
-    subtitleAnnotated: AnnotatedString? = null
+    subtitleAnnotated: AnnotatedString? = null,
     // SY <--
 ) {
     val height = if (subtitle != null /* SY --> */ || subtitleAnnotated != null/* SY <-- */) 72.dp else 56.dp
@@ -60,7 +60,7 @@ fun PreferenceRow(
                 onLongClick = onLongClick,
                 onClick = onClick,
             ),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (painter != null) {
             Icon(
@@ -75,7 +75,7 @@ fun PreferenceRow(
         Column(
             Modifier
                 .padding(horizontal = horizontalPadding)
-                .weight(1f)
+                .weight(1f),
         ) {
             Text(
                 text = title,
@@ -114,7 +114,7 @@ fun SwitchPreference(
     subtitle: String? = null,
     painter: Painter? = null,
     // SY -->
-    subtitleAnnotated: AnnotatedString? = null
+    subtitleAnnotated: AnnotatedString? = null,
     // SY <--
 ) {
     PreferenceRow(
@@ -129,7 +129,7 @@ fun SwitchPreference(
         },
         onClick = { preference.value = !preference.value },
         // SY -->
-        subtitleAnnotated = subtitleAnnotated
+        subtitleAnnotated = subtitleAnnotated,
         // SY <--
     )
 }

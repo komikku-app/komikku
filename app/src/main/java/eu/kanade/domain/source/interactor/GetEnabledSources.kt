@@ -52,7 +52,7 @@ class GetEnabledSources(
                     val source = it.copy(
                         pin = flag,
                         isExcludedFromDataSaver = it.id.toString() in excludedFromDataSaver,
-                        categories = categories
+                        categories = categories,
                     )
                     val toFlatten = mutableListOf(source)
                     if (source.id == lastUsedSource) {

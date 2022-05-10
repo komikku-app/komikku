@@ -84,7 +84,7 @@ class SettingsDebugController : BasicComposeController() {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .nestedScroll(nestedScrollInterop)
+                    .nestedScroll(nestedScrollInterop),
             ) {
                 var running by remember { mutableStateOf(false) }
                 var result by remember { mutableStateOf<Pair<String, String>?>(null) }
@@ -94,7 +94,7 @@ class SettingsDebugController : BasicComposeController() {
                             text = "Functions",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(16.dp),
                         )
                     }
                     items(functions.orEmpty()) { (func, name) ->
@@ -123,7 +123,7 @@ class SettingsDebugController : BasicComposeController() {
                             text = "Toggles",
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(16.dp),
                         )
                     }
                     items(toggles) { (name, pref, default) ->
@@ -134,7 +134,7 @@ class SettingsDebugController : BasicComposeController() {
                                 .capitalize(Locale.getDefault()),
                             subtitleAnnotated = if (pref.value != default) {
                                 AnnotatedString("MODIFIED", SpanStyle(color = Color.Red))
-                            } else null
+                            } else null,
                         )
                     }
                     item {
@@ -145,7 +145,7 @@ class SettingsDebugController : BasicComposeController() {
                     running && result == null,
                     enter = fadeIn(),
                     exit = fadeOut(),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     Box(
                         Modifier
@@ -158,7 +158,7 @@ class SettingsDebugController : BasicComposeController() {
                                     }
                                 }
                             },
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator()
                     }
@@ -174,7 +174,7 @@ class SettingsDebugController : BasicComposeController() {
                             SelectionContainer {
                                 Text(text = result?.second.orEmpty())
                             }
-                        }
+                        },
                     )
                 }
             }

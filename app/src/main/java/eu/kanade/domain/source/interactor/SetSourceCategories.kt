@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.preference.plusAssign
 
 class SetSourceCategories(
-    private val preferences: PreferencesHelper
+    private val preferences: PreferencesHelper,
 ) {
 
     fun await(source: Source, sourceCategories: List<String>) {

@@ -59,7 +59,7 @@ fun SourceScreen(
     onClickLatest: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
     onClickSetCategories: (Source, List<String>) -> Unit,
-    onClickToggleDataSaver: (Source) -> Unit
+    onClickToggleDataSaver: (Source) -> Unit,
 ) {
     val state by presenter.state.collectAsState()
 
@@ -77,7 +77,7 @@ fun SourceScreen(
             onClickLatest = onClickLatest,
             onClickPin = onClickPin,
             onClickSetCategories = onClickSetCategories,
-            onClickToggleDataSaver = onClickToggleDataSaver
+            onClickToggleDataSaver = onClickToggleDataSaver,
         )
     }
 }
@@ -94,7 +94,7 @@ fun SourceList(
     onClickLatest: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
     onClickSetCategories: (Source, List<String>) -> Unit,
-    onClickToggleDataSaver: (Source) -> Unit
+    onClickToggleDataSaver: (Source) -> Unit,
 ) {
     if (list.isEmpty()) {
         EmptyScreen(textResource = R.string.source_empty_screen)
@@ -123,14 +123,14 @@ fun SourceList(
                     is SourceUiModel.Header -> it.hashCode()
                     is SourceUiModel.Item -> it.source.key()
                 }
-            }
+            },
         ) { model ->
             when (model) {
                 is SourceUiModel.Header -> {
                     SourceHeader(
                         modifier = Modifier.animateItemPlacement(),
                         language = model.language,
-                        isCategory = model.isCategory
+                        isCategory = model.isCategory,
                     )
                 }
                 is SourceUiModel.Item -> SourceItem(
@@ -168,7 +168,7 @@ fun SourceList(
                 onClickToggleDataSaver(sourceState)
                 setSourceState(null)
             },
-            onDismiss = { setSourceState(null) }
+            onDismiss = { setSourceState(null) },
         )
     }
     if (sourceCategoriesState != null) {
@@ -213,7 +213,7 @@ fun SourceItem(
     onClickItem: (Source) -> Unit,
     onLongClickItem: (Source) -> Unit,
     onClickLatest: (Source) -> Unit,
-    onClickPin: (Source) -> Unit
+    onClickPin: (Source) -> Unit,
 ) {
     BaseSourceItem(
         modifier = modifier,
@@ -226,8 +226,8 @@ fun SourceItem(
                     Text(
                         text = stringResource(id = R.string.latest),
                         style = LocalTextStyle.current.copy(
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
                     )
                 }
             }
@@ -235,7 +235,7 @@ fun SourceItem(
             if (showPin) {
                 SourcePinButton(
                     isPinned = Pin.Pinned in source.pin,
-                    onClick = { onClickPin(source) }
+                    onClick = { onClickPin(source) },
                 )
             }
             // SY <--
@@ -245,7 +245,7 @@ fun SourceItem(
 
 @Composable
 fun SourceIcon(
-    source: Source
+    source: Source,
 ) {
     val icon = source.icon
     val modifier = Modifier
@@ -269,7 +269,7 @@ fun SourceIcon(
 @Composable
 fun SourcePinButton(
     isPinned: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val icon = if (isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin
     val tint = if (isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
@@ -277,7 +277,7 @@ fun SourcePinButton(
         Icon(
             imageVector = icon,
             contentDescription = "",
-            tint = tint
+            tint = tint,
         )
     }
 }
@@ -303,7 +303,7 @@ fun SourceOptionsDialog(
                     modifier = Modifier
                         .clickable(onClick = onClickPin)
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp)
+                        .padding(vertical = 16.dp),
                 )
                 if (source.id != LocalSource.ID) {
                     Text(
@@ -311,7 +311,7 @@ fun SourceOptionsDialog(
                         modifier = Modifier
                             .clickable(onClick = onClickDisable)
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp)
+                            .padding(vertical = 16.dp),
                     )
                 }
                 // SY -->
@@ -320,7 +320,7 @@ fun SourceOptionsDialog(
                     modifier = Modifier
                         .clickable(onClick = onClickSetCategories)
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp)
+                        .padding(vertical = 16.dp),
                 )
                 Text(
                     text = if (source.isExcludedFromDataSaver) {

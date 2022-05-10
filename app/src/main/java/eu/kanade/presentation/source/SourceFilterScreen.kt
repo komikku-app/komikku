@@ -92,7 +92,7 @@ fun SourceFilterContent(
                     is FilterUiModel.Header, is FilterUiModel.ToggleHeader -> it.hashCode()
                     is FilterUiModel.Item -> it.source.key()
                 }
-            }
+            },
         ) { model ->
             when (model) {
                 is FilterUiModel.Header -> {
@@ -100,7 +100,7 @@ fun SourceFilterContent(
                         modifier = Modifier.animateItemPlacement(),
                         language = model.language,
                         isEnabled = model.isEnabled,
-                        onClickItem = onClickLang
+                        onClickItem = onClickLang,
                     )
                 }
                 // SY -->
@@ -110,7 +110,7 @@ fun SourceFilterContent(
                         isEnabled = model.isEnabled,
                         onClickItem = {
                             onClickSources(!model.isEnabled, model.sources)
-                        }
+                        },
                     )
                 }
                 // SY <--
@@ -118,7 +118,7 @@ fun SourceFilterContent(
                     modifier = Modifier.animateItemPlacement(),
                     source = model.source,
                     isEnabled = model.isEnabled,
-                    onClickItem = onClickSource
+                    onClickItem = onClickSource,
                 )
             }
         }
@@ -130,7 +130,7 @@ fun SourceFilterHeader(
     modifier: Modifier,
     language: String,
     isEnabled: Boolean,
-    onClickItem: (String) -> Unit
+    onClickItem: (String) -> Unit,
 ) {
     PreferenceRow(
         modifier = modifier,
@@ -147,7 +147,7 @@ fun SourceFilterHeader(
 fun SourceFilterToggle(
     modifier: Modifier,
     isEnabled: Boolean,
-    onClickItem: () -> Unit
+    onClickItem: () -> Unit,
 ) {
     PreferenceRow(
         modifier = modifier,
@@ -156,7 +156,7 @@ fun SourceFilterToggle(
             Switch(checked = isEnabled, onCheckedChange = null)
         },
         onClick = { onClickItem() },
-        painter = remember { ColorPainter(Color.Transparent) }
+        painter = remember { ColorPainter(Color.Transparent) },
     )
 }
 
@@ -167,7 +167,7 @@ fun SourceFilterItem(
     modifier: Modifier,
     source: Source,
     isEnabled: Boolean,
-    onClickItem: (Source) -> Unit
+    onClickItem: (Source) -> Unit,
 ) {
     BaseSourceItem(
         modifier = modifier,
@@ -176,6 +176,6 @@ fun SourceFilterItem(
         onClickItem = { onClickItem(source) },
         action = {
             Checkbox(checked = isEnabled, onCheckedChange = null)
-        }
+        },
     )
 }

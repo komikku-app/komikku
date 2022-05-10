@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 
 class SourceRepositoryImpl(
     private val sourceManager: SourceManager,
-    private val handler: DatabaseHandler
+    private val handler: DatabaseHandler,
 ) : SourceRepository {
 
     override fun getSources(): Flow<List<Source>> {
