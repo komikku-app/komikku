@@ -48,6 +48,7 @@ class AppUpdateChecker {
             when (result) {
                 is AppUpdateResult.NewUpdate -> AppUpdateNotifier(context).promptUpdate(result.release)
                 is AppUpdateResult.NewUpdateFdroidInstallation -> AppUpdateNotifier(context).promptFdroidUpdate()
+                else -> {}
             }
 
             result
@@ -61,7 +62,6 @@ class AppUpdateChecker {
     private fun isNewVersion(versionTag: String): Boolean {
         // Removes prefixes like "r" or "v"
         val newVersion = versionTag.replace("[^\\d.]".toRegex(), "")
-        val oldVersion = BuildConfig.VERSION_NAME.replace("[^\\d.]".toRegex(), "")
 
         return if (BuildConfig.DEBUG) {
             // Preview builds: based on releases in "tachiyomiorg/tachiyomi-preview" repo
@@ -70,6 +70,8 @@ class AppUpdateChecker {
         } else {
             // Release builds: based on releases in "tachiyomiorg/tachiyomi" repo
             // tagged as something like "v0.1.2"
+            val oldVersion = BuildConfig.VERSION_NAME.replace("[^\\d.]".toRegex(), "")
+
             val newSemVer = newVersion.split(".").map { it.toInt() }
             val oldSemVer = oldVersion.split(".").map { it.toInt() }
 
@@ -78,6 +80,7 @@ class AppUpdateChecker {
                     return true
                 }
             }
+
             false
         }
     }
