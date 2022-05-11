@@ -216,6 +216,7 @@ class MainActivity : BaseActivity() {
 
         val container: ViewGroup = binding.controllerContainer
         router = Conductor.attachRouter(this, container, savedInstanceState)
+            .setPopRootControllerMode(Router.PopRootControllerMode.NEVER)
         router.addChangeListener(
             object : ControllerChangeHandler.ControllerChangeListener {
                 override fun onChangeStarted(
