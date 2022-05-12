@@ -132,7 +132,6 @@ class MangaController :
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     BaseChaptersAdapter.OnChapterClickListener,
-    AddDuplicateMangaDialog.Listener,
     ChangeMangaCoverDialog.Listener,
     ChangeMangaCategoriesDialog.Listener,
     DownloadCustomChaptersDialog.Listener,
@@ -665,7 +664,7 @@ class MangaController :
         trackSheet?.show()
     }
 
-    override fun addToLibrary(newManga: Manga) {
+    private fun addToLibrary(newManga: Manga) {
         val categories = presenter.getCategories()
         val defaultCategoryId = preferences.defaultCategory()
         val defaultCategory = categories.find { it.id == defaultCategoryId }
