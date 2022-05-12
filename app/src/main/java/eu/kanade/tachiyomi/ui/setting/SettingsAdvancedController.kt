@@ -14,6 +14,7 @@ import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -34,6 +35,7 @@ import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.setting.database.ClearDatabaseController
 import eu.kanade.tachiyomi.util.CrashLogUtil
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
@@ -61,6 +63,7 @@ import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import rikka.sui.Sui
 import uy.kohesive.injekt.Injekt
@@ -69,11 +72,12 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
-class SettingsAdvancedController : SettingsController() {
+class SettingsAdvancedController(
+    private val mangaRepository: MangaRepository = Injekt.get()
+) : SettingsController() {
 
     private val network: NetworkHelper by injectLazy()
     private val chapterCache: ChapterCache by injectLazy()
-    private val db: DatabaseHelper by injectLazy()
 
     @SuppressLint("BatteryLife")
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
@@ -224,6 +228,13 @@ class SettingsAdvancedController : SettingsController() {
                 summaryRes = R.string.pref_refresh_library_tracking_summary
 
                 onClick { LibraryUpdateService.start(context, target = Target.TRACKING) }
+            }
+            preference {
+                key = "pref_reset_viewer_flags"
+                titleRes = R.string.pref_reset_viewer_flags
+                summaryRes = R.string.pref_reset_viewer_flags_summary
+
+                onClick { resetViewerFlags() }
             }
         }
 
@@ -488,37 +499,52 @@ class SettingsAdvancedController : SettingsController() {
     // SY <--
 
     private fun clearChapterCache() {
-        if (activity == null) return
+        val activity = activity ?: return
         launchIO {
             try {
                 val deletedFiles = chapterCache.clear()
                 withUIContext {
-                    activity?.toast(resources?.getString(R.string.cache_deleted, deletedFiles))
+                    activity.toast(resources?.getString(R.string.cache_deleted, deletedFiles))
                     findPreference(CLEAR_CACHE_KEY)?.summary =
                         resources?.getString(R.string.used_cache, chapterCache.readableSize)
                 }
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
-                withUIContext { activity?.toast(R.string.cache_delete_error) }
+                withUIContext { activity.toast(R.string.cache_delete_error) }
             }
         }
     }
 
     private fun clearWebViewData() {
-        if (activity == null) return
+        val activity = activity ?: return
         try {
-            val webview = WebView(activity!!)
+            val webview = WebView(activity)
             webview.setDefaultSettings()
             webview.clearCache(true)
             webview.clearFormData()
             webview.clearHistory()
             webview.clearSslPreferences()
             WebStorage.getInstance().deleteAllData()
-            activity?.applicationInfo?.dataDir?.let { File("$it/app_webview/").deleteRecursively() }
-            activity?.toast(R.string.webview_data_deleted)
+            activity.applicationInfo?.dataDir?.let { File("$it/app_webview/").deleteRecursively() }
+            activity.toast(R.string.webview_data_deleted)
         } catch (e: Throwable) {
             logcat(LogPriority.ERROR, e)
-            activity?.toast(R.string.cache_delete_error)
+            activity.toast(R.string.cache_delete_error)
+        }
+    }
+
+    private fun resetViewerFlags() {
+        val activity = activity ?: return
+        launchIO {
+            val isSuccesful = mangaRepository.resetViewerFlags()
+            withUIContext {
+                val resouurceString = if (isSuccesful) {
+                    R.string.pref_reset_viewer_flags_succesful
+                } else {
+                    R.string.pref_reset_viewer_flags_unsuccesful
+                }
+                activity.toast(resouurceString)
+            }
         }
     }
 
