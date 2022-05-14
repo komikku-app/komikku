@@ -558,6 +558,10 @@ class ReaderPresenter(
         }
     }
 
+    fun saveProgress() {
+        getCurrentChapter()?.let { onChapterChanged(it) }
+    }
+
     /**
      * Called from the activity to preload the given [chapter].
      */
