@@ -76,6 +76,7 @@ class SettingsAdvancedController(
 
     private val network: NetworkHelper by injectLazy()
     private val chapterCache: ChapterCache by injectLazy()
+    private val db: DatabaseHelper by injectLazy()
 
     @SuppressLint("BatteryLife")
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
