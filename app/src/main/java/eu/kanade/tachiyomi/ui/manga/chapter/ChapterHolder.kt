@@ -27,6 +27,10 @@ class ChapterHolder(
         binding.download.setOnClickListener {
             onDownloadClick(it, bindingAdapterPosition)
         }
+        binding.download.setOnLongClickListener {
+            onDownloadLongClick(bindingAdapterPosition)
+            true
+        }
     }
 
     fun bind(item: ChapterItem, manga: Manga) {
