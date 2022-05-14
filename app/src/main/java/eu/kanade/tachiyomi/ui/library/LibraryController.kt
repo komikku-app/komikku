@@ -10,7 +10,6 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ActionMode
-import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -343,8 +342,10 @@ class LibraryController(
         onTabsSettingsChanged(firstLaunch = true)
 
         // Delay the scroll position to allow the view to be properly measured.
-        view.doOnAttach {
-            (activity as? MainActivity)?.binding?.tabs?.setScrollPosition(binding.libraryPager.currentItem, 0f, true)
+        view.post {
+            if (isAttached) {
+                (activity as? MainActivity)?.binding?.tabs?.setScrollPosition(binding.libraryPager.currentItem, 0f, true)
+            }
         }
 
         // Send the manga map to child fragments after the adapter is updated.
