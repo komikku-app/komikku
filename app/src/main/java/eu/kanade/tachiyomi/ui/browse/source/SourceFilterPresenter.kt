@@ -37,15 +37,12 @@ class SourceFilterPresenter(
                 .catch { exception ->
                     _state.value = SourceFilterState.Error(exception)
                 }
-                .collectLatest { sourceLangMap ->
-                    val uiModels = sourceLangMap.toFilterUiModels()
-                    _state.value = SourceFilterState.Success(uiModels)
-                }
+                .collectLatest(::collectLatestSourceLangMap)
         }
     }
 
-    private fun Map<String, List<Source>>.toFilterUiModels(): List<FilterUiModel> {
-        return this.flatMap {
+    private fun collectLatestSourceLangMap(sourceLangMap: Map<String, List<Source>>) {
+        val uiModels = sourceLangMap.flatMap {
             val isLangEnabled = it.key in preferences.enabledLanguages().get()
             val header = listOf(FilterUiModel.Header(it.key, isLangEnabled))
             // SY -->
@@ -66,6 +63,7 @@ class SourceFilterPresenter(
                 )
             }
         }
+        _state.value = SourceFilterState.Success(uiModels)
     }
 
     fun toggleSource(source: Source) {
