@@ -48,6 +48,7 @@ sealed class Extension {
         val iconUrl: String,
         // SY -->
         val repoUrl: String,
+        val isRepoSource: Boolean,
         // SY <--
     ) : Extension()
 
