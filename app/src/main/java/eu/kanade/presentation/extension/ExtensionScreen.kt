@@ -46,7 +46,6 @@ import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.extension.api.REPO_URL_PREFIX
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.InstallStep
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -307,7 +306,7 @@ fun ExtensionItemContent(
                         color = MaterialTheme.colorScheme.error,
                     ),
                 )
-            } /* SY --> */ else if (extension is Extension.Available && extension.repoUrl != REPO_URL_PREFIX) {
+            } /* SY --> */ else if (extension is Extension.Available && extension.isRepoSource) {
                 Text(
                     text = stringResource(R.string.repo_source).uppercase(),
                     style = MaterialTheme.typography.bodySmall.copy(
@@ -324,7 +323,7 @@ fun ExtensionItemContent(
 private infix fun String.plusRepo(extension: Extension): String {
     val context = LocalContext.current
     return remember(this, extension, context) {
-        if (extension is Extension.Available && extension.repoUrl != REPO_URL_PREFIX) {
+        if (extension is Extension.Available && extension.isRepoSource) {
             if (isNullOrEmpty()) {
                 ""
             } else {

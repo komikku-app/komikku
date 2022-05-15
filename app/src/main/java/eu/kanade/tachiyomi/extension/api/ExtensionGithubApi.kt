@@ -12,7 +12,9 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.source.BlacklistedSources
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.serialization.Serializable
+import logcat.LogPriority
 import uy.kohesive.injekt.injectLazy
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -22,21 +24,38 @@ internal class ExtensionGithubApi {
     private val networkService: NetworkHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
 
+    private var requiresFallbackSource = false
+
     suspend fun findExtensions(): List<Extension.Available> {
         return withIOContext {
-            val extensions = networkService.client
-                .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
-                .await()
+            val response = try {
+                networkService.client
+                    .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
+                    .await()
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e) { "Failed to get extensions from GitHub" }
+                requiresFallbackSource = true
+
+                networkService.client
+                    .newCall(GET("${FALLBACK_REPO_URL_PREFIX}index.min.json"))
+                    .await()
+            }
+
+            val extensions = response
                 .parseAs<List<ExtensionJsonObject>>()
                 .toExtensions() /* SY --> */ + preferences.extensionRepos()
                 .get()
                 .flatMap { repoPath ->
-                    val url = "$BASE_URL$repoPath/repo/"
+                    val url = if (requiresFallbackSource) {
+                        "$FALLBACK_BASE_URL$repoPath@repo/"
+                    } else {
+                        "$BASE_URL$repoPath/repo/"
+                    }
                     networkService.client
                         .newCall(GET("${url}index.min.json"))
                         .await()
                         .parseAs<List<ExtensionJsonObject>>()
-                        .toExtensions(url)
+                        .toExtensions(url, repoSource = true)
                 }
             // SY <--
 
@@ -85,7 +104,12 @@ internal class ExtensionGithubApi {
         return extensionsWithUpdate
     }
 
-    private fun List<ExtensionJsonObject>.toExtensions(/* SY --> */ repoUrl: String = REPO_URL_PREFIX /* SY <-- */): List<Extension.Available> {
+    private fun List<ExtensionJsonObject>.toExtensions(
+        // SY -->
+        repoUrl: String = getUrlPrefix(),
+        repoSource: Boolean = false
+        // SY <--
+    ): List<Extension.Available> {
         return this
             .filter {
                 val libVersion = it.version.substringBeforeLast('.').toDouble()
@@ -106,6 +130,7 @@ internal class ExtensionGithubApi {
                     iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.apk.replace(".apk", ".png")}",
                     // SY -->
                     repoUrl = repoUrl,
+                    isRepoSource = repoSource
                     // SY <--
                 )
             }
@@ -125,6 +150,14 @@ internal class ExtensionGithubApi {
         return /* SY --> */ "${extension.repoUrl}/apk/${extension.apkName}" // SY <--
     }
 
+    private fun getUrlPrefix(): String {
+        return if (requiresFallbackSource) {
+            FALLBACK_REPO_URL_PREFIX
+        } else {
+            REPO_URL_PREFIX
+        }
+    }
+
     // SY -->
     private fun Extension.isBlacklisted(
         blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get(),
@@ -134,8 +167,10 @@ internal class ExtensionGithubApi {
     // SY <--
 }
 
-const val BASE_URL = "https://raw.githubusercontent.com/"
-const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
+private const val BASE_URL = "https://raw.githubusercontent.com/"
+private const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
+private const val FALLBACK_BASE_URL = "https://cdn.jsdelivr.net/gh/"
+private const val FALLBACK_REPO_URL_PREFIX = "${FALLBACK_BASE_URL}tachiyomiorg/tachiyomi-extensions@repo/"
 
 @Serializable
 private data class ExtensionJsonObject(
