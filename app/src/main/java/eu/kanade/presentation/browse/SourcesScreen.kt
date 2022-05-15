@@ -44,14 +44,14 @@ import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
-import eu.kanade.tachiyomi.ui.browse.source.SourcePresenter
 import eu.kanade.tachiyomi.ui.browse.source.SourceState
+import eu.kanade.tachiyomi.ui.browse.source.SourcesPresenter
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 
 @Composable
-fun SourceScreen(
+fun SourcesScreen(
     nestedScrollInterop: NestedScrollConnection,
-    presenter: SourcePresenter,
+    presenter: SourcesPresenter,
     onClickItem: (Source) -> Unit,
     onClickDisable: (Source) -> Unit,
     onClickLatest: (Source) -> Unit,
@@ -104,8 +104,7 @@ fun SourceList(
     val (sourceCategoriesState, setSourceCategoriesState) = remember { mutableStateOf<Source?>(null) }
     // SY <--
     LazyColumn(
-        modifier = Modifier
-            .nestedScroll(nestedScrollConnection),
+        modifier = Modifier.nestedScroll(nestedScrollConnection),
         contentPadding = WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(

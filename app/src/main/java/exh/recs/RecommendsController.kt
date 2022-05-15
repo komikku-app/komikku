@@ -8,7 +8,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.source.SourceController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceItem
 
@@ -50,11 +50,11 @@ class RecommendsController(bundle: Bundle) : BrowseSourceController(bundle) {
     }
 
     private fun openSmartSearch(title: String) {
-        val smartSearchConfig = SourceController.SmartSearchConfig(title)
+        val smartSearchConfig = SourcesController.SmartSearchConfig(title)
         router.pushController(
-            SourceController(
+            SourcesController(
                 bundleOf(
-                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig,
+                    SourcesController.SMART_SEARCH_CONFIG to smartSearchConfig,
                 ),
             ),
         )

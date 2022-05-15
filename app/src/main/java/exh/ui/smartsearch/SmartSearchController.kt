@@ -9,7 +9,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
-import eu.kanade.tachiyomi.ui.browse.source.SourceController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
@@ -22,7 +22,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
     private val sourceManager: SourceManager by injectLazy()
 
     private val source = sourceManager.get(bundle?.getLong(ARG_SOURCE_ID, -1) ?: -1) as? CatalogueSource
-    private val smartSearchConfig: SourceController.SmartSearchConfig? = bundle?.getParcelable(
+    private val smartSearchConfig: SourcesController.SmartSearchConfig? = bundle?.getParcelable(
         ARG_SMART_SEARCH_CONFIG,
     )
 

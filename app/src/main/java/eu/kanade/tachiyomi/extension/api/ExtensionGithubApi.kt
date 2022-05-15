@@ -11,8 +11,8 @@ import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import exh.source.BlacklistedSources
 import eu.kanade.tachiyomi.util.system.logcat
+import exh.source.BlacklistedSources
 import kotlinx.serialization.Serializable
 import logcat.LogPriority
 import uy.kohesive.injekt.injectLazy
@@ -107,7 +107,7 @@ internal class ExtensionGithubApi {
     private fun List<ExtensionJsonObject>.toExtensions(
         // SY -->
         repoUrl: String = getUrlPrefix(),
-        repoSource: Boolean = false
+        repoSource: Boolean = false,
         // SY <--
     ): List<Extension.Available> {
         return this
@@ -130,7 +130,7 @@ internal class ExtensionGithubApi {
                     iconUrl = "${/* SY --> */ repoUrl /* SY <-- */}icon/${it.apk.replace(".apk", ".png")}",
                     // SY -->
                     repoUrl = repoUrl,
-                    isRepoSource = repoSource
+                    isRepoSource = repoSource,
                     // SY <--
                 )
             }

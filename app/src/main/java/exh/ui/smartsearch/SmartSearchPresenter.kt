@@ -3,7 +3,7 @@ package exh.ui.smartsearch
 import android.os.Bundle
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.browse.source.SourceController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import exh.smartsearch.SmartSearchEngine
 import exh.ui.base.CoroutinePresenter
@@ -11,7 +11,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-class SmartSearchPresenter(private val source: CatalogueSource, private val config: SourceController.SmartSearchConfig) :
+class SmartSearchPresenter(private val source: CatalogueSource, private val config: SourcesController.SmartSearchConfig) :
     CoroutinePresenter<SmartSearchController>() {
 
     private val _smartSearchFlow = MutableSharedFlow<SearchResults>()

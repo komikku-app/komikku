@@ -46,7 +46,7 @@ import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import kotlin.reflect.KClass
 
-open class SourceManager(private val context: Context) {
+class SourceManager(private val context: Context) {
 
     private val sourcesMap = mutableMapOf<Long, Source>()
     private val stubSourcesMap = mutableMapOf<Long, StubSource>()
@@ -84,7 +84,7 @@ open class SourceManager(private val context: Context) {
         // SY <--
     }
 
-    open fun get(sourceKey: Long): Source? {
+    fun get(sourceKey: Long): Source? {
         return sourcesMap[sourceKey]
     }
 

@@ -65,8 +65,8 @@ import eu.kanade.tachiyomi.ui.base.controller.popControllerWithTag
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
-import eu.kanade.tachiyomi.ui.browse.source.SourceController
-import eu.kanade.tachiyomi.ui.browse.source.SourceController.Companion.SMART_SEARCH_SOURCE_TAG
+import eu.kanade.tachiyomi.ui.browse.source.SourcesController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesController.Companion.SMART_SEARCH_SOURCE_TAG
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
@@ -140,7 +140,7 @@ class MangaController :
 
     constructor(history: HistoryWithRelations) : this(history.mangaId)
 
-    constructor(manga: Manga?, fromSource: Boolean = false, smartSearchConfig: SourceController.SmartSearchConfig? = null, update: Boolean = false) : super(
+    constructor(manga: Manga?, fromSource: Boolean = false, smartSearchConfig: SourcesController.SmartSearchConfig? = null, update: Boolean = false) : super(
         bundleOf(
             MANGA_EXTRA to (manga?.id ?: 0),
             FROM_SOURCE_EXTRA to fromSource,
@@ -239,7 +239,7 @@ class MangaController :
     }
 
     // EXH -->
-    val smartSearchConfig: SourceController.SmartSearchConfig? = args.getParcelable(
+    val smartSearchConfig: SourcesController.SmartSearchConfig? = args.getParcelable(
         SMART_SEARCH_CONFIG_EXTRA,
     )
 
@@ -732,12 +732,12 @@ class MangaController :
 
     // EXH -->
     fun openSmartSearch() {
-        val smartSearchConfig = SourceController.SmartSearchConfig(presenter.manga.title, presenter.manga.id)
+        val smartSearchConfig = SourcesController.SmartSearchConfig(presenter.manga.title, presenter.manga.id)
 
         router?.pushController(
-            SourceController(
+            SourcesController(
                 bundleOf(
-                    SourceController.SMART_SEARCH_CONFIG to smartSearchConfig,
+                    SourcesController.SMART_SEARCH_CONFIG to smartSearchConfig,
                 ),
             ).withFadeTransaction().tag(SMART_SEARCH_SOURCE_TAG),
         )

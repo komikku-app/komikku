@@ -5,7 +5,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 
-open class EHentaiPager(source: CatalogueSource, query: String, filters: FilterList) : SourcePager(source, query, filters) {
+class EHentaiPager(val source: CatalogueSource, val query: String, val filters: FilterList) : Pager() {
 
     private var lastMangaLink: String? = null
 

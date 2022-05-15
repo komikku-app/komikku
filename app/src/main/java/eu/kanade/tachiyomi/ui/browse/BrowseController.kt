@@ -19,10 +19,10 @@ import eu.kanade.tachiyomi.databinding.PagerControllerBinding
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.RxController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
-import eu.kanade.tachiyomi.ui.browse.extension.ExtensionController
+import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsController
 import eu.kanade.tachiyomi.ui.browse.feed.FeedController
 import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourcesController
-import eu.kanade.tachiyomi.ui.browse.source.SourceController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import uy.kohesive.injekt.injectLazy
 
@@ -144,10 +144,10 @@ class BrowseController :
             if (!router.hasRootController()) {
                 val controller: Controller = when (position) {
                     // SY -->
-                    SOURCES_CONTROLLER -> if (preferences.feedTabInFront().get()) FeedController() else SourceController()
-                    FEED_CONTROLLER -> if (!preferences.feedTabInFront().get()) FeedController() else SourceController()
+                    SOURCES_CONTROLLER -> if (preferences.feedTabInFront().get()) FeedController() else SourcesController()
+                    FEED_CONTROLLER -> if (!preferences.feedTabInFront().get()) FeedController() else SourcesController()
                     // SY <--
-                    EXTENSIONS_CONTROLLER -> ExtensionController()
+                    EXTENSIONS_CONTROLLER -> ExtensionsController()
                     MIGRATION_CONTROLLER -> MigrationSourcesController()
                     else -> error("Wrong position $position")
                 }

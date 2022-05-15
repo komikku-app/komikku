@@ -37,7 +37,7 @@ import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
-import eu.kanade.tachiyomi.ui.browse.source.SourceController
+import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
@@ -70,9 +70,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.injectLazy
 
-/**
- * Controller to manage the catalogues available in the app.
- */
 open class BrowseSourceController(bundle: Bundle) :
     SearchableNucleusController<SourceControllerBinding, BrowseSourcePresenter>(bundle),
     FabController,
@@ -85,7 +82,7 @@ open class BrowseSourceController(bundle: Bundle) :
         sourceId: Long,
         query: String? = null,
         // SY -->
-        smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        smartSearchConfig: SourcesController.SmartSearchConfig? = null,
         savedSearch: Long? = null,
         filterList: String? = null,
         // SY <--
@@ -116,7 +113,7 @@ open class BrowseSourceController(bundle: Bundle) :
         source: CatalogueSource,
         query: String? = null,
         // SY -->
-        smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        smartSearchConfig: SourcesController.SmartSearchConfig? = null,
         savedSearch: Long? = null,
         filterList: String? = null,
         // SY <--
@@ -132,7 +129,7 @@ open class BrowseSourceController(bundle: Bundle) :
         source: Source,
         query: String? = null,
         // SY -->
-        smartSearchConfig: SourceController.SmartSearchConfig? = null,
+        smartSearchConfig: SourcesController.SmartSearchConfig? = null,
         savedSearch: Long? = null,
         filterList: String? = null,
         // SY <--

@@ -13,7 +13,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.core.os.bundleOf
 import com.bluelinelabs.conductor.Controller
 import eu.kanade.domain.source.model.Source
-import eu.kanade.presentation.browse.SourceScreen
+import eu.kanade.presentation.browse.SourcesScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.SearchableComposeController
@@ -28,11 +28,7 @@ import exh.ui.smartsearch.SmartSearchController
 import kotlinx.parcelize.Parcelize
 import uy.kohesive.injekt.injectLazy
 
-/**
- * This controller shows and manages the different catalogues enabled by the user.
- * This controller should only handle UI actions, IO actions should be done by [SourcePresenter]
- */
-class SourceController(bundle: Bundle? = null) : SearchableComposeController<SourcePresenter>(bundle) {
+class SourcesController(bundle: Bundle? = null) : SearchableComposeController<SourcesPresenter>(bundle) {
 
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -57,12 +53,11 @@ class SourceController(bundle: Bundle? = null) : SearchableComposeController<Sou
         // SY <--
     }
 
-    override fun createPresenter(): SourcePresenter =
-        SourcePresenter(/* SY --> */ controllerMode = mode /* SY <-- */)
+    override fun createPresenter() = SourcesPresenter(/* SY --> */ controllerMode = mode /* SY <-- */)
 
     @Composable
     override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
-        SourceScreen(
+        SourcesScreen(
             nestedScrollInterop = nestedScrollInterop,
             presenter = presenter,
             onClickItem = { source ->
@@ -97,6 +92,7 @@ class SourceController(bundle: Bundle? = null) : SearchableComposeController<Sou
                 presenter.toggleExcludeFromDataSaver(source)
             },
         )
+
         LaunchedEffect(Unit) {
             (activity as? MainActivity)?.ready = true
         }
