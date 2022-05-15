@@ -39,7 +39,9 @@ import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.source.components.BaseSourceItem
 import eu.kanade.presentation.theme.header
+import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.presentation.util.horizontalPadding
+import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcePresenter
@@ -104,7 +106,7 @@ fun SourceList(
     LazyColumn(
         modifier = Modifier
             .nestedScroll(nestedScrollConnection),
-        contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+        contentPadding = WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(
             items = list,
