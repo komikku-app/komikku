@@ -169,7 +169,7 @@ internal class ExtensionGithubApi {
 
 private const val BASE_URL = "https://raw.githubusercontent.com/"
 private const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
-private const val FALLBACK_BASE_URL = "https://cdn.jsdelivr.net/gh/"
+private const val FALLBACK_BASE_URL = "https://fastly.jsdelivr.net/gh/"
 private const val FALLBACK_REPO_URL_PREFIX = "${FALLBACK_BASE_URL}tachiyomiorg/tachiyomi-extensions@repo/"
 
 @Serializable
