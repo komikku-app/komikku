@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -99,9 +100,9 @@ fun SourceList(
         return
     }
 
-    val (sourceState, setSourceState) = remember { mutableStateOf<Source?>(null) }
+    var sourceState by remember { mutableStateOf<Source?>(null) }
     // SY -->
-    val (sourceCategoriesState, setSourceCategoriesState) = remember { mutableStateOf<Source?>(null) }
+    var sourceCategoriesState by remember { mutableStateOf<Source?>(null) }
     // SY <--
     LazyColumn(
         modifier = Modifier.nestedScroll(nestedScrollConnection),
@@ -136,9 +137,7 @@ fun SourceList(
                     showLatest = showLatest,
                     showPin = showPin,
                     onClickItem = onClickItem,
-                    onLongClickItem = {
-                        setSourceState(it)
-                    },
+                    onLongClickItem = { sourceState = it },
                     onClickLatest = onClickLatest,
                     onClickPin = onClickPin,
                 )
@@ -148,38 +147,37 @@ fun SourceList(
 
     if (sourceState != null) {
         SourceOptionsDialog(
-            source = sourceState,
+            source = sourceState!!,
             onClickPin = {
-                onClickPin(sourceState)
-                setSourceState(null)
+                onClickPin(sourceState!!)
+                sourceState = null
             },
             onClickDisable = {
-                onClickDisable(sourceState)
-                setSourceState(null)
+                onClickDisable(sourceState!!)
+                sourceState = null
             },
             onClickSetCategories = {
-                setSourceCategoriesState(sourceState)
-                setSourceState(null)
+                sourceCategoriesState = sourceState
+                sourceState = null
             },
             onClickToggleDataSaver = {
-                onClickToggleDataSaver(sourceState)
-                setSourceState(null)
+                onClickToggleDataSaver(sourceState!!)
+                sourceState = null
             },
-            onDismiss = { setSourceState(null) },
+            onDismiss = { sourceState = null },
         )
     }
-    if (sourceCategoriesState != null) {
-        SourceCategoriesDialog(
-            source = sourceCategoriesState,
-            categories = categories,
-            oldCategories = sourceCategoriesState.categories,
-            onClickCategories = {
-                onClickSetCategories(sourceCategoriesState, it)
-                setSourceCategoriesState(null)
-            },
-            onDismiss = { setSourceCategoriesState(null) },
-        )
-    }
+    // SY -->
+    SourceCategoriesDialog(
+        source = sourceCategoriesState,
+        categories = categories,
+        onClickCategories = { source, newCategories ->
+            onClickSetCategories(source, newCategories)
+            sourceCategoriesState = null
+        },
+        onDismiss = { sourceCategoriesState = null },
+    )
+    // SY <--
 }
 
 @Composable
@@ -221,7 +219,7 @@ fun SourceItem(
             if (source.supportsLatest /* SY --> */ && showLatest /* SY <-- */) {
                 TextButton(onClick = { onClickLatest(source) }) {
                     Text(
-                        text = stringResource(id = R.string.latest),
+                        text = stringResource(R.string.latest),
                         style = LocalTextStyle.current.copy(
                             color = MaterialTheme.colorScheme.primary,
                         ),
@@ -281,7 +279,7 @@ fun SourceOptionsDialog(
                 )
                 if (source.id != LocalSource.ID) {
                     Text(
-                        text = stringResource(id = R.string.action_disable),
+                        text = stringResource(R.string.action_disable),
                         modifier = Modifier
                             .clickable(onClick = onClickDisable)
                             .fillMaxWidth()
@@ -323,14 +321,14 @@ sealed class SourceUiModel {
 // SY -->
 @Composable
 fun SourceCategoriesDialog(
-    source: Source,
+    source: Source?,
     categories: List<String>,
-    oldCategories: Set<String>,
-    onClickCategories: (List<String>) -> Unit,
+    onClickCategories: (Source, List<String>) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val newCategories = remember {
-        mutableStateListOf<String>().also { it.addAll(oldCategories) }
+    source ?: return
+    val newCategories = remember(source) {
+        mutableStateListOf<String>().also { it += source.categories }
     }
     AlertDialog(
         title = {
@@ -357,7 +355,7 @@ fun SourceCategoriesDialog(
         },
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onClickCategories(newCategories.toList()) }) {
+            TextButton(onClick = { onClickCategories(source, newCategories.toList()) }) {
                 Text(text = stringResource(android.R.string.ok))
             }
         },

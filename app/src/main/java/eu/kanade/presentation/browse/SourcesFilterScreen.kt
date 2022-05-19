@@ -100,7 +100,7 @@ fun SourcesFilterContent(
                     SourcesFilterHeader(
                         modifier = Modifier.animateItemPlacement(),
                         language = model.language,
-                        isEnabled = model.isEnabled,
+                        enabled = model.enabled,
                         onClickItem = onClickLang,
                     )
                 }
@@ -108,9 +108,9 @@ fun SourcesFilterContent(
                 is FilterUiModel.ToggleHeader -> {
                     SourcesFilterToggle(
                         modifier = Modifier.animateItemPlacement(),
-                        isEnabled = model.isEnabled,
+                        isEnabled = model.enabled,
                         onClickItem = {
-                            onClickSources(!model.isEnabled, model.sources)
+                            onClickSources(!model.enabled, model.sources)
                         },
                     )
                 }
@@ -118,7 +118,7 @@ fun SourcesFilterContent(
                 is FilterUiModel.Item -> SourcesFilterItem(
                     modifier = Modifier.animateItemPlacement(),
                     source = model.source,
-                    isEnabled = model.isEnabled,
+                    enabled = model.enabled,
                     onClickItem = onClickSource,
                 )
             }
@@ -130,14 +130,14 @@ fun SourcesFilterContent(
 fun SourcesFilterHeader(
     modifier: Modifier,
     language: String,
-    isEnabled: Boolean,
+    enabled: Boolean,
     onClickItem: (String) -> Unit,
 ) {
     PreferenceRow(
         modifier = modifier,
         title = LocaleHelper.getSourceDisplayName(language, LocalContext.current),
         action = {
-            Switch(checked = isEnabled, onCheckedChange = null)
+            Switch(checked = enabled, onCheckedChange = null)
         },
         onClick = { onClickItem(language) },
     )
@@ -167,7 +167,7 @@ fun SourcesFilterToggle(
 fun SourcesFilterItem(
     modifier: Modifier,
     source: Source,
-    isEnabled: Boolean,
+    enabled: Boolean,
     onClickItem: (Source) -> Unit,
 ) {
     BaseSourceItem(
@@ -176,7 +176,7 @@ fun SourcesFilterItem(
         showLanguageInContent = false,
         onClickItem = { onClickItem(source) },
         action = {
-            Checkbox(checked = isEnabled, onCheckedChange = null)
+            Checkbox(checked = enabled, onCheckedChange = null)
         },
     )
 }
