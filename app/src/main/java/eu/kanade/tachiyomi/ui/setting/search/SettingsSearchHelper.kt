@@ -65,7 +65,7 @@ object SettingsSearchHelper {
      * Must be called to populate `prefSearchResultList`
      */
     @SuppressLint("RestrictedApi")
-    fun initPreferenceSearchResultCollection(context: Context) {
+    fun initPreferenceSearchResults(context: Context) {
         val preferenceManager = PreferenceManager(context)
         prefSearchResultList.clear()
 
