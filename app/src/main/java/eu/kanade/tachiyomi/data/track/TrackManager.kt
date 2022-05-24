@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
 import eu.kanade.tachiyomi.data.track.komga.Komga
+import eu.kanade.tachiyomi.data.track.mangaupdates.MangaUpdates
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.data.track.myanimelist.MyAnimeList
 import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
@@ -19,6 +20,7 @@ class TrackManager(context: Context) {
         const val SHIKIMORI = 4
         const val BANGUMI = 5
         const val KOMGA = 6
+        const val MANGA_UPDATES = 7
 
         // SY --> Mangadex from Neko
         const val MDLIST = 60
@@ -49,7 +51,9 @@ class TrackManager(context: Context) {
 
     val komga = Komga(context, KOMGA)
 
-    val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga)
+    val mangaUpdates = MangaUpdates(context, MANGA_UPDATES)
+
+    val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates)
 
     fun getService(id: Int) = services.find { it.id == id }
 
