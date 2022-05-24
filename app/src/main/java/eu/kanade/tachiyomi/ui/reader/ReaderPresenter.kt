@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import com.jakewharton.rxrelay.BehaviorRelay
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -885,20 +884,22 @@ class ReaderPresenter(
 
         Observable
             .fromCallable {
-                if (manga.isLocal()) {
-                    val context = Injekt.get<Application>()
-                    LocalSource.updateCover(context, manga, stream())
-                    manga.updateCoverLastModified(db)
-                    R.string.cover_updated
-                    SetAsCoverResult.Success
-                } else {
-                    if (manga.favorite) {
-                        coverCache.setCustomCoverToCache(manga, stream())
+                stream().use {
+                    if (manga.isLocal()) {
+                        val context = Injekt.get<Application>()
+                        LocalSource.updateCover(context, manga, it)
                         manga.updateCoverLastModified(db)
                         coverCache.clearMemoryCache()
                         SetAsCoverResult.Success
                     } else {
-                        SetAsCoverResult.AddToLibraryFirst
+                        if (manga.favorite) {
+                            coverCache.setCustomCoverToCache(manga, it)
+                            manga.updateCoverLastModified(db)
+                            coverCache.clearMemoryCache()
+                            SetAsCoverResult.Success
+                        } else {
+                            SetAsCoverResult.AddToLibraryFirst
+                        }
                     }
                 }
             }
