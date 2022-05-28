@@ -330,7 +330,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
     }
 
     override fun onPause() {
-        presenter.saveProgress()
+        presenter.saveCurrentChapterReadingProgress()
         super.onPause()
     }
 
@@ -340,6 +340,7 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
      */
     override fun onResume() {
         super.onResume()
+        presenter.setReadStartTime()
         setMenuVisibility(menuVisible, animate = false)
     }
 
