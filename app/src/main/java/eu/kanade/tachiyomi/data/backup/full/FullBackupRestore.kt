@@ -49,8 +49,8 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         // SY <--
 
         // Store source mapping for error messages
-        var backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
-        sourceMapping = backupMaps.map { it.sourceId to it.name }.toMap()
+        val backupMaps = backup.backupBrokenSources.map { BackupSource(it.name, it.sourceId) } + backup.backupSources
+        sourceMapping = backupMaps.associate { it.sourceId to it.name }
 
         // Restore individual manga, sort by merged source so that merged source manga go last and merged references get the proper ids
         backup.backupManga /* SY --> */.sortedBy { it.source == MERGED_SOURCE_ID } /* SY <-- */.forEach {

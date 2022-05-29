@@ -69,7 +69,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         // Create root object
         var backup: Backup? = null
 
-        databaseHelper.inTransaction {
+        db.inTransaction {
             val databaseManga = getFavoriteManga() /* SY --> */ + if (flags and BACKUP_READ_MANGA_MASK == BACKUP_READ_MANGA) {
                 getReadManga()
             } else {
@@ -160,7 +160,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     private fun backupCategories(options: Int): List<BackupCategory> {
         // Check if user wants category information in backup
         return if (options and BACKUP_CATEGORY_MASK == BACKUP_CATEGORY) {
-            databaseHelper.getCategories()
+            db.getCategories()
                 .executeAsBlocking()
                 .map { BackupCategory.copyFrom(it) }
         } else {
@@ -201,7 +201,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         // SY -->
         if (manga.source == MERGED_SOURCE_ID) {
             manga.id?.let { mangaId ->
-                mangaObject.mergedMangaReferences = databaseHelper.getMergedMangaReferences(mangaId)
+                mangaObject.mergedMangaReferences = db.getMergedMangaReferences(mangaId)
                     .executeAsBlocking()
                     .map { BackupMergedMangaReference.copyFrom(it) }
             }
@@ -210,7 +210,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
         if (source != null) {
             manga.id?.let { mangaId ->
-                databaseHelper.getFlatMetadataForManga(mangaId).executeAsBlocking()?.let { flatMetadata ->
+                db.getFlatMetadataForManga(mangaId).executeAsBlocking()?.let { flatMetadata ->
                     mangaObject.flatMetadata = BackupFlatMetadata.copyFrom(flatMetadata)
                 }
             }
@@ -220,7 +220,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         // Check if user wants chapter information in backup
         if (options and BACKUP_CHAPTER_MASK == BACKUP_CHAPTER) {
             // Backup all the chapters
-            val chapters = databaseHelper.getChapters(manga).executeAsBlocking()
+            val chapters = db.getChapters(manga).executeAsBlocking()
             if (chapters.isNotEmpty()) {
                 mangaObject.chapters = chapters.map { BackupChapter.copyFrom(it) }
             }
@@ -229,7 +229,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         // Check if user wants category information in backup
         if (options and BACKUP_CATEGORY_MASK == BACKUP_CATEGORY) {
             // Backup categories for this manga
-            val categoriesForManga = databaseHelper.getCategoriesForManga(manga).executeAsBlocking()
+            val categoriesForManga = db.getCategoriesForManga(manga).executeAsBlocking()
             if (categoriesForManga.isNotEmpty()) {
                 mangaObject.categories = categoriesForManga.mapNotNull { it.order }
             }
@@ -237,7 +237,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
         // Check if user wants track information in backup
         if (options and BACKUP_TRACK_MASK == BACKUP_TRACK) {
-            val tracks = databaseHelper.getTracks(manga).executeAsBlocking()
+            val tracks = db.getTracks(manga).executeAsBlocking()
             if (tracks.isNotEmpty()) {
                 mangaObject.tracking = tracks.map { BackupTracking.copyFrom(it) }
             }
@@ -245,10 +245,10 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
         // Check if user wants history information in backup
         if (options and BACKUP_HISTORY_MASK == BACKUP_HISTORY) {
-            val historyForManga = databaseHelper.getHistoryByMangaId(manga.id!!).executeAsBlocking()
+            val historyForManga = db.getHistoryByMangaId(manga.id!!).executeAsBlocking()
             if (historyForManga.isNotEmpty()) {
                 val history = historyForManga.mapNotNull { history ->
-                    val url = databaseHelper.getChapter(history.chapter_id).executeAsBlocking()?.url
+                    val url = db.getChapter(history.chapter_id).executeAsBlocking()?.url
                     url?.let { BackupHistory(url, history.last_read) }
                 }
                 if (history.isNotEmpty()) {
@@ -286,7 +286,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      */
     internal fun restoreCategories(backupCategories: List<BackupCategory>) {
         // Get categories from file and from db
-        val dbCategories = databaseHelper.getCategories().executeAsBlocking()
+        val dbCategories = db.getCategories().executeAsBlocking()
 
         // Iterate over them
         backupCategories.map { it.getCategoryImpl() }.forEach { category ->
@@ -306,7 +306,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             if (!found) {
                 // Let the db assign the id
                 category.id = null
-                val result = databaseHelper.insertCategory(category).executeAsBlocking()
+                val result = db.insertCategory(category).executeAsBlocking()
                 category.id = result.insertedId()?.toInt()
             }
         }
@@ -319,7 +319,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      * @param categories the categories to restore.
      */
     internal fun restoreCategoriesForManga(manga: Manga, categories: List<Int>, backupCategories: List<BackupCategory>) {
-        val dbCategories = databaseHelper.getCategories().executeAsBlocking()
+        val dbCategories = db.getCategories().executeAsBlocking()
         val mangaCategoriesToUpdate = ArrayList<MangaCategory>(categories.size)
         categories.forEach { backupCategoryOrder ->
             backupCategories.firstOrNull {
@@ -335,8 +335,8 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
         // Update database
         if (mangaCategoriesToUpdate.isNotEmpty()) {
-            databaseHelper.deleteOldMangasCategories(listOf(manga)).executeAsBlocking()
-            databaseHelper.insertMangasCategories(mangaCategoriesToUpdate).executeAsBlocking()
+            db.deleteOldMangasCategories(listOf(manga)).executeAsBlocking()
+            db.insertMangasCategories(mangaCategoriesToUpdate).executeAsBlocking()
         }
     }
 
@@ -349,7 +349,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         // List containing history to be updated
         val historyToBeUpdated = ArrayList<History>(history.size)
         for ((url, lastRead) in history) {
-            val dbHistory = databaseHelper.getHistoryByChapterUrl(url).executeAsBlocking()
+            val dbHistory = db.getHistoryByChapterUrl(url).executeAsBlocking()
             // Check if history already in database and update
             if (dbHistory != null) {
                 dbHistory.apply {
@@ -358,7 +358,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 historyToBeUpdated.add(dbHistory)
             } else {
                 // If not in database create
-                databaseHelper.getChapter(url).executeAsBlocking()?.let {
+                db.getChapter(url).executeAsBlocking()?.let {
                     val historyToAdd = History.create(it).apply {
                         last_read = lastRead
                     }
@@ -366,7 +366,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                 }
             }
         }
-        databaseHelper.upsertHistoryLastRead(historyToBeUpdated).executeAsBlocking()
+        db.upsertHistoryLastRead(historyToBeUpdated).executeAsBlocking()
     }
 
     /**
@@ -380,7 +380,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         tracks.map { it.manga_id = manga.id!! }
 
         // Get tracks from database
-        val dbTracks = databaseHelper.getTracks(manga).executeAsBlocking()
+        val dbTracks = db.getTracks(manga).executeAsBlocking()
         val trackToUpdate = mutableListOf<Track>()
 
         tracks.forEach { track ->
@@ -408,12 +408,12 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
         }
         // Update database
         if (trackToUpdate.isNotEmpty()) {
-            databaseHelper.insertTracks(trackToUpdate).executeAsBlocking()
+            db.insertTracks(trackToUpdate).executeAsBlocking()
         }
     }
 
     internal fun restoreChaptersForManga(manga: Manga, chapters: List<Chapter>) {
-        val dbChapters = databaseHelper.getChapters(manga).executeAsBlocking()
+        val dbChapters = db.getChapters(manga).executeAsBlocking()
 
         chapters.forEach { chapter ->
             val dbChapter = dbChapters.find { it.url == chapter.url }
@@ -441,11 +441,11 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
     // SY -->
     internal suspend fun restoreSavedSearches(backupSavedSearches: List<BackupSavedSearch>) {
-        val currentSavedSearches = databaseHandler.awaitList {
+        val currentSavedSearches = database.awaitList {
             saved_searchQueries.selectAll(savedSearchMapper)
         }
 
-        databaseHandler.await(true) {
+        database.await(true) {
             backupSavedSearches.filter { backupSavedSearch ->
                 currentSavedSearches.none { it.name == backupSavedSearch.name && it.source == backupSavedSearch.source }
             }.forEach {
@@ -469,7 +469,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
      */
     internal fun restoreMergedMangaReferencesForManga(manga: Manga, backupMergedMangaReferences: List<BackupMergedMangaReference>) {
         // Get merged manga references from file and from db
-        val dbMergedMangaReferences = databaseHelper.getMergedMangaReferences().executeAsBlocking()
+        val dbMergedMangaReferences = db.getMergedMangaReferences().executeAsBlocking()
 
         // Iterate over them
         backupMergedMangaReferences.forEach { backupMergedMangaReference ->
@@ -487,11 +487,11 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             // Store the inserted id in the backupMergedMangaReference
             if (!found) {
                 // Let the db assign the id
-                val mergedManga = databaseHelper.getManga(backupMergedMangaReference.mangaUrl, backupMergedMangaReference.mangaSourceId).executeAsBlocking() ?: return@forEach
+                val mergedManga = db.getManga(backupMergedMangaReference.mangaUrl, backupMergedMangaReference.mangaSourceId).executeAsBlocking() ?: return@forEach
                 val mergedMangaReference = backupMergedMangaReference.getMergedMangaReference()
                 mergedMangaReference.mergeId = manga.id
                 mergedMangaReference.mangaId = mergedManga.id
-                databaseHelper.insertMergedManga(mergedMangaReference).executeAsBlocking()
+                db.insertMergedManga(mergedMangaReference).executeAsBlocking()
             }
         }
     }
@@ -499,10 +499,10 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     internal fun restoreFlatMetadata(manga: Manga, backupFlatMetadata: BackupFlatMetadata) {
         val mangaId = manga.id ?: return
         launchIO {
-            databaseHelper.getFlatMetadataForManga(mangaId).executeOnIO().let {
+            db.getFlatMetadataForManga(mangaId).executeOnIO().let {
                 if (it == null) {
                     val flatMetadata = backupFlatMetadata.getFlatMetadata(mangaId)
-                    databaseHelper.insertFlatMetadataAsync(flatMetadata).await()
+                    db.insertFlatMetadataAsync(flatMetadata).await()
                 }
             }
         }
