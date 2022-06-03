@@ -834,7 +834,7 @@ class LibraryPresenter(
                         SManga.ONGOING to context.getString(R.string.ongoing),
                         SManga.LICENSED to context.getString(R.string.licensed),
                         SManga.CANCELLED to context.getString(R.string.cancelled),
-                        SManga.ON_HIATUS to context.getString(R.string.ongoing),
+                        SManga.ON_HIATUS to context.getString(R.string.on_hiatus),
                         SManga.PUBLISHING_FINISHED to context.getString(R.string.publishing_finished),
                         SManga.COMPLETED to context.getString(R.string.completed),
                         SManga.UNKNOWN to context.getString(R.string.unknown),
