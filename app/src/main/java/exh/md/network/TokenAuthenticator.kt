@@ -7,12 +7,17 @@ import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
+import java.io.IOException
 
 class TokenAuthenticator(private val loginHelper: MangaDexLoginHelper) : Authenticator {
     override fun authenticate(route: Route?, response: Response): Request? {
         xLogI("Detected Auth error ${response.code} on ${response.request.url}")
 
-        val token = refreshToken(loginHelper)
+        val token = try {
+            refreshToken(loginHelper)
+        } catch (e: Exception) {
+            throw IOException(e)
+        }
         return if (token != null) {
             response.request.newBuilder().header("Authorization", token).build()
         } else {

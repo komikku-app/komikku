@@ -13,8 +13,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.seconds
 
-class MangaDexLoginHelper(val authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
-    val authService by authServiceLazy
+class MangaDexLoginHelper(authServiceLazy: Lazy<MangaDexAuthService>, val preferences: PreferencesHelper, val mdList: MdList) {
+    private val authService by authServiceLazy
     suspend fun isAuthenticated(): Boolean {
         return runCatching { authService.checkToken().isAuthenticated }
             .getOrElse { e ->
