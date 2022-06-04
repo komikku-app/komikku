@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.queries.getAllMergedMangaQuery
 import eu.kanade.tachiyomi.data.database.queries.getMergedChaptersQuery
+import eu.kanade.tachiyomi.data.database.queries.getMergedMangaForDownloadingQuery
 import eu.kanade.tachiyomi.data.database.queries.getMergedMangaFromUrlQuery
 import eu.kanade.tachiyomi.data.database.queries.getMergedMangaQuery
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable
@@ -56,6 +57,16 @@ interface MergedQueries : DbProvider {
         .withQuery(
             RawQuery.builder()
                 .query(getMergedMangaQuery())
+                .args(mergedMangaId)
+                .build(),
+        )
+        .prepare()
+
+    fun getMergedMangasForDownloading(mergedMangaId: Long) = db.get()
+        .listOfObjects(Manga::class.java)
+        .withQuery(
+            RawQuery.builder()
+                .query(getMergedMangaForDownloadingQuery())
                 .args(mergedMangaId)
                 .build(),
         )

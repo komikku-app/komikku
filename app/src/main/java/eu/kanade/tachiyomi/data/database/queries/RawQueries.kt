@@ -24,6 +24,19 @@ fun getMergedMangaQuery() =
 """
 
 /**
+ * Query to get the manga merged into a merged manga
+ */
+fun getMergedMangaForDownloadingQuery() =
+    """
+    SELECT ${Manga.TABLE}.*
+    FROM (
+        SELECT ${Merged.COL_MANGA_ID} FROM ${Merged.TABLE} WHERE ${Merged.COL_MERGE_ID} = ? AND ${Merged.COL_DOWNLOAD_CHAPTERS} = 1
+    ) AS M
+    JOIN ${Manga.TABLE}
+    ON ${Manga.TABLE}.${Manga.COL_ID} = M.${Merged.COL_MANGA_ID}
+"""
+
+/**
  * Query to get all the manga that are merged into other manga
  */
 fun getAllMergedMangaQuery() =

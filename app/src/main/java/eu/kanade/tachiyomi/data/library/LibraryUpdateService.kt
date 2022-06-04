@@ -470,13 +470,22 @@ class LibraryUpdateService(
         // We don't want to start downloading while the library is updating, because websites
         // may don't like it and they could ban the user.
         // SY -->
-        val chapterFilter = if (manga.source == MERGED_SOURCE_ID) {
-            db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
-                .filterNot { it.downloadChapters }
-                .mapNotNull { it.mangaId } + manga.id!!
-        } else emptyList()
+        if (manga.source == MERGED_SOURCE_ID) {
+            val downloadingManga = db.getMergedMangasForDownloading(manga.id!!).executeAsBlocking()
+                .associateBy { it.id!! }
+            chapters.groupBy { it.manga_id }
+                .forEach {
+                    downloadManager.downloadChapters(
+                        downloadingManga[it.key] ?: return@forEach,
+                        chapters,
+                        false,
+                    )
+                }
+
+            return
+        }
         // SY <--
-        downloadManager.downloadChapters(manga, /* SY --> */ chapters.filterNot { it.manga_id in chapterFilter } /* SY <-- */, false)
+        downloadManager.downloadChapters(manga, chapters, false)
     }
 
     /**
