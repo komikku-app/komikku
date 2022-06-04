@@ -19,7 +19,9 @@ val historyWithRelationsMapper: (Long, Long, Long, String, String?, Float, Date?
         id = historyId,
         chapterId = chapterId,
         mangaId = mangaId,
-        title = title,
+        // SY -->
+        ogTitle = title,
+        // SY <--
         thumbnailUrl = thumbnailUrl ?: "",
         chapterNumber = chapterNumber,
         readAt = readAt,

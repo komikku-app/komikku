@@ -12,10 +12,12 @@ open class MangaImpl : Manga {
     override lateinit var url: String
 
     // SY -->
+    private val customManga: CustomMangaManager.CustomMangaInfo?
+        get() = customMangaManager.getManga(this)
+
     override var title: String
         get() = if (favorite) {
-            val customTitle = customMangaManager.getManga(this)?.title
-            if (customTitle.isNullOrBlank()) ogTitle else customTitle
+            customManga?.title ?: ogTitle
         } else {
             ogTitle
         }
@@ -24,23 +26,23 @@ open class MangaImpl : Manga {
         }
 
     override var author: String?
-        get() = if (favorite) customMangaManager.getManga(this)?.author ?: ogAuthor else ogAuthor
+        get() = if (favorite) customManga?.author ?: ogAuthor else ogAuthor
         set(value) { ogAuthor = value }
 
     override var artist: String?
-        get() = if (favorite) customMangaManager.getManga(this)?.artist ?: ogArtist else ogArtist
+        get() = if (favorite) customManga?.artist ?: ogArtist else ogArtist
         set(value) { ogArtist = value }
 
     override var description: String?
-        get() = if (favorite) customMangaManager.getManga(this)?.description ?: ogDesc else ogDesc
+        get() = if (favorite) customManga?.description ?: ogDesc else ogDesc
         set(value) { ogDesc = value }
 
     override var genre: String?
-        get() = if (favorite) customMangaManager.getManga(this)?.genre ?: ogGenre else ogGenre
+        get() = if (favorite) customManga?.genreString ?: ogGenre else ogGenre
         set(value) { ogGenre = value }
 
     override var status: Int
-        get() = if (favorite) customMangaManager.getManga(this)?.status?.takeUnless { it == 0 } ?: ogStatus else ogStatus
+        get() = if (favorite) customManga?.status ?: ogStatus else ogStatus
         set(value) { ogStatus = value }
     // SY <--
 

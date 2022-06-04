@@ -2,12 +2,12 @@ package eu.kanade.tachiyomi.data.library
 
 import android.content.Context
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 class CustomMangaManager(val context: Context) {
 
@@ -15,9 +15,11 @@ class CustomMangaManager(val context: Context) {
 
     private val customMangaMap = fetchCustomData()
 
-    fun getManga(manga: Manga): Manga? = customMangaMap[manga.id]
+    fun getManga(manga: Manga): CustomMangaInfo? = customMangaMap[manga.id]
+    fun getManga(manga: DomainManga): CustomMangaInfo? = customMangaMap[manga.id]
+    fun getManga(mangaId: Long): CustomMangaInfo? = customMangaMap[mangaId]
 
-    private fun fetchCustomData(): MutableMap<Long, Manga> {
+    private fun fetchCustomData(): MutableMap<Long, CustomMangaInfo> {
         if (!editJson.exists() || !editJson.isFile) return mutableMapOf()
 
         val json = try {
@@ -29,10 +31,13 @@ class CustomMangaManager(val context: Context) {
         } ?: return mutableMapOf()
 
         val mangasJson = json.mangas ?: return mutableMapOf()
-        return mangasJson.mapNotNull { mangaJson ->
-            val id = mangaJson.id ?: return@mapNotNull null
-            id to mangaJson.toManga()
-        }.toMap().toMutableMap()
+        return mangasJson
+            .mapNotNull { mangaJson ->
+                val id = mangaJson.id ?: return@mapNotNull null
+                id to mangaJson.toManga()
+            }
+            .toMap()
+            .toMutableMap()
     }
 
     fun saveMangaInfo(manga: MangaJson) {
@@ -59,18 +64,6 @@ class CustomMangaManager(val context: Context) {
         }
     }
 
-    private fun Manga.toJson(): MangaJson {
-        return MangaJson(
-            id!!,
-            title,
-            author,
-            artist,
-            description,
-            genre?.split(", "),
-            status,
-        )
-    }
-
     @Serializable
     data class MangaList(
         val mangas: List<MangaJson>? = null,
@@ -87,14 +80,41 @@ class CustomMangaManager(val context: Context) {
         val status: Int? = null,
     ) {
 
-        fun toManga() = MangaImpl().apply {
-            id = this@MangaJson.id
-            title = this@MangaJson.title ?: ""
-            author = this@MangaJson.author
-            artist = this@MangaJson.artist
-            description = this@MangaJson.description
-            genre = this@MangaJson.genre?.joinToString(", ")
-            status = this@MangaJson.status ?: 0
+        fun toManga() = CustomMangaInfo(
+            id = this@MangaJson.id!!,
+            title = this@MangaJson.title?.takeUnless { it.isBlank() },
+            author = this@MangaJson.author,
+            artist = this@MangaJson.artist,
+            description = this@MangaJson.description,
+            genre = this@MangaJson.genre,
+            status = this@MangaJson.status?.takeUnless { it == 0 },
+        )
+    }
+
+    data class CustomMangaInfo(
+        var id: Long,
+        val title: String?,
+        val author: String? = null,
+        val artist: String? = null,
+        val description: String? = null,
+        val genre: List<String>? = null,
+        val status: Int? = null,
+    ) {
+        val genreString by lazy {
+            genre?.joinToString()
+        }
+        val statusLong = status?.toLong()
+
+        fun toJson(): MangaJson {
+            return MangaJson(
+                id,
+                title,
+                author,
+                artist,
+                description,
+                genre,
+                status,
+            )
         }
     }
 }

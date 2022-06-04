@@ -135,8 +135,8 @@ data class BackupManga(
                     backupManga.customArtist = it.artist
                     backupManga.customAuthor = it.author
                     backupManga.customDescription = it.description
-                    backupManga.customGenre = it.getGenres()
-                    backupManga.customStatus = it.status
+                    backupManga.customGenre = it.genre
+                    backupManga.customStatus = it.status ?: 0
                 }
             }
             // SY <--
