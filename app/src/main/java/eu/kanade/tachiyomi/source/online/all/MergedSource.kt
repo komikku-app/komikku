@@ -70,12 +70,12 @@ class MergedSource : HttpSource() {
                 .apply {
                     if (isEmpty()) {
                         throw IllegalArgumentException(
-                            "Manga references are empty, info unavailable, merge is likely corrupted"
+                            "Manga references are empty, info unavailable, merge is likely corrupted",
                         )
                     }
                     if (size == 1 && first().mangaSourceId == MERGED_SOURCE_ID) {
                         throw IllegalArgumentException(
-                            "Manga references contain only the merged reference, merge is likely corrupted"
+                            "Manga references contain only the merged reference, merge is likely corrupted",
                         )
                     }
                 }
