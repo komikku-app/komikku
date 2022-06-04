@@ -62,11 +62,13 @@ class MigrationBottomSheetDialog(private val activity: Activity, private val lis
         binding.migChapters.isChecked = MigrationFlags.hasChapters(flags)
         binding.migCategories.isChecked = MigrationFlags.hasCategories(flags)
         binding.migTracking.isChecked = MigrationFlags.hasTracks(flags)
+        binding.migCustomCover.isChecked = MigrationFlags.hasCustomCover(flags)
         binding.migExtra.isChecked = MigrationFlags.hasExtra(flags)
 
         binding.migChapters.setOnCheckedChangeListener { _, _ -> setFlags() }
         binding.migCategories.setOnCheckedChangeListener { _, _ -> setFlags() }
         binding.migTracking.setOnCheckedChangeListener { _, _ -> setFlags() }
+        binding.migCustomCover.setOnCheckedChangeListener { _, _ -> setFlags() }
         binding.migExtra.setOnCheckedChangeListener { _, _ -> setFlags() }
 
         binding.useSmartSearch.bindToPreference(preferences.smartMigration())
@@ -93,6 +95,7 @@ class MigrationBottomSheetDialog(private val activity: Activity, private val lis
         if (binding.migChapters.isChecked) flags = flags or MigrationFlags.CHAPTERS
         if (binding.migCategories.isChecked) flags = flags or MigrationFlags.CATEGORIES
         if (binding.migTracking.isChecked) flags = flags or MigrationFlags.TRACK
+        if (binding.migCustomCover.isChecked) flags = flags or MigrationFlags.CUSTOM_COVER
         if (binding.migExtra.isChecked) flags = flags or MigrationFlags.EXTRA
         preferences.migrateFlags().set(flags)
     }

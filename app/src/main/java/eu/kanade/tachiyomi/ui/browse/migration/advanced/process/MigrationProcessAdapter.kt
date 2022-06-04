@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.view.MenuItem
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.History
@@ -9,6 +10,7 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
+import eu.kanade.tachiyomi.util.hasCustomCover
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.cancel
@@ -19,6 +21,7 @@ class MigrationProcessAdapter(
 ) : FlexibleAdapter<MigrationProcessItem>(null, controller, true) {
     private val db: DatabaseHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
+    private val coverCache: CoverCache by injectLazy()
 
     var items: List<MigrationProcessItem> = emptyList()
 
@@ -148,11 +151,17 @@ class MigrationProcessAdapter(
         // Update track
         if (MigrationFlags.hasTracks(flags)) {
             val tracks = db.getTracks(prevManga).executeAsBlocking()
-            for (track in tracks) {
-                track.id = null
-                track.manga_id = manga.id!!
+            if (tracks.isNotEmpty()) {
+                tracks.forEach { track ->
+                    track.id = null
+                    track.manga_id = manga.id!!
+                }
+                db.insertTracks(tracks).executeAsBlocking()
             }
-            db.insertTracks(tracks).executeAsBlocking()
+        }
+        // Update custom cover
+        if (MigrationFlags.hasCustomCover(flags) && prevManga.hasCustomCover(coverCache)) {
+            coverCache.setCustomCoverToCache(manga, coverCache.getCustomCoverFile(prevManga).inputStream())
         }
         // Update extras
         if (MigrationFlags.hasExtra(flags)) {
