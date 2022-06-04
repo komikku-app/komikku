@@ -174,7 +174,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         searchTitles: List<SearchTitle>? = null,
     ): Boolean {
         val mappedQueries = queries.groupBy { it.excluded }
-        val tracks = if (hasLoggedServices) db.getTracks(manga).executeAsBlocking().toList() else null
+        val tracks = if (hasLoggedServices) db.getTracks(manga.id).executeAsBlocking().toList() else null
         val source = sourceManager.get(manga.source)
         val genre = if (checkGenre) manga.getGenres().orEmpty() else emptyList()
         val hasNormalQuery = mappedQueries[false]?.all { queryComponent ->

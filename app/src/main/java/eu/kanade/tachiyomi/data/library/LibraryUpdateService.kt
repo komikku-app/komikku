@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
+import eu.kanade.data.chapter.NoChaptersException
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -35,7 +36,6 @@ import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
-import eu.kanade.tachiyomi.util.chapter.NoChaptersException
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -519,7 +519,7 @@ class LibraryUpdateService(
                 xLogE("Error adding initial track for ${manga.title}", exception)
             }
             ioScope?.launch(handler) {
-                val tracks = db.getTracks(manga).executeAsBlocking()
+                val tracks = db.getTracks(manga.id).executeAsBlocking()
                 if (tracks.isEmpty() || tracks.none { it.sync_id == TrackManager.MDLIST }) {
                     val track = trackManager.mdList.createInitialTracker(manga)
                     db.insertTrack(trackManager.mdList.refresh(track)).executeAsBlocking()
@@ -619,7 +619,7 @@ class LibraryUpdateService(
     }
 
     private suspend fun updateTrackings(manga: LibraryManga, loggedServices: List<TrackService>) {
-        db.getTracks(manga).executeAsBlocking()
+        db.getTracks(manga.id).executeAsBlocking()
             .map { track ->
                 supervisorScope {
                     async {
@@ -739,7 +739,7 @@ class LibraryUpdateService(
                 notifier.showProgressNotification(listOf(manga), count, listManga.size)
 
                 // Get this manga's trackers from the database
-                val dbTracks = db.getTracks(manga).executeAsBlocking()
+                val dbTracks = db.getTracks(manga.id).executeAsBlocking()
 
                 // find the mdlist entry if its unfollowed the follow it
                 val tracker = TrackItem(dbTracks.firstOrNull { it.sync_id == TrackManager.MDLIST } ?: trackManager.mdList.createInitialTracker(manga), trackManager.mdList)

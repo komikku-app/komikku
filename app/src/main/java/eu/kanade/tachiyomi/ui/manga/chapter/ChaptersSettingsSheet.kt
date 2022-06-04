@@ -96,9 +96,9 @@ class ChaptersSettingsSheet(
 
             private val scanlatorFilters = Item.DrawableSelection(0, this, R.string.scanlator, R.drawable.ic_outline_people_alt_24dp)
 
-            override val header = null
+            override val header: Item? = null
             override val items = listOf(downloaded, unread, bookmarked, scanlatorFilters)
-            override val footer = null
+            override val footer: Item? = null
 
             override fun initModels() {
                 if (presenter.forceDownloaded()) {
@@ -186,9 +186,9 @@ class ChaptersSettingsSheet(
             private val chapterNum = Item.MultiSort(R.string.sort_by_number, this)
             private val uploadDate = Item.MultiSort(R.string.sort_by_upload_date, this)
 
-            override val header = null
+            override val header: Item? = null
             override val items = listOf(source, uploadDate, chapterNum)
-            override val footer = null
+            override val footer: Item? = null
 
             override fun initModels() {
                 val sorting = presenter.manga.sorting
@@ -248,9 +248,9 @@ class ChaptersSettingsSheet(
             private val displayTitle = Item.Radio(R.string.show_title, this)
             private val displayChapterNum = Item.Radio(R.string.show_chapter_number, this)
 
-            override val header = null
+            override val header: Item? = null
             override val items = listOf(displayTitle, displayChapterNum)
-            override val footer = null
+            override val footer: Item? = null
 
             override fun initModels() {
                 val mode = presenter.manga.displayMode

@@ -150,7 +150,7 @@ class MigrationProcessAdapter(
         }
         // Update track
         if (MigrationFlags.hasTracks(flags)) {
-            val tracks = db.getTracks(prevManga).executeAsBlocking()
+            val tracks = db.getTracks(prevManga.id).executeAsBlocking()
             if (tracks.isNotEmpty()) {
                 tracks.forEach { track ->
                     track.id = null
@@ -161,7 +161,7 @@ class MigrationProcessAdapter(
         }
         // Update custom cover
         if (MigrationFlags.hasCustomCover(flags) && prevManga.hasCustomCover(coverCache)) {
-            coverCache.setCustomCoverToCache(manga, coverCache.getCustomCoverFile(prevManga).inputStream())
+            coverCache.setCustomCoverToCache(manga, coverCache.getCustomCoverFile(prevManga.id).inputStream())
         }
         // Update extras
         if (MigrationFlags.hasExtra(flags)) {
