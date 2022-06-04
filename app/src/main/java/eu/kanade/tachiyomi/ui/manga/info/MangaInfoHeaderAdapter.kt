@@ -48,7 +48,7 @@ class MangaInfoHeaderAdapter(
     private var source: Source = controller.presenter.source
 
     // SY -->
-    private var meta: RaisedSearchMetadata? = controller.presenter.meta
+    private var meta: RaisedSearchMetadata? = controller.presenter.meta.value
     private var mergedMangaReferences: List<MergedMangaReference> = controller.presenter.mergedMangaReferences
 
     // SY <--

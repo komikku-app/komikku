@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -48,6 +49,7 @@ import exh.md.utils.MdLang
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.MangaDexDescription
 import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import okhttp3.OkHttpClient
 import okhttp3.Response
@@ -217,6 +219,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     override fun getDescriptionAdapter(controller: MangaController): MangaDexDescriptionAdapter {
         return MangaDexDescriptionAdapter(controller)
+    }
+
+    @Composable
+    override fun DescriptionComposable(controller: MangaController) {
+        MangaDexDescription(controller)
     }
 
     override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Triple<MangaDto, List<String>, StatisticsMangaDto>) {

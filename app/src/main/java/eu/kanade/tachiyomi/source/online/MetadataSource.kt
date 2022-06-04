@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source.online
 
+import androidx.compose.runtime.Composable
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -112,6 +113,9 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     }
 
     fun getDescriptionAdapter(controller: MangaController): RecyclerView.Adapter<*>?
+
+    @Composable
+    fun DescriptionComposable(controller: MangaController)
 
     fun MangaInfo.id() = db.getManga(key, id).executeAsBlocking()?.id
     val SManga.id get() = (this as? Manga)?.id

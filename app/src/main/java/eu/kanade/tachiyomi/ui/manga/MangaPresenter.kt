@@ -66,6 +66,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.supervisorScope
@@ -146,7 +147,7 @@ class MangaPresenter(
 
     data class EXHRedirect(val manga: Manga, val update: Boolean)
 
-    var meta: RaisedSearchMetadata? = null
+    val meta: MutableStateFlow<RaisedSearchMetadata?> = MutableStateFlow(null)
 
     var mergedManga = emptyMap<Long, Manga>()
         private set
@@ -191,7 +192,7 @@ class MangaPresenter(
                 val meta = if (mainSource != null) {
                     flatMetadata?.raise(mainSource.metaClass)
                 } else null
-                this.meta = meta
+                this.meta.value = meta
                 // SY <--
                 view.onNextMangaInfo(manga, source, meta)
             },)
@@ -394,7 +395,7 @@ class MangaPresenter(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeLatestCache(
                     { view, _ ->
-                        view.onNextMangaInfo(manga, source, meta)
+                        view.onNextMangaInfo(manga, source, meta.value)
                     },
                 )
         }

@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.net.Uri
 import android.os.Build
+import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.toSManga
@@ -16,6 +17,7 @@ import exh.metadata.metadata.HitomiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.HitomiDescription
 import exh.ui.metadata.adapters.HitomiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
@@ -138,6 +140,11 @@ class Hitomi(delegate: HttpSource, val context: Context) :
 
     override fun getDescriptionAdapter(controller: MangaController): HitomiDescriptionAdapter {
         return HitomiDescriptionAdapter(controller)
+    }
+
+    @Composable
+    override fun DescriptionComposable(controller: MangaController) {
+        HitomiDescription(controller)
     }
 
     companion object {

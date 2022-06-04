@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -17,6 +18,7 @@ import exh.metadata.metadata.PururinSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.PururinDescription
 import exh.ui.metadata.adapters.PururinDescriptionAdapter
 import exh.util.dropBlank
 import exh.util.trimAll
@@ -117,5 +119,10 @@ class Pururin(delegate: HttpSource, val context: Context) :
 
     override fun getDescriptionAdapter(controller: MangaController): PururinDescriptionAdapter {
         return PururinDescriptionAdapter(controller)
+    }
+
+    @Composable
+    override fun DescriptionComposable(controller: MangaController) {
+        PururinDescription(controller)
     }
 }

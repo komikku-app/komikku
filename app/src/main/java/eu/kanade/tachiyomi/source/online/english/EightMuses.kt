@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -15,6 +16,7 @@ import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.EightMusesDescription
 import exh.ui.metadata.adapters.EightMusesDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
@@ -99,5 +101,10 @@ class EightMuses(delegate: HttpSource, val context: Context) :
 
     override fun getDescriptionAdapter(controller: MangaController): EightMusesDescriptionAdapter {
         return EightMusesDescriptionAdapter(controller)
+    }
+
+    @Composable
+    override fun DescriptionComposable(controller: MangaController) {
+        EightMusesDescription(controller)
     }
 }

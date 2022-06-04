@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -44,6 +45,7 @@ import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUA
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
 import exh.ui.login.EhLoginActivity
+import exh.ui.metadata.adapters.EHentaiDescription
 import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
@@ -1071,6 +1073,11 @@ class EHentai(
 
     override fun getDescriptionAdapter(controller: MangaController): EHentaiDescriptionAdapter {
         return EHentaiDescriptionAdapter(controller)
+    }
+
+    @Composable
+    override fun DescriptionComposable(controller: MangaController) {
+        EHentaiDescription(controller)
     }
 
     companion object {

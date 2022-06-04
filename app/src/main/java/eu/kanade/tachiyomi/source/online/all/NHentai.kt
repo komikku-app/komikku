@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.toSManga
@@ -15,6 +16,7 @@ import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.NHentaiDescription
 import exh.ui.metadata.adapters.NHentaiDescriptionAdapter
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
@@ -170,6 +172,11 @@ class NHentai(delegate: HttpSource, val context: Context) :
 
     override fun getDescriptionAdapter(controller: MangaController): NHentaiDescriptionAdapter {
         return NHentaiDescriptionAdapter(controller)
+    }
+
+    @Composable
+    override fun DescriptionComposable(controller: MangaController) {
+        NHentaiDescription(controller)
     }
 
     companion object {

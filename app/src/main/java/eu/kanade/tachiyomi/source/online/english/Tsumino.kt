@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -17,6 +18,7 @@ import exh.metadata.metadata.TsuminoSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
+import exh.ui.metadata.adapters.TsuminoDescription
 import exh.ui.metadata.adapters.TsuminoDescriptionAdapter
 import exh.util.dropBlank
 import exh.util.trimAll
@@ -144,5 +146,10 @@ class Tsumino(delegate: HttpSource, val context: Context) :
 
     override fun getDescriptionAdapter(controller: MangaController): TsuminoDescriptionAdapter {
         return TsuminoDescriptionAdapter(controller)
+    }
+
+    @Composable
+    override fun DescriptionComposable(controller: MangaController) {
+        TsuminoDescription(controller)
     }
 }
