@@ -31,65 +31,63 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <HorizontalScrollView
-            android:id="@+id/migration_data_scrollView"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/migration_data_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:scrollbars="none"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/data_label">
 
-            <LinearLayout
+            <androidx.constraintlayout.helper.widget.Flow
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:constraint_referenced_ids="mig_chapters,mig_categories,mig_tracking,mig_custom_cover,mig_extra"
+                app:flow_horizontalBias="0"
+                app:flow_horizontalGap="8dp"
+                app:flow_horizontalStyle="packed"
+                app:flow_verticalGap="2dp"
+                app:flow_wrapMode="chain"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <CheckBox
+                android:id="@+id/mig_chapters"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/chapters" />
 
-                <CheckBox
-                    android:id="@+id/mig_chapters"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:checked="true"
-                    android:text="@string/chapters" />
+            <CheckBox
+                android:id="@+id/mig_categories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/categories" />
 
-                <CheckBox
-                    android:id="@+id/mig_categories"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:checked="true"
-                    android:text="@string/categories" />
+            <CheckBox
+                android:id="@+id/mig_tracking"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/track" />
 
-                <CheckBox
-                    android:id="@+id/mig_tracking"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:checked="true"
-                    android:text="@string/track" />
+            <CheckBox
+                android:id="@+id/mig_custom_cover"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/custom_cover" />
 
-                <CheckBox
-                    android:id="@+id/mig_custom_cover"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:checked="true"
-                    android:text="@string/custom_cover" />
-
-                <CheckBox
-                    android:id="@+id/mig_extra"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:checked="true"
-                    android:text="@string/log_extra" />
-            </LinearLayout>
-
-        </HorizontalScrollView>
+            <CheckBox
+                android:id="@+id/mig_extra"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/log_extra" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <View
             android:id="@+id/migration_data_divider"
@@ -99,17 +97,18 @@
             android:background="?android:attr/divider"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/migration_data_scrollView"/>
+            app:layout_constraintTop_toBottomOf="@id/migration_data_group"/>
 
         <TextView
             android:id="@+id/options_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
             android:text="@string/action_settings"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textColor="?attr/colorPrimary"
-            app:layout_constraintStart_toStartOf="@+id/migration_data_scrollView"
+            app:layout_constraintStart_toStartOf="@+id/migration_data_group"
             app:layout_constraintTop_toBottomOf="@+id/migration_data_divider" />
 
         <RadioGroup
