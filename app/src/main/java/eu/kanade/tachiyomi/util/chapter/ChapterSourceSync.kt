@@ -12,6 +12,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Date
 import java.util.TreeSet
+import kotlin.math.max
 
 /**
  * Helper method for syncing the list of chapters from the source with the ones from the database.
@@ -60,6 +61,9 @@ fun syncChaptersWithSource(
         }
     }
 
+    var maxTimestamp = 0L // in previous chapters to add
+    val rightNow = Date().time
+
     for (sourceChapter in sourceChapters) {
         // This forces metadata update for the main viewable things in the chapter list.
         if (source is HttpSource) {
@@ -73,7 +77,9 @@ fun syncChaptersWithSource(
         // Add the chapter if not in db already, or update if the metadata changed.
         if (dbChapter == null) {
             if (sourceChapter.date_upload == 0L) {
-                sourceChapter.date_upload = Date().time
+                sourceChapter.date_upload = if (maxTimestamp == 0L) rightNow else maxTimestamp
+            } else {
+                maxTimestamp = max(maxTimestamp, sourceChapter.date_upload)
             }
             toAdd.add(sourceChapter)
         } else {
@@ -98,6 +104,7 @@ fun syncChaptersWithSource(
         return Pair(emptyList(), emptyList())
     }
 
+    // Keep it a List instead of a Set. See #6372.
     val readded = mutableListOf<Chapter>()
 
     db.inTransaction {
@@ -170,6 +177,7 @@ fun syncChaptersWithSource(
         db.updateLastUpdated(manga).executeAsBlocking()
     }
 
+    @Suppress("ConvertArgumentToSet")
     return Pair(toAdd.subtract(readded).toList(), toDelete.subtract(readded).toList())
 }
 
