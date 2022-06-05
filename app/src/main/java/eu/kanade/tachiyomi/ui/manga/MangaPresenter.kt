@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
@@ -380,24 +381,14 @@ class MangaPresenter(
         }
 
         if (uri == null && resetCover) {
-            Observable.just(manga)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeLatestCache(
-                    { view, _ ->
-                        view.setRefreshing()
-                    },
-                )
+            launchUI {
+                view?.setRefreshing()
+            }
             fetchMangaFromSource(manualFetch = true)
         } else {
-            Observable.just(manga)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeLatestCache(
-                    { view, _ ->
-                        view.onNextMangaInfo(manga, source, meta.value)
-                    },
-                )
+            launchUI {
+                view?.onNextMangaInfo(manga, source, meta.value)
+            }
         }
     }
 
