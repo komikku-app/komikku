@@ -54,5 +54,8 @@ private fun isHentaiSource(source: String): Boolean {
         source.contains("hbrowse", true) ||
         source.contains("nhentai", true) ||
         source.contains("erofus", true) ||
+        source.contains("multporn", true) ||
+        source.contains("vcp", true) ||
+        source.contains("vmp", true) ||
         source.contains("hentai", true)
 }
