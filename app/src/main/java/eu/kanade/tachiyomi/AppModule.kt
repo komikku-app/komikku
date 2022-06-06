@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi
 
 import android.app.Application
+import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
@@ -26,6 +27,7 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import exh.eh.EHentaiUpdateHelper
+import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
@@ -40,13 +42,18 @@ class AppModule(val app: Application) : InjektModule {
 
         // This is used to allow incremental migration from Storio
         addSingletonFactory<SupportSQLiteOpenHelper> {
-            FrameworkSQLiteOpenHelperFactory().create(
-                SupportSQLiteOpenHelper.Configuration.builder(app)
-                    .callback(DbOpenCallback())
-                    .name(DbOpenCallback.DATABASE_NAME)
-                    .noBackupDirectory(false)
-                    .build(),
-            )
+            val configuration = SupportSQLiteOpenHelper.Configuration.builder(app)
+                .callback(DbOpenCallback())
+                .name(DbOpenCallback.DATABASE_NAME)
+                .noBackupDirectory(false)
+                .build()
+
+            if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Support database inspector in Android Studio
+                FrameworkSQLiteOpenHelperFactory().create(configuration)
+            } else {
+                RequerySQLiteOpenHelperFactory().create(configuration)
+            }
         }
 
         addSingletonFactory<SqlDriver> {
