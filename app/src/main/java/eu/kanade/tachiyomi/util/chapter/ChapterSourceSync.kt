@@ -71,7 +71,7 @@ fun syncChaptersWithSource(
             source.prepareNewChapter(sourceChapter, manga)
         }
         // Recognize chapter number for the chapter.
-        ChapterRecognition.parseChapterNumber(sourceChapter, manga)
+        sourceChapter.chapter_number = ChapterRecognition.parseChapterNumber(/* SY --> */ manga.originalTitle /* SY <-- */, sourceChapter.name, sourceChapter.chapter_number)
 
         val dbChapter = dbChapters.find { it.url == sourceChapter.url }
 
