@@ -440,7 +440,7 @@ class LibraryController(
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         createOptionsMenu(menu, inflater, R.menu.library, R.id.action_search)
         // Mutate the filter icon because it needs to be tinted and the resource is shared.
-        menu.findItem(R.id.action_filter).icon.mutate()
+        menu.findItem(R.id.action_filter).icon?.mutate()
 
         // SY -->
         menu.findItem(R.id.action_sync_favorites).isVisible = preferences.isHentaiEnabled().get()
@@ -470,7 +470,7 @@ class LibraryController(
         // Tint icon if there's a filter active
         if (settingsSheet.filters.hasActiveFilters()) {
             val filterColor = activity!!.getResourceColor(R.attr.colorFilterActive)
-            filterItem.icon.setTint(filterColor)
+            filterItem.icon?.setTint(filterColor)
         }
     }
 
