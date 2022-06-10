@@ -322,7 +322,6 @@ class LocalSource(
                 }
             }
         }
-            .also { coverCache.clearMemoryCache() }
     }
 
     sealed class Format {

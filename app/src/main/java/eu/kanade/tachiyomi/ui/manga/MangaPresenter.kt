@@ -640,12 +640,11 @@ class MangaPresenter(
                         LocalSource.updateCover(context, manga, it)
                         manga.updateCoverLastModified(db)
                         db.insertManga(manga).executeAsBlocking()
-                        coverCache.clearMemoryCache()
                     } else if (manga.favorite) {
                         coverCache.setCustomCoverToCache(manga, it)
                         manga.updateCoverLastModified(db)
-                        coverCache.clearMemoryCache()
                     }
+                    true
                 }
             }
             .subscribeOn(Schedulers.io())
@@ -661,7 +660,6 @@ class MangaPresenter(
             .fromCallable {
                 coverCache.deleteCustomCover(manga.id)
                 manga.updateCoverLastModified(db)
-                coverCache.clearMemoryCache()
             }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

@@ -592,7 +592,6 @@ class LibraryUpdateService(
                 .awaitAll()
         }
 
-        coverCache.clearMemoryCache()
         notifier.cancelProgressNotification()
     }
 
