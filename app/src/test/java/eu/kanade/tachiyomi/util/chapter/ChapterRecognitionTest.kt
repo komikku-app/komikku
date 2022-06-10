@@ -256,20 +256,7 @@ class ChapterRecognitionTest {
     }
 
     private fun assertChapter(mangaTitle: String, name: String, expected: Float) {
-        val chapter = createChapter(name)
-        ChapterRecognition.parseChapterNumber(chapter, createManga(mangaTitle))
-        assertEquals(expected, chapter.chapter_number)
-    }
-
-    private fun createManga(title: String): Manga {
-        val manga = Manga.create(0)
-        manga.title = title
-        return manga
-    }
-
-    private fun createChapter(name: String): Chapter {
-        val chapter = Chapter.create()
-        chapter.name = name
-        return chapter
+        val chapterNumber = parseChapterNumber(mangaTitle, name)
+        assertEquals(chapterNumber, expected)
     }
 }
