@@ -37,11 +37,6 @@ jobs:
           java-version: 11
           distribution: adopt
 
-      - name: Copy CI gradle.properties
-        run: |
-          mkdir -p ~/.gradle
-          cp .github/runner-files/ci-gradle.properties ~/.gradle/gradle.properties
-
       - name: Write google-services.json
         uses: DamianReeves/write-file-action@v1.0
         with:
