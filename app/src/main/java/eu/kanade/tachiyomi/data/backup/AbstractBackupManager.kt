@@ -59,7 +59,7 @@ abstract class AbstractBackupManager(protected val context: Context) {
                 .map { it.toSChapter() }
         }
         // SY <--
-        val syncedChapters = syncChaptersWithSource(db, fetchedChapters, manga, source)
+        val syncedChapters = syncChaptersWithSource(fetchedChapters, manga, source)
         if (syncedChapters.first.isNotEmpty()) {
             chapters.forEach { it.manga_id = manga.id }
             updateChapters(chapters)

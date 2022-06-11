@@ -2,7 +2,7 @@ package eu.kanade.data.manga
 
 import eu.kanade.domain.manga.model.Manga
 
-val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, String?) -> Manga =
+val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, String, Long, String?, Boolean, Long?, Long?, Boolean, Long, Long, Long, Long, List<String>?) -> Manga =
     { id, source, url, artist, author, description, genre, title, status, thumbnailUrl, favorite, lastUpdate, _, initialized, viewer, chapterFlags, coverLastModified, dateAdded, filteredScanlators ->
         Manga(
             id = id,
@@ -24,6 +24,8 @@ val mangaMapper: (Long, Long, String, String?, String?, String?, List<String>?, 
             // SY <--
             thumbnailUrl = thumbnailUrl,
             initialized = initialized,
+            // SY -->
             filteredScanlators = filteredScanlators,
+            // SY <--
         )
     }

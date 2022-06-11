@@ -20,7 +20,7 @@ CREATE TABLE mangas(
     chapter_flags INTEGER NOT NULL,
     cover_last_modified INTEGER AS Long NOT NULL,
     date_added INTEGER AS Long NOT NULL,
-    filtered_scanlators TEXT
+    filtered_scanlators TEXT AS List<String>
 );
 
 CREATE INDEX library_favorite_index ON mangas(favorite) WHERE favorite = 1;
@@ -68,3 +68,8 @@ WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
 ) AND _id NOT IN (
     SELECT manga_id FROM chapters WHERE read = 1 OR last_page_read != 0
 );
+
+updateLastUpdate:
+UPDATE mangas
+SET last_update = :lastUpdate
+WHERE _id = :mangaId;

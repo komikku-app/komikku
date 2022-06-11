@@ -190,7 +190,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                 }
 
                                                 try {
-                                                    syncChaptersWithSource(db, chapters.map { it.toSChapter() }, localManga, source)
+                                                    syncChaptersWithSource(chapters.map { it.toSChapter() }, localManga, source)
                                                 } catch (e: Exception) {
                                                     return@async2 null
                                                 }
@@ -230,7 +230,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                             emptyList()
                                         }
                                         withIOContext {
-                                            syncChaptersWithSource(db, chapters, localManga, source)
+                                            syncChaptersWithSource(chapters, localManga, source)
                                         }
                                         localManga
                                     } else null
@@ -363,7 +363,7 @@ class MigrationListController(bundle: Bundle? = null) :
                 try {
                     val chapters = source.getChapterList(localManga.toMangaInfo())
                         .map { it.toSChapter() }
-                    syncChaptersWithSource(db, chapters, localManga, source)
+                    syncChaptersWithSource(chapters, localManga, source)
                 } catch (e: Exception) {
                     return@async null
                 }

@@ -1,7 +1,9 @@
 package eu.kanade.domain.manga.model
 
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
+import eu.kanade.tachiyomi.source.model.SManga
 import uy.kohesive.injekt.injectLazy
+import eu.kanade.tachiyomi.data.database.models.Manga as DbManga
 
 data class Manga(
     val id: Long,
@@ -24,8 +26,8 @@ data class Manga(
     val thumbnailUrl: String?,
     val initialized: Boolean,
     // SY -->
-    val filteredScanlators: String?,
-// SY <--
+    val filteredScanlators: List<String>?,
+    // SY <--
 ) {
 
     // SY -->
@@ -55,6 +57,20 @@ data class Manga(
     val sorting: Long
         get() = chapterFlags and CHAPTER_SORTING_MASK
 
+    fun toSManga(): SManga {
+        return SManga.create().also {
+            it.url = url
+            it.title = title
+            it.artist = artist
+            it.author = author
+            it.description = description
+            it.genre = genre.orEmpty().joinToString()
+            it.status = status.toInt()
+            it.thumbnail_url = thumbnailUrl
+            it.initialized = initialized
+        }
+    }
+
     companion object {
 
         // Generic filter that does not filter anything
@@ -69,4 +85,15 @@ data class Manga(
         private val customMangaManager: CustomMangaManager by injectLazy()
         // SY <--
     }
+}
+
+// TODO: Remove when all deps are migrated
+fun Manga.toDbManga(): DbManga = DbManga.create(url, title, source).also {
+    it.id = id
+    it.favorite = favorite
+    it.last_update = lastUpdate
+    it.date_added = dateAdded
+    it.viewer_flags = viewerFlags.toInt()
+    it.chapter_flags = chapterFlags.toInt()
+    it.cover_last_modified = coverLastModified
 }

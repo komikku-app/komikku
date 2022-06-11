@@ -11,6 +11,7 @@ import eu.kanade.tachiyomi.source.online.english.EightMuses
 import eu.kanade.tachiyomi.source.online.english.HBrowse
 import eu.kanade.tachiyomi.source.online.english.Pururin
 import eu.kanade.tachiyomi.source.online.english.Tsumino
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
  * Source helpers
@@ -100,6 +101,8 @@ fun Source.isEhBasedSource() = id == EH_SOURCE_ID || id == EXH_SOURCE_ID
 fun Source.isMdBasedSource() = id in mangaDexSourceIds
 
 fun Manga.isEhBasedManga() = source == EH_SOURCE_ID || source == EXH_SOURCE_ID
+
+fun DomainManga.isEhBasedManga() = source == EH_SOURCE_ID || source == EXH_SOURCE_ID
 
 fun Source.getMainSource(): Source = if (this is EnhancedHttpSource) {
     this.source()

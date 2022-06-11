@@ -756,7 +756,7 @@ class MangaPresenter(
                     val chapters = source.getChapterList(manga.toMangaInfo())
                         .map { it.toSChapter() }
 
-                    val (newChapters, _) = syncChaptersWithSource(db, chapters, manga, source)
+                    val (newChapters, _) = syncChaptersWithSource(chapters, manga, source)
                     if (manualFetch) {
                         downloadNewChapters(newChapters)
                     }

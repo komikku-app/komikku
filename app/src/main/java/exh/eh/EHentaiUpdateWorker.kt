@@ -210,7 +210,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             val newChapters = source.getChapterList(manga.toMangaInfo())
                 .map { it.toSChapter() }
 
-            val (new, _) = syncChaptersWithSource(db, newChapters, manga, source) // Not suspending, but does block, maybe fix this?
+            val (new, _) = syncChaptersWithSource(newChapters, manga, source) // Not suspending, but does block, maybe fix this?
             return new to db.getChapters(manga).executeOnIO()
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {

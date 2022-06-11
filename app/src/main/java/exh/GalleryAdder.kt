@@ -151,7 +151,7 @@ class GalleryAdder {
                 }.map { it.toSChapter() }
 
                 if (chapterList.isNotEmpty()) {
-                    syncChaptersWithSource(db, chapterList, manga, source)
+                    syncChaptersWithSource(chapterList, manga, source)
                 }
             } catch (e: Exception) {
                 logger.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)

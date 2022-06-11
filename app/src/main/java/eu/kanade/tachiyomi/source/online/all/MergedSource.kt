@@ -175,7 +175,7 @@ class MergedSource : HttpSource() {
                                         val chapterList = source.getChapterList(loadedManga.toMangaInfo())
                                             .map(ChapterInfo::toSChapter)
                                         val results =
-                                            syncChaptersWithSource(db, chapterList, loadedManga, source)
+                                            syncChaptersWithSource(chapterList, loadedManga, source)
                                         if (ifDownloadNewChapters && reference.downloadChapters) {
                                             downloadManager.downloadChapters(
                                                 loadedManga,

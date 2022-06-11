@@ -13,6 +13,7 @@ import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.dateAdapter
 import eu.kanade.data.listOfStringsAdapter
+import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -68,6 +69,9 @@ class AppModule(val app: Application) : InjektModule {
                 ),
                 mangasAdapter = Mangas.Adapter(
                     genreAdapter = listOfStringsAdapter,
+                    // SY -->
+                    filtered_scanlatorsAdapter = listOfStringsAndAdapter,
+                    // SY <--
                 ),
             )
         }
