@@ -20,13 +20,21 @@ SELECT * FROM search_metadata WHERE manga_id = ?;
 selectByIndexedExtra:
 SELECT * FROM search_metadata WHERE indexed_extra = ?;
 
+upsert:
+INSERT INTO search_metadata(manga_id, uploader, extra, indexed_extra, extra_version)
+VALUES (:mangaId, :uploader, :extra, :indexedExtra, :extraVersion)
+ON CONFLICT(manga_id)
+DO UPDATE
+SET
+    uploader = :uploader,
+    extra = :extra,
+    indexed_extra = :indexedExtra,
+    extra_version = :extraVersion
+WHERE manga_id = :mangaId;
+
 insert:
 INSERT INTO search_metadata (manga_id, uploader, extra, indexed_extra, extra_version)
 VALUES (?, ?, ?, ?, ?);
-
-insertNew:
-INSERT INTO search_metadata (manga_id, uploader, extra, indexed_extra, extra_version)
-VALUES ?;
 
 deleteAll:
 DELETE FROM search_metadata;

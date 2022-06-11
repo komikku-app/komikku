@@ -20,10 +20,6 @@ deleteByManga:
 DELETE FROM search_tags WHERE manga_id = ?;
 
 insert:
-INSERT INTO search_tags (_id, manga_id, namespace, name, type)
-VALUES (?, ?, ?, ?, ?);
-
-insertNew:
 INSERT INTO search_tags (manga_id, namespace, name, type)
 VALUES (?, ?, ?, ?);
 

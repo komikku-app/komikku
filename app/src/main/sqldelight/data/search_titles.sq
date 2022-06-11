@@ -18,9 +18,6 @@ deleteByManga:
 DELETE FROM search_titles WHERE manga_id = ?;
 
 insert:
-INSERT INTO search_titles (_id, manga_id, title, type) VALUES (?, ?, ?, ?);
-
-insertNew:
 INSERT INTO search_titles (manga_id, title, type) VALUES (?, ?, ?);
 
 insertItem:
