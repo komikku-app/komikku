@@ -25,6 +25,7 @@ import eu.kanade.domain.source.interactor.GetLanguagesWithSources
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
+import eu.kanade.domain.source.interactor.GetSourcesWithNonLibraryManga
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
@@ -63,13 +64,14 @@ class DomainModule : InjektModule {
         addFactory { GetExtensionLanguages(get(), get()) }
 
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
-        addFactory { GetLanguagesWithSources(get(), get()) }
         addFactory { GetEnabledSources(get(), get()) }
-        addFactory { ToggleSource(get()) }
-        addFactory { ToggleSourcePin(get()) }
+        addFactory { GetLanguagesWithSources(get(), get()) }
         addFactory { GetSourcesWithFavoriteCount(get(), get()) }
+        addFactory { GetSourcesWithNonLibraryManga(get()) }
         addFactory { SetMigrateSorting(get()) }
         addFactory { ToggleLanguage(get()) }
+        addFactory { ToggleSource(get()) }
+        addFactory { ToggleSourcePin(get()) }
 
         // SY -->
         addFactory { GetSourceCategories(get()) }

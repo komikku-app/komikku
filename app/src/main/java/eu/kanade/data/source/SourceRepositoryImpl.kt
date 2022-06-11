@@ -8,6 +8,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import eu.kanade.tachiyomi.source.Source as LoadedSource
 
 class SourceRepositoryImpl(
     private val sourceManager: SourceManager,
@@ -30,13 +31,23 @@ class SourceRepositoryImpl(
         val sourceIdWithFavoriteCount = handler.subscribeToList { mangasQueries.getSourceIdWithFavoriteCount() }
         return sourceIdWithFavoriteCount.map { sourceIdsWithCount ->
             sourceIdsWithCount
+                .filterNot { it.source == LocalSource.ID /* SY --> */ || it.source == MERGED_SOURCE_ID /* SY <-- */ }
                 .map { (sourceId, count) ->
                     val source = sourceManager.getOrStub(sourceId).run {
                         sourceMapper(this)
                     }
                     source to count
                 }
-                .filterNot { it.first.id == LocalSource.ID /* SY --> */ || it.first.id == MERGED_SOURCE_ID /* SY <-- */ }
+        }
+    }
+
+    override fun getSourcesWithNonLibraryManga(): Flow<List<Pair<LoadedSource, Long>>> {
+        val sourceIdWithNonLibraryManga = handler.subscribeToList { mangasQueries.getSourceIdsWithNonLibraryManga() }
+        return sourceIdWithNonLibraryManga.map { sourceId ->
+            sourceId.map { (sourceId, count) ->
+                val source = sourceManager.getOrStub(sourceId)
+                source to count
+            }
         }
     }
 }

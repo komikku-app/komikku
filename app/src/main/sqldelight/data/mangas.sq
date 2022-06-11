@@ -48,3 +48,23 @@ AND source = :sourceId;
 resetViewerFlags:
 UPDATE mangas
 SET viewer = 0;
+
+getSourceIdsWithNonLibraryManga:
+SELECT source, COUNT(*) AS manga_count
+FROM mangas
+WHERE favorite = 0
+GROUP BY source;
+
+deleteMangasNotInLibraryBySourceIds:
+DELETE FROM mangas
+WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
+    SELECT manga_id FROM merged WHERE manga_id != merge_id
+);
+
+deleteMangasNotInLibraryAndNotReadBySourceIds:
+DELETE FROM mangas
+WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
+    SELECT manga_id FROM merged WHERE manga_id != merge_id
+) AND _id NOT IN (
+    SELECT manga_id FROM chapters WHERE read = 1 OR last_page_read != 0
+);
