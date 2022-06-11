@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="1.8.5" changeDate="Aug 14,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.6(from 0.13.5)[/b]</changelogtext>
+        <changelogtext>Update EH tags for auto-complete filter</changelogtext>
+        <changelogtext>Update supported MangaDex languages</changelogtext>
+    </changelogversion>
     <changelogversion versionName="1.8.4" changeDate="Jul 13,2022">
         <changelogtext>[b]Based on Tachiyomi stable 0.13.5(from 0.13.4)[/b]</changelogtext>
         <changelogtext>Fix On Hiatus dynamic category</changelogtext>
