@@ -1,7 +1,36 @@
+import kotlin.collections.List;
+
 CREATE TABLE categories(
     _id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     sort INTEGER NOT NULL,
     flags INTEGER NOT NULL,
-    manga_order TEXT NOT NULL
+    manga_order TEXT AS List<Long> NOT NULL
 );
+
+getCategories:
+SELECT
+_id AS id,
+name,
+sort AS `order`,
+flags,
+manga_order AS `mangaOrder`
+FROM categories;
+
+getCategoriesByMangaId:
+SELECT
+C._id AS id,
+C.name,
+C.sort AS `order`,
+C.flags
+FROM categories C
+JOIN mangas_categories MC
+ON C._id = MC.category_id
+WHERE MC.manga_id = :mangaId;
+
+insert:
+INSERT INTO categories(name, sort, flags, manga_order)
+VALUES (:name, :order, :flags, :mangaOrder);
+
+selectLastInsertedRowId:
+SELECT last_insert_rowid();

@@ -66,10 +66,8 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         return true
     }
 
-    private fun restoreCategories(backupCategories: List<BackupCategory>) {
-        db.inTransaction {
-            backupManager.restoreCategories(backupCategories)
-        }
+    private suspend fun restoreCategories(backupCategories: List<BackupCategory>) {
+        backupManager.restoreCategories(backupCategories)
 
         restoreProgress += 1
         showRestoreProgress(restoreProgress, restoreAmount, context.getString(R.string.categories))
@@ -84,10 +82,10 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
     }
     // SY <--
 
-    private fun restoreManga(backupManga: BackupManga, backupCategories: List<BackupCategory>) {
+    private suspend fun restoreManga(backupManga: BackupManga, backupCategories: List<BackupCategory>) {
         val manga = backupManga.getMangaImpl()
         val chapters = backupManga.getChaptersImpl()
-        val categories = backupManga.categories
+        val categories = backupManga.categories.map { it.toInt() }
         val history = backupManga.brokenHistory.map { BackupHistory(it.url, it.lastRead) } + backupManga.history
         val tracks = backupManga.getTrackingImpl()
         // SY -->
@@ -120,7 +118,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
      * @param history history data from json
      * @param tracks tracking data from json
      */
-    private fun restoreMangaData(
+    private suspend fun restoreMangaData(
         manga: Manga,
         chapters: List<Chapter>,
         categories: List<Int>,
@@ -133,18 +131,16 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         customManga: CustomMangaManager.MangaJson?,
         // SY -->
     ) {
-        db.inTransaction {
-            val dbManga = backupManager.getMangaFromDatabase(manga)
-            if (dbManga == null) {
-                // Manga not in database
-                restoreMangaFetch(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
-            } else {
-                // Manga in database
-                // Copy information from manga already in database
-                backupManager.restoreMangaNoFetch(manga, dbManga)
-                // Fetch rest of manga information
-                restoreMangaNoFetch(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
-            }
+        val dbManga = backupManager.getMangaFromDatabase(manga.url, manga.source)
+        if (dbManga == null) {
+            // Manga not in database
+            restoreMangaFetch(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
+        } else {
+            // Manga in database
+            // Copy information from manga already in database
+            backupManager.restoreMangaNoFetch(manga, dbManga)
+            // Fetch rest of manga information
+            restoreMangaNoFetch(manga, chapters, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
         }
     }
 
@@ -155,7 +151,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
      * @param chapters chapters of manga that needs updating
      * @param categories categories that need updating
      */
-    private fun restoreMangaFetch(
+    private suspend fun restoreMangaFetch(
         manga: Manga,
         chapters: List<Chapter>,
         categories: List<Int>,
@@ -179,7 +175,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         }
     }
 
-    private fun restoreMangaNoFetch(
+    private suspend fun restoreMangaNoFetch(
         backupManga: Manga,
         chapters: List<Chapter>,
         categories: List<Int>,
@@ -197,7 +193,7 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
         restoreExtraForManga(backupManga, categories, history, tracks, backupCategories/* SY --> */, mergedMangaReferences, flatMetadata, customManga/* SY <-- */)
     }
 
-    private fun restoreExtraForManga(
+    private suspend fun restoreExtraForManga(
         manga: Manga,
         categories: List<Int>,
         history: List<BackupHistory>,
@@ -220,10 +216,10 @@ class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBa
 
         // SY -->
         // Restore merged manga references if its a merged manga
-        backupManager.restoreMergedMangaReferencesForManga(manga, mergedMangaReferences)
+        backupManager.restoreMergedMangaReferencesForManga(manga.id!!, mergedMangaReferences)
 
         // Restore flat metadata for metadata sources
-        flatMetadata?.let { backupManager.restoreFlatMetadata(manga, it) }
+        flatMetadata?.let { backupManager.restoreFlatMetadata(manga.id!!, it) }
 
         // Restore Custom Info
         customManga?.id = manga.id!!

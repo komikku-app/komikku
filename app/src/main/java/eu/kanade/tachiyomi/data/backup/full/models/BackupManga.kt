@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.data.backup.full.models
 
+import data.Mangas
+import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.tachiyomi.data.database.models.ChapterImpl
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
@@ -29,7 +31,7 @@ data class BackupManga(
     @ProtoNumber(14) var viewer: Int = 0, // Replaced by viewer_flags
     // @ProtoNumber(15) val flags: Int = 0, 1.x value, not used in 0.x
     @ProtoNumber(16) var chapters: List<BackupChapter> = emptyList(),
-    @ProtoNumber(17) var categories: List<Int> = emptyList(),
+    @ProtoNumber(17) var categories: List<Long> = emptyList(),
     @ProtoNumber(18) var tracking: List<BackupTracking> = emptyList(),
     // Bump by 100 for values that are not saved/implemented in 1.x but are used in 0.x
     @ProtoNumber(100) var favorite: Boolean = true,
@@ -109,28 +111,28 @@ data class BackupManga(
     }
 
     companion object {
-        fun copyFrom(manga: Manga /* SY --> */, customMangaManager: CustomMangaManager?/* SY <-- */): BackupManga {
+        fun copyFrom(manga: Mangas /* SY --> */, customMangaManager: CustomMangaManager?/* SY <-- */): BackupManga {
             return BackupManga(
                 url = manga.url,
                 // SY -->
-                title = manga.originalTitle,
-                artist = manga.originalArtist,
-                author = manga.originalAuthor,
-                description = manga.originalDescription,
-                genre = manga.getOriginalGenres() ?: emptyList(),
-                status = manga.originalStatus,
+                title = manga.title,
+                artist = manga.artist,
+                author = manga.author,
+                description = manga.description,
+                genre = manga.genre ?: emptyList(),
+                status = manga.status.toInt(),
                 // SY <--
                 thumbnailUrl = manga.thumbnail_url,
                 favorite = manga.favorite,
                 source = manga.source,
                 dateAdded = manga.date_added,
-                viewer = manga.readingModeType,
-                viewer_flags = manga.viewer_flags,
-                chapterFlags = manga.chapter_flags,
-                filtered_scanlators = manga.filtered_scanlators,
+                viewer = (manga.viewer.toInt() and ReadingModeType.MASK),
+                viewer_flags = manga.viewer.toInt(),
+                chapterFlags = manga.chapter_flags.toInt(),
+                filtered_scanlators = listOfStringsAndAdapter.encode(manga.filtered_scanlators.orEmpty()),
                 // SY -->
             ).also { backupManga ->
-                customMangaManager?.getManga(manga)?.let {
+                customMangaManager?.getManga(manga._id)?.let {
                     backupManga.customTitle = it.title
                     backupManga.customArtist = it.artist
                     backupManga.customAuthor = it.author

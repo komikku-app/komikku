@@ -13,3 +13,17 @@ data class BackupSavedSearch(
     @ProtoNumber(3) val filterList: String = "",
     @ProtoNumber(4) val source: Long = 0,
 )
+
+val backupSavedSearchMapper = {
+        _: Long,
+        source: Long,
+        name: String,
+        query: String?,
+        filtersJson: String?, ->
+    BackupSavedSearch(
+        source = source,
+        name = name,
+        query = query.orEmpty(),
+        filterList = filtersJson ?: "[]",
+    )
+}

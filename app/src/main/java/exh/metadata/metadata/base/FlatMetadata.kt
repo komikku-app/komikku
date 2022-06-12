@@ -1,6 +1,11 @@
 package exh.metadata.metadata.base
 
 import com.pushtorefresh.storio.operations.PreparedOperation
+import eu.kanade.data.AndroidDatabaseHandler
+import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.exh.searchMetadataMapper
+import eu.kanade.data.exh.searchTagMapper
+import eu.kanade.data.exh.searchTitleMapper
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import exh.metadata.sql.models.SearchMetadata
 import exh.metadata.sql.models.SearchTag
@@ -29,6 +34,29 @@ data class FlatMetadata(
             .decodeFromString(clazz.serializer(), metadata.extra).apply {
                 fillBaseFields(this@FlatMetadata)
             }
+}
+
+fun DatabaseHandler.getFlatMetadataForManga(mangaId: Long): FlatMetadata? {
+    this as AndroidDatabaseHandler
+    val meta = db.search_metadataQueries.selectByMangaId(mangaId, searchMetadataMapper).executeAsOneOrNull()
+    return if (meta != null) {
+        val tags = db.search_tagsQueries.selectByMangaId(mangaId, searchTagMapper).executeAsList()
+        val titles = db.search_titlesQueries.selectByMangaId(mangaId, searchTitleMapper).executeAsList()
+
+        FlatMetadata(meta, tags, titles)
+    } else null
+}
+
+suspend fun DatabaseHandler.awaitFlatMetadataForManga(mangaId: Long): FlatMetadata? {
+    return await {
+        val meta = search_metadataQueries.selectByMangaId(mangaId, searchMetadataMapper).executeAsOneOrNull()
+        if (meta != null) {
+            val tags = search_tagsQueries.selectByMangaId(mangaId, searchTagMapper).executeAsList()
+            val titles = search_titlesQueries.selectByMangaId(mangaId, searchTitleMapper).executeAsList()
+
+            FlatMetadata(meta, tags, titles)
+        } else null
+    }
 }
 
 fun DatabaseHelper.getFlatMetadataForManga(mangaId: Long): PreparedOperation<FlatMetadata?> {
@@ -89,6 +117,43 @@ private fun <T> preparedOperationFromSingle(single: Single<T>): PreparedOperatio
          * @return single result of operation.
          */
         override fun asRxSingle() = single
+    }
+}
+
+fun DatabaseHandler.insertFlatMetadata(flatMetadata: FlatMetadata) {
+    require(flatMetadata.metadata.mangaId != -1L)
+
+    this as AndroidDatabaseHandler // todo remove when legacy backup is dead
+    db.transaction {
+        flatMetadata.metadata.let {
+            db.search_metadataQueries.upsert(it.mangaId, it.uploader, it.extra, it.indexedExtra, it.extraVersion)
+        }
+        db.search_tagsQueries.deleteByManga(flatMetadata.metadata.mangaId)
+        flatMetadata.tags.forEach {
+            db.search_tagsQueries.insert(it.mangaId, it.namespace, it.name, it.type)
+        }
+        db.search_titlesQueries.deleteByManga(flatMetadata.metadata.mangaId)
+        flatMetadata.titles.forEach {
+            db.search_titlesQueries.insert(it.mangaId, it.title, it.type)
+        }
+    }
+}
+
+suspend fun DatabaseHandler.awaitInsertFlatMetadata(flatMetadata: FlatMetadata) {
+    require(flatMetadata.metadata.mangaId != -1L)
+
+    await(true) {
+        flatMetadata.metadata.run {
+            search_metadataQueries.upsert(mangaId, uploader, extra, indexedExtra, extraVersion)
+        }
+        search_tagsQueries.deleteByManga(flatMetadata.metadata.mangaId)
+        flatMetadata.tags.forEach {
+            search_tagsQueries.insert(it.mangaId, it.namespace, it.name, it.type)
+        }
+        search_titlesQueries.deleteByManga(flatMetadata.metadata.mangaId)
+        flatMetadata.titles.forEach {
+            search_titlesQueries.insert(it.mangaId, it.title, it.type)
+        }
     }
 }
 

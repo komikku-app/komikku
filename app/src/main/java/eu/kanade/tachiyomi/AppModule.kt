@@ -7,11 +7,13 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
+import data.Categories
 import data.History
 import data.Mangas
 import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.dateAdapter
+import eu.kanade.data.listOfLongsAdapter
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -73,6 +75,11 @@ class AppModule(val app: Application) : InjektModule {
                     filtered_scanlatorsAdapter = listOfStringsAndAdapter,
                     // SY <--
                 ),
+                // SY -->
+                categoriesAdapter = Categories.Adapter(
+                    manga_orderAdapter = listOfLongsAdapter,
+                ),
+                // SY <--
             )
         }
 

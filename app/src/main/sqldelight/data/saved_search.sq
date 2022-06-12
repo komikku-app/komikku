@@ -21,6 +21,10 @@ SELECT * FROM saved_search WHERE _id = ?;
 selectByIds:
 SELECT * FROM saved_search WHERE _id IN ?;
 
+selectNamesAndSources:
+SELECT source, name
+FROM saved_search;
+
 insertSavedSearch:
 INSERT INTO saved_search (_id, source, name, query, filters_json)
 VALUES (?, ?, ?, ?, ?);
