@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -641,7 +642,7 @@ class LibraryPresenter(
                     val mergedSource = sourceManager.get(MERGED_SOURCE_ID) as MergedSource
                     val mergedMangas = db.getMergedMangas(manga.id!!).executeAsBlocking()
                     mergedSource
-                        .getChaptersAsBlocking(manga)
+                        .getChaptersAsBlocking(manga.toDomainManga()!!)
                         .filter { !it.read }
                         .groupBy { it.manga_id!! }
                         .forEach ab@{ (mangaId, chapters) ->
@@ -710,7 +711,11 @@ class LibraryPresenter(
     fun markReadStatus(mangas: List<Manga>, read: Boolean) {
         mangas.forEach { manga ->
             launchIO {
-                val chapters = if (manga.source == MERGED_SOURCE_ID) (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga) else db.getChapters(manga).executeAsBlocking()
+                val chapters = if (manga.source == MERGED_SOURCE_ID) {
+                    (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga.toDomainManga()!!)
+                } else {
+                    db.getChapters(manga).executeAsBlocking()
+                }
                 chapters.forEach {
                     it.read = read
                     if (!read) {
@@ -815,7 +820,7 @@ class LibraryPresenter(
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
         val chapters = if (manga.source == MERGED_SOURCE_ID) {
-            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga)
+            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga.toDomainManga()!!)
         } else db.getChapters(manga).executeAsBlocking()
         return if (manga.isEhBasedManga()) {
             val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)

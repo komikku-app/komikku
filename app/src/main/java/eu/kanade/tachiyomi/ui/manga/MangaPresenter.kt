@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -222,7 +223,7 @@ class MangaPresenter(
         // Add the subscription that retrieves the chapters from the database, keeps subscribed to
         // changes, and sends the list of chapters to the relay.
         add(
-            (/* SY --> */if (source is MergedSource) source.getChaptersObservable(manga, true, dedupe) else /* SY <-- */ db.getChapters(manga).asRxObservable())
+            (/* SY --> */if (source is MergedSource) source.getChaptersObservable(manga.toDomainManga()!!, true, dedupe) else /* SY <-- */ db.getChapters(manga).asRxObservable())
                 .map { chapters ->
                     // Convert every chapter to a model.
                     chapters.map { it.toModel() }
@@ -761,7 +762,7 @@ class MangaPresenter(
                         downloadNewChapters(newChapters)
                     }
                 } else {
-                    source.fetchChaptersForMergedManga(manga, manualFetch, true, dedupe)
+                    source.fetchChaptersForMergedManga(manga.toDomainManga()!!, manualFetch, true, dedupe)
                 }
 
                 withUIContext { view?.onFetchChaptersDone() }

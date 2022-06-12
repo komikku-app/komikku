@@ -1,7 +1,12 @@
 package eu.kanade.domain.manga.model
 
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
+import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.SManga
+import tachiyomi.source.model.MangaInfo
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import eu.kanade.tachiyomi.data.database.models.Manga as DbManga
 
@@ -88,7 +93,7 @@ data class Manga(
 }
 
 // TODO: Remove when all deps are migrated
-fun Manga.toDbManga(): DbManga = DbManga.create(url, title, source).also {
+fun Manga.toDbManga(): DbManga = DbManga.create(url, ogTitle, source).also {
     it.id = id
     it.favorite = favorite
     it.last_update = lastUpdate
@@ -96,4 +101,23 @@ fun Manga.toDbManga(): DbManga = DbManga.create(url, title, source).also {
     it.viewer_flags = viewerFlags.toInt()
     it.chapter_flags = chapterFlags.toInt()
     it.cover_last_modified = coverLastModified
+}
+
+fun Manga.toMangaInfo(): MangaInfo = MangaInfo(
+    // SY -->
+    artist = ogArtist ?: "",
+    author = ogAuthor ?: "",
+    cover = thumbnailUrl ?: "",
+    description = ogDescription ?: "",
+    genres = ogGenre ?: emptyList(),
+    key = url,
+    status = ogStatus.toInt(),
+    title = ogTitle,
+    // SY <--
+)
+
+fun Manga.isLocal(): Boolean = source == LocalSource.ID
+
+fun Manga.hasCustomCover(coverCache: CoverCache = Injekt.get()): Boolean {
+    return coverCache.getCustomCoverFile(id).exists()
 }

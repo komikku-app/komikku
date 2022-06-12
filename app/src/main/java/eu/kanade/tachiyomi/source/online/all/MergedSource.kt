@@ -1,8 +1,12 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -15,7 +19,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import exh.log.xLogW
@@ -31,7 +34,11 @@ import okhttp3.Response
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import eu.kanade.domain.chapter.model.Chapter as DomainChapter
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 class MergedSource : HttpSource() {
     private val db: DatabaseHelper by injectLazy()
@@ -92,8 +99,8 @@ class MergedSource : HttpSource() {
     }
 
     // TODO more chapter dedupe
-    private fun transformMergedChapters(manga: Manga, chapterList: List<Chapter>, editScanlators: Boolean, dedupe: Boolean): List<Chapter> {
-        val mangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
+    private fun transformMergedChapters(manga: DomainManga, chapterList: List<Chapter>, editScanlators: Boolean, dedupe: Boolean): List<Chapter> {
+        val mangaReferences = db.getMergedMangaReferences(manga.id).executeAsBlocking()
         if (editScanlators) {
             val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
             chapterList.onEach { chapter ->
@@ -107,12 +114,12 @@ class MergedSource : HttpSource() {
         return if (dedupe) dedupeChapterList(mangaReferences, chapterList) else chapterList
     }
 
-    fun getChaptersAsBlocking(manga: Manga, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
-        return transformMergedChapters(manga, db.getChaptersByMergedMangaId(manga.id!!).executeAsBlocking(), editScanlators, dedupe)
+    fun getChaptersAsBlocking(manga: DomainManga, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
+        return transformMergedChapters(manga, db.getChaptersByMergedMangaId(manga.id).executeAsBlocking(), editScanlators, dedupe)
     }
 
-    fun getChaptersObservable(manga: Manga, editScanlators: Boolean = false, dedupe: Boolean = true): Observable<List<Chapter>> {
-        return db.getChaptersByMergedMangaId(manga.id!!).asRxObservable()
+    fun getChaptersObservable(manga: DomainManga, editScanlators: Boolean = false, dedupe: Boolean = true): Observable<List<Chapter>> {
+        return db.getChaptersByMergedMangaId(manga.id).asRxObservable()
             .map { chapterList ->
                 transformMergedChapters(manga, chapterList, editScanlators, dedupe)
             }
@@ -144,20 +151,21 @@ class MergedSource : HttpSource() {
         return chapterList.maxByOrNull { it.chapter_number }?.manga_id
     }
 
-    suspend fun fetchChaptersForMergedManga(manga: Manga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
+    suspend fun fetchChaptersForMergedManga(manga: DomainManga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
         return withIOContext {
             fetchChaptersAndSync(manga, downloadChapters)
             getChaptersAsBlocking(manga, editScanlators, dedupe)
         }
     }
 
-    suspend fun fetchChaptersAndSync(manga: Manga, downloadChapters: Boolean = true): Pair<List<Chapter>, List<Chapter>> {
-        val mangaReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
+    suspend fun fetchChaptersAndSync(manga: DomainManga, downloadChapters: Boolean = true): Pair<List<DomainChapter>, List<DomainChapter>> {
+        val syncChaptersWithSource = Injekt.get<SyncChaptersWithSource>()
+        val mangaReferences = db.getMergedMangaReferences(manga.id).executeAsBlocking()
         if (mangaReferences.isEmpty()) {
             throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
         }
 
-        val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(db, preferences)
+        val ifDownloadNewChapters = downloadChapters && manga.toDbManga().shouldDownloadNewChapters(db, preferences)
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {
@@ -175,11 +183,11 @@ class MergedSource : HttpSource() {
                                         val chapterList = source.getChapterList(loadedManga.toMangaInfo())
                                             .map(ChapterInfo::toSChapter)
                                         val results =
-                                            syncChaptersWithSource(chapterList, loadedManga, source)
+                                            syncChaptersWithSource.await(chapterList, loadedManga.toDomainManga()!!, source)
                                         if (ifDownloadNewChapters && reference.downloadChapters) {
                                             downloadManager.downloadChapters(
                                                 loadedManga,
-                                                results.first,
+                                                results.first.map(DomainChapter::toDbChapter),
                                             )
                                         }
                                         results

@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.data.database.resolvers.MangaFavoritePutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaFilteredScanlatorsPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaFlagsPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaInfoPutResolver
-import eu.kanade.tachiyomi.data.database.resolvers.MangaLastUpdatedPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaMigrationPutResolver
 import eu.kanade.tachiyomi.data.database.resolvers.MangaThumbnailPutResolver
 import eu.kanade.tachiyomi.data.database.tables.CategoryTable
@@ -144,11 +143,6 @@ interface MangaQueries : DbProvider {
     fun updateViewerFlags(manga: Manga) = db.put()
         .`object`(manga)
         .withPutResolver(MangaFlagsPutResolver(MangaTable.COL_VIEWER, Manga::viewer_flags))
-        .prepare()
-
-    fun updateLastUpdated(manga: Manga) = db.put()
-        .`object`(manga)
-        .withPutResolver(MangaLastUpdatedPutResolver())
         .prepare()
 
     fun updateMangaFavorite(manga: Manga) = db.put()

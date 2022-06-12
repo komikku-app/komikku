@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.saver.Image
@@ -47,7 +48,6 @@ import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.cacheImageDir
 import eu.kanade.tachiyomi.util.system.ImageUtil
-import eu.kanade.tachiyomi.util.system.isLTR
 import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.updateCoverLastModified
@@ -146,7 +146,7 @@ class ReaderPresenter(
         // SY <--
         val dbChapters = /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
             (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
-                .getChaptersAsBlocking(manga)
+                .getChaptersAsBlocking(manga.toDomainManga()!!)
         } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
 
         val selectedChapter = dbChapters.find { it.id == chapterId }

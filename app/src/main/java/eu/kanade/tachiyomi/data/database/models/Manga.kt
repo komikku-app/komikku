@@ -151,14 +151,18 @@ fun Manga.toDomainManga(): DomainManga? {
         chapterFlags = chapter_flags.toLong(),
         coverLastModified = cover_last_modified,
         url = url,
-        ogTitle = title,
-        ogArtist = artist,
-        ogAuthor = author,
-        ogDescription = description,
-        ogGenre = getGenres(),
-        ogStatus = status.toLong(),
+        // SY -->
+        ogTitle = originalTitle,
+        ogArtist = originalArtist,
+        ogAuthor = originalAuthor,
+        ogDescription = originalDescription,
+        ogGenre = getOriginalGenres(),
+        ogStatus = originalStatus.toLong(),
+        // SY <--
         thumbnailUrl = thumbnail_url,
         initialized = initialized,
+        // SY -->
         filteredScanlators = MdUtil.getScanlators(filtered_scanlators).toList(),
+        // SY <--
     )
 }
