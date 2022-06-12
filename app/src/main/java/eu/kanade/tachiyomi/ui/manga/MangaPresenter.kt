@@ -4,6 +4,9 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import com.jakewharton.rxrelay.PublishRelay
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
+import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -69,7 +72,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
@@ -93,6 +98,8 @@ class MangaPresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
+    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
 ) : BasePresenter<MangaController>() {
 
     /**
@@ -108,9 +115,7 @@ class MangaPresenter(
     /**
      * Subject of list of chapters to allow updating the view without going to DB.
      */
-    private val chaptersRelay: PublishRelay<List<ChapterItem>> by lazy {
-        PublishRelay.create<List<ChapterItem>>()
-    }
+    private val chaptersRelay by lazy { PublishRelay.create<List<ChapterItem>>() }
 
     /**
      * Whether the chapter list has been requested to the source.
@@ -220,52 +225,48 @@ class MangaPresenter(
 
         // Chapters list - start
 
-        // Add the subscription that retrieves the chapters from the database, keeps subscribed to
-        // changes, and sends the list of chapters to the relay.
-        add(
-            (/* SY --> */if (source is MergedSource) source.getChaptersObservable(manga.toDomainManga()!!, true, dedupe) else /* SY <-- */ db.getChapters(manga).asRxObservable())
-                .map { chapters ->
-                    // Convert every chapter to a model.
-                    chapters.map { it.toModel() }
+        // Keeps subscribed to changes and sends the list of chapters to the relay.
+        presenterScope.launchIO {
+            manga.id?.let { mangaId ->
+                if (source is MergedSource) {
+                    getMergedChapterByMangaId.subscribe(mangaId)
+                        .map { source.transformMergedChapters(mangaId, it, true, dedupe) }
+                } else {
+                    getChapterByMangaId.subscribe(mangaId)
                 }
-                .doOnNext { chapters ->
-                    // Find downloaded chapters
-                    setDownloadedChapters(chapters)
+                    .collectLatest { domainChapters ->
+                        val chapterItems = domainChapters.map { it.toDbChapter().toModel() }
+                        setDownloadedChapters(chapterItems)
+                        this@MangaPresenter.allChapters = chapterItems
+                        observeDownloads()
 
-                    allChapterScanlators = chapters.flatMap { MdUtil.getScanlators(it.chapter.scanlator) }.toSet()
-
-                    // Store the last emission
-                    this.allChapters = chapters
-
-                    // Listen for download status changes
-                    observeDownloads()
-
-                    // SY -->
-                    if (chapters.isNotEmpty() && (source.isEhBasedSource()) && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
-                        // Check for gallery in library and accept manga with lowest id
-                        // Find chapters sharing same root
-                        updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
-                            .onEach { (acceptedChain, _) ->
-                                // Redirect if we are not the accepted root
-                                if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
-                                    // Update if any of our chapters are not in accepted manga's chapters
-                                    xLogD("Found accepted manga %s", manga.url)
-                                    val ourChapterUrls = chapters.map { it.url }.toSet()
-                                    val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
-                                    val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
-                                    redirectFlow.emit(
-                                        EXHRedirect(
-                                            acceptedChain.manga,
-                                            update,
-                                        ),
-                                    )
-                                }
-                            }.launchIn(presenterScope)
+                        // SY -->
+                        if (domainChapters.isNotEmpty() && (source.isEhBasedSource()) && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
+                            // Check for gallery in library and accept manga with lowest id
+                            // Find chapters sharing same root
+                            updateHelper.findAcceptedRootAndDiscardOthers(manga.source, domainChapters.map { it.toDbChapter() })
+                                .onEach { (acceptedChain, _) ->
+                                    // Redirect if we are not the accepted root
+                                    if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
+                                        // Update if any of our chapters are not in accepted manga's chapters
+                                        xLogD("Found accepted manga %s", manga.url)
+                                        val ourChapterUrls = domainChapters.map { it.url }.toSet()
+                                        val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
+                                        val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
+                                        redirectFlow.emit(
+                                            EXHRedirect(
+                                                acceptedChain.manga,
+                                                update,
+                                            ),
+                                        )
+                                    }
+                                }.launchIn(presenterScope)
+                        }
+                        // SY <--
+                        chaptersRelay.call(chapterItems)
                     }
-                    // SY <--
-                }
-                .subscribe { chaptersRelay.call(it) },
-        )
+            }
+        }
 
         // Chapters list - end
 

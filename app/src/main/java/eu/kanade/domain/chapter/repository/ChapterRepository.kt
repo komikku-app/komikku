@@ -2,6 +2,7 @@ package eu.kanade.domain.chapter.repository
 
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
+import kotlinx.coroutines.flow.Flow
 
 interface ChapterRepository {
 
@@ -14,4 +15,12 @@ interface ChapterRepository {
     suspend fun removeChaptersWithIds(chapterIds: List<Long>)
 
     suspend fun getChapterByMangaId(mangaId: Long): List<Chapter>
+
+    suspend fun getChapterByMangaIdFlow(mangaId: Long): Flow<List<Chapter>>
+
+    // SY -->
+    suspend fun getMergedChapterByMangaId(mangaId: Long): List<Chapter>
+
+    suspend fun getMergedChapterByMangaIdAsFlow(mangaId: Long): Flow<List<Chapter>>
+    // SY <--
 }

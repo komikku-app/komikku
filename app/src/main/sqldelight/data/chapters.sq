@@ -23,10 +23,18 @@ SELECT *
 FROM chapters
 WHERE _id = :id;
 
-getChapterByMangaId:
+getChaptersByMangaId:
 SELECT *
 FROM chapters
 WHERE manga_id = :mangaId;
+
+getMergedChaptersByMangaId:
+SELECT chapters.*
+FROM (
+    SELECT manga_id FROM merged WHERE merge_id = ?
+) AS M
+JOIN chapters
+ON chapters.manga_id = M.manga_id;
 
 removeChaptersWithIds:
 DELETE FROM chapters

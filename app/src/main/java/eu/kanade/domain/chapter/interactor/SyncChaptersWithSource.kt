@@ -26,6 +26,7 @@ class SyncChaptersWithSource(
     private val chapterRepository: ChapterRepository = Injekt.get(),
     private val shouldUpdateDbChapter: ShouldUpdateDbChapter = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
+    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
 ) {
 
     suspend fun await(
@@ -46,7 +47,7 @@ class SyncChaptersWithSource(
             }
 
         // Chapters from db.
-        val dbChapters = chapterRepository.getChapterByMangaId(manga.id)
+        val dbChapters = getChapterByMangaId.await(manga.id)
 
         // Chapters from the source not in db.
         val toAdd = mutableListOf<Chapter>()
