@@ -67,17 +67,16 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                pvId?.let { getString(R.string.id) to it },
-                url?.let { getString(R.string.url) to it },
-                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
-                title?.let { getString(R.string.title) to it },
-                altTitles.nullIfEmpty()?.joinToString()
-                    ?.let { getString(R.string.alt_titles) to it },
-                artist?.let { getString(R.string.artist) to it },
-                genre?.let { getString(R.string.genre) to it },
-                rating?.let { getString(R.string.average_rating) to it.toString() },
-                status?.let { getString(R.string.status) to it },
-                lang?.let { getString(R.string.language) to it },
+                getItem(pvId) { getString(R.string.id) },
+                getItem(url) { getString(R.string.url) },
+                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
+                getItem(title) { getString(R.string.title) },
+                getItem(altTitles.nullIfEmpty(), { it.joinToString() }) { getString(R.string.alt_titles) },
+                getItem(artist) { getString(R.string.artist) },
+                getItem(genre) { getString(R.string.genre) },
+                getItem(rating) { getString(R.string.average_rating) },
+                getItem(status) { getString(R.string.status) },
+                getItem(lang) { getString(R.string.language) },
             )
         }
     }

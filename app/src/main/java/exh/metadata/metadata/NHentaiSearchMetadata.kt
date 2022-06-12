@@ -88,17 +88,17 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                nhId?.let { getString(R.string.id) to it.toString() },
-                uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) },
-                favoritesCount?.let { getString(R.string.total_favorites) to it.toString() },
-                mediaId?.let { getString(R.string.media_id) to it },
-                japaneseTitle?.let { getString(R.string.japanese_title) to it },
-                englishTitle?.let { getString(R.string.english_title) to it },
-                shortTitle?.let { getString(R.string.short_title) to it },
-                coverImageType?.let { getString(R.string.cover_image_file_type) to it },
-                pageImageTypes.size.let { getString(R.string.page_count) to it.toString() },
-                thumbnailImageType?.let { getString(R.string.thumbnail_image_file_type) to it },
-                scanlator?.let { getString(R.string.scanlator) to it },
+                getItem(nhId) { getString(R.string.id) },
+                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it * 1000)) }) { getString(R.string.date_posted) },
+                getItem(favoritesCount) { getString(R.string.total_favorites) },
+                getItem(mediaId) { getString(R.string.media_id) },
+                getItem(japaneseTitle) { getString(R.string.japanese_title) },
+                getItem(englishTitle) { getString(R.string.english_title) },
+                getItem(shortTitle) { getString(R.string.short_title) },
+                getItem(coverImageType) { getString(R.string.cover_image_file_type) },
+                getItem(pageImageTypes.size) { getString(R.string.page_count) },
+                getItem(thumbnailImageType) { getString(R.string.thumbnail_image_file_type) },
+                getItem(scanlator) { getString(R.string.scanlator) },
             )
         }
     }

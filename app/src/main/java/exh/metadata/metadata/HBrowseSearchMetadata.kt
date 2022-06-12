@@ -48,11 +48,11 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                hbId?.let { getString(R.string.id) to it.toString() },
-                hbUrl?.let { getString(R.string.url) to it },
-                thumbnail?.let { getString(R.string.thumbnail_url) to it },
-                title?.let { getString(R.string.title) to it },
-                length?.let { getString(R.string.page_count) to it.toString() },
+                getItem(hbId) { getString(R.string.id) },
+                getItem(hbUrl) { getString(R.string.url) },
+                getItem(thumbnail) { getString(R.string.thumbnail_url) },
+                getItem(title) { getString(R.string.title) },
+                getItem(length) { getString(R.string.page_count) },
             )
         }
     }

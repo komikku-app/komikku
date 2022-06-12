@@ -59,13 +59,13 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                hlId?.let { getString(R.string.id) to it },
-                title?.let { getString(R.string.title) to it },
-                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
-                artists.nullIfEmpty()?.joinToString()?.let { getString(R.string.artist) to it },
-                genre?.let { getString(R.string.genre) to it },
-                language?.let { getString(R.string.language) to it },
-                uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
+                getItem(hlId) { getString(R.string.id) },
+                getItem(title) { getString(R.string.title) },
+                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
+                getItem(artists.nullIfEmpty(), { it.joinToString() }) { getString(R.string.artist) },
+                getItem(genre) { getString(R.string.genre) },
+                getItem(language) { getString(R.string.language) },
+                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) { getString(R.string.date_posted) },
             )
         }
     }
