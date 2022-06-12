@@ -69,20 +69,20 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                tmId?.let { getString(R.string.id) to it.toString() },
-                title?.let { getString(R.string.title) to it },
-                uploader?.let { getString(R.string.uploader) to it },
-                uploadDate?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
-                length?.let { getString(R.string.page_count) to it.toString() },
-                ratingString?.let { getString(R.string.rating_string) to it },
-                averageRating?.let { getString(R.string.average_rating) to it.toString() },
-                userRatings?.let { getString(R.string.total_ratings) to it.toString() },
-                favorites?.let { getString(R.string.total_favorites) to it.toString() },
-                category?.let { getString(R.string.genre) to it },
-                collection?.let { getString(R.string.collection) to it },
-                group?.let { getString(R.string.group) to it },
-                parody.nullIfEmpty()?.joinToString()?.let { getString(R.string.parodies) to it },
-                character.nullIfEmpty()?.joinToString()?.let { getString(R.string.characters) to it },
+                getItem(tmId) { getString(R.string.id) },
+                getItem(title) { getString(R.string.title) },
+                getItem(uploader) { getString(R.string.uploader) },
+                getItem(uploadDate, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) { getString(R.string.date_posted) },
+                getItem(length) { getString(R.string.page_count) },
+                getItem(ratingString) { getString(R.string.rating_string) },
+                getItem(averageRating) { getString(R.string.average_rating) },
+                getItem(userRatings) { getString(R.string.total_ratings) },
+                getItem(favorites) { getString(R.string.total_favorites) },
+                getItem(category) { getString(R.string.genre) },
+                getItem(collection) { getString(R.string.collection) },
+                getItem(group) { getString(R.string.group) },
+                getItem(parody.nullIfEmpty(), { it.joinToString() }) { getString(R.string.parodies) },
+                getItem(character.nullIfEmpty(), { it.joinToString() }) { getString(R.string.characters) },
             )
         }
     }

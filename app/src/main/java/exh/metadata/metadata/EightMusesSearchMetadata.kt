@@ -41,10 +41,9 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                title?.let { getString(R.string.title) to it },
-                path.nullIfEmpty()?.joinToString("/", prefix = "/")
-                    ?.let { getString(R.string.path) to it },
-                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
+                getItem(title) { getString(R.string.title) },
+                getItem(path.nullIfEmpty(), { it.joinToString("/", prefix = "/") }) { getString(R.string.path) },
+                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
             )
         }
     }

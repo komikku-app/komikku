@@ -54,6 +54,15 @@ abstract class RaisedSearchMetadata {
         if (newTitle != null) titles += RaisedTitle(newTitle, type)
     }
 
+    fun <T : Any> getItem(
+        item: T?,
+        toString: (T) -> String = Any::toString,
+        block: (T) -> String,
+    ): Pair<String, String>? {
+        item ?: return null
+        return block(item) to toString(item)
+    }
+
     open fun copyTo(manga: SManga) {
         val infoManga = createMangaInfo(manga.toMangaInfo()).toSManga()
         manga.copyFrom(infoManga)

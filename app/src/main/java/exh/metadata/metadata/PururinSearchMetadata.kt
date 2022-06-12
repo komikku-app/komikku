@@ -56,16 +56,16 @@ class PururinSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                prId?.let { getString(R.string.id) to it.toString() },
-                title?.let { getString(R.string.title) to it },
-                altTitle?.let { getString(R.string.alt_title) to it },
-                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
-                uploaderDisp?.let { getString(R.string.uploader_capital) to it },
-                uploader?.let { getString(R.string.uploader) to it },
-                pages?.let { getString(R.string.page_count) to it.toString() },
-                fileSize?.let { getString(R.string.gallery_size) to it },
-                ratingCount?.let { getString(R.string.total_ratings) to it.toString() },
-                averageRating?.let { getString(R.string.average_rating) to it.toString() },
+                getItem(prId) { getString(R.string.id) },
+                getItem(title) { getString(R.string.title) },
+                getItem(altTitle) { getString(R.string.alt_title) },
+                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
+                getItem(uploaderDisp) { getString(R.string.uploader_capital) },
+                getItem(uploader) { getString(R.string.uploader) },
+                getItem(pages) { getString(R.string.page_count) },
+                getItem(fileSize) { getString(R.string.gallery_size) },
+                getItem(ratingCount) { getString(R.string.total_ratings) },
+                getItem(averageRating) { getString(R.string.average_rating) },
             )
         }
     }

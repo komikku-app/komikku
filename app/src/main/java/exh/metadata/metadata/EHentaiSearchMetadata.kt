@@ -51,16 +51,14 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
         val cover = thumbnailUrl
 
         // No title bug?
-        val title = if (Injekt.get<PreferencesHelper>().useJapaneseTitle().get()) {
-            altTitle ?: title
-        } else {
-            title
-        }
+        val title = altTitle
+            ?.takeIf { Injekt.get<PreferencesHelper>().useJapaneseTitle().get() }
+            ?: title
 
         // Set artist (if we can find one)
-        val artist = tags.ofNamespace(EH_ARTIST_NAMESPACE).let { tags ->
-            if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
-        }
+        val artist = tags.ofNamespace(EH_ARTIST_NAMESPACE)
+            .ifEmpty { null }
+            ?.joinToString { it.name }
 
         // Copy tags -> genres
         val genres = tagsToGenreList()
@@ -92,25 +90,25 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
     override fun getExtraInfoPairs(context: Context): List<Pair<String, String>> {
         return with(context) {
             listOfNotNull(
-                gId?.let { getString(R.string.id) to it },
-                gToken?.let { getString(R.string.token) to it },
-                exh?.let { getString(R.string.is_exhentai_gallery) to it.toString() },
-                thumbnailUrl?.let { getString(R.string.thumbnail_url) to it },
-                title?.let { getString(R.string.title) to it },
-                altTitle?.let { getString(R.string.alt_title) to it },
-                genre?.let { getString(R.string.genre) to it },
-                datePosted?.let { getString(R.string.date_posted) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
-                parent?.let { getString(R.string.parent) to it },
-                visible?.let { getString(R.string.visible) to it },
-                language?.let { getString(R.string.language) to it },
-                translated?.let { getString(R.string.translated) to it.toString() },
-                size?.let { getString(R.string.gallery_size) to MetadataUtil.humanReadableByteCount(it, true) },
-                length?.let { getString(R.string.page_count) to it.toString() },
-                favorites?.let { getString(R.string.total_favorites) to it.toString() },
-                ratingCount?.let { getString(R.string.total_ratings) to it.toString() },
-                averageRating?.let { getString(R.string.average_rating) to it.toString() },
-                aged.let { getString(R.string.aged) to it.toString() },
-                lastUpdateCheck.let { getString(R.string.last_update_check) to MetadataUtil.EX_DATE_FORMAT.format(Date(it)) },
+                getItem(gId) { getString(R.string.id) },
+                getItem(gToken) { getString(R.string.token) },
+                getItem(exh) { getString(R.string.is_exhentai_gallery) },
+                getItem(thumbnailUrl) { getString(R.string.thumbnail_url) },
+                getItem(title) { getString(R.string.title) },
+                getItem(altTitle) { getString(R.string.alt_title) },
+                getItem(genre) { getString(R.string.genre) },
+                getItem(datePosted, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) { getString(R.string.date_posted) },
+                getItem(parent) { getString(R.string.parent) },
+                getItem(visible) { getString(R.string.visible) },
+                getItem(language) { getString(R.string.language) },
+                getItem(translated) { getString(R.string.translated) },
+                getItem(size, { MetadataUtil.humanReadableByteCount(it, true) }) { getString(R.string.gallery_size) },
+                getItem(length) { getString(R.string.page_count) },
+                getItem(favorites) { getString(R.string.total_favorites) },
+                getItem(ratingCount) { getString(R.string.total_ratings) },
+                getItem(averageRating) { getString(R.string.average_rating) },
+                getItem(aged) { getString(R.string.aged) },
+                getItem(lastUpdateCheck, { MetadataUtil.EX_DATE_FORMAT.format(Date(it)) }) { getString(R.string.last_update_check) },
             )
         }
     }
