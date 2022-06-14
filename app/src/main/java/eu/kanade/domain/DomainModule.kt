@@ -30,6 +30,7 @@ import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetLanguagesWithSources
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
+import eu.kanade.domain.source.interactor.GetSourceData
 import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.GetSourcesWithNonLibraryManga
 import eu.kanade.domain.source.interactor.SetMigrateSorting
@@ -39,6 +40,7 @@ import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.interactor.ToggleSources
+import eu.kanade.domain.source.interactor.UpsertSourceData
 import eu.kanade.domain.source.repository.SourceRepository
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
@@ -77,12 +79,14 @@ class DomainModule : InjektModule {
         addSingletonFactory<SourceRepository> { SourceRepositoryImpl(get(), get()) }
         addFactory { GetEnabledSources(get(), get()) }
         addFactory { GetLanguagesWithSources(get(), get()) }
+        addFactory { GetSourceData(get()) }
         addFactory { GetSourcesWithFavoriteCount(get(), get()) }
         addFactory { GetSourcesWithNonLibraryManga(get()) }
         addFactory { SetMigrateSorting(get()) }
         addFactory { ToggleLanguage(get()) }
         addFactory { ToggleSource(get()) }
         addFactory { ToggleSourcePin(get()) }
+        addFactory { UpsertSourceData(get()) }
 
         // SY -->
         addFactory { GetSourceCategories(get()) }

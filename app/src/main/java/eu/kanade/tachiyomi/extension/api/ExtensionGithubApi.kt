@@ -2,7 +2,8 @@ package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.extension.model.AvailableExtensionSources
+import eu.kanade.tachiyomi.extension.ExtensionManager
+import eu.kanade.tachiyomi.extension.model.AvailableSources
 import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.extension.model.LoadResult
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
@@ -23,6 +24,7 @@ internal class ExtensionGithubApi {
 
     private val networkService: NetworkHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
+    private val extensionManager: ExtensionManager by injectLazy()
 
     private var requiresFallbackSource = false
 
@@ -69,15 +71,17 @@ internal class ExtensionGithubApi {
         }
     }
 
-    suspend fun checkForUpdates(context: Context): List<Extension.Installed>? {
+    suspend fun checkForUpdates(context: Context, fromAvailableExtensionList: Boolean = false): List<Extension.Installed>? {
         // Limit checks to once a day at most
-        if (Date().time < preferences.lastExtCheck().get() + TimeUnit.DAYS.toMillis(1)) {
+        if (fromAvailableExtensionList.not() && Date().time < preferences.lastExtCheck().get() + TimeUnit.DAYS.toMillis(1)) {
             return null
         }
 
-        val extensions = findExtensions()
-
-        preferences.lastExtCheck().set(Date().time)
+        val extensions = if (fromAvailableExtensionList) {
+            extensionManager.availableExtensions
+        } else {
+            findExtensions().also { preferences.lastExtCheck().set(Date().time) }
+        }
 
         // SY -->
         val blacklistEnabled = preferences.enableSourceBlacklist().get()
@@ -136,11 +140,12 @@ internal class ExtensionGithubApi {
             }
     }
 
-    private fun List<ExtensionSourceJsonObject>.toExtensionSources(): List<AvailableExtensionSources> {
+    private fun List<ExtensionSourceJsonObject>.toExtensionSources(): List<AvailableSources> {
         return this.map {
-            AvailableExtensionSources(
-                name = it.name,
+            AvailableSources(
                 id = it.id,
+                lang = it.lang,
+                name = it.name,
                 baseUrl = it.baseUrl,
             )
         }
@@ -188,7 +193,8 @@ private data class ExtensionJsonObject(
 
 @Serializable
 private data class ExtensionSourceJsonObject(
-    val name: String,
     val id: Long,
+    val lang: String,
+    val name: String,
     val baseUrl: String,
 )

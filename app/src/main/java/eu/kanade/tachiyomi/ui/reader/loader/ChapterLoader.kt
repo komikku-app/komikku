@@ -120,6 +120,7 @@ class ChapterLoader(
                     is LocalSource.Format.Epub -> EpubPageLoader(format.file)
                 }
             }
+            source is SourceManager.StubSource -> throw source.getSourceNotInstalledException()
             else -> error(context.getString(R.string.loader_not_implemented_error))
         }
     }
