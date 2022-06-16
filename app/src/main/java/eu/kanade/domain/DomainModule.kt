@@ -5,7 +5,6 @@ import eu.kanade.data.history.HistoryRepositoryImpl
 import eu.kanade.data.manga.MangaRepositoryImpl
 import eu.kanade.data.source.SourceRepositoryImpl
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
-import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.ShouldUpdateDbChapter
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.UpdateChapter
@@ -28,18 +27,13 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetLanguagesWithSources
-import eu.kanade.domain.source.interactor.GetShowLatest
-import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.GetSourceData
 import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.GetSourcesWithNonLibraryManga
 import eu.kanade.domain.source.interactor.SetMigrateSorting
-import eu.kanade.domain.source.interactor.SetSourceCategories
-import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
-import eu.kanade.domain.source.interactor.ToggleSources
 import eu.kanade.domain.source.interactor.UpsertSourceData
 import eu.kanade.domain.source.repository.SourceRepository
 import uy.kohesive.injekt.api.InjektModule
@@ -87,14 +81,5 @@ class DomainModule : InjektModule {
         addFactory { ToggleSource(get()) }
         addFactory { ToggleSourcePin(get()) }
         addFactory { UpsertSourceData(get()) }
-
-        // SY -->
-        addFactory { GetSourceCategories(get()) }
-        addFactory { GetShowLatest(get()) }
-        addFactory { ToggleExcludeFromDataSaver(get()) }
-        addFactory { SetSourceCategories(get()) }
-        addFactory { ToggleSources(get()) }
-        addFactory { GetMergedChapterByMangaId(get()) }
-        // SY <--
     }
 }
