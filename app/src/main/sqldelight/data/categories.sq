@@ -15,7 +15,8 @@ name,
 sort AS `order`,
 flags,
 manga_order AS `mangaOrder`
-FROM categories;
+FROM categories
+ORDER BY sort;
 
 getCategoriesByMangaId:
 SELECT
@@ -31,6 +32,18 @@ WHERE MC.manga_id = :mangaId;
 insert:
 INSERT INTO categories(name, sort, flags, manga_order)
 VALUES (:name, :order, :flags, :mangaOrder);
+
+delete:
+DELETE FROM categories
+WHERE _id = :categoryId;
+
+update:
+UPDATE categories
+SET name = coalesce(:name, name),
+    sort = coalesce(:order, sort),
+    flags = coalesce(:flags, flags),
+    manga_order = coalesce(:mangaOrder, manga_order)
+WHERE _id = :categoryId;
 
 selectLastInsertedRowId:
 SELECT last_insert_rowid();
