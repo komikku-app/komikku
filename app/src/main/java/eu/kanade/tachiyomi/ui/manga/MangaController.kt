@@ -26,7 +26,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.bluelinelabs.conductor.Controller
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -225,8 +224,6 @@ class MangaController :
 
     private var trackSheet: TrackSheet? = null
 
-    private var dialog: DialogController? = null
-
     /**
      * For [recyclerViewUpdatesToolbarTitleAlpha]
      */
@@ -259,8 +256,10 @@ class MangaController :
         super.onChangeStarted(handler, type)
         // Hide toolbar title on enter
         // No need to update alpha for cover dialog
-        if (dialog == null) {
-            updateToolbarTitleAlpha(if (type.isEnter) 0F else 1F)
+        if (!type.isEnter) {
+            if (!type.isPush || router.backstack.lastOrNull()?.controller !is DialogController) {
+                updateToolbarTitleAlpha(1f)
+            }
         }
         recyclerViewUpdatesToolbarTitleAlpha(type.isEnter)
     }
@@ -827,17 +826,8 @@ class MangaController :
     }
 
     private fun showChangeCategoryDialog(manga: Manga, categories: List<Category>, preselected: Array<Int>) {
-        if (dialog != null) return
-        dialog = ChangeMangaCategoriesDialog(this, listOf(manga), categories, preselected)
-        dialog?.addLifecycleListener(
-            object : LifecycleListener() {
-                override fun postDestroy(controller: Controller) {
-                    super.postDestroy(controller)
-                    dialog = null
-                }
-            },
-        )
-        dialog?.showDialog(router)
+        ChangeMangaCategoriesDialog(this, listOf(manga), categories, preselected)
+            .showDialog(router)
     }
 
     override fun updateCategoriesForMangas(mangas: List<Manga>, addCategories: List<Category>, removeCategories: List<Category>) {
@@ -941,18 +931,9 @@ class MangaController :
     }
 
     fun showFullCoverDialog() {
-        if (dialog != null) return
         val manga = manga ?: return
-        dialog = MangaFullCoverDialog(this, manga)
-        dialog?.addLifecycleListener(
-            object : LifecycleListener() {
-                override fun postDestroy(controller: Controller) {
-                    super.postDestroy(controller)
-                    dialog = null
-                }
-            },
-        )
-        dialog?.showDialog(router)
+        MangaFullCoverDialog(this, manga)
+            .showDialog(router)
     }
 
     fun shareCover() {
@@ -1053,7 +1034,7 @@ class MangaController :
     fun onSetCoverSuccess() {
         editMangaDialog?.loadCover()
         mangaInfoAdapter?.notifyItemChanged(0, this)
-        (dialog as? MangaFullCoverDialog)?.setImage(manga)
+        (router.backstack.lastOrNull()?.controller as? MangaFullCoverDialog)?.setImage(manga)
         activity?.toast(R.string.cover_updated)
     }
 
