@@ -11,10 +11,12 @@ import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
+import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.saver.Image
@@ -23,7 +25,6 @@ import eu.kanade.tachiyomi.data.saver.Location
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.job.DelayedTrackingStore
 import eu.kanade.tachiyomi.data.track.job.DelayedTrackingUpdateJob
-import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.MetadataSource
@@ -39,7 +40,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
-import eu.kanade.tachiyomi.util.isLocal
+import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -49,7 +50,6 @@ import eu.kanade.tachiyomi.util.storage.cacheImageDir
 import eu.kanade.tachiyomi.util.system.ImageUtil
 import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -903,36 +903,28 @@ class ReaderPresenter(
     /**
      * Sets the image of this [page] as cover and notifies the UI of the result.
      */
-    fun setAsCover(page: ReaderPage) {
+    fun setAsCover(context: Context, page: ReaderPage) {
         if (page.status != Page.READY) return
-        val manga = manga ?: return
+        val manga = manga?.toDomainManga() ?: return
         val stream = page.stream ?: return
 
-        Observable
-            .fromCallable {
-                stream().use {
-                    if (manga.isLocal()) {
-                        val context = Injekt.get<Application>()
-                        LocalSource.updateCover(context, manga, it)
-                        manga.updateCoverLastModified(db)
-                        SetAsCoverResult.Success
-                    } else {
-                        if (manga.favorite) {
-                            coverCache.setCustomCoverToCache(manga, it)
-                            manga.updateCoverLastModified(db)
-                            SetAsCoverResult.Success
-                        } else {
-                            SetAsCoverResult.AddToLibraryFirst
-                        }
-                    }
-                }
+        presenterScope.launchIO {
+            val result = try {
+                manga.editCover(context, stream())
+            } catch (e: Exception) {
+                false
             }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, result -> view.onSetAsCoverResult(result) },
-                { view, _ -> view.onSetAsCoverResult(SetAsCoverResult.Error) },
-            )
+            launchUI {
+                val resultResult = if (!result) {
+                    SetAsCoverResult.Error
+                } else if (manga.isLocal() || manga.favorite) {
+                    SetAsCoverResult.Success
+                } else {
+                    SetAsCoverResult.AddToLibraryFirst
+                }
+                view?.onSetAsCoverResult(resultResult)
+            }
+        }
     }
 
     /**

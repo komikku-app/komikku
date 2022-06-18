@@ -1026,7 +1026,7 @@ class MangaController :
             // SY -->
             if (editMangaDialog != null) {
                 editMangaDialog?.updateCover(dataUri)
-            } else presenter.editCover(manga!!, activity, dataUri)
+            } else presenter.editCover(activity, dataUri)
             // SY <--
         }
     }

@@ -40,6 +40,7 @@ import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
+import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -347,7 +348,7 @@ class MangaPresenter(
         uri: Uri?,
         resetCover: Boolean = false,
     ) {
-        if (manga.source == LocalSource.ID) {
+        if (manga.isLocal()) {
             manga.title = if (title.isNullOrBlank()) manga.url else title.trim()
             manga.author = author?.trimOrNull()
             manga.artist = artist?.trimOrNull()
@@ -376,7 +377,7 @@ class MangaPresenter(
         }
 
         if (uri != null) {
-            editCover(manga, context, uri)
+            editCover(context, uri)
         } else if (resetCover) {
             coverCache.deleteCustomCover(manga.id)
             manga.updateCoverLastModified(db)
@@ -630,31 +631,20 @@ class MangaPresenter(
     /**
      * Update cover with local file.
      *
-     * @param manga the manga edited.
      * @param context Context.
      * @param data uri of the cover resource.
      */
-    fun editCover(manga: Manga, context: Context, data: Uri) {
-        Observable
-            .fromCallable {
-                context.contentResolver.openInputStream(data)?.use {
-                    if (manga.isLocal()) {
-                        LocalSource.updateCover(context, manga, it)
-                        manga.updateCoverLastModified(db)
-                        db.insertManga(manga).executeAsBlocking()
-                    } else if (manga.favorite) {
-                        coverCache.setCustomCoverToCache(manga, it)
-                        manga.updateCoverLastModified(db)
-                    }
-                    true
+    fun editCover(context: Context, data: Uri) {
+        presenterScope.launchIO {
+            context.contentResolver.openInputStream(data)?.use {
+                try {
+                    val result = manga.toDomainManga()!!.editCover(context, it)
+                    launchUI { if (result) view?.onSetCoverSuccess() }
+                } catch (e: Exception) {
+                    launchUI { view?.onSetCoverError(e) }
                 }
             }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeFirst(
-                { view, _ -> view.onSetCoverSuccess() },
-                { view, e -> view.onSetCoverError(e) },
-            )
+        }
     }
 
     fun deleteCustomCover(manga: Manga) {
