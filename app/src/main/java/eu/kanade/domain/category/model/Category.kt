@@ -7,4 +7,7 @@ data class Category(
     val name: String,
     val order: Long,
     val flags: Long,
+    // SY -->
+    val mangaOrder: List<Long>,
+    // SY <--
 ) : Serializable

@@ -18,7 +18,6 @@ import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.runAsObservable
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
@@ -83,9 +82,7 @@ open class FeedPresenter(
     }
 
     suspend fun hasTooManyFeeds(): Boolean {
-        return withIOContext {
-            database.awaitList { feed_saved_searchQueries.selectAllGlobal() }.size > 10
-        }
+        return database.awaitOne { feed_saved_searchQueries.countGlobal() } > 10
     }
 
     fun getEnabledSources(): List<CatalogueSource> {
@@ -100,9 +97,7 @@ open class FeedPresenter(
     }
 
     suspend fun getSourceSavedSearches(source: CatalogueSource): List<SavedSearch> {
-        return withIOContext {
-            database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
-        }
+        return database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
     }
 
     fun createFeed(source: CatalogueSource, savedSearch: SavedSearch?) {

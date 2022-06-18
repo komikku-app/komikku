@@ -1,6 +1,7 @@
 package eu.kanade.data.category
 
 import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.listOfLongsAdapter
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.category.model.CategoryUpdate
 import eu.kanade.domain.category.repository.CategoryRepository
@@ -23,6 +24,9 @@ class CategoryRepositoryImpl(
                 name = name,
                 order = order,
                 flags = 0L,
+                // SY -->
+                mangaOrder = emptyList(),
+                // SY <--
             )
         }
     }
@@ -36,6 +40,9 @@ class CategoryRepositoryImpl(
                 order = payload.order,
                 flags = payload.flags,
                 categoryId = payload.id,
+                // SY -->
+                mangaOrder = payload.mangaOrder?.let(listOfLongsAdapter::encode),
+                // SY <--
             )
         }
     }

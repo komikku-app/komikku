@@ -47,7 +47,9 @@ fun MigrateSourceScreen(
     presenter: MigrationSourcesPresenter,
     onClickItem: (Source) -> Unit,
     onLongClickItem: (Source) -> Unit,
+    // SY -->
     onClickAll: (Source) -> Unit,
+    // SY <--
 ) {
     val state by presenter.state.collectAsState()
     when (state) {
@@ -59,7 +61,9 @@ fun MigrateSourceScreen(
                 list = (state as MigrateSourceState.Success).sources,
                 onClickItem = onClickItem,
                 onLongClickItem = onLongClickItem,
+                // SY -->
                 onClickAll = onClickAll,
+                // SY <--
             )
     }
 }
@@ -70,7 +74,9 @@ fun MigrateSourceList(
     list: List<Pair<Source, Long>>,
     onClickItem: (Source) -> Unit,
     onLongClickItem: (Source) -> Unit,
+    // SY -->
     onClickAll: (Source) -> Unit,
+    // SY <--
 ) {
     if (list.isEmpty()) {
         EmptyScreen(textResource = R.string.information_empty_library)
@@ -103,7 +109,9 @@ fun MigrateSourceList(
                 count = count,
                 onClickItem = { onClickItem(source) },
                 onLongClickItem = { onLongClickItem(source) },
+                // SY -->
                 onClickAll = { onClickAll(source) },
+                // SY <--
             )
         }
     }
@@ -116,7 +124,9 @@ fun MigrateSourceItem(
     count: Long,
     onClickItem: () -> Unit,
     onLongClickItem: () -> Unit,
+    // SY -->
     onClickAll: () -> Unit,
+    // SY <--
 ) {
     BaseSourceItem(
         modifier = modifier,

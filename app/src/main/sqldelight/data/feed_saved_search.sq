@@ -12,6 +12,9 @@ CREATE INDEX feed_saved_search_saved_search_index ON feed_saved_search(saved_sea
 selectAllGlobal:
 SELECT * FROM feed_saved_search WHERE global = 1;
 
+countGlobal:
+SELECT count(*) FROM feed_saved_search WHERE global = 1;
+
 selectBySource:
 SELECT * FROM feed_saved_search WHERE source = ? AND global = 0;
 
@@ -34,6 +37,14 @@ ON saved_search._id = M.saved_search;
 
 selectSourceFeedSavedSearch:
 SELECT saved_search.*
+FROM (
+    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = ?
+) AS M
+JOIN saved_search
+ON saved_search._id = M.saved_search;
+
+countSourceFeedSavedSearch:
+SELECT count(*)
 FROM (
     SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = ?
 ) AS M
