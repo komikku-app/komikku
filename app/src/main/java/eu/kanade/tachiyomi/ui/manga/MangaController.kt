@@ -35,6 +35,7 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
 import eu.kanade.data.chapter.NoChaptersException
+import eu.kanade.domain.category.model.toDbCategory
 import eu.kanade.domain.history.model.HistoryWithRelations
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -116,6 +117,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import reactivecircus.flowbinding.recyclerview.scrollStateChanges
@@ -478,20 +480,23 @@ class MangaController :
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        // Hide options for local manga
-        menu.findItem(R.id.action_share).isVisible = !isLocalSource
-        menu.findItem(R.id.download_group).isVisible = !isLocalSource
+        runBlocking {
+            // Hide options for local manga
+            menu.findItem(R.id.action_share).isVisible = !isLocalSource
+            menu.findItem(R.id.download_group).isVisible = !isLocalSource
 
-        // Hide options for non-library manga
-        menu.findItem(R.id.action_edit_categories).isVisible = presenter.manga.favorite && presenter.getCategories().isNotEmpty()
-        menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite /* SY --> */ && presenter.manga.source != MERGED_SOURCE_ID // SY <--
+            // Hide options for non-library manga
+            menu.findItem(R.id.action_edit_categories).isVisible =
+                presenter.manga.favorite && presenter.getCategories().isNotEmpty()
+            menu.findItem(R.id.action_migrate).isVisible = presenter.manga.favorite
 
-        // SY -->
-        menu.findItem(R.id.action_edit).isVisible = presenter.manga.favorite || isLocalSource
-        menu.findItem(R.id.action_recommend).isVisible = preferences.recommendsInOverflow().get()
-        menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
-        menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
-        // SY <--
+            // SY -->
+            menu.findItem(R.id.action_edit).isVisible = presenter.manga.favorite || isLocalSource
+            menu.findItem(R.id.action_recommend).isVisible = preferences.recommendsInOverflow().get()
+            menu.findItem(R.id.action_merged).isVisible = presenter.manga.source == MERGED_SOURCE_ID
+            menu.findItem(R.id.action_toggle_dedupe).isVisible = false // presenter.manga.source == MERGED_SOURCE_ID
+            // SY <--
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -666,39 +671,47 @@ class MangaController :
     }
 
     private fun addToLibrary(newManga: Manga) {
-        val categories = presenter.getCategories()
-        val defaultCategoryId = preferences.defaultCategory()
-        val defaultCategory = categories.find { it.id == defaultCategoryId }
+        launchIO {
+            val categories = presenter.getCategories()
+            val defaultCategoryId = preferences.defaultCategory()
+            val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
 
-        when {
-            // Default category set
-            defaultCategory != null -> {
-                toggleFavorite()
-                presenter.moveMangaToCategory(newManga, defaultCategory)
-                activity?.toast(activity?.getString(R.string.manga_added_library))
-                activity?.invalidateOptionsMenu()
-            }
-
-            // Automatic 'Default' or no categories
-            defaultCategoryId == 0 || categories.isEmpty() -> {
-                toggleFavorite()
-                presenter.moveMangaToCategory(newManga, null)
-                activity?.toast(activity?.getString(R.string.manga_added_library))
-                activity?.invalidateOptionsMenu()
-            }
-
-            // Choose a category
-            else -> {
-                val ids = presenter.getMangaCategoryIds(newManga)
-                val preselected = categories.map {
-                    if (it.id in ids) {
-                        QuadStateTextView.State.CHECKED.ordinal
-                    } else {
-                        QuadStateTextView.State.UNCHECKED.ordinal
+            withUIContext {
+                when {
+                    // Default category set
+                    defaultCategory != null -> {
+                        toggleFavorite()
+                        presenter.moveMangaToCategory(newManga, defaultCategory.toDbCategory())
+                        activity?.toast(activity?.getString(R.string.manga_added_library))
+                        activity?.invalidateOptionsMenu()
                     }
-                }.toTypedArray()
 
-                showChangeCategoryDialog(newManga, categories, preselected)
+                    // Automatic 'Default' or no categories
+                    defaultCategoryId == 0 || categories.isEmpty() -> {
+                        toggleFavorite()
+                        presenter.moveMangaToCategory(newManga, null)
+                        activity?.toast(activity?.getString(R.string.manga_added_library))
+                        activity?.invalidateOptionsMenu()
+                    }
+
+                    // Choose a category
+                    else -> {
+                        val ids = presenter.getMangaCategoryIds(newManga)
+                        val preselected = categories.map {
+                            if (it.id in ids) {
+                                QuadStateTextView.State.CHECKED.ordinal
+                            } else {
+                                QuadStateTextView.State.UNCHECKED.ordinal
+                            }
+                        }.toTypedArray()
+
+                        showChangeCategoryDialog(
+                            newManga,
+                            categories.map { it.toDbCategory() },
+                            preselected,
+                        )
+                    }
+                }
             }
         }
 
@@ -813,18 +826,27 @@ class MangaController :
     }
 
     fun onCategoriesClick() {
-        val manga = presenter.manga
-        val categories = presenter.getCategories()
+        launchIO {
+            val manga = presenter.manga
+            val categories = presenter.getCategories()
 
-        val ids = presenter.getMangaCategoryIds(manga)
-        val preselected = categories.map {
-            if (it.id in ids) {
-                QuadStateTextView.State.CHECKED.ordinal
-            } else {
-                QuadStateTextView.State.UNCHECKED.ordinal
+            if (categories.isEmpty()) {
+                return@launchIO
             }
-        }.toTypedArray()
-        showChangeCategoryDialog(manga, categories, preselected)
+
+            val ids = presenter.getMangaCategoryIds(manga)
+            val preselected = categories.map {
+                if (it.id in ids) {
+                    QuadStateTextView.State.CHECKED.ordinal
+                } else {
+                    QuadStateTextView.State.UNCHECKED.ordinal
+                }
+            }.toTypedArray()
+
+            withUIContext {
+                showChangeCategoryDialog(manga, categories.map { it.toDbCategory() }, preselected)
+            }
+        }
     }
 
     private fun showChangeCategoryDialog(manga: Manga, categories: List<Category>, preselected: Array<Int>) {
