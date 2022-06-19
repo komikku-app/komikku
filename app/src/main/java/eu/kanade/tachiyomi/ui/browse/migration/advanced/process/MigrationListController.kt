@@ -420,7 +420,7 @@ class MigrationListController(bundle: Bundle? = null) :
                             it.controller !is MangaController &&
                                 it.controller !is MigrationListController &&
                                 it.controller !is PreMigrationController
-                        } + MangaController(manga).withFadeTransaction()
+                        } + MangaController(manga.id!!).withFadeTransaction()
                         router.setBackstack(newStack, OneWayFadeChangeHandler())
                         return@launchUI
                     }

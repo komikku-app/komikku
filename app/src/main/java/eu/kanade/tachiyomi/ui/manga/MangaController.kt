@@ -142,9 +142,9 @@ class MangaController :
 
     constructor(history: HistoryWithRelations) : this(history.mangaId)
 
-    constructor(manga: Manga?, fromSource: Boolean = false, smartSearchConfig: SourcesController.SmartSearchConfig? = null, update: Boolean = false) : super(
+    constructor(mangaId: Long, fromSource: Boolean = false, smartSearchConfig: SourcesController.SmartSearchConfig? = null, update: Boolean = false) : super(
         bundleOf(
-            MANGA_EXTRA to (manga?.id ?: 0),
+            MANGA_EXTRA to mangaId,
             FROM_SOURCE_EXTRA to fromSource,
             // SY -->
             SMART_SEARCH_CONFIG_EXTRA to smartSearchConfig,
@@ -152,15 +152,11 @@ class MangaController :
             // SY <--
         ),
     ) {
-        this.manga = manga
-        if (manga != null) {
-            source = Injekt.get<SourceManager>().getOrStub(manga.source)
+        this.manga = Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking()
+        if (this.manga != null) {
+            source = Injekt.get<SourceManager>().getOrStub(this.manga!!.source)
         }
     }
-
-    constructor(mangaId: Long) : this(
-        Injekt.get<DatabaseHelper>().getManga(mangaId).executeAsBlocking(),
-    )
 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(bundle.getLong(MANGA_EXTRA))
@@ -382,7 +378,7 @@ class MangaController :
 
         settingsSheet = ChaptersSettingsSheet(router, presenter)
 
-        trackSheet = TrackSheet(this, manga!!, (activity as MainActivity).supportFragmentManager)
+        trackSheet = TrackSheet(this, (activity as MainActivity).supportFragmentManager)
 
         presenter.redirectFlow
             .onEach { redirect ->
@@ -766,7 +762,7 @@ class MangaController :
             router?.popCurrentController()
             router?.replaceTopController(
                 MangaController(
-                    mergedManga,
+                    mergedManga.id!!,
                     true,
                     update = true,
                 ).withFadeTransaction(),

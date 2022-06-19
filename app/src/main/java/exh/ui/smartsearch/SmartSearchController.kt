@@ -15,7 +15,6 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.plus
 import uy.kohesive.injekt.injectLazy
 
 class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartSearchBinding, SmartSearchPresenter>() {
@@ -44,7 +43,7 @@ class SmartSearchController(bundle: Bundle? = null) : NucleusController<EhSmartS
         presenter.smartSearchFlow
             .onEach { results ->
                 if (results is SmartSearchPresenter.SearchResults.Found) {
-                    val transaction = MangaController(results.manga, true, smartSearchConfig).withFadeTransaction()
+                    val transaction = MangaController(results.manga.id!!, true, smartSearchConfig).withFadeTransaction()
                     router.replaceTopController(transaction)
                 } else {
                     if (results is SmartSearchPresenter.SearchResults.NotFound) {

@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.source
 
 import android.graphics.drawable.Drawable
 import eu.kanade.domain.source.model.SourceData
+import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
@@ -12,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.toPageUrl
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.awaitSingle
+import exh.source.MERGED_SOURCE_ID
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
@@ -105,3 +107,46 @@ fun Source.icon(): Drawable? = Injekt.get<ExtensionManager>().getAppIconForSourc
 fun Source.getPreferenceKey(): String = "source_$id"
 
 fun Source.toSourceData(): SourceData = SourceData(id = id, lang = lang, name = name)
+
+fun Source.getNameForMangaInfo(source: Source, getMergedSourcesString: (List<String>, Boolean) -> String): String {
+    val preferences = Injekt.get<PreferencesHelper>()
+    val enabledLanguages = preferences.enabledLanguages().get()
+        .filterNot { it in listOf("all", "other") }
+    // SY -->
+    val isMergedSource = source.id == MERGED_SOURCE_ID
+    // SY <--
+    val hasOneActiveLanguages = enabledLanguages.size == 1
+    val isInEnabledLanguages = source.lang in enabledLanguages
+    return when {
+        // SY -->
+        isMergedSource && hasOneActiveLanguages -> getMergedSourcesString(
+            enabledLanguages,
+            true,
+        )
+        isMergedSource -> getMergedSourcesString(
+            enabledLanguages,
+            false,
+        )
+        // SY <--
+        // For edge cases where user disables a source they got manga of in their library.
+        hasOneActiveLanguages && !isInEnabledLanguages -> toString()
+        // Hide the language tag when only one language is used.
+        hasOneActiveLanguages && isInEnabledLanguages -> name
+        else -> toString()
+    }
+}
+
+fun Source.getNameForMangaInfo(): String {
+    val preferences = Injekt.get<PreferencesHelper>()
+    val enabledLanguages = preferences.enabledLanguages().get()
+        .filterNot { it in listOf("all", "other") }
+    val hasOneActiveLanguages = enabledLanguages.size == 1
+    val isInEnabledLanguages = lang in enabledLanguages
+    return when {
+        // For edge cases where user disables a source they got manga of in their library.
+        hasOneActiveLanguages && !isInEnabledLanguages -> toString()
+        // Hide the language tag when only one language is used.
+        hasOneActiveLanguages && isInEnabledLanguages -> name
+        else -> toString()
+    }
+}

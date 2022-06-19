@@ -760,7 +760,7 @@ open class BrowseSourceController(bundle: Bundle) :
         val item = adapter?.getItem(position) as? SourceItem ?: return false
         router.pushController(
             MangaController(
-                item.manga,
+                item.manga.id!!,
                 true,
                 args.getParcelable(MangaController.SMART_SEARCH_CONFIG_EXTRA),
             ),

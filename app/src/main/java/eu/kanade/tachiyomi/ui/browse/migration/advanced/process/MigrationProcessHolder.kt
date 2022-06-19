@@ -67,7 +67,7 @@ class MigrationProcessHolder(
                     .onEach {
                         adapter.controller.router.pushController(
                             MangaController(
-                                manga,
+                                manga.id!!,
                                 true,
                             ),
                         )
@@ -103,7 +103,7 @@ class MigrationProcessHolder(
                         .onEach {
                             adapter.controller.router.pushController(
                                 MangaController(
-                                    searchResult,
+                                    searchResult.id!!,
                                     true,
                                 ),
                             )

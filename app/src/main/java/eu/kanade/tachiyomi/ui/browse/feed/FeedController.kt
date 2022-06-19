@@ -115,7 +115,7 @@ open class FeedController :
      */
     override fun onMangaClick(manga: Manga) {
         // Open MangaController.
-        parentController?.router?.pushController(MangaController(manga, true))
+        parentController?.router?.pushController(MangaController(manga.id!!, true))
     }
 
     /**
