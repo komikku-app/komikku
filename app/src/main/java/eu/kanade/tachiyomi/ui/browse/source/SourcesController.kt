@@ -10,7 +10,6 @@ import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.core.os.bundleOf
 import com.bluelinelabs.conductor.Controller
 import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.browse.SourcesScreen
@@ -62,16 +61,7 @@ class SourcesController(bundle: Bundle? = null) : SearchableComposeController<So
             presenter = presenter,
             onClickItem = { source ->
                 when {
-                    mode == Mode.SMART_SEARCH -> {
-                        router.pushController(
-                            SmartSearchController(
-                                bundleOf(
-                                    SmartSearchController.ARG_SOURCE_ID to source.id,
-                                    SmartSearchController.ARG_SMART_SEARCH_CONFIG to smartSearchConfig,
-                                ),
-                            ),
-                        )
-                    }
+                    mode == Mode.SMART_SEARCH -> router.pushController(SmartSearchController(source.id, smartSearchConfig!!))
                     preferences.useNewSourceNavigation().get() -> openSource(source, SourceFeedController(source.id))
                     else -> openSource(source, BrowseSourceController(source))
                 }
