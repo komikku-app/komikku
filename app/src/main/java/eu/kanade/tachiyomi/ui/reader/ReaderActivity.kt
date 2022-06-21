@@ -32,7 +32,7 @@ import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.core.graphics.ColorUtils
-import androidx.core.transition.addListener
+import androidx.core.transition.doOnEnd
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -1079,9 +1079,9 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         updateCropBordersShortcut()
         if (window.sharedElementEnterTransition is MaterialContainerTransform) {
             // Wait until transition is complete to avoid crash on API 26
-            window.sharedElementEnterTransition.addListener(
-                onEnd = { setOrientation(presenter.getMangaOrientationType()) },
-            )
+            window.sharedElementEnterTransition.doOnEnd {
+                setOrientation(presenter.getMangaOrientationType())
+            }
         } else {
             setOrientation(presenter.getMangaOrientationType())
         }
