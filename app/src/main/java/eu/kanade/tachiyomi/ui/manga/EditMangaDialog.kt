@@ -152,9 +152,9 @@ class EditMangaDialog : DialogController {
             }
         }
         binding.mangaGenresTags.clearFocus()
-        binding.coverLayout.clicks()
+        /*binding.coverLayout.clicks()
             .onEach { infoController.changeCover() }
-            .launchIn(infoController.viewScope)
+            .launchIn(infoController.viewScope)*/
         binding.resetTags.clicks()
             .onEach { resetTags() }
             .launchIn(infoController.viewScope)
