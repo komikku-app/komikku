@@ -23,7 +23,8 @@ SELECT
 C._id AS id,
 C.name,
 C.sort AS `order`,
-C.flags
+C.flags,
+C.manga_order AS `mangaOrder`
 FROM categories C
 JOIN mangas_categories MC
 ON C._id = MC.category_id

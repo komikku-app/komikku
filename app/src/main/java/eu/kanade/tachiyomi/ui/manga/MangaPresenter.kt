@@ -5,11 +5,13 @@ import android.net.Uri
 import android.os.Bundle
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.domain.category.interactor.GetCategories
-import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetDuplicateLibraryManga
+import eu.kanade.domain.manga.interactor.GetMangaWithChapters
+import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
@@ -31,7 +33,6 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
@@ -45,7 +46,6 @@ import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import eu.kanade.tachiyomi.util.system.logcat
@@ -98,12 +98,17 @@ class MangaPresenter(
     private val db: DatabaseHelper = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
-    private val coverCache: CoverCache = Injekt.get(),
+    // SY -->
     private val sourceManager: SourceManager = Injekt.get(),
-    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    // SY <--
+    private val coverCache: CoverCache = Injekt.get(),
+    private val getMangaWithChapters: GetMangaWithChapters = Injekt.get(),
+    // SY -->
+    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
+    // SY <--
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
-    private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
 ) : BasePresenter<MangaController>() {
 
     /**
@@ -183,7 +188,6 @@ class MangaPresenter(
         }
 
         // Manga info - start
-
         getMangaObservable()
             .observeOn(AndroidSchedulers.mainThread())
             // SY -->
@@ -232,27 +236,27 @@ class MangaPresenter(
             manga.id?.let { mangaId ->
                 if (source is MergedSource) {
                     getMergedChapterByMangaId.subscribe(mangaId)
-                        .map { source.transformMergedChapters(mangaId, it, true, dedupe) }
+                        .map { manga to source.transformMergedChapters(mangaId, it, true, dedupe) }
                 } else {
-                    getChapterByMangaId.subscribe(mangaId)
+                    getMangaWithChapters.subscribe(mangaId)
                 }
-                    .collectLatest { domainChapters ->
-                        val chapterItems = domainChapters.map { it.toDbChapter().toModel() }
+                    .collectLatest { (_, chapters) ->
+                        val chapterItems = chapters.map { it.toDbChapter().toModel() }
                         setDownloadedChapters(chapterItems)
                         this@MangaPresenter.allChapters = chapterItems
                         observeDownloads()
 
                         // SY -->
-                        if (domainChapters.isNotEmpty() && (source.isEhBasedSource()) && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
+                        if (chapters.isNotEmpty() && (source.isEhBasedSource()) && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
                             // Check for gallery in library and accept manga with lowest id
                             // Find chapters sharing same root
-                            updateHelper.findAcceptedRootAndDiscardOthers(manga.source, domainChapters.map { it.toDbChapter() })
+                            updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters.map { it.toDbChapter() })
                                 .onEach { (acceptedChain, _) ->
                                     // Redirect if we are not the accepted root
                                     if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
                                         // Update if any of our chapters are not in accepted manga's chapters
                                         xLogD("Found accepted manga %s", manga.url)
-                                        val ourChapterUrls = domainChapters.map { it.url }.toSet()
+                                        val ourChapterUrls = chapters.map { it.url }.toSet()
                                         val acceptedChapterUrls = acceptedChain.chapters.map { it.url }.toSet()
                                         val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
                                         redirectFlow.emit(
@@ -280,7 +284,6 @@ class MangaPresenter(
     }
 
     // Manga info - start
-
     private fun getMangaObservable(): Observable<Manga> {
         return db.getManga(manga.url, manga.source).asRxObservable()
     }
@@ -318,16 +321,11 @@ class MangaPresenter(
         if (fetchMangaJob?.isActive == true) return
         fetchMangaJob = presenterScope.launchIO {
             try {
-                val networkManga = source.getMangaDetails(manga.toMangaInfo())
-                val sManga = networkManga.toSManga()
-                manga.prepUpdateCover(coverCache, sManga, manualFetch)
-                manga.copyFrom(sManga)
-                if (!manga.favorite) {
-                    // if the manga isn't a favorite, set its title from source and update in db
-                    manga.title = sManga.title
+                manga.toDomainManga()?.let { domainManga ->
+                    val networkManga = source.getMangaDetails(domainManga.toMangaInfo())
+
+                    updateManga.awaitUpdateFromSource(domainManga, networkManga, manualFetch, coverCache)
                 }
-                manga.initialized = true
-                db.insertManga(manga).executeAsBlocking()
 
                 withUIContext { view?.onFetchMangaInfoDone() }
             } catch (e: Throwable) {

@@ -26,6 +26,7 @@ class SyncChaptersWithSource(
     private val chapterRepository: ChapterRepository = Injekt.get(),
     private val shouldUpdateDbChapter: ShouldUpdateDbChapter = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
+    private val updateChapter: UpdateChapter = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
 ) {
 
@@ -184,7 +185,7 @@ class SyncChaptersWithSource(
 
         if (toChange.isNotEmpty()) {
             val chapterUpdates = toChange.map { it.toChapterUpdate() }
-            chapterRepository.updateAll(chapterUpdates)
+            updateChapter.awaitAll(chapterUpdates)
         }
 
         // Set this manga as updated since chapters were changed
