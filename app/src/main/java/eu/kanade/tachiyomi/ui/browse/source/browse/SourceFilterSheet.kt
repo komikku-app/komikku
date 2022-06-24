@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ConcatAdapter
 import com.google.android.material.chip.Chip
@@ -127,7 +126,7 @@ class SourceFilterSheet(
             )
             // SY <--
             recycler.setHasFixedSize(true)
-            (binding.root[1] as ViewGroup).addView(recycler)
+            (binding.root.getChildAt(1) as ViewGroup).addView(recycler)
             addView(binding.root)
             // SY -->
             binding.saveSearchBtn.setOnClickListener { onSaveClicked() }
