@@ -6,16 +6,10 @@ import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.toLong
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
-import exh.eh.EHentaiThrottleManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import data.Mangas as DbManga
@@ -41,32 +35,6 @@ abstract class AbstractBackupManager(protected val context: Context) {
      */
     internal suspend fun getMangaFromDatabase(url: String, source: Long): DbManga? {
         return handler.awaitOneOrNull { mangasQueries.getMangaByUrlAndSource(url, source) }
-    }
-
-    /**
-     * Fetches chapter information.
-     *
-     * @param source source of manga
-     * @param manga manga that needs updating
-     * @param chapters list of chapters in the backup
-     * @return Updated manga chapters.
-     */
-    internal open suspend fun restoreChapters(source: Source, manga: Manga, chapters: List<Chapter> /* SY --> */, throttleManager: EHentaiThrottleManager /* SY <-- */): Pair<List<Chapter>, List<Chapter>> {
-        // SY -->
-        val fetchedChapters = if (source is EHentai) {
-            source.getChapterList(manga.toMangaInfo(), throttleManager::throttle)
-                .map { it.toSChapter() }
-        } else {
-            source.getChapterList(manga.toMangaInfo())
-                .map { it.toSChapter() }
-        }
-        // SY <--
-        val syncedChapters = syncChaptersWithSource(fetchedChapters, manga, source)
-        if (syncedChapters.first.isNotEmpty()) {
-            chapters.forEach { it.manga_id = manga.id }
-            updateChapters(chapters)
-        }
-        return syncedChapters
     }
 
     /**

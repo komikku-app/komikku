@@ -3,16 +3,12 @@ package eu.kanade.tachiyomi.data.backup
 import android.content.Context
 import android.net.Uri
 import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.chapter.NoChaptersException
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.track.TrackManager
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.util.system.createFileInCacheDir
-import exh.eh.EHentaiThrottleManager
 import kotlinx.coroutines.Job
 import uy.kohesive.injekt.injectLazy
 import java.io.File
@@ -35,10 +31,6 @@ abstract class AbstractBackupRestore<T : AbstractBackupManager>(protected val co
 
     protected var restoreAmount = 0
     protected var restoreProgress = 0
-
-    // SY -->
-    protected val throttleManager = EHentaiThrottleManager()
-    // SY <--
 
     /**
      * Mapping of source ID to source name from backup data
@@ -65,28 +57,6 @@ abstract class AbstractBackupRestore<T : AbstractBackupManager>(protected val co
 
         notifier.showRestoreComplete(time, errors.size, logFile.parent, logFile.name)
         return true
-    }
-
-    /**
-     * Fetches chapter information.
-     *
-     * @param source source of manga
-     * @param manga manga that needs updating
-     * @return Updated manga chapters.
-     */
-    internal suspend fun updateChapters(source: Source, manga: Manga, chapters: List<Chapter>): Pair<List<Chapter>, List<Chapter>> {
-        return try {
-            backupManager.restoreChapters(source, manga, chapters /* SY --> */, throttleManager /* SY <-- */)
-        } catch (e: Exception) {
-            // If there's any error, return empty update and continue.
-            val errorMessage = if (e is NoChaptersException) {
-                context.getString(R.string.no_chapters_error)
-            } else {
-                e.message
-            }
-            errors.add(Date() to "${manga.title} - $errorMessage")
-            Pair(emptyList(), emptyList())
-        }
     }
 
     /**

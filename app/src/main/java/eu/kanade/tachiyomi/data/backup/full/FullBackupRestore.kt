@@ -27,9 +27,6 @@ import java.util.Date
 class FullBackupRestore(context: Context, notifier: BackupNotifier) : AbstractBackupRestore<FullBackupManager>(context, notifier) {
 
     override suspend fun performRestore(uri: Uri): Boolean {
-        // SY -->
-        throttleManager.resetThrottle()
-        // SY <--
         backupManager = FullBackupManager(context)
 
         val backupString = context.contentResolver.openInputStream(uri)!!.source().gzip().buffer().use { it.readByteArray() }
