@@ -112,10 +112,8 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
         }
     }
 
-    fun getDescriptionAdapter(controller: MangaController): RecyclerView.Adapter<*>?
-
     @Composable
-    fun DescriptionComposable(controller: MangaController)
+    fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit)
 
     fun MangaInfo.id() = db.getManga(key, id).executeAsBlocking()?.id
     val SManga.id get() = (this as? Manga)?.id

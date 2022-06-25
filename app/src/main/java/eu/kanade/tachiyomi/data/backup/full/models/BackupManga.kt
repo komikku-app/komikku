@@ -97,7 +97,7 @@ data class BackupManga(
                 artist = customArtist,
                 description = customDescription,
                 genre = customGenre,
-                status = customStatus.takeUnless { it == 0 },
+                status = customStatus.takeUnless { it == 0 }?.toLong(),
             )
         }
         return null
@@ -138,7 +138,7 @@ data class BackupManga(
                     backupManga.customAuthor = it.author
                     backupManga.customDescription = it.description
                     backupManga.customGenre = it.genre
-                    backupManga.customStatus = it.status ?: 0
+                    backupManga.customStatus = it.status?.toInt() ?: 0
                 }
             }
             // SY <--

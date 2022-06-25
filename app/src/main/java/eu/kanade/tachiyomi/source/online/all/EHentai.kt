@@ -23,7 +23,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -46,7 +46,6 @@ import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
 import exh.ui.login.EhLoginActivity
 import exh.ui.metadata.adapters.EHentaiDescription
-import exh.ui.metadata.adapters.EHentaiDescriptionAdapter
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
@@ -84,7 +83,6 @@ import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import java.net.URLEncoder
-import java.util.ArrayList
 
 // TODO Consider gallery updating when doing tabbed browsing
 class EHentai(
@@ -1071,13 +1069,9 @@ class EHentai(
         return "${uri.scheme}://${uri.host}/g/${obj["gid"]!!.jsonPrimitive.int}/${obj["token"]!!.jsonPrimitive.content}/"
     }
 
-    override fun getDescriptionAdapter(controller: MangaController): EHentaiDescriptionAdapter {
-        return EHentaiDescriptionAdapter(controller)
-    }
-
     @Composable
-    override fun DescriptionComposable(controller: MangaController) {
-        EHentaiDescription(controller)
+    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
+        EHentaiDescription(state, openMetadataViewer, search)
     }
 
     companion object {

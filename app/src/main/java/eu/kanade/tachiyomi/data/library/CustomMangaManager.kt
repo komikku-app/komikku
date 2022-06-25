@@ -77,7 +77,7 @@ class CustomMangaManager(val context: Context) {
         val artist: String? = null,
         val description: String? = null,
         val genre: List<String>? = null,
-        val status: Int? = null,
+        val status: Long? = null,
     ) {
 
         fun toManga() = CustomMangaInfo(
@@ -87,7 +87,7 @@ class CustomMangaManager(val context: Context) {
             artist = this@MangaJson.artist,
             description = this@MangaJson.description,
             genre = this@MangaJson.genre,
-            status = this@MangaJson.status?.takeUnless { it == 0 },
+            status = this@MangaJson.status?.takeUnless { it == 0L },
         )
     }
 
@@ -98,7 +98,7 @@ class CustomMangaManager(val context: Context) {
         val artist: String? = null,
         val description: String? = null,
         val genre: List<String>? = null,
-        val status: Int? = null,
+        val status: Long? = null,
     ) {
         val genreString by lazy {
             genre?.joinToString()

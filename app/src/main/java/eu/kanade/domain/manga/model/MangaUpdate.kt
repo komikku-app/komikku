@@ -18,4 +18,7 @@ data class MangaUpdate(
     val status: Long? = null,
     val thumbnailUrl: String? = null,
     val initialized: Boolean? = null,
+    // SY -->
+    val filteredScanlators: List<String>? = null,
+    // SY <--
 )

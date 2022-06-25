@@ -682,7 +682,7 @@ class LibraryPresenter(
                     manga.artist.takeUnless { it == manga.originalArtist },
                     manga.description.takeUnless { it == manga.originalDescription },
                     manga.genre.takeUnless { it == manga.originalGenre }?.let { manga.getGenres() },
-                    manga.status.takeUnless { it == manga.originalStatus },
+                    manga.status.takeUnless { it == manga.originalStatus }?.toLong(),
                 )
             }
             if (mangaJson != null) {

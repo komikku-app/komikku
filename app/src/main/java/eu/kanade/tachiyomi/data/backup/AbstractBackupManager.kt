@@ -111,6 +111,7 @@ abstract class AbstractBackupManager(protected val context: Context) {
                 coverLastModified = manga.cover_last_modified,
                 dateAdded = manga.date_added,
                 mangaId = manga.id!!,
+                filteredScanlators = manga.filtered_scanlators,
             )
         }
         return manga.id!!

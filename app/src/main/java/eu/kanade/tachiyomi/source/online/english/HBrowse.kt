@@ -10,13 +10,12 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.HBrowseDescription
-import exh.ui.metadata.adapters.HBrowseDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -87,12 +86,8 @@ class HBrowse(delegate: HttpSource, val context: Context) :
         return uri.pathSegments.firstOrNull()?.let { "/$it/c00001/" }
     }
 
-    override fun getDescriptionAdapter(controller: MangaController): HBrowseDescriptionAdapter {
-        return HBrowseDescriptionAdapter(controller)
-    }
-
     @Composable
-    override fun DescriptionComposable(controller: MangaController) {
-        HBrowseDescription(controller)
+    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
+        HBrowseDescription(state, openMetadataViewer)
     }
 }

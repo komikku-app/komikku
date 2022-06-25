@@ -2,6 +2,7 @@ package eu.kanade.data.manga
 
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.listOfStringsAdapter
+import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.data.toLong
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
@@ -19,6 +20,10 @@ class MangaRepositoryImpl(
     }
 
     override suspend fun subscribeMangaById(id: Long): Flow<Manga> {
+        return handler.subscribeToOne { mangasQueries.getMangaById(id, mangaMapper) }
+    }
+
+    override suspend fun getMangaByIdAsFlow(id: Long): Flow<Manga> {
         return handler.subscribeToOne { mangasQueries.getMangaById(id, mangaMapper) }
     }
 
@@ -72,6 +77,7 @@ class MangaRepositoryImpl(
                     coverLastModified = update.coverLastModified,
                     dateAdded = update.dateAdded,
                     mangaId = update.id,
+                    filteredScanlators = update.filteredScanlators?.let(listOfStringsAndAdapter::encode),
                 )
             }
             true

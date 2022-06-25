@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.metadata.metadata.TsuminoSearchMetadata.Companion.TAG_TYPE_DEFAULT
@@ -19,7 +19,6 @@ import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUA
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.TsuminoDescription
-import exh.ui.metadata.adapters.TsuminoDescriptionAdapter
 import exh.util.dropBlank
 import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
@@ -144,12 +143,8 @@ class Tsumino(delegate: HttpSource, val context: Context) :
         val RATING_FAVORITES_REGEX = "/ ([0-9].*) favs".toRegex()
     }
 
-    override fun getDescriptionAdapter(controller: MangaController): TsuminoDescriptionAdapter {
-        return TsuminoDescriptionAdapter(controller)
-    }
-
     @Composable
-    override fun DescriptionComposable(controller: MangaController) {
-        TsuminoDescription(controller)
+    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
+        TsuminoDescription(state, openMetadataViewer)
     }
 }

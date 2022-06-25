@@ -23,7 +23,7 @@ import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.md.MangaDexFabHeaderAdapter
 import exh.md.dto.MangaDto
@@ -50,7 +50,6 @@ import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.MangaDexDescription
-import exh.ui.metadata.adapters.MangaDexDescriptionAdapter
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import rx.Observable
@@ -217,13 +216,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     // MetadataSource methods
     override val metaClass: KClass<MangaDexSearchMetadata> = MangaDexSearchMetadata::class
 
-    override fun getDescriptionAdapter(controller: MangaController): MangaDexDescriptionAdapter {
-        return MangaDexDescriptionAdapter(controller)
-    }
-
     @Composable
-    override fun DescriptionComposable(controller: MangaController) {
-        MangaDexDescription(controller)
+    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
+        MangaDexDescription(state, openMetadataViewer)
     }
 
     override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Triple<MangaDto, List<String>, StatisticsMangaDto>) {

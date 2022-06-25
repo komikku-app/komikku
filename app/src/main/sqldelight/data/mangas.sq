@@ -114,7 +114,8 @@ UPDATE mangas SET
     viewer = coalesce(:viewer, viewer),
     chapter_flags = coalesce(:chapterFlags, chapter_flags),
     cover_last_modified = coalesce(:coverLastModified, cover_last_modified),
-    date_added = coalesce(:dateAdded, date_added)
+    date_added = coalesce(:dateAdded, date_added),
+    filtered_scanlators = coalesce(:filteredScanlators, filtered_scanlators)
 WHERE _id = :mangaId;
 
 selectLastInsertedRowId:

@@ -11,14 +11,13 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.HitomiDescription
-import exh.ui.metadata.adapters.HitomiDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import tachiyomi.source.model.MangaInfo
@@ -138,13 +137,9 @@ class Hitomi(delegate: HttpSource, val context: Context) :
         return "https://hitomi.la/manga/${uri.pathSegments[1].substringBefore('.')}.html"
     }
 
-    override fun getDescriptionAdapter(controller: MangaController): HitomiDescriptionAdapter {
-        return HitomiDescriptionAdapter(controller)
-    }
-
     @Composable
-    override fun DescriptionComposable(controller: MangaController) {
-        HitomiDescription(controller)
+    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
+        HitomiDescription(state, openMetadataViewer)
     }
 
     companion object {

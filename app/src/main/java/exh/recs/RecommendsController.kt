@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.View
 import androidx.core.os.bundleOf
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
@@ -19,7 +19,7 @@ class RecommendsController(bundle: Bundle) : BrowseSourceController(bundle) {
 
     constructor(manga: Manga, source: CatalogueSource) : this(
         bundleOf(
-            MANGA_ID to manga.id!!,
+            MANGA_ID to manga.id,
             SOURCE_ID_KEY to source.id,
         ),
     )

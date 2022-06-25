@@ -11,13 +11,12 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.EightMusesDescription
-import exh.ui.metadata.adapters.EightMusesDescriptionAdapter
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -99,12 +98,8 @@ class EightMuses(delegate: HttpSource, val context: Context) :
         return "/comics/album/${path.joinToString("/")}"
     }
 
-    override fun getDescriptionAdapter(controller: MangaController): EightMusesDescriptionAdapter {
-        return EightMusesDescriptionAdapter(controller)
-    }
-
     @Composable
-    override fun DescriptionComposable(controller: MangaController) {
-        EightMusesDescription(controller)
+    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
+        EightMusesDescription(state, openMetadataViewer)
     }
 }

@@ -42,7 +42,7 @@ open class MangaImpl : Manga {
         set(value) { ogGenre = value }
 
     override var status: Int
-        get() = if (favorite) customManga?.status ?: ogStatus else ogStatus
+        get() = if (favorite) customManga?.status?.toInt() ?: ogStatus else ogStatus
         set(value) { ogStatus = value }
     // SY <--
 
