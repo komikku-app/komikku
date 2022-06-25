@@ -102,7 +102,7 @@ class ApiMangaParser(
                 lastChapterNumber = lastChapter?.floor()
 
                 statistics?.rating?.let {
-                    rating = it.average?.toFloat()
+                    rating = it.bayesian?.toFloat()
                     // manga.users = it.users
                 }
 
