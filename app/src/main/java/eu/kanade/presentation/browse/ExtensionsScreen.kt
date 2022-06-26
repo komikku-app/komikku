@@ -304,6 +304,8 @@ fun ExtensionItemContent(
             if (warning != null) {
                 Text(
                     text = stringResource(warning).uppercase() /* SY --> */ plusRepo extension /* SY <-- */,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.error,
                     ),
@@ -311,6 +313,8 @@ fun ExtensionItemContent(
             } /* SY --> */ else if (extension is Extension.Available && extension.isRepoSource) {
                 Text(
                     text = stringResource(R.string.repo_source).uppercase(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.error,
                     ),
