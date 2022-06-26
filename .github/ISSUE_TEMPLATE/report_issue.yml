@@ -90,6 +90,8 @@ body:
       label: Acknowledgements
       description: Read this carefully, we will close and ignore your issue if you skimmed through this.
       options:
+        - label: This is a TachiyomiSY specific issue that does not happen in [Tachiyomi Preview](https://github.com/tachiyomiorg/tachiyomi/).
+          required: true
         - label: I have searched the existing issues and this is a new ticket, **NOT** a duplicate or related to another open or closed issue.
           required: true
         - label: I have written a short but informative title.
