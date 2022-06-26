@@ -38,7 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
@@ -335,14 +337,12 @@ private fun MangaScreenSmallImpl(
                     doGlobalSearch = onSearch,
                     showMergeWithAnother = state.showMergeWithAnother,
                     onMergeWithAnotherClicked = onMergeWithAnotherClicked,
-                    mangaMetadataHeader = remember {
-                        getDescriptionComposable(
-                            source = state.source.getMainSource<MetadataSource<*, *>>(),
-                            state = state,
-                            openMetadataViewer = onMetadataViewerClicked,
-                            search = { onSearch(it, false) },
-                        )
-                    },
+                    mangaMetadataHeader = getDescriptionComposable(
+                        source = remember { state.source.getMainSource<MetadataSource<*, *>>() },
+                        state = state,
+                        openMetadataViewer = onMetadataViewerClicked,
+                        search = { onSearch(it, false) },
+                    ),
                     searchMetadataChips = remember { SearchMetadataChips(state.meta, state.source, state.manga.genre) },
                     scrollBehavior = scrollBehavior,
                     actionModeCounter = selected.size,
@@ -702,14 +702,12 @@ fun MangaScreenLargeImpl(
                     showMergeWithAnother = state.showMergeWithAnother,
                     onRecommendClicked = onRecommendClicked,
                     onMergeWithAnotherClicked = onMergeWithAnotherClicked,
-                    mangaMetadataHeader = remember {
-                        getDescriptionComposable(
-                            source = state.source.getMainSource<MetadataSource<*, *>>(),
-                            state = state,
-                            openMetadataViewer = onMetadataViewerClicked,
-                            search = { onSearch(it, false) },
-                        )
-                    },
+                    mangaMetadataHeader = getDescriptionComposable(
+                        source = remember { state.source.getMainSource<MetadataSource<*, *>>() },
+                        state = state,
+                        openMetadataViewer = onMetadataViewerClicked,
+                        search = { onSearch(it, false) },
+                    ),
                     searchMetadataChips = remember { SearchMetadataChips(state.meta, state.source, state.manga.genre) },
                 )
 
@@ -874,6 +872,9 @@ fun onChapterItemClick(
     }
 }
 
+@Composable
+@ReadOnlyComposable
+@Stable
 private fun getDescriptionComposable(
     source: MetadataSource<*, *>?,
     state: MangaScreenState.Success,
