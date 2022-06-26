@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import exh.util.nullIfBlank
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
@@ -129,7 +130,7 @@ data class BackupManga(
                 viewer = (manga.viewer.toInt() and ReadingModeType.MASK),
                 viewer_flags = manga.viewer.toInt(),
                 chapterFlags = manga.chapter_flags.toInt(),
-                filtered_scanlators = listOfStringsAndAdapter.encode(manga.filtered_scanlators.orEmpty()),
+                filtered_scanlators = listOfStringsAndAdapter.encode(manga.filtered_scanlators.orEmpty()).nullIfBlank(),
                 // SY -->
             ).also { backupManga ->
                 customMangaManager?.getManga(manga._id)?.let {

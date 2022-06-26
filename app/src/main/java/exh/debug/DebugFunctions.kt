@@ -375,4 +375,20 @@ object DebugFunctions {
             )
         }
     }
+
+    fun resetFilteredScanlatorsForAllManga() {
+        db.inTransaction {
+            db.lowLevel().executeSQL(
+                RawQuery.builder()
+                    .query(
+                        """
+                        UPDATE ${MangaTable.TABLE}
+                            SET ${MangaTable.COL_FILTERED_SCANLATORS} = NULL
+                        """.trimIndent(),
+                    )
+                    .affectsTables(MangaTable.TABLE)
+                    .build(),
+            )
+        }
+    }
 }
