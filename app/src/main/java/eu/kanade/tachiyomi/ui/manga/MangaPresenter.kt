@@ -3,8 +3,11 @@ package eu.kanade.tachiyomi.ui.manga
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.Immutable
+import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.interactor.MoveMangaToCategories
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
@@ -20,6 +23,11 @@ import eu.kanade.domain.manga.model.TriStateFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
+import eu.kanade.domain.track.interactor.DeleteTrack
+import eu.kanade.domain.track.interactor.GetTracks
+import eu.kanade.domain.track.interactor.InsertTrack
+import eu.kanade.domain.track.model.toDbTrack
+import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -45,7 +53,6 @@ import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -72,6 +79,7 @@ import exh.source.isEhBasedSource
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfEmpty
 import exh.util.trimOrNull
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
@@ -79,15 +87,17 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
-import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
@@ -122,6 +132,12 @@ class MangaPresenter(
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    private val getCategories: GetCategories = Injekt.get(),
+    private val deleteTrack: DeleteTrack = Injekt.get(),
+    private val getTracks: GetTracks = Injekt.get(),
+    private val moveMangaToCategories: MoveMangaToCategories = Injekt.get(),
+    private val insertTrack: InsertTrack = Injekt.get(),
+    private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
 ) : BasePresenter<MangaController>() {
 
     private val _state: MutableStateFlow<MangaScreenState> = MutableStateFlow(MangaScreenState.Loading)
@@ -152,7 +168,6 @@ class MangaPresenter(
 
     private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
-    private var trackSubscription: Subscription? = null
     private var searchTrackerJob: Job? = null
     private var refreshTrackersJob: Job? = null
 
@@ -279,17 +294,7 @@ class MangaPresenter(
                                     mergedData = mergedData,
                                     showRecommendationsInOverflow = preferences.recommendsInOverflow().get(),
                                     showMergeWithAnother = smartSearched,
-                                ).also {
-                                    getTrackingObservable(manga)
-                                        .subscribeLatestCache(
-                                            { _, count ->
-                                                successState?.let {
-                                                    _state.value = it.copy(trackingCount = count)
-                                                }
-                                            },
-                                            { _, error -> logcat(LogPriority.ERROR, error) },
-                                        )
-                                }
+                                )
                             }
 
                             // Update state
@@ -304,7 +309,8 @@ class MangaPresenter(
                         }
                     }
 
-                    fetchTrackers()
+                    observeTrackers()
+                    observeTrackingCount()
                     observeDownloads()
 
                     if (!manga.initialized) {
@@ -332,24 +338,6 @@ class MangaPresenter(
     }
 
     // Manga info - start
-
-    private fun getTrackingObservable(manga: DomainManga): Observable<Int> {
-        if (!trackManager.hasLoggedServices()) {
-            return Observable.just(0)
-        }
-
-        return db.getTracks(manga.id).asRxObservable()
-            .map { tracks ->
-                val loggedServices = trackManager.services.filter { it.isLogged }.map { it.id }
-                tracks
-                    // SY -->
-                    .filterNot { it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int }
-                    // SY <--
-                    .filter { it.sync_id in loggedServices }
-            }
-            .map { it.size }
-    }
-
     /**
      * Fetch manga information from source.
      */
@@ -688,8 +676,8 @@ class MangaPresenter(
      * @return Array of category ids the manga is in, if none returns default id
      */
     fun getMangaCategoryIds(manga: DomainManga): Array<Int> {
-        val categories = db.getCategoriesForManga(manga.toDbManga()).executeAsBlocking()
-        return categories.mapNotNull { it.id }.toTypedArray()
+        val categories = runBlocking { getCategories.await(manga.id) }
+        return categories.map { it.id.toInt() }.toTypedArray()
     }
 
     fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Category>) {
@@ -706,8 +694,11 @@ class MangaPresenter(
      * @param categories the selected categories.
      */
     private fun moveMangaToCategories(manga: Manga, categories: List<Category>) {
-        val mc = categories.filter { it.id != 0 }.map { MangaCategory.create(manga, it) }
-        db.setMangaCategories(mc, listOf(manga))
+        val mangaId = manga.id ?: return
+        val categoryIds = categories.mapNotNull { it.id?.toLong() }
+        presenterScope.launchIO {
+            moveMangaToCategories.await(mangaId, categoryIds)
+        }
     }
 
     /**
@@ -718,6 +709,27 @@ class MangaPresenter(
      */
     private fun moveMangaToCategory(manga: Manga, category: Category?) {
         moveMangaToCategories(manga, listOfNotNull(category))
+    }
+
+    private fun observeTrackingCount() {
+        val manga = successState?.manga ?: return
+
+        presenterScope.launchIO {
+            getTracks.subscribe(manga.id)
+                .catch { logcat(LogPriority.ERROR, it) }
+                .map { tracks ->
+                    val loggedServicesId = loggedServices.map { it.id.toLong() }
+                    tracks
+                        .filter { it.syncId in loggedServicesId }
+                        // SY -->
+                        .filterNot { it.syncId == TrackManager.MDLIST.toLong() && it.status == FollowStatus.UNFOLLOWED.int.toLong() }
+                        // SY <--
+                        .size
+                }
+                .collectLatest { trackingCount ->
+                    updateSuccessState { it.copy(trackingCount = trackingCount) }
+                }
+        }
     }
 
     // Manga info - end
@@ -891,7 +903,7 @@ class MangaPresenter(
             val modified = chapters.filterNot { it.read == read }
             modified
                 .map { ChapterUpdate(id = it.id, read = read) }
-                .forEach { updateChapter.await(it) }
+                .let { updateChapter.awaitAll(it) }
             if (read && preferences.removeAfterMarkedAsRead()) {
                 deleteChapters(modified)
             }
@@ -924,7 +936,7 @@ class MangaPresenter(
             chapters
                 .filterNot { it.bookmark == bookmarked }
                 .map { ChapterUpdate(id = it.id, bookmark = bookmarked) }
-                .forEach { updateChapter.await(it) }
+                .let { updateChapter.awaitAll(it) }
         }
     }
 
@@ -972,6 +984,7 @@ class MangaPresenter(
      */
     fun setUnreadFilter(state: State) {
         val manga = successState?.manga ?: return
+
         val flag = when (state) {
             State.IGNORE -> DomainManga.SHOW_ALL
             State.INCLUDE -> DomainManga.CHAPTER_SHOW_UNREAD
@@ -988,11 +1001,13 @@ class MangaPresenter(
      */
     fun setDownloadedFilter(state: State) {
         val manga = successState?.manga ?: return
+
         val flag = when (state) {
             State.IGNORE -> DomainManga.SHOW_ALL
             State.INCLUDE -> DomainManga.CHAPTER_SHOW_DOWNLOADED
             State.EXCLUDE -> DomainManga.CHAPTER_SHOW_NOT_DOWNLOADED
         }
+
         presenterScope.launchIO {
             setMangaChapterFlags.awaitSetDownloadedFilter(manga, flag)
         }
@@ -1004,11 +1019,13 @@ class MangaPresenter(
      */
     fun setBookmarkedFilter(state: State) {
         val manga = successState?.manga ?: return
+
         val flag = when (state) {
             State.IGNORE -> DomainManga.SHOW_ALL
             State.INCLUDE -> DomainManga.CHAPTER_SHOW_BOOKMARKED
             State.EXCLUDE -> DomainManga.CHAPTER_SHOW_NOT_BOOKMARKED
         }
+
         presenterScope.launchIO {
             setMangaChapterFlags.awaitSetBookmarkFilter(manga, flag)
         }
@@ -1029,6 +1046,7 @@ class MangaPresenter(
      */
     fun setDisplayMode(mode: Long) {
         val manga = successState?.manga ?: return
+
         presenterScope.launchIO {
             setMangaChapterFlags.awaitSetDisplayMode(manga, mode)
         }
@@ -1040,6 +1058,7 @@ class MangaPresenter(
      */
     fun setSorting(sort: Long) {
         val manga = successState?.manga ?: return
+
         presenterScope.launchIO {
             setMangaChapterFlags.awaitSetSortingModeOrFlipOrder(manga, sort)
         }
@@ -1049,36 +1068,42 @@ class MangaPresenter(
 
     // Track sheet - start
 
-    private fun fetchTrackers() {
-        val state = successState ?: return
-        val manga = successState?.manga ?: return
-        trackSubscription?.let { remove(it) }
-        trackSubscription = db.getTracks(manga.id)
-            .asRxObservable()
-            .map { tracks ->
-                loggedServices.map { service ->
-                    TrackItem(tracks.find { it.sync_id == service.id }, service)
-                }
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            // SY -->
-            .map { trackItems ->
-                if (manga.source in mangaDexSourceIds || state.mergedData?.manga?.values.orEmpty().any { it.source in mangaDexSourceIds }) {
-                    val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
-                    when {
-                        mdTrack == null -> {
-                            trackItems
-                        }
-                        mdTrack.track == null -> {
-                            trackItems - mdTrack + createMdListTrack()
-                        }
-                        else -> trackItems
+    private fun observeTrackers() {
+        val state = successState
+        val manga = state?.manga ?: return
+
+        presenterScope.launchIO {
+            getTracks.subscribe(manga.id)
+                .catch { logcat(LogPriority.ERROR, it) }
+                .map { tracks ->
+                    val dbTracks = tracks.map { it.toDbTrack() }
+                    loggedServices.map { service ->
+                        TrackItem(dbTracks.find { it.sync_id == service.id }, service)
                     }
-                } else trackItems
-            }
-            // SY <--
-            .doOnNext { _trackList = it }
-            .subscribeLatestCache(MangaController::onNextTrackers)
+                }
+                // SY -->
+                .map { trackItems ->
+                    if (manga.source in mangaDexSourceIds || state.mergedData?.manga?.values.orEmpty().any { it.source in mangaDexSourceIds }) {
+                        val mdTrack = trackItems.firstOrNull { it.service.id == TrackManager.MDLIST }
+                        when {
+                            mdTrack == null -> {
+                                trackItems
+                            }
+                            mdTrack.track == null -> {
+                                trackItems - mdTrack + createMdListTrack()
+                            }
+                            else -> trackItems
+                        }
+                    } else trackItems
+                }
+                // SY <--
+                .collectLatest { trackItems ->
+                    _trackList = trackItems
+                    withContext(Dispatchers.Main) {
+                        view?.onNextTrackers(trackItems)
+                    }
+                }
+        }
     }
 
     // SY -->
@@ -1099,16 +1124,21 @@ class MangaPresenter(
             supervisorScope {
                 try {
                     trackList
-                        .filter { it.track != null }
                         .map {
                             async {
-                                val track = it.service.refresh(it.track!!)
-                                db.insertTrack(track).executeAsBlocking()
+                                val track = it.track ?: return@async null
 
-                                if (it.service is EnhancedTrackService) {
+                                val updatedTrack = it.service.refresh(track)
+
+                                val domainTrack = updatedTrack.toDomainTrack() ?: return@async null
+                                insertTrack.await(domainTrack)
+
+                                (it.service as? EnhancedTrackService)?.let { _ ->
                                     val allChapters = successState?.chapters
-                                        ?.map { it.chapter.toDbChapter() } ?: emptyList()
-                                    syncChaptersWithTrackServiceTwoWay(db, allChapters, track, it.service)
+                                        ?.map { it.chapter } ?: emptyList()
+
+                                    syncChaptersWithTrackServiceTwoWay
+                                        .await(allChapters, domainTrack, it.service)
                                 }
                             }
                         }
@@ -1146,10 +1176,17 @@ class MangaPresenter(
                         .map { it.chapter.toDbChapter() }
                     val hasReadChapters = allChapters.any { it.read }
                     service.bind(item, hasReadChapters)
-                    db.insertTrack(item).executeAsBlocking()
 
-                    if (service is EnhancedTrackService) {
-                        syncChaptersWithTrackServiceTwoWay(db, allChapters, item, service)
+                    item.toDomainTrack(idRequired = false)?.let { track ->
+                        insertTrack.await(track)
+
+                        (service as? EnhancedTrackService)?.let { _ ->
+                            val chapters = successState.chapters
+                                .map { it.chapter }
+
+                            syncChaptersWithTrackServiceTwoWay
+                                .await(chapters, track, service)
+                        }
                     }
                 } catch (e: Throwable) {
                     this@MangaPresenter.xLogD("Error registering tracking", e)
@@ -1163,21 +1200,28 @@ class MangaPresenter(
 
     fun unregisterTracking(service: TrackService) {
         val manga = successState?.manga ?: return
-        db.deleteTrackForManga(manga.toDbManga(), service).executeAsBlocking()
+
+        presenterScope.launchIO {
+            deleteTrack.await(manga.id, service.id.toLong())
+        }
     }
 
     private fun updateRemote(track: Track, service: TrackService) {
         launchIO {
             try {
                 service.update(track)
-                db.insertTrack(track).executeAsBlocking()
+
+                track.toDomainTrack(idRequired = false)?.let {
+                    insertTrack.await(it)
+                }
+
                 withUIContext { view?.onTrackingRefreshDone() }
             } catch (e: Throwable) {
                 this@MangaPresenter.xLogD("Error updating tracking", e)
                 withUIContext { view?.onTrackingRefreshError(e) }
 
                 // Restart on error to set old values
-                fetchTrackers()
+                observeTrackers()
             }
         }
     }

@@ -1,5 +1,6 @@
 package eu.kanade.domain.manga.model
 
+import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -178,7 +179,7 @@ fun TriStateFilter.toTriStateGroupState(): ExtendedNavigationView.Item.TriStateG
 }
 
 // TODO: Remove when all deps are migrated
-fun Manga.toDbManga(): DbManga = DbManga.create(url, ogTitle, source).also {
+fun Manga.toDbManga(): DbManga = DbManga.create(source).also {
     it.id = id
     it.favorite = favorite
     it.last_update = lastUpdate
@@ -186,7 +187,17 @@ fun Manga.toDbManga(): DbManga = DbManga.create(url, ogTitle, source).also {
     it.viewer_flags = viewerFlags.toInt()
     it.chapter_flags = chapterFlags.toInt()
     it.cover_last_modified = coverLastModified
+    it.url = url
+    // SY -->
+    it.title = ogTitle
+    it.artist = ogArtist
+    it.author = ogAuthor
+    it.description = ogDescription
+    it.genre = ogGenre?.let(listOfStringsAdapter::encode)
+    it.status = ogStatus.toInt()
+    // SY <--
     it.thumbnail_url = thumbnailUrl
+    it.initialized = initialized
 }
 
 fun Manga.toMangaInfo(): MangaInfo = MangaInfo(
