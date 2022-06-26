@@ -130,7 +130,7 @@ data class BackupManga(
                 viewer = (manga.viewer.toInt() and ReadingModeType.MASK),
                 viewer_flags = manga.viewer.toInt(),
                 chapterFlags = manga.chapter_flags.toInt(),
-                filtered_scanlators = listOfStringsAndAdapter.encode(manga.filtered_scanlators.orEmpty()).nullIfBlank(),
+                filtered_scanlators = manga.filtered_scanlators?.let(listOfStringsAndAdapter::encode).nullIfBlank(),
                 // SY -->
             ).also { backupManga ->
                 customMangaManager?.getManga(manga._id)?.let {
