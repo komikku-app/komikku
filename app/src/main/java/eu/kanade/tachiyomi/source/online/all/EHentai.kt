@@ -37,6 +37,7 @@ import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_GENRE_NAMESPACE
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_META_NAMESPACE
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_UPLOADER_NAMESPACE
+import exh.metadata.metadata.EHentaiSearchMetadata.Companion.EH_VISIBILITY_NAMESPACE
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_LIGHT
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_NORMAL
 import exh.metadata.metadata.EHentaiSearchMetadata.Companion.TAG_TYPE_WEAK
@@ -687,6 +688,9 @@ class EHentai(
                 }
                 uploader?.let {
                     tags += RaisedTag(EH_UPLOADER_NAMESPACE, it, TAG_TYPE_VIRTUAL)
+                }
+                visible?.let {
+                    tags += RaisedTag(EH_VISIBILITY_NAMESPACE, it.substringAfter('(').substringBeforeLast(')'), TAG_TYPE_VIRTUAL)
                 }
             }
         }
