@@ -167,7 +167,7 @@ class LibraryPresenter(
         val filterCompleted = preferences.filterCompleted().get()
         val loggedInServices = trackManager.services.filter { trackService -> trackService.isLogged }
             .associate { trackService ->
-                Pair(trackService.id, preferences.filterTracking(trackService.id).get())
+                Pair(trackService.id, preferences.filterTracking(trackService.id.toInt()).get())
             }
         val isNotAnyLoggedIn = !loggedInServices.values.any()
         // SY -->
@@ -220,8 +220,8 @@ class LibraryPresenter(
 
             if (!containsExclude.any() && !containsInclude.any()) return@tracking true
 
-            val exclude = trackedManga?.filter { containsExclude.containsKey(it.key) && it.value }?.values ?: emptyList()
-            val include = trackedManga?.filter { containsInclude.containsKey(it.key) && it.value }?.values ?: emptyList()
+            val exclude = trackedManga?.filter { containsExclude.containsKey(it.key.toLong()) && it.value }?.values ?: emptyList()
+            val include = trackedManga?.filter { containsInclude.containsKey(it.key.toLong()) && it.value }?.values ?: emptyList()
 
             if (containsInclude.any() && containsExclude.any()) {
                 return@tracking if (exclude.isNotEmpty()) !exclude.any() else include.any()
@@ -553,7 +553,7 @@ class LibraryPresenter(
                 .mapValues { tracksForMangaId ->
                     // Check if any of the trackers is logged in for the current manga id
                     tracksForMangaId.value.associate {
-                        Pair(it.sync_id, trackManager.getService(it.sync_id)?.isLogged.takeUnless { isLogged -> isLogged == true && it.sync_id == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int } ?: false)
+                        Pair(it.sync_id, trackManager.getService(it.sync_id.toLong())?.isLogged.takeUnless { isLogged -> isLogged == true && it.sync_id.toLong() == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int } ?: false)
                     }
                 }
         }.observeOn(Schedulers.io())
@@ -878,7 +878,7 @@ class LibraryPresenter(
                 }
                 libraryManga.forEach { libraryItem ->
                     val status = tracks[libraryItem.manga.id]?.firstNotNullOfOrNull { track ->
-                        statuses[track.sync_id]?.get(track.status)
+                        statuses[track.sync_id.toLong()]?.get(track.status)
                     } ?: "not tracked"
                     val group = grouping.values.find { (statusInt) ->
                         statusInt == (trackManager.trackMap[status] ?: TrackManager.OTHER)

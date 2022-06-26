@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.ui.library
 
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -51,6 +51,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         trackManager.hasLoggedServices()
     }
     private val services = trackManager.services.map { service -> service.id to controller.activity!!.getString(service.nameRes()) }.toMap()
+    private val getTracks: GetTracks by injectLazy()
 
     // Keep compatibility as searchText field was replaced when we upgraded FlexibleAdapter
     var searchText
@@ -166,7 +167,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         }
     }
 
-    private fun filterManga(
+    private suspend fun filterManga(
         queries: List<QueryComponent>,
         manga: LibraryManga,
         checkGenre: Boolean = true,
@@ -174,7 +175,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
         searchTitles: List<SearchTitle>? = null,
     ): Boolean {
         val mappedQueries = queries.groupBy { it.excluded }
-        val tracks = if (hasLoggedServices) db.getTracks(manga.id).executeAsBlocking().toList() else null
+        val tracks = if (hasLoggedServices) getTracks.await(manga.id!!).toList() else null
         val source = sourceManager.get(manga.source)
         val genre = if (checkGenre) manga.getGenres().orEmpty() else emptyList()
         val hasNormalQuery = mappedQueries[false]?.all { queryComponent ->
@@ -238,12 +239,12 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
             (hasNormalQuery == null && doesNotHaveExcludedQuery != null && doesNotHaveExcludedQuery)
     }
 
-    private fun filterTracks(constraint: String, tracks: List<Track>): Boolean {
+    private fun filterTracks(constraint: String, tracks: List<eu.kanade.domain.track.model.Track>): Boolean {
         return tracks.any {
-            val trackService = trackManager.getService(it.sync_id)
+            val trackService = trackManager.getService(it.syncId)
             if (trackService != null) {
-                val status = trackService.getStatus(it.status)
-                val name = services[it.sync_id]
+                val status = trackService.getStatus(it.status.toInt())
+                val name = services[it.syncId]
                 return@any status.contains(constraint, true) || name?.contains(constraint, true) == true
             }
             return@any false

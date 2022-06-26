@@ -14,16 +14,16 @@ import eu.kanade.tachiyomi.data.track.shikimori.Shikimori
 class TrackManager(context: Context) {
 
     companion object {
-        const val MYANIMELIST = 1
-        const val ANILIST = 2
-        const val KITSU = 3
-        const val SHIKIMORI = 4
-        const val BANGUMI = 5
-        const val KOMGA = 6
-        const val MANGA_UPDATES = 7
+        const val MYANIMELIST = 1L
+        const val ANILIST = 2L
+        const val KITSU = 3L
+        const val SHIKIMORI = 4L
+        const val BANGUMI = 5L
+        const val KOMGA = 6L
+        const val MANGA_UPDATES = 7L
 
         // SY --> Mangadex from Neko
-        const val MDLIST = 60
+        const val MDLIST = 60L
         // SY <--
 
         // SY -->
@@ -55,7 +55,7 @@ class TrackManager(context: Context) {
 
     val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates)
 
-    fun getService(id: Int) = services.find { it.id == id }
+    fun getService(id: Long) = services.find { it.id == id }
 
     fun hasLoggedServices() = services.any { it.isLogged }
 

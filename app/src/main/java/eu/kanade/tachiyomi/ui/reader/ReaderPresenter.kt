@@ -11,7 +11,9 @@ import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.model.isLocal
-import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.domain.track.interactor.GetTracks
+import eu.kanade.domain.track.interactor.InsertTrack
+import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -60,6 +62,7 @@ import exh.util.defaultReaderType
 import exh.util.mangaType
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import logcat.LogPriority
 import rx.Observable
 import rx.Subscription
@@ -81,9 +84,10 @@ class ReaderPresenter(
     private val db: DatabaseHelper = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
-    private val coverCache: CoverCache = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
     private val delayedTrackingStore: DelayedTrackingStore = Injekt.get(),
+    private val getTracks: GetTracks = Injekt.get(),
+    private val insertTrack: InsertTrack = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
 ) : BasePresenter<ReaderActivity>() {
@@ -186,9 +190,8 @@ class ReaderPresenter(
 
     private var hasTrackers: Boolean = false
     private val checkTrackers: (Manga) -> Unit = { manga ->
-        val tracks = db.getTracks(manga.id).executeAsBlocking()
-
-        hasTrackers = tracks.size > 0
+        val tracks = runBlocking { getTracks.await(manga.id!!) }
+        hasTrackers = tracks.isNotEmpty()
     }
 
     private val incognitoMode = preferences.incognitoMode().get()
@@ -947,27 +950,27 @@ class ReaderPresenter(
         if (!preferences.autoUpdateTrack()) return
         val manga = manga ?: return
 
-        val chapterRead = readerChapter.chapter.chapter_number
+        val chapterRead = readerChapter.chapter.chapter_number.toDouble()
 
         val trackManager = Injekt.get<TrackManager>()
         val context = Injekt.get<Application>()
 
         launchIO {
-            db.getTracks(manga.id).executeAsBlocking()
+            getTracks.await(manga.id!!)
                 .mapNotNull { track ->
-                    val service = trackManager.getService(track.sync_id)
-                    if (service != null && service.isLogged && chapterRead > track.last_chapter_read /* SY --> */ && ((service.id == TrackManager.MDLIST && track.status != FollowStatus.UNFOLLOWED.int) || service.id != TrackManager.MDLIST)/* SY <-- */) {
-                        track.last_chapter_read = chapterRead
+                    val service = trackManager.getService(track.syncId)
+                    if (service != null && service.isLogged && chapterRead > track.lastChapterRead /* SY --> */ && ((service.id == TrackManager.MDLIST && track.status != FollowStatus.UNFOLLOWED.int.toLong()) || service.id != TrackManager.MDLIST)/* SY <-- */) {
+                        val updatedTrack = track.copy(lastChapterRead = chapterRead)
 
                         // We want these to execute even if the presenter is destroyed and leaks
                         // for a while. The view can still be garbage collected.
                         async {
                             runCatching {
                                 if (context.isOnline()) {
-                                    service.update(track, true)
-                                    db.insertTrack(track).executeAsBlocking()
+                                    service.update(updatedTrack.toDbTrack(), true)
+                                    insertTrack.await(updatedTrack)
                                 } else {
-                                    delayedTrackingStore.addItem(track)
+                                    delayedTrackingStore.addItem(updatedTrack)
                                     DelayedTrackingUpdateJob.setupTask(context)
                                 }
                             }

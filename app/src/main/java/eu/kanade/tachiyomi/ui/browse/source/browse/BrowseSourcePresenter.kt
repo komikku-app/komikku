@@ -7,6 +7,8 @@ import eu.kanade.data.exh.savedSearchMapper
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.manga.interactor.GetDuplicateLibraryManga
 import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.track.interactor.InsertTrack
+import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -89,6 +91,7 @@ open class BrowseSourcePresenter(
     private val coverCache: CoverCache = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
+    private val insertTrack: InsertTrack = Injekt.get(),
 ) : BasePresenter<BrowseSourceController>() {
 
     /**
@@ -357,7 +360,7 @@ open class BrowseSourcePresenter(
                         service.match(manga)?.let { track ->
                             track.manga_id = manga.id!!
                             (service as TrackService).bind(track)
-                            db.insertTrack(track).executeAsBlocking()
+                            insertTrack.await(track.toDomainTrack()!!)
 
                             syncChaptersWithTrackServiceTwoWay(db, db.getChapters(manga).executeAsBlocking(), track, service as TrackService)
                         }
