@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.view.Gravity
 import android.view.LayoutInflater
 import androidx.core.view.isVisible
@@ -24,6 +23,7 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
+import tachiyomi.decoder.ImageDecoder
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
@@ -366,13 +366,17 @@ class PagerPageHolder(
         }
         val imageBytes = imageStream.readBytes()
         val imageBitmap = try {
-            BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            ImageDecoder.newInstance(imageBytes.inputStream())?.decode()
         } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
+            null
+        }
+        if (imageBitmap == null) {
             imageStream2.close()
             imageStream.close()
             page.fullPage = true
             splitDoublePages()
-            logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
+            logcat(LogPriority.ERROR) { "Cannot combine pages" }
             return imageBytes.inputStream()
         }
         viewer.scope.launchUI { progressIndicator.setProgress(96) }
@@ -389,14 +393,18 @@ class PagerPageHolder(
 
         val imageBytes2 = imageStream2.readBytes()
         val imageBitmap2 = try {
-            BitmapFactory.decodeByteArray(imageBytes2, 0, imageBytes2.size)
+            ImageDecoder.newInstance(imageBytes2.inputStream())?.decode()
         } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
+            null
+        }
+        if (imageBitmap2 == null) {
             imageStream2.close()
             imageStream.close()
             extraPage?.fullPage = true
             page.isolatedPage = true
             splitDoublePages()
-            logcat(LogPriority.ERROR, e) { "Cannot combine pages" }
+            logcat(LogPriority.ERROR) { "Cannot combine pages" }
             return imageBytes.inputStream()
         }
         viewer.scope.launchUI { progressIndicator.setProgress(97) }

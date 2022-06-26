@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.reader
 
 import android.app.Application
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.ColorInt
@@ -64,6 +63,7 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
+import tachiyomi.decoder.ImageDecoder
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -773,7 +773,7 @@ class ReaderPresenter(
         }
     }
 
-    private suspend fun saveImages(
+    private fun saveImages(
         page1: ReaderPage,
         page2: ReaderPage,
         isLTR: Boolean,
@@ -785,11 +785,8 @@ class ReaderPresenter(
         ImageUtil.findImageType(stream1) ?: throw Exception("Not an image")
         val stream2 = page2.stream!!
         ImageUtil.findImageType(stream2) ?: throw Exception("Not an image")
-        val imageBytes = stream1().readBytes()
-        val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-
-        val imageBytes2 = stream2().readBytes()
-        val imageBitmap2 = BitmapFactory.decodeByteArray(imageBytes2, 0, imageBytes2.size)
+        val imageBitmap = ImageDecoder.newInstance(stream1())?.decode()!!
+        val imageBitmap2 = ImageDecoder.newInstance(stream2())?.decode()!!
 
         val chapter = page1.chapter.chapter
 
