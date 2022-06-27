@@ -169,10 +169,6 @@ fun MangaInfoHeader(
             }
         }
 
-        // SY --> Manga metadata
-        mangaMetadataHeader?.invoke()
-        // SY <--
-
         // Action buttons
         Row(modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
             val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .38f)
@@ -214,6 +210,10 @@ fun MangaInfoHeader(
                 onClick = onMergeClicked,
             )
         }
+
+        // SY --> Manga metadata
+        mangaMetadataHeader?.invoke()
+        // SY <--
 
         // Expandable description-tags
         Column {
