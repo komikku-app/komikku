@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.data.track
 
 import android.content.Context
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.anilist.Anilist
 import eu.kanade.tachiyomi.data.track.bangumi.Bangumi
 import eu.kanade.tachiyomi.data.track.kitsu.Kitsu
@@ -22,16 +21,6 @@ class TrackManager(context: Context) {
 
         // SY --> Mangadex from Neko
         const val MDLIST = 60
-        // SY <--
-
-        // SY -->
-        const val READING = 1
-        const val REPEATING = 2
-        const val PLAN_TO_READ = 3
-        const val PAUSED = 4
-        const val COMPLETED = 5
-        const val DROPPED = 6
-        const val OTHER = 7
         // SY <--
     }
 
@@ -54,17 +43,4 @@ class TrackManager(context: Context) {
     fun getService(id: Int) = services.find { it.id == id }
 
     fun hasLoggedServices() = services.any { it.isLogged }
-
-    // SY -->
-    val trackMap by lazy {
-        mapOf(
-            context.getString(R.string.reading) to READING,
-            context.getString(R.string.repeating) to REPEATING,
-            context.getString(R.string.plan_to_read) to PLAN_TO_READ,
-            context.getString(R.string.paused) to PAUSED,
-            context.getString(R.string.completed) to COMPLETED,
-            context.getString(R.string.dropped) to DROPPED,
-        )
-    }
-    // SY <--
 }

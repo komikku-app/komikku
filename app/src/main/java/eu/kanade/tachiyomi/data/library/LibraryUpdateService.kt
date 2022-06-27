@@ -26,6 +26,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
+import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.SManga
@@ -309,17 +310,13 @@ class LibraryUpdateService(
             when (group) {
                 LibraryGroup.BY_TRACK_STATUS -> {
                     val trackingExtra = groupExtra?.toIntOrNull() ?: -1
-                    val loggedServices = trackManager.services.filter { it.isLogged }
                     val tracks = db.getTracks().executeAsBlocking().groupBy { it.manga_id }
-                    val statuses = loggedServices.associate {
-                        it.id to it.getStatusList().associateWith(it::getStatus)
-                    }
 
                     libraryManga.filter { manga ->
                         val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
-                            statuses[track.sync_id]?.get(track.status)
-                        } ?: "not tracked"
-                        (trackManager.trackMap[status] ?: TrackManager.OTHER) == trackingExtra
+                            TrackStatus.parseTrackerStatus(track.sync_id, track.status)
+                        } ?: TrackStatus.OTHER
+                        status.int == trackingExtra
                     }
                 }
                 LibraryGroup.BY_SOURCE -> {
