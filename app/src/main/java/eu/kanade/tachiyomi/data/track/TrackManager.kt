@@ -40,17 +40,11 @@ class TrackManager(context: Context) {
     val mdList = MdList(context, MDLIST)
 
     val myAnimeList = MyAnimeList(context, MYANIMELIST)
-
     val aniList = Anilist(context, ANILIST)
-
     val kitsu = Kitsu(context, KITSU)
-
     val shikimori = Shikimori(context, SHIKIMORI)
-
     val bangumi = Bangumi(context, BANGUMI)
-
     val komga = Komga(context, KOMGA)
-
     val mangaUpdates = MangaUpdates(context, MANGA_UPDATES)
 
     val services = listOf(mdList, myAnimeList, aniList, kitsu, shikimori, bangumi, komga, mangaUpdates)

@@ -7,7 +7,9 @@ import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import eu.kanade.data.chapter.NoChaptersException
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetMangaById
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -46,7 +48,6 @@ import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithTrackServiceTwoWay
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -105,9 +106,11 @@ class LibraryUpdateService(
     val coverCache: CoverCache = Injekt.get(),
     private val getMangaById: GetMangaById = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
+    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
+    private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
 ) : Service() {
 
     private lateinit var wakeLock: PowerManager.WakeLock
@@ -636,7 +639,8 @@ class LibraryUpdateService(
                                 insertTrack.await(updatedTrack.toDomainTrack()!!)
 
                                 if (service is EnhancedTrackService) {
-                                    syncChaptersWithTrackServiceTwoWay(db, db.getChapters(manga).executeAsBlocking(), track.toDbTrack(), service)
+                                    val chapters = getChapterByMangaId.await(manga.id!!)
+                                    syncChaptersWithTrackServiceTwoWay.await(chapters, track, service)
                                 }
                             } catch (e: Throwable) {
                                 // Ignore errors and continue
