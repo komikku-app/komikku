@@ -39,8 +39,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.MaterialShapeDrawable
@@ -100,16 +101,14 @@ import exh.source.isEhBasedSource
 import exh.util.defaultReaderType
 import exh.util.floor
 import exh.util.mangaType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.launch
 import logcat.LogPriority
 import nucleus.factory.RequiresPresenter
 import reactivecircus.flowbinding.android.view.clicks
@@ -166,8 +165,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
     // SY -->
     private var ehUtilsVisible = false
 
-    private val autoScrollFlow = MutableSharedFlow<Unit>()
-    private var autoScrollJob: Job? = null
     private val sourceManager: SourceManager by injectLazy()
 
     private var lastShiftDoubleState: Boolean? = null
@@ -265,19 +262,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
             binding.expandEhButton.setImageResource(R.drawable.ic_keyboard_arrow_down_white_32dp)
         }
     }
-
-    private fun setupAutoscroll(interval: Double) {
-        autoScrollJob?.cancel()
-        if (interval == -1.0) return
-
-        val duration = interval.seconds
-        autoScrollJob = lifecycleScope.launch(Dispatchers.IO) {
-            while (true) {
-                delay(duration)
-                autoScrollFlow.emit(Unit)
-            }
-        }
-    }
     // SY <--
 
     /**
@@ -292,10 +276,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         readingModeToast?.cancel()
         progressDialog?.dismiss()
         progressDialog = null
-        // SY -->
-        autoScrollJob?.cancel()
-        autoScrollJob = null
-        // SY <--
     }
 
     /**
@@ -722,31 +702,34 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
         )
 
         binding.ehAutoscroll.checkedChanges()
-            .onEach {
-                setupAutoscroll(
-                    if (it) {
-                        preferences.autoscrollInterval().get().toDouble()
-                    } else {
-                        -1.0
-                    },
-                )
+            .combine(binding.ehAutoscrollFreq.textChanges()) { checked, text ->
+                checked to text
             }
-            .launchIn(lifecycleScope)
-
-        binding.ehAutoscrollFreq.textChanges()
-            .onEach {
-                val parsed = it.toString().toDoubleOrNull()
+            .mapLatest { (checked, text) ->
+                val parsed = text.toString().toDoubleOrNull()
 
                 if (parsed == null || parsed <= 0 || parsed > 9999) {
                     binding.ehAutoscrollFreq.error = getString(R.string.eh_autoscroll_freq_invalid)
                     preferences.autoscrollInterval().set(-1f)
                     binding.ehAutoscroll.isEnabled = false
-                    setupAutoscroll(-1.0)
                 } else {
                     binding.ehAutoscrollFreq.error = null
                     preferences.autoscrollInterval().set(parsed.toFloat())
                     binding.ehAutoscroll.isEnabled = true
-                    setupAutoscroll(if (binding.ehAutoscroll.isChecked) parsed else -1.0)
+                    if (checked) {
+                        repeatOnLifecycle(Lifecycle.State.STARTED) {
+                            val interval = parsed.seconds
+                            while (true) {
+                                delay(interval)
+                                viewer.let { v ->
+                                    when (v) {
+                                        is PagerViewer -> v.moveToNext()
+                                        is WebtoonViewer -> v.scrollDown()
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .launchIn(lifecycleScope)
@@ -848,16 +831,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                     .setMessage(R.string.eh_boost_page_help_message)
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
-            }
-            .launchIn(lifecycleScope)
-
-        autoScrollFlow
-            .flowWithLifecycle(lifecycle)
-            .onEach {
-                viewer.let { v ->
-                    if (v is PagerViewer) v.moveToNext()
-                    else if (v is WebtoonViewer) v.scrollDown()
-                }
             }
             .launchIn(lifecycleScope)
     }
