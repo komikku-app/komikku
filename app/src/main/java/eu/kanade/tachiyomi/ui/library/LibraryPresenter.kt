@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
+import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -856,15 +857,9 @@ class LibraryPresenter(
                     .let(grouping::putAll)
             LibraryGroup.BY_TRACK_STATUS -> {
                 grouping.putAll(
-                    listOf(
-                        TrackManager.READING to context.getString(R.string.reading),
-                        TrackManager.REPEATING to context.getString(R.string.repeating),
-                        TrackManager.PLAN_TO_READ to context.getString(R.string.plan_to_read),
-                        TrackManager.PAUSED to context.getString(R.string.on_hold),
-                        TrackManager.COMPLETED to context.getString(R.string.completed),
-                        TrackManager.DROPPED to context.getString(R.string.dropped),
-                        TrackManager.OTHER to context.getString(R.string.not_tracked),
-                    ).associateBy(Pair<Int, *>::first),
+                    TrackStatus.values()
+                        .map { it.int to context.getString(it.res) }
+                        .associateBy(Pair<Int, *>::first),
                 )
             }
         }
@@ -873,21 +868,12 @@ class LibraryPresenter(
         when (groupType) {
             LibraryGroup.BY_TRACK_STATUS -> {
                 val tracks = db.getTracks().executeAsBlocking().groupBy { it.manga_id }
-                val statuses = loggedServices.associate {
-                    it.id to it.getStatusList().associateWith(it::getStatus)
-                }
                 libraryManga.forEach { libraryItem ->
                     val status = tracks[libraryItem.manga.id]?.firstNotNullOfOrNull { track ->
-                        statuses[track.sync_id.toLong()]?.get(track.status)
-                    } ?: "not tracked"
-                    val group = grouping.values.find { (statusInt) ->
-                        statusInt == (trackManager.trackMap[status] ?: TrackManager.OTHER)
-                    }
-                    if (group != null) {
-                        map.getOrPut(group.first) { mutableListOf() } += libraryItem
-                    } else {
-                        map.getOrPut(7) { mutableListOf() } += libraryItem
-                    }
+                        TrackStatus.parseTrackerStatus(track.sync_id.toLong(), track.status)
+                    } ?: TrackStatus.OTHER
+
+                    map.getOrPut(status.int) { mutableListOf() } += libraryItem
                 }
             }
             LibraryGroup.BY_SOURCE -> {
