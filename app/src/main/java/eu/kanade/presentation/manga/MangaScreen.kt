@@ -343,7 +343,7 @@ private fun MangaScreenSmallImpl(
                         openMetadataViewer = onMetadataViewerClicked,
                         search = { onSearch(it, false) },
                     ),
-                    searchMetadataChips = remember { SearchMetadataChips(state.meta, state.source, state.manga.genre) },
+                    searchMetadataChips = remember(state) { SearchMetadataChips(state.meta, state.source, state.manga.genre) },
                     scrollBehavior = scrollBehavior,
                     actionModeCounter = selected.size,
                     onSelectAll = {
@@ -708,7 +708,7 @@ fun MangaScreenLargeImpl(
                         openMetadataViewer = onMetadataViewerClicked,
                         search = { onSearch(it, false) },
                     ),
-                    searchMetadataChips = remember { SearchMetadataChips(state.meta, state.source, state.manga.genre) },
+                    searchMetadataChips = remember(state) { SearchMetadataChips(state.meta, state.source, state.manga.genre) },
                 )
 
                 val chaptersWeight = if (windowWidthSizeClass == WindowWidthSizeClass.Medium) 1f else 2f

@@ -18,8 +18,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowRow
 import eu.kanade.presentation.components.SuggestionChip
@@ -38,7 +38,7 @@ data class DisplayTag(
     val namespace: String?,
     val text: String,
     val search: String,
-    val border: Dp?,
+    val border: Int?,
 )
 
 @Immutable
@@ -63,8 +63,8 @@ value class SearchMetadataChips(
                                 } ?: it.name,
                                 border = if (source.id == EXH_SOURCE_ID || source.id == EH_SOURCE_ID) {
                                     when (it.type) {
-                                        EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 3.dp
-                                        EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 1.dp
+                                        EHentaiSearchMetadata.TAG_TYPE_NORMAL -> 3
+                                        EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 1
                                         else -> null
                                     }
                                 } else null,
@@ -110,7 +110,11 @@ fun NamespaceTags(
                             text = text,
                             onClick = { onClick(search) },
                             onLongClick = { onLongClick(search) },
-                            border = border?.let { SuggestionChipDefaults.suggestionChipBorder(borderWidth = it) },
+                            border = border?.let {
+                                with(LocalDensity.current) {
+                                    SuggestionChipDefaults.suggestionChipBorder(borderWidth = it.toDp())
+                                }
+                            },
                         )
                     }
                 }
