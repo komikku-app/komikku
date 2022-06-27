@@ -167,7 +167,7 @@ class LibraryPresenter(
         val filterCompleted = preferences.filterCompleted().get()
         val loggedInServices = trackManager.services.filter { trackService -> trackService.isLogged }
             .associate { trackService ->
-                Pair(trackService.id, preferences.filterTracking(trackService.id.toInt()).get())
+                Pair(trackService.id, preferences.filterTracking(trackService.id).get())
             }
         val isNotAnyLoggedIn = !loggedInServices.values.any()
         // SY -->

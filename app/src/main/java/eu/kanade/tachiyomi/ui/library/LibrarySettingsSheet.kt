@@ -137,7 +137,7 @@ class LibrarySettingsSheet(
                 completed.state = preferences.filterCompleted().get()
 
                 trackFilters.forEach { trackFilter ->
-                    trackFilter.value.state = preferences.filterTracking(trackFilter.key.toInt()).get()
+                    trackFilter.value.state = preferences.filterTracking(trackFilter.key).get()
                 }
 
                 // SY -->
@@ -165,7 +165,7 @@ class LibrarySettingsSheet(
                     else -> {
                         trackFilters.forEach { trackFilter ->
                             if (trackFilter.value == item) {
-                                preferences.filterTracking(trackFilter.key.toInt()).set(newState)
+                                preferences.filterTracking(trackFilter.key).set(newState)
                             }
                         }
                     }
