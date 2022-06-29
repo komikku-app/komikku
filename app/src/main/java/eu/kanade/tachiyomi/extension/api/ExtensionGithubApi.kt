@@ -28,14 +28,17 @@ internal class ExtensionGithubApi {
 
     suspend fun findExtensions(): List<Extension.Available> {
         return withIOContext {
-            val response = try {
+            val githubResponse = if (requiresFallbackSource) null else try {
                 networkService.client
                     .newCall(GET("${REPO_URL_PREFIX}index.min.json"))
                     .await()
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e) { "Failed to get extensions from GitHub" }
                 requiresFallbackSource = true
+                null
+            }
 
+            val response = githubResponse ?: run {
                 networkService.client
                     .newCall(GET("${FALLBACK_REPO_URL_PREFIX}index.min.json"))
                     .await()
@@ -169,7 +172,7 @@ internal class ExtensionGithubApi {
 
 private const val BASE_URL = "https://raw.githubusercontent.com/"
 private const val REPO_URL_PREFIX = "${BASE_URL}tachiyomiorg/tachiyomi-extensions/repo/"
-private const val FALLBACK_BASE_URL = "https://fastly.jsdelivr.net/gh/"
+private const val FALLBACK_BASE_URL = "https://gcore.jsdelivr.net/gh/"
 private const val FALLBACK_REPO_URL_PREFIX = "${FALLBACK_BASE_URL}tachiyomiorg/tachiyomi-extensions@repo/"
 
 @Serializable
