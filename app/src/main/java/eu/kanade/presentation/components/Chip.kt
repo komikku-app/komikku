@@ -219,7 +219,8 @@ private fun ChipContent(
                 avatar()
             } else if (leadingIcon != null) {
                 CompositionLocalProvider(
-                    LocalContentColor provides leadingIconColor, content = leadingIcon,
+                    LocalContentColor provides leadingIconColor,
+                    content = leadingIcon,
                 )
             }
             Spacer(Modifier.width(HorizontalElementsPadding))
@@ -227,7 +228,8 @@ private fun ChipContent(
             Spacer(Modifier.width(HorizontalElementsPadding))
             if (trailingIcon != null) {
                 CompositionLocalProvider(
-                    LocalContentColor provides trailingIconColor, content = trailingIcon,
+                    LocalContentColor provides trailingIconColor,
+                    content = trailingIcon,
                 )
             }
         }

@@ -19,7 +19,7 @@ val backupSavedSearchMapper = {
         source: Long,
         name: String,
         query: String?,
-        filtersJson: String?, ->
+        filtersJson: String?,  ->
     BackupSavedSearch(
         source = source,
         name = name,

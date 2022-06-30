@@ -13,7 +13,7 @@ val mergedMangaReferenceMapper = {
         mergeUrl: String,
         mangaId: Long?,
         mangaUrl: String,
-        mangaSourceId: Long, ->
+        mangaSourceId: Long,  ->
     MergedMangaReference(
         id = id,
         isInfoManga = isInfoManga,

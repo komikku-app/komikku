@@ -46,7 +46,7 @@ val backupMergedMangaReferenceMapper = {
         mergeUrl: String,
         _: Long?,
         mangaUrl: String,
-        mangaSourceId: Long, ->
+        mangaSourceId: Long,  ->
     BackupMergedMangaReference(
         isInfoManga = isInfoManga,
         getChapterUpdates = getChapterUpdates,
