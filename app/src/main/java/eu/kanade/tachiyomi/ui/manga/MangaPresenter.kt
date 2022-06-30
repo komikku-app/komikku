@@ -783,11 +783,14 @@ class MangaPresenter(
     private fun List<DomainChapter>.toChapterItems(manga: DomainManga, mergedData: MergedMangaData?): List<ChapterItem> {
         return map { chapter ->
             val activeDownload = downloadManager.queue.find { chapter.id == it.chapter.id }
+            val chapter = chapter.let { if (mergedData != null) it.toMergedDownloadedChapter() else it }
+            val manga = mergedData?.manga?.get(chapter.mangaId) ?: manga
             val downloaded = downloadManager.isChapterDownloaded(
                 // SY -->
-                chapter.let { if (mergedData != null) it.toMergedDownloadedChapter() else it }
-                    .toDbChapter(),
-                (mergedData?.manga?.get(chapter.mangaId) ?: manga).toDbManga(),
+                chapter.name,
+                chapter.scanlator,
+                manga.ogTitle,
+                manga.source,
                 // SY <--
             )
             val downloadState = when {

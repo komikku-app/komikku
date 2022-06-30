@@ -474,6 +474,7 @@ class LibrarySettingsSheet(
                 item.checked = !item.checked
                 when (item) {
                     startReadingButton -> preferences.startReadingButton().set((item.checked))
+                    else -> Unit
                 }
                 adapter.notifyItemChanged(item)
             }
