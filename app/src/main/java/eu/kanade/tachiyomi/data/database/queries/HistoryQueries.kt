@@ -21,17 +21,6 @@ interface HistoryQueries : DbProvider {
         )
         .prepare()
 
-    fun getHistoryByChapterUrl(chapterUrl: String) = db.get()
-        .`object`(History::class.java)
-        .withQuery(
-            RawQuery.builder()
-                .query(getHistoryByChapterUrl())
-                .args(chapterUrl)
-                .observesTables(HistoryTable.TABLE)
-                .build(),
-        )
-        .prepare()
-
     /**
      * Updates the history last read.
      * Inserts history object if not yet in database

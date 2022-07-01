@@ -141,20 +141,6 @@ val libraryQuery =
         ) AS MC
         ON MC.${MangaCategory.COL_MANGA_ID} = M.${Manga.COL_ID};
 """
-// SY <--
-
-/**
- * Query to get the recent chapters of manga from the library up to a date.
- */
-fun getRecentsQuery() =
-    """
-    SELECT ${Manga.TABLE}.${Manga.COL_URL} as mangaUrl, * FROM ${Manga.TABLE} JOIN ${Chapter.TABLE}
-    ON ${Manga.TABLE}.${Manga.COL_ID} = ${Chapter.TABLE}.${Chapter.COL_MANGA_ID}
-    WHERE ${Manga.COL_FAVORITE} = 1 
-    AND ${Chapter.COL_DATE_UPLOAD} > ?
-    AND ${Chapter.COL_DATE_FETCH} > ${Manga.COL_DATE_ADDED}
-    ORDER BY ${Chapter.COL_DATE_UPLOAD} DESC
-"""
 
 fun getHistoryByMangaId() =
     """
@@ -164,15 +150,7 @@ fun getHistoryByMangaId() =
     ON ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
     WHERE ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = ? AND ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
 """
-
-fun getHistoryByChapterUrl() =
-    """
-    SELECT ${History.TABLE}.*
-    FROM ${History.TABLE}
-    JOIN ${Chapter.TABLE}
-    ON ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
-    WHERE ${Chapter.TABLE}.${Chapter.COL_URL} = ? AND ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
-"""
+// SY <--
 
 fun getLastReadMangaQuery() =
     """
