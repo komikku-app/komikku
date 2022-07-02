@@ -11,6 +11,7 @@ import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
+import java.io.Serializable
 import eu.kanade.tachiyomi.data.database.models.Manga as DbManga
 
 data class Manga(
@@ -36,7 +37,7 @@ data class Manga(
     // SY -->
     val filteredScanlators: List<String>?,
     // SY <--
-) {
+) : Serializable {
 
     // SY -->
     private val customMangaInfo = if (favorite) {

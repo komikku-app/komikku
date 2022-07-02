@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 import androidx.core.view.isVisible
 import coil.dispose
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
 import eu.kanade.tachiyomi.util.view.loadAutoPause
 import exh.metadata.metadata.MangaDexSearchMetadata

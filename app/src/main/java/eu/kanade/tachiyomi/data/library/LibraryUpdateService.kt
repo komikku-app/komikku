@@ -8,6 +8,7 @@ import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import eu.kanade.data.chapter.NoChaptersException
 import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
@@ -23,7 +24,6 @@ import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -262,7 +262,7 @@ class LibraryUpdateService(
         ioScope?.cancel()
 
         // Update favorite manga
-        val categoryId = intent.getIntExtra(KEY_CATEGORY, -1)
+        val categoryId = intent.getLongExtra(KEY_CATEGORY, -1)
         val group = intent.getIntExtra(KEY_GROUP, LibraryGroup.BY_DEFAULT)
         val groupExtra = intent.getStringExtra(KEY_GROUP_EXTRA)
         addMangaToQueue(categoryId, group, groupExtra)
@@ -294,14 +294,14 @@ class LibraryUpdateService(
      *
      * @param categoryId the ID of the category to update, or -1 if no category specified.
      */
-    fun addMangaToQueue(categoryId: Int, group: Int, groupExtra: String?) {
+    fun addMangaToQueue(categoryId: Long, group: Int, groupExtra: String?) {
         val libraryManga = db.getLibraryMangas().executeAsBlocking()
         // SY -->
         val groupLibraryUpdateType = preferences.groupLibraryUpdateType().get()
         // SY <--
 
-        val listToUpdate = if (categoryId != -1) {
-            libraryManga.filter { it.category == categoryId }
+        val listToUpdate = if (categoryId != -1L) {
+            libraryManga.filter { it.category.toLong() == categoryId }
             // SY -->
         } else if (
             group == LibraryGroup.BY_DEFAULT ||

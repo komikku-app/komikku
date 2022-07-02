@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.compose.runtime.Immutable
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
-import eu.kanade.domain.category.model.toDbCategory
+import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
@@ -34,9 +34,7 @@ import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
@@ -111,6 +109,7 @@ import uy.kohesive.injekt.injectLazy
 import java.text.DateFormat
 import eu.kanade.domain.chapter.model.Chapter as DomainChapter
 import eu.kanade.domain.manga.model.Manga as DomainManga
+import eu.kanade.tachiyomi.data.database.models.Manga.Companion as DbManga
 
 class MangaPresenter(
     val mangaId: Long,
@@ -404,8 +403,8 @@ class MangaPresenter(
                         artist = newArtist,
                         description = newDesc,
                         genre = tags,
-                        status = status
-                    )
+                        status = status,
+                    ),
                 )
             }
         } else {
@@ -481,13 +480,13 @@ class MangaPresenter(
 
             return originalManga
         } else {
-            val mergedManga = Manga.create(originalManga.url, originalManga.title, MERGED_SOURCE_ID).apply {
+            val mergedManga = DbManga.create(originalManga.url, originalManga.title, MERGED_SOURCE_ID).apply {
                 copyFrom(originalManga.toSManga())
                 favorite = true
                 last_update = originalManga.lastUpdate
                 viewer_flags = originalManga.viewerFlags.toInt()
                 chapter_flags = originalManga.chapterFlags.toInt()
-                sorting = Manga.CHAPTER_SORTING_NUMBER
+                sorting = DbManga.CHAPTER_SORTING_NUMBER
                 date_added = System.currentTimeMillis()
             }
 
@@ -514,7 +513,6 @@ class MangaPresenter(
                 .let {
                     setMangaCategories.await(mergedManga.id!!, it.map { it.id })
                 }
-
 
             val originalMangaReference = MergedMangaReference(
                 id = null,
@@ -617,22 +615,22 @@ class MangaPresenter(
 
                 // Now check if user previously set categories, when available
                 val categories = getCategories()
-                val defaultCategoryId = preferences.defaultCategory()
+                val defaultCategoryId = preferences.defaultCategory().toLong()
                 val defaultCategory = categories.find { it.id == defaultCategoryId }
                 when {
                     // Default category set
                     defaultCategory != null -> {
                         val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
-                        moveMangaToCategory(manga.toDbManga(), defaultCategory)
+                        moveMangaToCategory(defaultCategory)
                         launchUI { onAdded() }
                     }
 
                     // Automatic 'Default' or no categories
-                    defaultCategoryId == 0 || categories.isEmpty() -> {
+                    defaultCategoryId == 0L || categories.isEmpty() -> {
                         val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
-                        moveMangaToCategory(manga.toDbManga(), null)
+                        moveMangaToCategory(null)
                         launchUI { onAdded() }
                     }
 
@@ -691,7 +689,7 @@ class MangaPresenter(
      * @return List of categories, not including the default category
      */
     suspend fun getCategories(): List<Category> {
-        return getCategories.await().map { it.toDbCategory() }
+        return getCategories.await()
     }
 
     /**
@@ -700,15 +698,15 @@ class MangaPresenter(
      * @param manga the manga to get categories from.
      * @return Array of category ids the manga is in, if none returns default id
      */
-    fun getMangaCategoryIds(manga: DomainManga): Array<Int> {
+    fun getMangaCategoryIds(manga: DomainManga): Array<Long> {
         val categories = runBlocking { getCategories.await(manga.id) }
-        return categories.map { it.id.toInt() }.toTypedArray()
+        return categories.map { it.id }.toTypedArray()
     }
 
-    fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Category>) {
-        moveMangaToCategories(manga, categories)
+    fun moveMangaToCategoriesAndAddToLibrary(manga: DomainManga, categories: List<Category>) {
+        moveMangaToCategories(categories)
         presenterScope.launchIO {
-            updateManga.awaitUpdateFavorite(manga.id!!, true)
+            updateManga.awaitUpdateFavorite(manga.id, true)
         }
     }
 
@@ -718,9 +716,8 @@ class MangaPresenter(
      * @param manga the manga to move.
      * @param categories the selected categories.
      */
-    private fun moveMangaToCategories(manga: Manga, categories: List<Category>) {
-        val mangaId = manga.id ?: return
-        val categoryIds = categories.mapNotNull { it.id?.toLong() }
+    private fun moveMangaToCategories(categories: List<Category>) {
+        val categoryIds = categories.map { it.id }
         presenterScope.launchIO {
             setMangaCategories.await(mangaId, categoryIds)
         }
@@ -732,8 +729,8 @@ class MangaPresenter(
      * @param manga the manga to move.
      * @param category the selected category, or null for default category.
      */
-    private fun moveMangaToCategory(manga: Manga, category: Category?) {
-        moveMangaToCategories(manga, listOfNotNull(category))
+    private fun moveMangaToCategory(category: Category?) {
+        moveMangaToCategories(listOfNotNull(category))
     }
 
     private fun observeTrackingCount() {

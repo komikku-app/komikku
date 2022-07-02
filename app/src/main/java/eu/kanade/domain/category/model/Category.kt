@@ -2,6 +2,9 @@ package eu.kanade.domain.category.model
 
 import android.content.Context
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
+import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
+import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import java.io.Serializable
 import eu.kanade.tachiyomi.data.database.models.Category as DbCategory
 
@@ -15,6 +18,15 @@ data class Category(
     // SY <--
 ) : Serializable {
 
+    val displayMode: Long
+        get() = flags and DisplayModeSetting.MASK
+
+    val sortMode: Long
+        get() = flags and SortModeSetting.MASK
+
+    val sortDirection: Long
+        get() = flags and SortDirectionSetting.MASK
+
     companion object {
         val default = { context: Context ->
             Category(
@@ -22,7 +34,7 @@ data class Category(
                 name = context.getString(R.string.default_category),
                 order = 0,
                 flags = 0,
-                mangaOrder = emptyList()
+                mangaOrder = emptyList(),
             )
         }
     }

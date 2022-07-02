@@ -150,7 +150,6 @@ fun getHistoryByMangaId() =
     ON ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
     WHERE ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = ? AND ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
 """
-// SY <--
 
 /**
  * Query to get the categories for a manga.
@@ -162,3 +161,5 @@ fun getCategoriesForMangaQuery() =
     ${MangaCategory.TABLE}.${MangaCategory.COL_CATEGORY_ID}
     WHERE ${MangaCategory.COL_MANGA_ID} = ?
 """
+
+// SY <--

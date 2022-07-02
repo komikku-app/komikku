@@ -5,6 +5,7 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.savedSearchMapper
 import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.model.toDbCategory
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.manga.interactor.GetDuplicateLibraryManga
@@ -13,9 +14,9 @@ import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.EnhancedTrackService
@@ -77,6 +78,7 @@ import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 import java.util.Date
 import eu.kanade.domain.category.model.Category as DomainCategory
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 open class BrowseSourcePresenter(
     private val sourceId: Long,
@@ -220,7 +222,7 @@ open class BrowseSourcePresenter(
             .observeOn(Schedulers.io())
             // SY -->
             .map { (page, mangas, metadata) ->
-                Triple(page, mangas.map { networkToLocalManga(it, sourceId) }, metadata)
+                Triple(page, mangas.map { networkToLocalManga(it, sourceId).toDomainManga()!! }, metadata)
             }
             // SY <--
             .doOnNext { initializeMangas(it.second) }
@@ -296,15 +298,15 @@ open class BrowseSourcePresenter(
      *
      * @param mangas the list of manga to initialize.
      */
-    fun initializeMangas(mangas: List<Manga>) {
+    fun initializeMangas(mangas: List<DomainManga>) {
         presenterScope.launchIO {
             mangas.asFlow()
-                .filter { it.thumbnail_url == null && !it.initialized }
-                .map { getMangaDetails(it) }
+                .filter { it.thumbnailUrl == null && !it.initialized }
+                .map { getMangaDetails(it.toDbManga()) }
                 .onEach {
                     withUIContext {
                         @Suppress("DEPRECATION")
-                        view?.onMangaInitialized(it)
+                        view?.onMangaInitialized(it.toDomainManga()!!)
                     }
                 }
                 .catch { e -> logcat(LogPriority.ERROR, e) }
@@ -451,8 +453,8 @@ open class BrowseSourcePresenter(
         return getCategories.subscribe().firstOrNull() ?: emptyList()
     }
 
-    suspend fun getDuplicateLibraryManga(manga: Manga): Manga? {
-        return getDuplicateLibraryManga.await(manga.title, manga.source)?.toDbManga()
+    suspend fun getDuplicateLibraryManga(manga: DomainManga): DomainManga? {
+        return getDuplicateLibraryManga.await(manga.title, manga.source)
     }
 
     /**
@@ -461,9 +463,10 @@ open class BrowseSourcePresenter(
      * @param manga the manga to get categories from.
      * @return Array of category ids the manga is in, if none returns default id
      */
-    suspend fun getMangaCategoryIds(manga: Manga): Array<Long?> {
-        val categories = getCategories.await(manga.id!!)
-        return categories.map { it.id }.toTypedArray()
+    fun getMangaCategoryIds(manga: DomainManga): Array<Long?> {
+        return runBlocking { getCategories.await(manga.id) }
+            .map { it.id }
+            .toTypedArray()
     }
 
     /**
@@ -472,8 +475,8 @@ open class BrowseSourcePresenter(
      * @param categories the selected categories.
      * @param manga the manga to move.
      */
-    private fun moveMangaToCategories(manga: Manga, categories: List<Category>) {
-        val mc = categories.filter { it.id != 0 }.map { MangaCategory.create(manga, it) }
+    private fun moveMangaToCategories(manga: Manga, categories: List<DomainCategory>) {
+        val mc = categories.filter { it.id != 0L }.map { MangaCategory.create(manga, it.toDbCategory()) }
         db.setMangaCategories(mc, listOf(manga))
     }
 
@@ -483,7 +486,7 @@ open class BrowseSourcePresenter(
      * @param category the selected category.
      * @param manga the manga to move.
      */
-    fun moveMangaToCategory(manga: Manga, category: Category?) {
+    fun moveMangaToCategory(manga: Manga, category: DomainCategory?) {
         moveMangaToCategories(manga, listOfNotNull(category))
     }
 
@@ -493,7 +496,7 @@ open class BrowseSourcePresenter(
      * @param manga needed to change
      * @param selectedCategories selected categories
      */
-    fun updateMangaCategories(manga: Manga, selectedCategories: List<Category>) {
+    fun updateMangaCategories(manga: Manga, selectedCategories: List<DomainCategory>) {
         if (!manga.favorite) {
             changeMangaFavorite(manga)
         }

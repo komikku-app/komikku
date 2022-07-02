@@ -45,7 +45,7 @@ class RecommendsController(bundle: Bundle) : BrowseSourceController(bundle) {
 
     override fun onItemClick(view: View, position: Int): Boolean {
         val item = adapter?.getItem(position) as? SourceItem ?: return false
-        openSmartSearch(item.manga.originalTitle)
+        openSmartSearch(item.manga.ogTitle)
         return true
     }
 

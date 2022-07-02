@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.search
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
+import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
@@ -31,7 +32,7 @@ class SourceSearchController(
         val migrationListController = targetController as? MigrationListController ?: return false
         val sourceManager = Injekt.get<SourceManager>()
         val source = sourceManager.get(manga.source) ?: return false
-        migrationListController.useMangaForMigration(manga, source)
+        migrationListController.useMangaForMigration(manga.toDbManga(), source)
         router.popCurrentController()
         router.popCurrentController()
         return true

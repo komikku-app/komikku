@@ -6,6 +6,7 @@ import coil.dispose
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.util.view.loadAutoPause
 import kotlinx.coroutines.flow.launchIn
@@ -85,7 +86,7 @@ class LibraryComfortableGridHolder(
     // SY -->
     private fun playButtonClicked() {
         if (adapter !is LibraryCategoryAdapter) return
-        adapter.controller.startReading(manga ?: return, adapter)
+        adapter.controller.startReading(manga?.toDomainManga() ?: return, adapter)
     }
     // SY <--
 }

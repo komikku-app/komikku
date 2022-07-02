@@ -10,10 +10,10 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
 import eu.kanade.domain.category.interactor.UpdateCategory
+import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.category.model.CategoryUpdate
+import eu.kanade.domain.category.model.toDbCategory
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
@@ -59,8 +59,6 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     private val scope = MainScope()
 
     private val preferences: PreferencesHelper by injectLazy()
-
-    private val db: DatabaseHelper by injectLazy()
 
     /**
      * The fragment containing this view.
@@ -264,20 +262,21 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         // SY -->
         adapter.isLongPressDragEnabled = adapter.canDrag()
         var mangaForCategory = event.getMangaForCategory(category).orEmpty()
-        if (preferences.categorizedDisplaySettings().get() && category.id != 0) {
+        var mangaOrder = category.mangaOrder
+        if (preferences.categorizedDisplaySettings().get() && category.id != 0L) {
             if (SortModeSetting.fromFlag(category.sortMode) == SortModeSetting.DRAG_AND_DROP) {
                 mangaForCategory = mangaForCategory.sortedBy {
-                    category.mangaOrder.indexOf(it.manga.id)
+                    mangaOrder.indexOf(it.manga.id)
                 }
             }
         } else if (preferences.librarySortingMode().get() == SortModeSetting.DRAG_AND_DROP) {
-            if (category.id == 0) {
-                category.mangaOrder = preferences.defaultMangaOrder().get()
+            if (category.id == 0L) {
+                mangaOrder = preferences.defaultMangaOrder().get()
                     .split("/")
                     .mapNotNull { it.toLongOrNull() }
             }
             mangaForCategory = mangaForCategory.sortedBy {
-                category.mangaOrder.indexOf(it.manga.id)
+                mangaOrder.indexOf(it.manga.id)
             }
         }
         // SY <--
@@ -433,23 +432,23 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         if (fromPosition == toPosition) return
         controller.invalidateActionMode()
         val mangaIds = adapter.currentItems.mapNotNull { it.manga.id }
-        category.mangaOrder = mangaIds
-        if (category.id == 0) {
+        if (category.id == 0L) {
             preferences.defaultMangaOrder().set(mangaIds.joinToString("/"))
         } else {
             scope.launch {
-                updateCategory.await(CategoryUpdate(category.id!!.toLong(), mangaOrder = mangaIds))
+                updateCategory.await(CategoryUpdate(category.id.toLong(), mangaOrder = mangaIds))
             }
         }
-        if (preferences.categorizedDisplaySettings().get() && category.id != 0) {
+        if (preferences.categorizedDisplaySettings().get() && category.id != 0L) {
             if (SortModeSetting.fromFlag(category.sortMode) != SortModeSetting.DRAG_AND_DROP) {
-                category.sortMode = SortModeSetting.DRAG_AND_DROP.flag
-                category.sortDirection = SortDirectionSetting.ASCENDING.flag
+                val dbCategory = category.toDbCategory()
+                dbCategory.sortMode = SortModeSetting.DRAG_AND_DROP.flag.toInt()
+                dbCategory.sortDirection = SortDirectionSetting.ASCENDING.flag.toInt()
                 scope.launch {
                     updateCategory.await(
                         CategoryUpdate(
-                            id = category.id!!.toLong(),
-                            flags = category.flags.toLong(),
+                            id = category.id,
+                            flags = dbCategory.flags.toLong(),
                             mangaOrder = mangaIds,
                         ),
                     )

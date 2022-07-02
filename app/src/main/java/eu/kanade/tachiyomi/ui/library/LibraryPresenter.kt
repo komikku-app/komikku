@@ -7,7 +7,7 @@ import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
-import eu.kanade.domain.category.model.toDbCategory
+import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.UpdateChapter
@@ -15,14 +15,13 @@ import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -48,7 +47,6 @@ import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
 import exh.util.isLewd
 import exh.util.nullIfBlank
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
@@ -59,6 +57,7 @@ import uy.kohesive.injekt.api.get
 import java.text.Collator
 import java.util.Collections
 import java.util.Locale
+import eu.kanade.tachiyomi.data.database.models.Manga as DbManga
 
 /**
  * Class containing library information.
@@ -68,7 +67,7 @@ private data class Library(val categories: List<Category>, val mangaMap: Library
 /**
  * Typealias for the library manga, using the category as keys, and list of manga as values.
  */
-private typealias LibraryMap = Map<Int, List<LibraryItem>>
+typealias LibraryMap = Map<Long, List<LibraryItem>>
 
 /**
  * Presenter of [LibraryController].
@@ -403,12 +402,12 @@ class LibraryPresenter(
 
         val defaultSortingMode = SortModeSetting.get(preferences, null)
         val sortingModes = categories.associate { category ->
-            (category.id ?: 0) to SortModeSetting.get(preferences, category)
+            category.id to SortModeSetting.get(preferences, category)
         }
 
         val defaultSortDirection = SortDirectionSetting.get(preferences, null)
         val sortDirections = categories.associate { category ->
-            (category.id ?: 0) to SortDirectionSetting.get(preferences, category)
+            category.id to SortDirectionSetting.get(preferences, category)
         }
 
         val locale = Locale.getDefault()
@@ -417,12 +416,12 @@ class LibraryPresenter(
         }
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
             val sortingMode = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortingModes[i1.manga.category] ?: defaultSortingMode
+                sortingModes[i1.manga.category.toLong()] ?: defaultSortingMode
             } else {
                 defaultSortingMode
             }
             val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortDirections[i1.manga.category] ?: defaultSortDirection
+                sortDirections[i1.manga.category.toLong()] ?: defaultSortDirection
             } else {
                 defaultSortDirection
             } == SortDirectionSetting.ASCENDING
@@ -480,7 +479,7 @@ class LibraryPresenter(
 
         return map.mapValues { entry ->
             val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortDirections[entry.key] ?: defaultSortDirection
+                sortDirections[entry.key.toLong()] ?: defaultSortDirection
             } else {
                 defaultSortDirection
             } == SortDirectionSetting.ASCENDING
@@ -503,13 +502,13 @@ class LibraryPresenter(
     private fun getLibraryObservable(): Observable<Library> {
         return Observable.combineLatest(getCategoriesObservable(), getLibraryMangasObservable()) { dbCategories, libraryManga ->
             val categories = if (libraryManga.containsKey(0)) {
-                arrayListOf(Category.createDefault(context)) + dbCategories
+                arrayListOf(Category.default(context)) + dbCategories
             } else {
                 dbCategories
             }
 
             libraryManga.forEach { (categoryId, libraryManga) ->
-                val category = categories.first { category -> category.id == categoryId }
+                val category = categories.first { category -> category.id == categoryId.toLong() }
                 libraryManga.forEach { libraryItem ->
                     libraryItem.displayMode = category.displayMode
                 }
@@ -527,9 +526,9 @@ class LibraryPresenter(
         val items = if (groupType == LibraryGroup.BY_DEFAULT) {
             map
         } else if (!libraryIsGrouped) {
-            editedCategories = listOf(Category.create("All").apply { this.id = 0 })
+            editedCategories = listOf(Category(0, "All", 0, 0, emptyList()))
             mapOf(
-                0 to map.values.flatten().distinctBy { it.manga.id },
+                0L to map.values.flatten().distinctBy { it.manga.id },
             )
         } else {
             val (items, customCategories) = getGroupedMangaItems(
@@ -549,7 +548,7 @@ class LibraryPresenter(
      * @return an observable of the categories.
      */
     private fun getCategoriesObservable(): Observable<List<Category>> {
-        return getCategories.subscribe().map { it.map { it.toDbCategory() } }.asObservable()
+        return getCategories.subscribe().asObservable()
     }
 
     /**
@@ -603,7 +602,7 @@ class LibraryPresenter(
                         shouldSetFromCategory,
                         defaultLibraryDisplayMode,
                     )
-                }.groupBy { it.manga.category }
+                }.groupBy { it.manga.category.toLong() }
             }
     }
 
@@ -688,10 +687,10 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    suspend fun getCommonCategories(mangas: List<Manga>): Collection<Category> {
+    suspend fun getCommonCategories(mangas: List<DbManga>): Collection<Category> {
         if (mangas.isEmpty()) return emptyList()
         return mangas.toSet()
-            .map { getCategories.await(it.id!!).map { it.toDbCategory() } }
+            .map { getCategories.await(it.id!!) }
             .reduce { set1, set2 -> set1.intersect(set2).toMutableList() }
     }
 
@@ -700,9 +699,9 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    suspend fun getMixCategories(mangas: List<Manga>): Collection<Category> {
+    suspend fun getMixCategories(mangas: List<DbManga>): Collection<Category> {
         if (mangas.isEmpty()) return emptyList()
-        val mangaCategories = mangas.toSet().map { getCategories.await(it.id!!).map { it.toDbCategory() } }
+        val mangaCategories = mangas.toSet().map { getCategories.await(it.id!!) }
         val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2).toMutableList() }
         return mangaCategories.flatten().distinct().subtract(common).toMutableList()
     }
@@ -712,7 +711,7 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    fun downloadUnreadChapters(mangas: List<Manga>) {
+    fun downloadUnreadChapters(mangas: List<DbManga>) {
         mangas.forEach { manga ->
             launchIO {
                 if (manga.source == MERGED_SOURCE_ID) {
@@ -742,7 +741,7 @@ class LibraryPresenter(
     }
 
     // SY -->
-    fun cleanTitles(mangas: List<Manga>) {
+    fun cleanTitles(mangas: List<DbManga>) {
         mangas.forEach { manga ->
             val editedTitle = manga.title.replace("\\[.*?]".toRegex(), "").trim().replace("\\(.*?\\)".toRegex(), "").trim().replace("\\{.*?\\}".toRegex(), "").trim().let {
                 if (it.contains("|")) {
@@ -769,7 +768,7 @@ class LibraryPresenter(
         }
     }
 
-    fun syncMangaToDex(mangaList: List<Manga>) {
+    fun syncMangaToDex(mangaList: List<DbManga>) {
         launchIO {
             MdUtil.getEnabledMangaDex(preferences, sourceManager)?.let { mdex ->
                 mangaList.forEach {
@@ -785,7 +784,7 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    fun markReadStatus(mangas: List<Manga>, read: Boolean) {
+    fun markReadStatus(mangas: List<DbManga>, read: Boolean) {
         mangas.forEach { manga ->
             launchIO {
                 val chapters = if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(manga.id!!) else getChapterByMangaId.await(manga.id!!)
@@ -807,7 +806,7 @@ class LibraryPresenter(
         }
     }
 
-    private fun deleteChapters(manga: Manga, chapters: List<Chapter>) {
+    private fun deleteChapters(manga: DbManga, chapters: List<Chapter>) {
         sourceManager.get(manga.source)?.let { source ->
             // SY -->
             if (source is MergedSource) {
@@ -829,7 +828,7 @@ class LibraryPresenter(
      * @param deleteFromLibrary whether to delete manga from library.
      * @param deleteChapters whether to delete downloaded chapters.
      */
-    fun removeMangas(mangaList: List<Manga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
+    fun removeMangas(mangaList: List<DbManga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
         launchIO {
             val mangaToDelete = mangaList.distinctBy { it.id }
 
@@ -872,12 +871,11 @@ class LibraryPresenter(
     fun setMangaCategories(mangaList: List<Manga>, addCategories: List<Category>, removeCategories: List<Category>) {
         presenterScope.launchIO {
             mangaList.map { manga ->
-                val categoryIds = getCategories.await(manga.id!!)
-                    .map { it.toDbCategory() }
+                val categoryIds = getCategories.await(manga.id)
                     .subtract(removeCategories)
                     .plus(addCategories)
-                    .mapNotNull { it.id?.toLong() }
-                setMangaCategories.await(manga.id!!, categoryIds)
+                    .map { it.id }
+                setMangaCategories.await(manga.id, categoryIds)
             }
         }
     }
@@ -886,8 +884,8 @@ class LibraryPresenter(
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
         val chapters = if (manga.source == MERGED_SOURCE_ID) {
-            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlockingAsDbChapter(manga.id!!)
-        } else runBlocking { getChapterByMangaId.await(manga.id!!) }.map { it.toDbChapter() }
+            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlockingAsDbChapter(manga.id)
+        } else runBlocking { getChapterByMangaId.await(manga.id) }.map { it.toDbChapter() }
         return if (manga.isEhBasedManga()) {
             val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
             if (chapter?.read == false) chapter else null
@@ -897,19 +895,19 @@ class LibraryPresenter(
     }
 
     private fun getGroupedMangaItems(libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
-        val grouping: MutableMap<Number, Pair<Int, String>> = mutableMapOf()
+        val grouping: MutableMap<Number, Pair<Long, String>> = mutableMapOf()
         when (groupType) {
             LibraryGroup.BY_STATUS -> {
                 grouping.putAll(
                     listOf(
-                        SManga.ONGOING to context.getString(R.string.ongoing),
-                        SManga.LICENSED to context.getString(R.string.licensed),
-                        SManga.CANCELLED to context.getString(R.string.cancelled),
-                        SManga.ON_HIATUS to context.getString(R.string.on_hiatus),
-                        SManga.PUBLISHING_FINISHED to context.getString(R.string.publishing_finished),
-                        SManga.COMPLETED to context.getString(R.string.completed),
-                        SManga.UNKNOWN to context.getString(R.string.unknown),
-                    ).associateBy(Pair<Int, *>::first),
+                        SManga.ONGOING.toLong() to context.getString(R.string.ongoing),
+                        SManga.LICENSED.toLong() to context.getString(R.string.licensed),
+                        SManga.CANCELLED.toLong() to context.getString(R.string.cancelled),
+                        SManga.ON_HIATUS.toLong() to context.getString(R.string.on_hiatus),
+                        SManga.PUBLISHING_FINISHED.toLong() to context.getString(R.string.publishing_finished),
+                        SManga.COMPLETED.toLong() to context.getString(R.string.completed),
+                        SManga.UNKNOWN.toLong() to context.getString(R.string.unknown),
+                    ).associateBy(Pair<Long, *>::first),
                 )
             }
             LibraryGroup.BY_SOURCE ->
@@ -917,19 +915,19 @@ class LibraryPresenter(
                     .map { it.manga.source }
                     .distinct()
                     .sorted()
-                    .mapIndexed { index, sourceLong ->
-                        sourceLong to (index to sourceManager.getOrStub(sourceLong).name)
+                    .map { sourceId ->
+                        sourceId to (sourceId to sourceManager.getOrStub(sourceId).name)
                     }
                     .let(grouping::putAll)
             LibraryGroup.BY_TRACK_STATUS -> {
                 grouping.putAll(
                     TrackStatus.values()
-                        .map { it.int to context.getString(it.res) }
-                        .associateBy(Pair<Int, *>::first),
+                        .map { it.int.toLong() to context.getString(it.res) }
+                        .associateBy(Pair<Long, *>::first),
                 )
             }
         }
-        val map: MutableMap<Int, MutableList<LibraryItem>> = mutableMapOf()
+        val map: MutableMap<Long, MutableList<LibraryItem>> = mutableMapOf()
 
         when (groupType) {
             LibraryGroup.BY_TRACK_STATUS -> {
@@ -939,7 +937,7 @@ class LibraryPresenter(
                         TrackStatus.parseTrackerStatus(track.syncId, track.status.toInt())
                     } ?: TrackStatus.OTHER
 
-                    map.getOrPut(status.int) { mutableListOf() } += libraryItem
+                    map.getOrPut(status.int.toLong()) { mutableListOf() } += libraryItem
                 }
             }
             LibraryGroup.BY_SOURCE -> {
@@ -949,9 +947,9 @@ class LibraryPresenter(
                         map.getOrPut(group.first) { mutableListOf() } += libraryItem
                     } else {
                         grouping.getOrPut(Int.MAX_VALUE) {
-                            Int.MAX_VALUE to context.getString(R.string.unknown)
+                            Long.MAX_VALUE to context.getString(R.string.unknown)
                         }
-                        map.getOrPut(Int.MAX_VALUE) { mutableListOf() } += libraryItem
+                        map.getOrPut(Long.MAX_VALUE) { mutableListOf() } += libraryItem
                     }
                 }
             }
@@ -962,9 +960,9 @@ class LibraryPresenter(
                         map.getOrPut(group.first) { mutableListOf() } += libraryItem
                     } else {
                         grouping.getOrPut(Int.MAX_VALUE) {
-                            Int.MAX_VALUE to context.getString(R.string.unknown)
+                            Long.MAX_VALUE to context.getString(R.string.unknown)
                         }
-                        map.getOrPut(Int.MAX_VALUE) { mutableListOf() } += libraryItem
+                        map.getOrPut(Long.MAX_VALUE) { mutableListOf() } += libraryItem
                     }
                 }
             }
@@ -975,7 +973,7 @@ class LibraryPresenter(
             LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.values.filter { it.first in map.keys }
             else -> grouping.values
         }.map { (id, name) ->
-            Category.create(name).also { it.id = id }
+            Category(id, name, 0, 0, emptyList())
         }
 
         return map to categories

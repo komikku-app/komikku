@@ -4,9 +4,9 @@ import android.view.View
 import androidx.core.view.isVisible
 import coil.dispose
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.SourceEnhancedEhentaiListItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.loadAutoPause
