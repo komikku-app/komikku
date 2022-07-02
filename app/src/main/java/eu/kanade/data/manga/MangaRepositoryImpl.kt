@@ -27,6 +27,14 @@ class MangaRepositoryImpl(
         return handler.subscribeToOne { mangasQueries.getMangaById(id, mangaMapper) }
     }
 
+    override suspend fun getMangaByUrlAndSource(url: String, sourceId: Long): Manga? {
+        return handler.awaitOneOrNull { mangasQueries.getMangaByUrlAndSource(url, sourceId, mangaMapper) }
+    }
+
+    override suspend fun subscribeMangaByUrlAndSource(url: String, sourceId: Long): Flow<Manga?> {
+        return handler.subscribeToOneOrNull { mangasQueries.getMangaByUrlAndSource(url, sourceId, mangaMapper) }
+    }
+
     override suspend fun getFavorites(): List<Manga> {
         return handler.awaitList { mangasQueries.getFavorites(mangaMapper) }
     }

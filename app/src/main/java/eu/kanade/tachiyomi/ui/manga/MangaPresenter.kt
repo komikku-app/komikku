@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.compose.runtime.Immutable
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
+import eu.kanade.domain.category.model.toDbCategory
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
@@ -13,12 +14,15 @@ import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetDuplicateLibraryManga
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
+import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
 import eu.kanade.domain.manga.interactor.GetMangaWithChapters
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.SetMangaChapterFlags
 import eu.kanade.domain.manga.interactor.SetMangaFilteredScanlators
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.TriStateFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
@@ -33,9 +37,9 @@ import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
@@ -113,7 +117,6 @@ class MangaPresenter(
     val isFromSource: Boolean,
     val smartSearched: Boolean,
     private val preferences: PreferencesHelper = Injekt.get(),
-    private val db: DatabaseHelper = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     // SY -->
@@ -121,6 +124,8 @@ class MangaPresenter(
     // SY <--
     private val getMangaAndChapters: GetMangaWithChapters = Injekt.get(),
     // SY -->
+    private val getMangaById: GetMangaById = Injekt.get(),
+    private val getMangaByUrlAndSource: GetMangaByUrlAndSource = Injekt.get(),
     private val setMangaFilteredScanlators: SetMangaFilteredScanlators = Injekt.get(),
     private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
@@ -377,8 +382,12 @@ class MangaPresenter(
         val state = successState ?: return
         var manga = state.manga
         if (state.manga.isLocal()) {
+            val newTitle = if (title.isNullOrBlank()) manga.url else title.trim()
+            val newAuthor = author?.trimOrNull()
+            val newArtist = artist?.trimOrNull()
+            val newDesc = description?.trimOrNull()
             manga = manga.copy(
-                ogTitle = if (title.isNullOrBlank()) manga.url else title.trim(),
+                ogTitle = newTitle,
                 ogAuthor = author?.trimOrNull(),
                 ogArtist = artist?.trimOrNull(),
                 ogDescription = description?.trimOrNull(),
@@ -386,8 +395,19 @@ class MangaPresenter(
                 ogStatus = status ?: 0,
             )
             (sourceManager.get(LocalSource.ID) as LocalSource).updateMangaInfo(manga.toSManga())
-            // TODO
-            db.updateMangaInfo(manga.toDbManga()).executeAsBlocking()
+            launchIO {
+                updateManga.await(
+                    MangaUpdate(
+                        manga.id,
+                        title = newTitle,
+                        author = newAuthor,
+                        artist = newArtist,
+                        description = newDesc,
+                        genre = tags,
+                        status = status
+                    )
+                )
+            }
         } else {
             val genre = if (!tags.isNullOrEmpty() && tags != state.manga.ogGenre) {
                 tags
@@ -413,11 +433,13 @@ class MangaPresenter(
         }
     }
 
-    suspend fun smartSearchMerge(context: Context, manga: DomainManga, originalMangaId: Long): Manga {
-        val originalManga = db.getManga(originalMangaId).executeAsBlocking()
+    suspend fun smartSearchMerge(context: Context, manga: DomainManga, originalMangaId: Long): DomainManga {
+        val db = Injekt.get<DatabaseHelper>()
+
+        val originalManga = getMangaById.await(originalMangaId)
             ?: throw IllegalArgumentException(context.getString(R.string.merge_unknown_manga, originalMangaId))
         if (originalManga.source == MERGED_SOURCE_ID) {
-            val children = db.getMergedMangaReferences(originalMangaId).executeAsBlocking()
+            val children = getMergedReferencesById.await(originalMangaId)
             if (children.any { it.mangaSourceId == manga.source && it.mangaUrl == manga.url }) {
                 throw IllegalArgumentException(context.getString(R.string.merged_already))
             }
@@ -430,7 +452,7 @@ class MangaPresenter(
                     chapterSortMode = 0,
                     chapterPriority = 0,
                     downloadChapters = true,
-                    mergeId = originalManga.id!!,
+                    mergeId = originalManga.id,
                     mergeUrl = originalManga.url,
                     mangaId = manga.id,
                     mangaUrl = manga.url,
@@ -446,38 +468,40 @@ class MangaPresenter(
                     chapterSortMode = 0,
                     chapterPriority = -1,
                     downloadChapters = false,
-                    mergeId = originalManga.id!!,
+                    mergeId = originalManga.id,
                     mergeUrl = originalManga.url,
-                    mangaId = originalManga.id!!,
+                    mangaId = originalManga.id,
                     mangaUrl = originalManga.url,
                     mangaSourceId = MERGED_SOURCE_ID,
                 )
             }
 
+            // todo
             db.insertMergedMangas(mangaReferences).executeAsBlocking()
 
             return originalManga
         } else {
             val mergedManga = Manga.create(originalManga.url, originalManga.title, MERGED_SOURCE_ID).apply {
-                copyFrom(originalManga)
+                copyFrom(originalManga.toSManga())
                 favorite = true
-                last_update = originalManga.last_update
-                viewer_flags = originalManga.viewer_flags
-                chapter_flags = originalManga.chapter_flags
+                last_update = originalManga.lastUpdate
+                viewer_flags = originalManga.viewerFlags.toInt()
+                chapter_flags = originalManga.chapterFlags.toInt()
                 sorting = Manga.CHAPTER_SORTING_NUMBER
                 date_added = System.currentTimeMillis()
             }
-            var existingManga = db.getManga(mergedManga.url, mergedManga.source).executeAsBlocking()
+
+            var existingManga = getMangaByUrlAndSource.await(mergedManga.url, mergedManga.source)
             while (existingManga != null) {
                 if (existingManga.favorite) {
                     throw IllegalArgumentException(context.getString(R.string.merge_duplicate))
                 } else if (!existingManga.favorite) {
                     withContext(NonCancellable) {
-                        db.deleteManga(existingManga!!).executeAsBlocking()
-                        db.deleteMangaForMergedManga(existingManga!!.id!!).executeAsBlocking()
+                        db.deleteManga(existingManga!!.toDbManga()).executeAsBlocking()
+                        db.deleteMangaForMergedManga(existingManga!!.id).executeAsBlocking()
                     }
                 }
-                existingManga = db.getManga(mergedManga.url, mergedManga.source).executeAsBlocking()
+                existingManga = getMangaByUrlAndSource.await(mergedManga.url, mergedManga.source)
             }
 
             // Reload chapters immediately
@@ -486,12 +510,11 @@ class MangaPresenter(
             val newId = db.insertManga(mergedManga).executeAsBlocking().insertedId()
             if (newId != null) mergedManga.id = newId
 
-            db.getCategoriesForManga(originalManga)
-                .executeAsBlocking()
-                .map { MangaCategory.create(mergedManga, it) }
+            getCategories.await(originalMangaId)
                 .let {
-                    db.insertMangasCategories(it).executeAsBlocking()
+                    setMangaCategories.await(mergedManga.id!!, it.map { it.id })
                 }
+
 
             val originalMangaReference = MergedMangaReference(
                 id = null,
@@ -502,7 +525,7 @@ class MangaPresenter(
                 downloadChapters = true,
                 mergeId = mergedManga.id!!,
                 mergeUrl = mergedManga.url,
-                mangaId = originalManga.id!!,
+                mangaId = originalManga.id,
                 mangaUrl = originalManga.url,
                 mangaSourceId = originalManga.source,
             )
@@ -537,7 +560,7 @@ class MangaPresenter(
 
             db.insertMergedMangas(listOf(originalMangaReference, newMangaReference, mergedMangaReference)).executeAsBlocking()
 
-            return mergedManga
+            return mergedManga.toDomainManga()!!
         }
 
         // Note that if the manga are merged in a different order, this won't trigger, but I don't care lol
@@ -545,6 +568,8 @@ class MangaPresenter(
 
     fun updateMergeSettings(mergeReference: MergedMangaReference?, mergedMangaReferences: List<MergedMangaReference>) {
         launchIO {
+            // todo
+            val db = Injekt.get<DatabaseHelper>()
             mergeReference?.let {
                 db.updateMergeMangaSettings(it).executeAsBlocking()
             }
@@ -665,8 +690,8 @@ class MangaPresenter(
      *
      * @return List of categories, not including the default category
      */
-    fun getCategories(): List<Category> {
-        return db.getCategories().executeAsBlocking()
+    suspend fun getCategories(): List<Category> {
+        return getCategories.await().map { it.toDbCategory() }
     }
 
     /**
@@ -976,9 +1001,12 @@ class MangaPresenter(
     }
 
     private fun downloadNewChapters(chapters: List<Chapter>) {
-        val manga = successState?.manga ?: return
-        if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(db, preferences) || manga.isEhBasedManga()) return
-        downloadChapters(chapters.map { it.toDomainChapter()!! })
+        presenterScope.launchIO {
+            val manga = successState?.manga ?: return@launchIO
+            val categories = getCategories.await(manga.id).map { it.id }
+            if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(categories, preferences) || manga.isEhBasedManga()) return@launchIO
+            downloadChapters(chapters.map { it.toDomainChapter()!! })
+        }
     }
 
     /**
@@ -1110,14 +1138,15 @@ class MangaPresenter(
     }
 
     // SY -->
-    private fun createMdListTrack(): TrackItem {
+    private suspend fun createMdListTrack(): TrackItem {
         val state = successState!!
         val mdManga = state.manga.takeIf { it.source in mangaDexSourceIds }
             ?: state.mergedData?.manga?.values?.find { it.source in mangaDexSourceIds }
             ?: throw IllegalArgumentException("Could not create initial track")
         val track = trackManager.mdList.createInitialTracker(state.manga.toDbManga(), mdManga.toDbManga())
-        track.id = db.insertTrack(track).executeAsBlocking().insertedId()
-        return TrackItem(track, trackManager.mdList)
+            .toDomainTrack(false)!!
+        insertTrack.await(track)
+        return TrackItem(getTracks.await(mangaId).first { it.syncId == TrackManager.MDLIST }.toDbTrack(), trackManager.mdList)
     }
     // SY <--
 

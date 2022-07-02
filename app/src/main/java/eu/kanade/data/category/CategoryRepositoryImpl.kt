@@ -12,13 +12,11 @@ class CategoryRepositoryImpl(
     private val handler: DatabaseHandler,
 ) : CategoryRepository {
 
-    // SY -->
-    override suspend fun awaitAll(): List<Category> {
+    override suspend fun getAll(): List<Category> {
         return handler.awaitList { categoriesQueries.getCategories(categoryMapper) }
     }
-    // SY <--
 
-    override fun getAll(): Flow<List<Category>> {
+    override fun getAllAsFlow(): Flow<List<Category>> {
         return handler.subscribeToList { categoriesQueries.getCategories(categoryMapper) }
     }
 

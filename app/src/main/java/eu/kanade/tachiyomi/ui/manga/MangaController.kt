@@ -66,6 +66,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.recent.history.HistoryController
 import eu.kanade.tachiyomi.ui.recent.updates.UpdatesController
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
@@ -361,7 +362,7 @@ class MangaController :
                 router?.popCurrentController()
                 router?.replaceTopController(
                     MangaController(
-                        mergedManga.id!!,
+                        mergedManga.id,
                         true,
                         update = true,
                     ).withFadeTransaction(),
@@ -408,18 +409,22 @@ class MangaController :
     }
 
     private fun onCategoriesClick() {
-        val manga = presenter.manga ?: return
-        val categories = presenter.getCategories()
+        viewScope.launchIO {
+            val manga = presenter.manga ?: return@launchIO
+            val categories = presenter.getCategories()
 
-        val ids = presenter.getMangaCategoryIds(manga)
-        val preselected = categories.map {
-            if (it.id in ids) {
-                QuadStateTextView.State.CHECKED.ordinal
-            } else {
-                QuadStateTextView.State.UNCHECKED.ordinal
+            val ids = presenter.getMangaCategoryIds(manga)
+            val preselected = categories.map {
+                if (it.id in ids) {
+                    QuadStateTextView.State.CHECKED.ordinal
+                } else {
+                    QuadStateTextView.State.UNCHECKED.ordinal
+                }
+            }.toTypedArray()
+            launchUI {
+                showChangeCategoryDialog(manga.toDbManga(), categories, preselected)
             }
-        }.toTypedArray()
-        showChangeCategoryDialog(manga.toDbManga(), categories, preselected)
+        }
     }
 
     private fun showChangeCategoryDialog(manga: Manga, categories: List<Category>, preselected: Array<Int>) {

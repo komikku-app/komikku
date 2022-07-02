@@ -4,6 +4,7 @@ import eu.kanade.data.manga.MangaMergeRepositoryImpl
 import eu.kanade.data.manga.MangaMetadataRepositoryImpl
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
+import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
 import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
@@ -30,6 +31,7 @@ class SYDomainModule : InjektModule {
         addFactory { SetSourceCategories(get()) }
         addFactory { ToggleSources(get()) }
         addFactory { SetMangaFilteredScanlators(get()) }
+        addFactory { GetMangaByUrlAndSource(get()) }
 
         addSingletonFactory<MangaMetadataRepository> { MangaMetadataRepositoryImpl(get()) }
         addFactory { GetFlatMetadataById(get()) }

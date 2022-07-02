@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.source.online.all
 
+import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.toDbChapter
-import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -44,6 +44,7 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
 class MergedSource : HttpSource() {
     private val db: DatabaseHelper by injectLazy()
     private val getMergedChaptersByMangaId: GetMergedChapterByMangaId by injectLazy()
+    private val getCategories: GetCategories by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val downloadManager: DownloadManager by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
@@ -169,7 +170,7 @@ class MergedSource : HttpSource() {
             throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
         }
 
-        val ifDownloadNewChapters = downloadChapters && manga.toDbManga().shouldDownloadNewChapters(db, preferences)
+        val ifDownloadNewChapters = downloadChapters && manga.shouldDownloadNewChapters(getCategories.await(manga.id).map { it.id }, preferences)
         val semaphore = Semaphore(5)
         var exception: Exception? = null
         return supervisorScope {

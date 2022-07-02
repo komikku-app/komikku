@@ -461,9 +461,9 @@ open class BrowseSourcePresenter(
      * @param manga the manga to get categories from.
      * @return Array of category ids the manga is in, if none returns default id
      */
-    fun getMangaCategoryIds(manga: Manga): Array<Long?> {
-        val categories = db.getCategoriesForManga(manga).executeAsBlocking()
-        return categories.mapNotNull { it?.id?.toLong() }.toTypedArray()
+    suspend fun getMangaCategoryIds(manga: Manga): Array<Long?> {
+        val categories = getCategories.await(manga.id!!)
+        return categories.map { it.id }.toTypedArray()
     }
 
     /**

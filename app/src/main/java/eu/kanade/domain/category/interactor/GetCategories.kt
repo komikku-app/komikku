@@ -8,18 +8,16 @@ class GetCategories(
     private val categoryRepository: CategoryRepository,
 ) {
 
-    // SY -->
-    suspend fun await(): List<Category> {
-        return categoryRepository.awaitAll()
-    }
-    // SY <--
-
     fun subscribe(): Flow<List<Category>> {
-        return categoryRepository.getAll()
+        return categoryRepository.getAllAsFlow()
     }
 
     fun subscribe(mangaId: Long): Flow<List<Category>> {
         return categoryRepository.getCategoriesByMangaIdAsFlow(mangaId)
+    }
+
+    suspend fun await(): List<Category> {
+        return categoryRepository.getAll()
     }
 
     suspend fun await(mangaId: Long): List<Category> {
