@@ -19,6 +19,7 @@ if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
 shortcutHelper.setFilePath("./shortcuts.xml")
 
 android {
+    namespace = "eu.kanade.tachiyomi.sy"
     compileSdk = AndroidConfig.compileSdk
     ndkVersion = AndroidConfig.ndk
 
