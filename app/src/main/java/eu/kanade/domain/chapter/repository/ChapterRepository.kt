@@ -20,6 +20,8 @@ interface ChapterRepository {
 
     suspend fun getChapterByMangaIdAsFlow(mangaId: Long): Flow<List<Chapter>>
 
+    suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long): Chapter?
+
     // SY -->
     suspend fun getMergedChapterByMangaId(mangaId: Long): List<Chapter>
 

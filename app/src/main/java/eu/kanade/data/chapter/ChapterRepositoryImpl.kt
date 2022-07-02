@@ -100,6 +100,10 @@ class ChapterRepositoryImpl(
         return handler.subscribeToList { chaptersQueries.getChaptersByMangaId(mangaId, chapterMapper) }
     }
 
+    override suspend fun getChapterByUrlAndMangaId(url: String, mangaId: Long): Chapter? {
+        return handler.awaitOneOrNull { chaptersQueries.getChapterByUrlAndMangaId(url, mangaId, chapterMapper) }
+    }
+
     // SY -->
     override suspend fun getMergedChapterByMangaId(mangaId: Long): List<Chapter> {
         return handler.awaitList { chaptersQueries.getMergedChaptersByMangaId(mangaId, chapterMapper) }
