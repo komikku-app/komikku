@@ -137,36 +137,6 @@ interface MangaQueries : DbProvider {
 
     fun deleteManga(manga: Manga) = db.delete().`object`(manga).prepare()
 
-    fun getLastReadManga() = db.get()
-        .listOfObjects(Manga::class.java)
-        .withQuery(
-            RawQuery.builder()
-                .query(getLastReadMangaQuery())
-                .observesTables(MangaTable.TABLE)
-                .build(),
-        )
-        .prepare()
-
-    fun getLatestChapterManga() = db.get()
-        .listOfObjects(Manga::class.java)
-        .withQuery(
-            RawQuery.builder()
-                .query(getLatestChapterMangaQuery())
-                .observesTables(MangaTable.TABLE)
-                .build(),
-        )
-        .prepare()
-
-    fun getChapterFetchDateManga() = db.get()
-        .listOfObjects(Manga::class.java)
-        .withQuery(
-            RawQuery.builder()
-                .query(getChapterFetchDateMangaQuery())
-                .observesTables(MangaTable.TABLE)
-                .build(),
-        )
-        .prepare()
-
     // SY -->
     fun getMangaWithMetadata() = db.get()
         .listOfObjects(Manga::class.java)

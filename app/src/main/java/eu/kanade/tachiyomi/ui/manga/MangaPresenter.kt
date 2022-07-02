@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.Immutable
 import eu.kanade.domain.category.interactor.GetCategories
-import eu.kanade.domain.category.interactor.MoveMangaToCategories
+import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
@@ -135,7 +135,7 @@ class MangaPresenter(
     private val getCategories: GetCategories = Injekt.get(),
     private val deleteTrack: DeleteTrack = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
-    private val moveMangaToCategories: MoveMangaToCategories = Injekt.get(),
+    private val setMangaCategories: SetMangaCategories = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
 ) : BasePresenter<MangaController>() {
@@ -697,7 +697,7 @@ class MangaPresenter(
         val mangaId = manga.id ?: return
         val categoryIds = categories.mapNotNull { it.id?.toLong() }
         presenterScope.launchIO {
-            moveMangaToCategories.await(mangaId, categoryIds)
+            setMangaCategories.await(mangaId, categoryIds)
         }
     }
 

@@ -7,6 +7,7 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
+import eu.kanade.data.manga.LibraryQuery
 import eu.kanade.tachiyomi.Database
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -87,4 +88,8 @@ class AndroidDatabaseHandler(
         val context = getCurrentDatabaseContext()
         return withContext(context) { block(db) }
     }
+
+    // SY -->
+    fun getLibraryQuery() = LibraryQuery(driver)
+    // SY <--
 }

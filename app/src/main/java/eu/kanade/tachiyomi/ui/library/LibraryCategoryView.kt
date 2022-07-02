@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.SelectableAdapter
+import eu.kanade.domain.category.interactor.UpdateCategory
+import eu.kanade.domain.category.model.CategoryUpdate
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
@@ -425,6 +427,8 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         }
     }
 
+    private val updateCategory: UpdateCategory by injectLazy()
+
     override fun onItemMove(fromPosition: Int, toPosition: Int) {
         if (fromPosition == toPosition) return
         controller.invalidateActionMode()
@@ -433,13 +437,23 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         if (category.id == 0) {
             preferences.defaultMangaOrder().set(mangaIds.joinToString("/"))
         } else {
-            db.insertCategory(category).asRxObservable().subscribe()
+            scope.launch {
+                updateCategory.await(CategoryUpdate(category.id!!.toLong(), mangaOrder = mangaIds))
+            }
         }
         if (preferences.categorizedDisplaySettings().get() && category.id != 0) {
             if (SortModeSetting.fromFlag(category.sortMode) != SortModeSetting.DRAG_AND_DROP) {
                 category.sortMode = SortModeSetting.DRAG_AND_DROP.flag
                 category.sortDirection = SortDirectionSetting.ASCENDING.flag
-                db.insertCategory(category).asRxObservable().subscribe()
+                scope.launch {
+                    updateCategory.await(
+                        CategoryUpdate(
+                            id = category.id!!.toLong(),
+                            flags = category.flags.toLong(),
+                            mangaOrder = mangaIds,
+                        ),
+                    )
+                }
             }
         } else if (preferences.librarySortingMode().get() != SortModeSetting.DRAG_AND_DROP) {
             preferences.librarySortingAscending().set(SortDirectionSetting.ASCENDING)

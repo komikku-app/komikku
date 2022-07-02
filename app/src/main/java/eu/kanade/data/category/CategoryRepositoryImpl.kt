@@ -12,8 +12,26 @@ class CategoryRepositoryImpl(
     private val handler: DatabaseHandler,
 ) : CategoryRepository {
 
+    // SY -->
+    override suspend fun awaitAll(): List<Category> {
+        return handler.awaitList { categoriesQueries.getCategories(categoryMapper) }
+    }
+    // SY <--
+
     override fun getAll(): Flow<List<Category>> {
         return handler.subscribeToList { categoriesQueries.getCategories(categoryMapper) }
+    }
+
+    override suspend fun getCategoriesByMangaId(mangaId: Long): List<Category> {
+        return handler.awaitList {
+            categoriesQueries.getCategoriesByMangaId(mangaId, categoryMapper)
+        }
+    }
+
+    override fun getCategoriesByMangaIdAsFlow(mangaId: Long): Flow<List<Category>> {
+        return handler.subscribeToList {
+            categoriesQueries.getCategoriesByMangaId(mangaId, categoryMapper)
+        }
     }
 
     @Throws(DuplicateNameException::class)
@@ -52,12 +70,6 @@ class CategoryRepositoryImpl(
             categoriesQueries.delete(
                 categoryId = categoryId,
             )
-        }
-    }
-
-    override suspend fun getCategoriesForManga(mangaId: Long): List<Category> {
-        return handler.awaitList {
-            categoriesQueries.getCategoriesByMangaId(mangaId, categoryMapper)
         }
     }
 

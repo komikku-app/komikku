@@ -36,6 +36,8 @@ import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.preference.asImmediateFlow
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.openInBrowser
@@ -53,6 +55,7 @@ import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
 import exh.ui.LoaderManager
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
@@ -267,6 +270,7 @@ class LibraryController(
         destroyActionModeIfNeeded()
         adapter?.onDestroy()
         adapter = null
+        settingsSheet?.sheetScope?.cancel()
         settingsSheet = null
         tabsVisibilitySubscription?.unsubscribe()
         tabsVisibilitySubscription = null
@@ -633,25 +637,29 @@ class LibraryController(
      * Move the selected manga to a list of categories.
      */
     private fun showMangaCategoriesDialog() {
-        // Create a copy of selected manga
-        val mangas = selectedMangas.toList()
+        viewScope.launchIO {
+            // Create a copy of selected manga
+            val mangas = selectedMangas.toList()
 
-        // Hide the default category because it has a different behavior than the ones from db.
-        val categories = presenter.categories.filter { it.id != 0 }
+            // Hide the default category because it has a different behavior than the ones from db.
+            val categories = presenter.categories.filter { it.id != 0 }
 
-        // Get indexes of the common categories to preselect.
-        val common = presenter.getCommonCategories(mangas)
-        // Get indexes of the mix categories to preselect.
-        val mix = presenter.getMixCategories(mangas)
-        val preselected = categories.map {
-            when (it) {
-                in common -> QuadStateTextView.State.CHECKED.ordinal
-                in mix -> QuadStateTextView.State.INDETERMINATE.ordinal
-                else -> QuadStateTextView.State.UNCHECKED.ordinal
+            // Get indexes of the common categories to preselect.
+            val common = presenter.getCommonCategories(mangas)
+            // Get indexes of the mix categories to preselect.
+            val mix = presenter.getMixCategories(mangas)
+            val preselected = categories.map {
+                when (it) {
+                    in common -> QuadStateTextView.State.CHECKED.ordinal
+                    in mix -> QuadStateTextView.State.INDETERMINATE.ordinal
+                    else -> QuadStateTextView.State.UNCHECKED.ordinal
+                }
+            }.toTypedArray()
+            launchUI {
+                ChangeMangaCategoriesDialog(this@LibraryController, mangas, categories, preselected)
+                    .showDialog(router)
             }
-        }.toTypedArray()
-        ChangeMangaCategoriesDialog(this, mangas, categories, preselected)
-            .showDialog(router)
+        }
     }
 
     private fun downloadUnreadChapters() {
@@ -691,7 +699,7 @@ class LibraryController(
     // SY <--
 
     override fun updateCategoriesForMangas(mangas: List<Manga>, addCategories: List<Category>, removeCategories: List<Category>) {
-        presenter.updateMangasToCategories(mangas, addCategories, removeCategories)
+        presenter.setMangaCategories(mangas, addCategories, removeCategories)
         destroyActionModeIfNeeded()
     }
 

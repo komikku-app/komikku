@@ -9,13 +9,27 @@ class TrackRepositoryImpl(
     private val handler: DatabaseHandler,
 ) : TrackRepository {
 
+    // SY -->
+    override suspend fun getTracks(): List<Track> {
+        return handler.awaitList {
+            manga_syncQueries.getTracks(trackMapper)
+        }
+    }
+    // SY <--
+
     override suspend fun getTracksByMangaId(mangaId: Long): List<Track> {
         return handler.awaitList {
             manga_syncQueries.getTracksByMangaId(mangaId, trackMapper)
         }
     }
 
-    override suspend fun subscribeTracksByMangaId(mangaId: Long): Flow<List<Track>> {
+    override fun getTracksAsFlow(): Flow<List<Track>> {
+        return handler.subscribeToList {
+            manga_syncQueries.getTracks(trackMapper)
+        }
+    }
+
+    override fun getTracksByMangaIdAsFlow(mangaId: Long): Flow<List<Track>> {
         return handler.subscribeToList {
             manga_syncQueries.getTracksByMangaId(mangaId, trackMapper)
         }
