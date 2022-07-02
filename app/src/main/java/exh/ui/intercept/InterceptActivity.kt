@@ -70,7 +70,7 @@ class InterceptActivity : BaseActivity() {
                         onBackPressed()
                         startActivity(
                             if (it.chapter != null) {
-                                ReaderActivity.newIntent(this, it.manga, it.chapter)
+                                ReaderActivity.newIntent(this, it.manga.id!!, it.chapter.id!!)
                             } else {
                                 Intent(this, MainActivity::class.java)
                                     .setAction(MainActivity.SHORTCUT_MANGA)

@@ -871,7 +871,7 @@ class LibraryController(
         }
         val activity = activity ?: return
         val chapter = presenter.getFirstUnread(manga) ?: return
-        val intent = ReaderActivity.newIntent(activity, manga, chapter)
+        val intent = ReaderActivity.newIntent(activity, manga.id!!, chapter.id!!)
         destroyActionModeIfNeeded()
         startActivity(intent)
     }

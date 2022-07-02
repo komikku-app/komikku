@@ -3,7 +3,10 @@ package eu.kanade.tachiyomi.data.backup
 import android.content.Context
 import android.net.Uri
 import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.manga.mangaMapper
 import eu.kanade.data.toLong
+import eu.kanade.domain.manga.interactor.GetFavorites
+import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
@@ -13,6 +16,7 @@ import eu.kanade.tachiyomi.source.SourceManager
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import data.Mangas as DbManga
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 abstract class AbstractBackupManager(protected val context: Context) {
 
@@ -21,8 +25,10 @@ abstract class AbstractBackupManager(protected val context: Context) {
     internal val sourceManager: SourceManager = Injekt.get()
     internal val trackManager: TrackManager = Injekt.get()
     protected val preferences: PreferencesHelper = Injekt.get()
+    private val getFavorites: GetFavorites = Injekt.get()
 
     // SY -->
+    private val getMergedManga: GetMergedManga = Injekt.get()
     protected val customMangaManager: CustomMangaManager = Injekt.get()
     // SY <--
 
@@ -42,13 +48,13 @@ abstract class AbstractBackupManager(protected val context: Context) {
      *
      * @return [Manga] from library
      */
-    protected suspend fun getFavoriteManga(): List<DbManga> {
-        return handler.awaitList { mangasQueries.getFavorites() }
+    protected suspend fun getFavoriteManga(): List<DomainManga> {
+        return getFavorites.await()
     }
 
     // SY -->
-    protected suspend fun getReadManga(): List<DbManga> {
-        return handler.awaitList { mangasQueries.getReadMangaNotInLibrary() }
+    protected suspend fun getReadManga(): List<DomainManga> {
+        return handler.awaitList { mangasQueries.getReadMangaNotInLibrary(mangaMapper) }
     }
 
     /**
@@ -56,8 +62,8 @@ abstract class AbstractBackupManager(protected val context: Context) {
      *
      * @return merged [Manga] that are possibly not in the library
      */
-    protected suspend fun getMergedManga(): List<DbManga> {
-        return handler.awaitList { mergedQueries.selectAllMergedMangas() }
+    protected suspend fun getMergedManga(): List<DomainManga> {
+        return getMergedManga.await()
     }
     // SY <--
 

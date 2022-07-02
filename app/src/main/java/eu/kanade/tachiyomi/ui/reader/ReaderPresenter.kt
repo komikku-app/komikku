@@ -6,11 +6,16 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import com.jakewharton.rxrelay.BehaviorRelay
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
+import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
+import eu.kanade.domain.manga.interactor.GetFlatMetadataById
+import eu.kanade.domain.manga.interactor.GetMangaById
 import eu.kanade.domain.manga.model.isLocal
+import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
@@ -46,6 +51,7 @@ import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.takeBytes
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.cacheImageDir
 import eu.kanade.tachiyomi.util.system.ImageUtil
@@ -54,7 +60,6 @@ import eu.kanade.tachiyomi.util.system.logcat
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedManga
@@ -86,10 +91,15 @@ class ReaderPresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
     private val delayedTrackingStore: DelayedTrackingStore = Injekt.get(),
+    private val getMangaById: GetMangaById = Injekt.get(),
+    private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
+    // SY -->
+    private val getFlatMetadataById: GetFlatMetadataById,
+    // SY <--
 ) : BasePresenter<ReaderActivity>() {
 
     /**
@@ -147,17 +157,19 @@ class ReaderPresenter(
         // SY -->
         val filteredScanlators = manga.filtered_scanlators?.let { MdUtil.getScanlators(it) }
         // SY <--
-        val dbChapters = /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
-            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
-                .getChaptersAsBlocking(manga.id!!)
-        } else /* SY <-- */ db.getChapters(manga).executeAsBlocking()
+        val chapters = runBlocking {
+            /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
+                (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
+                    .getChaptersAsBlocking(manga.id!!)
+            } else /* SY <-- */ getChapterByMangaId.await(manga.id!!)
+        }
 
-        val selectedChapter = dbChapters.find { it.id == chapterId }
+        val selectedChapter = chapters.find { it.id == chapterId }
             ?: error("Requested chapter of id $chapterId not found in chapter list")
 
         val chaptersForReader = when {
             (preferences.skipRead() || preferences.skipFiltered()) -> {
-                val filteredChapters = dbChapters.filterNot {
+                val filteredChapters = chapters.filterNot {
                     when {
                         preferences.skipRead() && it.read -> true
                         preferences.skipFiltered() -> {
@@ -180,10 +192,11 @@ class ReaderPresenter(
                     filteredChapters + listOf(selectedChapter)
                 }
             }
-            else -> dbChapters
+            else -> chapters
         }
 
         chaptersForReader
+            .map { it.toDbChapter() }
             .sortedWith(getChapterSort(manga, sortDescending = false))
             .map(::ReaderChapter)
     }
@@ -266,28 +279,22 @@ class ReaderPresenter(
     fun init(mangaId: Long, initialChapterId: Long) {
         if (!needsInit()) return
 
-        db.getManga(mangaId).asRxObservable()
-            .first()
-            .observeOn(AndroidSchedulers.mainThread())
-            // SY -->
-            .flatMap { manga ->
+        launchIO {
+            try {
+                // SY -->
+                val manga = getMangaById.await(mangaId) ?: return@launchIO
                 val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
-                if (manga.initialized && source != null) {
-                    db.getFlatMetadataForManga(mangaId).asRxSingle().map {
-                        manga to it?.raise(source.metaClass)
-                    }.toObservable()
-                } else {
-                    Observable.just(manga to null)
+                val metadata = if (source != null) {
+                    getFlatMetadataById.await(mangaId)?.raise(source.metaClass)
+                } else null
+                withUIContext {
+                    init(manga.toDbManga(), initialChapterId, metadata)
                 }
+                // SY <--
+            } catch (e: Throwable) {
+                view?.setInitialChapterError(e)
             }
-            .doOnNext { init(it.first, initialChapterId, it.second) }
-            // SY <--
-            .subscribeFirst(
-                { _, _ ->
-                    // Ignore onNext event
-                },
-                ReaderActivity::setInitialChapterError,
-            )
+        }
     }
 
     /**

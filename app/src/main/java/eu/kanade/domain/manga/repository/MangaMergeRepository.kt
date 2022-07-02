@@ -5,6 +5,10 @@ import exh.merged.sql.models.MergedMangaReference
 import kotlinx.coroutines.flow.Flow
 
 interface MangaMergeRepository {
+    suspend fun getMergedManga(): List<Manga>
+
+    suspend fun subscribeMergedManga(): Flow<List<Manga>>
+
     suspend fun getMergedMangaById(id: Long): List<Manga>
 
     suspend fun subscribeMergedMangaById(id: Long): Flow<List<Manga>>

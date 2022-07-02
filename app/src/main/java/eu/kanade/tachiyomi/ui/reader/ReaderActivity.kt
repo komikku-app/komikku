@@ -51,7 +51,6 @@ import com.google.android.material.transition.platform.MaterialContainerTransfor
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
@@ -134,10 +133,6 @@ class ReaderActivity : BaseRxActivity<ReaderPresenter>() {
                 putExtra("chapter", chapterId)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
-        }
-
-        fun newIntent(context: Context, manga: Manga, chapter: Chapter): Intent {
-            return newIntent(context, manga.id, chapter.id)
         }
 
         const val SHIFT_DOUBLE_PAGES = "shiftingDoublePages"

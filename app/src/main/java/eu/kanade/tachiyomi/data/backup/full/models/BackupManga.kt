@@ -1,13 +1,12 @@
 package eu.kanade.tachiyomi.data.backup.full.models
 
-import data.Mangas
 import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.database.models.ChapterImpl
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.TrackImpl
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
-import exh.util.nullIfBlank
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 
@@ -112,28 +111,28 @@ data class BackupManga(
     }
 
     companion object {
-        fun copyFrom(manga: Mangas /* SY --> */, customMangaManager: CustomMangaManager?/* SY <-- */): BackupManga {
+        fun copyFrom(manga: Manga /* SY --> */, customMangaManager: CustomMangaManager?/* SY <-- */): BackupManga {
             return BackupManga(
                 url = manga.url,
                 // SY -->
-                title = manga.title,
-                artist = manga.artist,
-                author = manga.author,
-                description = manga.description,
-                genre = manga.genre ?: emptyList(),
-                status = manga.status.toInt(),
+                title = manga.ogTitle,
+                artist = manga.ogArtist,
+                author = manga.ogAuthor,
+                description = manga.ogDescription,
+                genre = manga.ogGenre ?: emptyList(),
+                status = manga.ogStatus.toInt(),
                 // SY <--
-                thumbnailUrl = manga.thumbnail_url,
+                thumbnailUrl = manga.thumbnailUrl,
                 favorite = manga.favorite,
                 source = manga.source,
-                dateAdded = manga.date_added,
-                viewer = (manga.viewer.toInt() and ReadingModeType.MASK),
-                viewer_flags = manga.viewer.toInt(),
-                chapterFlags = manga.chapter_flags.toInt(),
-                filtered_scanlators = manga.filtered_scanlators?.let(listOfStringsAndAdapter::encode).nullIfBlank(),
+                dateAdded = manga.dateAdded,
+                viewer = (manga.viewerFlags.toInt() and ReadingModeType.MASK),
+                viewer_flags = manga.viewerFlags.toInt(),
+                chapterFlags = manga.chapterFlags.toInt(),
                 // SY -->
+                filtered_scanlators = manga.filteredScanlators?.let(listOfStringsAndAdapter::encode),
             ).also { backupManga ->
-                customMangaManager?.getManga(manga._id)?.let {
+                customMangaManager?.getManga(manga.id)?.let {
                     backupManga.customTitle = it.title
                     backupManga.customArtist = it.artist
                     backupManga.customAuthor = it.author

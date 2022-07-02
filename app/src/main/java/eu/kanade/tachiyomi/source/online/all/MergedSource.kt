@@ -121,9 +121,12 @@ class MergedSource : HttpSource() {
         return if (dedupe) dedupeChapterList(mangaReferences, chapters) else chapters
     }
 
-    fun getChaptersAsBlocking(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
+    fun getChaptersAsBlockingAsDbChapter(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
+        return getChaptersAsBlocking(mangaId, editScanlators, dedupe).map(DomainChapter::toDbChapter)
+    }
+
+    fun getChaptersAsBlocking(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<DomainChapter> {
         return transformMergedChapters(mangaId, runBlocking { getMergedChaptersByMangaId.await(mangaId) }, editScanlators, dedupe)
-            .map(DomainChapter::toDbChapter)
     }
 
     private fun dedupeChapterList(mangaReferences: List<MergedMangaReference>, chapterList: List<DomainChapter>): List<DomainChapter> {
@@ -155,7 +158,7 @@ class MergedSource : HttpSource() {
     suspend fun fetchChaptersForMergedManga(manga: DomainManga, downloadChapters: Boolean = true, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {
         return withIOContext {
             fetchChaptersAndSync(manga, downloadChapters)
-            getChaptersAsBlocking(manga.id, editScanlators, dedupe)
+            getChaptersAsBlockingAsDbChapter(manga.id, editScanlators, dedupe)
         }
     }
 

@@ -719,7 +719,7 @@ class LibraryPresenter(
                     val mergedSource = sourceManager.get(MERGED_SOURCE_ID) as MergedSource
                     val mergedMangas = getMergedMangaById.await(manga.id!!)
                     mergedSource
-                        .getChaptersAsBlocking(manga.id!!)
+                        .getChaptersAsBlockingAsDbChapter(manga.id!!)
                         .filter { !it.read }
                         .groupBy { it.manga_id!! }
                         .forEach ab@{ (mangaId, chapters) ->
@@ -886,7 +886,7 @@ class LibraryPresenter(
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
         val chapters = if (manga.source == MERGED_SOURCE_ID) {
-            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga.id!!)
+            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlockingAsDbChapter(manga.id!!)
         } else runBlocking { getChapterByMangaId.await(manga.id!!) }.map { it.toDbChapter() }
         return if (manga.isEhBasedManga()) {
             val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)

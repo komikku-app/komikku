@@ -11,6 +11,14 @@ class MangaMergeRepositoryImpl(
     private val handler: DatabaseHandler,
 ) : MangaMergeRepository {
 
+    override suspend fun getMergedManga(): List<Manga> {
+        return handler.awaitList { mergedQueries.selectAllMergedMangas(mangaMapper) }
+    }
+
+    override suspend fun subscribeMergedManga(): Flow<List<Manga>> {
+        return handler.subscribeToList { mergedQueries.selectAllMergedMangas(mangaMapper) }
+    }
+
     override suspend fun getMergedMangaById(id: Long): List<Manga> {
         return handler.awaitList { mergedQueries.selectMergedMangasById(id, mangaMapper) }
     }
