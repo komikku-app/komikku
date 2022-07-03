@@ -237,7 +237,7 @@ class MangaController :
     private fun openMergedSettingsDialog() {
         EditMergedSettingsDialog(
             this,
-            presenter.manga!!.toDbManga(),
+            presenter.manga ?: return,
         ).showDialog(router)
     }
 

@@ -1,5 +1,6 @@
 package eu.kanade.data.manga
 
+import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
@@ -7,6 +8,7 @@ import eu.kanade.data.toLong
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.repository.MangaRepository
+import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
@@ -19,24 +21,26 @@ class MangaRepositoryImpl(
         return handler.awaitOne { mangasQueries.getMangaById(id, mangaMapper) }
     }
 
-    override suspend fun subscribeMangaById(id: Long): Flow<Manga> {
-        return handler.subscribeToOne { mangasQueries.getMangaById(id, mangaMapper) }
-    }
-
     override suspend fun getMangaByIdAsFlow(id: Long): Flow<Manga> {
         return handler.subscribeToOne { mangasQueries.getMangaById(id, mangaMapper) }
     }
 
-    override suspend fun getMangaByUrlAndSource(url: String, sourceId: Long): Manga? {
+    override suspend fun getMangaByUrlAndSourceId(url: String, sourceId: Long): Manga? {
         return handler.awaitOneOrNull { mangasQueries.getMangaByUrlAndSource(url, sourceId, mangaMapper) }
-    }
-
-    override suspend fun subscribeMangaByUrlAndSource(url: String, sourceId: Long): Flow<Manga?> {
-        return handler.subscribeToOneOrNull { mangasQueries.getMangaByUrlAndSource(url, sourceId, mangaMapper) }
     }
 
     override suspend fun getFavorites(): List<Manga> {
         return handler.awaitList { mangasQueries.getFavorites(mangaMapper) }
+    }
+
+    override suspend fun getLibraryManga(): List<LibraryManga> {
+        return handler.awaitList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
+        // return handler.awaitList { mangasQueries.getLibrary(libraryManga) }
+    }
+
+    override fun getLibraryMangaAsFlow(): Flow<List<LibraryManga>> {
+        return handler.subscribeToList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
+        // return handler.subscribeToList { mangasQueries.getLibrary(libraryManga) }
     }
 
     override fun getFavoritesBySourceId(sourceId: Long): Flow<List<Manga>> {
@@ -65,6 +69,31 @@ class MangaRepositoryImpl(
             categoryIds.map { categoryId ->
                 mangas_categoriesQueries.insert(mangaId, categoryId)
             }
+        }
+    }
+
+    override suspend fun insert(manga: Manga): Long? {
+        return handler.awaitOneOrNull {
+            mangasQueries.insert(
+                source = manga.source,
+                url = manga.url,
+                artist = manga.artist,
+                author = manga.author,
+                description = manga.description,
+                genre = manga.genre,
+                title = manga.title,
+                status = manga.status,
+                thumbnail_url = manga.thumbnailUrl,
+                favorite = manga.favorite,
+                last_update = manga.lastUpdate,
+                next_update = null,
+                initialized = manga.initialized,
+                viewer = manga.viewerFlags,
+                chapter_flags = manga.chapterFlags,
+                cover_last_modified = manga.coverLastModified,
+                date_added = manga.dateAdded,
+            )
+            mangasQueries.selectLastInsertedRowId()
         }
     }
 
@@ -115,11 +144,15 @@ class MangaRepositoryImpl(
         }
     }
 
-    override suspend fun getMangaBySource(sourceId: Long): List<Manga> {
+    override suspend fun getMangaBySourceId(sourceId: Long): List<Manga> {
         return handler.awaitList { mangasQueries.getBySource(sourceId, mangaMapper) }
     }
 
     override suspend fun getAll(): List<Manga> {
         return handler.awaitList { mangasQueries.getAll(mangaMapper) }
+    }
+
+    override suspend fun deleteManga(mangaId: Long) {
+        handler.await { mangasQueries.deleteById(mangaId) }
     }
 }

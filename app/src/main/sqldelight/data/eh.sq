@@ -5,3 +5,28 @@ migrateSource:
 UPDATE mangas
 SET source = :newId
 WHERE source = :oldId;
+
+getChaptersByMangaIds:
+SELECT * FROM chapters WHERE manga_id IN :mangaIds;
+
+resetFilteredScanlatorsForAllManga:
+UPDATE mangas
+SET filtered_scanlators = NULL;
+
+migrateAllNhentaiToOtherLang:
+UPDATE mangas
+SET source = :nh
+WHERE favorite = 1 AND source IN :sources;
+
+resetReaderViewerForAllManga:
+UPDATE mangas
+SET viewer = 0;
+
+fixReaderViewerBackupBug:
+UPDATE mangas
+SET viewer = 0
+WHERE viewer = -1;
+
+addAllMangaInDatabaseToLibrary:
+UPDATE mangas
+SET favorite = 1;

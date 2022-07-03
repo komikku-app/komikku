@@ -6,13 +6,16 @@ import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.manga.mangaMapper
 import eu.kanade.data.toLong
 import eu.kanade.domain.manga.interactor.GetFavorites
+import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetMergedManga
+import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
+import exh.metadata.metadata.base.FlatMetadata
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import data.Mangas as DbManga
@@ -30,6 +33,8 @@ abstract class AbstractBackupManager(protected val context: Context) {
     // SY -->
     private val getMergedManga: GetMergedManga = Injekt.get()
     protected val customMangaManager: CustomMangaManager = Injekt.get()
+    private val insertFlatMetadata: InsertFlatMetadata = Injekt.get()
+    private val getFlatMetadataById: GetFlatMetadataById = Injekt.get()
     // SY <--
 
     abstract suspend fun createBackup(uri: Uri, flags: Int, isAutoBackup: Boolean): String
@@ -65,6 +70,10 @@ abstract class AbstractBackupManager(protected val context: Context) {
     protected suspend fun getMergedManga(): List<DomainManga> {
         return getMergedManga.await()
     }
+
+    protected suspend fun getFlatMetadata(mangaId: Long) = getFlatMetadataById.await(mangaId)
+
+    protected suspend fun insertFlatMetadata(flatMetadata: FlatMetadata) = insertFlatMetadata.await(flatMetadata)
     // SY <--
 
     /**

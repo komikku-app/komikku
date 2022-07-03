@@ -20,19 +20,10 @@ class GetManga(
     }
 
     suspend fun subscribe(id: Long): Flow<Manga> {
-        return mangaRepository.subscribeMangaById(id)
+        return mangaRepository.getMangaByIdAsFlow(id)
     }
 
     suspend fun await(url: String, sourceId: Long): Manga? {
-        return try {
-            mangaRepository.getMangaByUrlAndSource(url, sourceId)
-        } catch (e: Exception) {
-            logcat(LogPriority.ERROR, e)
-            null
-        }
-    }
-
-    suspend fun subscribe(url: String, sourceId: Long): Flow<Manga?> {
-        return mangaRepository.subscribeMangaByUrlAndSource(url, sourceId)
+        return mangaRepository.getMangaByUrlAndSourceId(url, sourceId)
     }
 }

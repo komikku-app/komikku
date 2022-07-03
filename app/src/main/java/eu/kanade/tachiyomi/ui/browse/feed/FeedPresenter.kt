@@ -4,8 +4,13 @@ import android.os.Bundle
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.feedSavedSearchMapper
 import eu.kanade.data.exh.savedSearchMapper
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.manga.model.toMangaUpdate
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -23,6 +28,7 @@ import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
@@ -40,14 +46,16 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * Function calls should be done from here. UI calls should be done from the controller.
  *
  * @param sourceManager manages the different sources.
- * @param database manages the database calls.
+ * @param handler manages the database calls.
  * @param preferences manages the preference calls.
  */
 open class FeedPresenter(
     val sourceManager: SourceManager = Injekt.get(),
-    val database: DatabaseHandler = Injekt.get(),
-    val db: DatabaseHelper = Injekt.get(),
+    val handler: DatabaseHandler = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
+    private val insertManga: InsertManga = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
 ) : BasePresenter<FeedController>() {
 
     /**
@@ -68,7 +76,7 @@ open class FeedPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        database.subscribeToList { feed_saved_searchQueries.selectAllGlobal() }
+        handler.subscribeToList { feed_saved_searchQueries.selectAllGlobal() }
             .onEach {
                 getFeed()
             }
@@ -82,7 +90,7 @@ open class FeedPresenter(
     }
 
     suspend fun hasTooManyFeeds(): Boolean {
-        return database.awaitOne { feed_saved_searchQueries.countGlobal() } > 10
+        return handler.awaitOne { feed_saved_searchQueries.countGlobal() } > 10
     }
 
     fun getEnabledSources(): List<CatalogueSource> {
@@ -97,12 +105,12 @@ open class FeedPresenter(
     }
 
     suspend fun getSourceSavedSearches(source: CatalogueSource): List<SavedSearch> {
-        return database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
+        return handler.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
     }
 
     fun createFeed(source: CatalogueSource, savedSearch: SavedSearch?) {
         launchIO {
-            database.await {
+            handler.await {
                 feed_saved_searchQueries.insertFeedSavedSearch(
                     _id = null,
                     source = source.id,
@@ -115,17 +123,17 @@ open class FeedPresenter(
 
     fun deleteFeed(feed: FeedSavedSearch) {
         launchIO {
-            database.await {
+            handler.await {
                 feed_saved_searchQueries.deleteById(feed.id ?: return@await)
             }
         }
     }
 
     private suspend fun getSourcesToGetFeed(): List<Pair<FeedSavedSearch, SavedSearch?>> {
-        val savedSearches = database.awaitList {
+        val savedSearches = handler.awaitList {
             feed_saved_searchQueries.selectGlobalFeedSavedSearch(savedSearchMapper)
         }.associateBy { it.id }
-        return database.awaitList { feed_saved_searchQueries.selectAllGlobal(feedSavedSearchMapper) }
+        return handler.awaitList { feed_saved_searchQueries.selectAllGlobal(feedSavedSearchMapper) }
             .map { it to savedSearches[it.savedSearch] }
     }
 
@@ -263,7 +271,7 @@ open class FeedPresenter(
             val networkManga = source.getMangaDetails(manga.toMangaInfo())
             manga.copyFrom(networkManga.toSManga())
             manga.initialized = true
-            db.insertManga(manga).executeAsBlocking()
+            updateManga.await(manga.toDomainManga()!!.toMangaUpdate())
             manga
         }
             .onErrorResumeNext { Observable.just(manga) }
@@ -276,15 +284,22 @@ open class FeedPresenter(
      * @param sManga the manga from the source.
      * @return a manga from the database.
      */
-    protected open fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
-        var localManga = db.getManga(sManga.url, sourceId).executeAsBlocking()
+    private fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
+        var localManga = runBlocking { getManga.await(sManga.url, sourceId) }
         if (localManga == null) {
             val newManga = Manga.create(sManga.url, sManga.title, sourceId)
             newManga.copyFrom(sManga)
-            val result = db.insertManga(newManga).executeAsBlocking()
-            newManga.id = result.insertedId()
-            localManga = newManga
+            newManga.id = -1
+            val result = runBlocking {
+                val id = insertManga.await(newManga.toDomainManga()!!)
+                getManga.await(id!!)
+            }
+            localManga = result
+        } else if (!localManga.favorite) {
+            // if the manga isn't a favorite, set its display title from source
+            // if it later becomes a favorite, updated title will go to db
+            localManga = localManga.copy(ogTitle = sManga.title)
         }
-        return localManga
+        return localManga?.toDbManga()!!
     }
 }

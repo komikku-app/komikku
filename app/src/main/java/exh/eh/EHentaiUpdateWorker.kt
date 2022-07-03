@@ -12,11 +12,13 @@ import androidx.work.WorkerParameters
 import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
 import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.manga.mangaMapper
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
+import eu.kanade.domain.manga.interactor.GetFlatMetadataById
+import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
@@ -33,11 +35,6 @@ import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.log.xLog
 import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.metadata.metadata.base.awaitFlatMetadataForManga
-import exh.metadata.metadata.base.awaitInsertFlatMetadata
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
-import exh.source.isEhBasedManga
 import exh.util.cancellable
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
@@ -53,7 +50,6 @@ import kotlin.time.Duration.Companion.days
 
 class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
-    private val handler: DatabaseHandler by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
@@ -61,6 +57,9 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
     private val updateManga: UpdateManga by injectLazy()
     private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
+    private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
+    private val insertFlatMetadata: InsertFlatMetadata by injectLazy()
+    private val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
 
     private val updateNotifier by lazy { LibraryUpdateNotifier(context) }
 
@@ -84,16 +83,12 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         val startTime = System.currentTimeMillis()
 
         logger.d("Finding manga with metadata...")
-        val metadataManga = handler.awaitList { mangasQueries.getEhMangaWithMetadata(EH_SOURCE_ID, EXH_SOURCE_ID, mangaMapper) }
+        val metadataManga = getExhFavoriteMangaWithMetadata.await()
 
         logger.d("Filtering manga and raising metadata...")
         val curTime = System.currentTimeMillis()
         val allMeta = metadataManga.asFlow().cancellable().mapNotNull { manga ->
-            if (!manga.isEhBasedManga()) {
-                return@mapNotNull null
-            }
-
-            val meta = handler.awaitFlatMetadataForManga(manga.id)
+            val meta = getFlatMetadataById.await(manga.id)
                 ?: return@mapNotNull null
 
             val raisedMeta = meta.raise<EHentaiSearchMetadata>()
@@ -221,12 +216,12 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             return new to getChapterByMangaId.await(manga.id)
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {
-                val meta = handler.awaitFlatMetadataForManga(manga.id)?.raise<EHentaiSearchMetadata>()
+                val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>()
                 if (meta != null) {
                     // Age dead galleries
                     logger.d("Aged %s - notfound", manga.id)
                     meta.aged = true
-                    handler.awaitInsertFlatMetadata(meta.flatten())
+                    insertFlatMetadata.await(meta)
                 }
                 throw GalleryNotUpdatedException(false, t)
             }

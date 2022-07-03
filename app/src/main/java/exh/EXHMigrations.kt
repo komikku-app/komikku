@@ -2,21 +2,21 @@
 
 package exh
 
-import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import com.pushtorefresh.storio.sqlite.queries.Query
 import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.chapter.chapterMapper
+import eu.kanade.domain.chapter.interactor.DeleteChapters
+import eu.kanade.domain.chapter.interactor.UpdateChapter
+import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaBySource
+import eu.kanade.domain.manga.interactor.InsertMergedReference
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.tables.ChapterTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
@@ -39,7 +39,6 @@ import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
-import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
@@ -69,12 +68,14 @@ import java.net.URISyntaxException
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
 object EXHMigrations {
-    private val db: DatabaseHelper by injectLazy()
     private val handler: DatabaseHandler by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val getManga: GetManga by injectLazy()
     private val getMangaBySource: GetMangaBySource by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
+    private val updateChapter: UpdateChapter by injectLazy()
+    private val deleteChapters: DeleteChapters by injectLazy()
+    private val insertMergedReference: InsertMergedReference by injectLazy()
 
     /**
      * Performs a migration when the application is updated.
@@ -125,89 +126,73 @@ object EXHMigrations {
                     updateSourceId(NHentai.otherId, 6907)
                 }
                 if (oldVersion under 7) {
-                    db.inTransaction {
-                        val mergedMangas = runBlocking { getMangaBySource.await(MERGED_SOURCE_ID) }
+                    val mergedMangas = runBlocking { getMangaBySource.await(MERGED_SOURCE_ID) }
 
-                        if (mergedMangas.isNotEmpty()) {
-                            val mangaConfigs = mergedMangas.mapNotNull { mergedManga -> readMangaConfig(mergedManga)?.let { mergedManga to it } }
-                            if (mangaConfigs.isNotEmpty()) {
-                                val mangaToUpdate = mutableListOf<MangaUpdate>()
-                                val mergedMangaReferences = mutableListOf<MergedMangaReference>()
-                                mangaConfigs.onEach { mergedManga ->
-                                    val newFirst = mergedManga.second.children.firstOrNull()?.url?.let {
-                                        if (runBlocking { getManga.await(it, MERGED_SOURCE_ID) } != null) return@onEach
-                                        mangaToUpdate += MangaUpdate(id = mergedManga.first.id, url = it)
-                                        mergedManga.first.copy(url = it)
-                                    } ?: mergedManga.first
+                    if (mergedMangas.isNotEmpty()) {
+                        val mangaConfigs = mergedMangas.mapNotNull { mergedManga -> readMangaConfig(mergedManga)?.let { mergedManga to it } }
+                        if (mangaConfigs.isNotEmpty()) {
+                            val mangaToUpdate = mutableListOf<MangaUpdate>()
+                            val mergedMangaReferences = mutableListOf<MergedMangaReference>()
+                            mangaConfigs.onEach { mergedManga ->
+                                val newFirst = mergedManga.second.children.firstOrNull()?.url?.let {
+                                    if (runBlocking { getManga.await(it, MERGED_SOURCE_ID) } != null) return@onEach
+                                    mangaToUpdate += MangaUpdate(id = mergedManga.first.id, url = it)
+                                    mergedManga.first.copy(url = it)
+                                } ?: mergedManga.first
+                                mergedMangaReferences += MergedMangaReference(
+                                    id = null,
+                                    isInfoManga = false,
+                                    getChapterUpdates = false,
+                                    chapterSortMode = 0,
+                                    chapterPriority = 0,
+                                    downloadChapters = false,
+                                    mergeId = newFirst.id,
+                                    mergeUrl = newFirst.url,
+                                    mangaId = newFirst.id,
+                                    mangaUrl = newFirst.url,
+                                    mangaSourceId = MERGED_SOURCE_ID,
+                                )
+                                mergedManga.second.children.distinct().forEachIndexed { index, mangaSource ->
+                                    val load = mangaSource.load() ?: return@forEachIndexed
                                     mergedMangaReferences += MergedMangaReference(
                                         id = null,
-                                        isInfoManga = false,
-                                        getChapterUpdates = false,
+                                        isInfoManga = index == 0,
+                                        getChapterUpdates = true,
                                         chapterSortMode = 0,
                                         chapterPriority = 0,
-                                        downloadChapters = false,
-                                        mergeId = mergedManga.first.id,
-                                        mergeUrl = mergedManga.first.url,
-                                        mangaId = mergedManga.first.id,
-                                        mangaUrl = mergedManga.first.url,
-                                        mangaSourceId = MERGED_SOURCE_ID,
+                                        downloadChapters = true,
+                                        mergeId = newFirst.id,
+                                        mergeUrl = newFirst.url,
+                                        mangaId = load.manga.id,
+                                        mangaUrl = load.manga.url,
+                                        mangaSourceId = load.source.id,
                                     )
-                                    mergedManga.second.children.distinct().forEachIndexed { index, mangaSource ->
-                                        val load = mangaSource.load(db, sourceManager) ?: return@forEachIndexed
-                                        mergedMangaReferences += MergedMangaReference(
-                                            id = null,
-                                            isInfoManga = index == 0,
-                                            getChapterUpdates = true,
-                                            chapterSortMode = 0,
-                                            chapterPriority = 0,
-                                            downloadChapters = true,
-                                            mergeId = mergedManga.first.id,
-                                            mergeUrl = mergedManga.first.url,
-                                            mangaId = load.manga.id!!,
-                                            mangaUrl = load.manga.url,
-                                            mangaSourceId = load.source.id,
-                                        )
-                                    }
                                 }
-                                runBlocking {
-                                    updateManga.awaitAll(mangaToUpdate)
-                                }
-                                db.insertMergedMangas(mergedMangaReferences).executeAsBlocking()
+                            }
+                            runBlocking {
+                                updateManga.awaitAll(mangaToUpdate)
+                                insertMergedReference.awaitAll(mergedMangaReferences)
+                            }
 
-                                val loadedMangaList = mangaConfigs.map { it.second.children }.flatten().mapNotNull { it.load(db, sourceManager) }.distinct()
-                                val chapters = db.db.get()
-                                    .listOfObjects(Chapter::class.java)
-                                    .withQuery(
-                                        Query.builder()
-                                            .table(ChapterTable.TABLE)
-                                            .where("${ChapterTable.COL_MANGA_ID} IN (${mergedMangas.joinToString { it.id.toString() }})")
-                                            .build(),
+                            val loadedMangaList = mangaConfigs.map { it.second.children }.flatten().mapNotNull { it.load() }.distinct()
+                            val chapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(mergedMangas.map { it.id }, chapterMapper) } }
+                            val mergedMangaChapters = runBlocking { handler.awaitList { ehQueries.getChaptersByMangaIds(loadedMangaList.map { it.manga.id }, chapterMapper) } }
+
+                            val mergedMangaChaptersMatched = mergedMangaChapters.mapNotNull { chapter -> loadedMangaList.firstOrNull { it.manga.id == chapter.id }?.let { it to chapter } }
+                            val parsedChapters = chapters.filter { it.read || it.lastPageRead != 0L }.mapNotNull { chapter -> readUrlConfig(chapter.url)?.let { chapter to it } }
+                            val chaptersToUpdate = mutableListOf<ChapterUpdate>()
+                            parsedChapters.forEach { parsedChapter ->
+                                mergedMangaChaptersMatched.firstOrNull { it.second.url == parsedChapter.second.url && it.first.source.id == parsedChapter.second.source && it.first.manga.url == parsedChapter.second.mangaUrl }?.let {
+                                    chaptersToUpdate += ChapterUpdate(
+                                        it.second.id,
+                                        read = parsedChapter.first.read,
+                                        lastPageRead = parsedChapter.first.lastPageRead,
                                     )
-                                    .prepare()
-                                    .executeAsBlocking()
-                                val mergedMangaChapters = db.db.get()
-                                    .listOfObjects(Chapter::class.java)
-                                    .withQuery(
-                                        Query.builder()
-                                            .table(ChapterTable.TABLE)
-                                            .where("${ChapterTable.COL_MANGA_ID} IN (${loadedMangaList.filter { it.manga.id != null }.joinToString { it.manga.id.toString() }})")
-                                            .build(),
-                                    )
-                                    .prepare()
-                                    .executeAsBlocking()
-                                val mergedMangaChaptersMatched = mergedMangaChapters.mapNotNull { chapter -> loadedMangaList.firstOrNull { it.manga.id == chapter.id }?.let { it to chapter } }
-                                val parsedChapters = chapters.filter { it.read || it.last_page_read != 0 }.mapNotNull { chapter -> readUrlConfig(chapter.url)?.let { chapter to it } }
-                                val chaptersToUpdate = mutableListOf<Chapter>()
-                                parsedChapters.forEach { parsedChapter ->
-                                    mergedMangaChaptersMatched.firstOrNull { it.second.url == parsedChapter.second.url && it.first.source.id == parsedChapter.second.source && it.first.manga.url == parsedChapter.second.mangaUrl }?.let {
-                                        chaptersToUpdate += it.second.apply {
-                                            read = parsedChapter.first.read
-                                            last_page_read = parsedChapter.first.last_page_read
-                                        }
-                                    }
                                 }
-                                db.deleteChapters(mergedMangaChapters).executeAsBlocking()
-                                db.updateChaptersProgress(chaptersToUpdate).executeAsBlocking()
+                            }
+                            runBlocking {
+                                deleteChapters.await(mergedMangaChapters.map { it.id })
+                                updateChapter.awaitAll(chaptersToUpdate)
                             }
                         }
                     }
@@ -471,18 +456,6 @@ object EXHMigrations {
         }
     }
 
-    private fun backupDatabase(context: Context, oldMigrationVersion: Int) {
-        val backupLocation = File(File(context.filesDir, "exh_db_bck"), "$oldMigrationVersion.bck.db")
-        if (backupLocation.exists()) return // Do not backup same version twice
-
-        val dbLocation = context.getDatabasePath(db.lowLevel().sqliteOpenHelper().databaseName)
-        try {
-            dbLocation.copyTo(backupLocation, overwrite = true)
-        } catch (t: Throwable) {
-            xLogW("Failed to backup database!")
-        }
-    }
-
     private fun getUrlWithoutDomain(orig: String): String {
         return try {
             val uri = URI(orig)
@@ -536,8 +509,8 @@ object EXHMigrations {
         @SerialName("u")
         val url: String,
     ) {
-        fun load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource? {
-            val manga = db.getManga(url, source).executeAsBlocking() ?: return null
+        fun load(): LoadedMangaSource? {
+            val manga = runBlocking { getManga.await(url, source) } ?: return null
             val source = sourceManager.getOrStub(source)
             return LoadedMangaSource(source, manga)
         }
@@ -551,7 +524,7 @@ object EXHMigrations {
         }
     }
 
-    private data class LoadedMangaSource(val source: Source, val manga: Manga)
+    private data class LoadedMangaSource(val source: Source, val manga: DomainManga)
 
     private fun updateSourceId(newId: Long, oldId: Long) {
         runBlocking {

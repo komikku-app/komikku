@@ -12,16 +12,22 @@ import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.interactor.DeleteByMergeId
+import eu.kanade.domain.manga.interactor.DeleteMangaById
 import eu.kanade.domain.manga.interactor.GetDuplicateLibraryManga
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaWithChapters
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.InsertMergedReference
 import eu.kanade.domain.manga.interactor.SetMangaChapterFlags
 import eu.kanade.domain.manga.interactor.SetMangaFilteredScanlators
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.interactor.UpdateMergedSettings
 import eu.kanade.domain.manga.model.MangaUpdate
+import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
 import eu.kanade.domain.manga.model.TriStateFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
@@ -32,7 +38,6 @@ import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
@@ -127,6 +132,11 @@ class MangaPresenter(
     private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
+    private val insertMergedReference: InsertMergedReference = Injekt.get(),
+    private val updateMergedSettings: UpdateMergedSettings = Injekt.get(),
+    private val insertManga: InsertManga = Injekt.get(),
+    private val deleteMangaById: DeleteMangaById = Injekt.get(),
+    private val deleteByMergeId: DeleteByMergeId = Injekt.get(),
     private val getFlatMetadata: GetFlatMetadataById = Injekt.get(),
     // SY <--
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
@@ -223,7 +233,7 @@ class MangaPresenter(
 
         presenterScope.launchIO {
             if (!getMangaAndChapters.awaitManga(mangaId).favorite) {
-                ChapterSettingsHelper.applySettingDefaults(mangaId, setMangaChapterFlags)
+                ChapterSettingsHelper.applySettingDefaults(mangaId)
             }
 
             getMangaAndChapters.subscribe(mangaId)
@@ -431,8 +441,6 @@ class MangaPresenter(
     }
 
     suspend fun smartSearchMerge(context: Context, manga: DomainManga, originalMangaId: Long): DomainManga {
-        val db = Injekt.get<DatabaseHelper>()
-
         val originalManga = getManga.await(originalMangaId)
             ?: throw IllegalArgumentException(context.getString(R.string.merge_unknown_manga, originalMangaId))
         if (originalManga.source == MERGED_SOURCE_ID) {
@@ -474,7 +482,7 @@ class MangaPresenter(
             }
 
             // todo
-            db.insertMergedMangas(mangaReferences).executeAsBlocking()
+            insertMergedReference.awaitAll(mangaReferences)
 
             return originalManga
         } else {
@@ -494,8 +502,10 @@ class MangaPresenter(
                     throw IllegalArgumentException(context.getString(R.string.merge_duplicate))
                 } else if (!existingManga.favorite) {
                     withContext(NonCancellable) {
-                        db.deleteManga(existingManga!!.toDbManga()).executeAsBlocking()
-                        db.deleteMangaForMergedManga(existingManga!!.id).executeAsBlocking()
+                        existingManga?.id?.let {
+                            deleteByMergeId.await(it)
+                            deleteMangaById.await(it)
+                        }
                     }
                 }
                 existingManga = getManga.await(mergedManga.url, mergedManga.source)
@@ -503,13 +513,13 @@ class MangaPresenter(
 
             // Reload chapters immediately
             mergedManga.initialized = false
-
-            val newId = db.insertManga(mergedManga).executeAsBlocking().insertedId()
-            if (newId != null) mergedManga.id = newId
+            mergedManga.id = -1
+            val newId = insertManga.await(mergedManga.toDomainManga()!!)
+            mergedManga.id = newId ?: throw NullPointerException("Invalid new manga id")
 
             getCategories.await(originalMangaId)
                 .let {
-                    setMangaCategories.await(mergedManga.id!!, it.map { it.id })
+                    setMangaCategories.await(newId, it.map { it.id })
                 }
 
             val originalMangaReference = MergedMangaReference(
@@ -554,7 +564,7 @@ class MangaPresenter(
                 mangaSourceId = MERGED_SOURCE_ID,
             )
 
-            db.insertMergedMangas(listOf(originalMangaReference, newMangaReference, mergedMangaReference)).executeAsBlocking()
+            insertMergedReference.awaitAll(listOf(originalMangaReference, newMangaReference, mergedMangaReference))
 
             return mergedManga.toDomainManga()!!
         }
@@ -562,14 +572,21 @@ class MangaPresenter(
         // Note that if the manga are merged in a different order, this won't trigger, but I don't care lol
     }
 
-    fun updateMergeSettings(mergeReference: MergedMangaReference?, mergedMangaReferences: List<MergedMangaReference>) {
+    fun updateMergeSettings(mergedMangaReferences: List<MergedMangaReference>) {
         launchIO {
-            // todo
-            val db = Injekt.get<DatabaseHelper>()
-            mergeReference?.let {
-                db.updateMergeMangaSettings(it).executeAsBlocking()
+            if (mergedMangaReferences.isNotEmpty()) {
+                updateMergedSettings.awaitAll(
+                    mergedMangaReferences.map {
+                        MergeMangaSettingsUpdate(
+                            it.id!!,
+                            it.isInfoManga,
+                            it.getChapterUpdates,
+                            it.chapterPriority,
+                            it.downloadChapters,
+                        )
+                    },
+                )
             }
-            if (mergedMangaReferences.isNotEmpty()) db.updateMergedMangaSettings(mergedMangaReferences).executeAsBlocking()
         }
     }
 

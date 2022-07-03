@@ -91,9 +91,5 @@ class AndroidDatabaseHandler(
 
     // SY -->
     fun getLibraryQuery() = LibraryQuery(driver)
-
-    fun rawQuery(query: (SqlDriver) -> Unit) {
-        return query(driver)
-    }
     // SY <--
 }

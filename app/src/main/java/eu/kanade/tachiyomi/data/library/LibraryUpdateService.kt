@@ -14,18 +14,21 @@ import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetFavorites
+import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.GetMergedMangaForDownloading
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
+import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
+import eu.kanade.domain.manga.model.toMangaUpdate
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -47,6 +50,7 @@ import eu.kanade.tachiyomi.data.track.TrackStatus
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.UnmeteredSource
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.MergedSource
@@ -67,7 +71,6 @@ import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isMdBasedSource
 import exh.source.mangaDexSourceIds
-import exh.util.executeOnIO
 import exh.util.nullIfBlank
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -102,12 +105,12 @@ import eu.kanade.domain.manga.model.Manga as DomainManga
  * destroyed.
  */
 class LibraryUpdateService(
-    val db: DatabaseHelper = Injekt.get(),
     val sourceManager: SourceManager = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
     val downloadManager: DownloadManager = Injekt.get(),
     val trackManager: TrackManager = Injekt.get(),
     val coverCache: CoverCache = Injekt.get(),
+    private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
@@ -119,6 +122,8 @@ class LibraryUpdateService(
     // SY -->
     private val getFavorites: GetFavorites = Injekt.get(),
     private val insertFlatMetadata: InsertFlatMetadata = Injekt.get(),
+    private val insertManga: InsertManga = Injekt.get(),
+    private val getMergedMangaForDownloading: GetMergedMangaForDownloading = Injekt.get(),
     // SY <--
 ) : Service() {
 
@@ -301,7 +306,7 @@ class LibraryUpdateService(
      * @param categoryId the ID of the category to update, or -1 if no category specified.
      */
     fun addMangaToQueue(categoryId: Long, group: Int, groupExtra: String?) {
-        val libraryManga = db.getLibraryMangas().executeAsBlocking()
+        val libraryManga = runBlocking { getLibraryManga.await() }
         // SY -->
         val groupLibraryUpdateType = preferences.groupLibraryUpdateType().get()
         // SY <--
@@ -499,12 +504,12 @@ class LibraryUpdateService(
         // may don't like it and they could ban the user.
         // SY -->
         if (manga.source == MERGED_SOURCE_ID) {
-            val downloadingManga = db.getMergedMangasForDownloading(manga.id!!).executeAsBlocking()
-                .associateBy { it.id!! }
+            val downloadingManga = runBlocking { getMergedMangaForDownloading.await(manga.id!!) }
+                .associateBy { it.id }
             chapters.groupBy { it.manga_id }
                 .forEach {
                     downloadManager.downloadChapters(
-                        downloadingManga[it.key] ?: return@forEach,
+                        downloadingManga[it.key]?.toDbManga() ?: return@forEach,
                         chapters,
                         false,
                     )
@@ -593,7 +598,14 @@ class LibraryUpdateService(
                                             mangaWithNotif.prepUpdateCover(coverCache, sManga, true)
                                             sManga.thumbnail_url?.let {
                                                 mangaWithNotif.thumbnail_url = it
-                                                db.insertManga(mangaWithNotif).executeAsBlocking()
+                                                try {
+                                                    updateManga.await(
+                                                        mangaWithNotif.toDomainManga()!!
+                                                            .toMangaUpdate(),
+                                                    )
+                                                } catch (e: Exception) {
+                                                    logcat(LogPriority.ERROR) { "Manga don't exist anymore" }
+                                                }
                                             }
                                         } catch (e: Throwable) {
                                             // Ignore errors and continue
@@ -714,24 +726,29 @@ class LibraryUpdateService(
                 count++
                 notifier.showProgressNotification(listOf(networkManga), count, size)
 
-                var dbManga = db.getManga(networkManga.url, mangaDex.id)
-                    .executeOnIO()
+                var dbManga = getManga.await(networkManga.url, mangaDex.id)
+
                 if (dbManga == null) {
-                    dbManga = Manga.create(
+                    val newManga = Manga.create(
                         networkManga.url,
                         networkManga.title,
                         mangaDex.id,
                     )
-                    dbManga.date_added = System.currentTimeMillis()
+                    newManga.favorite = true
+                    newManga.date_added = System.currentTimeMillis()
+                    newManga.id = -1
+                    val result = runBlocking {
+                        val id = insertManga.await(newManga.toDomainManga()!!)
+                        getManga.await(id!!)
+                    }
+                    dbManga = result ?: return
+                } else if (!dbManga.favorite) {
+                    updateManga.awaitUpdateFavorite(dbManga.id, true)
                 }
 
-                dbManga.copyFrom(networkManga)
-                dbManga.favorite = true
-                val id = db.insertManga(dbManga).executeOnIO().insertedId()
-                if (id != null) {
-                    metadata.mangaId = id
-                    insertFlatMetadata.await(metadata)
-                }
+                updateManga.awaitUpdateFromSource(dbManga, networkManga.toMangaInfo(), true)
+                metadata.mangaId = dbManga.id
+                insertFlatMetadata.await(metadata)
             }
 
         notifier.cancelProgressNotification()

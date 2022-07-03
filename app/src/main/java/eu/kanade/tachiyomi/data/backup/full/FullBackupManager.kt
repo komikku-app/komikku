@@ -42,8 +42,6 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.logcat
-import exh.metadata.metadata.base.awaitFlatMetadataForManga
-import exh.metadata.metadata.base.awaitInsertFlatMetadata
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.nullIfBlank
@@ -197,7 +195,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
         val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
         if (source != null) {
-            handler.awaitFlatMetadataForManga(manga.id)?.let { flatMetadata ->
+            getFlatMetadata(manga.id)?.let { flatMetadata ->
                 mangaObject.flatMetadata = BackupFlatMetadata.copyFrom(flatMetadata)
             }
         }
@@ -535,18 +533,17 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                     mergeId = mergeMangaId
                     mangaId = mergedManga.id
                     handler.await {
-                        mergedQueries.insertMerged(
-                            null,
-                            isInfoManga,
-                            getChapterUpdates,
-                            chapterSortMode.toLong(),
-                            chapterPriority.toLong(),
-                            downloadChapters,
-                            mergeId!!,
-                            mergeUrl,
-                            mangaId,
-                            mangaUrl,
-                            mangaSourceId,
+                        mergedQueries.insert(
+                            infoManga = isInfoManga,
+                            getChapterUpdates = getChapterUpdates,
+                            chapterSortMode = chapterSortMode.toLong(),
+                            chapterPriority = chapterPriority.toLong(),
+                            downloadChapters = downloadChapters,
+                            mergeId = mergeId!!,
+                            mergeUrl = mergeUrl,
+                            mangaId = mangaId,
+                            mangaUrl = mangaUrl,
+                            mangaSource = mangaSourceId,
                         )
                     }
                 }
@@ -555,8 +552,8 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
     }
 
     internal suspend fun restoreFlatMetadata(mangaId: Long, backupFlatMetadata: BackupFlatMetadata) {
-        if (handler.awaitFlatMetadataForManga(mangaId) == null) {
-            handler.awaitInsertFlatMetadata(backupFlatMetadata.getFlatMetadata(mangaId))
+        if (getFlatMetadata(mangaId) == null) {
+            insertFlatMetadata(backupFlatMetadata.getFlatMetadata(mangaId))
         }
     }
     // SY <--

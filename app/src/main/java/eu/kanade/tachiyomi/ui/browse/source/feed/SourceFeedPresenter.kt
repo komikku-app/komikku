@@ -5,8 +5,13 @@ import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.feedSavedSearchMapper
 import eu.kanade.data.exh.savedSearchMapper
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.manga.model.toMangaUpdate
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -28,6 +33,7 @@ import exh.savedsearches.models.SavedSearch
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -40,7 +46,6 @@ import rx.subjects.PublishSubject
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
-import java.lang.RuntimeException
 
 sealed class SourceFeed {
     object Latest : SourceFeed()
@@ -53,14 +58,16 @@ sealed class SourceFeed {
  * Function calls should be done from here. UI calls should be done from the controller.
  *
  * @param source the source.
- * @param database manages the database calls.
+ * @param handler manages the database calls.
  * @param preferences manages the preference calls.
  */
 open class SourceFeedPresenter(
     val source: CatalogueSource,
-    val database: DatabaseHandler = Injekt.get(),
-    val db: DatabaseHelper = Injekt.get(),
+    val handler: DatabaseHandler = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
+    private val insertManga: InsertManga = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
 ) : BasePresenter<SourceFeedController>() {
 
     /**
@@ -98,7 +105,7 @@ open class SourceFeedPresenter(
 
         sourceFilters = source.getFilterList()
 
-        database.subscribeToList { feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id, savedSearchMapper) }
+        handler.subscribeToList { feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id, savedSearchMapper) }
             .onEach {
                 getFeed()
             }
@@ -113,19 +120,19 @@ open class SourceFeedPresenter(
 
     suspend fun hasTooManyFeeds(): Boolean {
         return withIOContext {
-            database.awaitList {
+            handler.awaitList {
                 feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id)
             }.size > 10
         }
     }
 
     suspend fun getSourceSavedSearches(): List<SavedSearch> {
-        return database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
+        return handler.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
     }
 
     fun createFeed(savedSearchId: Long) {
         launchIO {
-            database.await {
+            handler.await {
                 feed_saved_searchQueries.insertFeedSavedSearch(
                     _id = null,
                     source = source.id,
@@ -138,12 +145,12 @@ open class SourceFeedPresenter(
 
     fun deleteFeed(feed: FeedSavedSearch) {
         launchIO {
-            database.await { feed_saved_searchQueries.deleteById(feed.id ?: return@await) }
+            handler.await { feed_saved_searchQueries.deleteById(feed.id ?: return@await) }
         }
     }
 
     private suspend fun getSourcesToGetFeed(): List<SourceFeed> {
-        val savedSearches = database.awaitList { feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id, savedSearchMapper) }
+        val savedSearches = handler.awaitList { feed_saved_searchQueries.selectSourceFeedSavedSearch(source.id, savedSearchMapper) }
             .associateBy { it.id!! }
 
         return listOfNotNull(
@@ -151,7 +158,7 @@ open class SourceFeedPresenter(
                 SourceFeed.Latest
             } else null,
             SourceFeed.Browse,
-        ) + database.awaitList { feed_saved_searchQueries.selectBySource(source.id, feedSavedSearchMapper) }
+        ) + handler.awaitList { feed_saved_searchQueries.selectBySource(source.id, feedSavedSearchMapper) }
             .map { SourceFeed.SourceSavedSearch(it, savedSearches[it.savedSearch]!!) }
     }
 
@@ -284,7 +291,7 @@ open class SourceFeedPresenter(
             val networkManga = source.getMangaDetails(manga.toMangaInfo())
             manga.copyFrom(networkManga.toSManga())
             manga.initialized = true
-            db.insertManga(manga).executeAsBlocking()
+            updateManga.await(manga.toDomainManga()!!.toMangaUpdate())
             manga
         }
             .onErrorResumeNext { Observable.just(manga) }
@@ -297,21 +304,28 @@ open class SourceFeedPresenter(
      * @param sManga the manga from the source.
      * @return a manga from the database.
      */
-    protected open fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
-        var localManga = db.getManga(sManga.url, sourceId).executeAsBlocking()
+    private fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
+        var localManga = runBlocking { getManga.await(sManga.url, sourceId) }
         if (localManga == null) {
             val newManga = Manga.create(sManga.url, sManga.title, sourceId)
             newManga.copyFrom(sManga)
-            val result = db.insertManga(newManga).executeAsBlocking()
-            newManga.id = result.insertedId()
-            localManga = newManga
+            newManga.id = -1
+            val result = runBlocking {
+                val id = insertManga.await(newManga.toDomainManga()!!)
+                getManga.await(id!!)
+            }
+            localManga = result
+        } else if (!localManga.favorite) {
+            // if the manga isn't a favorite, set its display title from source
+            // if it later becomes a favorite, updated title will go to db
+            localManga = localManga.copy(ogTitle = sManga.title)
         }
-        return localManga
+        return localManga?.toDbManga()!!
     }
 
     suspend fun loadSearch(searchId: Long): EXHSavedSearch? {
         return withIOContext {
-            val search = database.awaitOneOrNull {
+            val search = handler.awaitOneOrNull {
                 saved_searchQueries.selectById(searchId, savedSearchMapper)
             } ?: return@withIOContext null
             EXHSavedSearch(
@@ -334,7 +348,7 @@ open class SourceFeedPresenter(
 
     suspend fun loadSearches(): List<EXHSavedSearch> {
         return withIOContext {
-            database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }.map {
+            handler.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }.map {
                 val filtersJson = it.filtersJson ?: return@map EXHSavedSearch(
                     id = it.id!!,
                     name = it.name,

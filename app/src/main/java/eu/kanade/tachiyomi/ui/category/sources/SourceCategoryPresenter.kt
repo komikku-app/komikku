@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.category.sources
 
 import android.os.Bundle
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import kotlinx.coroutines.flow.launchIn
@@ -14,9 +13,7 @@ import uy.kohesive.injekt.api.get
 /**
  * Presenter of [SourceCategoryController]. Used to manage the categories of the library.
  */
-class SourceCategoryPresenter(
-    private val db: DatabaseHelper = Injekt.get(),
-) : BasePresenter<SourceCategoryController>() {
+class SourceCategoryPresenter : BasePresenter<SourceCategoryController>() {
 
     /**
      * List containing categories.

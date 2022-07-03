@@ -3,11 +3,11 @@ package eu.kanade.domain.manga.interactor
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.repository.MangaRepository
 
-class GetMangaBySource(
+class InsertManga(
     private val mangaRepository: MangaRepository,
 ) {
 
-    suspend fun await(sourceId: Long): List<Manga> {
-        return mangaRepository.getMangaBySourceId(sourceId)
+    suspend fun await(manga: Manga): Long? {
+        return mangaRepository.insert(manga)
     }
 }

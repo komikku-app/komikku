@@ -2,7 +2,6 @@ package exh.debug
 
 import android.app.Application
 import androidx.work.WorkManager
-import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
@@ -12,7 +11,6 @@ import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toMangaInfo
-import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.NHentai
@@ -110,16 +108,7 @@ object DebugFunctions {
     }
 
     fun addAllMangaInDatabaseToLibrary() {
-        (handler as AndroidDatabaseHandler).rawQuery {
-            it.execute(
-                null,
-                """
-                UPDATE ${MangaTable.TABLE}
-                    SET ${MangaTable.COL_FAVORITE} = 1
-                """.trimIndent(),
-                0,
-            )
-        }
+        runBlocking { handler.await { ehQueries.addAllMangaInDatabaseToLibrary() } }
     }
 
     fun countMangaInDatabaseInLibrary() = runBlocking { getFavorites.await().size }
@@ -200,16 +189,8 @@ object DebugFunctions {
     fun cancelAllScheduledJobs() = app.jobScheduler.cancelAll()
 
     private fun convertSources(from: Long, to: Long) {
-        (handler as AndroidDatabaseHandler).rawQuery {
-            it.execute(
-                null,
-                """
-                UPDATE ${MangaTable.TABLE}
-                    SET ${MangaTable.COL_SOURCE} = $to
-                    WHERE ${MangaTable.COL_SOURCE} = $from
-                """.trimIndent(),
-                0,
-            )
+        runBlocking {
+            handler.await { ehQueries.migrateSource(to, from) }
         }
     }
 
@@ -292,60 +273,20 @@ object DebugFunctions {
     }*/
 
     fun fixReaderViewerBackupBug() {
-        (handler as AndroidDatabaseHandler).rawQuery {
-            it.execute(
-                null,
-                """
-                UPDATE ${MangaTable.TABLE}
-                    SET ${MangaTable.COL_VIEWER} = 0
-                    WHERE ${MangaTable.COL_VIEWER} = -1
-                """.trimIndent(),
-                0,
-            )
-        }
+        runBlocking { handler.await { ehQueries.fixReaderViewerBackupBug() } }
     }
 
     fun resetReaderViewerForAllManga() {
-        (handler as AndroidDatabaseHandler).rawQuery {
-            it.execute(
-                null,
-                """
-                UPDATE ${MangaTable.TABLE}
-                    SET ${MangaTable.COL_VIEWER} = 0
-                """.trimIndent(),
-                0,
-            )
-        }
+        runBlocking { handler.await { ehQueries.resetReaderViewerForAllManga() } }
     }
 
     fun migrateAllNhentaiToOtherLang() {
-        val sources = nHentaiSourceIds.toMutableList()
-            .also { it.remove(NHentai.otherId) }
-            .joinToString(separator = ",")
+        val sources = nHentaiSourceIds - NHentai.otherId
 
-        (handler as AndroidDatabaseHandler).rawQuery {
-            it.execute(
-                null,
-                """
-                UPDATE ${MangaTable.TABLE}
-                    SET ${MangaTable.COL_SOURCE} = ${NHentai.otherId}
-                    WHERE ${MangaTable.COL_FAVORITE} = 1 AND ${MangaTable.COL_SOURCE} in ($sources)
-                """.trimIndent(),
-                0,
-            )
-        }
+        runBlocking { handler.await { ehQueries.migrateAllNhentaiToOtherLang(NHentai.otherId, sources) } }
     }
 
     fun resetFilteredScanlatorsForAllManga() {
-        (handler as AndroidDatabaseHandler).rawQuery {
-            it.execute(
-                null,
-                """
-                UPDATE ${MangaTable.TABLE}
-                    SET ${MangaTable.COL_FILTERED_SCANLATORS} = NULL
-                """.trimIndent(),
-                0,
-            )
-        }
+        runBlocking { handler.await { ehQueries.resetFilteredScanlatorsForAllManga() } }
     }
 }

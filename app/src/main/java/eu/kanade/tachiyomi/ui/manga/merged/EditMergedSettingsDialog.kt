@@ -7,15 +7,22 @@ import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.manga.interactor.DeleteMergeById
+import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.GetMergedMangaById
+import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.EditMergedSettingsDialogBinding
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.toast
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
+import kotlinx.coroutines.runBlocking
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMergedMangaItemListener {
@@ -27,13 +34,15 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
 
     lateinit var binding: EditMergedSettingsDialogBinding
 
-    private val db: DatabaseHelper by injectLazy()
+    private val getMergedMangaById: GetMergedMangaById by injectLazy()
+    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
+    private val deleteMergeById: DeleteMergeById by injectLazy()
 
     private val mangaController
         get() = targetController as MangaController
 
     constructor(target: MangaController, manga: Manga) : super(
-        bundleOf(KEY_MANGA to manga.id!!),
+        bundleOf(KEY_MANGA to manga.id),
     ) {
         targetController = target
         this.manga = manga
@@ -41,8 +50,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
 
     @Suppress("unused")
     constructor(bundle: Bundle) : super(bundle) {
-        manga = db.getManga(bundle.getLong(KEY_MANGA))
-            .executeAsBlocking()!!
+        manga = runBlocking { Injekt.get<GetManga>().await(bundle.getLong(KEY_MANGA))!! }
     }
 
     private var mergedHeaderAdapter: EditMergedSettingsHeaderAdapter? = null
@@ -62,8 +70,8 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     }
 
     fun onViewCreated() {
-        val mergedManga = db.getMergedMangas(manga.id!!).executeAsBlocking()
-        val mergedReferences = db.getMergedMangaReferences(manga.id!!).executeAsBlocking()
+        val mergedManga = runBlocking { getMergedMangaById.await(manga.id) }
+        val mergedReferences = runBlocking { getMergedReferencesById.await(manga.id) }
         if (mergedReferences.isEmpty() || mergedReferences.size == 1) {
             activity?.toast(R.string.merged_references_invalid)
             router.popCurrentController()
@@ -85,7 +93,7 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
     }
 
     private fun onPositiveButtonClick() {
-        mangaController.presenter.updateMergeSettings(mergeReference, mergedMangas.map { it.second })
+        mangaController.presenter.updateMergeSettings(listOfNotNull(mergeReference) + mergedMangas.map { it.second })
     }
 
     override fun onItemReleased(position: Int) {
@@ -105,7 +113,9 @@ class EditMergedSettingsDialog : DialogController, EditMergedMangaAdapter.EditMe
             .setTitle(R.string.delete_merged_manga)
             .setMessage(R.string.delete_merged_manga_desc)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                db.deleteMergedManga(mergeMangaReference).executeAsBlocking()
+                launchIO {
+                    deleteMergeById.await(mergeMangaReference.id!!)
+                }
                 dialog?.dismiss()
                 mangaController.router.popController(mangaController)
             }

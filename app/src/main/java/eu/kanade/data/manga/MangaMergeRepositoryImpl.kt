@@ -72,4 +72,57 @@ class MangaMergeRepositoryImpl(
             }
         }
     }
+
+    override suspend fun insert(reference: MergedMangaReference): Long? {
+        return handler.awaitOneOrNull {
+            mergedQueries.insert(
+                infoManga = reference.isInfoManga,
+                getChapterUpdates = reference.getChapterUpdates,
+                chapterSortMode = reference.chapterSortMode.toLong(),
+                chapterPriority = reference.chapterPriority.toLong(),
+                downloadChapters = reference.downloadChapters,
+                mergeId = reference.mergeId!!,
+                mergeUrl = reference.mergeUrl,
+                mangaId = reference.mangaId,
+                mangaUrl = reference.mangaUrl,
+                mangaSource = reference.mangaSourceId,
+            )
+            mergedQueries.selectLastInsertedRowId()
+        }
+    }
+
+    override suspend fun insertAll(references: List<MergedMangaReference>) {
+        handler.await(true) {
+            references.forEach { reference ->
+                mergedQueries.insert(
+                    infoManga = reference.isInfoManga,
+                    getChapterUpdates = reference.getChapterUpdates,
+                    chapterSortMode = reference.chapterSortMode.toLong(),
+                    chapterPriority = reference.chapterPriority.toLong(),
+                    downloadChapters = reference.downloadChapters,
+                    mergeId = reference.mergeId!!,
+                    mergeUrl = reference.mergeUrl,
+                    mangaId = reference.mangaId,
+                    mangaUrl = reference.mangaUrl,
+                    mangaSource = reference.mangaSourceId,
+                )
+            }
+        }
+    }
+
+    override suspend fun deleteById(id: Long) {
+        handler.await {
+            mergedQueries.deleteById(id)
+        }
+    }
+
+    override suspend fun deleteByMergeId(mergeId: Long) {
+        handler.await {
+            mergedQueries.deleteByMergeId(mergeId)
+        }
+    }
+
+    override suspend fun getMergeMangaForDownloading(mergeId: Long): List<Manga> {
+        return handler.awaitList { mergedQueries.selectMergedMangasForDownloadingById(mergeId, mangaMapper) }
+    }
 }

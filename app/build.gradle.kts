@@ -148,6 +148,7 @@ dependencies {
     implementation(androidx.paging.runtime)
     implementation(androidx.paging.compose)
 
+    implementation(libs.bundles.sqlite)
     implementation(androidx.sqlite)
     implementation(libs.sqldelight.android.driver)
     implementation(libs.sqldelight.coroutines)
@@ -200,11 +201,6 @@ dependencies {
     implementation(libs.disklrucache)
     implementation(libs.unifile)
     implementation(libs.junrar)
-
-    // Database
-    implementation(libs.bundles.sqlite)
-    implementation("com.github.inorichi.storio:storio-common:8be19de@aar")
-    implementation("com.github.inorichi.storio:storio-sqlite:8be19de@aar")
 
     // Preferences
     implementation(libs.preferencektx)

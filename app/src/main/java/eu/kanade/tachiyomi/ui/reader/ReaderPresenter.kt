@@ -14,12 +14,14 @@ import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.GetMergedManga
+import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
@@ -86,7 +88,6 @@ import java.util.concurrent.TimeUnit
  * Presenter used by the activity to perform background operations.
  */
 class ReaderPresenter(
-    private val db: DatabaseHelper = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
@@ -97,8 +98,11 @@ class ReaderPresenter(
     private val insertTrack: InsertTrack = Injekt.get(),
     private val upsertHistory: UpsertHistory = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
+    private val setMangaViewerFlags: SetMangaViewerFlags = Injekt.get(),
     // SY -->
-    private val getFlatMetadataById: GetFlatMetadataById,
+    private val getFlatMetadataById: GetFlatMetadataById = Injekt.get(),
+    private val getMergedManga: GetMergedManga = Injekt.get(),
+    private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     // SY <--
 ) : BasePresenter<ReaderActivity>() {
 
@@ -314,8 +318,8 @@ class ReaderPresenter(
 
         val context = Injekt.get<Application>()
         val source = sourceManager.getOrStub(manga.source)
-        val mergedReferences = if (source is MergedSource) db.getMergedMangaReferences(manga.id!!).executeAsBlocking() else emptyList()
-        mergedManga = if (source is MergedSource) db.getMergedMangas(manga.id!!).executeAsBlocking().associateBy { it.id!! } else emptyMap()
+        val mergedReferences = if (source is MergedSource) runBlocking { getMergedReferencesById.await(manga.id!!) } else emptyList()
+        mergedManga = if (source is MergedSource) runBlocking { getMergedManga.await() }.map { it.toDbManga() }.associateBy { it.id!! } else emptyMap()
         loader = ChapterLoader(context, downloadManager, manga, source, sourceManager, mergedReferences, mergedManga ?: emptyMap())
 
         Observable.just(manga).subscribeLatestCache(ReaderActivity::setManga)
@@ -648,7 +652,14 @@ class ReaderPresenter(
     fun toggleBookmark(chapterId: Long, bookmarked: Boolean) {
         val chapter = chapterList.find { it.chapter.id == chapterId }?.chapter ?: return
         chapter.bookmark = bookmarked
-        db.updateChapterProgress(chapter).executeAsBlocking()
+        launchIO {
+            updateChapter.await(
+                ChapterUpdate(
+                    id = chapter.id!!.toLong(),
+                    bookmark = bookmarked,
+                ),
+            )
+        }
     }
     // SY <--
 
@@ -677,7 +688,9 @@ class ReaderPresenter(
     fun setMangaReadingMode(readingModeType: Int) {
         val manga = manga ?: return
         manga.readingModeType = readingModeType
-        db.updateViewerFlags(manga).executeAsBlocking()
+        runBlocking {
+            setMangaViewerFlags.awaitSetMangaReadingMode(manga.id!!.toLong(), readingModeType.toLong())
+        }
 
         Observable.timer(250, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
             .subscribeFirst({ view, _ ->
@@ -712,7 +725,9 @@ class ReaderPresenter(
     fun setMangaOrientationType(rotationType: Int) {
         val manga = manga ?: return
         manga.orientationType = rotationType
-        db.updateViewerFlags(manga).executeAsBlocking()
+        runBlocking {
+            setMangaViewerFlags.awaitSetOrientationType(manga.id!!.toLong(), rotationType.toLong())
+        }
 
         logcat(LogPriority.INFO) { "Manga orientation is ${manga.orientationType}" }
 

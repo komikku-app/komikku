@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.ui.library
 import android.os.Bundle
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.core.util.asObservable
-import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
@@ -13,6 +12,7 @@ import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
@@ -74,6 +74,7 @@ typealias LibraryMap = Map<Long, List<LibraryItem>>
  */
 class LibraryPresenter(
     private val handler: DatabaseHandler = Injekt.get(),
+    private val getLibraryManga: GetLibraryManga = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
@@ -561,39 +562,7 @@ class LibraryPresenter(
         val defaultLibraryDisplayMode = preferences.libraryDisplayMode()
         val shouldSetFromCategory = preferences.categorizedDisplaySettings()
 
-        // TODO: Move this to domain/data layer
-        return handler
-            .subscribeToList {
-                // SY -->
-                (handler as AndroidDatabaseHandler).getLibraryQuery()
-                /*mangasQueries.getLibrary { _id: Long, source: Long, url: String, artist: String?, author: String?, description: String?, genre: List<String>?, title: String, status: Long, thumbnail_url: String?, favorite: Boolean, last_update: Long?, next_update: Long?, initialized: Boolean, viewer: Long, chapter_flags: Long, cover_last_modified: Long, date_added: Long, filteredScanlators: List<String>?, unread_count: Long, read_count: Long, category: Long ->
-                    LibraryManga().apply {
-                        this.id = _id
-                        this.source = source
-                        this.url = url
-                        this.artist = artist
-                        this.author = author
-                        this.description = description
-                        this.genre = genre?.joinToString()
-                        this.title = title
-                        this.status = status.toInt()
-                        this.thumbnail_url = thumbnail_url
-                        this.favorite = favorite
-                        this.last_update = last_update ?: 0
-                        this.initialized = initialized
-                        this.viewer_flags = viewer.toInt()
-                        this.chapter_flags = chapter_flags.toInt()
-                        this.cover_last_modified = cover_last_modified
-                        this.date_added = date_added
-                        this.filtered_scanlators = filteredScanlators?.let(listOfStringsAndAdapter::encode)
-                        this.unreadCount = unread_count.toInt()
-                        this.readCount = read_count.toInt()
-                        this.category = category.toInt()
-                    }
-                }*/
-                // SY <--
-            }
-            .asObservable()
+        return getLibraryManga.subscribe().asObservable()
             .map { list ->
                 list.map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category

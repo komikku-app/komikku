@@ -21,4 +21,14 @@ interface MangaMergeRepository {
     suspend fun updateSettings(update: MergeMangaSettingsUpdate): Boolean
 
     suspend fun updateAllSettings(values: List<MergeMangaSettingsUpdate>): Boolean
+
+    suspend fun insert(reference: MergedMangaReference): Long?
+
+    suspend fun insertAll(references: List<MergedMangaReference>)
+
+    suspend fun deleteById(id: Long)
+
+    suspend fun deleteByMergeId(mergeId: Long)
+
+    suspend fun getMergeMangaForDownloading(mergeId: Long): List<Manga>
 }

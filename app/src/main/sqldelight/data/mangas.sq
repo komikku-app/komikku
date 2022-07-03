@@ -166,6 +166,44 @@ WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
     SELECT manga_id FROM chapters WHERE read = 1 OR last_page_read != 0
 );
 
+INSERT INTO mangas(
+    source,
+    url,
+    artist,
+    author,
+    description,
+    genre,
+    title,
+    status,
+    thumbnail_url,
+    favorite,
+    last_update,
+    next_update,
+    initialized,
+    viewer,
+    chapter_flags,
+    cover_last_modified,
+    date_added
+) VALUES (
+    :source,
+    :url,
+    :artist,
+    :author,
+    :description,
+    :genre,
+    :title,
+    :status,
+    :thumbnailUrl,
+    :favorite,
+    :lastUpdate,
+    0,
+    :initialized,
+    :viewerFlags,
+    :chapterFlags,
+    :coverLastModified,
+    :dateAdded
+);
+
 update:
 UPDATE mangas SET
     source = coalesce(:source, source),
@@ -207,6 +245,9 @@ SELECT * FROM mangas WHERE source = :sourceId;
 
 getAll:
 SELECT * FROM mangas;
+
+deleteById:
+DELETE FROM mangas WHERE _id = :id;
 
 selectLastInsertRow:
 SELECT *

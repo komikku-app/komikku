@@ -4,7 +4,11 @@ import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.toDbChapter
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
+import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.interactor.InsertManga
+import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
@@ -22,7 +26,6 @@ import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
-import exh.log.xLogW
 import exh.merged.sql.models.MergedMangaReference
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
@@ -42,8 +45,10 @@ import eu.kanade.domain.chapter.model.Chapter as DomainChapter
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
 class MergedSource : HttpSource() {
-    private val db: DatabaseHelper by injectLazy()
+    private val getManga: GetManga by injectLazy()
+    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
     private val getMergedChaptersByMangaId: GetMergedChapterByMangaId by injectLazy()
+    private val insertManga: InsertManga by injectLazy()
     private val getCategories: GetCategories by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val downloadManager: DownloadManager by injectLazy()
@@ -74,9 +79,8 @@ class MergedSource : HttpSource() {
 
     override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
         return withIOContext {
-            val mergedManga = db.getManga(manga.key, id).executeAsBlocking()
-                ?: throw Exception("merged manga not in db")
-            val mangaReferences = db.getMergedMangaReferences(mergedManga.id!!).executeAsBlocking()
+            val mergedManga = getManga.await(manga.key, id) ?: throw Exception("merged manga not in db")
+            val mangaReferences = getMergedReferencesById.await(mergedManga.id)
                 .apply {
                     if (isEmpty()) {
                         throw IllegalArgumentException(
@@ -93,7 +97,7 @@ class MergedSource : HttpSource() {
             val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga }
                 ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
             val dbManga = mangaInfoReference?.run {
-                db.getManga(mangaUrl, mangaSourceId).executeAsBlocking()?.toMangaInfo()
+                getManga.await(mangaUrl, mangaSourceId)?.toMangaInfo()
             }
             (dbManga ?: mergedManga.toMangaInfo()).copy(
                 key = manga.key,
@@ -102,8 +106,8 @@ class MergedSource : HttpSource() {
     }
 
     // TODO more chapter dedupe
-    fun transformMergedChapters(mangaId: Long, chapterList: List<DomainChapter>, editScanlators: Boolean, dedupe: Boolean): List<DomainChapter> {
-        val mangaReferences = db.getMergedMangaReferences(mangaId).executeAsBlocking()
+    suspend fun transformMergedChapters(mangaId: Long, chapterList: List<DomainChapter>, editScanlators: Boolean, dedupe: Boolean): List<DomainChapter> {
+        val mangaReferences = getMergedReferencesById.await(mangaId)
         val chapters = if (editScanlators) {
             val sources = mangaReferences.map { sourceManager.getOrStub(it.mangaSourceId) to it.mangaId }
             chapterList.map { chapter ->
@@ -127,7 +131,11 @@ class MergedSource : HttpSource() {
     }
 
     fun getChaptersAsBlocking(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<DomainChapter> {
-        return transformMergedChapters(mangaId, runBlocking { getMergedChaptersByMangaId.await(mangaId) }, editScanlators, dedupe)
+        return runBlocking { getChapters(mangaId, editScanlators, dedupe) }
+    }
+
+    suspend fun getChapters(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<DomainChapter> {
+        return transformMergedChapters(mangaId, getMergedChaptersByMangaId.await(mangaId), editScanlators, dedupe)
     }
 
     private fun dedupeChapterList(mangaReferences: List<MergedMangaReference>, chapterList: List<DomainChapter>): List<DomainChapter> {
@@ -165,7 +173,7 @@ class MergedSource : HttpSource() {
 
     suspend fun fetchChaptersAndSync(manga: DomainManga, downloadChapters: Boolean = true): Pair<List<DomainChapter>, List<DomainChapter>> {
         val syncChaptersWithSource = Injekt.get<SyncChaptersWithSource>()
-        val mangaReferences = db.getMergedMangaReferences(manga.id).executeAsBlocking()
+        val mangaReferences = getMergedReferencesById.await(manga.id)
         if (mangaReferences.isEmpty()) {
             throw IllegalArgumentException("Manga references are empty, chapters unavailable, merge is likely corrupted")
         }
@@ -183,15 +191,15 @@ class MergedSource : HttpSource() {
                             values.map {
                                 try {
                                     val (source, loadedManga, reference) =
-                                        it.load(db, sourceManager)
+                                        it.load(sourceManager, getManga, insertManga)
                                     if (loadedManga != null && reference.getChapterUpdates) {
                                         val chapterList = source.getChapterList(loadedManga.toMangaInfo())
                                             .map(ChapterInfo::toSChapter)
                                         val results =
-                                            syncChaptersWithSource.await(chapterList, loadedManga.toDomainManga()!!, source)
+                                            syncChaptersWithSource.await(chapterList, loadedManga, source)
                                         if (ifDownloadNewChapters && reference.downloadChapters) {
                                             downloadManager.downloadChapters(
-                                                loadedManga,
+                                                loadedManga.toDbManga(),
                                                 results.first.map(DomainChapter::toDbChapter),
                                             )
                                         }
@@ -218,26 +226,25 @@ class MergedSource : HttpSource() {
         }
     }
 
-    suspend fun MergedMangaReference.load(db: DatabaseHelper, sourceManager: SourceManager): LoadedMangaSource {
-        var manga = db.getManga(mangaUrl, mangaSourceId).executeAsBlocking()
+    suspend fun MergedMangaReference.load(sourceManager: SourceManager, getManga: GetManga, insertManga: InsertManga): LoadedMangaSource {
+        var manga = getManga.await(mangaUrl, mangaSourceId)
         val source = sourceManager.getOrStub(manga?.source ?: mangaSourceId)
         if (manga == null) {
-            manga = Manga.create(mangaSourceId).apply {
+            val newManga = Manga.create(mangaSourceId).apply {
                 url = mangaUrl
             }
-            manga.copyFrom(source.getMangaDetails(manga.toMangaInfo()).toSManga())
-            try {
-                manga.id = db.insertManga(manga).executeAsBlocking().insertedId()
-                mangaId = manga.id
-                db.insertNewMergedMangaId(this).executeAsBlocking()
-            } catch (e: Exception) {
-                xLogW("Error inserting merged manga id", e)
+            newManga.copyFrom(source.getMangaDetails(newManga.toMangaInfo()).toSManga())
+            newManga.id = -1
+            val result = run {
+                val id = insertManga.await(newManga.toDomainManga()!!)
+                getManga.await(id!!)
             }
+            manga = result
         }
         return LoadedMangaSource(source, manga, this)
     }
 
-    data class LoadedMangaSource(val source: Source, val manga: Manga?, val reference: MergedMangaReference)
+    data class LoadedMangaSource(val source: Source, val manga: DomainManga?, val reference: MergedMangaReference)
 
     override val lang = "all"
     override val supportsLatest = false
