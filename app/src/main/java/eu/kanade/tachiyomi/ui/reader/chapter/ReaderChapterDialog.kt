@@ -5,8 +5,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Chapter
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.databinding.ReaderChaptersDialogBinding
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.ReaderPresenter
@@ -34,9 +35,9 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
 
         adapter?.mItemClickListener = FlexibleAdapter.OnItemClickListener { _, position ->
             val item = adapter?.getItem(position)
-            if (item != null && item.id != presenter.getCurrentChapter()?.chapter?.id) {
+            if (item != null && item.chapter.id != presenter.getCurrentChapter()?.chapter?.id) {
                 dialog.dismiss()
-                presenter.loadNewChapterFromDialog(item)
+                presenter.loadNewChapterFromDialog(item.chapter)
             }
             true
         }
@@ -50,8 +51,11 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
     }
 
     private fun refreshList(scroll: Boolean = true) {
+        val chapterSort = getChapterSort(presenter.manga!!.toDomainManga()!!)
         val chapters = presenter.getChapters(activity)
-            .sortedWith(getChapterSort(presenter.manga!!))
+            .sortedWith { a, b ->
+                chapterSort(a.chapter, b.chapter)
+            }
 
         adapter?.clear()
         adapter?.updateDataSet(chapters)
@@ -69,7 +73,7 @@ class ReaderChapterDialog(private val activity: ReaderActivity) : ReaderChapterA
     }
 
     override fun bookmarkChapter(chapter: Chapter) {
-        presenter.toggleBookmark(chapter.id!!, !chapter.bookmark)
+        presenter.toggleBookmark(chapter.id, !chapter.bookmark)
         refreshList(scroll = false)
     }
 }

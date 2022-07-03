@@ -492,7 +492,7 @@ class MangaPresenter(
                 last_update = originalManga.lastUpdate
                 viewer_flags = originalManga.viewerFlags.toInt()
                 chapter_flags = originalManga.chapterFlags.toInt()
-                sorting = DbManga.CHAPTER_SORTING_NUMBER
+                sorting = DomainManga.CHAPTER_SORTING_NUMBER.toInt()
                 date_added = System.currentTimeMillis()
             }
 

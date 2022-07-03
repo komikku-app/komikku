@@ -10,7 +10,7 @@ import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
@@ -230,8 +230,9 @@ class MergedSource : HttpSource() {
         var manga = getManga.await(mangaUrl, mangaSourceId)
         val source = sourceManager.getOrStub(manga?.source ?: mangaSourceId)
         if (manga == null) {
-            val newManga = Manga.create(mangaSourceId).apply {
-                url = mangaUrl
+            val newManga = MangaImpl().apply {
+                this.source = mangaSourceId
+                this.url = mangaUrl
             }
             newManga.copyFrom(source.getMangaDetails(newManga.toMangaInfo()).toSManga())
             newManga.id = -1

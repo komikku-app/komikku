@@ -22,8 +22,8 @@ import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDbTrack
-import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainChapter
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -83,6 +83,8 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import eu.kanade.domain.chapter.model.Chapter as DomainChapter
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
  * Presenter used by the activity to perform background operations.
@@ -177,11 +179,12 @@ class ReaderPresenter(
                     when {
                         preferences.skipRead() && it.read -> true
                         preferences.skipFiltered() -> {
-                            (manga.readFilter == Manga.CHAPTER_SHOW_READ && !it.read) ||
-                                (manga.readFilter == Manga.CHAPTER_SHOW_UNREAD && it.read) ||
-                                (manga.downloadedFilter == Manga.CHAPTER_SHOW_DOWNLOADED && !downloadManager.isChapterDownloaded(it.name, it.scanlator, /* SY --> */ manga.originalTitle /* SY <-- */, manga.source)) ||
-                                (manga.downloadedFilter == Manga.CHAPTER_SHOW_NOT_DOWNLOADED && downloadManager.isChapterDownloaded(it.name, it.scanlator, /* SY --> */ manga.originalTitle /* SY <-- */, manga.source)) ||
-                                (manga.bookmarkedFilter == Manga.CHAPTER_SHOW_BOOKMARKED && !it.bookmark) ||
+                            (manga.readFilter == DomainManga.CHAPTER_SHOW_READ.toInt() && !it.read) ||
+                                (manga.readFilter == DomainManga.CHAPTER_SHOW_UNREAD.toInt() && it.read) ||
+                                (manga.downloadedFilter == DomainManga.CHAPTER_SHOW_DOWNLOADED.toInt() && !downloadManager.isChapterDownloaded(it.name, it.scanlator, manga.title, manga.source)) ||
+                                (manga.downloadedFilter == DomainManga.CHAPTER_SHOW_NOT_DOWNLOADED.toInt() && downloadManager.isChapterDownloaded(it.name, it.scanlator, manga.title, manga.source)) ||
+                                (manga.bookmarkedFilter == DomainManga.CHAPTER_SHOW_BOOKMARKED.toInt() && !it.bookmark) ||
+                                (manga.bookmarkedFilter == DomainManga.CHAPTER_SHOW_NOT_BOOKMARKED.toInt() && it.bookmark) ||
                                 // SY -->
                                 (filteredScanlators != null && MdUtil.getScanlators(it.scanlator).none { group -> filteredScanlators.contains(group) })
                             // SY <--
@@ -200,14 +203,14 @@ class ReaderPresenter(
         }
 
         chaptersForReader
+            .sortedWith(getChapterSort(manga.toDomainManga()!!, sortDescending = false))
             .map { it.toDbChapter() }
-            .sortedWith(getChapterSort(manga, sortDescending = false))
             .map(::ReaderChapter)
     }
 
     private var hasTrackers: Boolean = false
-    private val checkTrackers: (Manga) -> Unit = { manga ->
-        val tracks = runBlocking { getTracks.await(manga.id!!) }
+    private val checkTrackers: (DomainManga) -> Unit = { manga ->
+        val tracks = runBlocking { getTracks.await(manga.id) }
         hasTrackers = tracks.isNotEmpty()
     }
 
@@ -314,7 +317,7 @@ class ReaderPresenter(
         // SY <--
         if (chapterId == -1L) chapterId = initialChapterId
 
-        checkTrackers(manga)
+        checkTrackers(manga.toDomainManga()!!)
 
         val context = Injekt.get<Application>()
         val source = sourceManager.getOrStub(manga.source)
@@ -352,8 +355,8 @@ class ReaderPresenter(
 
         return chapterList.map {
             ReaderChapterItem(
-                it.chapter,
-                manga!!,
+                it.chapter.toDomainChapter()!!,
+                manga!!.toDomainManga()!!,
                 it.chapter.id == currentChapter?.chapter?.id,
                 context,
                 preferences.dateFormat(),
@@ -415,7 +418,7 @@ class ReaderPresenter(
             .also(::add)
     }
 
-    fun loadNewChapterFromDialog(chapter: Chapter) {
+    fun loadNewChapterFromDialog(chapter: DomainChapter) {
         val newChapter = chapterList.firstOrNull { it.chapter.id == chapter.id } ?: return
         loadAdjacent(newChapter)
     }

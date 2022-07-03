@@ -9,19 +9,19 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.davidea.viewholders.FlexibleViewHolder
+import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.ReaderChapterItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
+import eu.kanade.domain.manga.model.Manga.Companion as DomainManga
 
-class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boolean, context: Context, val dateFormat: DateFormat, val decimalFormat: DecimalFormat) :
-    AbstractFlexibleItem<ReaderChapterItem.ViewHolder>(),
-    Chapter by chapter {
+class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: Boolean, context: Context, val dateFormat: DateFormat, val decimalFormat: DecimalFormat) :
+    AbstractFlexibleItem<ReaderChapterItem.ViewHolder>() {
 
     val readColor = context.getResourceColor(R.attr.colorOnSurface, 0.38f)
     val unreadColor = context.getResourceColor(R.attr.colorOnSurface)
@@ -50,13 +50,13 @@ class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boole
 
         other as ReaderChapterItem
 
-        if (id != other.id) return false
+        if (chapter.id != other.chapter.id) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return id.hashCode()
+        return chapter.id.hashCode()
     }
 
     inner class ViewHolder(view: View, private val adapter: ReaderChapterAdapter) : FlexibleViewHolder(view, adapter) {
@@ -64,19 +64,20 @@ class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boole
 
         fun bind(item: ReaderChapterItem) {
             val manga = item.manga
+            val chapter = item.chapter
 
             binding.chapterTitle.text = when (manga.displayMode) {
-                Manga.CHAPTER_DISPLAY_NUMBER -> {
-                    val number = item.decimalFormat.format(item.chapter_number.toDouble())
+                DomainManga.CHAPTER_DISPLAY_NUMBER -> {
+                    val number = item.decimalFormat.format(chapter.chapterNumber.toDouble())
                     itemView.context.getString(R.string.display_mode_chapter, number)
                 }
-                else -> item.name
+                else -> chapter.name
             }
 
             // Set correct text color
             val chapterColor = when {
-                item.read -> item.readColor
-                item.bookmark -> item.bookmarkedColor
+                chapter.read -> item.readColor
+                chapter.bookmark -> item.bookmarkedColor
                 else -> item.unreadColor
             }
             binding.chapterTitle.setTextColor(chapterColor)
@@ -86,11 +87,11 @@ class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boole
 
             val descriptions = mutableListOf<CharSequence>()
 
-            if (item.date_upload > 0) {
-                descriptions.add(item.dateFormat.format(Date(item.date_upload)))
+            if (chapter.dateUpload > 0) {
+                descriptions.add(item.dateFormat.format(Date(chapter.dateUpload)))
             }
-            if (!item.scanlator.isNullOrBlank()) {
-                descriptions.add(item.scanlator!!)
+            if (!chapter.scanlator.isNullOrBlank()) {
+                descriptions.add(chapter.scanlator)
             }
 
             if (descriptions.isNotEmpty()) {
@@ -99,7 +100,7 @@ class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boole
                 binding.chapterScanlator.text = ""
             }
 
-            if (item.bookmark) {
+            if (chapter.bookmark) {
                 binding.bookmarkImage.setVectorCompat(R.drawable.ic_bookmark_24dp, R.attr.colorAccent)
             } else {
                 binding.bookmarkImage.setVectorCompat(R.drawable.ic_bookmark_border_24dp, R.attr.colorOnSurface)
@@ -113,7 +114,7 @@ class ReaderChapterItem(chapter: Chapter, val manga: Manga, val isCurrent: Boole
                 binding.chapterScanlator.setTypeface(null, Typeface.NORMAL)
             }
             binding.bookmarkLayout.setOnClickListener {
-                adapter.clickListener.bookmarkChapter(item)
+                adapter.clickListener.bookmarkChapter(chapter)
             }
         }
     }

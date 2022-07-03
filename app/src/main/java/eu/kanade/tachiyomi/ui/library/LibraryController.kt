@@ -679,7 +679,7 @@ class LibraryController(
     }
 
     private fun showDeleteMangaDialog() {
-        DeleteLibraryMangasDialog(this, selectedMangas.toList()).showDialog(router)
+        DeleteLibraryMangasDialog(this, selectedMangas.toList().map { it.toDomainManga()!! }).showDialog(router)
     }
 
     // SY -->
@@ -707,8 +707,8 @@ class LibraryController(
         destroyActionModeIfNeeded()
     }
 
-    override fun deleteMangas(mangas: List<DbManga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
-        presenter.removeMangas(mangas, deleteFromLibrary, deleteChapters)
+    override fun deleteMangas(mangas: List<Manga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
+        presenter.removeMangas(mangas.map { it.toDbManga() }, deleteFromLibrary, deleteChapters)
         destroyActionModeIfNeeded()
     }
 

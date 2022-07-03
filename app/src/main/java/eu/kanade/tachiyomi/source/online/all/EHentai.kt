@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -137,8 +138,9 @@ class EHentai(
                 fav = FAVORITES_BORDER_HEX_COLORS.indexOf(
                     favElement?.attr("style")?.substring(14, 17),
                 ),
-                manga = Manga.create(id).apply {
+                manga = MangaImpl().apply {
                     // Get title
+                    source = this@EHentai.id
                     title = thumbnailElement.attr("title")
                     url = EHentaiSearchMetadata.normalizeUrl(linkElement.attr("href"))
                     // Get image
