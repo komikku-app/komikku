@@ -6,9 +6,11 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import coil.dispose
 import eu.davidea.viewholders.FlexibleViewHolder
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.MigrationMangaCardBinding
 import eu.kanade.tachiyomi.databinding.MigrationProcessItemBinding
 import eu.kanade.tachiyomi.source.Source
@@ -19,7 +21,6 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.view.loadAutoPause
 import eu.kanade.tachiyomi.util.view.setVectorCompat
 import exh.source.MERGED_SOURCE_ID
-import exh.util.executeOnIO
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
@@ -30,8 +31,10 @@ class MigrationProcessHolder(
     private val view: View,
     private val adapter: MigrationProcessAdapter,
 ) : FlexibleViewHolder(view, adapter) {
-    private val db: DatabaseHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
+    private val getMangaById: GetMangaById by injectLazy()
+    private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
+    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
 
     private var item: MigrationProcessItem? = null
     private val binding = MigrationProcessItemBinding.bind(view)
@@ -67,7 +70,7 @@ class MigrationProcessHolder(
                     .onEach {
                         adapter.controller.router.pushController(
                             MangaController(
-                                manga.id!!,
+                                manga.id,
                                 true,
                             ),
                         )
@@ -86,7 +89,7 @@ class MigrationProcessHolder(
                 }*/
 
                 val searchResult = item.manga.searchResult.get()?.let {
-                    db.getManga(it).executeOnIO()
+                    getMangaById.await(it)
                 }
                 val resultSource = searchResult?.source?.let {
                     sourceManager.get(it)
@@ -103,7 +106,7 @@ class MigrationProcessHolder(
                         .onEach {
                             adapter.controller.router.pushController(
                                 MangaController(
-                                    searchResult.id!!,
+                                    searchResult.id,
                                     true,
                                 ),
                             )
@@ -143,24 +146,24 @@ class MigrationProcessHolder(
         title.text = if (manga.title.isBlank()) {
             view.context.getString(R.string.unknown)
         } else {
-            manga.originalTitle
+            manga.ogTitle
         }
 
         mangaSourceLabel.text = if (source.id == MERGED_SOURCE_ID) {
-            db.getMergedMangaReferences(manga.id!!).executeOnIO().map {
+            getMergedReferencesById.await(manga.id).map {
                 sourceManager.getOrStub(it.mangaSourceId).toString()
             }.distinct().joinToString()
         } else {
             source.toString()
         }
 
-        val chapters = db.getChapters(manga).executeOnIO()
+        val chapters = getChapterByMangaId.await(manga.id)
         // For rounded corners
         badges.leftBadges.clipToOutline = true
         badges.rightBadges.clipToOutline = true
         badges.unreadText.isVisible = true
         badges.unreadText.text = chapters.size.toString()
-        val latestChapter = chapters.maxByOrNull { it.chapter_number }?.chapter_number ?: -1f
+        val latestChapter = chapters.maxOfOrNull { it.chapterNumber } ?: -1f
 
         if (latestChapter > 0f) {
             mangaLastChapterLabel.text = root.context.getString(
