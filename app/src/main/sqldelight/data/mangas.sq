@@ -26,13 +26,6 @@ CREATE TABLE mangas(
 CREATE INDEX library_favorite_index ON mangas(favorite) WHERE favorite = 1;
 CREATE INDEX mangas_url_index ON mangas(url);
 
-insert:
-INSERT INTO mangas(source,url,artist,author,description,genre,title,status,thumbnail_url,favorite,last_update,next_update,initialized,viewer,chapter_flags,cover_last_modified,date_added)
-VALUES (:source,:url,:artist,:author,:description,:genre,:title,:status,:thumbnail_url,:favorite,:last_update,:next_update,:initialized,:viewer,:chapter_flags,:cover_last_modified,:date_added);
-
-insertEmpty:
-INSERT INTO mangas (source, url, title, artist, author, description, genre, status, thumbnail_url, favorite, last_update, next_update, initialized, viewer, chapter_flags, cover_last_modified, date_added, filtered_scanlators) VALUES (?, ?, ?, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, 0, 0, 0, 0, 0, NULL);
-
 getMangaById:
 SELECT *
 FROM mangas
@@ -166,43 +159,9 @@ WHERE favorite = 0 AND source IN :sourceIdsAND AND _id NOT IN (
     SELECT manga_id FROM chapters WHERE read = 1 OR last_page_read != 0
 );
 
-INSERT INTO mangas(
-    source,
-    url,
-    artist,
-    author,
-    description,
-    genre,
-    title,
-    status,
-    thumbnail_url,
-    favorite,
-    last_update,
-    next_update,
-    initialized,
-    viewer,
-    chapter_flags,
-    cover_last_modified,
-    date_added
-) VALUES (
-    :source,
-    :url,
-    :artist,
-    :author,
-    :description,
-    :genre,
-    :title,
-    :status,
-    :thumbnailUrl,
-    :favorite,
-    :lastUpdate,
-    0,
-    :initialized,
-    :viewerFlags,
-    :chapterFlags,
-    :coverLastModified,
-    :dateAdded
-);
+insert:
+INSERT INTO mangas(source,url,artist,author,description,genre,title,status,thumbnail_url,favorite,last_update,next_update,initialized,viewer,chapter_flags,cover_last_modified,date_added)
+VALUES (:source,:url,:artist,:author,:description,:genre,:title,:status,:thumbnailUrl,:favorite,:lastUpdate,:nextUpdate,:initialized,:viewerFlags,:chapterFlags,:coverLastModified,:dateAdded);
 
 update:
 UPDATE mangas SET

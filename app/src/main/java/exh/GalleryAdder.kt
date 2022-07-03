@@ -2,16 +2,17 @@ package exh
 
 import android.content.Context
 import androidx.core.net.toUri
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.chapter.chapterMapper
-import eu.kanade.data.manga.mangaMapper
+import eu.kanade.domain.chapter.interactor.GetChapter
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.database.models.MangaImpl
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
@@ -23,9 +24,10 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class GalleryAdder(
-    private val handler: DatabaseHandler = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
+    private val insertManga: InsertManga = Injekt.get(),
+    private val getChapter: GetChapter = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
 ) {
@@ -119,15 +121,16 @@ class GalleryAdder(
 
             // Use manga in DB if possible, otherwise, make a new manga
             var manga = getManga.await(cleanedMangaUrl, source.id)
-                ?: handler.awaitOne(true) {
-                    // Insert created manga if not in DB before fetching details
-                    // This allows us to keep the metadata when fetching details
-                    mangasQueries.insertEmpty(
-                        source = source.id,
-                        url = cleanedMangaUrl,
-                        title = realMangaUrl,
-                    )
-                    mangasQueries.selectLastInsertRow(mangaMapper)
+                ?: run {
+                    val newManga = MangaImpl().apply {
+                        this.url = realMangaUrl
+                        this.source = source.id
+                        this.id = -1
+                        this.title = "TODO"
+                    }
+                    newManga.id = -1
+                    insertManga.await(newManga.toDomainManga()!!)
+                    getManga.await(cleanedMangaUrl, source.id)!!
                 }
 
             // Fetch and copy details
@@ -157,7 +160,7 @@ class GalleryAdder(
             }
 
             return if (cleanedChapterUrl != null) {
-                val chapter = handler.awaitOneOrNull { chaptersQueries.getChapterByUrlAndMangaId(cleanedChapterUrl, manga.id, chapterMapper) }
+                val chapter = getChapter.await(cleanedChapterUrl, manga.id)
                 if (chapter != null) {
                     GalleryAddEvent.Success(url, manga, context, chapter)
                 } else {

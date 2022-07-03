@@ -233,6 +233,7 @@ class MergedSource : HttpSource() {
             val newManga = MangaImpl().apply {
                 this.source = mangaSourceId
                 this.url = mangaUrl
+                this.title = "TODO"
             }
             newManga.copyFrom(source.getMangaDetails(newManga.toMangaInfo()).toSManga())
             newManga.id = -1
