@@ -23,54 +23,6 @@ interface ChapterQueries : DbProvider {
         .prepare()
     // SY <--
 
-    fun getChapter(id: Long) = db.get()
-        .`object`(Chapter::class.java)
-        .withQuery(
-            Query.builder()
-                .table(ChapterTable.TABLE)
-                .where("${ChapterTable.COL_ID} = ?")
-                .whereArgs(id)
-                .build(),
-        )
-        .prepare()
-
-    fun getChapter(url: String, mangaId: Long) = db.get()
-        .`object`(Chapter::class.java)
-        .withQuery(
-            Query.builder()
-                .table(ChapterTable.TABLE)
-                .where("${ChapterTable.COL_URL} = ? AND ${ChapterTable.COL_MANGA_ID} = ?")
-                .whereArgs(url, mangaId)
-                .build(),
-        )
-        .prepare()
-
-    // SY -->
-    fun getChapters(url: String) = db.get()
-        .listOfObjects(Chapter::class.java)
-        .withQuery(
-            Query.builder()
-                .table(ChapterTable.TABLE)
-                .where("${ChapterTable.COL_URL} = ?")
-                .whereArgs(url)
-                .build(),
-        )
-        .prepare()
-
-    fun getChaptersReadByUrls(urls: List<String>) = db.get()
-        .listOfObjects(Chapter::class.java)
-        .withQuery(
-            Query.builder()
-                .table(ChapterTable.TABLE)
-                .where("${ChapterTable.COL_URL} IN (?) AND (${ChapterTable.COL_READ} = 1 OR ${ChapterTable.COL_LAST_PAGE_READ} != 0)")
-                .whereArgs(urls.joinToString { "\"$it\"" })
-                .build(),
-        )
-        .prepare()
-    // SY <--
-
-    fun insertChapters(chapters: List<Chapter>) = db.put().objects(chapters).prepare()
-
     fun deleteChapters(chapters: List<Chapter>) = db.delete().objects(chapters).prepare()
 
     fun updateChapterProgress(chapter: Chapter) = db.put()

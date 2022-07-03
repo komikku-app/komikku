@@ -14,8 +14,7 @@ import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetDuplicateLibraryManga
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
-import eu.kanade.domain.manga.interactor.GetMangaById
-import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaWithChapters
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
@@ -123,8 +122,7 @@ class MangaPresenter(
     // SY <--
     private val getMangaAndChapters: GetMangaWithChapters = Injekt.get(),
     // SY -->
-    private val getMangaById: GetMangaById = Injekt.get(),
-    private val getMangaByUrlAndSource: GetMangaByUrlAndSource = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
     private val setMangaFilteredScanlators: SetMangaFilteredScanlators = Injekt.get(),
     private val getMergedChapterByMangaId: GetMergedChapterByMangaId = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
@@ -435,7 +433,7 @@ class MangaPresenter(
     suspend fun smartSearchMerge(context: Context, manga: DomainManga, originalMangaId: Long): DomainManga {
         val db = Injekt.get<DatabaseHelper>()
 
-        val originalManga = getMangaById.await(originalMangaId)
+        val originalManga = getManga.await(originalMangaId)
             ?: throw IllegalArgumentException(context.getString(R.string.merge_unknown_manga, originalMangaId))
         if (originalManga.source == MERGED_SOURCE_ID) {
             val children = getMergedReferencesById.await(originalMangaId)
@@ -490,7 +488,7 @@ class MangaPresenter(
                 date_added = System.currentTimeMillis()
             }
 
-            var existingManga = getMangaByUrlAndSource.await(mergedManga.url, mergedManga.source)
+            var existingManga = getManga.await(mergedManga.url, mergedManga.source)
             while (existingManga != null) {
                 if (existingManga.favorite) {
                     throw IllegalArgumentException(context.getString(R.string.merge_duplicate))
@@ -500,7 +498,7 @@ class MangaPresenter(
                         db.deleteMangaForMergedManga(existingManga!!.id).executeAsBlocking()
                     }
                 }
-                existingManga = getMangaByUrlAndSource.await(mergedManga.url, mergedManga.source)
+                existingManga = getManga.await(mergedManga.url, mergedManga.source)
             }
 
             // Reload chapters immediately
@@ -744,7 +742,7 @@ class MangaPresenter(
                     tracks
                         .filter { it.syncId in loggedServicesId }
                         // SY -->
-                        .filterNot { it.syncId == TrackManager.MDLIST.toLong() && it.status == FollowStatus.UNFOLLOWED.int.toLong() }
+                        .filterNot { it.syncId == TrackManager.MDLIST && it.status == FollowStatus.UNFOLLOWED.int.toLong() }
                         // SY <--
                         .size
                 }

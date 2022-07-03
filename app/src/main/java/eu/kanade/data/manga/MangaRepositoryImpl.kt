@@ -114,4 +114,12 @@ class MangaRepositoryImpl(
             }
         }
     }
+
+    override suspend fun getMangaBySource(sourceId: Long): List<Manga> {
+        return handler.awaitList { mangasQueries.getBySource(sourceId, mangaMapper) }
+    }
+
+    override suspend fun getAll(): List<Manga> {
+        return handler.awaitList { mangasQueries.getAll(mangaMapper) }
+    }
 }

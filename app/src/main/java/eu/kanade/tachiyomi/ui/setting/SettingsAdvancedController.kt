@@ -14,10 +14,13 @@ import androidx.core.net.toUri
 import androidx.core.text.HtmlCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.interactor.GetAllManga
+import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
@@ -82,7 +85,8 @@ class SettingsAdvancedController(
     private val network: NetworkHelper by injectLazy()
     private val chapterCache: ChapterCache by injectLazy()
     private val trackManager: TrackManager by injectLazy()
-    private val db: DatabaseHelper by injectLazy()
+    private val getAllManga: GetAllManga by injectLazy()
+    private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
 
     @SuppressLint("BatteryLife")
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
@@ -475,7 +479,7 @@ class SettingsAdvancedController(
         if (job?.isActive == true) return
         activity?.toast(R.string.starting_cleanup)
         job = launchIO {
-            val mangaList = db.getMangas().executeAsBlocking()
+            val mangaList = getAllManga.await()
             val downloadManager: DownloadManager = Injekt.get()
             var foldersCleared = 0
             Injekt.get<SourceManager>().getOnlineSources().forEach { source ->
@@ -483,7 +487,7 @@ class SettingsAdvancedController(
                 val sourceManga = mangaList
                     .asSequence()
                     .filter { it.source == source.id }
-                    .map { it to DiskUtil.buildValidFilename(it.originalTitle) }
+                    .map { it to DiskUtil.buildValidFilename(it.ogTitle) }
                     .toList()
 
                 mangaFolders.forEach mangaFolder@{ mangaFolder ->
@@ -493,8 +497,8 @@ class SettingsAdvancedController(
                         foldersCleared += 1 + (mangaFolder.listFiles().orEmpty().size)
                         mangaFolder.delete()
                     } else {
-                        val chapterList = db.getChapters(manga).executeAsBlocking()
-                        foldersCleared += downloadManager.cleanupChapters(chapterList, manga, source, removeRead, removeNonFavorite)
+                        val chapterList = getChapterByMangaId.await(manga.id)
+                        foldersCleared += downloadManager.cleanupChapters(chapterList.map { it.toDbChapter() }, manga.toDbManga(), source, removeRead, removeNonFavorite)
                     }
                 }
             }

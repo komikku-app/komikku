@@ -5,19 +5,18 @@ package exh
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import com.pushtorefresh.storio.sqlite.queries.DeleteQuery
 import com.pushtorefresh.storio.sqlite.queries.Query
-import com.pushtorefresh.storio.sqlite.queries.RawQuery
 import eu.kanade.data.DatabaseHandler
+import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.GetMangaBySource
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.resolvers.MangaUrlPutResolver
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable
-import eu.kanade.tachiyomi.data.database.tables.MangaTable
-import eu.kanade.tachiyomi.data.database.tables.TrackTable
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys
@@ -29,7 +28,6 @@ import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
 import eu.kanade.tachiyomi.ui.library.LibrarySort
@@ -68,11 +66,15 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.net.URI
 import java.net.URISyntaxException
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 object EXHMigrations {
     private val db: DatabaseHelper by injectLazy()
-    private val database: DatabaseHandler by injectLazy()
+    private val handler: DatabaseHandler by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
+    private val getManga: GetManga by injectLazy()
+    private val getMangaBySource: GetMangaBySource by injectLazy()
+    private val updateManga: UpdateManga by injectLazy()
 
     /**
      * Performs a migration when the application is updated.
@@ -102,68 +104,41 @@ object EXHMigrations {
 
                 val prefs = PreferenceManager.getDefaultSharedPreferences(context)
                 if (oldVersion under 4) {
-                    db.inTransaction {
-                        updateSourceId(HBROWSE_SOURCE_ID, 6912)
-                        // Migrate BHrowse URLs
-                        val hBrowseManga = db.db.get()
-                            .listOfObjects(Manga::class.java)
-                            .withQuery(
-                                Query.builder()
-                                    .table(MangaTable.TABLE)
-                                    .where("${MangaTable.COL_SOURCE} = $HBROWSE_SOURCE_ID")
-                                    .build(),
-                            )
-                            .prepare()
-                            .executeAsBlocking()
-                        hBrowseManga.forEach {
-                            it.url = it.url + "/c00001/"
-                        }
+                    updateSourceId(HBROWSE_SOURCE_ID, 6912)
+                    // Migrate BHrowse URLs
+                    val hBrowseManga = runBlocking { getMangaBySource.await(HBROWSE_SOURCE_ID) }
+                    val mangaUpdates = hBrowseManga.map {
+                        MangaUpdate(it.id, url = it.url + "/c00001/")
+                    }
 
-                        db.db.put()
-                            .objects(hBrowseManga)
-                            // Extremely slow without the resolver :/
-                            .withPutResolver(MangaUrlPutResolver())
-                            .prepare()
-                            .executeAsBlocking()
+                    runBlocking {
+                        updateManga.awaitAll(mangaUpdates)
                     }
                 }
                 if (oldVersion under 5) {
-                    db.inTransaction {
-                        // Migrate Hitomi source IDs
-                        updateSourceId(Hitomi.otherId, 6910)
-                    }
+                    // Migrate Hitomi source IDs
+                    updateSourceId(Hitomi.otherId, 6910)
                 }
                 if (oldVersion under 6) {
-                    db.inTransaction {
-                        updateSourceId(PERV_EDEN_EN_SOURCE_ID, 6905)
-                        updateSourceId(PERV_EDEN_IT_SOURCE_ID, 6906)
-                        updateSourceId(NHentai.otherId, 6907)
-                    }
+                    updateSourceId(PERV_EDEN_EN_SOURCE_ID, 6905)
+                    updateSourceId(PERV_EDEN_IT_SOURCE_ID, 6906)
+                    updateSourceId(NHentai.otherId, 6907)
                 }
                 if (oldVersion under 7) {
                     db.inTransaction {
-                        val mergedMangas = db.db.get()
-                            .listOfObjects(Manga::class.java)
-                            .withQuery(
-                                Query.builder()
-                                    .table(MangaTable.TABLE)
-                                    .where("${MangaTable.COL_SOURCE} = $MERGED_SOURCE_ID")
-                                    .build(),
-                            )
-                            .prepare()
-                            .executeAsBlocking()
+                        val mergedMangas = runBlocking { getMangaBySource.await(MERGED_SOURCE_ID) }
 
                         if (mergedMangas.isNotEmpty()) {
                             val mangaConfigs = mergedMangas.mapNotNull { mergedManga -> readMangaConfig(mergedManga)?.let { mergedManga to it } }
                             if (mangaConfigs.isNotEmpty()) {
-                                val mangaToUpdate = mutableListOf<Manga>()
+                                val mangaToUpdate = mutableListOf<MangaUpdate>()
                                 val mergedMangaReferences = mutableListOf<MergedMangaReference>()
                                 mangaConfigs.onEach { mergedManga ->
-                                    mergedManga.second.children.firstOrNull()?.url?.let {
-                                        if (db.getManga(it, MERGED_SOURCE_ID).executeAsBlocking() != null) return@onEach
-                                        mergedManga.first.url = it
-                                    }
-                                    mangaToUpdate += mergedManga.first
+                                    val newFirst = mergedManga.second.children.firstOrNull()?.url?.let {
+                                        if (runBlocking { getManga.await(it, MERGED_SOURCE_ID) } != null) return@onEach
+                                        mangaToUpdate += MangaUpdate(id = mergedManga.first.id, url = it)
+                                        mergedManga.first.copy(url = it)
+                                    } ?: mergedManga.first
                                     mergedMangaReferences += MergedMangaReference(
                                         id = null,
                                         isInfoManga = false,
@@ -171,9 +146,9 @@ object EXHMigrations {
                                         chapterSortMode = 0,
                                         chapterPriority = 0,
                                         downloadChapters = false,
-                                        mergeId = mergedManga.first.id!!,
+                                        mergeId = mergedManga.first.id,
                                         mergeUrl = mergedManga.first.url,
-                                        mangaId = mergedManga.first.id!!,
+                                        mangaId = mergedManga.first.id,
                                         mangaUrl = mergedManga.first.url,
                                         mangaSourceId = MERGED_SOURCE_ID,
                                     )
@@ -186,7 +161,7 @@ object EXHMigrations {
                                             chapterSortMode = 0,
                                             chapterPriority = 0,
                                             downloadChapters = true,
-                                            mergeId = mergedManga.first.id!!,
+                                            mergeId = mergedManga.first.id,
                                             mergeUrl = mergedManga.first.url,
                                             mangaId = load.manga.id!!,
                                             mangaUrl = load.manga.url,
@@ -194,12 +169,9 @@ object EXHMigrations {
                                         )
                                     }
                                 }
-                                db.db.put()
-                                    .objects(mangaToUpdate)
-                                    // Extremely slow without the resolver :/
-                                    .withPutResolver(MangaUrlPutResolver())
-                                    .prepare()
-                                    .executeAsBlocking()
+                                runBlocking {
+                                    updateManga.awaitAll(mangaToUpdate)
+                                }
                                 db.insertMergedMangas(mergedMangaReferences).executeAsBlocking()
 
                                 val loadedMangaList = mangaConfigs.map { it.second.children }.flatten().mapNotNull { it.load(db, sourceManager) }.distinct()
@@ -208,7 +180,7 @@ object EXHMigrations {
                                     .withQuery(
                                         Query.builder()
                                             .table(ChapterTable.TABLE)
-                                            .where("${ChapterTable.COL_MANGA_ID} IN (${mergedMangas.filter { it.id != null }.joinToString { it.id.toString() }})")
+                                            .where("${ChapterTable.COL_MANGA_ID} IN (${mergedMangas.joinToString { it.id.toString() }})")
                                             .build(),
                                     )
                                     .prepare()
@@ -289,13 +261,9 @@ object EXHMigrations {
                     }
 
                     // Delete old mangadex trackers
-                    db.db.lowLevel().delete(
-                        DeleteQuery.builder()
-                            .table(TrackTable.TABLE)
-                            .where("${TrackTable.COL_SYNC_ID} = ?")
-                            .whereArgs(6)
-                            .build(),
-                    )
+                    runBlocking {
+                        handler.await { ehQueries.deleteBySyncId(6) }
+                    }
                 }
                 if (oldVersion under 18) {
                     val readerTheme = preferences.readerTheme().get()
@@ -407,7 +375,7 @@ object EXHMigrations {
                 }
                 if (oldVersion under 31) {
                     runBlocking {
-                        database.await(true) {
+                        handler.await(true) {
                             prefs.getStringSet("eh_saved_searches", emptySet())?.forEach {
                                 kotlin.runCatching {
                                     val content = Json.decodeFromString<JsonObject>(it.substringAfter(':'))
@@ -421,7 +389,7 @@ object EXHMigrations {
                                 }
                             }
                         }
-                        database.await(true) {
+                        handler.await(true) {
                             prefs.getStringSet("latest_tab_sources", emptySet())?.forEach {
                                 feed_saved_searchQueries.insertFeedSavedSearch(
                                     _id = null,
@@ -557,7 +525,7 @@ object EXHMigrations {
         }
     }
 
-    private fun readMangaConfig(manga: SManga): MangaConfig? {
+    private fun readMangaConfig(manga: DomainManga): MangaConfig? {
         return MangaConfig.readFromUrl(manga.url)
     }
 
@@ -586,17 +554,8 @@ object EXHMigrations {
     private data class LoadedMangaSource(val source: Source, val manga: Manga)
 
     private fun updateSourceId(newId: Long, oldId: Long) {
-        db.lowLevel().executeSQL(
-            RawQuery.builder()
-                .query(
-                    """
-                    UPDATE ${MangaTable.TABLE}
-                        SET ${MangaTable.COL_SOURCE} = $newId
-                        WHERE ${MangaTable.COL_SOURCE} = $oldId
-                    """.trimIndent(),
-                )
-                .affectsTables(MangaTable.TABLE)
-                .build(),
-        )
+        runBlocking {
+            handler.await { ehQueries.migrateSource(newId, oldId) }
+        }
     }
 }

@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.coroutines.CoroutineContext
 
 class MigratingManga(
-    private val getMangaById: GetMangaById,
+    private val getManga: GetManga,
     private val sourceManager: SourceManager,
     val mangaId: Long,
     parentContext: CoroutineContext,
@@ -28,7 +28,7 @@ class MigratingManga(
     @Volatile
     private var manga: Manga? = null
     suspend fun manga(): Manga? {
-        if (manga == null) manga = getMangaById.await(mangaId)
+        if (manga == null) manga = getManga.await(mangaId)
         return manga
     }
 

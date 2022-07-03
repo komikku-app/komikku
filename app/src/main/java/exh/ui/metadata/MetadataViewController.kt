@@ -6,7 +6,7 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.chrisbanes.insetter.applyInsetter
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.databinding.MetadataViewControllerBinding
 import eu.kanade.tachiyomi.source.Source
@@ -29,7 +29,7 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
     }
 
     constructor(mangaId: Long) : this(
-        runBlocking { Injekt.get<GetMangaById>().await(mangaId)!! },
+        runBlocking { Injekt.get<GetManga>().await(mangaId)!! },
     )
 
     @Suppress("unused")

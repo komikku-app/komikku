@@ -1,0 +1,7 @@
+deleteBySyncId:
+DELETE FROM manga_sync WHERE sync_id = :syncId;
+
+migrateSource:
+UPDATE mangas
+SET source = :newId
+WHERE source = :oldId;

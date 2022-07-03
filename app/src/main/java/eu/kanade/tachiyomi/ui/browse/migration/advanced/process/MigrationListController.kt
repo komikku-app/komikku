@@ -16,7 +16,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
@@ -75,7 +75,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     private val smartSearchEngine = SmartSearchEngine(config?.extraSearchParams)
     private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
-    private val getMangaById: GetMangaById by injectLazy()
+    private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
 
     private val migrationScope = CoroutineScope(Job() + Dispatchers.IO)
@@ -109,7 +109,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
         val newMigratingManga = migratingManga ?: run {
             val new = config.mangaIds.map {
-                MigratingManga(getMangaById, sourceManager, it, migrationScope.coroutineContext)
+                MigratingManga(getManga, sourceManager, it, migrationScope.coroutineContext)
             }
             migratingManga = new.toMutableList()
             new
@@ -409,7 +409,7 @@ class MigrationListController(bundle: Bundle? = null) :
                 val hasDetails = router.backstack.any { it.controller is MangaController }
                 if (hasDetails) {
                     val manga = migratingManga?.firstOrNull()?.searchResult?.get()?.let {
-                        getMangaById.await(it)
+                        getManga.await(it)
                     }
                     if (manga != null) {
                         val newStack = router.backstack.filter {

@@ -1,6 +1,6 @@
 package exh.md.similar
 
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.all.MangaDex
@@ -17,14 +17,14 @@ import uy.kohesive.injekt.api.get
 class MangaDexSimilarPresenter(
     val mangaId: Long,
     sourceId: Long,
-    private val getMangaById: GetMangaById = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
 ) : BrowseSourcePresenter(sourceId) {
 
     var manga: Manga? = null
 
     override fun createPager(query: String, filters: FilterList): Pager {
         val sourceAsMangaDex = source.getMainSource() as MangaDex
-        this.manga = runBlocking { getMangaById.await(mangaId) }
+        this.manga = runBlocking { getManga.await(mangaId) }
         return MangaDexSimilarPager(manga!!, sourceAsMangaDex)
     }
 }

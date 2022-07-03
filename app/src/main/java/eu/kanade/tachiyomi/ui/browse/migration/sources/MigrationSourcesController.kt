@@ -5,9 +5,9 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import eu.kanade.domain.manga.interactor.GetFavorites
 import eu.kanade.presentation.browse.MigrateSourceScreen
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.ComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -54,10 +54,9 @@ class MigrationSourcesController : ComposeController<MigrationSourcesPresenter>(
             onClickAll = { source ->
                 // TODO: Jay wtf, need to clean this up sometime
                 launchIO {
-                    val manga = Injekt.get<DatabaseHelper>().getFavoriteMangas().executeAsBlocking()
+                    val manga = Injekt.get<GetFavorites>().await()
                     val sourceMangas =
-                        manga.asSequence().filter { it.source == source.id }.mapNotNull { it.id }
-                            .toList()
+                        manga.asSequence().filter { it.source == source.id }.map { it.id }.toList()
                     withUIContext {
                         PreMigrationController.navigateToMigration(
                             Injekt.get<PreferencesHelper>().skipPreMigration().get(),

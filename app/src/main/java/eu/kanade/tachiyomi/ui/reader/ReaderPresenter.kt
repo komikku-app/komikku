@@ -13,7 +13,7 @@ import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.track.interactor.GetTracks
@@ -91,7 +91,7 @@ class ReaderPresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
     private val delayedTrackingStore: DelayedTrackingStore = Injekt.get(),
-    private val getMangaById: GetMangaById = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val getTracks: GetTracks = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
@@ -282,7 +282,7 @@ class ReaderPresenter(
         launchIO {
             try {
                 // SY -->
-                val manga = getMangaById.await(mangaId) ?: return@launchIO
+                val manga = getManga.await(mangaId) ?: return@launchIO
                 val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
                 val metadata = if (source != null) {
                     getFlatMetadataById.await(mangaId)?.raise(source.metaClass)

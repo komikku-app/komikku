@@ -1,9 +1,7 @@
 package eu.kanade.tachiyomi.data.database.queries
 
 import exh.source.MERGED_SOURCE_ID
-import eu.kanade.tachiyomi.data.database.tables.CategoryTable as Category
 import eu.kanade.tachiyomi.data.database.tables.ChapterTable as Chapter
-import eu.kanade.tachiyomi.data.database.tables.HistoryTable as History
 import eu.kanade.tachiyomi.data.database.tables.MangaCategoryTable as MangaCategory
 import eu.kanade.tachiyomi.data.database.tables.MangaTable as Manga
 import exh.merged.sql.tables.MergedTable as Merged
@@ -75,18 +73,6 @@ fun getMergedChaptersQuery() =
 """
 
 /**
- * Query to get manga that are not in library, but have read chapters
- */
-fun getReadMangaNotInLibraryQuery() =
-    """
-    SELECT ${Manga.TABLE}.* 
-    FROM ${Manga.TABLE} 
-    WHERE ${Manga.COL_FAVORITE} = 0 AND ${Manga.COL_ID} IN(
-        SELECT ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} FROM ${Chapter.TABLE} WHERE ${Chapter.COL_READ} = 1 OR ${Chapter.COL_LAST_PAGE_READ} != 0
-    )
-"""
-
-/**
  * Query to get the manga from the library, with their categories, read and unread count.
  */
 val libraryQuery =
@@ -140,26 +126,6 @@ val libraryQuery =
             SELECT * FROM ${MangaCategory.TABLE}
         ) AS MC
         ON MC.${MangaCategory.COL_MANGA_ID} = M.${Manga.COL_ID};
-"""
-
-fun getHistoryByMangaId() =
-    """
-    SELECT ${History.TABLE}.*
-    FROM ${History.TABLE}
-    JOIN ${Chapter.TABLE}
-    ON ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
-    WHERE ${Chapter.TABLE}.${Chapter.COL_MANGA_ID} = ? AND ${History.TABLE}.${History.COL_CHAPTER_ID} = ${Chapter.TABLE}.${Chapter.COL_ID}
-"""
-
-/**
- * Query to get the categories for a manga.
- */
-fun getCategoriesForMangaQuery() =
-    """
-    SELECT ${Category.TABLE}.* FROM ${Category.TABLE}
-    JOIN ${MangaCategory.TABLE} ON ${Category.TABLE}.${Category.COL_ID} =
-    ${MangaCategory.TABLE}.${MangaCategory.COL_CATEGORY_ID}
-    WHERE ${MangaCategory.COL_MANGA_ID} = ?
 """
 
 // SY <--

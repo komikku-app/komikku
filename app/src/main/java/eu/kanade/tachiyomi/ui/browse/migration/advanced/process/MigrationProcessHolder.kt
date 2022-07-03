@@ -7,7 +7,7 @@ import androidx.core.view.isVisible
 import coil.dispose
 import eu.davidea.viewholders.FlexibleViewHolder
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
@@ -32,7 +32,7 @@ class MigrationProcessHolder(
     private val adapter: MigrationProcessAdapter,
 ) : FlexibleViewHolder(view, adapter) {
     private val sourceManager: SourceManager by injectLazy()
-    private val getMangaById: GetMangaById by injectLazy()
+    private val getManga: GetManga by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
     private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
 
@@ -89,7 +89,7 @@ class MigrationProcessHolder(
                 }*/
 
                 val searchResult = item.manga.searchResult.get()?.let {
-                    getMangaById.await(it)
+                    getManga.await(it)
                 }
                 val resultSource = searchResult?.source?.let {
                     sourceManager.get(it)

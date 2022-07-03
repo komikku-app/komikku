@@ -21,7 +21,8 @@ enum class TrackStatus(val int: Int, @StringRes val res: Int) {
     OTHER(7, R.string.not_tracked);
 
     companion object {
-        fun parseTrackerStatus(tracker: Long, status: Int): TrackStatus? {
+        fun parseTrackerStatus(tracker: Long, statusLong: Long): TrackStatus? {
+            val status = statusLong.toInt()
             return when (tracker) {
                 TrackManager.MDLIST -> {
                     when (FollowStatus.fromInt(status)) {

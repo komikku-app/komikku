@@ -13,7 +13,7 @@ import coil.transform.RoundedCornersTransformation
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.EditMangaDialogBinding
@@ -52,7 +52,7 @@ class EditMangaDialog : DialogController {
 
     @Suppress("unused")
     constructor(bundle: Bundle) : super(bundle) {
-        manga = runBlocking { Injekt.get<GetMangaById>().await(bundle.getLong(KEY_MANGA))!! }
+        manga = runBlocking { Injekt.get<GetManga>().await(bundle.getLong(KEY_MANGA))!! }
     }
 
     override fun onCreateDialog(savedViewState: Bundle?): Dialog {

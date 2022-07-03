@@ -7,8 +7,7 @@ import eu.kanade.data.chapter.chapterMapper
 import eu.kanade.data.manga.mangaMapper
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.manga.interactor.GetMangaById
-import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toMangaInfo
@@ -25,8 +24,7 @@ import uy.kohesive.injekt.api.get
 
 class GalleryAdder(
     private val handler: DatabaseHandler = Injekt.get(),
-    private val getMangaByUrlAndSource: GetMangaByUrlAndSource = Injekt.get(),
-    private val getMangaById: GetMangaById = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val sourceManager: SourceManager = Injekt.get(),
@@ -120,7 +118,7 @@ class GalleryAdder(
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
-            var manga = getMangaByUrlAndSource.await(cleanedMangaUrl, source.id)
+            var manga = getManga.await(cleanedMangaUrl, source.id)
                 ?: handler.awaitOne(true) {
                     // Insert created manga if not in DB before fetching details
                     // This allows us to keep the metadata when fetching details
@@ -135,7 +133,7 @@ class GalleryAdder(
             // Fetch and copy details
             val newManga = source.getMangaDetails(manga.toMangaInfo())
             updateManga.awaitUpdateFromSource(manga, newManga, false, Injekt.get())
-            manga = getMangaById.await(manga.id)!!
+            manga = getManga.await(manga.id)!!
 
             if (fav) {
                 updateManga.awaitUpdateFavorite(manga.id, true)

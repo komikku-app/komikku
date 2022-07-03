@@ -14,7 +14,7 @@ import eu.kanade.domain.history.interactor.RemoveHistoryById
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.History
 import eu.kanade.domain.history.model.HistoryUpdate
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
@@ -37,7 +37,7 @@ class EHentaiUpdateHelper(context: Context) {
         )
     private val handler: DatabaseHandler by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
-    private val getMangaById: GetMangaById by injectLazy()
+    private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val setMangaCategories: SetMangaCategories by injectLazy()
     private val getCategories: GetCategories by injectLazy()
@@ -64,7 +64,7 @@ class EHentaiUpdateHelper(context: Context) {
                     .mapNotNull { mangaId ->
                         coroutineScope {
                             val manga = async(Dispatchers.IO) {
-                                getMangaById.await(mangaId)
+                                getManga.await(mangaId)
                             }
                             val chapterList = async(Dispatchers.IO) {
                                 getChapterByMangaId.await(mangaId)

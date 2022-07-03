@@ -13,7 +13,9 @@ import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithTrackServiceTwoWay
 import eu.kanade.domain.chapter.model.toDbChapter
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetFavorites
+import eu.kanade.domain.manga.interactor.GetManga
+import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
@@ -61,7 +63,6 @@ import eu.kanade.tachiyomi.util.system.logcat
 import exh.log.xLogE
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
-import exh.metadata.metadata.base.insertFlatMetadataAsync
 import exh.source.LIBRARY_UPDATE_EXCLUDED_SOURCES
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isMdBasedSource
@@ -77,6 +78,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -106,7 +108,7 @@ class LibraryUpdateService(
     val downloadManager: DownloadManager = Injekt.get(),
     val trackManager: TrackManager = Injekt.get(),
     val coverCache: CoverCache = Injekt.get(),
-    private val getMangaById: GetMangaById = Injekt.get(),
+    private val getManga: GetManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
@@ -114,6 +116,10 @@ class LibraryUpdateService(
     private val getTracks: GetTracks = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
+    // SY -->
+    private val getFavorites: GetFavorites = Injekt.get(),
+    private val insertFlatMetadata: InsertFlatMetadata = Injekt.get(),
+    // SY <--
 ) : Service() {
 
     private lateinit var wakeLock: PowerManager.WakeLock
@@ -327,11 +333,11 @@ class LibraryUpdateService(
             when (group) {
                 LibraryGroup.BY_TRACK_STATUS -> {
                     val trackingExtra = groupExtra?.toIntOrNull() ?: -1
-                    val tracks = db.getTracks().executeAsBlocking().groupBy { it.manga_id }
+                    val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
 
                     libraryManga.filter { manga ->
                         val status = tracks[manga.id]?.firstNotNullOfOrNull { track ->
-                            TrackStatus.parseTrackerStatus(track.sync_id.toLong(), track.status)
+                            TrackStatus.parseTrackerStatus(track.syncId, track.status)
                         } ?: TrackStatus.OTHER
                         status.int == trackingExtra
                     }
@@ -404,7 +410,7 @@ class LibraryUpdateService(
                                 }
 
                                 // Don't continue to update if manga not in library
-                                manga.id?.let { getMangaById.await(it) } ?: return@forEach
+                                manga.id?.let { getManga.await(it) } ?: return@forEach
 
                                 withUpdateNotification(
                                     currentlyUpdatingManga,
@@ -536,7 +542,7 @@ class LibraryUpdateService(
                 val tracks = getTracks.await(manga.id)
                 if (tracks.isEmpty() || tracks.none { it.syncId == TrackManager.MDLIST }) {
                     val track = trackManager.mdList.createInitialTracker(manga.toDbManga())
-                    db.insertTrack(trackManager.mdList.refresh(track)).executeAsBlocking()
+                    insertTrack.await(trackManager.mdList.refresh(track).toDomainTrack(false)!!)
                 }
             }
         }
@@ -550,7 +556,7 @@ class LibraryUpdateService(
             .map { it.toSChapter() }
 
         // Get manga from database to account for if it was removed during the update
-        val dbManga = getMangaById.await(manga.id)
+        val dbManga = getManga.await(manga.id)
             ?: return Pair(emptyList(), emptyList())
 
         // [dbmanga] was used so that manga data doesn't get overwritten
@@ -724,7 +730,7 @@ class LibraryUpdateService(
                 val id = db.insertManga(dbManga).executeOnIO().insertedId()
                 if (id != null) {
                     metadata.mangaId = id
-                    db.insertFlatMetadataAsync(metadata.flatten()).await()
+                    insertFlatMetadata.await(metadata)
                 }
             }
 
@@ -736,7 +742,7 @@ class LibraryUpdateService(
      */
     private suspend fun pushFavorites() {
         var count = 0
-        val listManga = db.getFavoriteMangas().executeAsBlocking().filter { it.source in mangaDexSourceIds }
+        val listManga = getFavorites.await().filter { it.source in mangaDexSourceIds }
 
         // filter all follows from Mangadex and only add reading or rereading manga to library
         if (trackManager.mdList.isLogged) {
@@ -746,18 +752,18 @@ class LibraryUpdateService(
                 }
 
                 count++
-                notifier.showProgressNotification(listOf(manga), count, listManga.size)
+                notifier.showProgressNotification(listOf(manga.toDbManga()), count, listManga.size)
 
                 // Get this manga's trackers from the database
-                val dbTracks = getTracks.await(manga.id!!)
+                val dbTracks = getTracks.await(manga.id)
 
                 // find the mdlist entry if its unfollowed the follow it
-                val tracker = TrackItem(dbTracks.firstOrNull { it.syncId == TrackManager.MDLIST }?.toDbTrack() ?: trackManager.mdList.createInitialTracker(manga), trackManager.mdList)
+                val tracker = TrackItem(dbTracks.firstOrNull { it.syncId == TrackManager.MDLIST }?.toDbTrack() ?: trackManager.mdList.createInitialTracker(manga.toDbManga()), trackManager.mdList)
 
                 if (tracker.track?.status == FollowStatus.UNFOLLOWED.int) {
                     tracker.track.status = FollowStatus.READING.int
                     val updatedTrack = tracker.service.update(tracker.track)
-                    db.insertTrack(updatedTrack).executeOnIO()
+                    insertTrack.await(updatedTrack.toDomainTrack(false)!!)
                 }
             }
         }

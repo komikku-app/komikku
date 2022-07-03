@@ -1,5 +1,6 @@
 package exh.smartsearch
 
+import eu.kanade.data.DatabaseHandler
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -18,6 +19,7 @@ class SmartSearchEngine(
     private val extraSearchParams: String? = null,
 ) {
     private val db: DatabaseHelper by injectLazy()
+    private val handler: DatabaseHandler by injectLazy()
 
     private val normalizedLevenshtein = NormalizedLevenshtein()
 

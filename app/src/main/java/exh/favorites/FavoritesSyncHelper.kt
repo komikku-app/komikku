@@ -8,7 +8,7 @@ import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
-import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
@@ -50,7 +50,7 @@ import kotlin.time.Duration.Companion.seconds
 class FavoritesSyncHelper(val context: Context) {
     private val handler: DatabaseHandler by injectLazy()
     private val getCategories: GetCategories by injectLazy()
-    private val getMangaByUrlAndSource: GetMangaByUrlAndSource by injectLazy()
+    private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val setMangaCategories: SetMangaCategories by injectLazy()
 
@@ -332,7 +332,7 @@ class FavoritesSyncHelper(val context: Context) {
                 EXH_SOURCE_ID,
                 EH_SOURCE_ID,
             ).forEach {
-                val manga = getMangaByUrlAndSource.await(url, it)
+                val manga = getManga.await(url, it)
 
                 if (manga?.favorite == true) {
                     updateManga.awaitUpdateFavorite(manga.id, false)

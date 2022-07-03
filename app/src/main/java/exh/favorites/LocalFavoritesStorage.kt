@@ -1,9 +1,10 @@
 package exh.favorites
 
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.exh.favoriteEntryMapper
 import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
+import eu.kanade.domain.manga.interactor.GetFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFavorites
+import eu.kanade.domain.manga.interactor.InsertFavoriteEntries
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -19,9 +20,11 @@ import kotlinx.coroutines.flow.toList
 import uy.kohesive.injekt.injectLazy
 
 class LocalFavoritesStorage {
-    private val handler: DatabaseHandler by injectLazy()
     private val getFavorites: GetFavorites by injectLazy()
     private val getCategories: GetCategories by injectLazy()
+    private val deleteFavoriteEntries: DeleteFavoriteEntries by injectLazy()
+    private val getFavoriteEntries: GetFavoriteEntries by injectLazy()
+    private val insertFavoriteEntries: InsertFavoriteEntries by injectLazy()
 
     suspend fun getChangedDbEntries() = getFavorites.await()
         .asFlow()
@@ -48,30 +51,20 @@ class LocalFavoritesStorage {
             .parseToFavoriteEntries()
 
         // Delete old snapshot
-        handler.await { eh_favoritesQueries.deleteAll() }
+        deleteFavoriteEntries.await()
 
         // Insert new snapshots
-        handler.await(true) {
-            dbMangas.toList().forEach {
-                eh_favoritesQueries.insertEhFavorites(
-                    it.id,
-                    it.title,
-                    it.gid,
-                    it.token,
-                    it.category.toLong(),
-                )
-            }
-        }
+        insertFavoriteEntries.await(dbMangas.toList())
     }
 
     suspend fun clearSnapshots() {
-        handler.await { eh_favoritesQueries.deleteAll() }
+        deleteFavoriteEntries.await()
     }
 
     private suspend fun Flow<FavoriteEntry>.getChangedEntries(): ChangeSet {
         val terminated = toList()
 
-        val databaseEntries = handler.awaitList { eh_favoritesQueries.selectAll(favoriteEntryMapper) }
+        val databaseEntries = getFavoriteEntries.await()
 
         val added = terminated.filter {
             queryListForEntry(databaseEntries, it) == null

@@ -1,8 +1,5 @@
 package exh.search
 
-import exh.metadata.sql.tables.SearchMetadataTable
-import exh.metadata.sql.tables.SearchTagTable
-import exh.metadata.sql.tables.SearchTitleTable
 import java.util.Locale
 
 class SearchEngine {
@@ -23,16 +20,16 @@ class SearchEngine {
             val params = mutableListOf<String>()
             it.joinToString(separator = " OR ", prefix = "(", postfix = ")") { q ->
                 params += q
-                "${SearchTagTable.TABLE}.${SearchTagTable.COL_NAME} LIKE ?"
+                "search_tags.name LIKE ?"
             } to params
         }
         return when {
             namespace != null -> {
                 var query =
                     """
-                    (SELECT ${SearchTagTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTagTable.TABLE}
-                        WHERE ${SearchTagTable.COL_NAMESPACE} IS NOT NULL
-                        AND ${SearchTagTable.COL_NAMESPACE} LIKE ?
+                    (SELECT ${"manga_id"} AS $COL_MANGA_ID FROM ${"search_tags"}
+                        WHERE ${"namespace"} IS NOT NULL
+                        AND ${"namespace"} LIKE ?
                     """.trimIndent()
                 val params = mutableListOf(escapeLike(namespace))
                 if (componentTagQuery != null) {
@@ -46,14 +43,14 @@ class SearchEngine {
                 // Match title + tags
                 val tagQuery =
                     """
-                    SELECT ${SearchTagTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTagTable.TABLE}
+                    SELECT ${"manga_id"} AS $COL_MANGA_ID FROM ${"search_tags"}
                         WHERE ${componentTagQuery!!.first}
                     """.trimIndent() to componentTagQuery.second
 
                 val titleQuery =
                     """
-                    SELECT ${SearchTitleTable.COL_MANGA_ID} AS $COL_MANGA_ID FROM ${SearchTitleTable.TABLE}
-                        WHERE ${SearchTitleTable.COL_TITLE} LIKE ?
+                    SELECT ${"manga_id"} AS $COL_MANGA_ID FROM ${"search_titles"}
+                        WHERE ${"title"} LIKE ?
                     """.trimIndent() to listOf(component.asLenientTitleQuery())
 
                 "(${tagQuery.first} UNION ${titleQuery.first})".trimIndent() to
@@ -75,7 +72,7 @@ class SearchEngine {
                 textToSubQueries(null, component)
             } else if (component is Namespace) {
                 if (component.namespace == "uploader") {
-                    wheres += "meta.${SearchMetadataTable.COL_UPLOADER} LIKE ?"
+                    wheres += "meta.uploader LIKE ?"
                     whereParams += component.tag!!.rawTextEscapedForLike()
                     null
                 } else {
@@ -97,15 +94,15 @@ class SearchEngine {
         val completeParams = mutableListOf<String>()
         var baseQuery =
             """
-            SELECT ${SearchMetadataTable.COL_MANGA_ID}
-            FROM ${SearchMetadataTable.TABLE} meta
+            SELECT ${"manga_id"}
+            FROM ${"search_metadata"} meta
             """.trimIndent()
 
         include.forEachIndexed { index, pair ->
             baseQuery += "\n" + (
                 """
                 INNER JOIN ${pair.first} i$index
-                ON i$index.$COL_MANGA_ID = meta.${SearchMetadataTable.COL_MANGA_ID}
+                ON i$index.$COL_MANGA_ID = meta.${"manga_id"}
                 """.trimIndent()
                 )
             completeParams += pair.second
@@ -113,7 +110,7 @@ class SearchEngine {
 
         exclude.forEach {
             wheres += """
-            (meta.${SearchMetadataTable.COL_MANGA_ID} NOT IN ${it.first})
+            (meta.${"manga_id"} NOT IN ${it.first})
             """.trimIndent()
             whereParams += it.second
         }
@@ -122,7 +119,7 @@ class SearchEngine {
             baseQuery += "\nWHERE\n"
             baseQuery += wheres.joinToString("\nAND\n")
         }
-        baseQuery += "\nORDER BY ${SearchMetadataTable.COL_MANGA_ID}"
+        baseQuery += "\nORDER BY manga_id"
 
         return baseQuery to completeParams
     }

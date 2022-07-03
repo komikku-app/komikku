@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
 
-class GetMangaById(
+class GetManga(
     private val mangaRepository: MangaRepository,
 ) {
 
@@ -21,5 +21,18 @@ class GetMangaById(
 
     suspend fun subscribe(id: Long): Flow<Manga> {
         return mangaRepository.subscribeMangaById(id)
+    }
+
+    suspend fun await(url: String, sourceId: Long): Manga? {
+        return try {
+            mangaRepository.getMangaByUrlAndSource(url, sourceId)
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            null
+        }
+    }
+
+    suspend fun subscribe(url: String, sourceId: Long): Flow<Manga?> {
+        return mangaRepository.subscribeMangaByUrlAndSource(url, sourceId)
     }
 }

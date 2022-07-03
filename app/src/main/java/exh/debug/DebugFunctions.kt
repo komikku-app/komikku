@@ -2,13 +2,16 @@ package exh.debug
 
 import android.app.Application
 import androidx.work.WorkManager
-import com.pushtorefresh.storio.sqlite.queries.RawQuery
+import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.manga.mangaMapper
+import eu.kanade.domain.manga.interactor.GetAllManga
+import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFavorites
+import eu.kanade.domain.manga.interactor.GetFlatMetadataById
+import eu.kanade.domain.manga.interactor.GetSearchMetadata
+import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toMangaInfo
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
@@ -17,18 +20,10 @@ import exh.EXHMigrations
 import exh.eh.EHentaiThrottleManager
 import exh.eh.EHentaiUpdateWorker
 import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.metadata.metadata.base.awaitFlatMetadataForManga
-import exh.metadata.metadata.base.awaitInsertFlatMetadata
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
-import exh.source.isEhBasedManga
 import exh.source.nHentaiSourceIds
-import exh.util.cancellable
-import exh.util.executeOnIO
 import exh.util.jobScheduler
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import uy.kohesive.injekt.injectLazy
 import java.util.UUID
@@ -36,12 +31,16 @@ import java.util.UUID
 @Suppress("unused")
 object DebugFunctions {
     val app: Application by injectLazy()
-    val db: DatabaseHelper by injectLazy()
     val handler: DatabaseHandler by injectLazy()
     val prefs: PreferencesHelper by injectLazy()
     val sourceManager: SourceManager by injectLazy()
     val updateManga: UpdateManga by injectLazy()
     val getFavorites: GetFavorites by injectLazy()
+    val getFlatMetadataById: GetFlatMetadataById by injectLazy()
+    val insertFlatMetadata: InsertFlatMetadata by injectLazy()
+    val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
+    val getSearchMetadata: GetSearchMetadata by injectLazy()
+    val getAllManga: GetAllManga by injectLazy()
 
     fun forceUpgradeMigration() {
         prefs.ehLastVersionCode().set(1)
@@ -55,18 +54,11 @@ object DebugFunctions {
 
     fun resetAgedFlagInEXHManga() {
         runBlocking {
-            val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
-
-            val allManga = metadataManga.asFlow().cancellable().mapNotNull { manga ->
-                if (manga.isEhBasedManga()) manga
-                else null
-            }.toList()
-
-            allManga.forEach { manga ->
-                val meta = handler.awaitFlatMetadataForManga(manga.id!!)?.raise<EHentaiSearchMetadata>() ?: return@forEach
+            getExhFavoriteMangaWithMetadata.await().forEach { manga ->
+                val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>() ?: return@forEach
                 // remove age flag
                 meta.aged = false
-                handler.awaitInsertFlatMetadata(meta.flatten())
+                insertFlatMetadata.await(meta)
             }
         }
     }
@@ -77,8 +69,7 @@ object DebugFunctions {
     fun resetEHGalleriesForUpdater() {
         throttleManager.resetThrottle()
         runBlocking {
-            val allManga = handler
-                .awaitList { mangasQueries.getEhMangaWithMetadata(EH_SOURCE_ID, EXH_SOURCE_ID, mangaMapper) }
+            val allManga = getExhFavoriteMangaWithMetadata.await()
 
             val eh = sourceManager.get(EH_SOURCE_ID)
             val ex = sourceManager.get(EXH_SOURCE_ID)
@@ -99,11 +90,8 @@ object DebugFunctions {
 
     fun getEHMangaListWithAgedFlagInfo(): String {
         return runBlocking {
-            val allManga = handler
-                .awaitList { mangasQueries.getEhMangaWithMetadata(EH_SOURCE_ID, EXH_SOURCE_ID, mangaMapper) }
-
-            allManga.map { manga ->
-                val meta = handler.awaitFlatMetadataForManga(manga.id)?.raise<EHentaiSearchMetadata>() ?: return@map
+            getExhFavoriteMangaWithMetadata.await().map { manga ->
+                val meta = getFlatMetadataById.await(manga.id)?.raise<EHentaiSearchMetadata>() ?: return@map
                 "Aged: ${meta.aged}\t Title: ${manga.title}"
             }
         }.joinToString(",\n")
@@ -111,10 +99,9 @@ object DebugFunctions {
 
     fun countAgedFlagInEXHManga(): Int {
         return runBlocking {
-            handler
-                .awaitList { mangasQueries.getEhMangaWithMetadata(EH_SOURCE_ID, EXH_SOURCE_ID, mangaMapper) }
+            getExhFavoriteMangaWithMetadata.await()
                 .count { manga ->
-                    val meta = handler.awaitFlatMetadataForManga(manga.id)
+                    val meta = getFlatMetadataById.await(manga.id)
                         ?.raise<EHentaiSearchMetadata>()
                         ?: return@count false
                     meta.aged
@@ -123,31 +110,30 @@ object DebugFunctions {
     }
 
     fun addAllMangaInDatabaseToLibrary() {
-        db.inTransaction {
-            db.lowLevel().executeSQL(
-                RawQuery.builder()
-                    .query(
-                        """
-                        UPDATE ${MangaTable.TABLE}
-                            SET ${MangaTable.COL_FAVORITE} = 1
-                        """.trimIndent(),
-                    )
-                    .affectsTables(MangaTable.TABLE)
-                    .build(),
+        (handler as AndroidDatabaseHandler).rawQuery {
+            it.execute(
+                null,
+                """
+                UPDATE ${MangaTable.TABLE}
+                    SET ${MangaTable.COL_FAVORITE} = 1
+                """.trimIndent(),
+                0,
             )
         }
     }
 
     fun countMangaInDatabaseInLibrary() = runBlocking { getFavorites.await().size }
 
-    fun countMangaInDatabaseNotInLibrary() = db.getMangas().executeAsBlocking().count { !it.favorite }
+    fun countMangaInDatabaseNotInLibrary() = runBlocking { getAllManga.await() }.count { !it.favorite }
 
-    fun countMangaInDatabase() = db.getMangas().executeAsBlocking().size
+    fun countMangaInDatabase() = runBlocking { getAllManga.await() }.size
 
-    fun countMetadataInDatabase() = db.getSearchMetadata().executeAsBlocking().size
+    fun countMetadataInDatabase() = runBlocking { getSearchMetadata.await().size }
 
-    fun countMangaInLibraryWithMissingMetadata() = db.getMangas().executeAsBlocking().count {
-        it.favorite && db.getSearchMetadataForManga(it.id!!).executeAsBlocking() == null
+    fun countMangaInLibraryWithMissingMetadata() = runBlocking {
+        runBlocking { getAllManga.await() }.count {
+            it.favorite && getSearchMetadata.await(it.id) == null
+        }
     }
 
     fun clearSavedSearches() = runBlocking { handler.await { saved_searchQueries.deleteAll() } }
@@ -214,18 +200,17 @@ object DebugFunctions {
     fun cancelAllScheduledJobs() = app.jobScheduler.cancelAll()
 
     private fun convertSources(from: Long, to: Long) {
-        db.lowLevel().executeSQL(
-            RawQuery.builder()
-                .query(
-                    """
-                    UPDATE ${MangaTable.TABLE}
-                        SET ${MangaTable.COL_SOURCE} = $to
-                        WHERE ${MangaTable.COL_SOURCE} = $from
-                    """.trimIndent(),
-                )
-                .affectsTables(MangaTable.TABLE)
-                .build(),
-        )
+        (handler as AndroidDatabaseHandler).rawQuery {
+            it.execute(
+                null,
+                """
+                UPDATE ${MangaTable.TABLE}
+                    SET ${MangaTable.COL_SOURCE} = $to
+                    WHERE ${MangaTable.COL_SOURCE} = $from
+                """.trimIndent(),
+                0,
+            )
+        }
     }
 
     /*fun copyEHentaiSavedSearchesToExhentai() {
@@ -307,34 +292,28 @@ object DebugFunctions {
     }*/
 
     fun fixReaderViewerBackupBug() {
-        db.inTransaction {
-            db.lowLevel().executeSQL(
-                RawQuery.builder()
-                    .query(
-                        """
-                        UPDATE ${MangaTable.TABLE}
-                            SET ${MangaTable.COL_VIEWER} = 0
-                            WHERE ${MangaTable.COL_VIEWER} = -1
-                        """.trimIndent(),
-                    )
-                    .affectsTables(MangaTable.TABLE)
-                    .build(),
+        (handler as AndroidDatabaseHandler).rawQuery {
+            it.execute(
+                null,
+                """
+                UPDATE ${MangaTable.TABLE}
+                    SET ${MangaTable.COL_VIEWER} = 0
+                    WHERE ${MangaTable.COL_VIEWER} = -1
+                """.trimIndent(),
+                0,
             )
         }
     }
 
     fun resetReaderViewerForAllManga() {
-        db.inTransaction {
-            db.lowLevel().executeSQL(
-                RawQuery.builder()
-                    .query(
-                        """
-                        UPDATE ${MangaTable.TABLE}
-                            SET ${MangaTable.COL_VIEWER} = 0
-                        """.trimIndent(),
-                    )
-                    .affectsTables(MangaTable.TABLE)
-                    .build(),
+        (handler as AndroidDatabaseHandler).rawQuery {
+            it.execute(
+                null,
+                """
+                UPDATE ${MangaTable.TABLE}
+                    SET ${MangaTable.COL_VIEWER} = 0
+                """.trimIndent(),
+                0,
             )
         }
     }
@@ -344,34 +323,28 @@ object DebugFunctions {
             .also { it.remove(NHentai.otherId) }
             .joinToString(separator = ",")
 
-        db.inTransaction {
-            db.lowLevel().executeSQL(
-                RawQuery.builder()
-                    .query(
-                        """
-                        UPDATE ${MangaTable.TABLE}
-                            SET ${MangaTable.COL_SOURCE} = ${NHentai.otherId}
-                            WHERE ${MangaTable.COL_FAVORITE} = 1 AND ${MangaTable.COL_SOURCE} in ($sources)
-                        """.trimIndent(),
-                    )
-                    .affectsTables(MangaTable.TABLE)
-                    .build(),
+        (handler as AndroidDatabaseHandler).rawQuery {
+            it.execute(
+                null,
+                """
+                UPDATE ${MangaTable.TABLE}
+                    SET ${MangaTable.COL_SOURCE} = ${NHentai.otherId}
+                    WHERE ${MangaTable.COL_FAVORITE} = 1 AND ${MangaTable.COL_SOURCE} in ($sources)
+                """.trimIndent(),
+                0,
             )
         }
     }
 
     fun resetFilteredScanlatorsForAllManga() {
-        db.inTransaction {
-            db.lowLevel().executeSQL(
-                RawQuery.builder()
-                    .query(
-                        """
-                        UPDATE ${MangaTable.TABLE}
-                            SET ${MangaTable.COL_FILTERED_SCANLATORS} = NULL
-                        """.trimIndent(),
-                    )
-                    .affectsTables(MangaTable.TABLE)
-                    .build(),
+        (handler as AndroidDatabaseHandler).rawQuery {
+            it.execute(
+                null,
+                """
+                UPDATE ${MangaTable.TABLE}
+                    SET ${MangaTable.COL_FILTERED_SCANLATORS} = NULL
+                """.trimIndent(),
+                0,
             )
         }
     }

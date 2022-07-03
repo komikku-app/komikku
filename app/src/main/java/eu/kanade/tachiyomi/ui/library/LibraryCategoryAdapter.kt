@@ -1,11 +1,12 @@
 package eu.kanade.tachiyomi.ui.library
 
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
+import eu.kanade.domain.manga.interactor.GetSearchTags
+import eu.kanade.domain.manga.interactor.GetSearchTitles
 import eu.kanade.domain.track.interactor.GetTracks
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.tables.MangaTable
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
@@ -21,7 +22,6 @@ import exh.search.SearchEngine
 import exh.search.Text
 import exh.source.isMetadataSource
 import exh.util.cancellable
-import exh.util.executeOnIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +41,6 @@ import uy.kohesive.injekt.injectLazy
 class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryController) :
     FlexibleAdapter<LibraryItem>(null, view, true) {
     // EXH -->
-    private val db: DatabaseHelper by injectLazy()
     private val searchEngine = SearchEngine()
     private var lastFilterJob: Job? = null
     private val sourceManager: SourceManager by injectLazy()
@@ -50,8 +49,13 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
     private val hasLoggedServices by lazy {
         trackManager.hasLoggedServices()
     }
-    private val services = trackManager.services.map { service -> service.id to controller.activity!!.getString(service.nameRes()) }.toMap()
+    private val services = trackManager.services.associate { service ->
+        service.id to controller.activity!!.getString(service.nameRes())
+    }
+    private val getIdsOfFavoriteMangaWithMetadata: GetIdsOfFavoriteMangaWithMetadata by injectLazy()
     private val getTracks: GetTracks by injectLazy()
+    private val getSearchTags: GetSearchTags by injectLazy()
+    private val getSearchTitles: GetSearchTitles by injectLazy()
 
     // Keep compatibility as searchText field was replaced when we upgraded FlexibleAdapter
     var searchText
@@ -116,19 +120,7 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                 val newManga = try {
                     // Prepare filter object
                     val parsedQuery = searchEngine.parseQuery(savedSearchText)
-
-                    val mangaWithMetaIdsQuery = db.getIdsOfFavoriteMangaWithMetadata().executeOnIO()
-                    val mangaWithMetaIds = LongArray(mangaWithMetaIdsQuery.count)
-                    if (mangaWithMetaIds.isNotEmpty()) {
-                        val mangaIdCol = mangaWithMetaIdsQuery.getColumnIndex(MangaTable.COL_ID)
-                        mangaWithMetaIdsQuery.moveToFirst()
-                        while (!mangaWithMetaIdsQuery.isAfterLast) {
-                            ensureActive() // Fail early when cancelled
-
-                            mangaWithMetaIds[mangaWithMetaIdsQuery.position] = mangaWithMetaIdsQuery.getLong(mangaIdCol)
-                            mangaWithMetaIdsQuery.moveToNext()
-                        }
-                    }
+                    val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
 
                     ensureActive() // Fail early when cancelled
 
@@ -140,8 +132,8 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
                                 // No meta? Filter using title
                                 filterManga(parsedQuery, item.manga)
                             } else {
-                                val tags = db.getSearchTagsForManga(mangaId).executeAsBlocking()
-                                val titles = db.getSearchTitlesForManga(mangaId).executeAsBlocking()
+                                val tags = getSearchTags.await(mangaId)
+                                val titles = getSearchTitles.await(mangaId)
                                 filterManga(parsedQuery, item.manga, false, tags, titles)
                             }
                         } else {

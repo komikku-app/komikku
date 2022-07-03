@@ -12,7 +12,7 @@ import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
-import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
@@ -35,7 +35,7 @@ class MigrationProcessAdapter(
     private val handler: DatabaseHandler by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
     private val coverCache: CoverCache by injectLazy()
-    private val getMangaById: GetMangaById by injectLazy()
+    private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val updateChapter: UpdateChapter by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
@@ -81,7 +81,7 @@ class MigrationProcessAdapter(
             currentItems.forEach { migratingManga ->
                 val manga = migratingManga.manga
                 if (manga.searchResult.initialized) {
-                    val toMangaObj = getMangaById.await(manga.searchResult.get() ?: return@forEach)
+                    val toMangaObj = getManga.await(manga.searchResult.get() ?: return@forEach)
                         ?: return@forEach
                     migrateMangaInternal(
                         manga.manga() ?: return@forEach,
@@ -97,7 +97,7 @@ class MigrationProcessAdapter(
         launchUI {
             val manga = getItem(position)?.manga ?: return@launchUI
 
-            val toMangaObj = getMangaById.await(manga.searchResult.get() ?: return@launchUI)
+            val toMangaObj = getManga.await(manga.searchResult.get() ?: return@launchUI)
                 ?: return@launchUI
             migrateMangaInternal(
                 manga.manga() ?: return@launchUI,

@@ -21,7 +21,6 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
 import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
@@ -35,7 +34,7 @@ import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.log.xLog
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.base.awaitFlatMetadataForManga
-import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.metadata.metadata.base.awaitInsertFlatMetadata
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -54,7 +53,6 @@ import kotlin.time.Duration.Companion.days
 
 class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
-    private val db: DatabaseHelper by injectLazy()
     private val handler: DatabaseHandler by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
@@ -228,7 +226,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     // Age dead galleries
                     logger.d("Aged %s - notfound", manga.id)
                     meta.aged = true
-                    db.insertFlatMetadataAsync(meta.flatten()).await()
+                    handler.awaitInsertFlatMetadata(meta.flatten())
                 }
                 throw GalleryNotUpdatedException(false, t)
             }

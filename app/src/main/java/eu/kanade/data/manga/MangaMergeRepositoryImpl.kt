@@ -2,10 +2,14 @@ package eu.kanade.data.manga
 
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.mergedMangaReferenceMapper
+import eu.kanade.data.toLong
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
 import eu.kanade.domain.manga.repository.MangaMergeRepository
+import eu.kanade.tachiyomi.util.system.logcat
 import exh.merged.sql.models.MergedMangaReference
 import kotlinx.coroutines.flow.Flow
+import logcat.LogPriority
 
 class MangaMergeRepositoryImpl(
     private val handler: DatabaseHandler,
@@ -33,5 +37,39 @@ class MangaMergeRepositoryImpl(
 
     override suspend fun subscribeReferencesById(id: Long): Flow<List<MergedMangaReference>> {
         return handler.subscribeToList { mergedQueries.selectByMergeId(id, mergedMangaReferenceMapper) }
+    }
+
+    override suspend fun updateSettings(update: MergeMangaSettingsUpdate): Boolean {
+        return try {
+            partialUpdate(update)
+            true
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            false
+        }
+    }
+
+    override suspend fun updateAllSettings(values: List<MergeMangaSettingsUpdate>): Boolean {
+        return try {
+            partialUpdate(*values.toTypedArray())
+            true
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e)
+            false
+        }
+    }
+
+    private suspend fun partialUpdate(vararg values: MergeMangaSettingsUpdate) {
+        handler.await(inTransaction = true) {
+            values.forEach { value ->
+                mergedQueries.updateSettingsById(
+                    id = value.id,
+                    getChapterUpdates = value.getChapterUpdates?.toLong(),
+                    downloadChapters = value.downloadChapters?.toLong(),
+                    infoManga = value.isInfoManga?.toLong(),
+                    chapterPriority = value.chapterPriority?.toLong(),
+                )
+            }
+        }
     }
 }

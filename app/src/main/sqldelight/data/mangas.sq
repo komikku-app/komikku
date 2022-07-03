@@ -196,6 +196,18 @@ INNER JOIN search_metadata
     ON mangas._id = search_metadata.manga_id
 WHERE mangas.favorite = 1 AND (mangas.source = :eh OR mangas.source = :exh);
 
+getIdsOfFavoriteMangaWithMetadata:
+SELECT mangas._id FROM mangas
+INNER JOIN search_metadata
+    ON mangas._id = search_metadata.manga_id
+WHERE mangas.favorite = 1;
+
+getBySource:
+SELECT * FROM mangas WHERE source = :sourceId;
+
+getAll:
+SELECT * FROM mangas;
+
 selectLastInsertRow:
 SELECT *
 FROM mangas

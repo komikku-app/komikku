@@ -1,14 +1,25 @@
 package eu.kanade.domain
 
+import eu.kanade.data.manga.FavoritesEntryRepositoryImpl
 import eu.kanade.data.manga.MangaMergeRepositoryImpl
 import eu.kanade.data.manga.MangaMetadataRepositoryImpl
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
+import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
+import eu.kanade.domain.manga.interactor.GetAllManga
+import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
+import eu.kanade.domain.manga.interactor.GetFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
-import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
+import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
+import eu.kanade.domain.manga.interactor.GetMangaBySource
 import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.interactor.GetSearchTags
+import eu.kanade.domain.manga.interactor.GetSearchTitles
+import eu.kanade.domain.manga.interactor.InsertFavoriteEntries
+import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.SetMangaFilteredScanlators
+import eu.kanade.domain.manga.repository.FavoritesEntryRepository
 import eu.kanade.domain.manga.repository.MangaMergeRepository
 import eu.kanade.domain.manga.repository.MangaMetadataRepository
 import eu.kanade.domain.source.interactor.GetShowLatest
@@ -31,15 +42,26 @@ class SYDomainModule : InjektModule {
         addFactory { SetSourceCategories(get()) }
         addFactory { ToggleSources(get()) }
         addFactory { SetMangaFilteredScanlators(get()) }
-        addFactory { GetMangaByUrlAndSource(get()) }
+        addFactory { GetAllManga(get()) }
+        addFactory { GetMangaBySource(get()) }
 
         addSingletonFactory<MangaMetadataRepository> { MangaMetadataRepositoryImpl(get()) }
         addFactory { GetFlatMetadataById(get()) }
+        addFactory { InsertFlatMetadata(get()) }
+        addFactory { GetExhFavoriteMangaWithMetadata(get()) }
+        addFactory { GetSearchTags(get()) }
+        addFactory { GetSearchTitles(get()) }
+        addFactory { GetIdsOfFavoriteMangaWithMetadata(get()) }
 
         addSingletonFactory<MangaMergeRepository> { MangaMergeRepositoryImpl(get()) }
         addFactory { GetMergedManga(get()) }
         addFactory { GetMergedMangaById(get()) }
         addFactory { GetMergedReferencesById(get()) }
         addFactory { GetMergedChapterByMangaId(get()) }
+
+        addSingletonFactory<FavoritesEntryRepository> { FavoritesEntryRepositoryImpl(get()) }
+        addFactory { GetFavoriteEntries(get()) }
+        addFactory { InsertFavoriteEntries(get()) }
+        addFactory { DeleteFavoriteEntries(get()) }
     }
 }

@@ -934,7 +934,7 @@ class LibraryPresenter(
                 val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
                 libraryManga.forEach { libraryItem ->
                     val status = tracks[libraryItem.manga.id]?.firstNotNullOfOrNull { track ->
-                        TrackStatus.parseTrackerStatus(track.syncId, track.status.toInt())
+                        TrackStatus.parseTrackerStatus(track.syncId, track.status)
                     } ?: TrackStatus.OTHER
 
                     map.getOrPut(status.int.toLong()) { mutableListOf() } += libraryItem
