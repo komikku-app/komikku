@@ -18,10 +18,10 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationListControllerBinding
@@ -333,7 +333,7 @@ class MigrationListController(bundle: Bundle? = null) :
                     } else {
                         sources.filter { it.id != manga.source }
                     }
-                    val searchController = SearchController(manga.toDbManga(), validSources)
+                    val searchController = SearchController(manga, validSources)
                     searchController.targetController = this@MigrationListController
                     router.pushController(searchController)
                 }
@@ -357,7 +357,7 @@ class MigrationListController(bundle: Bundle? = null) :
         adapter?.notifyItemChanged(firstIndex)
         launchUI {
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
-                val localManga = smartSearchEngine.networkToLocalManga(manga, source.id).toDomainManga()!!
+                val localManga = smartSearchEngine.networkToLocalManga(manga.toDbManga(), source.id).toDomainManga()!!
                 try {
                     val chapters = source.getChapterList(localManga.toMangaInfo())
                         .map { it.toSChapter() }

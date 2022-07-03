@@ -166,7 +166,7 @@ class ReaderPresenter(
         val chapters = runBlocking {
             /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
                 (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
-                    .getChaptersAsBlocking(manga.id!!)
+                    .getChapters(manga.id!!)
             } else /* SY <-- */ getChapterByMangaId.await(manga.id!!)
         }
 

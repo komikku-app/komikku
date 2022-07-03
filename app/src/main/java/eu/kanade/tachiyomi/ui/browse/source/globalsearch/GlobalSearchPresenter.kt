@@ -180,7 +180,7 @@ open class GlobalSearchPresenter(
                         .map { it.mangas }
                         .map { list -> list.map { networkToLocalManga(it, source.id) } } // Convert to local manga
                         .doOnNext { fetchImage(it, source) } // Load manga covers
-                        .map { list -> createCatalogueSearchItem(source, list.map { GlobalSearchCardItem(it) }) }
+                        .map { list -> createCatalogueSearchItem(source, list.map { GlobalSearchCardItem(it.toDomainManga()!!) }) }
                 },
                 5,
             )
@@ -240,7 +240,7 @@ open class GlobalSearchPresenter(
             .subscribe(
                 { (source, manga) ->
                     @Suppress("DEPRECATION")
-                    view?.onMangaInitialized(source, manga)
+                    view?.onMangaInitialized(source, manga.toDomainManga()!!)
                 },
                 { error ->
                     logcat(LogPriority.ERROR, error)

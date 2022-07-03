@@ -10,6 +10,7 @@ import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.chapter.interactor.UpdateChapter
+import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetLibraryManga
@@ -22,7 +23,6 @@ import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
-import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
@@ -767,7 +767,7 @@ class LibraryPresenter(
                 updateChapter.awaitAll(toUpdate)
 
                 if (read && preferences.removeAfterMarkedAsRead()) {
-                    deleteChapters(manga, chapters.map { it.toDbChapter() })
+                    deleteChapters(manga, chapters)
                 }
             }
         }
@@ -779,12 +779,12 @@ class LibraryPresenter(
             if (source is MergedSource) {
                 val mergedMangas = runBlocking { getMergedMangaById.await(manga.id) }
                 val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
-                chapters.groupBy { it.manga_id }.forEach { (mangaId, chapters) ->
+                chapters.groupBy { it.mangaId }.forEach { (mangaId, chapters) ->
                     val mergedManga = mergedMangas.firstOrNull { it.id == mangaId } ?: return@forEach
                     val mergedMangaSource = sources.firstOrNull { it.id == mergedManga.source } ?: return@forEach
-                    downloadManager.deleteChapters(chapters, mergedManga.toDbManga(), mergedMangaSource)
+                    downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, mergedManga.toDbManga(), mergedMangaSource)
                 }
-            } else /* SY <-- */ downloadManager.deleteChapters(chapters, manga.toDbManga(), source)
+            } else /* SY <-- */ downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, manga.toDbManga(), source)
         }
     }
 
@@ -851,13 +851,13 @@ class LibraryPresenter(
     /** Returns first unread chapter of a manga */
     fun getFirstUnread(manga: Manga): Chapter? {
         val chapters = if (manga.source == MERGED_SOURCE_ID) {
-            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlockingAsDbChapter(manga.id)
-        } else runBlocking { getChapterByMangaId.await(manga.id) }.map { it.toDbChapter() }
+            (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga.id)
+        } else runBlocking { getChapterByMangaId.await(manga.id) }
         return if (manga.isEhBasedManga()) {
-            val chapter = chapters.sortedBy { it.source_order }.getOrNull(0)
+            val chapter = chapters.sortedBy { it.sourceOrder }.getOrNull(0)
             if (chapter?.read == false) chapter else null
         } else {
-            chapters.sortedByDescending { it.source_order }.find { !it.read }
+            chapters.sortedByDescending { it.sourceOrder }.find { !it.read }
         }
     }
 
