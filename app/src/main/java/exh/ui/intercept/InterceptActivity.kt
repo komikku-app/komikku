@@ -6,9 +6,9 @@ import android.view.MenuItem
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
@@ -70,7 +70,7 @@ class InterceptActivity : BaseActivity() {
                         onBackPressed()
                         startActivity(
                             if (it.chapter != null) {
-                                ReaderActivity.newIntent(this, it.manga.id!!, it.chapter.id!!)
+                                ReaderActivity.newIntent(this, it.manga.id, it.chapter.id)
                             } else {
                                 Intent(this, MainActivity::class.java)
                                     .setAction(MainActivity.SHORTCUT_MANGA)
@@ -133,9 +133,7 @@ class InterceptActivity : BaseActivity() {
             val result = galleryAdder.addGallery(this@InterceptActivity, gallery, forceSource = source)
 
             status.value = when (result) {
-                is GalleryAddEvent.Success -> result.manga.id?.let {
-                    InterceptResult.Success(it, result.manga, result.chapter)
-                } ?: InterceptResult.Failure(getString(R.string.manga_id_is_null))
+                is GalleryAddEvent.Success -> InterceptResult.Success(result.manga.id, result.manga, result.chapter)
                 is GalleryAddEvent.Fail -> InterceptResult.Failure(result.logMessage)
             }
         }

@@ -11,29 +11,35 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.elvishew.xlog.Logger
 import com.elvishew.xlog.XLog
+import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.manga.mangaMapper
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
 import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import exh.debug.DebugToggles
 import exh.eh.EHentaiUpdateWorkerConstants.UPDATES_PER_ITERATION
 import exh.log.xLog
 import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.metadata.metadata.base.getFlatMetadataForManga
+import exh.metadata.metadata.base.awaitFlatMetadataForManga
 import exh.metadata.metadata.base.insertFlatMetadataAsync
+import exh.source.EH_SOURCE_ID
+import exh.source.EXH_SOURCE_ID
 import exh.source.isEhBasedManga
 import exh.util.cancellable
-import exh.util.executeOnIO
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.single
@@ -49,10 +55,14 @@ import kotlin.time.Duration.Companion.days
 class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
     private val db: DatabaseHelper by injectLazy()
+    private val handler: DatabaseHandler by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()
     private val updateHelper: EHentaiUpdateHelper by injectLazy()
     private val logger: Logger = xLog()
+    private val updateManga: UpdateManga by injectLazy()
+    private val syncChaptersWithSource: SyncChaptersWithSource by injectLazy()
+    private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
 
     private val updateNotifier by lazy { LibraryUpdateNotifier(context) }
 
@@ -76,7 +86,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
         val startTime = System.currentTimeMillis()
 
         logger.d("Finding manga with metadata...")
-        val metadataManga = db.getFavoriteMangaWithMetadata().executeOnIO()
+        val metadataManga = handler.awaitList { mangasQueries.getEhMangaWithMetadata(EH_SOURCE_ID, EXH_SOURCE_ID, mangaMapper) }
 
         logger.d("Filtering manga and raising metadata...")
         val curTime = System.currentTimeMillis()
@@ -85,7 +95,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 return@mapNotNull null
             }
 
-            val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()
+            val meta = handler.awaitFlatMetadataForManga(manga.id)
                 ?: return@mapNotNull null
 
             val raisedMeta = meta.raise<EHentaiSearchMetadata>()
@@ -95,8 +105,8 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                 return@mapNotNull null
             }
 
-            val chapter = db.getChapters(manga.id!!).executeOnIO().minByOrNull {
-                it.date_upload
+            val chapter = getChapterByMangaId.await(manga.id).minByOrNull {
+                it.dateUpload
             }
 
             UpdateEntry(manga, raisedMeta, chapter)
@@ -176,8 +186,8 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
                     updatedManga += acceptedRoot.manga to new.toTypedArray()
                 }
 
-                modifiedThisIteration += acceptedRoot.manga.id!!
-                modifiedThisIteration += discardedRoots.map { it.manga.id!! }
+                modifiedThisIteration += acceptedRoot.manga.id
+                modifiedThisIteration += discardedRoots.map { it.manga.id }
                 updatedThisIteration++
             }
         } finally {
@@ -192,7 +202,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             )
 
             if (updatedManga.isNotEmpty()) {
-                updateNotifier.showUpdateNotifications(updatedManga)
+                updateNotifier.showUpdateNotifications(updatedManga.map { it.first.toDbManga() to it.second.map { it.toDbChapter() }.toTypedArray() })
             }
         }
     }
@@ -204,17 +214,16 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
 
         try {
             val updatedManga = source.getMangaDetails(manga.toMangaInfo())
-            manga.copyFrom(updatedManga.toSManga())
-            db.insertManga(manga).executeOnIO()
+            updateManga.awaitUpdateFromSource(manga, updatedManga, false)
 
             val newChapters = source.getChapterList(manga.toMangaInfo())
                 .map { it.toSChapter() }
 
-            val (new, _) = syncChaptersWithSource(newChapters, manga, source) // Not suspending, but does block, maybe fix this?
-            return new to db.getChapters(manga).executeOnIO()
+            val (new, _) = syncChaptersWithSource.await(newChapters, manga, source)
+            return new to getChapterByMangaId.await(manga.id)
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {
-                val meta = db.getFlatMetadataForManga(manga.id!!).executeOnIO()?.raise<EHentaiSearchMetadata>()
+                val meta = handler.awaitFlatMetadataForManga(manga.id)?.raise<EHentaiSearchMetadata>()
                 if (meta != null) {
                     // Age dead galleries
                     logger.d("Aged %s - notfound", manga.id)

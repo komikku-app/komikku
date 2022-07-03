@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.source.online
 
 import androidx.compose.runtime.Composable
+import eu.kanade.data.DatabaseHandler
+import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -12,8 +14,8 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.metadata.metadata.base.getFlatMetadataForManga
-import exh.metadata.metadata.base.insertFlatMetadata
+import exh.metadata.metadata.base.awaitFlatMetadataForManga
+import exh.metadata.metadata.base.awaitInsertFlatMetadata
 import rx.Completable
 import rx.Single
 import tachiyomi.source.model.MangaInfo
@@ -26,6 +28,8 @@ import kotlin.reflect.KClass
  */
 interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     val db: DatabaseHelper get() = Injekt.get()
+    val handler: DatabaseHandler get() = Injekt.get()
+    val getMangaByUrlAndSource: GetMangaByUrlAndSource get() = Injekt.get()
 
     /**
      * The class of the metadata used by this source
@@ -59,14 +63,14 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     suspend fun parseToManga(manga: MangaInfo, input: I): MangaInfo {
         val mangaId = manga.id()
         val metadata = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeAsBlocking()
+            val flatMetadata = handler.awaitFlatMetadataForManga(mangaId)
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
         } else newMetaInstance()
 
         parseIntoMetadata(metadata, input)
         if (mangaId != null) {
             metadata.mangaId = mangaId
-            db.insertFlatMetadata(metadata.flatten())
+            handler.awaitInsertFlatMetadata(metadata.flatten())
         }
 
         return metadata.createMangaInfo(manga)
@@ -95,7 +99,7 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      */
     suspend fun fetchOrLoadMetadata(mangaId: Long?, inputProducer: suspend () -> I): M {
         val meta = if (mangaId != null) {
-            val flatMetadata = db.getFlatMetadataForManga(mangaId).executeAsBlocking()
+            val flatMetadata = handler.awaitFlatMetadataForManga(mangaId)
             flatMetadata?.raise(metaClass)
         } else {
             null
@@ -106,15 +110,16 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
             parseIntoMetadata(newMeta, input)
             if (mangaId != null) {
                 newMeta.mangaId = mangaId
-                db.insertFlatMetadata(newMeta.flatten()).let { newMeta }
-            } else newMeta
+                handler.awaitInsertFlatMetadata(newMeta.flatten())
+            }
+            newMeta
         }
     }
 
     @Composable
     fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit)
 
-    fun MangaInfo.id() = db.getManga(key, id).executeAsBlocking()?.id
+    suspend fun MangaInfo.id() = getMangaByUrlAndSource.await(key, id)?.id
     val SManga.id get() = (this as? Manga)?.id
     val SChapter.mangaId get() = (this as? Chapter)?.manga_id
 }

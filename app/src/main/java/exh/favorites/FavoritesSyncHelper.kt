@@ -3,18 +3,23 @@ package exh.favorites
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.PowerManager
+import eu.kanade.data.AndroidDatabaseHandler
+import eu.kanade.data.DatabaseHandler
+import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.interactor.SetMangaCategories
+import eu.kanade.domain.category.model.Category
+import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Category
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.MangaCategory
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.powerManager
 import eu.kanade.tachiyomi.util.system.toast
 import exh.GalleryAddEvent
@@ -29,13 +34,11 @@ import exh.source.isEhBasedManga
 import exh.util.ignore
 import exh.util.wifiManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.newSingleThreadContext
 import okhttp3.FormBody
 import okhttp3.Request
 import uy.kohesive.injekt.Injekt
@@ -43,15 +46,17 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import kotlin.time.Duration.Companion.seconds
 
+// TODO only apply database changes after sync
 class FavoritesSyncHelper(val context: Context) {
-    private val db: DatabaseHelper by injectLazy()
+    private val handler: DatabaseHandler by injectLazy()
+    private val getCategories: GetCategories by injectLazy()
+    private val getMangaByUrlAndSource: GetMangaByUrlAndSource by injectLazy()
+    private val updateManga: UpdateManga by injectLazy()
+    private val setMangaCategories: SetMangaCategories by injectLazy()
 
     private val prefs: PreferencesHelper by injectLazy()
 
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val dispatcher = newSingleThreadContext("Favorites-sync-worker")
 
     private val exh by lazy {
         Injekt.get<SourceManager>().get(EXH_SOURCE_ID) as? EHentai
@@ -79,7 +84,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         status.value = FavoritesSyncStatus.Initializing(context)
 
-        scope.launch(dispatcher) { beginSync() }
+        scope.launch(Dispatchers.IO) { beginSync() }
     }
 
     private suspend fun beginSync() {
@@ -91,14 +96,14 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Validate library state
         status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context)
-        val libraryManga = db.getLibraryMangas().executeAsBlocking()
+        val libraryManga = handler.awaitList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
             if (!it.isEhBasedManga()) return@forEach
 
             if (it.id in seenManga) {
-                val inCategories = db.getCategoriesForManga(it).executeAsBlocking()
-                status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(it, inCategories, context)
+                val inCategories = getCategories.await(it.id!!)
+                status.value = FavoritesSyncStatus.BadLibraryState.MangaInMultipleCategories(it.toDomainManga()!!, inCategories, context)
 
                 logger.w(context.getString(R.string.favorites_sync_manga_multiple_categories_error, it.id))
                 return
@@ -139,32 +144,30 @@ class FavoritesSyncHelper(val context: Context) {
             // Do not update galleries while syncing favorites
             EHentaiUpdateWorker.cancelBackground(context)
 
-            db.inTransaction {
-                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context)
-                val remoteChanges = storage.getChangedRemoteEntries(favorites.first)
-                val localChanges = if (prefs.exhReadOnlySync().get()) {
-                    null // Do not build local changes if they are not going to be applied
-                } else {
-                    status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context)
-                    storage.getChangedDbEntries()
-                }
-
-                // Apply remote categories
-                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names), context = context)
-                applyRemoteCategories(favorites.second)
-
-                // Apply change sets
-                applyChangeSetToLocal(errorList, remoteChanges)
-                if (localChanges != null) {
-                    applyChangeSetToRemote(errorList, localChanges)
-                }
-
-                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_cleaning_up), context = context)
-                storage.snapshotEntries()
+            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_remote_changes), context = context)
+            val remoteChanges = storage.getChangedRemoteEntries(favorites.first)
+            val localChanges = if (prefs.exhReadOnlySync().get()) {
+                null // Do not build local changes if they are not going to be applied
+            } else {
+                status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_calculating_local_changes), context = context)
+                storage.getChangedDbEntries()
             }
 
-            launchUI {
-                context.toast(context.getString(R.string.favorites_sync_complete))
+            // Apply remote categories
+            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_syncing_category_names), context = context)
+            applyRemoteCategories(favorites.second)
+
+            // Apply change sets
+            applyChangeSetToLocal(errorList, remoteChanges)
+            if (localChanges != null) {
+                applyChangeSetToRemote(errorList, localChanges)
+            }
+
+            status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_cleaning_up), context = context)
+            storage.snapshotEntries()
+
+            withUIContext {
+                context.toast(R.string.favorites_sync_complete)
             }
         } catch (e: IgnoredException) {
             // Do not display error as this error has already been reported
@@ -196,46 +199,33 @@ class FavoritesSyncHelper(val context: Context) {
         }
     }
 
-    private fun applyRemoteCategories(categories: List<String>) {
-        val localCategories = db.getCategories().executeAsBlocking()
+    private suspend fun applyRemoteCategories(categories: List<String>) {
+        val localCategories = getCategories.await()
 
         val newLocalCategories = localCategories.toMutableList()
 
-        var changed = false
-
         categories.forEachIndexed { index, remote ->
             val local = localCategories.getOrElse(index) {
-                changed = true
+                val newCategoryId = handler.awaitOne(true) {
+                    categoriesQueries.insert(remote, index.toLong(), 0L, emptyList())
+                    categoriesQueries.selectLastInsertedRowId()
+                }
+                Category(newCategoryId, remote, index.toLong(), 0L, emptyList())
+                    .also { newLocalCategories += it }
+            }
 
-                Category.create(remote).apply {
-                    order = index
-
-                    // Going through categories list from front to back
-                    // If category does not exist, list size <= category index
-                    // Thus, we can just add it here and not worry about indexing
-                    newLocalCategories += this
+            // Ensure consistent ordering and naming
+            if (local.name != remote || local.order != index.toLong()) {
+                handler.await {
+                    categoriesQueries.update(
+                        categoryId = local.id,
+                        order = index.toLong().takeIf { it != local.order },
+                        name = remote.takeIf { it != local.name },
+                        flags = null,
+                        mangaOrder = null,
+                    )
                 }
             }
-
-            if (local.name != remote) {
-                changed = true
-
-                local.name = remote
-            }
-        }
-
-        // Ensure consistent ordering
-        newLocalCategories.forEachIndexed { index, category ->
-            if (category.order != index) {
-                changed = true
-
-                category.order = index
-            }
-        }
-
-        // Only insert categories if changed
-        if (changed) {
-            db.insertCategories(newLocalCategories).executeAsBlocking()
         }
     }
 
@@ -339,27 +329,25 @@ class FavoritesSyncHelper(val context: Context) {
 
             // Consider both EX and EH sources
             listOf(
-                db.getManga(url, EXH_SOURCE_ID),
-                db.getManga(url, EH_SOURCE_ID),
+                EXH_SOURCE_ID,
+                EH_SOURCE_ID,
             ).forEach {
-                val manga = it.executeAsBlocking()
+                val manga = getMangaByUrlAndSource.await(url, it)
 
                 if (manga?.favorite == true) {
-                    manga.favorite = false
-                    manga.date_added = 0
-                    db.updateMangaFavorite(manga).executeAsBlocking()
+                    updateManga.awaitUpdateFavorite(manga.id, false)
                     removedManga += manga
                 }
             }
         }
 
         // Can't do too many DB OPs in one go
-        removedManga.chunked(10).forEach {
-            db.deleteOldMangasCategories(it).executeAsBlocking()
+        removedManga.forEach {
+            setMangaCategories.await(it.id, emptyList())
         }
 
-        val insertedMangaCategories = mutableListOf<Pair<MangaCategory, Manga>>()
-        val categories = db.getCategories().executeAsBlocking()
+        val insertedMangaCategories = mutableListOf<Pair<Long, Manga>>()
+        val categories = getCategories.await()
 
         // Apply additions
         throttleManager.resetThrottle()
@@ -402,18 +390,13 @@ class FavoritesSyncHelper(val context: Context) {
                     throw IgnoredException()
                 }
             } else if (result is GalleryAddEvent.Success) {
-                insertedMangaCategories += MangaCategory.create(
-                    result.manga,
-                    categories[it.category],
-                ) to result.manga
+                insertedMangaCategories += categories[it.category].id to result.manga
             }
         }
 
         // Can't do too many DB OPs in one go
-        insertedMangaCategories.chunked(10).map { mangaCategories ->
-            mangaCategories.map { it.first } to mangaCategories.map { it.second }
-        }.forEach {
-            db.setMangaCategories(it.first, it.second)
+        insertedMangaCategories.forEach { (category, manga) ->
+            setMangaCategories.await(manga.id, listOf(category))
         }
     }
 
@@ -424,7 +407,6 @@ class FavoritesSyncHelper(val context: Context) {
 
     fun onDestroy() {
         scope.cancel()
-        dispatcher.close()
     }
 
     companion object {

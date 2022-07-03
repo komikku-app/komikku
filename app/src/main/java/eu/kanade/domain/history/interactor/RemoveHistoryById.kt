@@ -10,4 +10,10 @@ class RemoveHistoryById(
     suspend fun await(history: HistoryWithRelations) {
         repository.resetHistory(history.id)
     }
+
+    // SY -->
+    suspend fun await(historyId: Long) {
+        repository.resetHistory(historyId)
+    }
+    // SY <--
 }

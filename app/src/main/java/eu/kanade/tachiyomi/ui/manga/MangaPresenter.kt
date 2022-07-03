@@ -239,7 +239,7 @@ class MangaPresenter(
                     if (chapters.isNotEmpty() && manga.isEhBasedManga() && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
                         // Check for gallery in library and accept manga with lowest id
                         // Find chapters sharing same root
-                        updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters.map { it.toDbChapter() })
+                        updateHelper.findAcceptedRootAndDiscardOthers(manga.source, chapters)
                             .onEach { (acceptedChain, _) ->
                                 // Redirect if we are not the accepted root
                                 if (manga.id != acceptedChain.manga.id && acceptedChain.manga.favorite) {
@@ -250,7 +250,7 @@ class MangaPresenter(
                                     val update = (ourChapterUrls - acceptedChapterUrls).isNotEmpty()
                                     redirectFlow.emit(
                                         EXHRedirect(
-                                            acceptedChain.manga.id!!,
+                                            acceptedChain.manga.id,
                                             update,
                                         ),
                                     )

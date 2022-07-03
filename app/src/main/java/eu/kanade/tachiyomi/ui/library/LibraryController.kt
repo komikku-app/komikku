@@ -807,7 +807,7 @@ class LibraryController(
                     ?.setMessage(activity!!.getString(R.string.favorites_sync_bad_library_state, status.message))
                     ?.setCancelable(false)
                     ?.setPositiveButton(R.string.show_gallery) { _, _ ->
-                        openManga(status.manga)
+                        openManga(status.manga.toDbManga())
                         presenter.favoritesSync.status.value = FavoritesSyncStatus.Idle(activity!!)
                     }
                     ?.setNegativeButton(android.R.string.ok) { _, _ ->

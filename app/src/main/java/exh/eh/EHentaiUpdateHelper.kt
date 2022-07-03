@@ -1,12 +1,23 @@
 package exh.eh
 
 import android.content.Context
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.History
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.MangaCategory
-import exh.util.executeOnIO
+import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.chapter.chapterMapper
+import eu.kanade.data.history.historyMapper
+import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.interactor.SetMangaCategories
+import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.chapter.model.ChapterUpdate
+import eu.kanade.domain.chapter.repository.ChapterRepository
+import eu.kanade.domain.history.interactor.RemoveHistoryById
+import eu.kanade.domain.history.interactor.UpsertHistory
+import eu.kanade.domain.history.model.History
+import eu.kanade.domain.history.model.HistoryUpdate
+import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.MangaUpdate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -24,7 +35,15 @@ class EHentaiUpdateHelper(context: Context) {
             File(context.filesDir, "exh-plt.maftable"),
             GalleryEntry.Serializer(),
         )
-    private val db: DatabaseHelper by injectLazy()
+    private val handler: DatabaseHandler by injectLazy()
+    private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
+    private val getMangaById: GetMangaById by injectLazy()
+    private val updateManga: UpdateManga by injectLazy()
+    private val setMangaCategories: SetMangaCategories by injectLazy()
+    private val getCategories: GetCategories by injectLazy()
+    private val chapterRepository: ChapterRepository by injectLazy()
+    private val upsertHistory: UpsertHistory by injectLazy()
+    private val removeHistoryById: RemoveHistoryById by injectLazy()
 
     /**
      * @param chapters Cannot be an empty list!
@@ -36,7 +55,8 @@ class EHentaiUpdateHelper(context: Context) {
         val chainsFlow = flowOf(chapters)
             .map { chapterList ->
                 chapterList.flatMap { chapter ->
-                    db.getChapters(chapter.url).executeOnIO().mapNotNull { it.manga_id }
+                    handler.awaitList { chaptersQueries.getChapterByUrl(chapter.url, chapterMapper) }
+                        .map { it.mangaId }
                 }.distinct()
             }
             .map { mangaIds ->
@@ -44,13 +64,13 @@ class EHentaiUpdateHelper(context: Context) {
                     .mapNotNull { mangaId ->
                         coroutineScope {
                             val manga = async(Dispatchers.IO) {
-                                db.getManga(mangaId).executeAsBlocking()
+                                getMangaById.await(mangaId)
                             }
                             val chapterList = async(Dispatchers.IO) {
-                                db.getChapters(mangaId).executeAsBlocking()
+                                getChapterByMangaId.await(mangaId)
                             }
                             val history = async(Dispatchers.IO) {
-                                db.getHistoryByMangaId(mangaId).executeAsBlocking()
+                                handler.awaitList { historyQueries.getHistoryByMangaId(mangaId, historyMapper) }
                             }
                             ChapterChain(
                                 manga.await() ?: return@coroutineScope null,
@@ -64,66 +84,66 @@ class EHentaiUpdateHelper(context: Context) {
 
         // Accept oldest chain
         val chainsWithAccepted = chainsFlow.map { chains ->
-            val acceptedChain = chains.minByOrNull { it.manga.id!! }!!
+            val acceptedChain = chains.minBy { it.manga.id }
 
             acceptedChain to chains
         }
 
         return chainsWithAccepted.map { (accepted, chains) ->
             val toDiscard = chains.filter { it.manga.favorite && it.manga.id != accepted.manga.id }
+            val mangaUpdates = mutableListOf<MangaUpdate>()
 
             val chainsAsChapters = chains.flatMap { it.chapters }
             val chainsAsHistory = chains.flatMap { it.history }
 
             if (toDiscard.isNotEmpty()) {
                 // Copy chain chapters to curChapters
-                val (newChapters, new) = getChapterList(accepted, toDiscard, chainsAsChapters)
-                val (history, urlHistory, deleteHistory) = getHistory(newChapters, chainsAsChapters, chainsAsHistory)
+                val (chapterUpdates, newChapters, new) = getChapterList(accepted, toDiscard, chainsAsChapters)
 
                 toDiscard.forEach {
-                    it.manga.favorite = false
-                    it.manga.date_added = 0
+                    mangaUpdates += MangaUpdate(
+                        id = it.manga.id,
+                        favorite = false,
+                        dateAdded = 0,
+                    )
                 }
                 if (!accepted.manga.favorite) {
-                    accepted.manga.favorite = true
-                    accepted.manga.date_added = System.currentTimeMillis()
+                    mangaUpdates += MangaUpdate(
+                        id = accepted.manga.id,
+                        favorite = true,
+                        dateAdded = System.currentTimeMillis(),
+                    )
                 }
 
-                val newAccepted = ChapterChain(accepted.manga, newChapters, history + urlHistory.map { it.second })
+                val newAccepted = ChapterChain(accepted.manga, newChapters, emptyList())
                 val rootsToMutate = toDiscard + newAccepted
 
-                db.inTransaction {
-                    // Apply changes to all manga
-                    db.insertMangas(rootsToMutate.map { it.manga }).executeAsBlocking()
-                    // Insert new chapters for accepted manga
-                    val chapterPutResults = db.insertChapters(newAccepted.chapters).executeAsBlocking().results()
+                // Apply changes to all manga
+                updateManga.awaitAll(mangaUpdates)
+                // Insert new chapters for accepted manga
+                chapterRepository.updateAll(chapterUpdates)
+                chapterRepository.addAll(newChapters)
 
-                    // Delete the duplicate history first
-                    if (deleteHistory.isNotEmpty()) {
-                        db.deleteHistoryIds(deleteHistory).executeAsBlocking()
-                    }
-                    // Get a updated history list
-                    val newHistory = urlHistory.mapNotNull { (url, history) ->
-                        val result = chapterPutResults.firstNotNullOfOrNull { (chapter, result) ->
-                            if (chapter.url == url) {
-                                result.insertedId()
-                            } else null
-                        }
-                        if (result != null) {
-                            history.chapter_id = result
-                            history
-                        } else null
-                    } + history
-                    // Copy the new history chapter ids
-                    db.updateHistoryChapterIds(newHistory).executeAsBlocking()
+                val (newHistory, deleteHistory) = getHistory(getChapterByMangaId.await(accepted.manga.id), chainsAsChapters, chainsAsHistory)
 
-                    // Copy categories from all chains to accepted manga
-                    val newCategories = rootsToMutate.flatMap {
-                        db.getCategoriesForManga(it.manga).executeAsBlocking()
-                    }.distinctBy { it.id }.map {
-                        MangaCategory.create(newAccepted.manga, it)
+                // Delete the duplicate history first
+                if (deleteHistory.isNotEmpty()) {
+                    deleteHistory.forEach {
+                        removeHistoryById.await(it)
                     }
-                    db.setMangaCategories(newCategories, rootsToMutate.map { it.manga })
+                }
+                // Insert new history
+                newHistory.forEach {
+                    upsertHistory.await(it)
+                }
+
+                // Copy categories from all chains to accepted manga
+
+                val newCategories = rootsToMutate.flatMap {
+                    getCategories.await(it.manga.id).map { it.id }
+                }.distinct()
+                rootsToMutate.forEach {
+                    setMangaCategories.await(it.manga.id, newCategories)
                 }
 
                 Triple(newAccepted, toDiscard, new)
@@ -140,105 +160,105 @@ class EHentaiUpdateHelper(context: Context) {
         }
     }
 
-    data class HistoryUpdates(
-        val history: List<History>,
-        val urlHistory: List<Pair<String, History>>,
-        val historyToDelete: List<Long>,
-    )
-
-    private fun getHistory(
-        newChapters: List<Chapter>,
+    fun getHistory(
+        currentChapters: List<Chapter>,
         chainsAsChapters: List<Chapter>,
         chainsAsHistory: List<History>,
-    ): HistoryUpdates {
-        val historyMap = chainsAsHistory
-            .groupBy { history ->
-                chainsAsChapters.find { it.id == history.chapter_id }?.url.orEmpty()
-            }
-            .filterKeys { it.isNotBlank() }
-        val latestHistory = historyMap.mapValues { entry ->
-            entry.value.maxByOrNull {
-                it.time_read
-            }!!
-        }
-        val oldHistory = historyMap.flatMap { entry ->
-            val topEntry = entry.value.maxByOrNull {
-                it.time_read
-            }!!
-            entry.value - topEntry
-        }.mapNotNull { it.id }
-        return HistoryUpdates(
-            latestHistory.filter { (_, history) ->
-                val oldChapter = chainsAsChapters.find { it.id == history.chapter_id }
-                val newChapter = newChapters.find { it.url == oldChapter?.url }
-                if (oldChapter != newChapter && newChapter?.id != null) {
-                    history.chapter_id = newChapter.id!!
-                    true
-                } else false
-            }.mapNotNull { it.value },
-            latestHistory.mapNotNull { (url, history) ->
-                val oldChapter = chainsAsChapters.find { it.id == history.chapter_id }
-                val newChapter = newChapters.find { it.url == oldChapter?.url }
-                if (oldChapter != newChapter && newChapter?.id == null) {
-                    url to history
-                } else {
-                    null
+    ): Pair<List<HistoryUpdate>, List<Long>> {
+        val history = chainsAsHistory.groupBy { history -> chainsAsChapters.find { it.id == history.chapterId }?.url }
+        val newHistory = currentChapters.mapNotNull { chapter ->
+            val newHistory = history[chapter.url]
+                ?.maxByOrNull {
+                    it.readAt?.time ?: 0
                 }
-            },
-            oldHistory,
-        )
+                ?.takeIf { it.chapterId != chapter.id && it.readAt != null }
+            if (newHistory != null) {
+                HistoryUpdate(chapter.id, newHistory.readAt!!, newHistory.readDuration)
+            } else null
+        }
+        val currentChapterIds = currentChapters.map { it.id }
+        val historyToDelete = chainsAsHistory.filterNot { it.chapterId in currentChapterIds }
+            .map { it.id }
+        return newHistory to historyToDelete
     }
 
     private fun getChapterList(
         accepted: ChapterChain,
         toDiscard: List<ChapterChain>,
         chainsAsChapters: List<Chapter>,
-    ): Pair<List<Chapter>, Boolean> {
+    ): Triple<List<ChapterUpdate>, List<Chapter>, Boolean> {
         var new = false
         return toDiscard
             .flatMap { chain ->
                 chain.chapters
             }
             .fold(accepted.chapters) { curChapters, chapter ->
-                val existing = curChapters.find { it.url == chapter.url }
+                val newLastPageRead = chainsAsChapters.maxOfOrNull { it.lastPageRead }
 
-                val newLastPageRead = chainsAsChapters.maxOfOrNull { it.last_page_read }
-
-                if (existing != null) {
-                    existing.read = existing.read || chapter.read
-                    existing.last_page_read = existing.last_page_read.coerceAtLeast(chapter.last_page_read)
-                    if (newLastPageRead != null && existing.last_page_read <= 0) {
-                        existing.last_page_read = newLastPageRead
+                if (curChapters.any { it.url == chapter.url }) {
+                    curChapters.map {
+                        if (it.url == chapter.url) {
+                            val read = it.read || chapter.read
+                            var lastPageRead = it.lastPageRead.coerceAtLeast(chapter.lastPageRead)
+                            if (newLastPageRead != null && lastPageRead <= 0) {
+                                lastPageRead = newLastPageRead
+                            }
+                            val bookmark = it.bookmark || chapter.bookmark
+                            it.copy(
+                                read = read,
+                                lastPageRead = lastPageRead,
+                                bookmark = bookmark,
+                            )
+                        } else it
                     }
-                    existing.bookmark = existing.bookmark || chapter.bookmark
-                    curChapters
                 } else {
                     new = true
-                    curChapters + Chapter.create().apply {
-                        manga_id = accepted.manga.id
-                        url = chapter.url
-                        name = chapter.name
-                        read = chapter.read
-                        bookmark = chapter.bookmark
-
-                        last_page_read = chapter.last_page_read
-                        if (newLastPageRead != null && last_page_read <= 0) {
-                            last_page_read = newLastPageRead
-                        }
-
-                        date_fetch = chapter.date_fetch
-                        date_upload = chapter.date_upload
-                    }
+                    curChapters + Chapter(
+                        id = -1,
+                        mangaId = accepted.manga.id,
+                        url = chapter.url,
+                        name = chapter.name,
+                        read = chapter.read,
+                        bookmark = chapter.bookmark,
+                        lastPageRead = if (newLastPageRead != null && chapter.lastPageRead <= 0) {
+                            newLastPageRead
+                        } else chapter.lastPageRead,
+                        dateFetch = chapter.dateFetch,
+                        dateUpload = chapter.dateUpload,
+                        chapterNumber = -1F,
+                        scanlator = null,
+                        sourceOrder = -1,
+                    )
                 }
             }
-            .sortedBy { it.date_upload }
+            .sortedBy { it.dateUpload }
             .let { chapters ->
-                chapters.onEachIndexed { index, chapter ->
-                    chapter.name = "v${index + 1}: " + chapter.name.substringAfter(" ")
-                    chapter.chapter_number = index + 1f
-                    chapter.source_order = chapters.lastIndex - index
+                val updates = mutableListOf<ChapterUpdate>()
+                val newChapters = mutableListOf<Chapter>()
+                chapters.mapIndexed { index, chapter ->
+                    val name = "v${index + 1}: " + chapter.name.substringAfter(" ")
+                    val chapterNumber = index + 1f
+                    val sourceOrder = chapters.lastIndex - index.toLong()
+                    when (chapter.id) {
+                        -1L -> newChapters.add(
+                            chapter.copy(
+                                name = name,
+                                chapterNumber = chapterNumber,
+                                sourceOrder = sourceOrder,
+                            ),
+                        )
+                        else -> updates.add(
+                            ChapterUpdate(
+                                id = chapter.id,
+                                name = name.takeUnless { chapter.name == it },
+                                chapterNumber = chapterNumber.takeUnless { chapter.chapterNumber == it },
+                                sourceOrder = sourceOrder.takeUnless { chapter.sourceOrder == it },
+                            ),
+                        )
+                    }
                 }
-            } to new
+                Triple(updates.toList(), newChapters.toList(), new)
+            }
     }
 }
 

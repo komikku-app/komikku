@@ -2,33 +2,38 @@ package exh
 
 import android.content.Context
 import androidx.core.net.toUri
+import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.chapter.chapterMapper
+import eu.kanade.data.manga.mangaMapper
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
+import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.manga.interactor.GetMangaById
+import eu.kanade.domain.manga.interactor.GetMangaByUrlAndSource
+import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.DatabaseHelper
-import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
-import eu.kanade.tachiyomi.util.chapter.syncChaptersWithSource
 import exh.log.xLogStack
 import exh.source.getMainSource
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import uy.kohesive.injekt.injectLazy
 
-class GalleryAdder {
+class GalleryAdder(
+    private val handler: DatabaseHandler = Injekt.get(),
+    private val getMangaByUrlAndSource: GetMangaByUrlAndSource = Injekt.get(),
+    private val getMangaById: GetMangaById = Injekt.get(),
+    private val updateManga: UpdateManga = Injekt.get(),
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    private val sourceManager: SourceManager = Injekt.get(),
+) {
 
-    private val db: DatabaseHelper by injectLazy()
-
-    private val sourceManager: SourceManager by injectLazy()
-
-    private val filters: Pair<Set<String>, Set<Long>> = run {
-        val preferences = Injekt.get<PreferencesHelper>()
-        preferences.enabledLanguages().get() to preferences.disabledSources().get().map { it.toLong() }.toSet()
+    private val filters: Pair<Set<String>, Set<Long>> = Injekt.get<PreferencesHelper>().run {
+        enabledLanguages().get() to disabledSources().get().map { it.toLong() }.toSet()
     }
 
     private val logger = xLogStack()
@@ -115,32 +120,27 @@ class GalleryAdder {
             } ?: return GalleryAddEvent.Fail.UnknownType(url, context)
 
             // Use manga in DB if possible, otherwise, make a new manga
-            val manga = db.getManga(cleanedMangaUrl, source.id).executeAsBlocking()
-                ?: Manga.create(source.id).apply {
-                    this.url = cleanedMangaUrl
-                    title = realMangaUrl
+            var manga = getMangaByUrlAndSource.await(cleanedMangaUrl, source.id)
+                ?: handler.awaitOne(true) {
+                    // Insert created manga if not in DB before fetching details
+                    // This allows us to keep the metadata when fetching details
+                    mangasQueries.insertEmpty(
+                        source = source.id,
+                        url = cleanedMangaUrl,
+                        title = realMangaUrl,
+                    )
+                    mangasQueries.selectLastInsertRow(mangaMapper)
                 }
-
-            // Insert created manga if not in DB before fetching details
-            // This allows us to keep the metadata when fetching details
-            if (manga.id == null) {
-                db.insertManga(manga).executeAsBlocking().insertedId()?.let {
-                    manga.id = it
-                }
-            }
 
             // Fetch and copy details
             val newManga = source.getMangaDetails(manga.toMangaInfo())
-
-            manga.copyFrom(newManga.toSManga())
-            manga.initialized = true
+            updateManga.awaitUpdateFromSource(manga, newManga, false, Injekt.get())
+            manga = getMangaById.await(manga.id)!!
 
             if (fav) {
-                manga.favorite = true
-                manga.date_added = System.currentTimeMillis()
+                updateManga.awaitUpdateFavorite(manga.id, true)
+                manga = manga.copy(favorite = true)
             }
-
-            db.insertManga(manga).executeAsBlocking()
 
             // Fetch and copy chapters
             try {
@@ -151,7 +151,7 @@ class GalleryAdder {
                 }.map { it.toSChapter() }
 
                 if (chapterList.isNotEmpty()) {
-                    syncChaptersWithSource(chapterList, manga, source)
+                    syncChaptersWithSource.await(chapterList, manga, source)
                 }
             } catch (e: Exception) {
                 logger.w(context.getString(R.string.gallery_adder_chapter_fetch_error, manga.title), e)
@@ -159,7 +159,7 @@ class GalleryAdder {
             }
 
             return if (cleanedChapterUrl != null) {
-                val chapter = db.getChapter(cleanedChapterUrl, manga.id!!).executeAsBlocking()
+                val chapter = handler.awaitOneOrNull { chaptersQueries.getChapterByUrlAndMangaId(cleanedChapterUrl, manga.id, chapterMapper) }
                 if (chapter != null) {
                     GalleryAddEvent.Success(url, manga, context, chapter)
                 } else {

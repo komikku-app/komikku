@@ -1,6 +1,6 @@
 package exh.recs
 
-import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.POST
@@ -203,7 +203,7 @@ open class RecommendsPager(
 
         val recs = apiList.firstNotNullOfOrNull { (key, api) ->
             try {
-                val recs = api.getRecsBySearch(manga.originalTitle)
+                val recs = api.getRecsBySearch(manga.ogTitle)
                 logcat { key.toString() + " > Results: " + recs.count() }
                 recs
             } catch (e: Exception) {

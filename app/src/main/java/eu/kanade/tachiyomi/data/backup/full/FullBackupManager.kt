@@ -44,7 +44,6 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.awaitFlatMetadataForManga
 import exh.metadata.metadata.base.awaitInsertFlatMetadata
-import exh.metadata.metadata.base.getFlatMetadataForManga
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.nullIfBlank
@@ -198,7 +197,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
 
         val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
         if (source != null) {
-            handler.getFlatMetadataForManga(manga.id)?.let { flatMetadata ->
+            handler.awaitFlatMetadataForManga(manga.id)?.let { flatMetadata ->
                 mangaObject.flatMetadata = BackupFlatMetadata.copyFrom(flatMetadata)
             }
         }

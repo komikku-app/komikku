@@ -1,7 +1,7 @@
 package exh.md.similar
 
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.data.database.models.toMangaInfo
+import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
