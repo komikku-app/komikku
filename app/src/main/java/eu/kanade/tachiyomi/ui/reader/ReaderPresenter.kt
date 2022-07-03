@@ -117,7 +117,7 @@ class ReaderPresenter(
     // SY -->
     var meta: RaisedSearchMetadata? = null
         private set
-    var mergedManga: Map<Long, Manga>? = null
+    var mergedManga: Map<Long, DomainManga>? = null
         private set
     // SY <--
 
@@ -322,8 +322,8 @@ class ReaderPresenter(
         val context = Injekt.get<Application>()
         val source = sourceManager.getOrStub(manga.source)
         val mergedReferences = if (source is MergedSource) runBlocking { getMergedReferencesById.await(manga.id!!) } else emptyList()
-        mergedManga = if (source is MergedSource) runBlocking { getMergedManga.await() }.map { it.toDbManga() }.associateBy { it.id!! } else emptyMap()
-        loader = ChapterLoader(context, downloadManager, manga, source, sourceManager, mergedReferences, mergedManga ?: emptyMap())
+        mergedManga = if (source is MergedSource) runBlocking { getMergedManga.await() }.associateBy { it.id } else emptyMap()
+        loader = ChapterLoader(context, downloadManager, manga.toDomainManga()!!, source, sourceManager, mergedReferences, mergedManga ?: emptyMap())
 
         Observable.just(manga).subscribeLatestCache(ReaderActivity::setManga)
         viewerChaptersRelay.subscribeLatestCache(ReaderActivity::setChapters)
@@ -1024,7 +1024,7 @@ class ReaderPresenter(
         val manga = if (mergedManga.isNullOrEmpty()) {
             manga
         } else {
-            mergedManga.orEmpty()[chapter.chapter.manga_id]
+            mergedManga.orEmpty()[chapter.chapter.manga_id]?.toDbManga()
         } ?: return
         // SY <--
 
