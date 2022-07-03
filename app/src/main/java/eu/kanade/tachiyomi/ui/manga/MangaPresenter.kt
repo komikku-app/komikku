@@ -679,7 +679,7 @@ class MangaPresenter(
      */
     fun hasDownloads(): Boolean {
         val manga = successState?.manga ?: return false
-        return downloadManager.getDownloadCount(manga.toDbManga()) > 0
+        return downloadManager.getDownloadCount(manga) > 0
     }
 
     /**
@@ -691,9 +691,9 @@ class MangaPresenter(
         if (state.source is MergedSource) {
             val mergedManga = state.mergedData?.manga?.map { it.value to sourceManager.getOrStub(it.value.source) }
             mergedManga?.forEach { (manga, source) ->
-                downloadManager.deleteManga(manga.toDbManga(), source)
+                downloadManager.deleteManga(manga, source)
             }
-        } else /* SY <-- */ downloadManager.deleteManga(state.manga.toDbManga(), state.source)
+        } else /* SY <-- */ downloadManager.deleteManga(state.manga, state.source)
     }
 
     /**
@@ -956,11 +956,11 @@ class MangaPresenter(
         if (state.source is MergedSource) {
             chapters.groupBy { it.mangaId }.forEach { map ->
                 val manga = state.mergedData?.manga?.get(map.key) ?: return@forEach
-                downloadManager.downloadChapters(manga.toDbManga(), map.value.map { it.toMergedDownloadedChapter().toDbChapter() })
+                downloadManager.downloadChapters(manga, map.value.map { it.toMergedDownloadedChapter().toDbChapter() })
             }
         } else { /* SY <-- */
             val manga = state.manga
-            downloadManager.downloadChapters(manga.toDbManga(), chapters.map { it.toDbChapter() })
+            downloadManager.downloadChapters(manga, chapters.map { it.toDbChapter() })
         }
     }
 
@@ -987,7 +987,7 @@ class MangaPresenter(
             try {
                 updateSuccessState { successState ->
                     val deletedIds = downloadManager
-                        .deleteChapters(chapters2, successState.manga.toDbManga(), successState.source)
+                        .deleteChapters(chapters2, successState.manga, successState.source)
                         .map { it.id }
                     val deletedChapters = successState.chapters.filter { deletedIds.contains(it.chapter.id) }
                     if (deletedChapters.isEmpty()) return@updateSuccessState successState

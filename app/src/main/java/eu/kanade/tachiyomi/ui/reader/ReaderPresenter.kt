@@ -1029,7 +1029,7 @@ class ReaderPresenter(
         // SY <--
 
         launchIO {
-            downloadManager.enqueueDeleteChapters(listOf(chapter.chapter), manga)
+            downloadManager.enqueueDeleteChapters(listOf(chapter.chapter), manga.toDomainManga()!!)
         }
     }
 

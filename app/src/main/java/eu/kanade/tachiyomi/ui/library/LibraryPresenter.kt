@@ -19,7 +19,6 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.isLocal
-import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -205,7 +204,7 @@ class LibraryPresenter(
             val isDownloaded = when {
                 item.manga.toDomainManga()!!.isLocal() -> true
                 item.downloadCount != -1 -> item.downloadCount > 0
-                else -> downloadManager.getDownloadCount(item.manga) > 0
+                else -> downloadManager.getDownloadCount(item.manga.toDomainManga()!!) > 0
             }
 
             return@downloaded if (downloadedOnly || filterDownloaded == State.INCLUDE.value) isDownloaded
@@ -322,9 +321,9 @@ class LibraryPresenter(
                         item.manga.id?.let { mergeMangaId ->
                             runBlocking {
                                 getMergedMangaById.await(mergeMangaId)
-                            }.sumOf { downloadManager.getDownloadCount(it.toDbManga()) }
+                            }.sumOf { downloadManager.getDownloadCount(it) }
                         } ?: 0
-                    } else /* SY <-- */ downloadManager.getDownloadCount(item.manga)
+                    } else /* SY <-- */ downloadManager.getDownloadCount(item.manga.toDomainManga()!!)
                 } else {
                     // Unset download count if not enabled
                     -1
@@ -693,7 +692,7 @@ class LibraryPresenter(
                         .groupBy { it.manga_id!! }
                         .forEach ab@{ (mangaId, chapters) ->
                             val mergedManga = mergedMangas.firstOrNull { it.id == mangaId } ?: return@ab
-                            downloadManager.downloadChapters(mergedManga.toDbManga(), chapters)
+                            downloadManager.downloadChapters(mergedManga, chapters)
                         }
                 } else {
                     /* SY --> */
@@ -704,7 +703,7 @@ class LibraryPresenter(
                     } else /* SY <-- */ getChapterByMangaId.await(manga.id)
                         .filter { !it.read }
 
-                    downloadManager.downloadChapters(manga.toDbManga(), chapters.map { it.toDbChapter() })
+                    downloadManager.downloadChapters(manga, chapters.map { it.toDbChapter() })
                 }
             }
         }
@@ -782,9 +781,9 @@ class LibraryPresenter(
                 chapters.groupBy { it.mangaId }.forEach { (mangaId, chapters) ->
                     val mergedManga = mergedMangas.firstOrNull { it.id == mangaId } ?: return@forEach
                     val mergedMangaSource = sources.firstOrNull { it.id == mergedManga.source } ?: return@forEach
-                    downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, mergedManga.toDbManga(), mergedMangaSource)
+                    downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, mergedManga, mergedMangaSource)
                 }
-            } else /* SY <-- */ downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, manga.toDbManga(), source)
+            } else /* SY <-- */ downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, manga, source)
         }
     }
 
@@ -819,9 +818,9 @@ class LibraryPresenter(
                             val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
                             mergedMangas.forEach merge@{ mergedManga ->
                                 val mergedSource = sources.firstOrNull { mergedManga.source == it.id } as? HttpSource ?: return@merge
-                                downloadManager.deleteManga(mergedManga.toDbManga(), mergedSource)
+                                downloadManager.deleteManga(mergedManga, mergedSource)
                             }
-                        } else downloadManager.deleteManga(manga, source)
+                        } else downloadManager.deleteManga(manga.toDomainManga()!!, source)
                     }
                 }
             }

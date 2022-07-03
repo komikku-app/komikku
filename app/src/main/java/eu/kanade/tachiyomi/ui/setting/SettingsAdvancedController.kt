@@ -17,7 +17,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetAllManga
-import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -498,7 +497,7 @@ class SettingsAdvancedController(
                         mangaFolder.delete()
                     } else {
                         val chapterList = getChapterByMangaId.await(manga.id)
-                        foldersCleared += downloadManager.cleanupChapters(chapterList.map { it.toDbChapter() }, manga.toDbManga(), source, removeRead, removeNonFavorite)
+                        foldersCleared += downloadManager.cleanupChapters(chapterList.map { it.toDbChapter() }, manga, source, removeRead, removeNonFavorite)
                     }
                 }
             }

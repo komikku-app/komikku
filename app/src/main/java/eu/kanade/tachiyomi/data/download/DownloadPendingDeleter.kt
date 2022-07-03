@@ -2,8 +2,8 @@ package eu.kanade.tachiyomi.data.download
 
 import android.content.Context
 import androidx.core.content.edit
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -155,7 +155,7 @@ class DownloadPendingDeleter(context: Context) {
      * Returns a manga entry from a manga model.
      */
     private fun Manga.toEntry(): MangaEntry {
-        return MangaEntry(id!!, url, originalTitle, source)
+        return MangaEntry(id!!, url, /* SY --> */ ogTitle /* SY <-- */, source)
     }
 
     /**
@@ -169,9 +169,14 @@ class DownloadPendingDeleter(context: Context) {
      * Returns a manga model from a manga entry.
      */
     private fun MangaEntry.toModel(): Manga {
-        return Manga.create(url, title, source).also {
-            it.id = id
-        }
+        return Manga.create().copy(
+            url = url,
+            // SY -->
+            ogTitle = title,
+            // SY <--
+            source = source,
+            id = id,
+        )
     }
 
     /**

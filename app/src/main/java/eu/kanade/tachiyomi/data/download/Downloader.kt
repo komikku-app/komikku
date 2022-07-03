@@ -5,10 +5,10 @@ import android.webkit.MimeTypeMap
 import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.download.model.DownloadQueue
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
@@ -254,7 +254,7 @@ class Downloader(
         val chaptersWithoutDir = async {
             chapters
                 // Filter out those already downloaded.
-                .filter { provider.findChapterDir(it.name, it.scanlator, /* SY --> */ manga.originalTitle /* SY <-- */, source) == null }
+                .filter { provider.findChapterDir(it.name, it.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source) == null }
                 // Add chapters to queue from the start.
                 .sortedByDescending { it.source_order }
         }
@@ -305,7 +305,7 @@ class Downloader(
      * @param download the chapter to be downloaded.
      */
     private fun downloadChapter(download: Download): Observable<Download> = Observable.defer {
-        val mangaDir = provider.getMangaDir(/* SY --> */ download.manga.originalTitle /* SY <-- */, download.source)
+        val mangaDir = provider.getMangaDir(/* SY --> */ download.manga.ogTitle /* SY <-- */, download.source)
 
         val availSpace = DiskUtil.getAvailableStorageSpace(mangaDir)
         if (availSpace != -1L && availSpace < MIN_DISK_SPACE) {

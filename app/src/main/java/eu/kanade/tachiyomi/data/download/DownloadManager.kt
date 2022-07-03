@@ -4,9 +4,9 @@ import android.content.Context
 import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.data.download.model.DownloadQueue
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -168,7 +168,7 @@ class DownloadManager(
      * @return an observable containing the list of pages from the chapter.
      */
     fun buildPageList(source: Source, manga: Manga, chapter: Chapter): Observable<List<Page>> {
-        return buildPageList(provider.findChapterDir(chapter.name, chapter.scanlator, /* SY --> */ manga.originalTitle /* SY <-- */, source))
+        return buildPageList(provider.findChapterDir(chapter.name, chapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, source))
     }
 
     /**
@@ -315,7 +315,7 @@ class DownloadManager(
         var cleaned = 0
 
         if (removeNonFavorite && !manga.favorite) {
-            val mangaFolder = provider.getMangaDir(manga.originalTitle, source)
+            val mangaFolder = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)
             cleaned += 1 + mangaFolder.listFiles().orEmpty().size
             mangaFolder.delete()
             cache.removeManga(manga)
@@ -336,12 +336,12 @@ class DownloadManager(
         }
 
         if (cache.getDownloadCount(manga) == 0) {
-            val mangaFolder = provider.getMangaDir(manga.originalTitle, source)
+            val mangaFolder = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)
             if (!mangaFolder.listFiles().isNullOrEmpty()) {
                 mangaFolder.delete()
                 cache.removeManga(manga)
             } else {
-                xLogE("Cache and download folder doesn't match for " + manga.originalTitle)
+                xLogE("Cache and download folder doesn't match for " + /* SY --> */ manga.ogTitle /* SY <-- */)
             }
         }
         return cleaned
@@ -357,7 +357,7 @@ class DownloadManager(
     fun deleteManga(manga: Manga, source: Source) {
         launchIO {
             downloader.queue.remove(manga)
-            provider.findMangaDir(/* SY --> */ manga.originalTitle /* SY <-- */, source)?.delete()
+            provider.findMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)?.delete()
             cache.removeManga(manga)
         }
     }
@@ -393,7 +393,7 @@ class DownloadManager(
      */
     fun renameChapter(source: Source, manga: Manga, oldChapter: Chapter, newChapter: Chapter) {
         val oldNames = provider.getValidChapterDirNames(oldChapter.name, oldChapter.scanlator)
-        val mangaDir = provider.getMangaDir(/* SY --> */ manga.originalTitle /* SY <-- */, source)
+        val mangaDir = provider.getMangaDir(/* SY --> */ manga.ogTitle /* SY <-- */, source)
 
         // Assume there's only 1 version of the chapter name formats present
         val oldDownload = oldNames.asSequence()

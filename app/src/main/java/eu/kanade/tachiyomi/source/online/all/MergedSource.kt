@@ -7,7 +7,6 @@ import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.InsertManga
-import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.database.models.Chapter
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
@@ -199,7 +198,7 @@ class MergedSource : HttpSource() {
                                             syncChaptersWithSource.await(chapterList, loadedManga, source)
                                         if (ifDownloadNewChapters && reference.downloadChapters) {
                                             downloadManager.downloadChapters(
-                                                loadedManga.toDbManga(),
+                                                loadedManga,
                                                 results.first.map(DomainChapter::toDbChapter),
                                             )
                                         }

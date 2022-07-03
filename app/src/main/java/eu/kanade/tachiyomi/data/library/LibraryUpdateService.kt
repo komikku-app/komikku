@@ -513,7 +513,7 @@ class LibraryUpdateService(
             chapters.groupBy { it.manga_id }
                 .forEach {
                     downloadManager.downloadChapters(
-                        downloadingManga[it.key]?.toDbManga() ?: return@forEach,
+                        downloadingManga[it.key] ?: return@forEach,
                         chapters,
                         false,
                     )
@@ -522,7 +522,7 @@ class LibraryUpdateService(
             return
         }
         // SY <--
-        downloadManager.downloadChapters(manga, chapters, false)
+        downloadManager.downloadChapters(manga.toDomainManga()!!, chapters, false)
     }
 
     /**
