@@ -13,8 +13,9 @@ import eu.kanade.domain.category.interactor.UpdateCategory
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.category.model.CategoryUpdate
 import eu.kanade.domain.category.model.toDbCategory
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -216,7 +217,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             .filter { it == category.id }
             .subscribe {
                 adapter.currentItems.forEach { item ->
-                    controller.setSelection(item.manga, true)
+                    controller.setSelection(item.manga.toDomainManga()!!, true)
                 }
                 controller.invalidateActionMode()
             }
@@ -225,7 +226,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             .filter { it == category.id }
             .subscribe {
                 adapter.currentItems.forEach { item ->
-                    controller.toggleSelection(item.manga)
+                    controller.toggleSelection(item.manga.toDomainManga()!!)
                 }
                 controller.invalidateActionMode()
             }
@@ -290,7 +291,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
                 val position = adapter.indexOf(manga)
                 if (position != -1 && !adapter.isSelected(position)) {
                     adapter.toggleSelection(position)
-                    (recycler.findViewHolderForItemId(manga.id!!) as? LibraryHolder<*>)?.toggleActivation()
+                    (recycler.findViewHolderForItemId(manga.id) as? LibraryHolder<*>)?.toggleActivation()
                 }
             }
         }
@@ -349,7 +350,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         val position = adapter.indexOf(manga)
         if (position != -1) {
             adapter.toggleSelection(position)
-            (recycler.findViewHolderForItemId(manga.id!!) as? LibraryHolder<*>)?.toggleActivation()
+            (recycler.findViewHolderForItemId(manga.id) as? LibraryHolder<*>)?.toggleActivation()
         }
     }
 
@@ -371,7 +372,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
             toggleSelection(position)
             true
         } else {
-            openManga(item.manga)
+            openManga(item.manga.toDomainManga()!!)
             false
         }
     }
@@ -478,7 +479,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     private fun toggleSelection(position: Int) {
         val item = adapter.getItem(position) ?: return
 
-        controller.setSelection(item.manga, !adapter.isSelected(position))
+        controller.setSelection(item.manga.toDomainManga()!!, !adapter.isSelected(position))
         controller.invalidateActionMode()
     }
 
@@ -490,7 +491,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     private fun setSelection(position: Int) {
         val item = adapter.getItem(position) ?: return
 
-        controller.setSelection(item.manga, true)
+        controller.setSelection(item.manga.toDomainManga()!!, true)
         controller.invalidateActionMode()
     }
 }

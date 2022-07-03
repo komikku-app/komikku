@@ -657,10 +657,10 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    suspend fun getCommonCategories(mangas: List<DbManga>): Collection<Category> {
+    suspend fun getCommonCategories(mangas: List<Manga>): Collection<Category> {
         if (mangas.isEmpty()) return emptyList()
         return mangas.toSet()
-            .map { getCategories.await(it.id!!) }
+            .map { getCategories.await(it.id) }
             .reduce { set1, set2 -> set1.intersect(set2).toMutableList() }
     }
 
@@ -669,9 +669,9 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    suspend fun getMixCategories(mangas: List<DbManga>): Collection<Category> {
+    suspend fun getMixCategories(mangas: List<Manga>): Collection<Category> {
         if (mangas.isEmpty()) return emptyList()
-        val mangaCategories = mangas.toSet().map { getCategories.await(it.id!!) }
+        val mangaCategories = mangas.toSet().map { getCategories.await(it.id) }
         val common = mangaCategories.reduce { set1, set2 -> set1.intersect(set2).toMutableList() }
         return mangaCategories.flatten().distinct().subtract(common).toMutableList()
     }
@@ -681,14 +681,14 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    fun downloadUnreadChapters(mangas: List<DbManga>) {
+    fun downloadUnreadChapters(mangas: List<Manga>) {
         mangas.forEach { manga ->
             launchIO {
                 if (manga.source == MERGED_SOURCE_ID) {
                     val mergedSource = sourceManager.get(MERGED_SOURCE_ID) as MergedSource
-                    val mergedMangas = getMergedMangaById.await(manga.id!!)
+                    val mergedMangas = getMergedMangaById.await(manga.id)
                     mergedSource
-                        .getChaptersAsBlockingAsDbChapter(manga.id!!)
+                        .getChaptersAsBlockingAsDbChapter(manga.id)
                         .filter { !it.read }
                         .groupBy { it.manga_id!! }
                         .forEach ab@{ (mangaId, chapters) ->
@@ -698,20 +698,20 @@ class LibraryPresenter(
                 } else {
                     /* SY --> */
                     val chapters = if (manga.isEhBasedManga()) {
-                        getChapterByMangaId.await(manga.id!!).minByOrNull { it.sourceOrder }?.let { chapter ->
+                        getChapterByMangaId.await(manga.id).minByOrNull { it.sourceOrder }?.let { chapter ->
                             if (!chapter.read) listOf(chapter) else emptyList()
                         } ?: emptyList()
-                    } else /* SY <-- */ getChapterByMangaId.await(manga.id!!)
+                    } else /* SY <-- */ getChapterByMangaId.await(manga.id)
                         .filter { !it.read }
 
-                    downloadManager.downloadChapters(manga, chapters.map { it.toDbChapter() })
+                    downloadManager.downloadChapters(manga.toDbManga(), chapters.map { it.toDbChapter() })
                 }
             }
         }
     }
 
     // SY -->
-    fun cleanTitles(mangas: List<DbManga>) {
+    fun cleanTitles(mangas: List<Manga>) {
         mangas.forEach { manga ->
             val editedTitle = manga.title.replace("\\[.*?]".toRegex(), "").trim().replace("\\(.*?\\)".toRegex(), "").trim().replace("\\{.*?\\}".toRegex(), "").trim().let {
                 if (it.contains("|")) {
@@ -721,24 +721,21 @@ class LibraryPresenter(
                 }
             }
             if (manga.title == editedTitle) return@forEach
-            val mangaJson = manga.id?.let { mangaId ->
-                CustomMangaManager.MangaJson(
-                    mangaId,
-                    editedTitle.nullIfBlank(),
-                    manga.author.takeUnless { it == manga.originalAuthor },
-                    manga.artist.takeUnless { it == manga.originalArtist },
-                    manga.description.takeUnless { it == manga.originalDescription },
-                    manga.genre.takeUnless { it == manga.originalGenre }?.let { manga.getGenres() },
-                    manga.status.takeUnless { it == manga.originalStatus }?.toLong(),
-                )
-            }
-            if (mangaJson != null) {
-                customMangaManager.saveMangaInfo(mangaJson)
-            }
+            val mangaJson = CustomMangaManager.MangaJson(
+                id = manga.id,
+                title = editedTitle.nullIfBlank(),
+                author = manga.author.takeUnless { it == manga.ogAuthor },
+                artist = manga.artist.takeUnless { it == manga.ogArtist },
+                description = manga.description.takeUnless { it == manga.ogDescription },
+                genre = manga.genre.takeUnless { it == manga.ogGenre },
+                status = manga.status.takeUnless { it == manga.ogStatus }?.toLong(),
+            )
+
+            customMangaManager.saveMangaInfo(mangaJson)
         }
     }
 
-    fun syncMangaToDex(mangaList: List<DbManga>) {
+    fun syncMangaToDex(mangaList: List<Manga>) {
         launchIO {
             MdUtil.getEnabledMangaDex(preferences, sourceManager)?.let { mdex ->
                 mangaList.forEach {
@@ -754,10 +751,10 @@ class LibraryPresenter(
      *
      * @param mangas the list of manga.
      */
-    fun markReadStatus(mangas: List<DbManga>, read: Boolean) {
+    fun markReadStatus(mangas: List<Manga>, read: Boolean) {
         mangas.forEach { manga ->
             launchIO {
-                val chapters = if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(manga.id!!) else getChapterByMangaId.await(manga.id!!)
+                val chapters = if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(manga.id) else getChapterByMangaId.await(manga.id)
 
                 val toUpdate = chapters
                     .map { chapter ->
@@ -776,18 +773,18 @@ class LibraryPresenter(
         }
     }
 
-    private fun deleteChapters(manga: DbManga, chapters: List<Chapter>) {
+    private fun deleteChapters(manga: Manga, chapters: List<Chapter>) {
         sourceManager.get(manga.source)?.let { source ->
             // SY -->
             if (source is MergedSource) {
-                val mergedMangas = runBlocking { getMergedMangaById.await(manga.id!!) }
+                val mergedMangas = runBlocking { getMergedMangaById.await(manga.id) }
                 val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
                 chapters.groupBy { it.manga_id }.forEach { (mangaId, chapters) ->
                     val mergedManga = mergedMangas.firstOrNull { it.id == mangaId } ?: return@forEach
                     val mergedMangaSource = sources.firstOrNull { it.id == mergedManga.source } ?: return@forEach
                     downloadManager.deleteChapters(chapters, mergedManga.toDbManga(), mergedMangaSource)
                 }
-            } else /* SY <-- */ downloadManager.deleteChapters(chapters, manga, source)
+            } else /* SY <-- */ downloadManager.deleteChapters(chapters, manga.toDbManga(), source)
         }
     }
 

@@ -14,13 +14,11 @@ import com.elvishew.xlog.XLog
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
@@ -194,7 +192,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             )
 
             if (updatedManga.isNotEmpty()) {
-                updateNotifier.showUpdateNotifications(updatedManga.map { it.first.toDbManga() to it.second.map { it.toDbChapter() }.toTypedArray() })
+                updateNotifier.showUpdateNotifications(updatedManga)
             }
         }
     }

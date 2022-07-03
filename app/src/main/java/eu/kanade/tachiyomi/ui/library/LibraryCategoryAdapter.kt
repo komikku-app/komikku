@@ -4,9 +4,9 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetSearchTags
 import eu.kanade.domain.manga.interactor.GetSearchTitles
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
