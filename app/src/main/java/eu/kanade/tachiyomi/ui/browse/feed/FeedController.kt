@@ -91,7 +91,7 @@ open class FeedController :
 
     private fun addFeedSearch(source: CatalogueSource) {
         viewScope.launchUI {
-            val items = presenter.getSourceSavedSearches(source)
+            val items = presenter.getSourceSavedSearches(source.id)
             val itemsStrings = listOf(activity!!.getString(R.string.latest)) + items.map { it.name }
             var selectedIndex = 0
 

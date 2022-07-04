@@ -3,6 +3,8 @@ package eu.kanade.domain
 import eu.kanade.data.manga.FavoritesEntryRepositoryImpl
 import eu.kanade.data.manga.MangaMergeRepositoryImpl
 import eu.kanade.data.manga.MangaMetadataRepositoryImpl
+import eu.kanade.data.source.FeedSavedSearchRepositoryImpl
+import eu.kanade.data.source.SavedSearchRepositoryImpl
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.manga.interactor.DeleteByMergeId
@@ -19,6 +21,7 @@ import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedMangaForDownloading
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.GetSearchTags
 import eu.kanade.domain.manga.interactor.GetSearchTitles
 import eu.kanade.domain.manga.interactor.InsertFavoriteEntries
@@ -29,16 +32,32 @@ import eu.kanade.domain.manga.interactor.UpdateMergedSettings
 import eu.kanade.domain.manga.repository.FavoritesEntryRepository
 import eu.kanade.domain.manga.repository.MangaMergeRepository
 import eu.kanade.domain.manga.repository.MangaMetadataRepository
+import eu.kanade.domain.source.interactor.CountFeedSavedSearchBySourceId
+import eu.kanade.domain.source.interactor.CountFeedSavedSearchGlobal
+import eu.kanade.domain.source.interactor.DeleteFeedSavedSearchById
+import eu.kanade.domain.source.interactor.DeleteSavedSearchById
+import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.interactor.GetFeedSavedSearchBySourceId
+import eu.kanade.domain.source.interactor.GetFeedSavedSearchGlobal
+import eu.kanade.domain.source.interactor.GetSavedSearchById
+import eu.kanade.domain.source.interactor.GetSavedSearchBySourceId
+import eu.kanade.domain.source.interactor.GetSavedSearchBySourceIdFeed
+import eu.kanade.domain.source.interactor.GetSavedSearchGlobalFeed
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
+import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
+import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.interactor.ToggleSources
+import eu.kanade.domain.source.repository.FeedSavedSearchRepository
+import eu.kanade.domain.source.repository.SavedSearchRepository
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addFactory
 import uy.kohesive.injekt.api.addSingletonFactory
 import uy.kohesive.injekt.api.get
+import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
 class SYDomainModule : InjektModule {
 
@@ -53,11 +72,13 @@ class SYDomainModule : InjektModule {
         addFactory { GetMangaBySource(get()) }
         addFactory { DeleteChapters(get()) }
         addFactory { DeleteMangaById(get()) }
+        addFactory { FilterSerializer() }
 
         addSingletonFactory<MangaMetadataRepository> { MangaMetadataRepositoryImpl(get()) }
         addFactory { GetFlatMetadataById(get()) }
         addFactory { InsertFlatMetadata(get()) }
         addFactory { GetExhFavoriteMangaWithMetadata(get()) }
+        addFactory { GetSearchMetadata(get()) }
         addFactory { GetSearchTags(get()) }
         addFactory { GetSearchTitles(get()) }
         addFactory { GetIdsOfFavoriteMangaWithMetadata(get()) }
@@ -77,5 +98,22 @@ class SYDomainModule : InjektModule {
         addFactory { GetFavoriteEntries(get()) }
         addFactory { InsertFavoriteEntries(get()) }
         addFactory { DeleteFavoriteEntries(get()) }
+
+        addSingletonFactory<SavedSearchRepository> { SavedSearchRepositoryImpl(get()) }
+        addFactory { GetSavedSearchById(get()) }
+        addFactory { GetSavedSearchBySourceId(get()) }
+        addFactory { DeleteSavedSearchById(get()) }
+        addFactory { InsertSavedSearch(get()) }
+        addFactory { GetExhSavedSearch(get(), get(), get()) }
+
+        addSingletonFactory<FeedSavedSearchRepository> { FeedSavedSearchRepositoryImpl(get()) }
+        addFactory { InsertFeedSavedSearch(get()) }
+        addFactory { DeleteFeedSavedSearchById(get()) }
+        addFactory { GetFeedSavedSearchGlobal(get()) }
+        addFactory { GetFeedSavedSearchBySourceId(get()) }
+        addFactory { CountFeedSavedSearchGlobal(get()) }
+        addFactory { CountFeedSavedSearchBySourceId(get()) }
+        addFactory { GetSavedSearchGlobalFeed(get()) }
+        addFactory { GetSavedSearchBySourceIdFeed(get()) }
     }
 }

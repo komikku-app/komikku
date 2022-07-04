@@ -14,6 +14,8 @@ import eu.kanade.domain.manga.interactor.GetMangaBySource
 import eu.kanade.domain.manga.interactor.InsertMergedReference
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.MangaUpdate
+import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
+import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -40,6 +42,8 @@ import eu.kanade.tachiyomi.util.system.DeviceUtil
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.merged.sql.models.MergedMangaReference
+import exh.savedsearches.models.FeedSavedSearch
+import exh.savedsearches.models.SavedSearch
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.HBROWSE_SOURCE_ID
@@ -76,6 +80,8 @@ object EXHMigrations {
     private val updateChapter: UpdateChapter by injectLazy()
     private val deleteChapters: DeleteChapters by injectLazy()
     private val insertMergedReference: InsertMergedReference by injectLazy()
+    private val insertSavedSearch: InsertSavedSearch by injectLazy()
+    private val insertFeedSavedSearch: InsertFeedSavedSearch by injectLazy()
 
     /**
      * Performs a migration when the application is updated.
@@ -360,29 +366,32 @@ object EXHMigrations {
                 }
                 if (oldVersion under 31) {
                     runBlocking {
-                        handler.await(true) {
-                            prefs.getStringSet("eh_saved_searches", emptySet())?.forEach {
-                                kotlin.runCatching {
-                                    val content = Json.decodeFromString<JsonObject>(it.substringAfter(':'))
-                                    saved_searchQueries.insertSavedSearch(
-                                        _id = null,
-                                        source = it.substringBefore(':').toLongOrNull() ?: return@forEach,
-                                        name = content["name"]!!.jsonPrimitive.content,
-                                        query = content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
-                                        filters_json = Json.encodeToString(content["filters"]!!.jsonArray),
-                                    )
-                                }
-                            }
-                        }
-                        handler.await(true) {
-                            prefs.getStringSet("latest_tab_sources", emptySet())?.forEach {
-                                feed_saved_searchQueries.insertFeedSavedSearch(
-                                    _id = null,
-                                    source = it.toLong(),
-                                    saved_search = null,
-                                    global = true,
+                        val savedSearch = prefs.getStringSet("eh_saved_searches", emptySet())?.mapNotNull {
+                            runCatching {
+                                val content = Json.decodeFromString<JsonObject>(it.substringAfter(':'))
+                                SavedSearch(
+                                    id = -1,
+                                    source = it.substringBefore(':').toLongOrNull()
+                                        ?: return@runCatching null,
+                                    name = content["name"]!!.jsonPrimitive.content,
+                                    query = content["query"]!!.jsonPrimitive.contentOrNull?.nullIfBlank(),
+                                    filtersJson = Json.encodeToString(content["filters"]!!.jsonArray),
                                 )
-                            }
+                            }.getOrNull()
+                        }
+                        if (!savedSearch.isNullOrEmpty()) {
+                            insertSavedSearch.awaitAll(savedSearch)
+                        }
+                        val feedSavedSearch = prefs.getStringSet("latest_tab_sources", emptySet())?.map {
+                            FeedSavedSearch(
+                                id = -1,
+                                source = it.toLong(),
+                                savedSearch = null,
+                                global = true,
+                            )
+                        }
+                        if (!feedSavedSearch.isNullOrEmpty()) {
+                            insertFeedSavedSearch.awaitAll(feedSavedSearch)
                         }
                     }
                     prefs.edit(commit = true) {

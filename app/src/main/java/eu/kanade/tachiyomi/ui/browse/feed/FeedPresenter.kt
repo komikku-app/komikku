@@ -1,14 +1,17 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
 import android.os.Bundle
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.exh.feedSavedSearchMapper
-import eu.kanade.data.exh.savedSearchMapper
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaUpdate
+import eu.kanade.domain.source.interactor.CountFeedSavedSearchGlobal
+import eu.kanade.domain.source.interactor.DeleteFeedSavedSearchById
+import eu.kanade.domain.source.interactor.GetFeedSavedSearchGlobal
+import eu.kanade.domain.source.interactor.GetSavedSearchBySourceId
+import eu.kanade.domain.source.interactor.GetSavedSearchGlobalFeed
+import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.database.models.toMangaInfo
@@ -46,16 +49,20 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * Function calls should be done from here. UI calls should be done from the controller.
  *
  * @param sourceManager manages the different sources.
- * @param handler manages the database calls.
  * @param preferences manages the preference calls.
  */
 open class FeedPresenter(
     val sourceManager: SourceManager = Injekt.get(),
-    val handler: DatabaseHandler = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val insertManga: InsertManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
+    private val getFeedSavedSearchGlobal: GetFeedSavedSearchGlobal = Injekt.get(),
+    private val getSavedSearchGlobalFeed: GetSavedSearchGlobalFeed = Injekt.get(),
+    private val countFeedSavedSearchGlobal: CountFeedSavedSearchGlobal = Injekt.get(),
+    private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
+    private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
+    private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
 ) : BasePresenter<FeedController>() {
 
     /**
@@ -76,9 +83,9 @@ open class FeedPresenter(
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        handler.subscribeToList { feed_saved_searchQueries.selectAllGlobal() }
+        getFeedSavedSearchGlobal.subscribe()
             .onEach {
-                getFeed()
+                getFeed(it)
             }
             .launchIn(presenterScope)
     }
@@ -90,7 +97,7 @@ open class FeedPresenter(
     }
 
     suspend fun hasTooManyFeeds(): Boolean {
-        return handler.awaitOne { feed_saved_searchQueries.countGlobal() } > 10
+        return countFeedSavedSearchGlobal.await() > 10
     }
 
     fun getEnabledSources(): List<CatalogueSource> {
@@ -104,36 +111,33 @@ open class FeedPresenter(
         return list.sortedBy { it.id.toString() !in pinnedSources }
     }
 
-    suspend fun getSourceSavedSearches(source: CatalogueSource): List<SavedSearch> {
-        return handler.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
+    suspend fun getSourceSavedSearches(sourceId: Long): List<SavedSearch> {
+        return getSavedSearchBySourceId.await(sourceId)
     }
 
     fun createFeed(source: CatalogueSource, savedSearch: SavedSearch?) {
         launchIO {
-            handler.await {
-                feed_saved_searchQueries.insertFeedSavedSearch(
-                    _id = null,
+            insertFeedSavedSearch.await(
+                FeedSavedSearch(
+                    id = -1,
                     source = source.id,
-                    saved_search = savedSearch?.id,
+                    savedSearch = savedSearch?.id,
                     global = true,
-                )
-            }
+                ),
+            )
         }
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
         launchIO {
-            handler.await {
-                feed_saved_searchQueries.deleteById(feed.id ?: return@await)
-            }
+            deleteFeedSavedSearchById.await(feed.id)
         }
     }
 
-    private suspend fun getSourcesToGetFeed(): List<Pair<FeedSavedSearch, SavedSearch?>> {
-        val savedSearches = handler.awaitList {
-            feed_saved_searchQueries.selectGlobalFeedSavedSearch(savedSearchMapper)
-        }.associateBy { it.id }
-        return handler.awaitList { feed_saved_searchQueries.selectAllGlobal(feedSavedSearchMapper) }
+    private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<Pair<FeedSavedSearch, SavedSearch?>> {
+        val savedSearches = getSavedSearchGlobalFeed.await()
+            .associateBy { it.id }
+        return feedSavedSearch
             .map { it to savedSearches[it.savedSearch] }
     }
 
@@ -152,12 +156,12 @@ open class FeedPresenter(
     /**
      * Initiates get manga per feed.
      */
-    suspend fun getFeed() {
+    private suspend fun getFeed(feedSavedSearch: List<FeedSavedSearch>) {
         // Create image fetch subscription
         initializeFetchImageSubscription()
 
         // Create items with the initial state
-        val initialItems = getSourcesToGetFeed().map { (feed, savedSearch) ->
+        val initialItems = getSourcesToGetFeed(feedSavedSearch).map { (feed, savedSearch) ->
             createCatalogueSearchItem(
                 feed,
                 savedSearch,
@@ -168,7 +172,7 @@ open class FeedPresenter(
         var items = initialItems
 
         fetchSourcesSubscription?.unsubscribe()
-        fetchSourcesSubscription = Observable.from(getSourcesToGetFeed())
+        fetchSourcesSubscription = Observable.from(getSourcesToGetFeed(feedSavedSearch))
             .flatMap(
                 { (feed, savedSearch) ->
                     val source = sourceManager.get(feed.source) as? CatalogueSource

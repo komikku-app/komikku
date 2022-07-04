@@ -3,11 +3,11 @@ package exh.favorites
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.PowerManager
-import eu.kanade.data.AndroidDatabaseHandler
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
+import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
@@ -49,6 +49,7 @@ import kotlin.time.Duration.Companion.seconds
 // TODO only apply database changes after sync
 class FavoritesSyncHelper(val context: Context) {
     private val handler: DatabaseHandler by injectLazy()
+    private val getLibraryManga: GetLibraryManga by injectLazy()
     private val getCategories: GetCategories by injectLazy()
     private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
@@ -96,7 +97,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         // Validate library state
         status.value = FavoritesSyncStatus.Processing(context.getString(R.string.favorites_sync_verifying_library), context = context)
-        val libraryManga = handler.awaitList { (handler as AndroidDatabaseHandler).getLibraryQuery() }
+        val libraryManga = getLibraryManga.await()
         val seenManga = HashSet<Long>(libraryManga.size)
         libraryManga.forEach {
             if (!it.isEhBasedManga()) return@forEach

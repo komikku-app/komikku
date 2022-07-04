@@ -16,13 +16,13 @@ countGlobal:
 SELECT count(*) FROM feed_saved_search WHERE global = 1;
 
 selectBySource:
-SELECT * FROM feed_saved_search WHERE source = ? AND global = 0;
+SELECT * FROM feed_saved_search WHERE source = :sourceId AND global = 0;
 
-insertFeedSavedSearch:
-INSERT INTO feed_saved_search (_id, source, saved_search, global) VALUES (?, ?, ?, ?);
+insert:
+INSERT INTO feed_saved_search (source, saved_search, global) VALUES (:sourceId, :savedSearch, :global);
 
 deleteById:
-DELETE FROM feed_saved_search WHERE _id = ?;
+DELETE FROM feed_saved_search WHERE _id = :id;
 
 deleteAll:
 DELETE FROM feed_saved_search;
@@ -38,7 +38,7 @@ ON saved_search._id = M.saved_search;
 selectSourceFeedSavedSearch:
 SELECT saved_search.*
 FROM (
-    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = ?
+    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = :sourceId
 ) AS M
 JOIN saved_search
 ON saved_search._id = M.saved_search;
@@ -46,7 +46,10 @@ ON saved_search._id = M.saved_search;
 countSourceFeedSavedSearch:
 SELECT count(*)
 FROM (
-    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = ?
+    SELECT saved_search FROM feed_saved_search WHERE global = 0 AND source = :sourceId
 ) AS M
 JOIN saved_search
 ON saved_search._id = M.saved_search;
+
+selectLastInsertedRowId:
+SELECT last_insert_rowid();

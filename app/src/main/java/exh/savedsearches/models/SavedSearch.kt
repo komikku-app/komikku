@@ -2,17 +2,17 @@ package exh.savedsearches.models
 
 data class SavedSearch(
     // Tag identifier, unique
-    var id: Long?,
+    val id: Long,
 
     // The source the saved search is for
-    var source: Long,
+    val source: Long,
 
     // If false the manga will not grab chapter updates
-    var name: String,
+    val name: String,
 
     // The query if there is any
-    var query: String?,
+    val query: String?,
 
     // The filter list
-    var filtersJson: String?,
+    val filtersJson: String?,
 )

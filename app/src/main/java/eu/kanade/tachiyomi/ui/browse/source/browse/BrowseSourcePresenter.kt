@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.os.Bundle
 import eu.davidea.flexibleadapter.items.IFlexible
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.exh.savedSearchMapper
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
@@ -14,6 +12,9 @@ import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaUpdate
+import eu.kanade.domain.source.interactor.DeleteSavedSearchById
+import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -48,12 +49,9 @@ import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateItem
 import eu.kanade.tachiyomi.ui.browse.source.filter.TriStateSectionItem
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.logcat
-import exh.log.xLogE
-import exh.savedsearches.EXHSavedSearch
 import exh.savedsearches.models.SavedSearch
 import exh.source.isEhBasedSource
 import exh.util.nullIfBlank
@@ -90,7 +88,6 @@ open class BrowseSourcePresenter(
     private val savedSearch: Long? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
-    private val database: DatabaseHandler = Injekt.get(),
     private val prefs: PreferencesHelper = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -102,6 +99,11 @@ open class BrowseSourcePresenter(
     private val updateManga: UpdateManga = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
+    // SY -->
+    private val deleteSavedSearchById: DeleteSavedSearchById = Injekt.get(),
+    private val insertSavedSearch: InsertSavedSearch = Injekt.get(),
+    private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
+    // SY <--
 ) : BasePresenter<BrowseSourceController>() {
 
     /**
@@ -161,18 +163,12 @@ open class BrowseSourcePresenter(
         val savedSearchFilters = savedSearch
         val jsonFilters = filters
         if (savedSearchFilters != null) {
-            runCatching {
-                val savedSearch = runBlocking {
-                    database.awaitOneOrNull {
-                        saved_searchQueries.selectById(savedSearchFilters, savedSearchMapper)
-                    }
-                } ?: return@runCatching
-                query = savedSearch.query.orEmpty()
-                val filtersJson = savedSearch.filtersJson
-                    ?: return@runCatching
-                val filters = Json.decodeFromString<JsonArray>(filtersJson)
-                filterSerializer.deserialize(sourceFilters, filters)
-                appliedFilters = sourceFilters
+            val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { sourceFilters } }
+            if (savedSearch != null) {
+                query = savedSearch.query
+                if (savedSearch.filterList != null) {
+                    appliedFilters = savedSearch.filterList
+                }
             }
         } else if (jsonFilters != null) {
             runCatching {
@@ -182,8 +178,7 @@ open class BrowseSourcePresenter(
             }
         }
 
-        database.subscribeToList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }
-            .map { loadSearches(it) }
+        getExhSavedSearch.subscribe(source.id, source::getFilterList)
             .onEach {
                 withUIContext {
                     view?.setSavedSearches(it)
@@ -529,92 +524,28 @@ open class BrowseSourcePresenter(
     // EXH -->
     fun saveSearch(name: String, query: String, filterList: FilterList) {
         launchIO {
-            kotlin.runCatching {
-                database.await {
-                    saved_searchQueries.insertSavedSearch(
-                        _id = null,
-                        source = source.id,
-                        name = name.trim(),
-                        query = query.nullIfBlank(),
-                        filters_json = filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) },
-                    )
-                }
-            }
-        }
-    }
-
-    fun deleteSearch(searchId: Long) {
-        launchIO {
-            database.await { saved_searchQueries.deleteById(searchId) }
-        }
-    }
-
-    suspend fun loadSearch(searchId: Long): EXHSavedSearch? {
-        return withIOContext {
-            val search = database.awaitOneOrNull {
-                saved_searchQueries.selectById(searchId, savedSearchMapper)
-            } ?: return@withIOContext null
-            EXHSavedSearch(
-                id = search.id!!,
-                name = search.name,
-                query = search.query.orEmpty(),
-                filterList = runCatching {
-                    val originalFilters = source.getFilterList()
-                    filterSerializer.deserialize(
-                        filters = originalFilters,
-                        json = search.filtersJson
-                            ?.let { Json.decodeFromString<JsonArray>(it) }
-                            ?: return@runCatching null,
-                    )
-                    originalFilters
-                }.getOrNull(),
+            insertSavedSearch.await(
+                SavedSearch(
+                    id = -1,
+                    source = source.id,
+                    name = name.trim(),
+                    query = query.nullIfBlank(),
+                    filtersJson = runCatching { filterSerializer.serialize(filterList).ifEmpty { null }?.let { Json.encodeToString(it) } }.getOrNull(),
+                ),
             )
         }
     }
 
-    suspend fun loadSearches(searches: List<SavedSearch>? = null): List<EXHSavedSearch> {
-        return withIOContext {
-            (searches ?: (database.awaitList { saved_searchQueries.selectBySource(source.id, savedSearchMapper) }))
-                .map {
-                    val filtersJson = it.filtersJson ?: return@map EXHSavedSearch(
-                        id = it.id!!,
-                        name = it.name,
-                        query = it.query.orEmpty(),
-                        filterList = null,
-                    )
-                    val filters = try {
-                        Json.decodeFromString<JsonArray>(filtersJson)
-                    } catch (e: Exception) {
-                        xLogE("Failed to load saved search!", e)
-                        null
-                    } ?: return@map EXHSavedSearch(
-                        id = it.id!!,
-                        name = it.name,
-                        query = it.query.orEmpty(),
-                        filterList = null,
-                    )
-
-                    try {
-                        val originalFilters = source.getFilterList()
-                        filterSerializer.deserialize(originalFilters, filters)
-                        EXHSavedSearch(
-                            id = it.id!!,
-                            name = it.name,
-                            query = it.query.orEmpty(),
-                            filterList = originalFilters,
-                        )
-                    } catch (t: RuntimeException) {
-                        // Load failed
-                        xLogE("Failed to load saved search!", t)
-                        EXHSavedSearch(
-                            id = it.id!!,
-                            name = it.name,
-                            query = it.query.orEmpty(),
-                            filterList = null,
-                        )
-                    }
-                }
+    fun deleteSearch(savedSearchId: Long) {
+        launchIO {
+            deleteSavedSearchById.await(savedSearchId)
         }
     }
+
+    suspend fun loadSearch(searchId: Long) =
+        getExhSavedSearch.awaitOne(searchId, source::getFilterList)
+
+    suspend fun loadSearches() =
+        getExhSavedSearch.await(source.id, source::getFilterList)
     // EXH <--
 }

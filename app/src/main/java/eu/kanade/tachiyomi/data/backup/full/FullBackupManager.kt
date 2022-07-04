@@ -500,12 +500,11 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
             backupSavedSearches.filter { backupSavedSearch ->
                 currentSavedSearches.none { it.source == backupSavedSearch.source && it.name == backupSavedSearch.name }
             }.forEach {
-                saved_searchQueries.insertSavedSearch(
-                    _id = null,
+                saved_searchQueries.insert(
                     source = it.source,
                     name = it.name,
                     query = it.query.nullIfBlank(),
-                    filters_json = it.filterList.nullIfBlank()
+                    filtersJson = it.filterList.nullIfBlank()
                         ?.takeUnless { it == "[]" },
                 )
             }

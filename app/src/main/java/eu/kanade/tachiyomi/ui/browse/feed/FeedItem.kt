@@ -73,6 +73,6 @@ class FeedItem(
      * @return hashcode
      */
     override fun hashCode(): Int {
-        return feed.id!!.toInt()
+        return feed.id.toInt()
     }
 }
