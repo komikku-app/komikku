@@ -11,6 +11,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.webkit.MimeTypeMap
 import androidx.annotation.ColorInt
 import androidx.core.graphics.alpha
 import androidx.core.graphics.applyCanvas
@@ -57,6 +58,12 @@ object ImageUtil {
         } catch (e: Exception) {
         }
         return null
+    }
+
+    fun getExtensionFromMimeType(mime: String?): String {
+        return MimeTypeMap.getSingleton().getExtensionFromMimeType(mime)
+            ?: SUPPLEMENTARY_MIMETYPE_MAPPING[mime]
+            ?: "jpg"
     }
 
     fun isAnimatedAndSupported(stream: InputStream): Boolean {
@@ -395,6 +402,12 @@ object ImageUtil {
 
     private fun Int.isWhite(): Boolean =
         red + blue + green > 740
+
+    // Android doesn't include some mappings
+    private val SUPPLEMENTARY_MIMETYPE_MAPPING = mapOf(
+        // https://issuetracker.google.com/issues/182703810
+        "image/jxl" to "jxl",
+    )
 
     fun mergeBitmaps(
         imageBitmap: Bitmap,
