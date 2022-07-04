@@ -2,14 +2,13 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
 import android.view.MenuItem
 import eu.davidea.flexibleadapter.FlexibleAdapter
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.history.historyMapper
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
+import eu.kanade.domain.history.interactor.GetHistoryByMangaId
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.manga.interactor.GetManga
@@ -32,13 +31,13 @@ import uy.kohesive.injekt.injectLazy
 class MigrationProcessAdapter(
     val controller: MigrationListController,
 ) : FlexibleAdapter<MigrationProcessItem>(null, controller, true) {
-    private val handler: DatabaseHandler by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
     private val coverCache: CoverCache by injectLazy()
     private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val updateChapter: UpdateChapter by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
+    private val getHistoryByMangaId: GetHistoryByMangaId by injectLazy()
     private val upsertHistory: UpsertHistory by injectLazy()
     private val getCategories: GetCategories by injectLazy()
     private val setMangaCategories: SetMangaCategories by injectLazy()
@@ -139,7 +138,7 @@ class MigrationProcessAdapter(
             val maxChapterRead =
                 prevMangaChapters.filter(Chapter::read).maxOfOrNull(Chapter::chapterNumber)
             val dbChapters = getChapterByMangaId.await(manga.id)
-            val prevHistoryList = handler.awaitList { historyQueries.getHistoryByMangaId(prevManga.id, historyMapper) }
+            val prevHistoryList = getHistoryByMangaId.await(prevManga.id)
 
             val chapterUpdates = mutableListOf<ChapterUpdate>()
             val historyUpdates = mutableListOf<HistoryUpdate>()

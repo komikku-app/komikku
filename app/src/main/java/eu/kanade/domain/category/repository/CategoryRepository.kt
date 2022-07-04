@@ -14,8 +14,10 @@ interface CategoryRepository {
 
     fun getCategoriesByMangaIdAsFlow(mangaId: Long): Flow<List<Category>>
 
+    // SY -->
     @Throws(DuplicateNameException::class)
-    suspend fun insert(name: String, order: Long)
+    suspend fun insert(name: String, order: Long): Long
+    // SY <--
 
     @Throws(DuplicateNameException::class)
     suspend fun update(payload: CategoryUpdate)

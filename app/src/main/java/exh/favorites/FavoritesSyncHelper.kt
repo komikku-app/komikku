@@ -3,10 +3,12 @@ package exh.favorites
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.PowerManager
-import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.interactor.InsertCategory
 import eu.kanade.domain.category.interactor.SetMangaCategories
+import eu.kanade.domain.category.interactor.UpdateCategory
 import eu.kanade.domain.category.model.Category
+import eu.kanade.domain.category.model.CategoryUpdate
 import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -48,12 +50,13 @@ import kotlin.time.Duration.Companion.seconds
 
 // TODO only apply database changes after sync
 class FavoritesSyncHelper(val context: Context) {
-    private val handler: DatabaseHandler by injectLazy()
     private val getLibraryManga: GetLibraryManga by injectLazy()
     private val getCategories: GetCategories by injectLazy()
     private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val setMangaCategories: SetMangaCategories by injectLazy()
+    private val insertCategory: InsertCategory by injectLazy()
+    private val updateCategory: UpdateCategory by injectLazy()
 
     private val prefs: PreferencesHelper by injectLazy()
 
@@ -203,28 +206,25 @@ class FavoritesSyncHelper(val context: Context) {
     private suspend fun applyRemoteCategories(categories: List<String>) {
         val localCategories = getCategories.await()
 
-        val newLocalCategories = localCategories.toMutableList()
-
         categories.forEachIndexed { index, remote ->
             val local = localCategories.getOrElse(index) {
-                val newCategoryId = handler.awaitOne(true) {
-                    categoriesQueries.insert(remote, index.toLong(), 0L, emptyList())
-                    categoriesQueries.selectLastInsertedRowId()
+                when (val insertCategoryResult = insertCategory.await(remote, index.toLong())) {
+                    is InsertCategory.Result.Error -> throw insertCategoryResult.error
+                    is InsertCategory.Result.Success -> Category(insertCategoryResult.id, remote, index.toLong(), 0L, emptyList())
                 }
-                Category(newCategoryId, remote, index.toLong(), 0L, emptyList())
-                    .also { newLocalCategories += it }
             }
 
             // Ensure consistent ordering and naming
             if (local.name != remote || local.order != index.toLong()) {
-                handler.await {
-                    categoriesQueries.update(
-                        categoryId = local.id,
+                val result = updateCategory.await(
+                    CategoryUpdate(
+                        id = local.id,
                         order = index.toLong().takeIf { it != local.order },
                         name = remote.takeIf { it != local.name },
-                        flags = null,
-                        mangaOrder = null,
-                    )
+                    ),
+                )
+                if (result is UpdateCategory.Result.Error) {
+                    throw result.error
                 }
             }
         }

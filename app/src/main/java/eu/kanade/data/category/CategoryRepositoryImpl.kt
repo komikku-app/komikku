@@ -32,10 +32,11 @@ class CategoryRepositoryImpl(
         }
     }
 
+    // SY -->
     @Throws(DuplicateNameException::class)
-    override suspend fun insert(name: String, order: Long) {
+    override suspend fun insert(name: String, order: Long): Long {
         if (checkDuplicateName(name)) throw DuplicateNameException(name)
-        handler.await {
+        return handler.awaitOne(true) {
             categoriesQueries.insert(
                 name = name,
                 order = order,
@@ -44,8 +45,10 @@ class CategoryRepositoryImpl(
                 mangaOrder = emptyList(),
                 // SY <--
             )
+            categoriesQueries.selectLastInsertedRowId()
         }
     }
+    // SY <--
 
     @Throws(DuplicateNameException::class)
     override suspend fun update(payload: CategoryUpdate) {

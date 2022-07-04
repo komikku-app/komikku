@@ -6,7 +6,9 @@ import eu.kanade.data.manga.MangaMetadataRepositoryImpl
 import eu.kanade.data.source.FeedSavedSearchRepositoryImpl
 import eu.kanade.data.source.SavedSearchRepositoryImpl
 import eu.kanade.domain.chapter.interactor.DeleteChapters
+import eu.kanade.domain.chapter.interactor.GetChapterByUrl
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
+import eu.kanade.domain.history.interactor.GetHistoryByMangaId
 import eu.kanade.domain.manga.interactor.DeleteByMergeId
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.DeleteMangaById
@@ -73,6 +75,8 @@ class SYDomainModule : InjektModule {
         addFactory { DeleteChapters(get()) }
         addFactory { DeleteMangaById(get()) }
         addFactory { FilterSerializer() }
+        addFactory { GetHistoryByMangaId(get()) }
+        addFactory { GetChapterByUrl(get()) }
 
         addSingletonFactory<MangaMetadataRepository> { MangaMetadataRepositoryImpl(get()) }
         addFactory { GetFlatMetadataById(get()) }

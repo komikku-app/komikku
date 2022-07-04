@@ -1,15 +1,14 @@
 package exh.eh
 
 import android.content.Context
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.chapter.chapterMapper
-import eu.kanade.data.history.historyMapper
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
+import eu.kanade.domain.chapter.interactor.GetChapterByUrl
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.repository.ChapterRepository
+import eu.kanade.domain.history.interactor.GetHistoryByMangaId
 import eu.kanade.domain.history.interactor.RemoveHistoryById
 import eu.kanade.domain.history.interactor.UpsertHistory
 import eu.kanade.domain.history.model.History
@@ -35,7 +34,7 @@ class EHentaiUpdateHelper(context: Context) {
             File(context.filesDir, "exh-plt.maftable"),
             GalleryEntry.Serializer(),
         )
-    private val handler: DatabaseHandler by injectLazy()
+    private val getChapterByUrl: GetChapterByUrl by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
     private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
@@ -44,6 +43,7 @@ class EHentaiUpdateHelper(context: Context) {
     private val chapterRepository: ChapterRepository by injectLazy()
     private val upsertHistory: UpsertHistory by injectLazy()
     private val removeHistoryById: RemoveHistoryById by injectLazy()
+    private val getHistoryByMangaId: GetHistoryByMangaId by injectLazy()
 
     /**
      * @param chapters Cannot be an empty list!
@@ -55,8 +55,7 @@ class EHentaiUpdateHelper(context: Context) {
         val chainsFlow = flowOf(chapters)
             .map { chapterList ->
                 chapterList.flatMap { chapter ->
-                    handler.awaitList { chaptersQueries.getChapterByUrl(chapter.url, chapterMapper) }
-                        .map { it.mangaId }
+                    getChapterByUrl.await(chapter.url).map { it.mangaId }
                 }.distinct()
             }
             .map { mangaIds ->
@@ -70,7 +69,7 @@ class EHentaiUpdateHelper(context: Context) {
                                 getChapterByMangaId.await(mangaId)
                             }
                             val history = async(Dispatchers.IO) {
-                                handler.awaitList { historyQueries.getHistoryByMangaId(mangaId, historyMapper) }
+                                getHistoryByMangaId.await(mangaId)
                             }
                             ChapterChain(
                                 manga.await() ?: return@coroutineScope null,
@@ -139,8 +138,8 @@ class EHentaiUpdateHelper(context: Context) {
 
                 // Copy categories from all chains to accepted manga
 
-                val newCategories = rootsToMutate.flatMap {
-                    getCategories.await(it.manga.id).map { it.id }
+                val newCategories = rootsToMutate.flatMap { chapterChain ->
+                    getCategories.await(chapterChain.manga.id).map { it.id }
                 }.distinct()
                 rootsToMutate.forEach {
                     setMangaCategories.await(it.manga.id, newCategories)

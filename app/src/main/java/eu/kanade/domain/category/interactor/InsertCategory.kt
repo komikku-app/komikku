@@ -8,15 +8,19 @@ class InsertCategory(
 
     suspend fun await(name: String, order: Long): Result {
         return try {
-            categoryRepository.insert(name, order)
-            Result.Success
+            // SY -->
+            Result.Success(categoryRepository.insert(name, order))
+            // SY <--
         } catch (e: Exception) {
             Result.Error(e)
         }
     }
 
     sealed class Result {
-        object Success : Result()
+        // SY -->
+        data class Success(val id: Long) : Result()
+
+        // Sy <--
         data class Error(val error: Exception) : Result()
     }
 }

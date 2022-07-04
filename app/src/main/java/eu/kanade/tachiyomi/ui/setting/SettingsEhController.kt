@@ -14,9 +14,8 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.preference.PreferenceScreen
 import com.fredporciuncula.flow.preferences.Preference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.data.DatabaseHandler
-import eu.kanade.data.manga.mangaMapper
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
+import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
@@ -46,8 +45,6 @@ import exh.eh.EHentaiUpdaterStats
 import exh.favorites.FavoritesIntroDialog
 import exh.log.xLogD
 import exh.metadata.metadata.EHentaiSearchMetadata
-import exh.source.EH_SOURCE_ID
-import exh.source.EXH_SOURCE_ID
 import exh.uconfig.WarnConfigureDialogController
 import exh.ui.login.EhLoginActivity
 import exh.util.nullIfBlank
@@ -72,9 +69,9 @@ import kotlin.time.Duration.Companion.seconds
  */
 
 class SettingsEhController : SettingsController() {
-    private val handler: DatabaseHandler by injectLazy()
     private val getFlatMetadataById: GetFlatMetadataById by injectLazy()
     private val deleteFavoriteEntries: DeleteFavoriteEntries by injectLazy()
+    private val getExhFavoriteMangaWithMetadata: GetExhFavoriteMangaWithMetadata by injectLazy()
 
     fun Preference<*>.reconfigure(): Boolean {
         // Listen for change commit
@@ -475,8 +472,7 @@ class SettingsEhController : SettingsController() {
                                 context.getString(R.string.gallery_updater_stats_text, getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context), stats.updateCount, stats.possibleUpdates)
                             } else context.getString(R.string.gallery_updater_not_ran_yet)
 
-                            val allMeta = handler
-                                .awaitList { mangasQueries.getEhMangaWithMetadata(EH_SOURCE_ID, EXH_SOURCE_ID, mangaMapper) }
+                            val allMeta = getExhFavoriteMangaWithMetadata.await()
                                 .mapNotNull {
                                     getFlatMetadataById.await(it.id)
                                         ?.raise<EHentaiSearchMetadata>()

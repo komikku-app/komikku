@@ -5,6 +5,7 @@ import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.chapter.chapterMapper
 import eu.kanade.data.manga.mangaMapper
 import eu.kanade.domain.chapter.model.Chapter
+import eu.kanade.domain.history.model.History
 import eu.kanade.domain.history.model.HistoryUpdate
 import eu.kanade.domain.history.model.HistoryWithRelations
 import eu.kanade.domain.history.repository.HistoryRepository
@@ -109,4 +110,10 @@ class HistoryRepositoryImpl(
             logcat(LogPriority.ERROR, throwable = e)
         }
     }
+
+    // SY -->
+    override suspend fun getByMangaId(mangaId: Long): List<History> {
+        return handler.awaitList { historyQueries.getHistoryByMangaId(mangaId, historyMapper) }
+    }
+    // SY <--
 }
