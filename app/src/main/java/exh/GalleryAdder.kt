@@ -11,8 +11,6 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.MangaImpl
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
@@ -122,20 +120,18 @@ class GalleryAdder(
             // Use manga in DB if possible, otherwise, make a new manga
             var manga = getManga.await(cleanedMangaUrl, source.id)
                 ?: run {
-                    val newManga = MangaImpl().apply {
-                        this.url = realMangaUrl
-                        this.source = source.id
-                        this.id = -1
-                        this.title = "TODO"
-                    }
-                    newManga.id = -1
-                    insertManga.await(newManga.toDomainManga()!!)
+                    insertManga.await(
+                        Manga.create().copy(
+                            source = source.id,
+                            url = cleanedMangaUrl
+                        )
+                    )
                     getManga.await(cleanedMangaUrl, source.id)!!
                 }
 
             // Fetch and copy details
             val newManga = source.getMangaDetails(manga.toMangaInfo())
-            updateManga.awaitUpdateFromSource(manga, newManga, false, Injekt.get())
+            updateManga.awaitUpdateFromSource(manga, newManga, false)
             manga = getManga.await(manga.id)!!
 
             if (fav) {
