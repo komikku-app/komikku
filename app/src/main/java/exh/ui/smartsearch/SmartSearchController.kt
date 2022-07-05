@@ -43,7 +43,7 @@ class SmartSearchController(bundle: Bundle) : NucleusController<EhSmartSearchBin
         presenter.smartSearchFlow
             .onEach { results ->
                 if (results is SmartSearchPresenter.SearchResults.Found) {
-                    val transaction = MangaController(results.manga.id!!, true, smartSearchConfig).withFadeTransaction()
+                    val transaction = MangaController(results.manga.id, true, smartSearchConfig).withFadeTransaction()
                     router.replaceTopController(transaction)
                 } else {
                     if (results is SmartSearchPresenter.SearchResults.NotFound) {

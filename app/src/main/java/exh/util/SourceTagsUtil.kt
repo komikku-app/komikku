@@ -1,7 +1,6 @@
 package exh.util
 
 import android.graphics.Color
-import eu.kanade.tachiyomi.data.database.models.Manga
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -130,8 +129,4 @@ object SourceTagsUtil {
     private const val TAG_TYPE_DEFAULT = 1
 
     private val spaceRegex = "\\s".toRegex()
-}
-
-fun Manga.getRaisedTags(genres: List<String>? = getGenres()): List<RaisedTag>? = genres?.map {
-    SourceTagsUtil.parseTag(it)
 }

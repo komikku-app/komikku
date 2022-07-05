@@ -1,7 +1,7 @@
 package exh.ui.smartsearch
 
 import android.os.Bundle
-import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.util.lang.launchIO

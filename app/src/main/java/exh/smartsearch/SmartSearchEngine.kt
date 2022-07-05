@@ -2,8 +2,7 @@ package exh.smartsearch
 
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
-import eu.kanade.domain.manga.model.toDbManga
-import eu.kanade.tachiyomi.data.database.models.Manga
+import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -15,6 +14,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
+import eu.kanade.tachiyomi.data.database.models.Manga.Companion as DbManga
 
 class SmartSearchEngine(
     private val extraSearchParams: String? = null,
@@ -175,7 +175,7 @@ class SmartSearchEngine(
     suspend fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
         var localManga = getManga.await(sManga.url, sourceId)
         if (localManga == null) {
-            val newManga = Manga.create(sManga.url, sManga.title, sourceId)
+            val newManga = DbManga.create(sManga.url, sManga.title, sourceId)
             newManga.copyFrom(sManga)
             newManga.id = -1
             val result = run {
@@ -188,7 +188,7 @@ class SmartSearchEngine(
             // if it later becomes a favorite, updated title will go to db
             localManga = localManga.copy(ogTitle = sManga.title)
         }
-        return localManga?.toDbManga()!!
+        return localManga!!
     }
 
     companion object {

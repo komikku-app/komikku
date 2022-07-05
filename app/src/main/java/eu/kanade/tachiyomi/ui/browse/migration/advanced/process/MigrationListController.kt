@@ -22,7 +22,6 @@ import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationListControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -183,7 +182,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                                 val localManga = smartSearchEngine.networkToLocalManga(
                                                     searchResult,
                                                     source.id,
-                                                ).toDomainManga()!!
+                                                )
 
                                                 val chapters = if (source is EHentai) {
                                                     source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle)
@@ -220,7 +219,7 @@ class MigrationListController(bundle: Bundle? = null) :
                                     }
 
                                     if (searchResult != null) {
-                                        val localManga = smartSearchEngine.networkToLocalManga(searchResult, source.id).toDomainManga()!!
+                                        val localManga = smartSearchEngine.networkToLocalManga(searchResult, source.id)
                                         val chapters = try {
                                             if (source is EHentai) {
                                                 source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle)
@@ -357,7 +356,7 @@ class MigrationListController(bundle: Bundle? = null) :
         adapter?.notifyItemChanged(firstIndex)
         launchUI {
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
-                val localManga = smartSearchEngine.networkToLocalManga(manga.toDbManga(), source.id).toDomainManga()!!
+                val localManga = smartSearchEngine.networkToLocalManga(manga.toDbManga(), source.id)
                 try {
                     val chapters = source.getChapterList(localManga.toMangaInfo())
                         .map { it.toSChapter() }
