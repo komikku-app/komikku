@@ -32,7 +32,7 @@ data class Category(
         val default = { context: Context ->
             Category(
                 id = 0,
-                name = context.getString(R.string.default_category),
+                name = context.getString(R.string.label_default),
                 order = 0,
                 flags = 0,
                 mangaOrder = emptyList(),
