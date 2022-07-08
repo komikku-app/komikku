@@ -9,9 +9,9 @@ import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
+import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.chapter.model.ChapterUpdate
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
@@ -78,6 +78,7 @@ class LibraryPresenter(
     private val getTracks: GetTracks = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
     private val getChapterByMangaId: GetChapterByMangaId = Injekt.get(),
+    private val setReadStatus: SetReadStatus = Injekt.get(),
     private val updateChapter: UpdateChapter = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val setMangaCategories: SetMangaCategories = Injekt.get(),
@@ -753,37 +754,11 @@ class LibraryPresenter(
     fun markReadStatus(mangas: List<Manga>, read: Boolean) {
         mangas.forEach { manga ->
             launchIO {
-                val chapters = if (manga.source == MERGED_SOURCE_ID) getMergedChaptersByMangaId.await(manga.id) else getChapterByMangaId.await(manga.id)
-
-                val toUpdate = chapters
-                    .map { chapter ->
-                        ChapterUpdate(
-                            read = read,
-                            lastPageRead = if (read) 0 else null,
-                            id = chapter.id,
-                        )
-                    }
-                updateChapter.awaitAll(toUpdate)
-
-                if (read && preferences.removeAfterMarkedAsRead()) {
-                    deleteChapters(manga, chapters)
-                }
+                setReadStatus.await(
+                    manga = manga,
+                    read = read,
+                )
             }
-        }
-    }
-
-    private fun deleteChapters(manga: Manga, chapters: List<Chapter>) {
-        sourceManager.get(manga.source)?.let { source ->
-            // SY -->
-            if (source is MergedSource) {
-                val mergedMangas = runBlocking { getMergedMangaById.await(manga.id) }
-                val sources = mergedMangas.distinctBy { it.source }.map { sourceManager.getOrStub(it.source) }
-                chapters.groupBy { it.mangaId }.forEach { (mangaId, chapters) ->
-                    val mergedManga = mergedMangas.firstOrNull { it.id == mangaId } ?: return@forEach
-                    val mergedMangaSource = sources.firstOrNull { it.id == mergedManga.source } ?: return@forEach
-                    downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, mergedManga, mergedMangaSource)
-                }
-            } else /* SY <-- */ downloadManager.deleteChapters(chapters.map { it.toDbChapter() }, manga, source)
         }
     }
 
