@@ -83,219 +83,221 @@ import kotlin.math.roundToInt
 private val whitespaceLineRegex = Regex("[\\r\\n]{2,}", setOf(RegexOption.MULTILINE))
 
 @Composable
-fun MangaInfoHeader(
+fun MangaInfoBox(
     modifier: Modifier = Modifier,
     windowWidthSizeClass: WindowWidthSizeClass,
     appBarPadding: Dp,
     title: String,
     author: String?,
     artist: String?,
-    description: String?,
-    tagsProvider: () -> List<String>?,
     sourceName: String,
     isStubSource: Boolean,
     coverDataProvider: () -> Manga,
-    favorite: Boolean,
     status: Long,
+    onCoverClick: () -> Unit,
+    doSearch: (query: String, global: Boolean) -> Unit,
+) {
+    Box(modifier = modifier) {
+        // Backdrop
+        val backdropGradientColors = listOf(
+            Color.Transparent,
+            MaterialTheme.colorScheme.background,
+        )
+        AsyncImage(
+            model = coverDataProvider(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .matchParentSize()
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        brush = Brush.verticalGradient(colors = backdropGradientColors),
+                    )
+                }
+                .alpha(.2f),
+        )
+
+        // Manga & source info
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+            if (windowWidthSizeClass == WindowWidthSizeClass.Compact) {
+                MangaAndSourceTitlesSmall(
+                    appBarPadding = appBarPadding,
+                    coverDataProvider = coverDataProvider,
+                    onCoverClick = onCoverClick,
+                    title = title,
+                    context = LocalContext.current,
+                    doSearch = doSearch,
+                    author = author,
+                    artist = artist,
+                    status = status,
+                    sourceName = sourceName,
+                    isStubSource = isStubSource,
+                )
+            } else {
+                MangaAndSourceTitlesLarge(
+                    appBarPadding = appBarPadding,
+                    coverDataProvider = coverDataProvider,
+                    onCoverClick = onCoverClick,
+                    title = title,
+                    context = LocalContext.current,
+                    doSearch = doSearch,
+                    author = author,
+                    artist = artist,
+                    status = status,
+                    sourceName = sourceName,
+                    isStubSource = isStubSource,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MangaActionRow(
+    modifier: Modifier = Modifier,
+    favorite: Boolean,
     trackingCount: Int,
-    fromSource: Boolean,
     onAddToLibraryClicked: () -> Unit,
     onWebViewClicked: (() -> Unit)?,
     onTrackingClicked: (() -> Unit)?,
-    onMergeClicked: () -> Unit,
-    onTagClicked: (String) -> Unit,
     onEditCategory: (() -> Unit)?,
-    onCoverClick: () -> Unit,
-    doSearch: (query: String, global: Boolean) -> Unit,
-    onRecommendClicked: () -> Unit,
-    showRecommendsInOverflow: Boolean,
-    showMergeWithAnother: Boolean,
-    onMergeWithAnotherClicked: () -> Unit,
-    mangaMetadataHeader: (@Composable () -> Unit)?,
+    // SY -->
+    onMergeClicked: () -> Unit,
+    // SY <--
+) {
+    Row(modifier = modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
+        val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .38f)
+        MangaActionButton(
+            title = if (favorite) {
+                stringResource(R.string.in_library)
+            } else {
+                stringResource(R.string.add_to_library)
+            },
+            icon = if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            color = if (favorite) MaterialTheme.colorScheme.primary else defaultActionButtonColor,
+            onClick = onAddToLibraryClicked,
+            onLongClick = onEditCategory,
+        )
+        if (onTrackingClicked != null) {
+            MangaActionButton(
+                title = if (trackingCount == 0) {
+                    stringResource(R.string.manga_tracking_tab)
+                } else {
+                    quantityStringResource(id = R.plurals.num_trackers, quantity = trackingCount, trackingCount)
+                },
+                icon = if (trackingCount == 0) Icons.Default.Sync else Icons.Default.Done,
+                color = if (trackingCount == 0) defaultActionButtonColor else MaterialTheme.colorScheme.primary,
+                onClick = onTrackingClicked,
+            )
+        }
+        if (onWebViewClicked != null) {
+            MangaActionButton(
+                title = stringResource(R.string.action_web_view),
+                icon = Icons.Default.Public,
+                color = defaultActionButtonColor,
+                onClick = onWebViewClicked,
+            )
+        }
+        // SY -->
+        MangaActionButton(
+            title = stringResource(R.string.merge),
+            icon = Icons.Outlined.CallMerge,
+            color = defaultActionButtonColor,
+            onClick = onMergeClicked,
+        )
+        // SY <--
+    }
+}
+
+@Composable
+fun ExpandableMangaDescription(
+    modifier: Modifier = Modifier,
+    defaultExpandState: Boolean,
+    description: String?,
+    tagsProvider: () -> List<String>?,
+    onTagClicked: (String) -> Unit,
+    // SY -->
     searchMetadataChips: SearchMetadataChips?,
+    doSearch: (query: String, global: Boolean) -> Unit,
+    // SY <--
 ) {
     val context = LocalContext.current
     Column(modifier = modifier) {
-        Box {
-            // Backdrop
-            val backdropGradientColors = listOf(
-                Color.Transparent,
-                MaterialTheme.colorScheme.background,
-            )
-            AsyncImage(
-                model = coverDataProvider(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .matchParentSize()
-                    .drawWithContent {
-                        drawContent()
-                        drawRect(
-                            brush = Brush.verticalGradient(colors = backdropGradientColors),
-                        )
-                    }
-                    .alpha(.2f),
-            )
-
-            // Manga & source info
-            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-                if (windowWidthSizeClass == WindowWidthSizeClass.Compact) {
-                    MangaAndSourceTitlesSmall(
-                        appBarPadding = appBarPadding,
-                        coverDataProvider = coverDataProvider,
-                        onCoverClick = onCoverClick,
-                        title = title,
-                        context = context,
-                        doSearch = doSearch,
-                        author = author,
-                        artist = artist,
-                        status = status,
-                        sourceName = sourceName,
-                        isStubSource = isStubSource,
-                    )
-                } else {
-                    MangaAndSourceTitlesLarge(
-                        appBarPadding = appBarPadding,
-                        coverDataProvider = coverDataProvider,
-                        onCoverClick = onCoverClick,
-                        title = title,
-                        context = context,
-                        doSearch = doSearch,
-                        author = author,
-                        artist = artist,
-                        status = status,
-                        sourceName = sourceName,
-                        isStubSource = isStubSource,
-                    )
-                }
-            }
+        val (expanded, onExpanded) = rememberSaveable {
+            mutableStateOf(defaultExpandState)
         }
-
-        // Action buttons
-        Row(modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
-            val defaultActionButtonColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .38f)
-            MangaActionButton(
-                title = if (favorite) {
-                    stringResource(R.string.in_library)
-                } else {
-                    stringResource(R.string.add_to_library)
-                },
-                icon = if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                color = if (favorite) MaterialTheme.colorScheme.primary else defaultActionButtonColor,
-                onClick = onAddToLibraryClicked,
-                onLongClick = onEditCategory,
-            )
-            if (onTrackingClicked != null) {
-                MangaActionButton(
-                    title = if (trackingCount == 0) {
-                        stringResource(R.string.manga_tracking_tab)
-                    } else {
-                        quantityStringResource(id = R.plurals.num_trackers, quantity = trackingCount, trackingCount)
-                    },
-                    icon = if (trackingCount == 0) Icons.Default.Sync else Icons.Default.Done,
-                    color = if (trackingCount == 0) defaultActionButtonColor else MaterialTheme.colorScheme.primary,
-                    onClick = onTrackingClicked,
-                )
-            }
-            if (onWebViewClicked != null) {
-                MangaActionButton(
-                    title = stringResource(R.string.action_web_view),
-                    icon = Icons.Default.Public,
-                    color = defaultActionButtonColor,
-                    onClick = onWebViewClicked,
-                )
-            }
-            MangaActionButton(
-                title = stringResource(R.string.merge),
-                icon = Icons.Outlined.CallMerge,
-                color = defaultActionButtonColor,
-                onClick = onMergeClicked,
-            )
+        val desc =
+            description.takeIf { !it.isNullOrBlank() } ?: stringResource(id = R.string.description_placeholder)
+        val trimmedDescription = remember(desc) {
+            desc
+                .replace(whitespaceLineRegex, "\n")
+                .trimEnd()
         }
-
-        // SY --> Manga metadata
-        mangaMetadataHeader?.invoke()
-        // SY <--
-
-        // Expandable description-tags
-        Column {
-            val (expanded, onExpanded) = rememberSaveable {
-                mutableStateOf(fromSource || windowWidthSizeClass != WindowWidthSizeClass.Compact)
-            }
-            val desc =
-                description.takeIf { !it.isNullOrBlank() } ?: stringResource(id = R.string.description_placeholder)
-            val trimmedDescription = remember(desc) {
-                desc
-                    .replace(whitespaceLineRegex, "\n")
-                    .trimEnd()
-            }
-            MangaSummary(
-                expandedDescription = desc,
-                shrunkDescription = trimmedDescription,
-                expanded = expanded,
+        MangaSummary(
+            expandedDescription = desc,
+            shrunkDescription = trimmedDescription,
+            expanded = expanded,
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .padding(horizontal = 16.dp)
+                .clickableNoIndication(
+                    onLongClick = { context.copyToClipboard(desc, desc) },
+                    onClick = { onExpanded(!expanded) },
+                ),
+        )
+        val tags = tagsProvider()
+        if (!tags.isNullOrEmpty()) {
+            Box(
                 modifier = Modifier
                     .padding(top = 8.dp)
-                    .padding(horizontal = 16.dp)
-                    .clickableNoIndication(
-                        onLongClick = { context.copyToClipboard(desc, desc) },
-                        onClick = { onExpanded(!expanded) },
-                    ),
-            )
-            val tags = tagsProvider()
-            if (!tags.isNullOrEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .padding(vertical = 12.dp)
-                        .animateContentSize(),
-                ) {
-                    if (expanded) {
-                        if (searchMetadataChips != null) {
-                            NamespaceTags(
-                                tags = searchMetadataChips,
-                                onClick = onTagClicked,
-                                onLongClick = { doSearch(it, true) },
-                            )
-                        } else {
-                            FlowRow(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                mainAxisSpacing = 4.dp,
-                                crossAxisSpacing = 8.dp,
-                            ) {
-                                tags.forEach {
-                                    TagsChip(
-                                        text = it,
-                                        onClick = { onTagClicked(it) },
-                                        onLongClick = { doSearch(it, true) },
-                                    )
-                                }
-                            }
-                        }
+                    .padding(vertical = 12.dp)
+                    .animateContentSize(),
+            ) {
+                if (expanded) {
+                    // SY -->
+                    if (searchMetadataChips != null) {
+                        NamespaceTags(
+                            tags = searchMetadataChips,
+                            onClick = onTagClicked,
+                            onLongClick = { doSearch(it, true) },
+                        )
                     } else {
-                        LazyRow(
-                            contentPadding = PaddingValues(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        // SY <--
+                        FlowRow(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            mainAxisSpacing = 4.dp,
+                            crossAxisSpacing = 8.dp,
                         ) {
-                            items(items = tags) {
+                            tags.forEach {
                                 TagsChip(
                                     text = it,
                                     onClick = { onTagClicked(it) },
+                                    // SY -->
                                     onLongClick = { doSearch(it, true) },
+                                    // SY <--
                                 )
                             }
                         }
                     }
+                } else {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        items(items = tags) {
+                            TagsChip(
+                                text = it,
+                                onClick = { onTagClicked(it) },
+                                // SY -->
+                                onLongClick = { doSearch(it, true) },
+                                // SY <--
+                            )
+                        }
+                    }
                 }
             }
         }
-        // SY -->
-        MangaInfoButtons(
-            showRecommendsButton = !showRecommendsInOverflow,
-            showMergeWithAnotherButton = showMergeWithAnother,
-            onRecommendClicked = onRecommendClicked,
-            onMergeWithAnotherClicked = onMergeWithAnotherClicked,
-        )
-        // SY <--
     }
 }
 

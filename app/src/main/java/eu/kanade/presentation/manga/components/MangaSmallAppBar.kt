@@ -54,12 +54,14 @@ fun MangaSmallAppBar(
     onDownloadClicked: ((DownloadAction) -> Unit)?,
     onEditCategoryClicked: (() -> Unit)?,
     onMigrateClicked: (() -> Unit)?,
+    // SY -->
     showEditInfo: Boolean,
     onEditInfoClicked: () -> Unit,
     showRecommends: Boolean,
     onRecommendClicked: () -> Unit,
     showMergeSettings: Boolean,
     onMergedSettingsClicked: () -> Unit,
+    // SY <--
     // For action mode
     actionModeCounter: Int,
     onSelectAll: () -> Unit,

@@ -306,6 +306,7 @@ class MangaPresenter(
                                     mergedData = mergedData,
                                     showRecommendationsInOverflow = preferences.recommendsInOverflow().get(),
                                     showMergeWithAnother = smartSearched,
+                                    alwaysShowPageProgress = preferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                                 )
                             }
 
@@ -1333,6 +1334,7 @@ sealed class MangaScreenState {
         val mergedData: MergedMangaData?,
         val showRecommendationsInOverflow: Boolean,
         val showMergeWithAnother: Boolean,
+        val alwaysShowPageProgress: Boolean,
         // SY <--
     ) : MangaScreenState() {
 
