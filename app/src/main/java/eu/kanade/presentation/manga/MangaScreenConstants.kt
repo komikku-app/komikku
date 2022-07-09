@@ -20,3 +20,21 @@ enum class EditCoverAction {
     EDIT,
     DELETE,
 }
+
+enum class MangaScreenItem {
+    INFO_BOX,
+    ACTION_ROW,
+
+    // SY -->
+    METADATA_INFO,
+
+    // SY <--
+    DESCRIPTION_WITH_TAG,
+
+    // SY -->
+    INFO_BUTTONS,
+
+    // SY <--
+    CHAPTER_HEADER,
+    CHAPTER,
+}

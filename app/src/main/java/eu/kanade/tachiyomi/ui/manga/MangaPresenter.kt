@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga
 
+import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.Immutable
@@ -60,6 +61,7 @@ import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.asImmediateFlow
 import eu.kanade.tachiyomi.util.removeCovers
@@ -80,7 +82,6 @@ import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.source.isEhBasedManga
-import exh.source.isEhBasedSource
 import exh.source.mangaDexSourceIds
 import exh.util.nullIfEmpty
 import exh.util.trimOrNull
@@ -110,6 +111,9 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.text.DateFormat
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Date
 import eu.kanade.domain.chapter.model.Chapter as DomainChapter
 import eu.kanade.domain.manga.model.Manga as DomainManga
 import eu.kanade.tachiyomi.data.database.models.Manga.Companion as DbManga
@@ -284,7 +288,20 @@ class MangaPresenter(
                 }
                 // SY <--
                 .collectLatest { (manga, chapters, flatMetadata, mergedData) ->
-                    val chapterItems = chapters.toChapterItems(manga, mergedData)
+                    val chapterItems = chapters.toChapterItems(
+                        context = view?.activity ?: Injekt.get<Application>(),
+                        manga = manga,
+                        // SY -->
+                        dateRelativeTime = if (manga.isEhBasedManga()) 0 else preferences.relativeTime().get(),
+                        dateFormat = if (manga.isEhBasedManga()) {
+                            MetadataUtil.EX_DATE_FORMAT
+                        } else {
+                            preferences.dateFormat()
+                        },
+                        mergedData = mergedData,
+                        alwaysShowReadingProgress = preferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
+                        // SY <--
+                    )
                     _state.update { currentState ->
                         when (currentState) {
                             // Initialize success state
@@ -293,12 +310,6 @@ class MangaPresenter(
                                 MangaScreenState.Success(
                                     manga = manga,
                                     source = source,
-                                    dateRelativeTime = if (source.isEhBasedSource()) 0 else preferences.relativeTime().get(),
-                                    dateFormat = if (source.isEhBasedSource()) {
-                                        MetadataUtil.EX_DATE_FORMAT
-                                    } else {
-                                        preferences.dateFormat()
-                                    },
                                     isFromSource = isFromSource,
                                     trackingAvailable = trackManager.hasLoggedServices(),
                                     chapters = chapterItems,
@@ -306,7 +317,6 @@ class MangaPresenter(
                                     mergedData = mergedData,
                                     showRecommendationsInOverflow = preferences.recommendsInOverflow().get(),
                                     showMergeWithAnother = smartSearched,
-                                    alwaysShowPageProgress = preferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                                 )
                             }
 
@@ -818,7 +828,14 @@ class MangaPresenter(
         }
     }
 
-    private fun List<DomainChapter>.toChapterItems(manga: DomainManga, mergedData: MergedMangaData?): List<ChapterItem> {
+    private fun List<DomainChapter>.toChapterItems(
+        context: Context,
+        manga: DomainManga,
+        dateRelativeTime: Int,
+        dateFormat: DateFormat,
+        mergedData: MergedMangaData?,
+        alwaysShowReadingProgress: Boolean,
+    ): List<ChapterItem> {
         return map { chapter ->
             val activeDownload = downloadManager.queue.find { chapter.id == it.chapter.id }
             val chapter = chapter.let { if (mergedData != null) it.toMergedDownloadedChapter() else it }
@@ -840,6 +857,29 @@ class MangaPresenter(
                 chapter = chapter,
                 downloadState = downloadState,
                 downloadProgress = activeDownload?.progress ?: 0,
+                chapterTitleString = if (manga.displayMode == DomainManga.CHAPTER_DISPLAY_NUMBER) {
+                    context.getString(
+                        R.string.display_mode_chapter,
+                        chapterDecimalFormat.format(chapter.chapterNumber.toDouble()),
+                    )
+                } else {
+                    chapter.name
+                },
+                dateUploadString = chapter.dateUpload
+                    .takeIf { it > 0 }
+                    ?.let {
+                        Date(it).toRelativeString(
+                            context,
+                            dateRelativeTime,
+                            dateFormat,
+                        )
+                    },
+                readProgressString = chapter.lastPageRead.takeIf { /* SY --> */(!chapter.read || alwaysShowReadingProgress)/* SY <-- */ && it > 0 }?.let {
+                    context.getString(
+                        R.string.chapter_progress,
+                        it + 1,
+                    )
+                },
             )
         }
     }
@@ -1319,8 +1359,6 @@ sealed class MangaScreenState {
     data class Success(
         val manga: DomainManga,
         val source: Source,
-        val dateRelativeTime: Int,
-        val dateFormat: DateFormat,
         val isFromSource: Boolean,
         val chapters: List<ChapterItem>,
         val trackingAvailable: Boolean = false,
@@ -1334,7 +1372,6 @@ sealed class MangaScreenState {
         val mergedData: MergedMangaData?,
         val showRecommendationsInOverflow: Boolean,
         val showMergeWithAnother: Boolean,
-        val alwaysShowPageProgress: Boolean,
         // SY <--
     ) : MangaScreenState() {
 
@@ -1386,6 +1423,16 @@ data class ChapterItem(
     val chapter: DomainChapter,
     val downloadState: Download.State,
     val downloadProgress: Int,
+
+    val chapterTitleString: String,
+    val dateUploadString: String?,
+    val readProgressString: String?,
 ) {
     val isDownloaded = downloadState == Download.State.DOWNLOADED
 }
+
+private val chapterDecimalFormat = DecimalFormat(
+    "#.###",
+    DecimalFormatSymbols()
+        .apply { decimalSeparator = '.' },
+)

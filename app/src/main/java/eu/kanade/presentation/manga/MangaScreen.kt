@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -52,7 +51,6 @@ import androidx.compose.ui.res.stringResource
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import eu.kanade.domain.chapter.model.Chapter
-import eu.kanade.domain.manga.model.Manga.Companion.CHAPTER_DISPLAY_NUMBER
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.SwipeRefreshIndicator
@@ -76,18 +74,8 @@ import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
-import eu.kanade.tachiyomi.util.lang.toRelativeString
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.util.Date
-
-private val chapterDecimalFormat = DecimalFormat(
-    "#.###",
-    DecimalFormatSymbols()
-        .apply { decimalSeparator = '.' },
-)
 
 @Composable
 fun MangaScreen(
@@ -361,7 +349,10 @@ private fun MangaScreenSmallImpl(
                     state = chapterListState,
                     contentPadding = noTopContentPadding,
                 ) {
-                    item(contentType = "info_box") {
+                    item(
+                        key = MangaScreenItem.INFO_BOX,
+                        contentType = MangaScreenItem.INFO_BOX,
+                    ) {
                         MangaInfoBox(
                             windowWidthSizeClass = WindowWidthSizeClass.Compact,
                             appBarPadding = topPadding,
@@ -377,7 +368,10 @@ private fun MangaScreenSmallImpl(
                         )
                     }
 
-                    item(contentType = "action_row") {
+                    item(
+                        key = MangaScreenItem.ACTION_ROW,
+                        contentType = MangaScreenItem.ACTION_ROW,
+                    ) {
                         MangaActionRow(
                             favorite = state.manga.favorite,
                             trackingCount = state.trackingCount,
@@ -393,7 +387,10 @@ private fun MangaScreenSmallImpl(
 
                     // SY -->
                     if (metadataSource != null) {
-                        item(contentType = "metadata_info") {
+                        item(
+                            key = MangaScreenItem.METADATA_INFO,
+                            contentType = MangaScreenItem.METADATA_INFO,
+                        ) {
                             metadataSource.DescriptionComposable(
                                 state = state,
                                 openMetadataViewer = onMetadataViewerClicked,
@@ -403,7 +400,10 @@ private fun MangaScreenSmallImpl(
                     }
                     // SY <--
 
-                    item(contentType = "desc") {
+                    item(
+                        key = MangaScreenItem.DESCRIPTION_WITH_TAG,
+                        contentType = MangaScreenItem.DESCRIPTION_WITH_TAG,
+                    ) {
                         ExpandableMangaDescription(
                             defaultExpandState = state.isFromSource,
                             description = state.manga.description,
@@ -420,7 +420,10 @@ private fun MangaScreenSmallImpl(
 
                     // SY -->
                     if (!state.showRecommendationsInOverflow || state.showMergeWithAnother) {
-                        item(contentType = "info_buttons") {
+                        item(
+                            key = MangaScreenItem.INFO_BUTTONS,
+                            contentType = MangaScreenItem.INFO_BUTTONS,
+                        ) {
                             MangaInfoButtons(
                                 showRecommendsButton = !state.showRecommendationsInOverflow,
                                 showMergeWithAnotherButton = state.showMergeWithAnother,
@@ -431,7 +434,10 @@ private fun MangaScreenSmallImpl(
                     }
                     // SY <--
 
-                    item(contentType = "header") {
+                    item(
+                        key = MangaScreenItem.CHAPTER_HEADER,
+                        contentType = MangaScreenItem.CHAPTER_HEADER,
+                    ) {
                         ChapterHeader(
                             chapterCount = chapters.size,
                             isChapterFiltered = state.manga.chaptersFiltered(),
@@ -441,7 +447,6 @@ private fun MangaScreenSmallImpl(
 
                     sharedChapterItems(
                         chapters = chapters,
-                        state = state,
                         selected = selected,
                         selectedPositions = selectedPositions,
                         onChapterClicked = onChapterClicked,
@@ -680,7 +685,10 @@ fun MangaScreenLargeImpl(
                         state = chapterListState,
                         contentPadding = withNavBarContentPadding,
                     ) {
-                        item(contentType = "header") {
+                        item(
+                            key = MangaScreenItem.CHAPTER_HEADER,
+                            contentType = MangaScreenItem.CHAPTER_HEADER,
+                        ) {
                             ChapterHeader(
                                 chapterCount = chapters.size,
                                 isChapterFiltered = state.manga.chaptersFiltered(),
@@ -690,7 +698,6 @@ fun MangaScreenLargeImpl(
 
                         sharedChapterItems(
                             chapters = chapters,
-                            state = state,
                             selected = selected,
                             selectedPositions = selectedPositions,
                             onChapterClicked = onChapterClicked,
@@ -753,56 +760,27 @@ private fun SharedMangaBottomActionMenu(
 
 private fun LazyListScope.sharedChapterItems(
     chapters: List<ChapterItem>,
-    state: MangaScreenState.Success,
     selected: SnapshotStateList<ChapterItem>,
     selectedPositions: Array<Int>,
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterItem>, ChapterDownloadAction) -> Unit)?,
 ) {
-    items(items = chapters) { chapterItem ->
-        val context = LocalContext.current
+    items(
+        items = chapters,
+        key = { it.chapter.id },
+        contentType = { MangaScreenItem.CHAPTER },
+    ) { chapterItem ->
         val haptic = LocalHapticFeedback.current
-
-        val (chapter, downloadState, downloadProgress) = chapterItem
-        val chapterTitle = if (state.manga.displayMode == CHAPTER_DISPLAY_NUMBER) {
-            stringResource(
-                id = R.string.display_mode_chapter,
-                chapterDecimalFormat.format(chapter.chapterNumber.toDouble()),
-            )
-        } else {
-            chapter.name
-        }
-        val date = remember(chapter.dateUpload) {
-            chapter.dateUpload
-                .takeIf { it > 0 }
-                ?.let {
-                    Date(it).toRelativeString(
-                        context,
-                        state.dateRelativeTime,
-                        state.dateFormat,
-                    )
-                }
-        }
-        val lastPageRead = remember(chapter.lastPageRead) {
-            chapter.lastPageRead.takeIf { /* SY --> */(!chapter.read || state.alwaysShowPageProgress)/* SY <-- */ && it > 0 }
-        }
-        val scanlator = remember(chapter.scanlator) { chapter.scanlator.takeIf { !it.isNullOrBlank() } }
-
         MangaChapterListItem(
-            title = chapterTitle,
-            date = date,
-            readProgress = lastPageRead?.let {
-                stringResource(
-                    id = R.string.chapter_progress,
-                    it + 1,
-                )
-            },
-            scanlator = scanlator,
-            read = chapter.read,
-            bookmark = chapter.bookmark,
+            title = chapterItem.chapterTitleString,
+            date = chapterItem.dateUploadString,
+            readProgress = chapterItem.readProgressString,
+            scanlator = chapterItem.chapter.scanlator.takeIf { !it.isNullOrBlank() },
+            read = chapterItem.chapter.read,
+            bookmark = chapterItem.chapter.bookmark,
             selected = selected.contains(chapterItem),
-            downloadStateProvider = { downloadState },
-            downloadProgressProvider = { downloadProgress },
+            downloadStateProvider = { chapterItem.downloadState },
+            downloadProgressProvider = { chapterItem.downloadProgress },
             onLongClick = {
                 val dispatched = onChapterItemLongClick(
                     chapterItem = chapterItem,
