@@ -436,7 +436,10 @@ class MainActivity : BaseActivity() {
     private fun setUnreadUpdatesBadge() {
         val updates = if (preferences.showUpdatesNavBadge().get()) preferences.unreadUpdatesCount().get() else 0
         if (updates > 0) {
-            nav.getOrCreateBadge(R.id.nav_updates).number = updates
+            nav.getOrCreateBadge(R.id.nav_updates).apply {
+                number = updates
+                setContentDescriptionQuantityStringsResource(R.plurals.notification_chapters_generic)
+            }
         } else {
             nav.removeBadge(R.id.nav_updates)
         }
@@ -445,7 +448,10 @@ class MainActivity : BaseActivity() {
     private fun setExtensionsBadge() {
         val updates = preferences.extensionUpdatesCount().get()
         if (updates > 0) {
-            nav.getOrCreateBadge(R.id.nav_browse).number = updates
+            nav.getOrCreateBadge(R.id.nav_browse).apply {
+                number = updates
+                setContentDescriptionQuantityStringsResource(R.plurals.update_check_notification_ext_updates)
+            }
         } else {
             nav.removeBadge(R.id.nav_browse)
         }
