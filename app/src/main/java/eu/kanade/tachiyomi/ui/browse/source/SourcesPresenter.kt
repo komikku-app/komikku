@@ -59,7 +59,7 @@ class SourcesPresenter(
         // SY <--
     }
 
-    private fun collectLatestSources(sources: List<Source>, categories: Set<String>, showLatest: Boolean, showPin: Boolean) {
+    private fun collectLatestSources(sources: List<Source>, categories: List<String>, showLatest: Boolean, showPin: Boolean) {
         val map = TreeMap<String, MutableList<Source>> { d1, d2 ->
             // Sources without a lang defined will be placed at the end
             when {

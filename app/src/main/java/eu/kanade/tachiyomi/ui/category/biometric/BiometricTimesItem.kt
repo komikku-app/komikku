@@ -6,12 +6,10 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.R
-import kotlin.time.ExperimentalTime
 
 /**
  * Category item for a recycler view.
  */
-@OptIn(ExperimentalTime::class)
 class BiometricTimesItem(val timeRange: TimeRange) : AbstractFlexibleItem<BiometricTimesHolder>() {
 
     /**

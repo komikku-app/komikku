@@ -3,20 +3,17 @@ package eu.kanade.tachiyomi.ui.category.biometric
 import android.os.Bundle
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.plusAssign
-import exh.log.xLogD
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import kotlin.time.ExperimentalTime
 
 /**
  * Presenter of [BiometricTimesController]. Used to manage the categories of the library.
  */
-@OptIn(ExperimentalTime::class)
 class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
 
     /**
@@ -36,12 +33,11 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
 
         preferences.authenticatorTimeRanges().asFlow().onEach { prefTimeRanges ->
             timeRanges = prefTimeRanges.toList()
-                .mapNotNull { TimeRange.fromPreferenceString(it) }.onEach { xLogD(it) }
+                .mapNotNull(TimeRange::fromPreferenceString)
 
-            Observable.just(timeRanges)
-                .map { it.map(::BiometricTimesItem) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeLatestCache(BiometricTimesController::setBiometricTimeItems)
+            withUIContext {
+                view?.setBiometricTimeItems(timeRanges.map(::BiometricTimesItem))
+            }
         }.launchIn(presenterScope)
     }
 
@@ -53,11 +49,11 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
     fun createTimeRange(timeRange: TimeRange) {
         // Do not allow duplicate categories.
         if (timeRangeConflicts(timeRange)) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onTimeRangeConflictsError() })
+            launchUI {
+                view?.onTimeRangeConflictsError()
+            }
             return
         }
-
-        xLogD(timeRange)
 
         preferences.authenticatorTimeRanges() += timeRange.toPreferenceString()
     }
@@ -69,7 +65,7 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
      */
     fun deleteTimeRanges(timeRanges: List<TimeRange>) {
         preferences.authenticatorTimeRanges().set(
-            this.timeRanges.filterNot { it in timeRanges }.map { it.toPreferenceString() }.toSet(),
+            this.timeRanges.filterNot { it in timeRanges }.map(TimeRange::toPreferenceString).toSet(),
         )
     }
 

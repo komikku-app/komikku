@@ -11,7 +11,6 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.Filter
-import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import exh.log.xLogW
 import exh.metadata.sql.models.SearchTag
@@ -69,10 +68,6 @@ class LibraryCategoryAdapter(view: LibraryCategoryView, val controller: LibraryC
      * The list of manga in this category.
      */
     private var mangas: List<LibraryItem> = emptyList()
-
-    // SY -->
-    val onItemReleaseListener: CategoryAdapter.OnItemReleaseListener = view
-    // SY <--
 
     /**
      * Sets a list of manga in the adapter.

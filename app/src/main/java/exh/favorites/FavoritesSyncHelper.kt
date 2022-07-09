@@ -3,8 +3,8 @@ package exh.favorites
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.PowerManager
+import eu.kanade.domain.category.interactor.CreateCategoryWithName
 import eu.kanade.domain.category.interactor.GetCategories
-import eu.kanade.domain.category.interactor.InsertCategory
 import eu.kanade.domain.category.interactor.SetMangaCategories
 import eu.kanade.domain.category.interactor.UpdateCategory
 import eu.kanade.domain.category.model.Category
@@ -55,7 +55,7 @@ class FavoritesSyncHelper(val context: Context) {
     private val getManga: GetManga by injectLazy()
     private val updateManga: UpdateManga by injectLazy()
     private val setMangaCategories: SetMangaCategories by injectLazy()
-    private val insertCategory: InsertCategory by injectLazy()
+    private val createCategoryWithName: CreateCategoryWithName by injectLazy()
     private val updateCategory: UpdateCategory by injectLazy()
 
     private val prefs: PreferencesHelper by injectLazy()
@@ -208,9 +208,10 @@ class FavoritesSyncHelper(val context: Context) {
 
         categories.forEachIndexed { index, remote ->
             val local = localCategories.getOrElse(index) {
-                when (val insertCategoryResult = insertCategory.await(remote, index.toLong())) {
-                    is InsertCategory.Result.Error -> throw insertCategoryResult.error
-                    is InsertCategory.Result.Success -> Category(insertCategoryResult.id, remote, index.toLong(), 0L, emptyList())
+                when (val createCategoryWithNameResult = createCategoryWithName.await(remote)) {
+                    is CreateCategoryWithName.Result.InternalError -> throw createCategoryWithNameResult.error
+                    CreateCategoryWithName.Result.NameAlreadyExistsError -> throw IllegalStateException("Category $remote already exists")
+                    is CreateCategoryWithName.Result.Success -> createCategoryWithNameResult.category
                 }
             }
 

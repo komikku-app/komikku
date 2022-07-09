@@ -28,16 +28,6 @@ abstract class LibraryHolder<VB : ViewBinding>(
     abstract fun onSetValues(item: LibraryItem)
 
     // SY -->
-    /**
-     * Called when an item is released.
-     *
-     * @param position The position of the released item.
-     */
-    override fun onItemReleased(position: Int) {
-        super.onItemReleased(position)
-        (adapter as? LibraryCategoryAdapter)?.onItemReleaseListener?.onItemReleased(position)
-    }
-
     override fun onLongClick(view: View?): Boolean {
         return if (adapter.isLongPressDragEnabled) {
             super.onLongClick(view)

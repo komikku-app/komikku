@@ -230,8 +230,8 @@ class MergedSource : HttpSource() {
             val id = insertManga.await(
                 Manga.create().copy(
                     source = mangaSourceId,
-                    url = mangaUrl
-                )
+                    url = mangaUrl,
+                ),
             )!!
             val newManga = getManga.await(id)!!
             updateManga.awaitUpdateFromSource(newManga, source.getMangaDetails(newManga.toMangaInfo()), false)

@@ -1,44 +1,35 @@
 package eu.kanade.tachiyomi.ui.category.sources
 
-import android.os.Bundle
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import eu.kanade.domain.source.interactor.CreateSourceCategory
+import eu.kanade.domain.source.interactor.DeleteSourceCategory
+import eu.kanade.domain.source.interactor.GetSourceCategories
+import eu.kanade.domain.source.interactor.RenameSourceCategory
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
+import eu.kanade.tachiyomi.util.lang.launchIO
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
  * Presenter of [SourceCategoryController]. Used to manage the categories of the library.
  */
-class SourceCategoryPresenter : BasePresenter<SourceCategoryController>() {
+class SourceCategoryPresenter(
+    private val getSourceCategories: GetSourceCategories = Injekt.get(),
+    private val createSourceCategory: CreateSourceCategory = Injekt.get(),
+    private val renameSourceCategory: RenameSourceCategory = Injekt.get(),
+    private val deleteSourceCategory: DeleteSourceCategory = Injekt.get(),
+) : BasePresenter<SourceCategoryController>() {
 
-    /**
-     * List containing categories.
-     */
-    private var categories: List<String> = emptyList()
+    var dialog: Dialog? by mutableStateOf(null)
 
-    val preferences: PreferencesHelper = Injekt.get()
+    val categories = getSourceCategories.subscribe()
 
-    /**
-     * Called when the presenter is created.
-     *
-     * @param savedState The saved state of this presenter.
-     */
-    override fun onCreate(savedState: Bundle?) {
-        super.onCreate(savedState)
-
-        preferences.sourcesTabCategories().asFlow().onEach { categories ->
-            this.categories = categories.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it }))
-
-            Observable.just(this.categories)
-                .map { it.map(::SourceCategoryItem) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeLatestCache(SourceCategoryController::setCategories)
-        }.launchIn(presenterScope)
-    }
+    private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
+    val events = _events.consumeAsFlow()
 
     /**
      * Creates and adds a new category to the database.
@@ -46,22 +37,13 @@ class SourceCategoryPresenter : BasePresenter<SourceCategoryController>() {
      * @param name The name of the category to create.
      */
     fun createCategory(name: String) {
-        // Do not allow duplicate categories.
-        if (categoryExists(name)) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onCategoryExistsError() })
-            return
+        presenterScope.launchIO {
+            when (createSourceCategory.await(name)) {
+                is CreateSourceCategory.Result.CategoryExists -> _events.send(Event.CategoryExists)
+                is CreateSourceCategory.Result.InvalidName -> _events.send(Event.InvalidName)
+                else -> {}
+            }
         }
-
-        if (name.contains("|")) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onCategoryInvalidNameError() })
-            return
-        }
-
-        // Create category.
-        val newCategories = categories.toMutableList()
-        newCategories += name
-
-        preferences.sourcesTabCategories().set(newCategories.toSet())
     }
 
     /**
@@ -69,56 +51,37 @@ class SourceCategoryPresenter : BasePresenter<SourceCategoryController>() {
      *
      * @param categories The list of categories to delete.
      */
-    fun deleteCategories(categories: List<String>) {
-        var sources = preferences.sourcesTabSourcesInCategories().get().toList()
-
-        sources = sources.map { it.split("|") }.filterNot { it[1] in categories }.map { it[0] + "|" + it[1] }
-
-        preferences.sourcesTabSourcesInCategories().set(sources.toSet())
-        preferences.sourcesTabCategories().set(
-            this.categories.filterNot { it in categories }.toSet(),
-        )
+    fun deleteCategory(categories: String) {
+        presenterScope.launchIO {
+            deleteSourceCategory.await(categories)
+        }
     }
 
     /**
      * Renames a category.
      *
-     * @param category The category to rename.
-     * @param name The new name of the category.
+     * @param categoryOld The category to rename.
+     * @param categoryNew The new name of the category.
      */
     fun renameCategory(categoryOld: String, categoryNew: String) {
-        // Do not allow duplicate categories.
-        if (categoryExists(categoryNew)) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onCategoryExistsError() })
-            return
-        }
-
-        if (categoryNew.contains("|")) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onCategoryInvalidNameError() })
-            return
-        }
-
-        val newCategories = categories.filterNot { it in categoryOld }.toMutableList()
-        newCategories += categoryNew
-
-        var sources = preferences.sourcesTabSourcesInCategories().get().toList()
-
-        sources = sources.map { it.split("|").toMutableList() }
-            .map {
-                if (it[1] == categoryOld) {
-                    it[1] = categoryNew
-                }
-                it[0] + "|" + it[1]
+        presenterScope.launchIO {
+            when (renameSourceCategory.await(categoryOld, categoryNew)) {
+                is CreateSourceCategory.Result.CategoryExists -> _events.send(Event.CategoryExists)
+                is CreateSourceCategory.Result.InvalidName -> _events.send(Event.InvalidName)
+                else -> {}
             }
-
-        preferences.sourcesTabSourcesInCategories().set(sources.toSet())
-        preferences.sourcesTabCategories().set(newCategories.sorted().toSet())
+        }
     }
 
-    /**
-     * Returns true if a category with the given name already exists.
-     */
-    private fun categoryExists(name: String): Boolean {
-        return categories.any { it.equals(name, true) }
+    sealed class Event {
+        object CategoryExists : Event()
+        object InvalidName : Event()
+        object InternalError : Event()
+    }
+
+    sealed class Dialog {
+        object Create : Dialog()
+        data class Rename(val category: String) : Dialog()
+        data class Delete(val category: String) : Dialog()
     }
 }

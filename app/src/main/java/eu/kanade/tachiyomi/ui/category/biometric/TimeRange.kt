@@ -40,11 +40,13 @@ data class TimeRange(private val startTime: Duration, private val endTime: Durat
 
     companion object {
         fun fromPreferenceString(timeRange: String): TimeRange? {
-            return timeRange.split(",").mapNotNull { it.toDoubleOrNull() }.let {
-                if (it.size != 2) null else {
-                    TimeRange(it[0].minutes, it[1].minutes)
-                }
-            }
+            val index = timeRange.indexOf(',')
+            return if (index != -1) {
+                TimeRange(
+                    timeRange.substring(0, index).toDoubleOrNull()?.minutes ?: return null,
+                    timeRange.substring(index + 1).toDoubleOrNull()?.minutes ?: return null,
+                )
+            } else return null
         }
     }
 }

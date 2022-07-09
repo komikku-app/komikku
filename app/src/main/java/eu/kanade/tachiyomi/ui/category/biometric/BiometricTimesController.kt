@@ -25,12 +25,10 @@ import eu.kanade.tachiyomi.util.view.shrinkOnScroll
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.ExperimentalTime
 
 /**
  * Controller to manage the lock times for the biometric lock.
  */
-@OptIn(ExperimentalTime::class)
 class BiometricTimesController :
     NucleusController<CategoriesControllerBinding, BiometricTimesPresenter>(),
     FabController,

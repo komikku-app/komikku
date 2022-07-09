@@ -123,8 +123,8 @@ class GalleryAdder(
                     insertManga.await(
                         Manga.create().copy(
                             source = source.id,
-                            url = cleanedMangaUrl
-                        )
+                            url = cleanedMangaUrl,
+                        ),
                     )
                     getManga.await(cleanedMangaUrl, source.id)!!
                 }

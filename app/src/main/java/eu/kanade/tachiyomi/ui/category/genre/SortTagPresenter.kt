@@ -1,93 +1,79 @@
 package eu.kanade.tachiyomi.ui.category.genre
 
-import android.os.Bundle
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import eu.kanade.domain.manga.interactor.CreateSortTag
+import eu.kanade.domain.manga.interactor.DeleteSortTag
+import eu.kanade.domain.manga.interactor.GetSortTag
+import eu.kanade.domain.manga.interactor.ReorderSortTag
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.preference.minusAssign
-import eu.kanade.tachiyomi.util.preference.plusAssign
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
+import eu.kanade.tachiyomi.util.lang.launchIO
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
  * Presenter of [SortTagController]. Used to manage the categories of the library.
  */
-class SortTagPresenter : BasePresenter<SortTagController>() {
+class SortTagPresenter(
+    private val getSortTag: GetSortTag = Injekt.get(),
+    private val createSortTag: CreateSortTag = Injekt.get(),
+    private val deleteSortTag: DeleteSortTag = Injekt.get(),
+    private val reorderSortTag: ReorderSortTag = Injekt.get(),
+) : BasePresenter<SortTagController>() {
+
+    var dialog: Dialog? by mutableStateOf(null)
 
     /**
      * List containing categories.
      */
-    private var tags: List<Pair<Int, String>> = emptyList()
+    val tags = getSortTag.subscribe()
 
-    val preferences: PreferencesHelper = Injekt.get()
+    private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
+    val events = _events.consumeAsFlow()
 
-    /**
-     * Called when the presenter is created.
-     *
-     * @param savedState The saved state of this presenter.
-     */
-    override fun onCreate(savedState: Bundle?) {
-        super.onCreate(savedState)
-
-        preferences.sortTagsForLibrary().asFlow().onEach { tags ->
-            this.tags = tags.map { it.split("|") }
-                .mapNotNull { (it.getOrNull(0)?.toIntOrNull() ?: return@mapNotNull null) to (it.getOrNull(1) ?: return@mapNotNull null) }
-                .sortedBy { it.first }
-
-            Observable.just(this.tags)
-                .map { tagPairs -> tagPairs.map { it.second }.map(::SortTagItem) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeLatestCache(SortTagController::setCategories)
-        }.launchIn(presenterScope)
-    }
-
-    /**
-     * Creates and adds a new category to the database.
-     *
-     * @param name The name of the category to create.
-     */
     fun createTag(name: String) {
-        // Do not allow duplicate categories.
-        if (tagExists(name.trim())) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onTagExistsError() })
-            return
-        }
-
-        val size = preferences.sortTagsForLibrary().get().size
-
-        preferences.sortTagsForLibrary() += "$size|${name.trim()}"
-    }
-
-    /**
-     * Deletes the given categories from the database.
-     *
-     * @param tags The list of categories to delete.
-     */
-    fun deleteTags(tags: List<String>) {
-        val preferenceTags = preferences.sortTagsForLibrary().get()
-        tags.forEach { tag ->
-            preferenceTags.firstOrNull { it.endsWith(tag) }?.let {
-                preferences.sortTagsForLibrary() -= it
+        presenterScope.launchIO {
+            when (createSortTag.await(name)) {
+                is CreateSortTag.Result.TagExists -> _events.send(Event.TagExists)
+                else -> {}
             }
         }
     }
 
-    /**
-     * Reorders the given categories in the database.
-     *
-     * @param tags The list of categories to reorder.
-     */
-    fun reorderTags(tags: List<String>) {
-        preferences.sortTagsForLibrary().set(tags.mapIndexed { index, tag -> "$index|$tag" }.toSet())
+    fun delete(tag: String) {
+        presenterScope.launchIO {
+            deleteSortTag.await(tag)
+        }
     }
 
-    /**
-     * Returns true if a category with the given name already exists.
-     */
-    private fun tagExists(name: String): Boolean {
-        return tags.any { it.equals(name) }
+    fun moveUp(tag: String, index: Int) {
+        presenterScope.launchIO {
+            when (reorderSortTag.await(tag, index - 1)) {
+                is ReorderSortTag.Result.InternalError -> _events.send(Event.InternalError)
+                else -> {}
+            }
+        }
+    }
+
+    fun moveDown(tag: String, index: Int) {
+        presenterScope.launchIO {
+            when (reorderSortTag.await(tag, index + 1)) {
+                is ReorderSortTag.Result.InternalError -> _events.send(Event.InternalError)
+                else -> {}
+            }
+        }
+    }
+
+    sealed class Event {
+        object TagExists : Event()
+        object InternalError : Event()
+    }
+
+    sealed class Dialog {
+        object Create : Dialog()
+        data class Delete(val tag: String) : Dialog()
     }
 }

@@ -1,12 +1,15 @@
 package eu.kanade.tachiyomi.ui.category.repos
 
-import android.os.Bundle
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import eu.kanade.domain.source.interactor.CreateSourceRepo
+import eu.kanade.domain.source.interactor.DeleteSourceRepos
+import eu.kanade.domain.source.interactor.GetSourceRepos
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import rx.Observable
-import rx.android.schedulers.AndroidSchedulers
+import eu.kanade.tachiyomi.util.lang.launchIO
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -14,30 +17,17 @@ import uy.kohesive.injekt.api.get
  * Presenter of [RepoController]. Used to manage the repos for the extensions.
  */
 class RepoPresenter(
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val getSourceRepos: GetSourceRepos = Injekt.get(),
+    private val createSourceRepo: CreateSourceRepo = Injekt.get(),
+    private val deleteSourceRepos: DeleteSourceRepos = Injekt.get(),
 ) : BasePresenter<RepoController>() {
-    /**
-     * List containing repos.
-     */
-    private var repos: List<String> = emptyList()
 
-    /**
-     * Called when the presenter is created.
-     *
-     * @param savedState The saved state of this presenter.
-     */
-    override fun onCreate(savedState: Bundle?) {
-        super.onCreate(savedState)
+    var dialog: Dialog? by mutableStateOf(null)
 
-        preferences.extensionRepos().asFlow().onEach { repos ->
-            this.repos = repos.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it }))
+    val repos = getSourceRepos.subscribe()
 
-            Observable.just(this.repos)
-                .map { it.map(::RepoItem) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeLatestCache(RepoController::setRepos)
-        }.launchIn(presenterScope)
-    }
+    private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
+    val events = _events.consumeAsFlow()
 
     /**
      * Creates and adds a new repo to the database.
@@ -45,19 +35,13 @@ class RepoPresenter(
      * @param name The name of the repo to create.
      */
     fun createRepo(name: String) {
-        // Do not allow duplicate repos.
-        if (repoExists(name)) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onRepoExistsError() })
-            return
+        presenterScope.launchIO {
+            when (createSourceRepo.await(name)) {
+                is CreateSourceRepo.Result.RepoExists -> _events.send(Event.RepoExists)
+                is CreateSourceRepo.Result.InvalidName -> _events.send(Event.InvalidName)
+                else -> {}
+            }
         }
-
-        // Do not allow invalid formats
-        if (!name.matches(repoRegex)) {
-            Observable.just(Unit).subscribeFirst({ view, _ -> view.onRepoInvalidNameError() })
-            return
-        }
-
-        preferences.extensionRepos().set((repos + name).toSet())
     }
 
     /**
@@ -66,19 +50,19 @@ class RepoPresenter(
      * @param repos The list of repos to delete.
      */
     fun deleteRepos(repos: List<String>) {
-        preferences.extensionRepos().set(
-            this.repos.filterNot { it in repos }.toSet(),
-        )
+        presenterScope.launchIO {
+            deleteSourceRepos.await(repos)
+        }
     }
 
-    /**
-     * Returns true if a repo with the given name already exists.
-     */
-    private fun repoExists(name: String): Boolean {
-        return repos.any { it.equals(name, true) }
+    sealed class Event {
+        object RepoExists : Event()
+        object InvalidName : Event()
+        object InternalError : Event()
     }
 
-    companion object {
-        val repoRegex = """^[a-zA-Z0-9-_.]*?\/[a-zA-Z0-9-_.]*?$""".toRegex()
+    sealed class Dialog {
+        object Create : Dialog()
+        data class Delete(val repo: String) : Dialog()
     }
 }

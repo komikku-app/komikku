@@ -381,6 +381,8 @@
     <string name="information_empty_tags">You have no tags. Tap the plus button to create one for sorting your library by tags</string>
     <string name="error_tag_exists">This tag exists!</string>
     <string name="snack_tags_deleted">Tags deleted</string>
+    <string name="delete_tag">Delete tag</string>
+    <string name="delete_tag_confirmation">Do you wish to delete the tag %s</string>
 
     <!-- Extension section -->
     <string name="ext_redundant">Redundant</string>
@@ -399,6 +401,8 @@
     <string name="snack_repo_deleted">Repo deleted</string>
     <string name="invalid_repo_name">Invalid repo name</string>
     <string name="repo_source">Repo source</string>
+    <string name="delete_repo">Delete repo</string>
+    <string name="delete_repo_confirmation">Do you wish to delete the repo %s</string>
 
     <!-- Migration -->
     <string name="select_sources">Select sources</string>

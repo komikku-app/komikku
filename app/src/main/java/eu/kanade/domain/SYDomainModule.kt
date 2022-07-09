@@ -9,10 +9,12 @@ import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.GetChapterByUrl
 import eu.kanade.domain.chapter.interactor.GetMergedChapterByMangaId
 import eu.kanade.domain.history.interactor.GetHistoryByMangaId
+import eu.kanade.domain.manga.interactor.CreateSortTag
 import eu.kanade.domain.manga.interactor.DeleteByMergeId
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.DeleteMangaById
 import eu.kanade.domain.manga.interactor.DeleteMergeById
+import eu.kanade.domain.manga.interactor.DeleteSortTag
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFavoriteEntries
@@ -26,9 +28,11 @@ import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.GetSearchTags
 import eu.kanade.domain.manga.interactor.GetSearchTitles
+import eu.kanade.domain.manga.interactor.GetSortTag
 import eu.kanade.domain.manga.interactor.InsertFavoriteEntries
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.InsertMergedReference
+import eu.kanade.domain.manga.interactor.ReorderSortTag
 import eu.kanade.domain.manga.interactor.SetMangaFilteredScanlators
 import eu.kanade.domain.manga.interactor.UpdateMergedSettings
 import eu.kanade.domain.manga.repository.FavoritesEntryRepository
@@ -36,8 +40,12 @@ import eu.kanade.domain.manga.repository.MangaMergeRepository
 import eu.kanade.domain.manga.repository.MangaMetadataRepository
 import eu.kanade.domain.source.interactor.CountFeedSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.CountFeedSavedSearchGlobal
+import eu.kanade.domain.source.interactor.CreateSourceCategory
+import eu.kanade.domain.source.interactor.CreateSourceRepo
 import eu.kanade.domain.source.interactor.DeleteFeedSavedSearchById
 import eu.kanade.domain.source.interactor.DeleteSavedSearchById
+import eu.kanade.domain.source.interactor.DeleteSourceCategory
+import eu.kanade.domain.source.interactor.DeleteSourceRepos
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetFeedSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetFeedSavedSearchGlobal
@@ -47,8 +55,10 @@ import eu.kanade.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import eu.kanade.domain.source.interactor.GetSavedSearchGlobalFeed
 import eu.kanade.domain.source.interactor.GetShowLatest
 import eu.kanade.domain.source.interactor.GetSourceCategories
+import eu.kanade.domain.source.interactor.GetSourceRepos
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.interactor.InsertSavedSearch
+import eu.kanade.domain.source.interactor.RenameSourceCategory
 import eu.kanade.domain.source.interactor.SetSourceCategories
 import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.interactor.ToggleSources
@@ -64,7 +74,6 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 class SYDomainModule : InjektModule {
 
     override fun InjektRegistrar.registerInjectables() {
-        addFactory { GetSourceCategories(get()) }
         addFactory { GetShowLatest(get()) }
         addFactory { ToggleExcludeFromDataSaver(get()) }
         addFactory { SetSourceCategories(get()) }
@@ -77,6 +86,17 @@ class SYDomainModule : InjektModule {
         addFactory { FilterSerializer() }
         addFactory { GetHistoryByMangaId(get()) }
         addFactory { GetChapterByUrl(get()) }
+        addFactory { CreateSourceRepo(get()) }
+        addFactory { DeleteSourceRepos(get()) }
+        addFactory { GetSourceRepos(get()) }
+        addFactory { GetSourceCategories(get()) }
+        addFactory { CreateSourceCategory(get()) }
+        addFactory { RenameSourceCategory(get(), get()) }
+        addFactory { DeleteSourceCategory(get()) }
+        addFactory { GetSortTag(get()) }
+        addFactory { CreateSortTag(get(), get()) }
+        addFactory { DeleteSortTag(get(), get()) }
+        addFactory { ReorderSortTag(get(), get()) }
 
         addSingletonFactory<MangaMetadataRepository> { MangaMetadataRepositoryImpl(get()) }
         addFactory { GetFlatMetadataById(get()) }

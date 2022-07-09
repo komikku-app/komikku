@@ -20,7 +20,6 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.LibraryCategoryBinding
-import eu.kanade.tachiyomi.ui.category.CategoryAdapter
 import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -53,8 +52,7 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
     FlexibleAdapter.OnItemClickListener,
     FlexibleAdapter.OnItemLongClickListener,
     // SY -->
-    FlexibleAdapter.OnItemMoveListener,
-    CategoryAdapter.OnItemReleaseListener {
+    FlexibleAdapter.OnItemMoveListener {
     // SY <--
 
     private val scope = MainScope()
@@ -409,10 +407,6 @@ class LibraryCategoryView @JvmOverloads constructor(context: Context, attrs: Att
         LibraryGroup.BY_DEFAULT -> null
         LibraryGroup.BY_SOURCE, LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> category.id.toString()
         else -> null
-    }
-
-    override fun onItemReleased(position: Int) {
-        return
     }
 
     override fun shouldMoveItem(fromPosition: Int, toPosition: Int): Boolean {
