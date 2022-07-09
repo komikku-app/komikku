@@ -4,13 +4,13 @@
     android:layout_height="wrap_content"
     android:layout_row="0"
     android:layout_column="0"
+    android:divider="?attr/colorOnBackground"
     android:padding="16dp"
-    android:showDividers="middle"
-    android:divider="?attr/colorOnBackground">
+    android:showDividers="middle">
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent">
 
         <TextView
             android:layout_width="wrap_content"
@@ -38,11 +38,13 @@
             android:padding="4dp"
             android:text="Doujinshi" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/doujinshi_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -57,11 +59,13 @@
             android:padding="4dp"
             android:text="Manga" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/manga_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -76,11 +80,13 @@
             android:padding="4dp"
             android:text="Artist CG" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/artist_cg_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -95,11 +101,13 @@
             android:padding="4dp"
             android:text="Game CG" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/game_cg_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -114,11 +122,13 @@
             android:padding="4dp"
             android:text="Western" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/western_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -133,11 +143,13 @@
             android:padding="4dp"
             android:text="Non-H" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/non_h_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -152,11 +164,13 @@
             android:padding="4dp"
             android:text="Image Set" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/image_set_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -171,11 +185,13 @@
             android:padding="4dp"
             android:text="Cosplay" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/cosplay_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -190,11 +206,13 @@
             android:padding="4dp"
             android:text="Asian Porn" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/asian_porn_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 
     <TableRow
@@ -209,10 +227,12 @@
             android:padding="4dp"
             android:text="Misc" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/misc_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp" />
     </TableRow>
 </TableLayout>

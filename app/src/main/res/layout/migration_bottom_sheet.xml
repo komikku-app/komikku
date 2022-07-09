@@ -157,22 +157,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/sourceGroup_divider">
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/use_smart_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:paddingStart="2dp"
-                android:paddingEnd="2dp"
+                android:paddingHorizontal="16.dp"
+                android:paddingVertical="16dp"
                 android:text="@string/use_intelligent_search" />
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/extra_search_param"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:paddingStart="2dp"
-                android:paddingEnd="2dp"
+                android:paddingHorizontal="16.dp"
+                android:paddingVertical="16dp"
                 android:text="@string/include_extra_search_parameter" />
 
             <EditText
@@ -186,23 +186,23 @@
                 android:inputType="textPersonName"
                 android:textSize="16sp" />
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/skip_step"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:paddingStart="2dp"
-                android:paddingEnd="2dp"
+                android:paddingHorizontal="16.dp"
+                android:paddingVertical="16dp"
                 android:text="@string/skip_this_step_next_time" />
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/Hide_not_found_manga"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="82dp"
-                android:paddingStart="2dp"
-                android:paddingEnd="2dp"
+                android:paddingHorizontal="16.dp"
+                android:paddingVertical="16dp"
                 android:text="@string/hide_not_found_manga" />
 
         </LinearLayout>
