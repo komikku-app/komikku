@@ -687,19 +687,19 @@ class LibraryPresenter(
                     val mergedSource = sourceManager.get(MERGED_SOURCE_ID) as MergedSource
                     val mergedMangas = getMergedMangaById.await(manga.id)
                     mergedSource
-                        .getChaptersAsBlockingAsDbChapter(manga.id)
+                        .getChapters(manga.id)
                         .filter { !it.read }
-                        .groupBy { it.manga_id!! }
+                        .groupBy { it.mangaId }
                         .forEach ab@{ (mangaId, chapters) ->
                             val mergedManga = mergedMangas.firstOrNull { it.id == mangaId } ?: return@ab
-                            downloadManager.downloadChapters(mergedManga, chapters)
+                            downloadManager.downloadChapters(mergedManga, chapters.map(Chapter::toDbChapter))
                         }
                 } else {
                     /* SY --> */
                     val chapters = if (manga.isEhBasedManga()) {
-                        getChapterByMangaId.await(manga.id).minByOrNull { it.sourceOrder }?.let { chapter ->
-                            if (!chapter.read) listOf(chapter) else emptyList()
-                        } ?: emptyList()
+                        getChapterByMangaId.await(manga.id).minByOrNull { it.sourceOrder }
+                            ?.takeUnless { it.read }
+                            .let(::listOfNotNull)
                     } else /* SY <-- */ getChapterByMangaId.await(manga.id)
                         .filter { !it.read }
 
