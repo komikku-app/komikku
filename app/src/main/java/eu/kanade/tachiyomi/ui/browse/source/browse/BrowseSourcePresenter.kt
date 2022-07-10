@@ -59,6 +59,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
@@ -70,9 +71,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import logcat.LogPriority
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
@@ -135,7 +133,7 @@ open class BrowseSourcePresenter(
     /**
      * Subscription for the pager.
      */
-    private var pagerSubscription: Subscription? = null
+    private var pagerJob: Job? = null
 
     /**
      * Subscription for one request from the pager.
@@ -156,7 +154,6 @@ open class BrowseSourcePresenter(
         super.onCreate(savedState)
 
         source = sourceManager.get(sourceId) as? CatalogueSource ?: return
-
         sourceFilters = source.getFilterList()
 
         // SY -->
@@ -213,35 +210,46 @@ open class BrowseSourcePresenter(
         pager = createPager(query, filters)
 
         val sourceId = source.id
-
         val sourceDisplayMode = prefs.sourceDisplayMode()
 
-        // Prepare the pager.
-        pagerSubscription?.let { remove(it) }
-        pagerSubscription = pager.results()
-            .observeOn(Schedulers.io())
-            // SY -->
-            .map { (page, mangas, metadata) ->
-                Triple(page, mangas.map { networkToLocalManga(it, sourceId).toDomainManga()!! }, metadata)
-            }
-            // SY <--
-            .doOnNext { initializeMangas(it.second) }
-            // SY -->
-            .map { (page, mangas, metadata) ->
-                page to mangas.mapIndexed { index, manga ->
-                    SourceItem(manga, sourceDisplayMode, metadata?.getOrNull(index))
+        pagerJob?.cancel()
+        pagerJob = presenterScope.launchIO {
+            pager.asFlow()
+                // SY -->
+                .map { (first, second, third) ->
+                    Triple(
+                        first,
+                        second.map {
+                            networkToLocalManga(
+                                it,
+                                sourceId,
+                            ).toDomainManga()!!
+                        },
+                        third,
+                    )
                 }
-            }
-            // SY <--
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeReplay(
-                { view, (page, mangas) ->
-                    view.onAddPage(page, mangas)
-                },
-                { _, error ->
+                // SY <--
+                .onEach { initializeMangas(it.second) }
+                // SY -->
+                .map { (first, second, third) ->
+                    first to second.mapIndexed { index, manga ->
+                        SourceItem(
+                            manga,
+                            sourceDisplayMode,
+                            third?.getOrNull(index),
+                        )
+                    }
+                }
+                // SY <--
+                .catch { error ->
                     logcat(LogPriority.ERROR, error)
-                },
-            )
+                }
+                .collectLatest { (page, mangas) ->
+                    withUIContext {
+                        view?.onAddPage(page, mangas)
+                    }
+                }
+        }
 
         // Request first page.
         requestNext()
