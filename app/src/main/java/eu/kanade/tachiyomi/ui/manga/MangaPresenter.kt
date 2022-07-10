@@ -338,6 +338,8 @@ class MangaPresenter(
 
                     if (!manga.initialized) {
                         fetchAllFromSource(manualFetch = false)
+                    } else if (chapterItems.isEmpty()) {
+                        fetchChaptersFromSource()
                     }
                 }
         }
