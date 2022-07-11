@@ -126,11 +126,10 @@ class EHentaiUpdateHelper(context: Context) {
                 val (newHistory, deleteHistory) = getHistory(getChapterByMangaId.await(accepted.manga.id), chainsAsChapters, chainsAsHistory)
 
                 // Delete the duplicate history first
-                if (deleteHistory.isNotEmpty()) {
-                    deleteHistory.forEach {
-                        removeHistoryById.await(it)
-                    }
+                deleteHistory.forEach {
+                    removeHistoryById.await(it)
                 }
+
                 // Insert new history
                 newHistory.forEach {
                     upsertHistory.await(it)
