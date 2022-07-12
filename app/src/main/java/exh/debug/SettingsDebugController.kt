@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
@@ -40,11 +39,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.presentation.components.Divider
+import eu.kanade.presentation.components.LazyColumn
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.SwitchPreference
 import eu.kanade.tachiyomi.ui.base.controller.BasicComposeController
-import eu.kanade.tachiyomi.util.preference.onClick
-import eu.kanade.tachiyomi.util.preference.preference
 import exh.util.capitalize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
