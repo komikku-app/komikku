@@ -192,9 +192,9 @@
 
     <!-- Browse settings -->
     <string name="pref_feed_position">Позиция вкладки (Лента)</string>
-    <string name="pref_feed_position_summery">Поместить вкладку «Лента» на место первой вкладки в «Поисковик»? Это сделает её вкладкой по умолчанию при открытии «Поисковик», не рекомендуется, если вы используете ограниченные сети(Моб. Данные)</string>
+    <string name="pref_feed_position_summery">Поместить вкладку «Лента» на место первой вкладки в «Поисковик»? Это сделает её вкладкой по умолчанию при открытии «Поисковик», не рекомендуется, если вы используете ограниченные сети(Моб. данные)</string>
     <string name="pref_source_source_filtering">Фильтровать источники по категориям</string>
-    <string name="pref_source_source_filtering_summery">Фильтровать источники которые находятся в категориях, чтобы источники которые находятся в категориях, не попадали под языковую фильтрацию</string>
+    <string name="pref_source_source_filtering_summery">Фильтровать источники которые находятся в категориях, чтобы те не попадали под языковую фильтрацию</string>
     <string name="pref_source_navigation">Убрать кнопку (Последняя)</string>
     <string name="pref_source_navigation_summery">Убирает кнопку «Последняя» возле источников, взамен, при нажатии на источник отображаются вкладки «Последняя» и «Поисковик»</string>
     <string name="pref_local_source_hidden_folders">Просмотр скрытых папок</string>
@@ -253,7 +253,7 @@
     <string name="auto_webtoon_mode_summary">Использовать автоматический режим веб-комикса для серий, которые вероятно имеют формат длинной полосы</string>
     <string name="enable_zoom_out">Включить уменьшение масштаба</string>
     <string name="tap_scroll_page">Нажатия пролистывают постранично</string>
-    <string name="tap_scroll_page_summary">Нажатие будет пролистывать целую страницу, взаместо размера экрана устройства</string>
+    <string name="tap_scroll_page_summary">Нажатие будет пролистывать целую страницу, заместо размера экрана устройства</string>
     <string name="reader_bottom_buttons">Кнопки в нижней части читалки</string>
     <string name="reader_bottom_buttons_summary">Настроить какие кнопки будут отображатся в нижней части читалки</string>
     <string name="pref_show_vert_seekbar_landscape">Показывать вертикальную полосу прокрутки</string>
@@ -436,7 +436,7 @@
         <item quantity="many">Копировать %1$d%2$s серий?</item>
         <item quantity="other">Копировать %1$d%2$s серий?</item>
     </plurals>
-    <string name="skipping_">(Пропуская %1$d)</string>
+    <string name="skipping_">(Исключая %1$d)</string>
     <plurals name="manga_migrated">
         <item quantity="one">%d серия перемещена</item>
         <item quantity="few">%d серии перемещены</item>
@@ -553,7 +553,7 @@
     <string name="artist_cg">Худож. графика</string>
     <string name="game_cg">Игровая графика</string>
     <string name="western">Западное</string>
-    <string name="non_h">Не-хентай</string>
+    <string name="non_h">Не хентай</string>
     <string name="image_set">Набор изображений</string>
     <string name="cosplay">Косплей</string>
     <string name="asian_porn">Азиатское порно</string>
@@ -572,13 +572,13 @@
     <string name="date_posted">Дата публикации</string>
     <string name="page_count">Количество страниц</string>
     <string name="parent">URL-адрес родителя</string>
-    <string name="visible">Видимое</string>
+    <string name="visible">Не скрыто</string>
     <string name="language">Язык</string>
     <string name="gallery_size">Размер галереи</string>
     <string name="total_favorites">Добавлено в избранное</string>
     <string name="total_ratings">Общий рейтинг</string>
     <string name="average_rating">Средний рейтинг</string>
-    <string name="aged">Возрастное</string>
+    <string name="aged">Возрастное ограничение</string>
     <string name="last_update_check">Время последнего обновления</string>
     <string name="path">Путь</string>
     <string name="artist">Художник</string>
@@ -615,7 +615,7 @@
         <item quantity="many">%1$d страниц</item>
         <item quantity="other">%1$d страниц</item>
     </plurals>
-    <string name="is_visible">Видимое: %1$s</string>
+    <string name="is_visible">Не скрыто: %1$s</string>
     <string name="language_translated">%1$s</string>
 
     <!-- Enhanced E/ExHentai Browse View -->
