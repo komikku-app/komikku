@@ -496,7 +496,14 @@ class LibraryController(
                 if (preferences.exhShowSyncIntro().get()) {
                     activity?.let { FavoritesIntroDialog().show(it) }
                 } else {
-                    presenter.favoritesSync.runSync()
+                    MaterialAlertDialogBuilder(activity!!)
+                        .setTitle(R.string.favorites_sync)
+                        .setMessage(R.string.favorites_sync_conformation_message)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            presenter.favoritesSync.runSync()
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
                 }
             }
             // SY <--
