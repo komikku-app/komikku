@@ -406,7 +406,7 @@ object EXHMigrations {
                         preferences.navigationModeWebtoon().set(5)
                     }
                 }
-                if (oldVersion under 35) {
+                if (oldVersion under 36) {
                     // Handle renamed enum values
                     @Suppress("DEPRECATION")
                     val newSortingMode = when (val oldSortingMode = preferences.librarySortingMode().get()) {
