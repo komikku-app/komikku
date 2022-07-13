@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
-    <changelogversion versionName="1.8.2" changeDate="Apr 22,2022">
+    <changelogversion versionName="1.8.4" changeDate="Jul 13,2022">
+        <changelogtext>[b]Based on Tachiyomi stable 0.13.5(from 0.13.4)[/b]</changelogtext>
+        <changelogtext>Fix On Hiatus dynamic category</changelogtext>
+        <changelogtext>Fix group by tracking</changelogtext>
+        <changelogtext>Migrate custom covers</changelogtext>
+        <changelogtext>Improve sheet selection items</changelogtext>
+        <changelogtext>Use Tachiyomi Image decoder for double pages, fixes certain image types not loading for double pages</changelogtext>
+        <changelogtext>Only use auto-scroll when app is in focus</changelogtext>
+        <changelogtext>Stop ddos when updating a merge manga</changelogtext>
+        <changelogtext>Fix auto-downloading for merge manga</changelogtext>
+        <changelogtext>Fix mangadex blocked uploaders</changelogtext>
+        <changelogtext>Add visibility virtual tag for E-Hentai, you can now search for expunged in the library</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="1.8.3" changeDate="Apr 22,2022">
         <changelogtext>[b]Based on Tachiyomi stable 0.13.4(from 0.13.3)[/b]</changelogtext>
         <changelogtext>Added chinese simplified translation(By Howard20181)</changelogtext>
     </changelogversion>
