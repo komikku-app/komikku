@@ -49,6 +49,7 @@ import eu.kanade.tachiyomi.widget.EmptyView
 import eu.kanade.tachiyomi.widget.materialdialogs.QuadStateTextView
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
+import exh.source.EH_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
@@ -449,7 +450,10 @@ class LibraryController(
         menu.findItem(R.id.action_filter).icon?.mutate()
 
         // SY -->
-        menu.findItem(R.id.action_sync_favorites).isVisible = preferences.isHentaiEnabled().get()
+        val hentaiEnabled = preferences.isHentaiEnabled().get()
+        val ehEnabled = EH_SOURCE_ID.toString() !in preferences.disabledSources().get()
+        val exhEnabled = preferences.enableExhentai().get()
+        menu.findItem(R.id.action_sync_favorites).isVisible = hentaiEnabled && (ehEnabled || exhEnabled)
         // SY <--
     }
 
