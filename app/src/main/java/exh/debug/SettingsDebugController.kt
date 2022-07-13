@@ -68,7 +68,8 @@ class SettingsDebugController : BasicComposeController() {
                     it.visibility == KVisibility.PUBLIC
                 }.map {
                     it to it.name.replace("(.)(\\p{Upper})".toRegex(), "$1 $2")
-                        .lowercase(Locale.getDefault()).capitalize(Locale.getDefault())
+                        .lowercase(Locale.getDefault())
+                        .capitalize(Locale.getDefault())
                 }
             }
         }
