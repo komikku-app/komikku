@@ -13,6 +13,6 @@ interface TagList {
         getTags1(),
         getTags2(),
         getTags3(),
-        getTags4()
+        getTags4(),
     )
 }
