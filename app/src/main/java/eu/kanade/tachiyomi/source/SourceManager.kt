@@ -224,11 +224,11 @@ class SourceManager(private val context: Context) {
     @Suppress("OverridingDeprecatedMember")
     open inner class StubSource(val sourceData: SourceData) : Source {
 
-        override val name: String = sourceData.name
+        override val id: Long = sourceData.id
+
+        override val name: String = sourceData.name.ifBlank { id.toString() }
 
         override val lang: String = sourceData.lang
-
-        override val id: Long = sourceData.id
 
         override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
             throw getSourceNotInstalledException()
@@ -255,10 +255,7 @@ class SourceManager(private val context: Context) {
         }
 
         override fun toString(): String {
-            if (name.isNotBlank() && lang.isNotBlank()) {
-                return "$name (${lang.uppercase()})"
-            }
-            return id.toString()
+            return if (sourceData.isMissingInfo.not()) "$name (${lang.uppercase()})" else id.toString()
         }
 
         fun getSourceNotInstalledException(): SourceNotInstalledException {
