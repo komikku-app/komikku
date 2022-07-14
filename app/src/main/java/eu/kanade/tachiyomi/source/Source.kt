@@ -12,8 +12,8 @@ import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.source.model.toPageUrl
 import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.ui.manga.MergedMangaData
 import eu.kanade.tachiyomi.util.lang.awaitSingle
-import exh.source.MERGED_SOURCE_ID
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
@@ -108,24 +108,18 @@ fun Source.getPreferenceKey(): String = "source_$id"
 
 fun Source.toSourceData(): SourceData = SourceData(id = id, lang = lang, name = name)
 
-fun Source.getNameForMangaInfo(source: Source, getMergedSourcesString: (List<String>, Boolean) -> String): String {
+fun Source.getNameForMangaInfo(mergeData: MergedMangaData?): String {
     val preferences = Injekt.get<PreferencesHelper>()
     val enabledLanguages = preferences.enabledLanguages().get()
         .filterNot { it in listOf("all", "other") }
-    // SY -->
-    val isMergedSource = source.id == MERGED_SOURCE_ID
-    // SY <--
     val hasOneActiveLanguages = enabledLanguages.size == 1
-    val isInEnabledLanguages = source.lang in enabledLanguages
+    val isInEnabledLanguages = lang in enabledLanguages
     return when {
         // SY -->
-        isMergedSource && hasOneActiveLanguages -> getMergedSourcesString(
+        mergeData != null -> getMergedSourcesString(
+            mergeData,
             enabledLanguages,
-            true,
-        )
-        isMergedSource -> getMergedSourcesString(
-            enabledLanguages,
-            false,
+            hasOneActiveLanguages,
         )
         // SY <--
         // For edge cases where user disables a source they got manga of in their library.
@@ -136,19 +130,24 @@ fun Source.getNameForMangaInfo(source: Source, getMergedSourcesString: (List<Str
     }
 }
 
-fun Source.getNameForMangaInfo(): String {
-    val preferences = Injekt.get<PreferencesHelper>()
-    val enabledLanguages = preferences.enabledLanguages().get()
-        .filterNot { it in listOf("all", "other") }
-    val hasOneActiveLanguages = enabledLanguages.size == 1
-    val isInEnabledLanguages = lang in enabledLanguages
-    return when {
-        // For edge cases where user disables a source they got manga of in their library.
-        hasOneActiveLanguages && !isInEnabledLanguages -> toString()
-        // Hide the language tag when only one language is used.
-        hasOneActiveLanguages && isInEnabledLanguages -> name
-        else -> toString()
+// SY -->
+private fun getMergedSourcesString(
+    mergeData: MergedMangaData,
+    enabledLangs: List<String>,
+    onlyName: Boolean,
+): String {
+    return if (onlyName) {
+        mergeData.sources.joinToString { source ->
+            if (source.lang !in enabledLangs) {
+                source.toString()
+            } else {
+                source.name
+            }
+        }
+    } else {
+        mergeData.sources.joinToString()
     }
 }
+// SY <--
 
 fun Source.isLocalOrStub(): Boolean = id == LocalSource.ID || this is SourceManager.StubSource
