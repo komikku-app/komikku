@@ -166,11 +166,11 @@ data class Manga(
             // SY <--
             source = -1L,
             favorite = false,
-            lastUpdate = -1L,
-            dateAdded = -1L,
-            viewerFlags = -1L,
+            lastUpdate = 0L,
+            dateAdded = 0L,
+            viewerFlags = 0L,
             chapterFlags = 0L,
-            coverLastModified = -1L,
+            coverLastModified = 0L,
             // SY -->
             ogArtist = null,
             ogAuthor = null,

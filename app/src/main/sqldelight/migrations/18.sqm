@@ -1,3 +1,15 @@
 UPDATE mangas
 SET chapter_flags = 0
 WHERE chapter_flags = -1;
+UPDATE mangas
+SET viewer = 0
+WHERE viewer = -1;
+UPDATE mangas
+SET date_added = 0
+WHERE date_added = -1;
+UPDATE mangas
+SET cover_last_modified = 0
+WHERE cover_last_modified = -1;
+UPDATE mangas
+SET last_update = 0
+WHERE last_update = -1;
