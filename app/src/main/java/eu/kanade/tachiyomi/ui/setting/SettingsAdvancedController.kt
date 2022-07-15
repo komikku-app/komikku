@@ -238,6 +238,28 @@ class SettingsAdvancedController(
                     true
                 }
             }
+            editTextPreference {
+                key = Keys.defaultUserAgent
+                titleRes = R.string.pref_user_agent_string
+                text = preferences.defaultUserAgent().get()
+                summary = network.defaultUserAgent
+
+                onChange {
+                    activity?.toast(R.string.requires_app_restart)
+                    true
+                }
+            }
+            if (preferences.defaultUserAgent().isSet()) {
+                preference {
+                    key = "pref_reset_user_agent"
+                    titleRes = R.string.pref_reset_user_agent_string
+
+                    onClick {
+                        preferences.defaultUserAgent().delete()
+                        activity?.toast(R.string.requires_app_restart)
+                    }
+                }
+            }
         }
 
         preferenceCategory {
