@@ -278,7 +278,13 @@ class MangaPresenter(
                         getMergedReferencesById.subscribe(mangaId),
                     ) { manga, references ->
                         if (manga.isNotEmpty()) {
-                            MergedMangaData(references, manga.associateBy { it.id })
+                            val sourceManager = Injekt.get<SourceManager>()
+                            MergedMangaData(
+                                references,
+                                manga.associateBy { it.id },
+                                references.map { it.mangaSourceId }.distinct()
+                                    .map { sourceManager.getOrStub(it) },
+                            )
                         } else null
                     },
                 ) { state, mergedData ->
@@ -1349,7 +1355,11 @@ class MangaPresenter(
     // Track sheet - end
 }
 
-data class MergedMangaData(val references: List<MergedMangaReference>, val manga: Map<Long, DomainManga>)
+data class MergedMangaData(
+    val references: List<MergedMangaReference>,
+    val manga: Map<Long, DomainManga>,
+    val sources: List<Source>,
+)
 
 sealed class MangaScreenState {
     @Immutable
