@@ -1,0 +1,3 @@
+UPDATE mangas
+SET chapter_flags = 0
+WHERE chapter_flags = -1;
