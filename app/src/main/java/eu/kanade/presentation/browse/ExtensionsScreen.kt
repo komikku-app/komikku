@@ -171,13 +171,7 @@ fun ExtensionContent(
                         onClickItem = {
                             when (it) {
                                 is Extension.Available -> onInstallExtension(it)
-                                is Extension.Installed -> {
-                                    if (it.hasUpdate) {
-                                        onUpdateExtension(it)
-                                    } else {
-                                        onOpenExtension(it)
-                                    }
-                                }
+                                is Extension.Installed -> onOpenExtension(it)
                                 is Extension.Untrusted -> { trustState = it }
                             }
                         },
