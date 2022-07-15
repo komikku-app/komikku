@@ -17,10 +17,13 @@ import eu.kanade.presentation.util.horizontalPadding
 
 @Composable
 fun SourceRepoListItem(
+    modifier: Modifier,
     repo: String,
     onDelete: (String) -> Unit,
 ) {
-    ElevatedCard {
+    ElevatedCard(
+        modifier = modifier,
+    ) {
         Row(
             modifier = Modifier
                 .padding(start = horizontalPadding, top = horizontalPadding, end = horizontalPadding),

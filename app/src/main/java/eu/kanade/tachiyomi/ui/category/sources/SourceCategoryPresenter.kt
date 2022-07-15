@@ -1,15 +1,16 @@
 package eu.kanade.tachiyomi.ui.category.sources
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.os.Bundle
 import eu.kanade.domain.source.interactor.CreateSourceCategory
 import eu.kanade.domain.source.interactor.DeleteSourceCategory
 import eu.kanade.domain.source.interactor.GetSourceCategories
 import eu.kanade.domain.source.interactor.RenameSourceCategory
+import eu.kanade.presentation.category.SourceCategoryState
+import eu.kanade.presentation.category.SourceCategoryStateImpl
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -18,18 +19,26 @@ import uy.kohesive.injekt.api.get
  * Presenter of [SourceCategoryController]. Used to manage the categories of the library.
  */
 class SourceCategoryPresenter(
+    private val state: SourceCategoryStateImpl = SourceCategoryState() as SourceCategoryStateImpl,
     private val getSourceCategories: GetSourceCategories = Injekt.get(),
     private val createSourceCategory: CreateSourceCategory = Injekt.get(),
     private val renameSourceCategory: RenameSourceCategory = Injekt.get(),
     private val deleteSourceCategory: DeleteSourceCategory = Injekt.get(),
-) : BasePresenter<SourceCategoryController>() {
-
-    var dialog: Dialog? by mutableStateOf(null)
-
-    val categories = getSourceCategories.subscribe()
+) : BasePresenter<SourceCategoryController>(), SourceCategoryState by state {
 
     private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
     val events = _events.consumeAsFlow()
+
+    override fun onCreate(savedState: Bundle?) {
+        super.onCreate(savedState)
+        presenterScope.launchIO {
+            getSourceCategories.subscribe()
+                .collectLatest {
+                    state.isLoading = false
+                    state.categories = it
+                }
+        }
+    }
 
     /**
      * Creates and adds a new category to the database.

@@ -19,6 +19,7 @@ import eu.kanade.presentation.util.horizontalPadding
 
 @Composable
 fun SortTagListItem(
+    modifier: Modifier,
     tag: String,
     index: Int,
     canMoveUp: Boolean,
@@ -27,7 +28,9 @@ fun SortTagListItem(
     onMoveDown: (String, Int) -> Unit,
     onDelete: (String) -> Unit,
 ) {
-    ElevatedCard {
+    ElevatedCard(
+        modifier = modifier,
+    ) {
         Row(
             modifier = Modifier
                 .padding(start = horizontalPadding, top = horizontalPadding, end = horizontalPadding),

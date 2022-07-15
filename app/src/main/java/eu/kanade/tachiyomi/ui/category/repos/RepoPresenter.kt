@@ -1,14 +1,15 @@
 package eu.kanade.tachiyomi.ui.category.repos
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.os.Bundle
 import eu.kanade.domain.source.interactor.CreateSourceRepo
 import eu.kanade.domain.source.interactor.DeleteSourceRepos
 import eu.kanade.domain.source.interactor.GetSourceRepos
+import eu.kanade.presentation.category.SourceRepoState
+import eu.kanade.presentation.category.SourceRepoStateImpl
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -17,17 +18,25 @@ import uy.kohesive.injekt.api.get
  * Presenter of [RepoController]. Used to manage the repos for the extensions.
  */
 class RepoPresenter(
+    private val state: SourceRepoStateImpl = SourceRepoState() as SourceRepoStateImpl,
     private val getSourceRepos: GetSourceRepos = Injekt.get(),
     private val createSourceRepo: CreateSourceRepo = Injekt.get(),
     private val deleteSourceRepos: DeleteSourceRepos = Injekt.get(),
-) : BasePresenter<RepoController>() {
-
-    var dialog: Dialog? by mutableStateOf(null)
-
-    val repos = getSourceRepos.subscribe()
+) : BasePresenter<RepoController>(), SourceRepoState by state {
 
     private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
     val events = _events.consumeAsFlow()
+
+    override fun onCreate(savedState: Bundle?) {
+        super.onCreate(savedState)
+        presenterScope.launchIO {
+            getSourceRepos.subscribe()
+                .collectLatest {
+                    state.isLoading = false
+                    state.repos = it
+                }
+        }
+    }
 
     /**
      * Creates and adds a new repo to the database.

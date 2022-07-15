@@ -7,8 +7,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +17,7 @@ import eu.kanade.presentation.category.components.CategoryFloatingActionButton
 import eu.kanade.presentation.category.components.CategoryTopAppBar
 import eu.kanade.presentation.category.components.repo.SourceRepoContent
 import eu.kanade.presentation.components.EmptyScreen
+import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
@@ -56,17 +55,18 @@ fun SourceRepoScreen(
         },
     ) { paddingValues ->
         val context = LocalContext.current
-        val repos by presenter.repos.collectAsState(initial = emptyList())
-        if (repos.isEmpty()) {
-            EmptyScreen(textResource = R.string.information_empty_repos)
-        } else {
-            SourceRepoContent(
-                repos = repos,
-                lazyListState = lazyListState,
-                paddingValues = paddingValues + topPaddingValues + PaddingValues(horizontal = horizontalPadding),
-                onDelete = { presenter.dialog = Dialog.Delete(it) },
-            )
+        when {
+            presenter.isLoading -> LoadingScreen()
+            presenter.isEmpty -> EmptyScreen(textResource = R.string.information_empty_category)
+            else -> {
+                SourceRepoContent(
+                    state = presenter,
+                    lazyListState = lazyListState,
+                    paddingValues = paddingValues + topPaddingValues + PaddingValues(horizontal = horizontalPadding),
+                )
+            }
         }
+
         val onDismissRequest = { presenter.dialog = null }
         when (val dialog = presenter.dialog) {
             Dialog.Create -> {

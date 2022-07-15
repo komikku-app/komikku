@@ -18,11 +18,14 @@ import eu.kanade.presentation.util.horizontalPadding
 
 @Composable
 fun SourceCategoryListItem(
+    modifier: Modifier,
     category: String,
     onRename: (String) -> Unit,
     onDelete: (String) -> Unit,
 ) {
-    ElevatedCard {
+    ElevatedCard(
+        modifier = modifier,
+    ) {
         Row(
             modifier = Modifier
                 .padding(start = horizontalPadding, top = horizontalPadding, end = horizontalPadding),

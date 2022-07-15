@@ -1,15 +1,16 @@
 package eu.kanade.tachiyomi.ui.category.genre
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.os.Bundle
 import eu.kanade.domain.manga.interactor.CreateSortTag
 import eu.kanade.domain.manga.interactor.DeleteSortTag
 import eu.kanade.domain.manga.interactor.GetSortTag
 import eu.kanade.domain.manga.interactor.ReorderSortTag
+import eu.kanade.presentation.category.SortTagState
+import eu.kanade.presentation.category.SortTagStateImpl
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -18,21 +19,26 @@ import uy.kohesive.injekt.api.get
  * Presenter of [SortTagController]. Used to manage the categories of the library.
  */
 class SortTagPresenter(
+    private val state: SortTagStateImpl = SortTagState() as SortTagStateImpl,
     private val getSortTag: GetSortTag = Injekt.get(),
     private val createSortTag: CreateSortTag = Injekt.get(),
     private val deleteSortTag: DeleteSortTag = Injekt.get(),
     private val reorderSortTag: ReorderSortTag = Injekt.get(),
-) : BasePresenter<SortTagController>() {
-
-    var dialog: Dialog? by mutableStateOf(null)
-
-    /**
-     * List containing categories.
-     */
-    val tags = getSortTag.subscribe()
+) : BasePresenter<SortTagController>(), SortTagState by state {
 
     private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
     val events = _events.consumeAsFlow()
+
+    override fun onCreate(savedState: Bundle?) {
+        super.onCreate(savedState)
+        presenterScope.launchIO {
+            getSortTag.subscribe()
+                .collectLatest {
+                    state.isLoading = false
+                    state.tags = it
+                }
+        }
+    }
 
     fun createTag(name: String) {
         presenterScope.launchIO {
