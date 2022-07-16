@@ -8,18 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.UTurnRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
@@ -30,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AroundLayout
@@ -38,6 +32,7 @@ import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
+import eu.kanade.presentation.components.TopAppBar
 import eu.kanade.presentation.manga.components.PagePreview
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
@@ -57,18 +52,13 @@ fun PagePreviewScreen(
     onDismissPageDialog: () -> Unit,
     navigateUp: () -> Unit,
 ) {
-    val topAppBarScrollState = rememberTopAppBarScrollState()
-    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarScrollState)
-
     Scaffold(
         modifier = Modifier
-            .statusBarsPadding()
-            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+            .statusBarsPadding(),
         topBar = {
             PagePreviewTopAppBar(
-                topAppBarScrollBehavior = topAppBarScrollBehavior,
                 navigateUp = navigateUp,
-                title = stringResource(id = R.string.page_previews),
+                title = stringResource(R.string.page_previews),
                 onOpenPageDialog = onOpenPageDialog,
                 showOpenPageDialog = state is PagePreviewState.Success &&
                     (state.pageCount != null && state.pageCount > 1 /* TODO support unknown pageCount || state.hasNextPage*/),
@@ -176,25 +166,13 @@ fun PagePreviewPageDialog(
 
 @Composable
 fun PagePreviewTopAppBar(
-    topAppBarScrollBehavior: TopAppBarScrollBehavior,
     navigateUp: () -> Unit,
     title: String,
     onOpenPageDialog: () -> Unit,
     showOpenPageDialog: Boolean,
 ) {
-    SmallTopAppBar(
-        navigationIcon = {
-            IconButton(onClick = navigateUp) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = stringResource(R.string.abc_action_bar_up_description),
-                )
-            }
-        },
-        title = {
-            Text(text = title)
-        },
-        scrollBehavior = topAppBarScrollBehavior,
+    TopAppBar(
+        title = title,
         actions = {
             if (showOpenPageDialog) {
                 IconButton(onClick = onOpenPageDialog) {
@@ -205,5 +183,6 @@ fun PagePreviewTopAppBar(
                 }
             }
         },
+        navigateUp = navigateUp,
     )
 }

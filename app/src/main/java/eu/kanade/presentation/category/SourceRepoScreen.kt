@@ -11,11 +11,11 @@ import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.category.components.CategoryCreateDialog
 import eu.kanade.presentation.category.components.CategoryDeleteDialog
 import eu.kanade.presentation.category.components.CategoryFloatingActionButton
-import eu.kanade.presentation.category.components.CategoryTopAppBar
 import eu.kanade.presentation.category.components.repo.SourceRepoContent
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
+import eu.kanade.presentation.components.TopAppBar
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
@@ -35,7 +35,7 @@ fun SourceRepoScreen(
         modifier = Modifier
             .statusBarsPadding(),
         topBar = {
-            CategoryTopAppBar(
+            TopAppBar(
                 navigateUp = navigateUp,
                 title = stringResource(R.string.action_edit_repos),
             )
