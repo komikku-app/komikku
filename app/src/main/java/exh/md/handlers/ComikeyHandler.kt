@@ -3,7 +3,6 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
@@ -16,11 +15,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 
-class ComikeyHandler(cloudflareClient: OkHttpClient) {
+class ComikeyHandler(cloudflareClient: OkHttpClient, userAgent: String) {
     val baseUrl = "https://comikey.com"
     private val apiUrl = "$baseUrl/sapi"
     val headers = Headers.Builder()
-        .add("User-Agent", HttpSource.DEFAULT_USER_AGENT)
+        .add("User-Agent", userAgent)
         .build()
 
     val client: OkHttpClient = cloudflareClient

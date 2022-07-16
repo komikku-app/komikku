@@ -3,7 +3,6 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -13,11 +12,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 
-class AzukiHandler(currentClient: OkHttpClient) {
+class AzukiHandler(currentClient: OkHttpClient, userAgent: String) {
     val baseUrl = "https://www.azuki.co"
     private val apiUrl = "https://production.api.azuki.co"
     val headers = Headers.Builder()
-        .add("User-Agent", HttpSource.DEFAULT_USER_AGENT)
+        .add("User-Agent", userAgent)
         .build()
 
     val client: OkHttpClient = currentClient
