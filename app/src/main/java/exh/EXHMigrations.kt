@@ -5,6 +5,7 @@ package exh
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import eu.kanade.data.DatabaseHandler
+import eu.kanade.data.category.categoryMapper
 import eu.kanade.data.chapter.chapterMapper
 import eu.kanade.domain.chapter.interactor.DeleteChapters
 import eu.kanade.domain.chapter.interactor.UpdateChapter
@@ -39,6 +40,7 @@ import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.system.DeviceUtil
+import eu.kanade.tachiyomi.util.system.logcat
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.merged.sql.models.MergedMangaReference
@@ -268,36 +270,40 @@ object EXHMigrations {
                     }
                 }
                 if (oldVersion under 20) {
-                    val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
-                    val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
+                    try {
+                        val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
+                        val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
 
-                    val newSortingMode = when (oldSortingMode) {
-                        LibrarySort.ALPHA -> SortModeSetting.ALPHABETICAL
-                        LibrarySort.LAST_READ -> SortModeSetting.LAST_READ
-                        LibrarySort.LAST_CHECKED -> SortModeSetting.LAST_MANGA_UPDATE
-                        LibrarySort.UNREAD -> SortModeSetting.UNREAD_COUNT
-                        LibrarySort.TOTAL -> SortModeSetting.TOTAL_CHAPTERS
-                        LibrarySort.LATEST_CHAPTER -> SortModeSetting.LATEST_CHAPTER
-                        LibrarySort.CHAPTER_FETCH_DATE -> SortModeSetting.CHAPTER_FETCH_DATE
-                        LibrarySort.DATE_ADDED -> SortModeSetting.DATE_ADDED
-                        LibrarySort.DRAG_AND_DROP -> SortModeSetting.DRAG_AND_DROP
-                        LibrarySort.TAG_LIST -> SortModeSetting.TAG_LIST
-                        else -> SortModeSetting.ALPHABETICAL
-                    }
+                        val newSortingMode = when (oldSortingMode) {
+                            LibrarySort.ALPHA -> SortModeSetting.ALPHABETICAL
+                            LibrarySort.LAST_READ -> SortModeSetting.LAST_READ
+                            LibrarySort.LAST_CHECKED -> SortModeSetting.LAST_MANGA_UPDATE
+                            LibrarySort.UNREAD -> SortModeSetting.UNREAD_COUNT
+                            LibrarySort.TOTAL -> SortModeSetting.TOTAL_CHAPTERS
+                            LibrarySort.LATEST_CHAPTER -> SortModeSetting.LATEST_CHAPTER
+                            LibrarySort.CHAPTER_FETCH_DATE -> SortModeSetting.CHAPTER_FETCH_DATE
+                            LibrarySort.DATE_ADDED -> SortModeSetting.DATE_ADDED
+                            LibrarySort.DRAG_AND_DROP -> SortModeSetting.DRAG_AND_DROP
+                            LibrarySort.TAG_LIST -> SortModeSetting.TAG_LIST
+                            else -> SortModeSetting.ALPHABETICAL
+                        }
 
-                    val newSortingDirection = when (oldSortingDirection) {
-                        true -> SortDirectionSetting.ASCENDING
-                        else -> SortDirectionSetting.DESCENDING
-                    }
+                        val newSortingDirection = when (oldSortingDirection) {
+                            true -> SortDirectionSetting.ASCENDING
+                            else -> SortDirectionSetting.DESCENDING
+                        }
 
-                    prefs.edit(commit = true) {
-                        remove(PreferenceKeys.librarySortingMode)
-                        remove(PreferenceKeys.librarySortingDirection)
-                    }
+                        prefs.edit(commit = true) {
+                            remove(PreferenceKeys.librarySortingMode)
+                            remove(PreferenceKeys.librarySortingDirection)
+                        }
 
-                    prefs.edit {
-                        putString(PreferenceKeys.librarySortingMode, newSortingMode.name)
-                        putString(PreferenceKeys.librarySortingDirection, newSortingDirection.name)
+                        prefs.edit {
+                            putString(PreferenceKeys.librarySortingMode, newSortingMode.name)
+                            putString(PreferenceKeys.librarySortingDirection, newSortingDirection.name)
+                        }
+                    } catch (e: Exception) {
+                        logcat(throwable = e) { "Already done migration" }
                     }
                 }
                 if (oldVersion under 21) {
@@ -413,9 +419,24 @@ object EXHMigrations {
                         SortModeSetting.LAST_CHECKED -> SortModeSetting.LAST_MANGA_UPDATE
                         SortModeSetting.UNREAD -> SortModeSetting.UNREAD_COUNT
                         SortModeSetting.DATE_FETCHED -> SortModeSetting.CHAPTER_FETCH_DATE
+                        SortModeSetting.DRAG_AND_DROP -> SortModeSetting.ALPHABETICAL
                         else -> oldSortingMode
                     }
                     preferences.librarySortingMode().set(newSortingMode)
+                    runBlocking {
+                        handler.await(true) {
+                            categoriesQueries.getCategories(categoryMapper).executeAsList()
+                                .filter { SortModeSetting.fromFlag(it.flags) == SortModeSetting.DRAG_AND_DROP }
+                                .forEach {
+                                    categoriesQueries.update(
+                                        categoryId = it.id,
+                                        flags = it.flags xor SortModeSetting.DRAG_AND_DROP.flag,
+                                        name = null,
+                                        order = null,
+                                    )
+                                }
+                        }
+                    }
                 }
 
                 // if (oldVersion under 1) { } (1 is current release version)

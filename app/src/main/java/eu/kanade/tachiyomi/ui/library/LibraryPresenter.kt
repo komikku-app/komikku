@@ -527,9 +527,6 @@ class LibraryPresenter(
                     i1.manga.date_added.compareTo(i2.manga.date_added)
                 }
                 // SY -->
-                SortModeSetting.DRAG_AND_DROP -> {
-                    0
-                }
                 SortModeSetting.TAG_LIST -> {
                     val manga1IndexOfTag = listOfTags.indexOfFirst { i1.manga.getGenres()?.contains(it) ?: false }
                     val manga2IndexOfTag = listOfTags.indexOfFirst { i2.manga.getGenres()?.contains(it) ?: false }
@@ -589,7 +586,7 @@ class LibraryPresenter(
         val items = if (groupType == LibraryGroup.BY_DEFAULT) {
             map
         } else if (!libraryIsGrouped) {
-            editedCategories = listOf(Category(0, "All", 0, 0, emptyList()))
+            editedCategories = listOf(Category(0, "All", 0, 0))
             mapOf(
                 0L to map.values.flatten().distinctBy { it.manga.id },
             )
@@ -1138,7 +1135,7 @@ class LibraryPresenter(
             LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.values.filter { it.first in map.keys }
             else -> grouping.values
         }.map { (id, name) ->
-            Category(id, name, 0, 0, emptyList())
+            Category(id, name, 0, 0)
         }
 
         return map to categories

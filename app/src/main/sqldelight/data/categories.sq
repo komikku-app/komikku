@@ -13,8 +13,7 @@ SELECT
 _id AS id,
 name,
 sort AS `order`,
-flags,
-manga_order AS `mangaOrder`
+flags
 FROM categories
 ORDER BY sort;
 
@@ -23,8 +22,7 @@ SELECT
 C._id AS id,
 C.name,
 C.sort AS `order`,
-C.flags,
-C.manga_order AS `mangaOrder`
+C.flags
 FROM categories C
 JOIN mangas_categories MC
 ON C._id = MC.category_id
@@ -32,7 +30,7 @@ WHERE MC.manga_id = :mangaId;
 
 insert:
 INSERT INTO categories(name, sort, flags, manga_order)
-VALUES (:name, :order, :flags, :mangaOrder);
+VALUES (:name, :order, :flags, NULL);
 
 delete:
 DELETE FROM categories
@@ -42,8 +40,7 @@ update:
 UPDATE categories
 SET name = coalesce(:name, name),
     sort = coalesce(:order, sort),
-    flags = coalesce(:flags, flags),
-    manga_order = coalesce(:mangaOrder, manga_order)
+    flags = coalesce(:flags, flags)
 WHERE _id = :categoryId;
 
 selectLastInsertedRowId:

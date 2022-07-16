@@ -12,8 +12,12 @@ enum class SortModeSetting(val flag: Long) {
     LATEST_CHAPTER(0b00010100),
     CHAPTER_FETCH_DATE(0b00011000),
     DATE_ADDED(0b00011100),
+
+    // SY -->
+    @Deprecated("Was unused")
     DRAG_AND_DROP(0b00100000),
     TAG_LIST(0b00100100),
+    // SY <--
 
     @Deprecated("Use LAST_MANGA_UPDATE")
     LAST_CHECKED(0b00001000),

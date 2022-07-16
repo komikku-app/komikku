@@ -14,9 +14,6 @@ data class Category(
     val name: String,
     val order: Long,
     val flags: Long,
-    // SY -->
-    val mangaOrder: List<Long>,
-    // SY <--
 ) : Serializable {
 
     val displayMode: Long
@@ -35,7 +32,6 @@ data class Category(
                 name = context.getString(R.string.label_default),
                 order = 0,
                 flags = 0,
-                mangaOrder = emptyList(),
             )
         }
     }

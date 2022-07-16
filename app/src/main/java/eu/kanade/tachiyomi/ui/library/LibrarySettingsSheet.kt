@@ -216,14 +216,13 @@ class LibrarySettingsSheet(
             private val dateAdded = Item.MultiSort(R.string.action_sort_date_added, this)
 
             // SY -->
-            private val dragAndDrop = Item.MultiSort(R.string.action_sort_drag_and_drop, this)
             private val tagList = Item.MultiSort(R.string.tag_sorting, this)
             // SY <--
 
             override val header = null
 
             override val items =
-                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, chapterFetchDate, dateAdded /* SY --> */, dragAndDrop) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() // SY <--
+                listOf(alphabetically, lastRead, lastChecked, unread, total, latestChapter, chapterFetchDate, dateAdded /* SY --> */) + if (preferences.sortTagsForLibrary().get().isNotEmpty()) listOf(tagList) else emptyList() // SY <--
             override val footer = null
 
             override fun initModels() {
@@ -251,8 +250,6 @@ class LibrarySettingsSheet(
                 dateAdded.state =
                     if (sorting == SortModeSetting.DATE_ADDED) order else Item.MultiSort.SORT_NONE
                 // SY -->
-                dragAndDrop.state =
-                    if (sorting == SortModeSetting.DRAG_AND_DROP) order else Item.MultiSort.SORT_NONE
                 tagList.state =
                     if (sorting == SortModeSetting.TAG_LIST) order else Item.MultiSort.SORT_NONE
                 // SY <--
@@ -260,27 +257,19 @@ class LibrarySettingsSheet(
 
             override fun onItemClicked(item: Item) {
                 item as Item.MultiStateGroup
-                // SY -->
-                if (item == dragAndDrop && preferences.groupLibraryBy().get() != LibraryGroup.BY_DEFAULT) return
-                // SY <--
                 val prevState = item.state
 
                 item.group.items.forEach {
                     (it as Item.MultiStateGroup).state =
                         Item.MultiSort.SORT_NONE
                 }
-                // SY -->
-                if (item == dragAndDrop) {
-                    item.state = Item.MultiSort.SORT_ASC
-                } else {
-                    item.state = when (prevState) {
-                        Item.MultiSort.SORT_NONE -> Item.MultiSort.SORT_ASC
-                        Item.MultiSort.SORT_ASC -> Item.MultiSort.SORT_DESC
-                        Item.MultiSort.SORT_DESC -> Item.MultiSort.SORT_ASC
-                        else -> throw Exception("Unknown state")
-                    }
+
+                item.state = when (prevState) {
+                    Item.MultiSort.SORT_NONE -> Item.MultiSort.SORT_ASC
+                    Item.MultiSort.SORT_ASC -> Item.MultiSort.SORT_DESC
+                    Item.MultiSort.SORT_DESC -> Item.MultiSort.SORT_ASC
+                    else -> throw Exception("Unknown state")
                 }
-                // SY <--
 
                 item.state = when (prevState) {
                     Item.MultiSort.SORT_NONE -> Item.MultiSort.SORT_ASC
@@ -329,7 +318,6 @@ class LibrarySettingsSheet(
                     chapterFetchDate -> SortModeSetting.CHAPTER_FETCH_DATE
                     dateAdded -> SortModeSetting.DATE_ADDED
                     // SY -->
-                    dragAndDrop -> SortModeSetting.DRAG_AND_DROP
                     tagList -> SortModeSetting.TAG_LIST
                     // SY <--
                     else -> throw NotImplementedError("Unknown display mode")
@@ -590,12 +578,6 @@ class LibrarySettingsSheet(
 
             override fun onItemClicked(item: Item) {
                 item as Item.DrawableSelection
-                if (item.id != LibraryGroup.BY_DEFAULT && preferences.librarySortingMode().get() == SortModeSetting.DRAG_AND_DROP) {
-                    preferences.librarySortingMode().set(SortModeSetting.ALPHABETICAL)
-                    preferences.librarySortingAscending().set(SortDirectionSetting.ASCENDING)
-                    sort.adjustDisplaySelection()
-                }
-
                 item.group.items.forEach {
                     (it as Item.DrawableSelection).state =
                         Item.DrawableSelection.NOT_SELECTED

@@ -293,7 +293,7 @@ class FullBackupManager(context: Context) : AbstractBackupManager(context) {
                     // Let the db assign the id
                     category.id = null
                     category.id = handler.awaitOne {
-                        categoriesQueries.insert(category.name, category.order.toLong(), category.flags.toLong(), category.mangaOrder)
+                        categoriesQueries.insert(category.name, category.order.toLong(), category.flags.toLong())
                         categoriesQueries.selectLastInsertedRowId()
                     }.toInt()
                 }

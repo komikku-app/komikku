@@ -24,7 +24,6 @@ class CreateCategoryWithName(
             name = name,
             order = nextOrder,
             flags = 0,
-            mangaOrder = emptyList(),
         )
 
         try {

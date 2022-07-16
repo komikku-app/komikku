@@ -16,10 +16,6 @@ interface Category : Serializable {
 
     var flags: Int
 
-    // SY -->
-    var mangaOrder: List<Long>
-    // SY <--
-
     private fun setFlags(flag: Int, mask: Int) {
         flags = flags and mask.inv() or (flag and mask)
     }
@@ -44,6 +40,5 @@ fun Category.toDomainCategory(): DomainCategory? {
         name = this.name,
         order = this.order.toLong(),
         flags = this.flags.toLong(),
-        mangaOrder = mangaOrder,
     )
 }

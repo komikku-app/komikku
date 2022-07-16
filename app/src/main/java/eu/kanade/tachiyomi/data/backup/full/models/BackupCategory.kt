@@ -12,23 +12,22 @@ class BackupCategory(
     // Bump by 100 to specify this is a 0.x value
     @ProtoNumber(100) var flags: Long = 0,
     // SY specific values
-    @ProtoNumber(600) var mangaOrder: List<Long> = emptyList(),
+    /*@ProtoNumber(600) var mangaOrder: List<Long> = emptyList(),*/
 ) {
     fun getCategoryImpl(): CategoryImpl {
         return CategoryImpl().apply {
             name = this@BackupCategory.name
             flags = this@BackupCategory.flags.toInt()
             order = this@BackupCategory.order.toInt()
-            mangaOrder = this@BackupCategory.mangaOrder
+            /*mangaOrder = this@BackupCategory.mangaOrder*/
         }
     }
 }
 
-val backupCategoryMapper = { _: Long, name: String, order: Long, flags: Long, mangaOrder: List<Long> ->
+val backupCategoryMapper = { _: Long, name: String, order: Long, flags: Long ->
     BackupCategory(
         name = name,
         order = order,
         flags = flags,
-        mangaOrder = mangaOrder,
     )
 }
