@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
@@ -107,7 +108,7 @@ class LibraryAdapter(
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 TachiyomiTheme {
-                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall, LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
                         val nestedScrollInterop = rememberNestedScrollInteropConnection()
 
                         val category = presenter.categories[position]
@@ -146,9 +147,7 @@ class LibraryAdapter(
                                         items = mangaList,
                                         selection = presenter.selection,
                                         onClick = onClickManga,
-                                        onLongClick = {
-                                            presenter.toggleSelection(it)
-                                        },
+                                        onLongClick = onLongClickManga,
                                     )
                                 }
                                 DisplayModeSetting.COMPACT_GRID -> {
