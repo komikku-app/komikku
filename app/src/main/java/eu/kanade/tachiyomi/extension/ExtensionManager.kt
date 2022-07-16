@@ -15,7 +15,6 @@ import eu.kanade.tachiyomi.extension.util.ExtensionInstallReceiver
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.extension.util.ExtensionLoader
 import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.lang.launchNow
 import eu.kanade.tachiyomi.util.preference.plusAssign
 import eu.kanade.tachiyomi.util.system.logcat
@@ -103,20 +102,21 @@ class ExtensionManager(
     }
 
     /**
-     * Relay used to notify the available extensions.
-     */
-    private val availableExtensionsRelay = BehaviorRelay.create<List<Extension.Available>>()
-
-    /**
      * List of the currently available extensions.
      */
     var availableExtensions = emptyList<Extension.Available>()
         private set(value) {
             field = value
-            availableExtensionsRelay.call(value)
+            availableExtensionsFlow.value = field
             updatedInstalledExtensionsStatuses(value)
             setupAvailableExtensionsSourcesDataMap(value)
         }
+
+    private val availableExtensionsFlow = MutableStateFlow(availableExtensions)
+
+    fun getAvailableExtensionsFlow(): StateFlow<List<Extension.Available>> {
+        return availableExtensionsFlow.asStateFlow()
+    }
 
     private var availableExtensionsSourcesData: Map<Long, SourceData> = mapOf()
 
@@ -134,29 +134,21 @@ class ExtensionManager(
     // SY <--
 
     /**
-     * Relay used to notify the untrusted extensions.
-     */
-    private val untrustedExtensionsRelay = BehaviorRelay.create<List<Extension.Untrusted>>()
-
-    /**
      * List of the currently untrusted extensions.
      */
     var untrustedExtensions = emptyList<Extension.Untrusted>()
         private set(value) {
             field = value
-            untrustedExtensionsRelay.call(value)
+            untrustedExtensionsFlow.value = field
         }
 
-    /**
-     * The source manager where the sources of the extensions are added.
-     */
-    private lateinit var sourceManager: SourceManager
+    private val untrustedExtensionsFlow = MutableStateFlow(untrustedExtensions)
 
-    /**
-     * Initializes this manager with the given source manager.
-     */
-    fun init(sourceManager: SourceManager) {
-        this.sourceManager = sourceManager
+    fun getUntrustedExtensionsFlow(): StateFlow<List<Extension.Untrusted>> {
+        return untrustedExtensionsFlow.asStateFlow()
+    }
+
+    init {
         initExtensions()
         ExtensionInstallReceiver(InstallationListener()).register(context)
     }
@@ -170,9 +162,6 @@ class ExtensionManager(
         installedExtensions = extensions
             .filterIsInstance<LoadResult.Success>()
             .map { it.extension }
-        installedExtensions
-            .flatMap { it.sources }
-            .forEach { sourceManager.registerSource(it) }
 
         untrustedExtensions = extensions
             .filterIsInstance<LoadResult.Untrusted>()
@@ -197,27 +186,6 @@ class ExtensionManager(
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }
     // EXH <--
-
-    /**
-     * Returns the relay of the installed extensions as an observable.
-     */
-    fun getInstalledExtensionsObservable(): Observable<List<Extension.Installed>> {
-        return installedExtensionsRelay.asObservable()
-    }
-
-    /**
-     * Returns the relay of the available extensions as an observable.
-     */
-    fun getAvailableExtensionsObservable(): Observable<List<Extension.Available>> {
-        return availableExtensionsRelay.asObservable()
-    }
-
-    /**
-     * Returns the relay of the untrusted extensions as an observable.
-     */
-    fun getUntrustedExtensionsObservable(): Observable<List<Extension.Untrusted>> {
-        return untrustedExtensionsRelay.asObservable()
-    }
 
     /**
      * Finds the available extensions in the [api] and updates [availableExtensions].
@@ -378,7 +346,6 @@ class ExtensionManager(
         // SY <--
 
         installedExtensions += extension
-        extension.sources.forEach { sourceManager.registerSource(it) }
     }
 
     /**
@@ -399,11 +366,9 @@ class ExtensionManager(
         val oldExtension = mutInstalledExtensions.find { it.pkgName == extension.pkgName }
         if (oldExtension != null) {
             mutInstalledExtensions -= oldExtension
-            extension.sources.forEach { sourceManager.unregisterSource(it) }
         }
         mutInstalledExtensions += extension
         installedExtensions = mutInstalledExtensions
-        extension.sources.forEach { sourceManager.registerSource(it) }
     }
 
     /**
@@ -416,7 +381,6 @@ class ExtensionManager(
         val installedExtension = installedExtensions.find { it.pkgName == pkgName }
         if (installedExtension != null) {
             installedExtensions -= installedExtension
-            installedExtension.sources.forEach { sourceManager.unregisterSource(it) }
         }
         val untrustedExtension = untrustedExtensions.find { it.pkgName == pkgName }
         if (untrustedExtension != null) {
