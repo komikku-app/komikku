@@ -1,6 +1,15 @@
 package eu.kanade.tachiyomi.ui.library
 
 import android.os.Bundle
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.util.fastAny
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.core.util.asObservable
 import eu.kanade.data.DatabaseHandler
@@ -13,8 +22,11 @@ import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.interactor.UpdateChapter
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetLibraryManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
+import eu.kanade.domain.manga.interactor.GetSearchTags
+import eu.kanade.domain.manga.interactor.GetSearchTitles
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
@@ -22,6 +34,7 @@ import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
@@ -33,20 +46,37 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
+import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.isNullOrUnsubscribed
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView.Item.TriStateGroup.State
 import exh.favorites.FavoritesSyncHelper
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
+import exh.metadata.sql.models.SearchTag
+import exh.metadata.sql.models.SearchTitle
+import exh.search.Namespace
+import exh.search.QueryComponent
+import exh.search.SearchEngine
+import exh.search.Text
 import exh.source.MERGED_SOURCE_ID
 import exh.source.isEhBasedManga
+import exh.source.isMetadataSource
+import exh.util.cancellable
 import exh.util.isLewd
 import exh.util.nullIfBlank
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import rx.Observable
 import rx.Subscription
@@ -88,9 +118,13 @@ class LibraryPresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     // SY -->
+    private val searchEngine: SearchEngine = SearchEngine(),
     private val customMangaManager: CustomMangaManager = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChapterByMangaId = Injekt.get(),
+    private val getIdsOfFavoriteMangaWithMetadata: GetIdsOfFavoriteMangaWithMetadata = Injekt.get(),
+    private val getSearchTags: GetSearchTags = Injekt.get(),
+    private val getSearchTitles: GetSearchTitles = Injekt.get(),
     // SY <--
 ) : BasePresenter<LibraryController>() {
 
@@ -99,8 +133,23 @@ class LibraryPresenter(
     /**
      * Categories of the library.
      */
-    var categories: List<Category> = emptyList()
+    var categories: List<Category> = mutableStateListOf()
         private set
+
+    var loadedManga = mutableStateMapOf<Long, List<LibraryItem>>()
+        private set
+
+    val loadedMangaFlow = MutableStateFlow(loadedManga)
+
+    var searchQuery by mutableStateOf(query)
+
+    val selection: MutableList<LibraryManga> = mutableStateListOf()
+
+    val isPerCategory by mutableStateOf(preferences.categorizedDisplaySettings().get())
+
+    var columns by mutableStateOf(0)
+
+    var currentDisplayMode by mutableStateOf(preferences.libraryDisplayMode().get())
 
     /**
      * Relay used to apply the UI filters to the last emission of the library.
@@ -132,6 +181,10 @@ class LibraryPresenter(
 
     private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
+    private val services = trackManager.services.associate { service ->
+        service.id to context.getString(service.nameRes())
+    }
+
     /**
      * Relay used to apply the UI update to the last emission of the library.
      */
@@ -145,6 +198,14 @@ class LibraryPresenter(
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
+        preferences.libraryDisplayMode()
+            .asFlow()
+            .drop(1)
+            .onEach {
+                currentDisplayMode = it
+            }
+            .launchIn(presenterScope)
+
         subscribeLibrary()
     }
 
@@ -567,11 +628,7 @@ class LibraryPresenter(
             .map { list ->
                 list.map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category
-                    LibraryItem(
-                        libraryManga,
-                        shouldSetFromCategory,
-                        defaultLibraryDisplayMode,
-                    )
+                    LibraryItem(libraryManga)
                 }.groupBy { it.manga.category.toLong() }
             }
     }
@@ -711,7 +768,7 @@ class LibraryPresenter(
     }
 
     // SY -->
-    fun cleanTitles(mangas: List<Manga>) {
+    fun cleanTitles(mangas: List<DbManga>) {
         mangas.forEach { manga ->
             val editedTitle = manga.title.replace("\\[.*?]".toRegex(), "").trim().replace("\\(.*?\\)".toRegex(), "").trim().replace("\\{.*?\\}".toRegex(), "").trim().let {
                 if (it.contains("|")) {
@@ -724,18 +781,18 @@ class LibraryPresenter(
             val mangaJson = CustomMangaManager.MangaJson(
                 id = manga.id,
                 title = editedTitle.nullIfBlank(),
-                author = manga.author.takeUnless { it == manga.ogAuthor },
-                artist = manga.artist.takeUnless { it == manga.ogArtist },
-                description = manga.description.takeUnless { it == manga.ogDescription },
-                genre = manga.genre.takeUnless { it == manga.ogGenre },
-                status = manga.status.takeUnless { it == manga.ogStatus }?.toLong(),
+                author = manga.author.takeUnless { it == manga.originalAuthor },
+                artist = manga.artist.takeUnless { it == manga.originalArtist },
+                description = manga.description.takeUnless { it == manga.originalDescription },
+                genre = manga.getGenres().takeUnless { it == manga.getOriginalGenres() },
+                status = manga.status.takeUnless { it == manga.originalStatus }?.toLong(),
             )
 
             customMangaManager.saveMangaInfo(mangaJson)
         }
     }
 
-    fun syncMangaToDex(mangaList: List<Manga>) {
+    fun syncMangaToDex(mangaList: List<DbManga>) {
         launchIO {
             MdUtil.getEnabledMangaDex(preferences, sourceManager)?.let { mdex ->
                 mangaList.forEach {
@@ -819,6 +876,173 @@ class LibraryPresenter(
                 setMangaCategories.await(manga.id, categoryIds)
             }
         }
+    }
+
+    // SY -->
+    @Composable
+    fun getMangaForCategory(categoryId: Long): androidx.compose.runtime.State<List<LibraryItem>> {
+        val unfiltered = loadedManga[categoryId] ?: emptyList()
+
+        return produceState(initialValue = unfiltered, searchQuery) {
+            val query = searchQuery
+            value = withIOContext {
+                if (unfiltered.isNotEmpty() && query.isNotBlank()) {
+                    // Prepare filter object
+                    val parsedQuery = searchEngine.parseQuery(query)
+                    val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
+                    unfiltered.asFlow().cancellable().filter { item ->
+                        if (isMetadataSource(item.manga.source)) {
+                            val mangaId = item.manga.id ?: -1
+                            if (mangaWithMetaIds.binarySearch(mangaId) < 0) {
+                                // No meta? Filter using title
+                                filterManga(parsedQuery, item.manga)
+                            } else {
+                                val tags = getSearchTags.await(mangaId)
+                                val titles = getSearchTitles.await(mangaId)
+                                filterManga(parsedQuery, item.manga, false, tags, titles)
+                            }
+                        } else {
+                            filterManga(parsedQuery, item.manga)
+                        }
+                    }.toList()
+                } else {
+                    unfiltered
+                }
+            }
+        }
+    }
+
+    private suspend fun filterManga(
+        queries: List<QueryComponent>,
+        manga: LibraryManga,
+        checkGenre: Boolean = true,
+        searchTags: List<SearchTag>? = null,
+        searchTitles: List<SearchTitle>? = null,
+    ): Boolean {
+        val mappedQueries = queries.groupBy { it.excluded }
+        val tracks = if (loggedServices.isNotEmpty()) getTracks.await(manga.id!!).toList() else null
+        val source = sourceManager.get(manga.source)
+        val genre = if (checkGenre) manga.getGenres().orEmpty() else emptyList()
+        val hasNormalQuery = mappedQueries[false]?.all { queryComponent ->
+            when (queryComponent) {
+                is Text -> {
+                    val query = queryComponent.asQuery()
+                    manga.title.contains(query, true) ||
+                        (manga.author?.contains(query, true) == true) ||
+                        (manga.artist?.contains(query, true) == true) ||
+                        (manga.description?.contains(query, true) == true) ||
+                        (source?.name?.contains(query, true) == true) ||
+                        (loggedServices.isNotEmpty() && tracks != null && filterTracks(query, tracks)) ||
+                        (genre.any { it.contains(query, true) }) ||
+                        (searchTags.orEmpty().any { it.name.contains(query, true) }) ||
+                        (searchTitles.orEmpty().any { it.title.contains(query, true) })
+                }
+                is Namespace -> {
+                    searchTags != null && searchTags.any {
+                        val tag = queryComponent.tag
+                        (it.namespace != null && it.namespace.contains(queryComponent.namespace, true) && tag != null && it.name.contains(tag.asQuery(), true)) ||
+                            (tag == null && it.namespace != null && it.namespace.contains(queryComponent.namespace, true))
+                    }
+                }
+                else -> true
+            }
+        }
+        val doesNotHaveExcludedQuery = mappedQueries[true]?.all { queryComponent ->
+            when (queryComponent) {
+                is Text -> {
+                    val query = queryComponent.asQuery()
+                    query.isBlank() || (
+                        (!manga.title.contains(query, true)) &&
+                            (!manga.author.orEmpty().contains(query, true)) &&
+                            (!manga.artist.orEmpty().contains(query, true)) &&
+                            (!manga.description.orEmpty().contains(query, true)) &&
+                            (!source?.name.orEmpty().contains(query, true)) &&
+                            (loggedServices.isEmpty() || loggedServices.isNotEmpty() && tracks == null || tracks != null && !filterTracks(query, tracks)) &&
+                            (genre.none { it.contains(query, true) }) &&
+                            (searchTags.orEmpty().none { it.name.contains(query, true) }) &&
+                            (searchTitles.orEmpty().none { it.title.contains(query, true) })
+                        )
+                }
+                is Namespace -> {
+                    val searchedTag = queryComponent.tag?.asQuery()
+                    searchTags == null || searchTags.all { mangaTag ->
+                        if (searchedTag == null || searchedTag.isBlank()) {
+                            mangaTag.namespace == null || !mangaTag.namespace.contains(queryComponent.namespace, true)
+                        } else if (mangaTag.namespace == null) {
+                            true
+                        } else {
+                            !(mangaTag.name.contains(searchedTag, true) && mangaTag.namespace.contains(queryComponent.namespace, true))
+                        }
+                    }
+                }
+                else -> true
+            }
+        }
+
+        return (hasNormalQuery != null && doesNotHaveExcludedQuery != null && hasNormalQuery && doesNotHaveExcludedQuery) ||
+            (hasNormalQuery != null && doesNotHaveExcludedQuery == null && hasNormalQuery) ||
+            (hasNormalQuery == null && doesNotHaveExcludedQuery != null && doesNotHaveExcludedQuery)
+    }
+
+    private fun filterTracks(constraint: String, tracks: List<eu.kanade.domain.track.model.Track>): Boolean {
+        return tracks.any {
+            val trackService = trackManager.getService(it.syncId)
+            if (trackService != null) {
+                val status = trackService.getStatus(it.status.toInt())
+                val name = services[it.syncId]
+                return@any status.contains(constraint, true) || name?.contains(constraint, true) == true
+            }
+            return@any false
+        }
+    }
+    // SY <--
+
+    @Composable
+    fun getDisplayMode(index: Int): DisplayModeSetting {
+        val category = categories[index]
+        return remember {
+            if (isPerCategory.not() || category.id == 0L) {
+                currentDisplayMode
+            } else {
+                DisplayModeSetting.fromFlag(category.displayMode)
+            }
+        }
+    }
+
+    fun hasSelection(): Boolean {
+        return selection.isNotEmpty()
+    }
+
+    fun clearSelection() {
+        selection.clear()
+    }
+
+    fun toggleSelection(manga: LibraryManga) {
+        if (selection.fastAny { it.id == manga.id }) {
+            selection.remove(manga)
+        } else {
+            selection.add(manga)
+        }
+        view?.invalidateActionMode()
+        view?.createActionModeIfNeeded()
+    }
+
+    fun selectAll(index: Int) {
+        val category = categories[index]
+        val items = loadedManga[category.id] ?: emptyList()
+        selection.addAll(items.filterNot { it.manga in selection }.map { it.manga })
+        view?.createActionModeIfNeeded()
+        view?.invalidateActionMode()
+    }
+
+    fun invertSelection(index: Int) {
+        val category = categories[index]
+        val items = (loadedManga[category.id] ?: emptyList()).map { it.manga }
+        val invert = items.filterNot { it in selection }
+        selection.removeAll(items)
+        selection.addAll(invert)
+        view?.createActionModeIfNeeded()
+        view?.invalidateActionMode()
     }
 
     // SY -->
