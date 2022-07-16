@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MigrationMangaController : ComposeController<MigrationMangaPresenter> {
+class MigrationMangaController : ComposeController<MigrateMangaPresenter> {
 
     constructor(sourceId: Long, sourceName: String?) : super(
         bundleOf(
@@ -33,7 +33,7 @@ class MigrationMangaController : ComposeController<MigrationMangaPresenter> {
 
     override fun getTitle(): String? = sourceName
 
-    override fun createPresenter(): MigrationMangaPresenter = MigrationMangaPresenter(sourceId)
+    override fun createPresenter(): MigrateMangaPresenter = MigrateMangaPresenter(sourceId)
 
     @Composable
     override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {

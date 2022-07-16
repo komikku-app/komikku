@@ -16,7 +16,6 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.manga.MigrationMangaController
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -46,10 +45,6 @@ class MigrationSourcesController : ComposeController<MigrationSourcesPresenter>(
                         source.name,
                     ),
                 )
-            },
-            onLongClickItem = { source ->
-                val sourceId = source.id.toString()
-                activity?.copyToClipboard(sourceId, sourceId)
             },
             onClickAll = { source ->
                 // TODO: Jay wtf, need to clean this up sometime

@@ -6,29 +6,33 @@ import eu.kanade.domain.source.interactor.ToggleLanguage
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSources
 import eu.kanade.domain.source.model.Source
+import eu.kanade.presentation.browse.SourcesFilterState
+import eu.kanade.presentation.browse.SourcesFilterStateImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import eu.kanade.tachiyomi.util.system.logcat
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
+import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class SourcesFilterPresenter(
+    private val state: SourcesFilterStateImpl = SourcesFilterState() as SourcesFilterStateImpl,
     private val getLanguagesWithSources: GetLanguagesWithSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleLanguage: ToggleLanguage = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
     // SY -->
     private val toggleSources: ToggleSources = Injekt.get(),
-// SY <--
-) : BasePresenter<SourceFilterController>() {
+    // SY <--
+) : BasePresenter<SourceFilterController>(), SourcesFilterState by state {
 
-    private val _state: MutableStateFlow<SourceFilterState> = MutableStateFlow(SourceFilterState.Loading)
-    val state: StateFlow<SourceFilterState> = _state.asStateFlow()
+    private val _events = Channel<Event>(Int.MAX_VALUE)
+    val events = _events.receiveAsFlow()
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
@@ -36,14 +40,15 @@ class SourcesFilterPresenter(
         presenterScope.launchIO {
             getLanguagesWithSources.subscribe()
                 .catch { exception ->
-                    _state.value = SourceFilterState.Error(exception)
+                    logcat(LogPriority.ERROR, exception)
+                    _events.send(Event.FailedFetchingLanguages)
                 }
                 .collectLatest(::collectLatestSourceLangMap)
         }
     }
 
     private fun collectLatestSourceLangMap(sourceLangMap: Map<String, List<Source>>) {
-        val uiModels = sourceLangMap.flatMap {
+        state.items = sourceLangMap.flatMap {
             val isLangEnabled = it.key in preferences.enabledLanguages().get()
             val header = listOf(FilterUiModel.Header(it.key, isLangEnabled))
             // SY -->
@@ -64,7 +69,7 @@ class SourcesFilterPresenter(
                 )
             }
         }
-        _state.value = SourceFilterState.Success(uiModels)
+        state.isLoading = false
     }
 
     fun toggleSource(source: Source) {
@@ -80,10 +85,8 @@ class SourcesFilterPresenter(
         toggleSources.await(isEnable, sources)
     }
     // SY <--
-}
 
-sealed class SourceFilterState {
-    object Loading : SourceFilterState()
-    data class Error(val error: Throwable) : SourceFilterState()
-    data class Success(val models: List<FilterUiModel>) : SourceFilterState()
+    sealed class Event {
+        object FailedFetchingLanguages : Event()
+    }
 }

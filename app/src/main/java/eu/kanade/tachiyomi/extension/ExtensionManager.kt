@@ -26,6 +26,9 @@ import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.source.MERGED_SOURCE_ID
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import logcat.LogPriority
 import rx.Observable
 import uy.kohesive.injekt.Injekt
@@ -69,8 +72,15 @@ class ExtensionManager(
     var installedExtensions = emptyList<Extension.Installed>()
         private set(value) {
             field = value
+            installedExtensionsFlow.value = field
             installedExtensionsRelay.call(value)
         }
+
+    private val installedExtensionsFlow = MutableStateFlow(installedExtensions)
+
+    fun getInstalledExtensionsFlow(): StateFlow<List<Extension.Installed>> {
+        return installedExtensionsFlow.asStateFlow()
+    }
 
     fun getAppIconForSource(source: Source): Drawable? {
         return getAppIconForSource(source.id)

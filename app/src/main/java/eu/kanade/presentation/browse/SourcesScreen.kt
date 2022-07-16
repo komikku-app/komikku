@@ -20,12 +20,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -45,9 +42,11 @@ import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.LocalSource
-import eu.kanade.tachiyomi.ui.browse.source.SourceState
 import eu.kanade.tachiyomi.ui.browse.source.SourcesPresenter
+import eu.kanade.tachiyomi.ui.browse.source.SourcesPresenter.Dialog
 import eu.kanade.tachiyomi.util.system.LocaleHelper
+import eu.kanade.tachiyomi.util.system.toast
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SourcesScreen(
@@ -60,34 +59,38 @@ fun SourcesScreen(
     onClickSetCategories: (Source, List<String>) -> Unit,
     onClickToggleDataSaver: (Source) -> Unit,
 ) {
-    val state by presenter.state.collectAsState()
-
-    when (state) {
-        is SourceState.Loading -> LoadingScreen()
-        is SourceState.Error -> Text(text = (state as SourceState.Error).error.message!!)
-        is SourceState.Success -> SourceList(
-            nestedScrollConnection = nestedScrollInterop,
-            list = (state as SourceState.Success).uiModels,
-            categories = (state as SourceState.Success).sourceCategories,
-            showPin = (state as SourceState.Success).showPin,
-            showLatest = (state as SourceState.Success).showLatest,
-            onClickItem = onClickItem,
-            onClickDisable = onClickDisable,
-            onClickLatest = onClickLatest,
-            onClickPin = onClickPin,
-            onClickSetCategories = onClickSetCategories,
-            onClickToggleDataSaver = onClickToggleDataSaver,
-        )
+    val context = LocalContext.current
+    when {
+        presenter.isLoading -> LoadingScreen()
+        presenter.isEmpty -> EmptyScreen(R.string.source_empty_screen)
+        else -> {
+            SourceList(
+                nestedScrollConnection = nestedScrollInterop,
+                state = presenter,
+                onClickItem = onClickItem,
+                onClickDisable = onClickDisable,
+                onClickLatest = onClickLatest,
+                onClickPin = onClickPin,
+                onClickSetCategories = onClickSetCategories,
+                onClickToggleDataSaver = onClickToggleDataSaver,
+            )
+        }
+    }
+    LaunchedEffect(Unit) {
+        presenter.events.collectLatest { event ->
+            when (event) {
+                SourcesPresenter.Event.FailedFetchingSources -> {
+                    context.toast(R.string.internal_error)
+                }
+            }
+        }
     }
 }
 
 @Composable
 fun SourceList(
     nestedScrollConnection: NestedScrollConnection,
-    list: List<SourceUiModel>,
-    categories: List<String>,
-    showPin: Boolean,
-    showLatest: Boolean,
+    state: SourcesState,
     onClickItem: (Source) -> Unit,
     onClickDisable: (Source) -> Unit,
     onClickLatest: (Source) -> Unit,
@@ -95,22 +98,12 @@ fun SourceList(
     onClickSetCategories: (Source, List<String>) -> Unit,
     onClickToggleDataSaver: (Source) -> Unit,
 ) {
-    if (list.isEmpty()) {
-        EmptyScreen(textResource = R.string.source_empty_screen)
-        return
-    }
-
-    var sourceState by remember { mutableStateOf<Source?>(null) }
-    // SY -->
-    var sourceCategoriesState by remember { mutableStateOf<Source?>(null) }
-    // SY <--
-
     ScrollbarLazyColumn(
         modifier = Modifier.nestedScroll(nestedScrollConnection),
         contentPadding = WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(
-            items = list,
+            items = state.items,
             contentType = {
                 when (it) {
                     is SourceUiModel.Header -> "header"
@@ -135,10 +128,10 @@ fun SourceList(
                 is SourceUiModel.Item -> SourceItem(
                     modifier = Modifier.animateItemPlacement(),
                     source = model.source,
-                    showLatest = showLatest,
-                    showPin = showPin,
+                    showLatest = state.showLatest,
+                    showPin = state.showPin,
                     onClickItem = onClickItem,
-                    onLongClickItem = { sourceState = it },
+                    onLongClickItem = { state.dialog = Dialog.SourceLongClick(it) },
                     onClickLatest = onClickLatest,
                     onClickPin = onClickPin,
                 )
@@ -146,38 +139,43 @@ fun SourceList(
         }
     }
 
-    if (sourceState != null) {
-        SourceOptionsDialog(
-            source = sourceState!!,
-            onClickPin = {
-                onClickPin(sourceState!!)
-                sourceState = null
-            },
-            onClickDisable = {
-                onClickDisable(sourceState!!)
-                sourceState = null
-            },
-            onClickSetCategories = {
-                sourceCategoriesState = sourceState
-                sourceState = null
-            },
-            onClickToggleDataSaver = {
-                onClickToggleDataSaver(sourceState!!)
-                sourceState = null
-            },
-            onDismiss = { sourceState = null },
-        )
-    }
     // SY -->
-    SourceCategoriesDialog(
-        source = sourceCategoriesState,
-        categories = categories,
-        onClickCategories = { source, newCategories ->
-            onClickSetCategories(source, newCategories)
-            sourceCategoriesState = null
-        },
-        onDismiss = { sourceCategoriesState = null },
-    )
+    when (val dialog = state.dialog) {
+        is Dialog.SourceCategories -> {
+            SourceCategoriesDialog(
+                source = dialog.source,
+                categories = state.categories,
+                onClickCategories = { source, newCategories ->
+                    onClickSetCategories(source, newCategories)
+                    state.dialog = null
+                },
+                onDismiss = { state.dialog = null },
+            )
+        }
+        is Dialog.SourceLongClick -> {
+            val source = dialog.source
+            SourceOptionsDialog(
+                source = source,
+                onClickPin = {
+                    onClickPin(source)
+                    state.dialog = null
+                },
+                onClickDisable = {
+                    onClickDisable(source)
+                    state.dialog = null
+                },
+                onClickSetCategories = {
+                    state.dialog = Dialog.SourceCategories(source)
+                },
+                onClickToggleDataSaver = {
+                    onClickToggleDataSaver(source)
+                    state.dialog = null
+                },
+                onDismiss = { state.dialog = null },
+            )
+        }
+        null -> Unit
+    }
     // SY <--
 }
 
