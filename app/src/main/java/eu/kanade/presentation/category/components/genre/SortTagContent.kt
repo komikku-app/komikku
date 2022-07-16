@@ -32,9 +32,9 @@ fun SortTagContent(
                 index = index,
                 canMoveUp = index != 0,
                 canMoveDown = index != tags.lastIndex,
-                onMoveUp = onMoveUp,
-                onMoveDown = onMoveDown,
-                onDelete = { state.dialog = SortTagPresenter.Dialog.Delete(it) },
+                onMoveUp = { onMoveUp(tag, index) },
+                onMoveDown = { onMoveDown(tag, index) },
+                onDelete = { state.dialog = SortTagPresenter.Dialog.Delete(tag) },
             )
         }
     }

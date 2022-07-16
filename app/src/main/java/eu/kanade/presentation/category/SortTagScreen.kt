@@ -3,12 +3,9 @@ package eu.kanade.presentation.category
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.category.components.CategoryCreateDialog
@@ -34,15 +31,11 @@ fun SortTagScreen(
     navigateUp: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
-    val topAppBarScrollState = rememberTopAppBarScrollState()
-    val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarScrollState)
     Scaffold(
         modifier = Modifier
-            .statusBarsPadding()
-            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+            .statusBarsPadding(),
         topBar = {
             CategoryTopAppBar(
-                topAppBarScrollBehavior = topAppBarScrollBehavior,
                 navigateUp = navigateUp,
                 title = stringResource(id = R.string.action_edit_tags),
             )

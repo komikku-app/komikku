@@ -1,7 +1,9 @@
 package eu.kanade.presentation.category.components.sources
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -20,14 +22,16 @@ import eu.kanade.presentation.util.horizontalPadding
 fun SourceCategoryListItem(
     modifier: Modifier,
     category: String,
-    onRename: (String) -> Unit,
-    onDelete: (String) -> Unit,
+    onRename: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     ElevatedCard(
         modifier = modifier,
     ) {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onRename() }
                 .padding(start = horizontalPadding, top = horizontalPadding, end = horizontalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -36,10 +40,10 @@ fun SourceCategoryListItem(
         }
         Row {
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(onClick = { onRename(category) }) {
+            IconButton(onClick = onRename) {
                 Icon(imageVector = Icons.Outlined.Edit, contentDescription = "")
             }
-            IconButton(onClick = { onDelete(category) }) {
+            IconButton(onClick = onDelete) {
                 Icon(imageVector = Icons.Outlined.Delete, contentDescription = "")
             }
         }

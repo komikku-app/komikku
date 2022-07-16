@@ -27,7 +27,7 @@ fun SourceRepoContent(
             SourceRepoListItem(
                 modifier = Modifier.animateItemPlacement(),
                 repo = repo,
-                onDelete = { state.dialog = RepoPresenter.Dialog.Delete(it) },
+                onDelete = { state.dialog = RepoPresenter.Dialog.Delete(repo) },
             )
         }
     }

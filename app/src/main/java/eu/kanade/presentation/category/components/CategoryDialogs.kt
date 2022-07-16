@@ -5,11 +5,16 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.components.TextButton
 import eu.kanade.tachiyomi.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun CategoryCreateDialog(
@@ -21,6 +26,8 @@ fun CategoryCreateDialog(
     // SY <--
 ) {
     val (name, onNameChange) = remember { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
+
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
@@ -28,12 +35,12 @@ fun CategoryCreateDialog(
                 onCreate(name)
                 onDismissRequest()
             },) {
-                Text(text = stringResource(id = R.string.action_add))
+                Text(text = stringResource(R.string.action_add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(id = R.string.action_cancel))
+                Text(text = stringResource(R.string.action_cancel))
             }
         },
         title = {
@@ -47,10 +54,12 @@ fun CategoryCreateDialog(
                 }
                 // SY <--
                 OutlinedTextField(
+                    modifier = Modifier
+                        .focusRequester(focusRequester),
                     value = name,
                     onValueChange = onNameChange,
                     label = {
-                        Text(text = stringResource(id = R.string.name))
+                        Text(text = stringResource(R.string.name))
                     },
                 )
                 // SY -->
@@ -58,6 +67,12 @@ fun CategoryCreateDialog(
             // SY <--
         },
     )
+
+    LaunchedEffect(focusRequester) {
+        // TODO: https://issuetracker.google.com/issues/204502668
+        delay(100)
+        focusRequester.requestFocus()
+    }
 }
 
 @Composable
@@ -67,6 +82,7 @@ fun CategoryRenameDialog(
     category: String,
 ) {
     val (name, onNameChange) = remember { mutableStateOf(category) }
+    val focusRequester = remember { FocusRequester.Default }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
@@ -74,27 +90,35 @@ fun CategoryRenameDialog(
                 onRename(name)
                 onDismissRequest()
             },) {
-                Text(text = stringResource(id = android.R.string.ok))
+                Text(text = stringResource(android.R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(id = R.string.action_cancel))
+                Text(text = stringResource(R.string.action_cancel))
             }
         },
         title = {
-            Text(text = stringResource(id = R.string.action_rename_category))
+            Text(text = stringResource(R.string.action_rename_category))
         },
         text = {
             OutlinedTextField(
+                modifier = Modifier
+                    .focusRequester(focusRequester),
                 value = name,
                 onValueChange = onNameChange,
                 label = {
-                    Text(text = stringResource(id = R.string.name))
+                    Text(text = stringResource(R.string.name))
                 },
             )
         },
     )
+
+    LaunchedEffect(focusRequester) {
+        // TODO: https://issuetracker.google.com/issues/204502668
+        delay(100)
+        focusRequester.requestFocus()
+    }
 }
 
 @Composable
