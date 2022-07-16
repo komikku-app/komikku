@@ -25,6 +25,7 @@ import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedMangaForDownloading
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.GetSearchTags
 import eu.kanade.domain.manga.interactor.GetSearchTitles
@@ -97,6 +98,7 @@ class SYDomainModule : InjektModule {
         addFactory { CreateSortTag(get(), get()) }
         addFactory { DeleteSortTag(get(), get()) }
         addFactory { ReorderSortTag(get(), get()) }
+        addFactory { GetPagePreviews(get()) }
 
         addSingletonFactory<MangaMetadataRepository> { MangaMetadataRepositoryImpl(get()) }
         addFactory { GetFlatMetadataById(get()) }

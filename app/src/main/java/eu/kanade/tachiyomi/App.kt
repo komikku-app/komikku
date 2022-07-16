@@ -44,6 +44,8 @@ import eu.kanade.tachiyomi.data.coil.DomainMangaKeyer
 import eu.kanade.tachiyomi.data.coil.MangaCoverFetcher
 import eu.kanade.tachiyomi.data.coil.MangaCoverKeyer
 import eu.kanade.tachiyomi.data.coil.MangaKeyer
+import eu.kanade.tachiyomi.data.coil.PagePreviewFetcher
+import eu.kanade.tachiyomi.data.coil.PagePreviewKeyer
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
@@ -178,6 +180,10 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                 add(MangaKeyer())
                 add(DomainMangaKeyer())
                 add(MangaCoverKeyer())
+                // SY -->
+                add(PagePreviewKeyer())
+                add(PagePreviewFetcher.Factory(lazy(callFactoryInit), lazy(diskCacheInit)))
+                // SY <--
             }
             callFactory(callFactoryInit)
             diskCache(diskCacheInit)

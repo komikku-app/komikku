@@ -531,6 +531,12 @@
     <string name="manga_id_is_null">Manga ID is null!</string>
     <string name="loading_manga">Loading manga…</string>
 
+    <!-- Page previews -->
+    <string name="page_previews">Page previews</string>
+    <string name="more_previews">More previews</string>
+    <string name="pref_clear_page_preview_cache">Clear page preview cache</string>
+    <string name="page_preview_page_go_to">Go to</string>
+
     <!-- Rating 0-10 (0, 0.5, 1, 1.5 and so fourth) -->
     <string name="rating10">Masterpiece</string>
     <string name="rating9">Amazing</string>

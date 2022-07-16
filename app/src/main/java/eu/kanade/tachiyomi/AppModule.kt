@@ -18,6 +18,7 @@ import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -116,6 +117,8 @@ class AppModule(val app: Application) : InjektModule {
         addSingletonFactory { CustomMangaManager(app) }
 
         addSingletonFactory { EHentaiUpdateHelper(app) }
+
+        addSingletonFactory { PagePreviewCache(app) }
         // SY <--
 
         // Asynchronously init expensive components for a faster cold start

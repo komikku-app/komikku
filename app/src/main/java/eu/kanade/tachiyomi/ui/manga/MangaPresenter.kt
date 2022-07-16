@@ -22,6 +22,7 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaWithChapters
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
 import eu.kanade.domain.manga.interactor.GetMergedReferencesById
+import eu.kanade.domain.manga.interactor.GetPagePreviews
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.InsertMergedReference
 import eu.kanade.domain.manga.interactor.SetMangaChapterFlags
@@ -30,6 +31,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.interactor.UpdateMergedSettings
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
+import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.TriStateFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
@@ -50,6 +52,7 @@ import eu.kanade.tachiyomi.data.track.EnhancedTrackService
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.source.LocalSource
+import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.toSChapter
@@ -139,6 +142,7 @@ class MangaPresenter(
     private val deleteMangaById: DeleteMangaById = Injekt.get(),
     private val deleteByMergeId: DeleteByMergeId = Injekt.get(),
     private val getFlatMetadata: GetFlatMetadataById = Injekt.get(),
+    private val getPagePreviews: GetPagePreviews = Injekt.get(),
     // SY <--
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val setMangaChapterFlags: SetMangaChapterFlags = Injekt.get(),
@@ -216,6 +220,7 @@ class MangaPresenter(
         val chapters: List<DomainChapter>,
         val flatMetadata: FlatMetadata?,
         val mergedData: MergedMangaData? = null,
+        val pagePreviewsState: PagePreviewState = PagePreviewState.Loading,
     ) {
         constructor(pair: Pair<DomainManga, List<DomainChapter>>, flatMetadata: FlatMetadata?) :
             this(pair.first, pair.second, flatMetadata)
@@ -317,10 +322,18 @@ class MangaPresenter(
                                     isFromSource = isFromSource,
                                     trackingAvailable = trackManager.hasLoggedServices(),
                                     chapters = chapterItems,
+                                    // SY -->
                                     meta = raiseMetadata(flatMetadata, source),
                                     mergedData = mergedData,
                                     showRecommendationsInOverflow = preferences.recommendsInOverflow().get(),
                                     showMergeWithAnother = smartSearched,
+                                    pagePreviewsState = if (source.getMainSource() is PagePreviewSource) {
+                                        getPagePreviews(manga, source)
+                                        PagePreviewState.Loading
+                                    } else {
+                                        PagePreviewState.Unused
+                                    },
+                                    // SY <--
                                 )
                             }
 
@@ -890,9 +903,27 @@ class MangaPresenter(
         }
     }
 
+    // SY -->
     private fun DomainChapter.toMergedDownloadedChapter() = copy(
         scanlator = scanlator?.substringAfter(": "),
     )
+
+    private fun getPagePreviews(manga: DomainManga, source: Source) {
+        presenterScope.launchIO {
+            when (val result = getPagePreviews.await(manga, source, 1)) {
+                is GetPagePreviews.Result.Error -> updateSuccessState {
+                    it.copy(pagePreviewsState = PagePreviewState.Error(result.error))
+                }
+                is GetPagePreviews.Result.Success -> updateSuccessState {
+                    it.copy(pagePreviewsState = PagePreviewState.Success(result.pagePreviews))
+                }
+                GetPagePreviews.Result.Unused -> updateSuccessState {
+                    it.copy(pagePreviewsState = PagePreviewState.Unused)
+                }
+            }
+        }
+    }
+    // SY <--
 
     /**
      * Requests an updated list of chapters from the source.
@@ -1382,6 +1413,7 @@ sealed class MangaScreenState {
         val mergedData: MergedMangaData?,
         val showRecommendationsInOverflow: Boolean,
         val showMergeWithAnother: Boolean,
+        val pagePreviewsState: PagePreviewState,
         // SY <--
     ) : MangaScreenState() {
 
@@ -1446,3 +1478,12 @@ private val chapterDecimalFormat = DecimalFormat(
     DecimalFormatSymbols()
         .apply { decimalSeparator = '.' },
 )
+
+// SY -->
+sealed class PagePreviewState {
+    object Unused : PagePreviewState()
+    object Loading : PagePreviewState()
+    data class Success(val pagePreviews: List<PagePreview>) : PagePreviewState()
+    data class Error(val error: Throwable) : PagePreviewState()
+}
+// SY <--

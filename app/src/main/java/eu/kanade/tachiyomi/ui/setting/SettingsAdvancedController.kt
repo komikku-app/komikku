@@ -20,6 +20,7 @@ import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.repository.MangaRepository
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
+import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService.Target
@@ -86,6 +87,7 @@ class SettingsAdvancedController(
     private val trackManager: TrackManager by injectLazy()
     private val getAllManga: GetAllManga by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
+    private val pagePreviewCache: PagePreviewCache by injectLazy()
 
     @SuppressLint("BatteryLife")
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
@@ -160,6 +162,15 @@ class SettingsAdvancedController(
 
                 onClick { clearChapterCache() }
             }
+            // SY -->
+            preference {
+                key = CLEAR_PREVIEW_CACHE_KEY
+                titleRes = R.string.pref_clear_page_preview_cache
+                summary = context.getString(R.string.used_cache, pagePreviewCache.readableSize)
+
+                onClick { clearPagePreviewCache() }
+            }
+            // SY <--
             switchPreference {
                 key = Keys.autoClearChapterCache
                 titleRes = R.string.pref_auto_clear_chapter_cache
@@ -514,6 +525,23 @@ class SettingsAdvancedController(
             }
         }
     }
+
+    private fun clearPagePreviewCache() {
+        val activity = activity ?: return
+        launchIO {
+            try {
+                val deletedFiles = pagePreviewCache.clear()
+                withUIContext {
+                    activity.toast(resources?.getString(R.string.cache_deleted, deletedFiles))
+                    findPreference(CLEAR_PREVIEW_CACHE_KEY)?.summary =
+                        resources?.getString(R.string.used_cache, pagePreviewCache.readableSize)
+                }
+            } catch (e: Throwable) {
+                logcat(LogPriority.ERROR, e)
+                withUIContext { activity.toast(R.string.cache_delete_error) }
+            }
+        }
+    }
     // SY <--
 
     private fun clearChapterCache() {
@@ -574,3 +602,7 @@ class SettingsAdvancedController(
 }
 
 private const val CLEAR_CACHE_KEY = "pref_clear_cache_key"
+
+// SY -->
+private const val CLEAR_PREVIEW_CACHE_KEY = "pref_clear_preview_cache_key"
+// SY <--

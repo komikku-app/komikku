@@ -1,6 +1,8 @@
 package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
@@ -10,6 +12,10 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.newCallWithProgress
+import eu.kanade.tachiyomi.source.PagePreviewInfo
+import eu.kanade.tachiyomi.source.PagePreviewPage
+import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -72,11 +78,16 @@ import kotlinx.serialization.json.put
 import okhttp3.CacheControl
 import okhttp3.CookieJar
 import okhttp3.Headers
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
@@ -84,6 +95,8 @@ import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.net.URLEncoder
 
 // TODO Consider gallery updating when doing tabbed browsing
@@ -94,7 +107,8 @@ class EHentai(
 ) : HttpSource(),
     MetadataSource<EHentaiSearchMetadata, Document>,
     UrlImportableSource,
-    NamespaceSource {
+    NamespaceSource,
+    PagePreviewSource {
     override val metaClass = EHentaiSearchMetadata::class
 
     private val domain: String
@@ -498,7 +512,7 @@ class EHentai(
     override fun searchMangaParse(response: Response) = genericMangaParse(response)
     override fun latestUpdatesParse(response: Response) = genericMangaParse(response)
 
-    private fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cache: Boolean = true): Request {
+    private fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cacheControl: CacheControl? = null): Request {
         return GET(
             if (page != null) {
                 addParam(url, "page", (page - 1).toString())
@@ -513,10 +527,10 @@ class EHentai(
                 headers.build()
             } else headers,
         ).let {
-            if (cache) {
+            if (cacheControl == null) {
                 it
             } else {
-                it.newBuilder().cacheControl(CacheControl.FORCE_NETWORK).build()
+                it.newBuilder().cacheControl(cacheControl).build()
             }
         }
     }
@@ -736,7 +750,7 @@ class EHentai(
                     exGet(
                         favoriteUrl,
                         page = page,
-                        cache = false,
+                        cacheControl = CacheControl.FORCE_NETWORK,
                     ),
                 ).awaitResponse()
             }
@@ -820,7 +834,9 @@ class EHentai(
                 .build()
 
             chain.proceed(newReq)
-        }.build()
+        }
+        .addInterceptor(ThumbnailPreviewInterceptor())
+        .build()
 
     // Filters
     override fun getFilterList(): FilterList {
@@ -1080,11 +1096,154 @@ class EHentai(
         EHentaiDescription(state, openMetadataViewer, search)
     }
 
+    override suspend fun getPagePreviewList(
+        manga: MangaInfo,
+        page: Int,
+    ): PagePreviewPage {
+        val doc = client.newCall(
+            exGet(
+                (baseUrl + manga.key)
+                    .toHttpUrl()
+                    .newBuilder()
+                    .removeAllQueryParameters("nw")
+                    .addQueryParameter("p", (page - 1).toString())
+                    .build()
+                    .toString(),
+            ),
+        ).await().asJsoup()
+        val previews = if (doc.selectFirst("div#gdo4 .ths")!!.attr("onClick").contains("inline_set=ts_l")) {
+            doc.body()
+                .select("#gdt div a")
+                .map {
+                    PagePreviewInfo(it.text().toInt(), imageUrl = it.select("img").attr("src"))
+                }
+        } else {
+            parseNormalPreviewSet(doc)
+                .map { preview ->
+                    PagePreviewInfo(preview.index, imageUrl = preview.toUrl())
+                }
+        }
+
+        return PagePreviewPage(
+            page = page,
+            pagePreviews = previews,
+            hasNextPage = doc.select("table.ptt tbody tr td")
+                .last()!!
+                .hasClass("ptdd")
+                .not(),
+            pagePreviewPages = doc.select("table.ptt tbody tr td a").asReversed()
+                .firstNotNullOfOrNull { it.text().toIntOrNull() },
+        )
+    }
+
+    override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
+        return client.newCallWithProgress(exGet(page.imageUrl, cacheControl = cacheControl), page).await()
+    }
+
+    /**
+     * Parse normal previews with regular expressions
+     */
+    private fun parseNormalPreviewSet(doc: Document): List<EHentaiThumbnailPreview> {
+        return doc.body()
+            .select("#gdt div div")
+            .map { it.selectFirst("img")!!.attr("alt").toInt() to it.attr("style") }
+            .map { (index, style) ->
+                val styles = style.split(";").mapNotNull { it.trimOrNull() }
+                val width = styles.first { it.startsWith("width:") }
+                    .removePrefix("width:")
+                    .removeSuffix("px")
+                    .toInt()
+
+                val height = styles.first { it.startsWith("height:") }
+                    .removePrefix("height:")
+                    .removeSuffix("px")
+                    .toInt()
+
+                val background = styles.first { it.startsWith("background:") }
+                    .removePrefix("background:")
+                    .split(" ")
+
+                val url = background.first { it.startsWith("url(") }
+                    .removePrefix("url(")
+                    .removeSuffix(")")
+
+                val widthOffset = background.first { it.startsWith("-") }
+                    .removePrefix("-")
+                    .removeSuffix("px")
+                    .toInt()
+
+                EHentaiThumbnailPreview(url, width, height, widthOffset, index)
+            }
+    }
+    data class EHentaiThumbnailPreview(
+        val imageUrl: String,
+        val width: Int,
+        val height: Int,
+        val widthOffset: Int,
+        val index: Int,
+    ) {
+        fun toUrl(): String {
+            return BLANK_PREVIEW_THUMB.toHttpUrl().newBuilder()
+                .addQueryParameter("imageUrl", imageUrl)
+                .addQueryParameter("width", width.toString())
+                .addQueryParameter("height", height.toString())
+                .addQueryParameter("widthOffset", widthOffset.toString())
+                .build()
+                .toString()
+        }
+
+        companion object {
+            fun parseFromUrl(url: HttpUrl) = EHentaiThumbnailPreview(
+                imageUrl = url.queryParameter("imageUrl")!!,
+                width = url.queryParameter("width")!!.toInt(),
+                height = url.queryParameter("height")!!.toInt(),
+                widthOffset = url.queryParameter("widthOffset")!!.toInt(),
+                index = -1,
+            )
+        }
+    }
+
+    private class ThumbnailPreviewInterceptor : Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request = chain.request()
+
+            if (request.url.host == THUMB_DOMAIN && request.url.pathSegments.contains(BLANK_THUMB)) {
+                val thumbnailPreview = EHentaiThumbnailPreview.parseFromUrl(request.url)
+                val response = chain.proceed(request.newBuilder().url(thumbnailPreview.imageUrl).build())
+                if (response.isSuccessful) {
+                    val body = ByteArrayOutputStream()
+                        .use {
+                            val bitmap = BitmapFactory.decodeStream(response.body!!.byteStream())
+                                ?: throw IOException("Null bitmap($thumbnailPreview)")
+                            Bitmap.createBitmap(
+                                bitmap,
+                                thumbnailPreview.widthOffset,
+                                0,
+                                thumbnailPreview.width.coerceAtMost(bitmap.width - thumbnailPreview.widthOffset),
+                                thumbnailPreview.height.coerceAtMost(bitmap.height),
+                            ).compress(Bitmap.CompressFormat.JPEG, 100, it)
+                            it.toByteArray()
+                        }
+                        .toResponseBody("image/jpeg".toMediaType())
+
+                    return response.newBuilder().body(body).build()
+                } else {
+                    return response
+                }
+            }
+
+            return chain.proceed(request)
+        }
+    }
+
     companion object {
         private const val TR_SUFFIX = "TR"
         private const val REVERSE_PARAM = "TEH_REVERSE"
         private val PAGE_COUNT_REGEX = "[0-9]*".toRegex()
         private val RATING_REGEX = "([0-9]*)px".toRegex()
+        private const val THUMB_DOMAIN = "ehgt.org"
+        private const val BLANK_THUMB = "blank.gif"
+        private const val BLANK_PREVIEW_THUMB = "https://$THUMB_DOMAIN/g/$BLANK_THUMB"
 
         private const val EH_API_BASE = "https://api.e-hentai.org/api.php"
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()!!

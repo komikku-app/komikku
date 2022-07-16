@@ -33,6 +33,7 @@ enum class MangaScreenItem {
 
     // SY -->
     INFO_BUTTONS,
+    CHAPTER_PREVIEW,
 
     // SY <--
     CHAPTER_HEADER,

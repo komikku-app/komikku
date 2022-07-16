@@ -63,6 +63,7 @@ import eu.kanade.presentation.manga.components.MangaChapterListItem
 import eu.kanade.presentation.manga.components.MangaInfoBox
 import eu.kanade.presentation.manga.components.MangaInfoButtons
 import eu.kanade.presentation.manga.components.MangaSmallAppBar
+import eu.kanade.presentation.manga.components.PagePreviews
 import eu.kanade.presentation.manga.components.SearchMetadataChips
 import eu.kanade.presentation.util.isScrolledToEnd
 import eu.kanade.presentation.util.isScrollingUp
@@ -74,6 +75,7 @@ import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
+import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 
@@ -108,6 +110,7 @@ fun MangaScreen(
     onMergedSettingsClicked: () -> Unit,
     onMergeClicked: () -> Unit,
     onMergeWithAnotherClicked: () -> Unit,
+    onMorePreviewsClicked: () -> Unit,
 
     // For bottom action menu
     onMultiBookmarkClicked: (List<Chapter>, bookmarked: Boolean) -> Unit,
@@ -141,6 +144,7 @@ fun MangaScreen(
             onMergedSettingsClicked = onMergedSettingsClicked,
             onMergeClicked = onMergeClicked,
             onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+            onMorePreviewsClicked = onMorePreviewsClicked,
             onMultiBookmarkClicked = onMultiBookmarkClicked,
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
@@ -173,6 +177,7 @@ fun MangaScreen(
             onMergedSettingsClicked = onMergedSettingsClicked,
             onMergeClicked = onMergeClicked,
             onMergeWithAnotherClicked = onMergeWithAnotherClicked,
+            onMorePreviewsClicked = onMorePreviewsClicked,
             onMultiBookmarkClicked = onMultiBookmarkClicked,
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
@@ -211,6 +216,7 @@ private fun MangaScreenSmallImpl(
     onMergedSettingsClicked: () -> Unit,
     onMergeClicked: () -> Unit,
     onMergeWithAnotherClicked: () -> Unit,
+    onMorePreviewsClicked: () -> Unit,
 
     // For bottom action menu
     onMultiBookmarkClicked: (List<Chapter>, bookmarked: Boolean) -> Unit,
@@ -432,6 +438,15 @@ private fun MangaScreenSmallImpl(
                             )
                         }
                     }
+
+                    if (state.pagePreviewsState !is PagePreviewState.Unused) {
+                        item(
+                            key = MangaScreenItem.CHAPTER_PREVIEW,
+                            contentType = MangaScreenItem.CHAPTER_PREVIEW,
+                        ) {
+                            PagePreviews(state.pagePreviewsState, onMorePreviewsClicked)
+                        }
+                    }
                     // SY <--
 
                     item(
@@ -489,6 +504,7 @@ fun MangaScreenLargeImpl(
     onMergedSettingsClicked: () -> Unit,
     onMergeClicked: () -> Unit,
     onMergeWithAnotherClicked: () -> Unit,
+    onMorePreviewsClicked: () -> Unit,
 
     // For bottom action menu
     onMultiBookmarkClicked: (List<Chapter>, bookmarked: Boolean) -> Unit,
@@ -669,6 +685,9 @@ fun MangaScreenLargeImpl(
                             onRecommendClicked = onRecommendClicked,
                             onMergeWithAnotherClicked = onMergeWithAnotherClicked,
                         )
+                    }
+                    if (state.pagePreviewsState !is PagePreviewState.Unused) {
+                        PagePreviews(state.pagePreviewsState, onMorePreviewsClicked)
                     }
                     // SY <--
                 }

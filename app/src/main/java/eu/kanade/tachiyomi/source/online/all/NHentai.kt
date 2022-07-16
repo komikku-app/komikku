@@ -4,7 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.newCallWithProgress
+import eu.kanade.tachiyomi.source.PagePreviewInfo
+import eu.kanade.tachiyomi.source.PagePreviewPage
+import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -23,6 +28,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import okhttp3.CacheControl
 import okhttp3.Response
 import tachiyomi.source.model.MangaInfo
 
@@ -30,7 +36,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
     MetadataSource<NHentaiSearchMetadata, Response>,
     UrlImportableSource,
-    NamespaceSource {
+    NamespaceSource,
+    PagePreviewSource {
     override val metaClass = NHentaiSearchMetadata::class
     override val lang = delegate.lang
 
@@ -172,6 +179,35 @@ class NHentai(delegate: HttpSource, val context: Context) :
     @Composable
     override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
         NHentaiDescription(state, openMetadataViewer)
+    }
+
+    override suspend fun getPagePreviewList(manga: MangaInfo, page: Int): PagePreviewPage {
+        val metadata = fetchOrLoadMetadata(manga.id()) {
+            client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+        }
+        return PagePreviewPage(
+            page,
+            metadata.pageImageTypes.mapIndexed { index, s ->
+                PagePreviewInfo(index + 1, imageUrl = thumbnailUrlFromType(metadata.mediaId!!, index + 1, s)!!)
+            },
+            false,
+            1,
+        )
+    }
+
+    private fun thumbnailUrlFromType(mediaId: String, page: Int, t: String) = NHentaiSearchMetadata.typeToExtension(t)?.let {
+        "https://t3.nhentai.net/galleries/$mediaId/${page}t.$it"
+    }
+
+    override suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl?): Response {
+        return client.newCallWithProgress(
+            if (cacheControl != null) {
+                GET(page.imageUrl, cache = cacheControl)
+            } else {
+                GET(page.imageUrl)
+            },
+            page,
+        ).await()
     }
 
     companion object {
