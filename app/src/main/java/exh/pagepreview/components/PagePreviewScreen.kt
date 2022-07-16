@@ -27,12 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AroundLayout
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
-import eu.kanade.presentation.components.TopAppBar
 import eu.kanade.presentation.manga.components.PagePreview
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
@@ -171,7 +171,7 @@ fun PagePreviewTopAppBar(
     onOpenPageDialog: () -> Unit,
     showOpenPageDialog: Boolean,
 ) {
-    TopAppBar(
+    AppBar(
         title = title,
         actions = {
             if (showOpenPageDialog) {

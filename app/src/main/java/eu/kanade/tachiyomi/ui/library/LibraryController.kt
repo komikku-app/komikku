@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.preference.asHotFlow
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
@@ -94,14 +95,8 @@ class LibraryController(
      */
     private var actionMode: ActionModeWithToolbar? = null
 
-    /**
-     * Relay to notify the library's viewpager for updates.
-     */
-    val libraryMangaRelay: BehaviorRelay<LibraryMangaEvent> = BehaviorRelay.create()
+    private var mangaMap: LibraryMap = emptyMap()
 
-    /**
-     * Adapter of the view pager.
-     */
     private var adapter: LibraryAdapter? = null
 
     /**
@@ -156,11 +151,9 @@ class LibraryController(
             currentCategory?.name
         }
 
-        if (preferences.categoryNumberOfItems().get() && libraryMangaRelay.hasValue()) {
-            libraryMangaRelay.value.mangas.let { mangaMap ->
-                if (!showCategoryTabs || adapter?.categories?.size == 1) {
-                    title += " (${mangaMap[currentCategory?.id]?.size ?: 0})"
-                }
+        if (preferences.categoryNumberOfItems().get()) {
+            if (!showCategoryTabs || adapter?.categories?.size == 1) {
+                title += " (${mangaMap[currentCategory?.id]?.size ?: 0})"
             }
         }
 
@@ -189,8 +182,7 @@ class LibraryController(
         )
 
         getColumnsPreferenceForCurrentOrientation()
-            .asFlow()
-            .onEach { presenter.columns = it }
+            .asHotFlow { presenter.columns = it }
             .launchIn(viewScope)
 
         binding.libraryPager.adapter = adapter
@@ -345,7 +337,7 @@ class LibraryController(
         presenter.loadedMangaFlow.value = presenter.loadedManga
 
         // Send the manga map to child fragments after the adapter is updated.
-        libraryMangaRelay.call(LibraryMangaEvent(mangaMap))
+        this.mangaMap = mangaMap
 
         // Finally update the title
         updateTitle()
@@ -378,9 +370,6 @@ class LibraryController(
         updateTitle()
     }
 
-    /**
-     * Called when the sorting mode is changed.
-     */
     private fun onSortChanged() {
         // SY -->
         activity?.invalidateOptionsMenu()
@@ -402,9 +391,6 @@ class LibraryController(
         adapter.recycle = true
     }
 
-    /**
-     * Creates the action mode if it's not created already.
-     */
     fun createActionModeIfNeeded() {
         val activity = activity
         if (actionMode == null && activity is MainActivity) {
@@ -413,9 +399,6 @@ class LibraryController(
         }
     }
 
-    /**
-     * Destroys the action mode.
-     */
     private fun destroyActionModeIfNeeded() {
         actionMode?.finish()
     }

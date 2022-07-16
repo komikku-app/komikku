@@ -71,10 +71,7 @@ import exh.util.isLewd
 import exh.util.nullIfBlank
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import rx.Observable
@@ -164,9 +161,6 @@ class LibraryPresenter(
      */
     private val sortTriggerRelay = BehaviorRelay.create(Unit)
 
-    /**
-     * Library subscription.
-     */
     private var librarySubscription: Subscription? = null
 
     // SY -->
@@ -196,13 +190,6 @@ class LibraryPresenter(
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
-        preferences.libraryDisplayMode()
-            .asFlow()
-            .drop(1)
-            .onEach {
-                currentDisplayMode = it
-            }
-            .launchIn(presenterScope)
 
         subscribeLibrary()
     }
