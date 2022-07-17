@@ -2,18 +2,17 @@ package eu.kanade.tachiyomi.ui.browse.migration.manga
 
 import android.os.Bundle
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.core.os.bundleOf
 import eu.kanade.presentation.browse.MigrateMangaScreen
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.ui.base.controller.ComposeController
+import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MigrationMangaController : ComposeController<MigrateMangaPresenter> {
+class MigrationMangaController : FullComposeController<MigrateMangaPresenter> {
 
     constructor(sourceId: Long, sourceName: String?) : super(
         bundleOf(
@@ -31,14 +30,13 @@ class MigrationMangaController : ComposeController<MigrateMangaPresenter> {
     private val sourceId: Long = args.getLong(SOURCE_ID_EXTRA)
     private val sourceName: String? = args.getString(SOURCE_NAME_EXTRA)
 
-    override fun getTitle(): String? = sourceName
-
-    override fun createPresenter(): MigrateMangaPresenter = MigrateMangaPresenter(sourceId)
+    override fun createPresenter() = MigrateMangaPresenter(sourceId)
 
     @Composable
-    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+    override fun ComposeContent() {
         MigrateMangaScreen(
-            nestedScrollInterop = nestedScrollInterop,
+            navigateUp = router::popCurrentController,
+            title = sourceName,
             presenter = presenter,
             onClickItem = {
                 PreMigrationController.navigateToMigration(
