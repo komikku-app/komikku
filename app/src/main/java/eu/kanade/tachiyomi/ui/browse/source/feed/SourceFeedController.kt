@@ -124,7 +124,7 @@ open class SourceFeedController :
     }
 
     override fun onSearchViewQueryTextSubmit(query: String?) {
-        onBrowseClick(query.nullIfBlank())
+        onBrowseClick(query?.nullIfBlank())
     }
 
     override fun onSearchViewQueryTextChange(newText: String?) {

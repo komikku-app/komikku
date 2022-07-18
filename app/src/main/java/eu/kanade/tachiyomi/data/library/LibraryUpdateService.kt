@@ -349,7 +349,7 @@ class LibraryUpdateService(
                     }
                 }
                 LibraryGroup.BY_SOURCE -> {
-                    val sourceExtra = groupExtra.nullIfBlank()?.toIntOrNull()
+                    val sourceExtra = groupExtra?.nullIfBlank()?.toIntOrNull()
                     val source = libraryManga.map { it.source }
                         .distinct()
                         .sorted()

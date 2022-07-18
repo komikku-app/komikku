@@ -168,13 +168,12 @@ class LibraryPresenter(
 
     var groupType = preferences.groupLibraryBy().get()
 
-    private val libraryIsGrouped
-        get() = groupType != LibraryGroup.UNGROUPED
-
     private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
-    private val services = trackManager.services.associate { service ->
-        service.id to context.getString(service.nameRes())
+    private val services by lazy {
+        trackManager.services.associate { service ->
+            service.id to context.getString(service.nameRes())
+        }
     }
 
     /**
@@ -570,7 +569,7 @@ class LibraryPresenter(
         var editedCategories = categories
         val items = if (groupType == LibraryGroup.BY_DEFAULT) {
             map
-        } else if (!libraryIsGrouped) {
+        } else if (groupType == LibraryGroup.UNGROUPED) {
             editedCategories = listOf(Category(0, "All", 0, 0))
             mapOf(
                 0L to map.values.flatten().distinctBy { it.manga.id },
@@ -1123,9 +1122,8 @@ class LibraryPresenter(
         return map to categories
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        favoritesSync.onDestroy()
+    fun runSync() {
+        favoritesSync.runSync(presenterScope)
     }
     // SY <--
 }

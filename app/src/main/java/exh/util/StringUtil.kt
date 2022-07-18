@@ -10,13 +10,6 @@ fun String.removeArticles(): String {
     return replace(articleRegex, "")
 }
 
-fun String.trimOrNull(): String? {
-    val trimmed = trim()
-    return trimmed.ifBlank { null }
-}
+fun String.trimOrNull() = trim().nullIfBlank()
 
-fun String?.nullIfBlank(): String? = if (isNullOrBlank()) {
-    null
-} else {
-    this
-}
+fun String.nullIfBlank(): String? = ifBlank { null }

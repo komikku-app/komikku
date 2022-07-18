@@ -54,7 +54,6 @@ import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.isEhBasedManga
 import exh.source.mangaDexSourceIds
 import exh.source.nHentaiSourceIds
-import exh.ui.LoaderManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -121,7 +120,6 @@ class LibraryController(
 
     // Favorites
     private var favoritesSyncJob: Job? = null
-    val loaderManager = LoaderManager()
     // <-- EH
 
     init {
@@ -462,7 +460,7 @@ class LibraryController(
                         .setTitle(R.string.favorites_sync)
                         .setMessage(R.string.favorites_sync_conformation_message)
                         .setPositiveButton(android.R.string.ok) { _, _ ->
-                            presenter.favoritesSync.runSync()
+                            presenter.runSync()
                         }
                         .setNegativeButton(android.R.string.cancel, null)
                         .show()

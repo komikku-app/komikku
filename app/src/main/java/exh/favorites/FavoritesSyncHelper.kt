@@ -37,8 +37,6 @@ import exh.util.ignore
 import exh.util.wifiManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
@@ -60,8 +58,6 @@ class FavoritesSyncHelper(val context: Context) {
 
     private val prefs: PreferencesHelper by injectLazy()
 
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
-
     private val exh by lazy {
         Injekt.get<SourceManager>().get(EXH_SOURCE_ID) as? EHentai
             ?: EHentai(0, true, context)
@@ -81,7 +77,7 @@ class FavoritesSyncHelper(val context: Context) {
     val status: MutableStateFlow<FavoritesSyncStatus> = MutableStateFlow(FavoritesSyncStatus.Idle(context))
 
     @Synchronized
-    fun runSync() {
+    fun runSync(scope: CoroutineScope) {
         if (status.value !is FavoritesSyncStatus.Idle) {
             return
         }
@@ -406,10 +402,6 @@ class FavoritesSyncHelper(val context: Context) {
         throttleManager.throttleTime >= THROTTLE_WARN
 
     class IgnoredException : RuntimeException()
-
-    fun onDestroy() {
-        scope.cancel()
-    }
 
     companion object {
         private val THROTTLE_WARN = 1.seconds
