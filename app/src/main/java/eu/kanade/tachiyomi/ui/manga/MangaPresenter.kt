@@ -201,6 +201,8 @@ class MangaPresenter(
     val processedChapters: Sequence<ChapterItem>?
         get() = successState?.processedChapters
 
+    private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
+
     // EXH -->
     private val customMangaManager: CustomMangaManager by injectLazy()
 
@@ -1035,6 +1037,7 @@ class MangaPresenter(
                 values = chapters.toTypedArray(),
             )
         }
+        toggleAllSelection(false)
     }
 
     /**
@@ -1052,6 +1055,7 @@ class MangaPresenter(
             val manga = state.manga
             downloadManager.downloadChapters(manga, chapters.map { it.toDbChapter() })
         }
+        toggleAllSelection(false)
     }
 
     /**
@@ -1065,6 +1069,7 @@ class MangaPresenter(
                 .map { ChapterUpdate(id = it.id, bookmark = bookmarked) }
                 .let { updateChapter.awaitAll(it) }
         }
+        toggleAllSelection(false)
     }
 
     /**
@@ -1087,12 +1092,16 @@ class MangaPresenter(
                         deletedChapters.forEach {
                             val index = indexOf(it)
                             val toAdd = removeAt(index)
-                                .copy(downloadState = Download.State.NOT_DOWNLOADED, downloadProgress = 0)
+                                .copy(
+                                    downloadState = Download.State.NOT_DOWNLOADED,
+                                    downloadProgress = 0,
+                                )
                             add(index, toAdd)
                         }
                     }
                     successState.copy(chapters = newChapters)
                 }
+                toggleAllSelection(false)
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
             }
@@ -1191,6 +1200,89 @@ class MangaPresenter(
 
         presenterScope.launchIO {
             setMangaChapterFlags.awaitSetSortingModeOrFlipOrder(manga, sort)
+        }
+    }
+
+    fun toggleSelection(
+        item: ChapterItem,
+        selected: Boolean,
+        userSelected: Boolean = false,
+        fromLongPress: Boolean = false,
+    ) {
+        updateSuccessState { successState ->
+            val modifiedIndex = successState.chapters.indexOfFirst { it.chapter.id == item.chapter.id }
+            if (modifiedIndex < 0) return@updateSuccessState successState
+
+            val oldItem = successState.chapters[modifiedIndex]
+            if ((oldItem.selected && selected) || (!oldItem.selected && !selected)) return@updateSuccessState successState
+
+            val newChapters = successState.chapters.toMutableList().apply {
+                val firstSelection = none { it.selected }
+                var newItem = removeAt(modifiedIndex)
+                add(modifiedIndex, newItem.copy(selected = selected))
+
+                if (selected && userSelected && fromLongPress) {
+                    if (firstSelection) {
+                        selectedPositions[0] = modifiedIndex
+                        selectedPositions[1] = modifiedIndex
+                    } else {
+                        // Try to select the items in-between when possible
+                        val range: IntRange
+                        if (modifiedIndex < selectedPositions[0]) {
+                            range = modifiedIndex + 1 until selectedPositions[0]
+                            selectedPositions[0] = modifiedIndex
+                        } else if (modifiedIndex > selectedPositions[1]) {
+                            range = (selectedPositions[1] + 1) until modifiedIndex
+                            selectedPositions[1] = modifiedIndex
+                        } else {
+                            // Just select itself
+                            range = IntRange.EMPTY
+                        }
+
+                        range.forEach {
+                            newItem = removeAt(it)
+                            add(it, newItem.copy(selected = true))
+                        }
+                    }
+                } else if (userSelected && !fromLongPress) {
+                    if (!selected) {
+                        if (modifiedIndex == selectedPositions[0]) {
+                            selectedPositions[0] = indexOfFirst { it.selected }
+                        } else if (modifiedIndex == selectedPositions[1]) {
+                            selectedPositions[1] = indexOfLast { it.selected }
+                        }
+                    } else {
+                        if (modifiedIndex < selectedPositions[0]) {
+                            selectedPositions[0] = modifiedIndex
+                        } else if (modifiedIndex > selectedPositions[1]) {
+                            selectedPositions[1] = modifiedIndex
+                        }
+                    }
+                }
+            }
+            successState.copy(chapters = newChapters)
+        }
+    }
+
+    fun toggleAllSelection(selected: Boolean) {
+        updateSuccessState { successState ->
+            val newChapters = successState.chapters.map {
+                it.copy(selected = selected)
+            }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            successState.copy(chapters = newChapters)
+        }
+    }
+
+    fun invertSelection() {
+        updateSuccessState { successState ->
+            val newChapters = successState.chapters.map {
+                it.copy(selected = !it.selected)
+            }
+            selectedPositions[0] = -1
+            selectedPositions[1] = -1
+            successState.copy(chapters = newChapters)
         }
     }
 
@@ -1482,6 +1574,8 @@ data class ChapterItem(
     val chapterTitleString: String,
     val dateUploadString: String?,
     val readProgressString: String?,
+
+    val selected: Boolean = false,
 ) {
     val isDownloaded = downloadState == Download.State.DOWNLOADED
 }
