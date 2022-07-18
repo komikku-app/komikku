@@ -17,7 +17,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -39,7 +38,6 @@ import eu.kanade.presentation.manga.components.PagePreview
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.system.logcat
 import exh.pagepreview.PagePreviewState
 import exh.util.floor
 import kotlinx.coroutines.launch
@@ -74,9 +72,6 @@ fun PagePreviewScreen(
                 BoxWithConstraints(Modifier.fillMaxSize()) {
                     val itemPerRowCount by derivedStateOf { (maxWidth / 120.dp).floor() }
                     val items by derivedStateOf { state.pagePreviews.chunked(itemPerRowCount) }
-                    SideEffect {
-                        logcat { (items.hashCode() to state.page).toString() }
-                    }
                     val lazyListState = key(state.page) {
                         rememberLazyListState()
                     }
