@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.UTurnRight
 import androidx.compose.material3.AlertDialog
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -75,7 +77,11 @@ fun PagePreviewScreen(
                     SideEffect {
                         logcat { (items.hashCode() to state.page).toString() }
                     }
+                    val lazyListState = key(state.page) {
+                        rememberLazyListState()
+                    }
                     ScrollbarLazyColumn(
+                        state = lazyListState,
                         modifier = Modifier,
                         contentPadding = paddingValues + topPaddingValues,
                     ) {
