@@ -54,7 +54,6 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="45dp"
-        android:contentDescription="@string/description_cover"
         android:paddingTop="30dp"
         android:paddingBottom="30dp"
         android:visibility="invisible"

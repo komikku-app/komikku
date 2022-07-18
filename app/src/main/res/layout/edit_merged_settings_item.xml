@@ -41,7 +41,6 @@
                 android:id="@+id/cover"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:contentDescription="@string/description_cover"
                 android:scaleType="centerCrop"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="h,3:2"

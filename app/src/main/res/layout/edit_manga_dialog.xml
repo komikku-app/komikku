@@ -18,7 +18,6 @@
             android:layout_height="150dp"
             android:adjustViewBounds="true"
             android:background="@drawable/rounded_rectangle"
-            android:contentDescription="@string/description_cover"
             android:scaleType="centerCrop"
             android:src="@mipmap/ic_launcher" />
     </FrameLayout>
