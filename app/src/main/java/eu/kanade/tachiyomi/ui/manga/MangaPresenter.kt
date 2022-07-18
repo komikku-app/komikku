@@ -826,7 +826,7 @@ class MangaPresenter(
             downloadManager.queue.getStatusAsFlow()
                 .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
-                .collectLatest {
+                .collect {
                     withUIContext {
                         updateDownloadState(it)
                     }
@@ -838,7 +838,7 @@ class MangaPresenter(
             downloadManager.queue.getProgressAsFlow()
                 .filter { /* SY --> */ if (isMergedSource) it.manga.id in mergedIds else /* SY <-- */ it.manga.id == successState?.manga?.id }
                 .catch { error -> logcat(LogPriority.ERROR, error) }
-                .collectLatest {
+                .collect {
                     withUIContext {
                         updateDownloadState(it)
                     }
