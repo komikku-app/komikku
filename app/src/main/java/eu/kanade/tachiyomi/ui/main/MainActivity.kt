@@ -45,7 +45,6 @@ import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeContentController
-import eu.kanade.tachiyomi.ui.base.controller.NoAppBarElevationController
 import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.TabbedController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -693,8 +692,6 @@ class MainActivity : BaseActivity() {
                     backstackLiftState.remove(it.instanceId)
                 }
             }
-
-            binding.root.isLiftAppBarOnScroll = internalTo !is NoAppBarElevationController
         }
     }
 
