@@ -22,6 +22,7 @@ import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.more.LogoHeader
+import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.CrashLogUtil
@@ -49,7 +50,7 @@ fun AboutScreen(
         },
     ) { paddingValues ->
         ScrollbarLazyColumn(
-            contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+            contentPadding = paddingValues + WindowInsets.navigationBars.asPaddingValues(),
         ) {
             item {
                 LogoHeader()
