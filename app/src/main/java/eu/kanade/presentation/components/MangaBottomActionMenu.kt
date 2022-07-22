@@ -22,16 +22,22 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.RemoveDone
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.util.calculateWindowWidthSizeClass
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -192,6 +199,163 @@ private fun RowScope.Button(
                 maxLines = 1,
                 style = MaterialTheme.typography.labelSmall,
             )
+        }
+    }
+}
+
+@Composable
+fun LibraryBottomActionMenu(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    onChangeCategoryClicked: (() -> Unit)?,
+    onMarkAsReadClicked: (() -> Unit)?,
+    onMarkAsUnreadClicked: (() -> Unit)?,
+    onDownloadClicked: (() -> Unit)?,
+    onDeleteClicked: (() -> Unit)?,
+    // SY -->
+    onClickCleanTitles: (() -> Unit)?,
+    onClickMigrate: (() -> Unit)?,
+    onClickAddToMangaDex: (() -> Unit)?,
+    // SY <--
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = expandVertically(expandFrom = Alignment.Bottom),
+        exit = shrinkVertically(shrinkTowards = Alignment.Bottom),
+    ) {
+        val scope = rememberCoroutineScope()
+        Surface(
+            modifier = modifier,
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = 3.dp,
+        ) {
+            val haptic = LocalHapticFeedback.current
+            val confirm = remember { mutableStateListOf(false, false, false, false, false /* SY --> */, false /* SY <-- */) }
+            var resetJob: Job? = remember { null }
+            val onLongClickItem: (Int) -> Unit = { toConfirmIndex ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                (0 until 5).forEach { i -> confirm[i] = i == toConfirmIndex }
+                resetJob?.cancel()
+                resetJob = scope.launch {
+                    delay(1000)
+                    if (isActive) confirm[toConfirmIndex] = false
+                }
+            }
+            // SY -->
+            val showOverflow = onClickCleanTitles != null || onClickAddToMangaDex != null
+            val moveMarkPrev = calculateWindowWidthSizeClass() == WindowWidthSizeClass.Compact
+            var overFlowOpen by remember { mutableStateOf(false) }
+            // SY <--
+            Row(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
+            ) {
+                if (onChangeCategoryClicked != null) {
+                    Button(
+                        title = stringResource(R.string.action_move_category),
+                        icon = Icons.Default.BookmarkAdd,
+                        toConfirm = confirm[0],
+                        onLongClick = { onLongClickItem(0) },
+                        onClick = onChangeCategoryClicked,
+                    )
+                }
+                if (onDownloadClicked != null) {
+                    Button(
+                        title = stringResource(R.string.action_download),
+                        icon = Icons.Outlined.Download,
+                        toConfirm = confirm[3],
+                        onLongClick = { onLongClickItem(3) },
+                        onClick = onDownloadClicked,
+                    )
+                }
+                if (onDeleteClicked != null) {
+                    Button(
+                        title = stringResource(R.string.action_delete),
+                        icon = Icons.Outlined.Delete,
+                        toConfirm = confirm[4],
+                        onLongClick = { onLongClickItem(4) },
+                        onClick = onDeleteClicked,
+                    )
+                }
+                // SY -->
+                if (onMarkAsReadClicked != null) {
+                    Button(
+                        title = stringResource(R.string.action_mark_as_read),
+                        icon = Icons.Default.DoneAll,
+                        toConfirm = confirm[1],
+                        onLongClick = { onLongClickItem(1) },
+                        onClick = onMarkAsReadClicked,
+                    )
+                }
+                if (showOverflow) {
+                    if (!moveMarkPrev && onMarkAsUnreadClicked != null) {
+                        Button(
+                            title = stringResource(R.string.action_mark_as_unread),
+                            icon = Icons.Default.RemoveDone,
+                            toConfirm = confirm[2],
+                            onLongClick = { onLongClickItem(2) },
+                            onClick = onMarkAsUnreadClicked,
+                        )
+                    }
+                    Button(
+                        title = stringResource(R.string.label_more),
+                        icon = Icons.Outlined.MoreVert,
+                        toConfirm = confirm[5],
+                        onLongClick = { onLongClickItem(5) },
+                        onClick = { overFlowOpen = true },
+                    )
+                    DropdownMenu(
+                        expanded = overFlowOpen,
+                        onDismissRequest = { overFlowOpen = false },
+                    ) {
+                        if (onMarkAsUnreadClicked != null && moveMarkPrev) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_mark_as_unread)) },
+                                onClick = onMarkAsUnreadClicked,
+                            )
+                        }
+                        if (onClickCleanTitles != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_clean_titles)) },
+                                onClick = onClickCleanTitles,
+                            )
+                        }
+                        if (onClickMigrate != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.migrate)) },
+                                onClick = onClickMigrate,
+                            )
+                        }
+                        if (onClickAddToMangaDex != null) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.mangadex_add_to_follows)) },
+                                onClick = onClickAddToMangaDex,
+                            )
+                        }
+                    }
+                } else {
+                    if (onMarkAsUnreadClicked != null) {
+                        Button(
+                            title = stringResource(R.string.action_mark_as_unread),
+                            icon = Icons.Default.RemoveDone,
+                            toConfirm = confirm[2],
+                            onLongClick = { onLongClickItem(2) },
+                            onClick = onMarkAsUnreadClicked,
+                        )
+                    }
+                    if (onClickMigrate != null) {
+                        Button(
+                            title = stringResource(R.string.migrate),
+                            icon = Icons.Outlined.SwapCalls,
+                            toConfirm = confirm[5],
+                            onLongClick = { onLongClickItem(5) },
+                            onClick = onClickMigrate,
+                        )
+                    }
+                }
+                // SY <--
+            }
         }
     }
 }
