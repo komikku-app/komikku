@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -162,25 +164,34 @@ class SettingsDebugController : BasicComposeController() {
                         CircularProgressIndicator()
                     }
                 }
-                if (result != null) {
-                    AlertDialog(
-                        onDismissRequest = { result = null },
-                        title = {
-                            Text(text = result?.first.orEmpty())
-                        },
-                        confirmButton = {},
-                        text = {
-                            SelectionContainer {
-                                Text(text = result?.second.orEmpty())
-                            }
-                        },
-                    )
-                }
+
+                ResultTextDialog(
+                    result = result,
+                    onDismissRequest = { result = null }
+                )
             }
         } else {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
+        }
+    }
+
+    @Composable
+    private fun ResultTextDialog(result: Pair<String, String>?, onDismissRequest: () -> Unit) {
+        if (result != null) {
+            AlertDialog(
+                onDismissRequest = onDismissRequest,
+                title = {
+                    Text(text = result.first)
+                },
+                confirmButton = {},
+                text = {
+                    SelectionContainer(Modifier.verticalScroll(rememberScrollState())) {
+                        Text(text = result.second)
+                    }
+                },
+            )
         }
     }
 
