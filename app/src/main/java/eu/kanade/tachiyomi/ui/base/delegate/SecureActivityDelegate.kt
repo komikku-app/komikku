@@ -119,6 +119,6 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
         // SY <--
 
         return preferences.lockAppAfter().get() <= 0 ||
-            Date().time >= preferences.lastAppUnlock().get() + 60 * 1000 * preferences.lockAppAfter().get()
+            Date().time >= preferences.lastAppClosed().get() + 60 * 1000 * preferences.lockAppAfter().get()
     }
 }
