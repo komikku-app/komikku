@@ -38,7 +38,6 @@ import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
-import eu.kanade.tachiyomi.data.database.models.Chapter as DbChapter
 
 class MergedSource : HttpSource() {
     private val getManga: GetManga by injectLazy()
@@ -121,10 +120,6 @@ class MergedSource : HttpSource() {
             }
         } else chapterList
         return if (dedupe) dedupeChapterList(mangaReferences, chapters) else chapters
-    }
-
-    fun getChaptersAsBlockingAsDbChapter(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<DbChapter> {
-        return getChaptersAsBlocking(mangaId, editScanlators, dedupe).map(Chapter::toDbChapter)
     }
 
     fun getChaptersAsBlocking(mangaId: Long, editScanlators: Boolean = false, dedupe: Boolean = true): List<Chapter> {

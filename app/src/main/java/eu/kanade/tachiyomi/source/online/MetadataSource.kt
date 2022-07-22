@@ -4,10 +4,7 @@ import androidx.compose.runtime.Composable
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
-import eu.kanade.tachiyomi.data.database.models.Chapter
-import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
@@ -118,6 +115,4 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit)
 
     suspend fun MangaInfo.id() = getManga.await(key, id)?.id
-    val SManga.id get() = (this as? Manga)?.id
-    val SChapter.mangaId get() = (this as? Chapter)?.manga_id
 }

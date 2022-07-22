@@ -6,7 +6,6 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.model.SChapter
 import exh.log.xLogD
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -21,6 +20,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import rx.Observable
+import tachiyomi.source.model.ChapterInfo
 import java.util.concurrent.TimeUnit
 
 class BilibiliHandler(currentClient: OkHttpClient) {
@@ -44,9 +44,9 @@ class BilibiliHandler(currentClient: OkHttpClient) {
             val mangaUrl = getMangaUrl(externalUrl)
             val chapters = getChapterList(mangaUrl)
             val chapter = chapters
-                .find { it.chapter_number == chapterNumber.toFloatOrNull() }
+                .find { it.number == chapterNumber.toFloatOrNull() }
                 ?: throw Exception("Unknown chapter $chapterNumber")
-            chapter.url
+            chapter.key
         }
 
         return fetchPageList(chapterUrl)
@@ -91,12 +91,12 @@ class BilibiliHandler(currentClient: OkHttpClient) {
         )
     }
 
-    suspend fun getChapterList(mangaUrl: String): List<SChapter> {
+    suspend fun getChapterList(mangaUrl: String): List<ChapterInfo> {
         val response = client.newCall(mangaDetailsApiRequest(mangaUrl)).await()
         return chapterListParse(response)
     }
 
-    fun chapterListParse(response: Response): List<SChapter> {
+    fun chapterListParse(response: Response): List<ChapterInfo> {
         val result = response.parseAs<BilibiliResultDto<BilibiliComicDto>>()
 
         if (result.code != 0) {
@@ -108,12 +108,11 @@ class BilibiliHandler(currentClient: OkHttpClient) {
             .map { ep -> chapterFromObject(ep, result.data.id) }
     }
 
-    private fun chapterFromObject(episode: BilibiliEpisodeDto, comicId: Int): SChapter = SChapter.create().apply {
-        name = "Ep. " + episode.order.toString().removeSuffix(".0") +
-            " - " + episode.title
-        chapter_number = episode.order
-        url = "/mc$comicId/${episode.id}"
-    }
+    private fun chapterFromObject(episode: BilibiliEpisodeDto, comicId: Int): ChapterInfo = ChapterInfo(
+        key = "/mc$comicId/${episode.id}",
+        name = "Ep. " + episode.order.toString().removeSuffix(".0") + " - " + episode.title,
+        number = episode.order,
+    )
 
     private suspend fun fetchPageList(chapterUrl: String): List<Page> {
         val response = client.newCall(pageListRequest(chapterUrl)).await()
