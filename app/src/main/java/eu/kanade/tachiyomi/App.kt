@@ -72,6 +72,7 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.security.Security
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import kotlin.time.Duration.Companion.days
 
@@ -182,6 +183,7 @@ open class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
     }
 
     override fun onStop(owner: LifecycleOwner) {
+        preferences.lastAppClosed().set(Date().time)
         if (!AuthenticatorUtil.isAuthenticating && preferences.lockAppAfter().get() >= 0) {
             SecureActivityDelegate.locked = true
         }
