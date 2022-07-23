@@ -7,6 +7,7 @@ import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
+import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.ui.library.LibraryPresenter
 
 @Composable
@@ -55,7 +56,7 @@ fun LibraryScreen(
                 onMarkAsReadClicked = onMarkAsReadClicked,
                 onMarkAsUnreadClicked = onMarkAsUnreadClicked,
                 onDownloadClicked = onDownloadClicked,
-                onDeleteClicked = onDeleteClicked,
+                onDeleteClicked = onDeleteClicked.takeIf { presenter.selection.none { it.source == LocalSource.ID } },
                 // SY -->
                 onClickCleanTitles = onClickCleanTitles.takeIf { presenter.showCleanTitles },
                 onClickMigrate = onClickMigrate,

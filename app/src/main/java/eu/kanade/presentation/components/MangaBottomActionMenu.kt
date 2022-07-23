@@ -243,7 +243,7 @@ fun LibraryBottomActionMenu(
             }
             // SY -->
             val showOverflow = onClickCleanTitles != null || onClickAddToMangaDex != null
-            val moveMarkPrev = calculateWindowWidthSizeClass() == WindowWidthSizeClass.Compact
+            val moveMarkPrev = onDeleteClicked != null && calculateWindowWidthSizeClass() == WindowWidthSizeClass.Compact
             var overFlowOpen by remember { mutableStateOf(false) }
             // SY <--
             Row(

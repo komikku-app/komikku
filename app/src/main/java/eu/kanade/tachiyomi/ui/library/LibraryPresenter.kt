@@ -571,7 +571,7 @@ class LibraryPresenter(
      * @return an observable of the categories and its manga.
      */
     private fun getLibraryObservable(): Observable<Library> {
-        return combine(getCategoriesObservable(), getLibraryMangasObservable()) { dbCategories, libraryManga ->
+        return combine(getCategoriesFlow(), getLibraryMangasFlow()) { dbCategories, libraryManga ->
             val categories = if (libraryManga.containsKey(0)) {
                 arrayListOf(Category.default(context)) + dbCategories
             } else {
@@ -618,7 +618,7 @@ class LibraryPresenter(
      *
      * @return an observable of the categories.
      */
-    private fun getCategoriesObservable(): Flow<List<Category>> {
+    private fun getCategoriesFlow(): Flow<List<Category>> {
         return getCategories.subscribe()
     }
 
@@ -628,7 +628,7 @@ class LibraryPresenter(
      * @return an observable containing a map with the category id as key and a list of manga as the
      * value.
      */
-    private fun getLibraryMangasObservable(): Flow<LibraryMap> {
+    private fun getLibraryMangasFlow(): Flow<LibraryMap> {
         return getLibraryManga.subscribe()
             .map { list ->
                 list.map { libraryManga ->

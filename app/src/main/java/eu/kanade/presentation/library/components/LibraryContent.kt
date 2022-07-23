@@ -7,9 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.platform.LocalUriHandler
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -22,7 +20,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
-import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.widget.EmptyView
 
 @Composable
@@ -48,8 +45,6 @@ fun LibraryContent(
     onOpenReader: (LibraryManga) -> Unit,
     // SY <--
 ) {
-    val nestedScrollInterop = rememberNestedScrollInteropConnection()
-
     val pagerState = rememberPagerState(currentPage)
 
     val categories = state.categories
@@ -86,7 +81,6 @@ fun LibraryContent(
 
         SwipeRefresh(
             state = rememberSwipeRefreshState(isRefreshing = false),
-            modifier = Modifier.nestedScroll(nestedScrollInterop),
             onRefresh = onRefresh,
             indicator = { s, trigger ->
                 SwipeRefreshIndicator(
@@ -96,12 +90,12 @@ fun LibraryContent(
             },
         ) {
             if (state.searchQuery.isNullOrEmpty() && isLibraryEmpty) {
-                val context = LocalContext.current
+                val handler = LocalUriHandler.current
                 EmptyScreen(
                     R.string.information_empty_library,
                     listOf(
                         EmptyView.Action(R.string.getting_started_guide, R.drawable.ic_help_24dp) {
-                            context.openInBrowser("https://tachiyomi.org/help/guides/getting-started")
+                            handler.openUri("https://tachiyomi.org/help/guides/getting-started")
                         },
                     ),
                 )
