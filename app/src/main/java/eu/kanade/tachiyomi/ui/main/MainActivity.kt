@@ -69,7 +69,6 @@ import eu.kanade.tachiyomi.util.system.isTablet
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.setNavigationBarTransparentCompat
-import eu.kanade.tachiyomi.widget.ActionModeWithToolbar
 import exh.EXHMigrations
 import exh.eh.EHentaiUpdateWorker
 import exh.source.BlacklistedSources
@@ -585,11 +584,6 @@ class MainActivity : BaseActivity() {
         }
         window.statusBarColor = getThemeColor(android.R.attr.statusBarColor)
         super.onSupportActionModeFinished(mode)
-    }
-
-    fun startActionModeAndToolbar(modeCallback: ActionModeWithToolbar.Callback): ActionModeWithToolbar {
-        binding.actionToolbar.start(modeCallback)
-        return binding.actionToolbar
     }
 
     private suspend fun resetExitConfirmation() {
