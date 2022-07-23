@@ -45,6 +45,7 @@ import eu.kanade.presentation.components.FastScrollLazyColumn
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.SwipeRefreshIndicator
 import eu.kanade.presentation.theme.header
+import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
@@ -115,7 +116,7 @@ fun ExtensionContent(
     var trustState by remember { mutableStateOf<Extension.Untrusted?>(null) }
 
     FastScrollLazyColumn(
-        contentPadding = WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+        contentPadding = bottomNavPaddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(
             items = state.items,

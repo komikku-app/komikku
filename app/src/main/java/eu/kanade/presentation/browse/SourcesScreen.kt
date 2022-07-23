@@ -37,6 +37,7 @@ import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.theme.header
+import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.horizontalPadding
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
@@ -100,7 +101,7 @@ fun SourceList(
 ) {
     ScrollbarLazyColumn(
         modifier = Modifier.nestedScroll(nestedScrollConnection),
-        contentPadding = WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+        contentPadding = bottomNavPaddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(
             items = state.items,

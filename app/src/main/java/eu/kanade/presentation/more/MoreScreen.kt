@@ -27,6 +27,7 @@ import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.components.SwitchPreference
+import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.quantityStringResource
 import eu.kanade.tachiyomi.R
@@ -60,7 +61,7 @@ fun MoreScreen(
         },
     ) { paddingValues ->
         ScrollbarLazyColumn(
-            contentPadding = paddingValues + WindowInsets.navigationBars.asPaddingValues(),
+            contentPadding = bottomNavPaddingValues + paddingValues + WindowInsets.navigationBars.asPaddingValues(),
         ) {
             item {
                 LogoHeader()
