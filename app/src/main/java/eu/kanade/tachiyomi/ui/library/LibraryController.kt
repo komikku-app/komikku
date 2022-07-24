@@ -87,7 +87,7 @@ class LibraryController(
             presenter = presenter,
             onMangaClicked = ::openManga,
             onGlobalSearchClicked = {
-                router.pushController(GlobalSearchController(presenter.query))
+                router.pushController(GlobalSearchController(presenter.searchQuery))
             },
             onChangeCategoryClicked = ::showMangaCategoriesDialog,
             onMarkAsReadClicked = { markReadStatus(true) },
