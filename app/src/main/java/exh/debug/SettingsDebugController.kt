@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.presentation.components.Divider
 import eu.kanade.presentation.components.LazyColumn
+import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.SwitchPreference
 import eu.kanade.tachiyomi.ui.base.controller.BasicComposeController
@@ -80,100 +81,99 @@ class SettingsDebugController : BasicComposeController() {
                 DebugToggles.values().map { DebugToggle(it.name, it.asPref(viewScope), it.default) }
             }
         }
-        if (functions != null) {
-            val scope = rememberCoroutineScope()
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .nestedScroll(nestedScrollInterop),
-            ) {
-                var running by remember { mutableStateOf(false) }
-                var result by remember { mutableStateOf<Pair<String, String>?>(null) }
-                LazyColumn(Modifier.fillMaxSize()) {
-                    item {
-                        Text(
-                            text = "Functions",
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp),
-                        )
-                    }
-                    items(functions.orEmpty()) { (func, name) ->
-                        PreferenceRow(
-                            title = name,
-                            onClick = {
-                                scope.launch(Dispatchers.Default) {
-                                    val text = try {
-                                        running = true
-                                        "Function returned result:\n\n${func.call(DebugFunctions)}"
-                                    } catch (e: Exception) {
-                                        "Function threw exception:\n\n${Log.getStackTraceString(e)}"
-                                    } finally {
-                                        running = false
-                                    }
-                                    result = name to text
-                                }
-                            },
-                        )
-                    }
-                    item {
-                        Divider()
-                    }
-                    item {
-                        Text(
-                            text = "Toggles",
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp),
-                        )
-                    }
-                    items(toggles) { (name, pref, default) ->
-                        SwitchPreference(
-                            preference = pref,
-                            title = name.replace('_', ' ')
-                                .lowercase(Locale.getDefault())
-                                .capitalize(Locale.getDefault()),
-                            subtitleAnnotated = if (pref.value != default) {
-                                AnnotatedString("MODIFIED", SpanStyle(color = Color.Red))
-                            } else null,
-                        )
-                    }
-                    item {
-                        Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
-                    }
-                }
-                AnimatedVisibility(
-                    running && result == null,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(color = Color.White.copy(alpha = 0.3F))
-                            .pointerInput(running && result == null) {
-                                forEachGesture {
-                                    awaitPointerEventScope {
-                                        waitForUpOrCancellation()?.consume()
-                                    }
-                                }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
+        if (functions == null) {
+            LoadingScreen()
+            return
+        }
 
-                ResultTextDialog(
-                    result = result,
-                    onDismissRequest = { result = null }
-                )
+        val scope = rememberCoroutineScope()
+        Box(
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(nestedScrollInterop),
+        ) {
+            var running by remember { mutableStateOf(false) }
+            var result by remember { mutableStateOf<Pair<String, String>?>(null) }
+            LazyColumn(Modifier.fillMaxSize()) {
+                item {
+                    Text(
+                        text = "Functions",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
+                items(functions.orEmpty()) { (func, name) ->
+                    PreferenceRow(
+                        title = name,
+                        onClick = {
+                            scope.launch(Dispatchers.Default) {
+                                val text = try {
+                                    running = true
+                                    "Function returned result:\n\n${func.call(DebugFunctions)}"
+                                } catch (e: Exception) {
+                                    "Function threw exception:\n\n${Log.getStackTraceString(e)}"
+                                } finally {
+                                    running = false
+                                }
+                                result = name to text
+                            }
+                        },
+                    )
+                }
+                item {
+                    Divider()
+                }
+                item {
+                    Text(
+                        text = "Toggles",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
+                items(toggles) { (name, pref, default) ->
+                    SwitchPreference(
+                        preference = pref,
+                        title = name.replace('_', ' ')
+                            .lowercase(Locale.getDefault())
+                            .capitalize(Locale.getDefault()),
+                        subtitleAnnotated = if (pref.value != default) {
+                            AnnotatedString("MODIFIED", SpanStyle(color = Color.Red))
+                        } else null,
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                }
             }
-        } else {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            AnimatedVisibility(
+                running && result == null,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(color = Color.White.copy(alpha = 0.3F))
+                        .pointerInput(running && result == null) {
+                            forEachGesture {
+                                awaitPointerEventScope {
+                                    waitForUpOrCancellation()?.consume()
+                                }
+                            }
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
             }
+
+            ResultTextDialog(
+                result = result,
+                onDismissRequest = { result = null },
+            )
         }
     }
 

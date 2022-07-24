@@ -3,11 +3,11 @@ package exh.ui.batchadd
 import android.content.Context
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import exh.log.xLogE
+import exh.ui.base.CoroutinePresenter
 import exh.util.trimOrNull
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import uy.kohesive.injekt.injectLazy
 
-class BatchAddPresenter : BasePresenter<BatchAddController>() {
+class BatchAddPresenter : CoroutinePresenter<BatchAddController>() {
     private val preferences: PreferencesHelper by injectLazy()
 
     private val galleryAdder by lazy { GalleryAdder() }

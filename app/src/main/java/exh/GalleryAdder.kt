@@ -34,6 +34,11 @@ class GalleryAdder(
         enabledLanguages().get() to disabledSources().get().map { it.toLong() }.toSet()
     }
 
+    private val Pair<Set<String>, Set<Long>>.enabledLangs
+        get() = first
+    private val Pair<Set<String>, Set<Long>>.disabledSources
+        get() = second
+
     private val logger = xLogStack()
 
     fun pickSource(url: String): List<UrlImportableSource> {
@@ -41,7 +46,7 @@ class GalleryAdder(
         return sourceManager.getVisibleCatalogueSources()
             .mapNotNull { it.getMainSource<UrlImportableSource>() }
             .filter {
-                it.lang in filters.first && it.id !in filters.second && try {
+                it.lang in filters.enabledLangs && it.id !in filters.disabledSources && try {
                     it.matchesUri(uri)
                 } catch (e: Exception) {
                     false
@@ -73,7 +78,7 @@ class GalleryAdder(
                 sourceManager.getVisibleCatalogueSources()
                     .mapNotNull { it.getMainSource<UrlImportableSource>() }
                     .find {
-                        it.lang in filters.first && it.id !in filters.second && try {
+                        it.lang in filters.enabledLangs && it.id !in filters.disabledSources && try {
                             it.matchesUri(uri)
                         } catch (e: Exception) {
                             false
