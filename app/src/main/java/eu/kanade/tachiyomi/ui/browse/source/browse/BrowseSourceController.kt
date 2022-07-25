@@ -217,6 +217,8 @@ open class BrowseSourceController(bundle: Bundle) :
             dialog.showDialog(router)
         }
         // SY <--
+
+        presenter.restartPager()
     }
 
     fun setSavedSearches(savedSearches: List<EXHSavedSearch>) {
