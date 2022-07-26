@@ -15,6 +15,12 @@ class TrackRepositoryImpl(
             manga_syncQueries.getTracks(trackMapper)
         }
     }
+
+    override suspend fun getTracksByMangaIds(mangaIds: List<Long>): List<Track> {
+        return handler.awaitList {
+            manga_syncQueries.getTracksByMangaIds(mangaIds, trackMapper)
+        }
+    }
     // SY <--
 
     override suspend fun getTracksByMangaId(mangaId: Long): List<Track> {

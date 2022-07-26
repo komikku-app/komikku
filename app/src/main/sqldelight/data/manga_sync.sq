@@ -25,6 +25,9 @@ getTracks:
 SELECT *
 FROM manga_sync;
 
+getTracksByMangaIds:
+SELECT * FROM manga_sync WHERE manga_id IN :mangaIds;
+
 getTracksByMangaId:
 SELECT *
 FROM manga_sync

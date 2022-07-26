@@ -33,6 +33,7 @@ import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.track.interactor.GetTracks
+import eu.kanade.domain.track.model.Track
 import eu.kanade.presentation.library.LibraryState
 import eu.kanade.presentation.library.LibraryStateImpl
 import eu.kanade.presentation.library.components.LibraryToolbarTitle
@@ -45,6 +46,8 @@ import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackStatus
+import eu.kanade.tachiyomi.source.LocalSource
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -933,19 +936,45 @@ class LibraryPresenter(
                     // Prepare filter object
                     val parsedQuery = searchEngine.parseQuery(query)
                     val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
+                    val tracks = if (loggedServices.isNotEmpty()) {
+                        getTracks.await(unfiltered.mapNotNull { it.manga.id }.distinct())
+                    } else emptyMap()
+                    val sources = unfiltered
+                        .distinctBy { it.manga.source }
+                        .mapNotNull { sourceManager.get(it.manga.source) }
+                        .associateBy { it.id }
                     unfiltered.asFlow().cancellable().filter { item ->
-                        if (isMetadataSource(item.manga.source)) {
-                            val mangaId = item.manga.id ?: -1
+                        val mangaId = item.manga.id ?: -1
+                        val sourceId = item.manga.source
+                        if (isMetadataSource(sourceId)) {
                             if (mangaWithMetaIds.binarySearch(mangaId) < 0) {
                                 // No meta? Filter using title
-                                filterManga(parsedQuery, item.manga)
+                                filterManga(
+                                    queries = parsedQuery,
+                                    manga = item.manga,
+                                    tracks = tracks[mangaId],
+                                    source = sources[sourceId],
+                                )
                             } else {
                                 val tags = getSearchTags.await(mangaId)
                                 val titles = getSearchTitles.await(mangaId)
-                                filterManga(parsedQuery, item.manga, false, tags, titles)
+                                filterManga(
+                                    queries = parsedQuery,
+                                    manga = item.manga,
+                                    tracks = tracks[mangaId],
+                                    source = sources[sourceId],
+                                    checkGenre = false,
+                                    searchTags = tags,
+                                    searchTitles = titles,
+                                )
                             }
                         } else {
-                            filterManga(parsedQuery, item.manga)
+                            filterManga(
+                                queries = parsedQuery,
+                                manga = item.manga,
+                                tracks = tracks[mangaId],
+                                source = sources[sourceId],
+                            )
                         }
                     }.toList()
                 } else {
@@ -955,76 +984,76 @@ class LibraryPresenter(
         }
     }
 
-    private suspend fun filterManga(
+    private fun filterManga(
         queries: List<QueryComponent>,
         manga: LibraryManga,
+        tracks: List<Track>?,
+        source: Source?,
         checkGenre: Boolean = true,
         searchTags: List<SearchTag>? = null,
         searchTitles: List<SearchTitle>? = null,
     ): Boolean {
-        val mappedQueries = queries.groupBy { it.excluded }
-        val tracks = if (loggedServices.isNotEmpty()) getTracks.await(manga.id!!).toList() else null
-        val source = sourceManager.get(manga.source)
+        val sourceIdString = manga.source.takeUnless { it == LocalSource.ID }?.toString()
         val genre = if (checkGenre) manga.getGenres().orEmpty() else emptyList()
-        val hasNormalQuery = mappedQueries[false]?.all { queryComponent ->
-            when (queryComponent) {
-                is Text -> {
-                    val query = queryComponent.asQuery()
-                    manga.title.contains(query, true) ||
-                        (manga.author?.contains(query, true) == true) ||
-                        (manga.artist?.contains(query, true) == true) ||
-                        (manga.description?.contains(query, true) == true) ||
-                        (source?.name?.contains(query, true) == true) ||
-                        (loggedServices.isNotEmpty() && tracks != null && filterTracks(query, tracks)) ||
-                        (genre.any { it.contains(query, true) }) ||
-                        (searchTags.orEmpty().any { it.name.contains(query, true) }) ||
-                        (searchTitles.orEmpty().any { it.title.contains(query, true) })
-                }
-                is Namespace -> {
-                    searchTags != null && searchTags.any {
-                        val tag = queryComponent.tag
-                        (it.namespace != null && it.namespace.contains(queryComponent.namespace, true) && tag != null && it.name.contains(tag.asQuery(), true)) ||
-                            (tag == null && it.namespace != null && it.namespace.contains(queryComponent.namespace, true))
+        return queries.all { queryComponent ->
+            when (queryComponent.excluded) {
+                false -> when (queryComponent) {
+                    is Text -> {
+                        val query = queryComponent.asQuery()
+                        manga.title.contains(query, true) ||
+                            (manga.author?.contains(query, true) == true) ||
+                            (manga.artist?.contains(query, true) == true) ||
+                            (manga.description?.contains(query, true) == true) ||
+                            (source?.name?.contains(query, true) == true) ||
+                            (sourceIdString != null && sourceIdString == query) ||
+                            (loggedServices.isNotEmpty() && tracks != null && filterTracks(query, tracks)) ||
+                            (genre.any { it.contains(query, true) }) ||
+                            (searchTags?.any { it.name.contains(query, true) } == true) ||
+                            (searchTitles?.any { it.title.contains(query, true) } == true)
                     }
-                }
-                else -> true
-            }
-        }
-        val doesNotHaveExcludedQuery = mappedQueries[true]?.all { queryComponent ->
-            when (queryComponent) {
-                is Text -> {
-                    val query = queryComponent.asQuery()
-                    query.isBlank() || (
-                        (!manga.title.contains(query, true)) &&
-                            (!manga.author.orEmpty().contains(query, true)) &&
-                            (!manga.artist.orEmpty().contains(query, true)) &&
-                            (!manga.description.orEmpty().contains(query, true)) &&
-                            (!source?.name.orEmpty().contains(query, true)) &&
-                            (loggedServices.isEmpty() || loggedServices.isNotEmpty() && tracks == null || tracks != null && !filterTracks(query, tracks)) &&
-                            (genre.none { it.contains(query, true) }) &&
-                            (searchTags.orEmpty().none { it.name.contains(query, true) }) &&
-                            (searchTitles.orEmpty().none { it.title.contains(query, true) })
-                        )
-                }
-                is Namespace -> {
-                    val searchedTag = queryComponent.tag?.asQuery()
-                    searchTags == null || searchTags.all { mangaTag ->
-                        if (searchedTag == null || searchedTag.isBlank()) {
-                            mangaTag.namespace == null || !mangaTag.namespace.contains(queryComponent.namespace, true)
-                        } else if (mangaTag.namespace == null) {
-                            true
-                        } else {
-                            !(mangaTag.name.contains(searchedTag, true) && mangaTag.namespace.contains(queryComponent.namespace, true))
+                    is Namespace -> {
+                        searchTags != null && searchTags.any {
+                            val tag = queryComponent.tag
+                            (it.namespace.equals(queryComponent.namespace, true) && tag?.run { it.name.contains(tag.asQuery(), true) } == true) ||
+                                (tag == null && it.namespace.equals(queryComponent.namespace, true))
                         }
                     }
+                    else -> true
                 }
-                else -> true
+                true -> when (queryComponent) {
+                    is Text -> {
+                        val query = queryComponent.asQuery()
+                        query.isBlank() || (
+                            (!manga.title.contains(query, true)) &&
+                                (manga.author?.contains(query, true) != true) &&
+                                (manga.artist?.contains(query, true) != true) &&
+                                (manga.description?.contains(query, true) != true) &&
+                                (source?.name?.contains(query, true) != true) &&
+                                (sourceIdString != null && sourceIdString != query) &&
+                                (loggedServices.isEmpty() || loggedServices.isNotEmpty() && tracks == null || tracks != null && !filterTracks(query, tracks)) &&
+                                (genre.none { it.contains(query, true) }) &&
+                                (searchTags?.any { it.name.contains(query, true) } != true) &&
+                                (searchTitles?.any { it.title.contains(query, true) } != true)
+                            )
+                    }
+                    is Namespace -> {
+                        val searchedTag = queryComponent.tag?.asQuery()
+                        searchTags == null || (queryComponent.namespace.isBlank() && searchedTag.isNullOrBlank()) || searchTags.all { mangaTag ->
+                            if (queryComponent.namespace.isBlank() && !searchedTag.isNullOrBlank()) {
+                                !mangaTag.name.contains(searchedTag, true)
+                            } else if (searchedTag.isNullOrBlank()) {
+                                mangaTag.namespace == null || !mangaTag.namespace.equals(queryComponent.namespace, true)
+                            } else if (mangaTag.namespace.isNullOrBlank()) {
+                                true
+                            } else {
+                                !mangaTag.name.contains(searchedTag, true) || !mangaTag.namespace.equals(queryComponent.namespace, true)
+                            }
+                        }
+                    }
+                    else -> true
+                }
             }
         }
-
-        return (hasNormalQuery != null && doesNotHaveExcludedQuery != null && hasNormalQuery && doesNotHaveExcludedQuery) ||
-            (hasNormalQuery != null && doesNotHaveExcludedQuery == null && hasNormalQuery) ||
-            (hasNormalQuery == null && doesNotHaveExcludedQuery != null && doesNotHaveExcludedQuery)
     }
 
     private fun filterTracks(constraint: String, tracks: List<eu.kanade.domain.track.model.Track>): Boolean {
@@ -1033,9 +1062,8 @@ class LibraryPresenter(
             if (trackService != null) {
                 val status = trackService.getStatus(it.status.toInt())
                 val name = services[it.syncId]
-                return@any status.contains(constraint, true) || name?.contains(constraint, true) == true
-            }
-            return@any false
+                status.contains(constraint, true) || name?.contains(constraint, true) == true
+            } else false
         }
     }
     // SY <--
