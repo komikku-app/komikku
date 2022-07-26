@@ -253,7 +253,7 @@ open class SourceManager(private val context: Context) {
             ),
         ).associateBy { it.originalSourceQualifiedClassName }
 
-        val currentDelegatedSources = ListenMutableMap(mutableMapOf<Long, DelegatedSource>(), ::handleSourceLibrary)
+        val currentDelegatedSources: MutableMap<Long, DelegatedSource> = ListenMutableMap(mutableMapOf(), ::handleSourceLibrary)
 
         data class DelegatedSource(
             val sourceName: String,
@@ -264,19 +264,10 @@ open class SourceManager(private val context: Context) {
         )
     }
 
-    class ListenMutableMap<K, V>(private val internalMap: MutableMap<K, V>, val listener: () -> Unit) : MutableMap<K, V> {
-        override val size: Int
-            get() = internalMap.size
-        override fun containsKey(key: K): Boolean = internalMap.containsKey(key)
-        override fun containsValue(value: V): Boolean = internalMap.containsValue(value)
-        override fun get(key: K): V? = internalMap[key]
-        override fun isEmpty(): Boolean = internalMap.isEmpty()
-        override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
-            get() = internalMap.entries
-        override val keys: MutableSet<K>
-            get() = internalMap.keys
-        override val values: MutableCollection<V>
-            get() = internalMap.values
+    private class ListenMutableMap<K, V>(
+        private val internalMap: MutableMap<K, V>,
+        private val listener: () -> Unit,
+    ) : MutableMap<K, V> by internalMap {
         override fun clear() {
             val clearResult = internalMap.clear()
             listener()
