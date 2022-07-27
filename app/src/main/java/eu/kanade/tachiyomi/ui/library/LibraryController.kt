@@ -74,10 +74,6 @@ class LibraryController(
     private var favoritesSyncJob: Job? = null
     // <-- EH
 
-    init {
-        retainViewMode = RetainViewMode.RETAIN_DETACH
-    }
-
     override fun createPresenter(): LibraryPresenter = LibraryPresenter()
 
     @Composable
