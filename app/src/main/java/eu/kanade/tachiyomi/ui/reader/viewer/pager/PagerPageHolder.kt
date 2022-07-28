@@ -28,6 +28,7 @@ import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
@@ -353,7 +354,18 @@ class PagerPageHolder(
     }
 
     private fun mergePages(imageStream: InputStream, imageStream2: InputStream?): InputStream {
-        imageStream2 ?: return imageStream
+        // Handle adding a center margin to wide images if requested
+        if (imageStream2 == null) {
+            if (imageStream is BufferedInputStream && ImageUtil.isWideImage(imageStream) &&
+                viewer.config.centerMarginType and PagerConfig.CenterMarginType.WIDE_PAGE_CENTER_MARGIN > 0 &&
+                !viewer.config.imageCropBorders
+            ) {
+                return ImageUtil.AddHorizontalCenterMargin(imageStream, getHeight(), context)
+            } else {
+                return imageStream
+            }
+        }
+
         if (page.fullPage) return imageStream
         if (ImageUtil.isAnimatedAndSupported(imageStream)) {
             page.fullPage = true
@@ -424,7 +436,12 @@ class PagerPageHolder(
 
         imageStream.close()
         imageStream2.close()
-        return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, viewer.config.pageCanvasColor) {
+
+        val centerMargin = if (viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0 &&
+            !viewer.config.imageCropBorders
+        ) 96 / (max(1, getHeight()) / max(height, height2)) else 0
+
+        return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, centerMargin, viewer.config.pageCanvasColor) {
             viewer.scope.launchUI {
                 if (it == 100) {
                     progressIndicator.hide()
@@ -461,7 +478,11 @@ class PagerPageHolder(
             }
         }
 
-        return ImageUtil.splitInHalf(imageStream, side)
+        val sideMargin = if ((viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN) > 0 &&
+            viewer.config.doublePages && !viewer.config.imageCropBorders
+        ) 48 else 0
+
+        return ImageUtil.splitInHalf(imageStream, side, sideMargin)
     }
 
     private fun onPageSplit(page: ReaderPage) {

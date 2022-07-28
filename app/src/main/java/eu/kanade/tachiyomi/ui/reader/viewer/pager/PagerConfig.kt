@@ -71,6 +71,9 @@ class PagerConfig(
 
     @ColorInt
     var pageCanvasColor = Color.WHITE
+
+    var centerMarginType = CenterMarginType.NONE
+
     // SY <--
 
     init {
@@ -150,6 +153,9 @@ class PagerConfig(
                 },
             )
 
+        preferences.centerMarginType()
+            .register({ centerMarginType = it }, { imagePropertyChangedListener?.invoke() })
+
         preferences.invertDoublePages()
             .register({ invertDoublePages = it && dualPageSplit == false }, { imagePropertyChangedListener?.invoke() })
         // SY <--
@@ -195,6 +201,13 @@ class PagerConfig(
             else -> defaultNavigation()
         }
         navigationModeChangedListener?.invoke()
+    }
+
+    object CenterMarginType {
+        const val NONE = 0
+        const val DOUBLE_PAGE_CENTER_MARGIN = 1
+        const val WIDE_PAGE_CENTER_MARGIN = 2
+        const val DOUBLE_AND_WIDE_CENTER_MARGIN = 3
     }
 
     object PageLayout {

@@ -116,6 +116,13 @@
         android:textColor="?android:attr/textColorSecondary"
         android:text="@string/invert_double_pages" />
 
+    <eu.kanade.tachiyomi.widget.MaterialSpinnerView
+        android:id="@+id/center_margin_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/center_margin_types"
+        app:title="@string/pref_center_margin" />
+
     <androidx.constraintlayout.widget.Group
         android:id="@+id/tapping_prefs_group"
         android:layout_width="wrap_content"

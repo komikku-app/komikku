@@ -508,6 +508,18 @@ class SettingsReaderController : SettingsController() {
                 titleRes = R.string.invert_double_pages
                 visibleIf(preferences.pageLayout()) { it != PagerConfig.PageLayout.SINGLE_PAGE }
             }
+
+            intListPreference {
+                bindTo(preferences.centerMarginType())
+                titleRes = R.string.center_margin
+                entriesRes = arrayOf(
+                    R.string.center_margin_none,
+                    R.string.center_margin_double_page,
+                    R.string.center_margin_wide_page,
+                    R.string.center_margin_double_and_wide_page,
+                )
+                entryValues = arrayOf("0", "1", "2", "3")
+            }
         }
         // SY <--
     }

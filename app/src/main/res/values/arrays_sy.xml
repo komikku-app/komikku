@@ -21,4 +21,11 @@
         <item>@string/double_pages</item>
         <item>@string/automatic_orientation</item>
     </string-array>
+
+    <string-array name="center_margin_types">
+        <item>@string/center_margin_none</item>
+        <item>@string/center_margin_double_page</item>
+        <item>@string/center_margin_wide_page</item>
+        <item>@string/center_margin_double_and_wide_page</item>
+    </string-array>
 </resources>

@@ -1,5 +1,4 @@
 package eu.kanade.tachiyomi.util.system
-
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -128,16 +127,16 @@ object ImageUtil {
     /**
      * Extract the 'side' part from imageStream and return it as InputStream.
      */
-    fun splitInHalf(imageStream: InputStream, side: Side): InputStream {
+    fun splitInHalf(imageStream: InputStream, side: Side, sidePadding: Int): InputStream {
         val imageBytes = imageStream.readBytes()
 
         val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
         val height = imageBitmap.height
         val width = imageBitmap.width
 
-        val singlePage = Rect(0, 0, width / 2, height)
+        val singlePage = Rect(0, 0, width / 2 + sidePadding, height)
 
-        val half = createBitmap(width / 2, height)
+        val half = createBitmap(width / 2 + sidePadding, height)
         val part = when (side) {
             Side.RIGHT -> Rect(width - width / 2, 0, width, height)
             Side.LEFT -> Rect(0, 0, width / 2, height)
@@ -152,7 +151,8 @@ object ImageUtil {
     }
 
     /**
-     * Split the image into left and right parts, then merge them into a new image.
+     * Split the image into left and right parts, then merge them into a
+     * new vertically-aligned image.
      */
     fun splitAndMerge(imageStream: InputStream, upperSide: Side): InputStream {
         val imageBytes = imageStream.readBytes()
@@ -187,6 +187,40 @@ object ImageUtil {
     enum class Side {
         RIGHT, LEFT
     }
+    // SY -->
+    /**
+     * Split the image into left and right parts, then merge them into a
+     * new image with added center padding scaled relative to the height of the display view
+     * to compensate for scaling.
+     */
+
+    fun AddHorizontalCenterMargin(imageStream: InputStream, viewHeight: Int, backgroundContext: Context): InputStream {
+        val imageBitmap = ImageDecoder.newInstance(imageStream)?.decode()!!
+        val height = imageBitmap.height
+        val width = imageBitmap.width
+
+        val centerPadding = 96 / (max(1, viewHeight) / height)
+
+        val leftSourcePart = Rect(0, 0, width / 2, height)
+        val rightSourcePart = Rect(width / 2, 0, width, height)
+        val leftTargetPart = Rect(0, 0, width / 2, height)
+        val rightTargetPart = Rect(width / 2 + centerPadding, 0, width + centerPadding, height)
+
+        val bgColor = chooseBackground(backgroundContext, imageStream)
+        bgColor.setBounds(width / 2, 0, width / 2 + centerPadding, height)
+        val result = createBitmap(width + centerPadding, height)
+
+        result.applyCanvas {
+            drawBitmap(imageBitmap, leftSourcePart, leftTargetPart, null)
+            drawBitmap(imageBitmap, rightSourcePart, rightTargetPart, null)
+            bgColor.draw(this)
+        }
+
+        val output = ByteArrayOutputStream()
+        result.compress(Bitmap.CompressFormat.JPEG, 100, output)
+        return ByteArrayInputStream(output.toByteArray())
+    }
+    // SY <--
 
     /**
      * Check whether the image is considered a tall image.
@@ -534,31 +568,37 @@ object ImageUtil {
         imageBitmap: Bitmap,
         imageBitmap2: Bitmap,
         isLTR: Boolean,
+        centerMargin: Int,
         @ColorInt background: Int = Color.WHITE,
+
         progressCallback: ((Int) -> Unit)? = null,
     ): ByteArrayInputStream {
         val height = imageBitmap.height
         val width = imageBitmap.width
         val height2 = imageBitmap2.height
         val width2 = imageBitmap2.width
+
         val maxHeight = max(height, height2)
-        val result = Bitmap.createBitmap(width + width2, max(height, height2), Bitmap.Config.ARGB_8888)
+
+        val result = Bitmap.createBitmap(width + width2 + centerMargin, max(height, height2), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)
         canvas.drawColor(background)
         val upperPart = Rect(
-            if (isLTR) 0 else width2,
+            if (isLTR) 0 else width2 + centerMargin,
             (maxHeight - imageBitmap.height) / 2,
-            (if (isLTR) 0 else width2) + imageBitmap.width,
+            (if (isLTR) 0 else width2 + centerMargin) + imageBitmap.width,
             imageBitmap.height + (maxHeight - imageBitmap.height) / 2,
         )
+
         canvas.drawBitmap(imageBitmap, imageBitmap.rect, upperPart, null)
         progressCallback?.invoke(98)
         val bottomPart = Rect(
-            if (!isLTR) 0 else width,
+            if (!isLTR) 0 else width + centerMargin,
             (maxHeight - imageBitmap2.height) / 2,
-            (if (!isLTR) 0 else width) + imageBitmap2.width,
+            (if (!isLTR) 0 else width + centerMargin) + imageBitmap2.width,
             imageBitmap2.height + (maxHeight - imageBitmap2.height) / 2,
         )
+
         canvas.drawBitmap(imageBitmap2, imageBitmap2.rect, bottomPart, null)
         progressCallback?.invoke(99)
 
