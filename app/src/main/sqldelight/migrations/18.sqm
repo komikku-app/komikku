@@ -14,4 +14,4 @@ UPDATE mangas
 SET last_update = 0
 WHERE last_update = -1;
 UPDATE categories
-SET manga_order = NULL;
+SET manga_order = "";
