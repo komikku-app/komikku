@@ -78,7 +78,7 @@ fun LibraryCoverOnlyGridItem(
         isLocal = item.isLocal,
         language = item.sourceLanguage,
         // SY -->
-        showPlayButton = item.startReadingButton,
+        showPlayButton = item.startReadingButton && item.manga.unreadCount > 0,
         onOpenReader = {
             onOpenReader(manga)
         },

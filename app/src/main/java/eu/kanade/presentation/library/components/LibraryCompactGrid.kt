@@ -93,7 +93,7 @@ fun LibraryCompactGridItem(
         isLocal = item.isLocal,
         language = item.sourceLanguage,
         // SY -->
-        showPlayButton = item.startReadingButton,
+        showPlayButton = item.startReadingButton && item.manga.unreadCount > 0,
         playButtonPosition = PlayButtonPosition.Top,
         onOpenReader = {
             onOpenReader(manga)
