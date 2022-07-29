@@ -1136,7 +1136,8 @@ class LibraryPresenter(
     }
 
     private fun getGroupedMangaItems(libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
-        val grouping: MutableMap<Number, Pair<Long, String>> = mutableMapOf()
+        val groupType = preferences.groupLibraryBy().get()
+        val grouping: MutableMap<Long, Pair<Long, String>> = mutableMapOf()
         when (groupType) {
             LibraryGroup.BY_STATUS -> {
                 grouping.putAll(
@@ -1187,7 +1188,7 @@ class LibraryPresenter(
                     if (group != null) {
                         map.getOrPut(group.first) { mutableListOf() } += libraryItem
                     } else {
-                        grouping.getOrPut(Int.MAX_VALUE) {
+                        grouping.getOrPut(Long.MAX_VALUE) {
                             Long.MAX_VALUE to context.getString(R.string.unknown)
                         }
                         map.getOrPut(Long.MAX_VALUE) { mutableListOf() } += libraryItem
@@ -1196,11 +1197,11 @@ class LibraryPresenter(
             }
             else -> {
                 libraryManga.forEach { libraryItem ->
-                    val group = grouping[libraryItem.manga.status]
+                    val group = grouping[libraryItem.manga.status.toLong()]
                     if (group != null) {
                         map.getOrPut(group.first) { mutableListOf() } += libraryItem
                     } else {
-                        grouping.getOrPut(Int.MAX_VALUE) {
+                        grouping.getOrPut(Long.MAX_VALUE) {
                             Long.MAX_VALUE to context.getString(R.string.unknown)
                         }
                         map.getOrPut(Long.MAX_VALUE) { mutableListOf() } += libraryItem
