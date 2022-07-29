@@ -183,7 +183,7 @@ class LibraryController(
     }
 
     fun showSettingsSheet() {
-        if (presenter.categories.isNotEmpty()) {
+        if (presenter.categories.isNotEmpty() /* SY --> */ && presenter.groupType == LibraryGroup.BY_DEFAULT /* SY <-- */) {
             presenter.categories[presenter.activeCategory].let { category ->
                 settingsSheet?.show(category.toDbCategory())
             }
@@ -248,7 +248,7 @@ class LibraryController(
             val mangas = presenter.selection.toList()
 
             // Hide the default category because it has a different behavior than the ones from db.
-            val categories = presenter.categories.filter { it.id != 0L }
+            val categories = presenter.ogCategories.filter { it.id != 0L } // SY <--
 
             // Get indexes of the common categories to preselect.
             val common = presenter.getCommonCategories(mangas.mapNotNull { it.toDomainManga() })

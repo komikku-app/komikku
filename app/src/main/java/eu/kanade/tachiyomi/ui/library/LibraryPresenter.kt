@@ -177,7 +177,7 @@ class LibraryPresenter(
     // SY -->
     val favoritesSync = FavoritesSyncHelper(context)
 
-    var groupType = preferences.groupLibraryBy().get()
+    val groupType by preferences.groupLibraryBy().asState()
 
     private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
@@ -248,6 +248,9 @@ class LibraryPresenter(
                     .observeOn(AndroidSchedulers.mainThread())
                     .asFlow()
                     .collectLatest {
+                        // SY -->
+                        state.categories = it.categories
+                        // SY <--
                         state.isLoading = false
                         loadedManga = it.mangaMap
                     }
@@ -588,28 +591,32 @@ class LibraryPresenter(
                 }
             }
 
-            state.categories = categories
+            // SY -->
+            state.ogCategories = categories
+            // SY <--
             Library(categories, libraryManga)
         }.asObservable()
     }
 
     // SY -->
     private fun applyGrouping(map: LibraryMap, categories: List<Category>): Pair<LibraryMap, List<Category>> {
-        groupType = preferences.groupLibraryBy().get()
+        val groupType = preferences.groupLibraryBy().get()
         var editedCategories = categories
-        val items = if (groupType == LibraryGroup.BY_DEFAULT) {
-            map
-        } else if (groupType == LibraryGroup.UNGROUPED) {
-            editedCategories = listOf(Category(0, "All", 0, 0))
-            mapOf(
-                0L to map.values.flatten().distinctBy { it.manga.id },
-            )
-        } else {
-            val (items, customCategories) = getGroupedMangaItems(
-                map.values.flatten().distinctBy { it.manga.id },
-            )
-            editedCategories = customCategories
-            items
+        val items = when (groupType) {
+            LibraryGroup.BY_DEFAULT -> map
+            LibraryGroup.UNGROUPED -> {
+                editedCategories = listOf(Category(0, "All", 0, 0))
+                mapOf(
+                    0L to map.values.flatten().distinctBy { it.manga.id },
+                )
+            }
+            else -> {
+                val (items, customCategories) = getGroupedMangaItems(
+                    map.values.flatten().distinctBy { it.manga.id },
+                )
+                editedCategories = customCategories
+                items
+            }
         }
 
         return items to editedCategories
@@ -929,7 +936,7 @@ class LibraryPresenter(
         }
         val unfiltered = loadedManga[categoryId] ?: emptyList()
 
-        return produceState(initialValue = unfiltered, searchQuery) {
+        return produceState(initialValue = unfiltered, unfiltered, searchQuery) {
             val query = searchQuery
             value = withIOContext {
                 if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
@@ -1072,7 +1079,9 @@ class LibraryPresenter(
     fun getDisplayMode(index: Int): androidx.compose.runtime.State<DisplayModeSetting> {
         val category = categories[index]
         return derivedStateOf {
-            if (isPerCategory.not() || category.id == 0L) {
+            // SY -->
+            if (groupType != LibraryGroup.BY_DEFAULT || isPerCategory.not() || (category.id == 0L && groupType == LibraryGroup.BY_DEFAULT)) {
+                // SY <--
                 currentDisplayMode
             } else {
                 DisplayModeSetting.fromFlag(category.displayMode)

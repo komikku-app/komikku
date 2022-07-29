@@ -23,6 +23,7 @@ interface LibraryState {
     var hasActiveFilters: Boolean
 
     // SY -->
+    val ogCategories: List<Category>
     val showSyncExh: Boolean
     val showCleanTitles: Boolean
     val showAddToMangadex: Boolean
@@ -42,6 +43,8 @@ class LibraryStateImpl : LibraryState {
     override var hasActiveFilters: Boolean by mutableStateOf(false)
 
     // SY -->
+    override var ogCategories: List<Category> by mutableStateOf(emptyList())
+
     override var showSyncExh: Boolean by mutableStateOf(true)
     override val showCleanTitles: Boolean by derivedStateOf {
         selection.any {
