@@ -570,7 +570,6 @@ object ImageUtil {
         isLTR: Boolean,
         centerMargin: Int,
         @ColorInt background: Int = Color.WHITE,
-
         progressCallback: ((Int) -> Unit)? = null,
     ): ByteArrayInputStream {
         val height = imageBitmap.height
