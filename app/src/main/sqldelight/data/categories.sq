@@ -30,7 +30,7 @@ WHERE MC.manga_id = :mangaId;
 
 insert:
 INSERT INTO categories(name, sort, flags, manga_order)
-VALUES (:name, :order, :flags, NULL);
+VALUES (:name, :order, :flags, "");
 
 delete:
 DELETE FROM categories
