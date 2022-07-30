@@ -42,55 +42,63 @@ fun LibraryGridCover(
             data = mangaCover,
         )
         content()
-        BadgeGroup(
-            modifier = Modifier
-                .padding(4.dp)
-                .align(Alignment.TopStart),
-        ) {
-            if (downloadCount > 0) {
-                Badge(
-                    text = "$downloadCount",
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textColor = MaterialTheme.colorScheme.onTertiary,
-                )
-            }
-            if (unreadCount > 0) {
-                Badge(text = "$unreadCount")
-            }
-        }
-        // SY -->
-        Column(
-            Modifier.align(Alignment.TopEnd),
-            horizontalAlignment = Alignment.End,
-        ) {
-            // SY <--
+        if (downloadCount > 0 || unreadCount > 0) {
             BadgeGroup(
                 modifier = Modifier
-                    .padding(4.dp),
+                    .padding(4.dp)
+                    .align(Alignment.TopStart),
             ) {
-                if (isLocal) {
+                if (downloadCount > 0) {
                     Badge(
-                        text = stringResource(R.string.local_source_badge),
+                        text = "$downloadCount",
                         color = MaterialTheme.colorScheme.tertiary,
                         textColor = MaterialTheme.colorScheme.onTertiary,
                     )
                 }
-                if (isLocal.not() && language.isNotEmpty()) {
-                    Badge(
-                        text = language,
-                        color = MaterialTheme.colorScheme.tertiary,
-                        textColor = MaterialTheme.colorScheme.onTertiary,
-                    )
+                if (unreadCount > 0) {
+                    Badge(text = "$unreadCount")
                 }
-            }
-            // SY -->
-            if (showPlayButton && playButtonPosition == PlayButtonPosition.Top) {
-                StartReadingButton(onOpenReader = onOpenReader)
             }
         }
-        if (showPlayButton && playButtonPosition == PlayButtonPosition.Bottom) {
+        if (isLocal || language.isNotEmpty()) {
+            // SY -->
+            Column(
+                Modifier.align(Alignment.TopEnd),
+                horizontalAlignment = Alignment.End,
+            ) {
+                // SY <--
+                BadgeGroup(
+                    modifier = Modifier
+                        .padding(4.dp),
+                ) {
+                    if (isLocal) {
+                        Badge(
+                            text = stringResource(R.string.local_source_badge),
+                            color = MaterialTheme.colorScheme.tertiary,
+                            textColor = MaterialTheme.colorScheme.onTertiary,
+                        )
+                    } else if (language.isNotEmpty()) {
+                        Badge(
+                            text = language,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            textColor = MaterialTheme.colorScheme.onTertiary,
+                        )
+                    }
+                }
+                // SY -->
+                if (showPlayButton && playButtonPosition == PlayButtonPosition.Top) {
+                    StartReadingButton(onOpenReader = onOpenReader)
+                }
+            }
+            if (showPlayButton && playButtonPosition == PlayButtonPosition.Bottom) {
+                StartReadingButton(
+                    Modifier.align(playButtonPosition.alignment),
+                    onOpenReader = onOpenReader,
+                )
+            }
+        } else if (showPlayButton) {
             StartReadingButton(
-                Modifier.align(Alignment.BottomEnd),
+                modifier = Modifier.align(playButtonPosition.alignment),
                 onOpenReader = onOpenReader,
             )
         }
@@ -98,4 +106,7 @@ fun LibraryGridCover(
     }
 }
 
-enum class PlayButtonPosition { Top, Bottom }
+enum class PlayButtonPosition(val alignment: Alignment) {
+    Top(Alignment.TopEnd),
+    Bottom(Alignment.BottomEnd)
+}
