@@ -92,7 +92,21 @@ class LibraryController(
             onDeleteClicked = ::showDeleteMangaDialog,
             onClickFilter = ::showSettingsSheet,
             onClickRefresh = {
-                if (LibraryUpdateService.start(context, it)) {
+                // SY -->
+                val groupType = presenter.groupType
+                if (
+                    LibraryUpdateService.start(
+                        context = context,
+                        category = if (groupType == LibraryGroup.BY_DEFAULT) it else null,
+                        group = groupType,
+                        groupExtra = when (groupType) {
+                            LibraryGroup.BY_DEFAULT -> null
+                            LibraryGroup.BY_SOURCE, LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> it?.id?.toString()
+                            else -> null
+                        },
+                    )
+                ) {
+                    // SY <--
                     context.toast(R.string.updating_library)
                 }
             },
