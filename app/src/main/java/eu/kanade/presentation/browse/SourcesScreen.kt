@@ -265,7 +265,7 @@ fun SourceOptionsDialog(
 ) {
     AlertDialog(
         title = {
-            Text(text = source.nameWithLanguage)
+            Text(text = source.visualName)
         },
         text = {
             Column {
