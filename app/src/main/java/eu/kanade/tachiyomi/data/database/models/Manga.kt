@@ -34,11 +34,6 @@ interface Manga : SManga {
         return chapter_flags and CHAPTER_SORT_MASK == CHAPTER_SORT_DESC
     }
 
-    fun getGenres(): List<String>? {
-        if (genre.isNullOrBlank()) return null
-        return genre?.split(", ")?.map { it.trim() }?.filterNot { it.isBlank() }?.distinct()
-    }
-
     // SY -->
     fun getOriginalGenres(): List<String>? {
         return originalGenre?.split(", ")?.map { it.trim() }
