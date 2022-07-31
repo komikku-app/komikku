@@ -29,6 +29,11 @@ interface SManga : Serializable {
 
     var initialized: Boolean
 
+    fun getGenres(): List<String>? {
+        if (genre.isNullOrBlank()) return null
+        return genre?.split(", ")?.map { it.trim() }?.filterNot { it.isBlank() }?.distinct()
+    }
+
     // SY -->
     val originalTitle: String
         get() = (this as? MangaImpl)?.ogTitle ?: title
@@ -144,7 +149,7 @@ fun SManga.toMangaInfo(): MangaInfo {
         artist = this.artist ?: "",
         author = this.author ?: "",
         description = this.description ?: "",
-        genres = this.genre?.split(", ") ?: emptyList(),
+        genres = this.getGenres() ?: emptyList(),
         status = this.status,
         cover = this.thumbnail_url ?: "",
     )
