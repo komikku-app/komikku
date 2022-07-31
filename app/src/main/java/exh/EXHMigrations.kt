@@ -33,7 +33,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
-import eu.kanade.tachiyomi.ui.library.LibrarySort
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
@@ -271,20 +270,20 @@ object EXHMigrations {
                 }
                 if (oldVersion under 20) {
                     try {
-                        val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
+                        val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0 /* ALPHABETICAL */)
                         val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
 
                         val newSortingMode = when (oldSortingMode) {
-                            LibrarySort.ALPHA -> SortModeSetting.ALPHABETICAL
-                            LibrarySort.LAST_READ -> SortModeSetting.LAST_READ
-                            LibrarySort.LAST_CHECKED -> SortModeSetting.LAST_MANGA_UPDATE
-                            LibrarySort.UNREAD -> SortModeSetting.UNREAD_COUNT
-                            LibrarySort.TOTAL -> SortModeSetting.TOTAL_CHAPTERS
-                            LibrarySort.LATEST_CHAPTER -> SortModeSetting.LATEST_CHAPTER
-                            LibrarySort.CHAPTER_FETCH_DATE -> SortModeSetting.CHAPTER_FETCH_DATE
-                            LibrarySort.DATE_ADDED -> SortModeSetting.DATE_ADDED
-                            LibrarySort.DRAG_AND_DROP -> SortModeSetting.DRAG_AND_DROP
-                            LibrarySort.TAG_LIST -> SortModeSetting.TAG_LIST
+                            0 -> SortModeSetting.ALPHABETICAL
+                            1 -> SortModeSetting.LAST_READ
+                            2 -> SortModeSetting.LAST_MANGA_UPDATE
+                            3 -> SortModeSetting.UNREAD_COUNT
+                            4 -> SortModeSetting.TOTAL_CHAPTERS
+                            6 -> SortModeSetting.LATEST_CHAPTER
+                            7 -> SortModeSetting.DRAG_AND_DROP
+                            8 -> SortModeSetting.DATE_ADDED
+                            9 -> SortModeSetting.TAG_LIST
+                            10 -> SortModeSetting.CHAPTER_FETCH_DATE
                             else -> SortModeSetting.ALPHABETICAL
                         }
 
