@@ -31,7 +31,6 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
-import eu.kanade.tachiyomi.ui.library.LibrarySort
 import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
 import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
@@ -308,36 +307,40 @@ object EXHMigrations {
                     }
                 }
                 if (oldVersion under 20) {
-                    val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0)
-                    val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
+                    try {
+                        val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0 /* ALPHABETICAL */)
+                        val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
 
-                    val newSortingMode = when (oldSortingMode) {
-                        LibrarySort.ALPHA -> SortModeSetting.ALPHABETICAL
-                        LibrarySort.LAST_READ -> SortModeSetting.LAST_READ
-                        LibrarySort.LAST_CHECKED -> SortModeSetting.LAST_CHECKED
-                        LibrarySort.UNREAD -> SortModeSetting.UNREAD
-                        LibrarySort.TOTAL -> SortModeSetting.TOTAL_CHAPTERS
-                        LibrarySort.LATEST_CHAPTER -> SortModeSetting.LATEST_CHAPTER
-                        LibrarySort.CHAPTER_FETCH_DATE -> SortModeSetting.DATE_FETCHED
-                        LibrarySort.DATE_ADDED -> SortModeSetting.DATE_ADDED
-                        LibrarySort.DRAG_AND_DROP -> SortModeSetting.DRAG_AND_DROP
-                        LibrarySort.TAG_LIST -> SortModeSetting.TAG_LIST
-                        else -> SortModeSetting.ALPHABETICAL
-                    }
+                        val newSortingMode = when (oldSortingMode) {
+                            0 -> SortModeSetting.ALPHABETICAL
+                            1 -> SortModeSetting.LAST_READ
+                            2 -> SortModeSetting.LAST_MANGA_UPDATE
+                            3 -> SortModeSetting.UNREAD_COUNT
+                            4 -> SortModeSetting.TOTAL_CHAPTERS
+                            6 -> SortModeSetting.LATEST_CHAPTER
+                            7 -> SortModeSetting.DRAG_AND_DROP
+                            8 -> SortModeSetting.DATE_ADDED
+                            9 -> SortModeSetting.TAG_LIST
+                            10 -> SortModeSetting.CHAPTER_FETCH_DATE
+                            else -> SortModeSetting.ALPHABETICAL
+                        }
 
-                    val newSortingDirection = when (oldSortingDirection) {
-                        true -> SortDirectionSetting.ASCENDING
-                        else -> SortDirectionSetting.DESCENDING
-                    }
+                        val newSortingDirection = when (oldSortingDirection) {
+                            true -> SortDirectionSetting.ASCENDING
+                            else -> SortDirectionSetting.DESCENDING
+                        }
 
-                    prefs.edit(commit = true) {
-                        remove(PreferenceKeys.librarySortingMode)
-                        remove(PreferenceKeys.librarySortingDirection)
-                    }
+                        prefs.edit(commit = true) {
+                            remove(PreferenceKeys.librarySortingMode)
+                            remove(PreferenceKeys.librarySortingDirection)
+                        }
 
-                    prefs.edit {
-                        putString(PreferenceKeys.librarySortingMode, newSortingMode.name)
-                        putString(PreferenceKeys.librarySortingDirection, newSortingDirection.name)
+                        prefs.edit {
+                            putString(PreferenceKeys.librarySortingMode, newSortingMode.name)
+                            putString(PreferenceKeys.librarySortingDirection, newSortingDirection.name)
+                        }
+                    } catch (e: Exception) {
+                        logcat(throwable = e) { "Already done migration" }
                     }
                 }
                 if (oldVersion under 21) {
