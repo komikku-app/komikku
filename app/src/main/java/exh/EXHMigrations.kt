@@ -412,7 +412,7 @@ object EXHMigrations {
                         preferences.navigationModeWebtoon().set(5)
                     }
                 }
-                if (oldVersion under 36) {
+                if (oldVersion under 37) {
                     // Handle renamed enum values
                     @Suppress("DEPRECATION")
                     val newSortingMode = when (val oldSortingMode = preferences.librarySortingMode().get()) {
@@ -426,7 +426,7 @@ object EXHMigrations {
                     runBlocking {
                         handler.await(true) {
                             categoriesQueries.getCategories(categoryMapper).executeAsList()
-                                .filter { SortModeSetting.fromFlag(it.flags) == SortModeSetting.DRAG_AND_DROP }
+                                .filter { SortModeSetting.fromFlag(it.flags and SortModeSetting.MASK) == SortModeSetting.DRAG_AND_DROP }
                                 .forEach {
                                     categoriesQueries.update(
                                         categoryId = it.id,
