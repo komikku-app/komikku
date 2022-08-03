@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.MoreVert
@@ -18,9 +16,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,11 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.Pill
 import eu.kanade.presentation.library.LibraryState
@@ -50,6 +48,8 @@ import kotlinx.coroutines.delay
 fun LibraryToolbar(
     state: LibraryState,
     title: LibraryToolbarTitle,
+    incognitoMode: Boolean,
+    downloadedOnlyMode: Boolean,
     onClickUnselectAll: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
@@ -58,21 +58,29 @@ fun LibraryToolbar(
     // SY -->
     onClickSyncExh: () -> Unit,
     // SY <--
+    scrollBehavior: TopAppBarScrollBehavior?,
 ) = when {
     state.selectionMode -> LibrarySelectionToolbar(
         state = state,
+        incognitoMode = incognitoMode,
+        downloadedOnlyMode = downloadedOnlyMode,
         onClickUnselectAll = onClickUnselectAll,
         onClickSelectAll = onClickSelectAll,
         onClickInvertSelection = onClickInvertSelection,
     )
     state.searchQuery != null -> LibrarySearchToolbar(
         searchQuery = state.searchQuery!!,
+        incognitoMode = incognitoMode,
+        downloadedOnlyMode = downloadedOnlyMode,
         onChangeSearchQuery = { state.searchQuery = it },
         onClickCloseSearch = { state.searchQuery = null },
+        scrollBehavior = scrollBehavior,
     )
     else -> LibraryRegularToolbar(
         title = title,
         hasFilters = state.hasActiveFilters,
+        incognitoMode = incognitoMode,
+        downloadedOnlyMode = downloadedOnlyMode,
         onClickSearch = { state.searchQuery = "" },
         onClickFilter = onClickFilter,
         onClickRefresh = onClickRefresh,
@@ -80,6 +88,7 @@ fun LibraryToolbar(
         showSyncExh = state.showSyncExh,
         onClickSyncExh = onClickSyncExh,
         // SY <--
+        scrollBehavior = scrollBehavior,
     )
 }
 
@@ -87,6 +96,8 @@ fun LibraryToolbar(
 fun LibraryRegularToolbar(
     title: LibraryToolbarTitle,
     hasFilters: Boolean,
+    incognitoMode: Boolean,
+    downloadedOnlyMode: Boolean,
     onClickSearch: () -> Unit,
     onClickFilter: () -> Unit,
     onClickRefresh: () -> Unit,
@@ -94,11 +105,12 @@ fun LibraryRegularToolbar(
     showSyncExh: Boolean,
     onClickSyncExh: () -> Unit,
     // SY <--
+    scrollBehavior: TopAppBarScrollBehavior?,
 ) {
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
     val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current
-    SmallTopAppBar(
-        title = {
+    AppBar(
+        titleContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = title.text,
@@ -149,30 +161,28 @@ fun LibraryRegularToolbar(
             }
             // SY <--
         },
+        incognitoMode = incognitoMode,
+        downloadedOnlyMode = downloadedOnlyMode,
+        scrollBehavior = scrollBehavior,
     )
 }
 
 @Composable
 fun LibrarySelectionToolbar(
     state: LibraryState,
+    incognitoMode: Boolean,
+    downloadedOnlyMode: Boolean,
     onClickUnselectAll: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
 ) {
     val backgroundColor by TopAppBarDefaults.smallTopAppBarColors().containerColor(1f)
-    SmallTopAppBar(
+    AppBar(
         modifier = Modifier
             .drawBehind {
                 drawRect(backgroundColor.copy(alpha = 1f))
             },
-        navigationIcon = {
-            IconButton(onClick = onClickUnselectAll) {
-                Icon(Icons.Outlined.Close, contentDescription = "close")
-            }
-        },
-        title = {
-            Text(text = "${state.selection.size}")
-        },
+        titleContent = { Text(text = "${state.selection.size}") },
         actions = {
             IconButton(onClick = onClickSelectAll) {
                 Icon(Icons.Outlined.SelectAll, contentDescription = "search")
@@ -181,27 +191,26 @@ fun LibrarySelectionToolbar(
                 Icon(Icons.Outlined.FlipToBack, contentDescription = "invert")
             }
         },
-        colors = TopAppBarDefaults.smallTopAppBarColors(
-            containerColor = Color.Transparent,
-            scrolledContainerColor = Color.Transparent,
-        ),
+        isActionMode = true,
+        onCancelActionMode = onClickUnselectAll,
+        incognitoMode = incognitoMode,
+        downloadedOnlyMode = downloadedOnlyMode,
     )
 }
 
 @Composable
 fun LibrarySearchToolbar(
     searchQuery: String,
+    incognitoMode: Boolean,
+    downloadedOnlyMode: Boolean,
     onChangeSearchQuery: (String) -> Unit,
     onClickCloseSearch: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior?,
 ) {
     val focusRequester = remember { FocusRequester.Default }
-    SmallTopAppBar(
-        navigationIcon = {
-            IconButton(onClick = onClickCloseSearch) {
-                Icon(Icons.Outlined.ArrowBack, contentDescription = "back")
-            }
-        },
-        title = {
+    AppBar(
+        navigateUp = onClickCloseSearch,
+        titleContent = {
             BasicTextField(
                 value = searchQuery,
                 onValueChange = onChangeSearchQuery,
@@ -218,6 +227,9 @@ fun LibrarySearchToolbar(
                 focusRequester.requestFocus()
             }
         },
+        incognitoMode = incognitoMode,
+        downloadedOnlyMode = downloadedOnlyMode,
+        scrollBehavior = scrollBehavior,
     )
 }
 
