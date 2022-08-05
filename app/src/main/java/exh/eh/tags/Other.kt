@@ -1,9 +1,9 @@
 package exh.eh.tags
 
 object Other : TagList {
-
-    override fun getTags1() = listOf(
+    override fun getTags1(): List<String> = listOf(
         "other:3d",
+        "other:3d imageset",
         "other:already uploaded",
         "other:anaglyph",
         "other:animated",
@@ -13,10 +13,12 @@ object Other : TagList {
         "other:comic",
         "other:compilation",
         "other:dakimakura",
+        "other:defaced",
         "other:figure",
         "other:forbidden content",
         "other:full censorship",
         "other:full color",
+        "other:game manual",
         "other:game sprite",
         "other:goudoushi",
         "other:hardcore",
@@ -33,10 +35,10 @@ object Other : TagList {
         "other:nudity only",
         "other:out of order",
         "other:paperchild",
-        "other:poor grammar",
         "other:realporn",
         "other:redraw",
         "other:replaced",
+        "other:rough grammar",
         "other:rough translation",
         "other:sample",
         "other:scanmark",

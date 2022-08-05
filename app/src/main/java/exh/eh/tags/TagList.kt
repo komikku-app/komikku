@@ -7,12 +7,9 @@ interface TagList {
 
     fun getTags3(): List<String> = emptyList()
 
-    fun getTags4(): List<String> = emptyList()
-
-    fun getTags() = listOf(
+    fun getTags(): List<List<String>> = listOf(
         getTags1(),
         getTags2(),
         getTags3(),
-        getTags4(),
     )
 }

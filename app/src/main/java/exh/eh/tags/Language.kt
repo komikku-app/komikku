@@ -1,7 +1,7 @@
 package exh.eh.tags
 
 object Language : TagList {
-    override fun getTags1() = listOf(
+    override fun getTags1(): List<String> = listOf(
         "language:arabic",
         "language:bulgarian",
         "language:catalan",

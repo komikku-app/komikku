@@ -1,8 +1,7 @@
 package exh.eh.tags
 
-object ReClass : TagList {
-
-    override fun getTags1() = listOf(
+object Reclass : TagList {
+    override fun getTags1(): List<String> = listOf(
         "reclass:artistcg",
         "reclass:asianporn",
         "reclass:cosplay",
