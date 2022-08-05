@@ -991,6 +991,17 @@ class MangaPresenter(
      */
     fun getNextUnreadChapter(): DomainChapter? {
         val successState = successState ?: return null
+        // SY -->
+        if (successState.manga.isEhBasedManga()) {
+            return successState.processedChapters.map { it.chapter }.let { chapters ->
+                if (successState.manga.sortDescending()) {
+                    chapters.firstOrNull()?.takeUnless { it.read }
+                } else {
+                    chapters.lastOrNull()?.takeUnless { it.read }
+                }
+            }
+        }
+        // SY <--
         return successState.processedChapters.map { it.chapter }.let { chapters ->
             if (successState.manga.sortDescending()) {
                 chapters.findLast { !it.read }
