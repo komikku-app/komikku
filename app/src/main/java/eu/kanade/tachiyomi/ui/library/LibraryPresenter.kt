@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.library
 
+import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -8,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastAny
 import com.jakewharton.rxrelay.BehaviorRelay
@@ -34,6 +36,7 @@ import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.model.Track
+import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.library.LibraryState
 import eu.kanade.presentation.library.LibraryStateImpl
 import eu.kanade.presentation.library.components.LibraryToolbarTitle
@@ -138,14 +141,8 @@ class LibraryPresenter(
     // SY <--
 ) : BasePresenter<LibraryController>(), LibraryState by state {
 
-    private val context = preferences.context
-
     var loadedManga by mutableStateOf(emptyMap<Long, List<LibraryItem>>())
         private set
-
-    val isPerCategory by preferences.categorizedDisplaySettings().asState()
-
-    var currentDisplayMode by preferences.libraryDisplayMode().asState()
 
     val tabVisibility by preferences.categoryTabs().asState()
 
@@ -175,15 +172,13 @@ class LibraryPresenter(
     private var librarySubscription: Job? = null
 
     // SY -->
-    val favoritesSync = FavoritesSyncHelper(context)
-
-    val groupType by preferences.groupLibraryBy().asState()
+    val favoritesSync = FavoritesSyncHelper(preferences.context)
 
     private val loggedServices by lazy { trackManager.services.filter { it.isLogged } }
 
     private val services by lazy {
         trackManager.services.associate { service ->
-            service.id to context.getString(service.nameRes())
+            service.id to preferences.context.getString(service.nameRes())
         }
     }
 
@@ -249,6 +244,7 @@ class LibraryPresenter(
                     .asFlow()
                     .collectLatest {
                         // SY -->
+                        state.groupType = preferences.groupLibraryBy().get()
                         state.categories = it.categories
                         // SY <--
                         state.isLoading = false
@@ -578,8 +574,8 @@ class LibraryPresenter(
      */
     private fun getLibraryObservable(): Observable<Library> {
         return combine(getCategoriesFlow(), getLibraryMangasFlow()) { dbCategories, libraryManga ->
-            val categories = if (libraryManga.containsKey(0) || libraryManga.isEmpty()) {
-                arrayListOf(Category.default(context)) + dbCategories
+            val categories = if (libraryManga.isNotEmpty() && libraryManga.containsKey(0).not()) {
+                dbCategories.filterNot { it.id == Category.UNCATEGORIZED_ID }
             } else {
                 dbCategories
             }
@@ -612,7 +608,8 @@ class LibraryPresenter(
             }
             else -> {
                 val (items, customCategories) = getGroupedMangaItems(
-                    map.values.flatten().distinctBy { it.manga.id },
+                    groupType = groupType,
+                    libraryManga = map.values.flatten().distinctBy { it.manga.id },
                 )
                 editedCategories = customCategories
                 items
@@ -909,13 +906,18 @@ class LibraryPresenter(
     // TODO: This is good but should we separate title from count or get categories with count from db
     @Composable
     fun getToolbarTitle(): androidx.compose.runtime.State<LibraryToolbarTitle> {
+        val context = LocalContext.current
         val category = categories.getOrNull(activeCategory)
 
         val defaultTitle = stringResource(id = R.string.label_library)
+        val categoryName = category?.visualName ?: defaultTitle
+
         val default = remember { LibraryToolbarTitle(defaultTitle) }
 
-        return produceState(initialValue = default, category, loadedManga, mangaCountVisibility, tabVisibility) {
-            val title = if (tabVisibility.not()) category?.name ?: defaultTitle else defaultTitle
+        return produceState(initialValue = default, category, loadedManga, mangaCountVisibility, tabVisibility, groupType, context) {
+            val title = if (tabVisibility.not()) {
+                getCategoryName(context, category, groupType, categoryName)
+            } else defaultTitle
 
             value = when {
                 category == null -> default
@@ -925,6 +927,36 @@ class LibraryPresenter(
                 tabVisibility && mangaCountVisibility -> LibraryToolbarTitle(title, loadedManga[category.id]?.size)
                 else -> default
             }
+        }
+    }
+
+    fun getCategoryName(
+        context: Context,
+        category: Category?,
+        groupType: Int,
+        categoryName: String,
+    ): String {
+        return when (groupType) {
+            LibraryGroup.BY_STATUS -> when (category?.id) {
+                SManga.ONGOING.toLong() -> context.getString(R.string.ongoing)
+                SManga.LICENSED.toLong() -> context.getString(R.string.licensed)
+                SManga.CANCELLED.toLong() -> context.getString(R.string.cancelled)
+                SManga.ON_HIATUS.toLong() -> context.getString(R.string.on_hiatus)
+                SManga.PUBLISHING_FINISHED.toLong() -> context.getString(R.string.publishing_finished)
+                SManga.COMPLETED.toLong() -> context.getString(R.string.completed)
+                else -> context.getString(R.string.unknown)
+            }
+            LibraryGroup.BY_SOURCE -> if (category?.id == LocalSource.ID) {
+                context.getString(R.string.local_source)
+            } else {
+                categoryName
+            }
+            LibraryGroup.BY_TRACK_STATUS -> TrackStatus.values()
+                .find { it.int.toLong() == category?.id }
+                .let { it ?: TrackStatus.OTHER }
+                .let { context.getString(it.res) }
+            LibraryGroup.UNGROUPED -> context.getString(R.string.ungrouped)
+            else -> categoryName
         }
     }
 
@@ -1063,7 +1095,7 @@ class LibraryPresenter(
         }
     }
 
-    private fun filterTracks(constraint: String, tracks: List<eu.kanade.domain.track.model.Track>): Boolean {
+    private fun filterTracks(constraint: String, tracks: List<Track>): Boolean {
         return tracks.any {
             val trackService = trackManager.getService(it.syncId)
             if (trackService != null) {
@@ -1073,6 +1105,8 @@ class LibraryPresenter(
             } else false
         }
     }
+
+    private val currentCategory by preferences.libraryDisplayMode().asState()
     // SY <--
 
     @Composable
@@ -1080,12 +1114,12 @@ class LibraryPresenter(
         val category = categories[index]
         return derivedStateOf {
             // SY -->
-            if (groupType != LibraryGroup.BY_DEFAULT || isPerCategory.not() || (category.id == 0L && groupType == LibraryGroup.BY_DEFAULT)) {
-                // SY <--
-                currentDisplayMode
+            if (groupType != LibraryGroup.BY_DEFAULT) {
+                currentCategory
             } else {
                 DisplayModeSetting.fromFlag(category.displayMode)
             }
+            // SY <--
         }
     }
 
@@ -1135,41 +1169,8 @@ class LibraryPresenter(
         }
     }
 
-    private fun getGroupedMangaItems(libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
-        val groupType = preferences.groupLibraryBy().get()
-        val grouping: MutableMap<Long, Pair<Long, String>> = mutableMapOf()
-        when (groupType) {
-            LibraryGroup.BY_STATUS -> {
-                grouping.putAll(
-                    listOf(
-                        SManga.ONGOING.toLong() to context.getString(R.string.ongoing),
-                        SManga.LICENSED.toLong() to context.getString(R.string.licensed),
-                        SManga.CANCELLED.toLong() to context.getString(R.string.cancelled),
-                        SManga.ON_HIATUS.toLong() to context.getString(R.string.on_hiatus),
-                        SManga.PUBLISHING_FINISHED.toLong() to context.getString(R.string.publishing_finished),
-                        SManga.COMPLETED.toLong() to context.getString(R.string.completed),
-                        SManga.UNKNOWN.toLong() to context.getString(R.string.unknown),
-                    ).associateBy(Pair<Long, *>::first),
-                )
-            }
-            LibraryGroup.BY_SOURCE ->
-                libraryManga
-                    .map { it.manga.source }
-                    .distinct()
-                    .sorted()
-                    .map { sourceId ->
-                        sourceId to (sourceId to sourceManager.getOrStub(sourceId).name)
-                    }
-                    .let(grouping::putAll)
-            LibraryGroup.BY_TRACK_STATUS -> {
-                grouping.putAll(
-                    TrackStatus.values()
-                        .map { it.int.toLong() to context.getString(it.res) }
-                        .associateBy(Pair<Long, *>::first),
-                )
-            }
-        }
-        val map: MutableMap<Long, MutableList<LibraryItem>> = mutableMapOf()
+    private fun getGroupedMangaItems(groupType: Int, libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
+        val manga = mutableMapOf<Long, MutableList<LibraryItem>>()
 
         when (groupType) {
             LibraryGroup.BY_TRACK_STATUS -> {
@@ -1179,46 +1180,39 @@ class LibraryPresenter(
                         TrackStatus.parseTrackerStatus(track.syncId, track.status)
                     } ?: TrackStatus.OTHER
 
-                    map.getOrPut(status.int.toLong()) { mutableListOf() } += libraryItem
+                    manga.getOrPut(status.int.toLong()) { mutableListOf() } += libraryItem
                 }
             }
             LibraryGroup.BY_SOURCE -> {
                 libraryManga.forEach { libraryItem ->
-                    val group = grouping[libraryItem.manga.source]
-                    if (group != null) {
-                        map.getOrPut(group.first) { mutableListOf() } += libraryItem
-                    } else {
-                        grouping.getOrPut(Long.MAX_VALUE) {
-                            Long.MAX_VALUE to context.getString(R.string.unknown)
-                        }
-                        map.getOrPut(Long.MAX_VALUE) { mutableListOf() } += libraryItem
-                    }
+                    manga.getOrPut(libraryItem.manga.source) { mutableListOf() } += libraryItem
                 }
             }
             else -> {
                 libraryManga.forEach { libraryItem ->
-                    val group = grouping[libraryItem.manga.status.toLong()]
-                    if (group != null) {
-                        map.getOrPut(group.first) { mutableListOf() } += libraryItem
-                    } else {
-                        grouping.getOrPut(Long.MAX_VALUE) {
-                            Long.MAX_VALUE to context.getString(R.string.unknown)
-                        }
-                        map.getOrPut(Long.MAX_VALUE) { mutableListOf() } += libraryItem
-                    }
+                    manga.getOrPut(libraryItem.manga.status.toLong()) { mutableListOf() } += libraryItem
                 }
             }
         }
 
         val categories = when (groupType) {
-            LibraryGroup.BY_SOURCE -> grouping.values.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, Pair<*, String>::second))
-            LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS -> grouping.values.filter { it.first in map.keys }
-            else -> grouping.values
-        }.map { (id, name) ->
-            Category(id, name, 0, 0)
+            LibraryGroup.BY_SOURCE -> manga.keys.map { Category(it, sourceManager.getOrStub(it).name, 0, 0) }
+                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
+            LibraryGroup.BY_TRACK_STATUS ->
+                manga.keys
+                    .map { id ->
+                        TrackStatus.values().find { id == it.int.toLong() }
+                            ?: TrackStatus.OTHER
+                    }
+                    .sortedBy { it.int }
+                    .map {
+                        Category(it.int.toLong(), "", 0, 0)
+                    }
+            LibraryGroup.BY_STATUS -> manga.keys.sorted().map { Category(it, "", 0, 0) }
+            else -> throw IllegalStateException("Invalid group type $groupType")
         }
 
-        return map to categories
+        return manga to categories
     }
 
     fun runSync() {

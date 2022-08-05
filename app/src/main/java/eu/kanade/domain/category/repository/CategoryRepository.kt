@@ -22,5 +22,7 @@ interface CategoryRepository {
 
     suspend fun updatePartial(updates: List<CategoryUpdate>)
 
+    suspend fun updateAllFlags(flags: Long?)
+
     suspend fun delete(categoryId: Long)
 }

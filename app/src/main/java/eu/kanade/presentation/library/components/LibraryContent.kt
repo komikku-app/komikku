@@ -1,13 +1,16 @@
 package eu.kanade.presentation.library.components
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -44,6 +47,7 @@ fun LibraryContent(
     getLibraryForPage: @Composable (Int) -> State<List<LibraryItem>>,
     // SY -->
     onOpenReader: (LibraryManga) -> Unit,
+    getCategoryName: (Context, Category, Int, String) -> String,
     // SY <--
 ) {
     Column(
@@ -61,6 +65,14 @@ fun LibraryContent(
                 getNumberOfMangaForCategory = getNumberOfMangaForCategory,
                 isDownloadOnly = isDownloadOnly,
                 isIncognitoMode = isIncognitoMode,
+                // SY -->
+                getCategoryName = { category, name ->
+                    val context = LocalContext.current
+                    derivedStateOf {
+                        getCategoryName(context, category, state.groupType, name)
+                    }.value
+                },
+                // SY <--
             )
         }
 

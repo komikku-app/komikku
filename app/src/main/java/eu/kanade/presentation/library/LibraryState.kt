@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import eu.kanade.domain.category.model.Category
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
+import eu.kanade.tachiyomi.ui.library.LibraryGroup
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -24,6 +25,7 @@ interface LibraryState {
 
     // SY -->
     val ogCategories: List<Category>
+    val groupType: Int
     val showSyncExh: Boolean
     val showCleanTitles: Boolean
     val showAddToMangadex: Boolean
@@ -43,6 +45,8 @@ class LibraryStateImpl : LibraryState {
     override var hasActiveFilters: Boolean by mutableStateOf(false)
 
     // SY -->
+    override var groupType: Int by mutableStateOf(LibraryGroup.BY_DEFAULT)
+
     override var ogCategories: List<Category> by mutableStateOf(emptyList())
 
     override var showSyncExh: Boolean by mutableStateOf(true)

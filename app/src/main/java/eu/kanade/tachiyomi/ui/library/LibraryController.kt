@@ -12,7 +12,6 @@ import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.category.model.Category
-import eu.kanade.domain.category.model.toDbCategory
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.presentation.library.LibraryScreen
@@ -205,7 +204,7 @@ class LibraryController(
     fun showSettingsSheet() {
         if (presenter.categories.isNotEmpty() /* SY --> */ && presenter.groupType == LibraryGroup.BY_DEFAULT /* SY <-- */) {
             presenter.categories[presenter.activeCategory].let { category ->
-                settingsSheet?.show(category.toDbCategory())
+                settingsSheet?.show(category)
             }
         } else {
             settingsSheet?.show()

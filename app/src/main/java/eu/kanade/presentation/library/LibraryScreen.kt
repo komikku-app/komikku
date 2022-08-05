@@ -109,6 +109,7 @@ fun LibraryScreen(
                     isDownloadOnly = presenter.isDownloadOnly,
                     // SY -->
                     onOpenReader = onOpenReader,
+                    getCategoryName = presenter::getCategoryName,
                     // SY <--
                 )
             }

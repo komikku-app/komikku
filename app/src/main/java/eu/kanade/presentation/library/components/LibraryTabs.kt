@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.PagerState
 import eu.kanade.domain.category.model.Category
+import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.components.DownloadedOnlyModeBanner
 import eu.kanade.presentation.components.IncognitoModeBanner
 import eu.kanade.presentation.components.Pill
@@ -36,6 +37,9 @@ fun LibraryTabs(
     isDownloadOnly: Boolean,
     isIncognitoMode: Boolean,
     getNumberOfMangaForCategory: @Composable (Long) -> State<Int?>,
+    // SY -->
+    getCategoryName: @Composable (Category, String) -> String,
+    // SY <--
 ) {
     val scope = rememberCoroutineScope()
 
@@ -43,12 +47,12 @@ fun LibraryTabs(
 
     Column {
         ScrollableTabRow(
-            selectedTabIndex = state.currentPage,
+            selectedTabIndex = state.currentPage.coerceAtMost(categories.lastIndex),
             edgePadding = 0.dp,
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
                     Modifier
-                        .tabIndicatorOffset(tabPositions[state.currentPage])
+                        .tabIndicatorOffset(tabPositions[state.currentPage.coerceAtMost(categories.lastIndex)])
                         .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)),
                 )
             },
@@ -67,7 +71,9 @@ fun LibraryTabs(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = category.name,
+                                // SY -->
+                                text = getCategoryName(category, category.visualName),
+                                // SY <--
                                 color = if (state.currentPage == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                             )
                             if (count != null) {

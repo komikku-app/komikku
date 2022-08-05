@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.library.setting
 
 import eu.kanade.domain.category.model.Category
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.ui.library.LibraryGroup
 
 enum class SortModeSetting(val flag: Long) {
     ALPHABETICAL(0b00000000),
@@ -38,7 +39,7 @@ enum class SortModeSetting(val flag: Long) {
         }
 
         fun get(preferences: PreferencesHelper, category: Category?): SortModeSetting {
-            return if (preferences.categorizedDisplaySettings().get() && category != null && category.id != 0L) {
+            return if (category != null && preferences.categorizedDisplaySettings().get() /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT/* SY <-- */) {
                 fromFlag(category.sortMode)
             } else {
                 preferences.librarySortingMode().get()
