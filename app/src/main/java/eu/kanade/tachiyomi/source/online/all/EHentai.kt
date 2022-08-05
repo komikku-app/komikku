@@ -853,8 +853,8 @@ class EHentai(
                 )
             },
             AutoCompleteTags(
-                EHTags.getNamespaces0Tags().map { "$it:" } + EHTags.getAllTags(),
-                EHTags.getNamespaces0Tags().map { "$it:" },
+                EHTags.getNamespaces().map { "$it:" } + EHTags.getAllTags(),
+                EHTags.getNamespaces().map { "$it:" },
                 excludePrefix,
             ),
             if (preferences.exhWatchedListDefaultState().get()) {
