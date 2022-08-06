@@ -86,7 +86,7 @@ open class BrowseSourcePresenter(
     private val savedSearch: Long? = null,
     // SY <--
     private val sourceManager: SourceManager = Injekt.get(),
-    private val prefs: PreferencesHelper = Injekt.get(),
+    private val preferences: PreferencesHelper = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
@@ -208,7 +208,7 @@ open class BrowseSourcePresenter(
         pager = createPager(query, filters)
 
         val sourceId = source.id
-        val sourceDisplayMode = prefs.sourceDisplayMode()
+        val sourceDisplayMode = preferences.sourceDisplayMode()
 
         pagerJob?.cancel()
         pagerJob = presenterScope.launchIO {
