@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.RemoveDone
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.SwapCalls
 import androidx.compose.material.ripple.rememberRipple
@@ -255,7 +256,7 @@ fun LibraryBottomActionMenu(
                 if (onChangeCategoryClicked != null) {
                     Button(
                         title = stringResource(R.string.action_move_category),
-                        icon = Icons.Default.BookmarkAdd,
+                        icon = Icons.Outlined.Label,
                         toConfirm = confirm[0],
                         onLongClick = { onLongClickItem(0) },
                         onClick = onChangeCategoryClicked,

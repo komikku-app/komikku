@@ -201,6 +201,7 @@ class FavoritesSyncHelper(val context: Context) {
 
     private suspend fun applyRemoteCategories(categories: List<String>) {
         val localCategories = getCategories.await()
+            .filterNot(Category::isSystemCategory)
 
         categories.forEachIndexed { index, remote ->
             val local = localCategories.getOrElse(index) {
@@ -346,6 +347,7 @@ class FavoritesSyncHelper(val context: Context) {
 
         val insertedMangaCategories = mutableListOf<Pair<Long, Manga>>()
         val categories = getCategories.await()
+            .filterNot(Category::isSystemCategory)
 
         // Apply additions
         throttleManager.resetThrottle()
