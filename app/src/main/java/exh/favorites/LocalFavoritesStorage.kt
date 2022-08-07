@@ -1,6 +1,7 @@
 package exh.favorites
 
 import eu.kanade.domain.category.interactor.GetCategories
+import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFavorites
@@ -90,6 +91,7 @@ class LocalFavoritesStorage {
 
     private suspend fun Flow<Manga>.loadDbCategories(): Flow<Pair<Int, Manga>> {
         val dbCategories = getCategories.await()
+            .filterNot(Category::isSystemCategory)
 
         return filter(::validateDbManga).mapNotNull {
             val category = getCategories.await(it.id)
