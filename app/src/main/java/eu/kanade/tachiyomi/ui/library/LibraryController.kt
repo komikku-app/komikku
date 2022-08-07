@@ -202,12 +202,8 @@ class LibraryController(
     }
 
     fun showSettingsSheet() {
-        if (presenter.categories.isNotEmpty() /* SY --> */ && presenter.groupType == LibraryGroup.BY_DEFAULT /* SY <-- */) {
-            presenter.categories[presenter.activeCategory].let { category ->
-                settingsSheet?.show(category)
-            }
-        } else {
-            settingsSheet?.show()
+        presenter.categories.getOrNull(presenter.activeCategory)?.let { category ->
+            settingsSheet?.show(category)
         }
     }
 
