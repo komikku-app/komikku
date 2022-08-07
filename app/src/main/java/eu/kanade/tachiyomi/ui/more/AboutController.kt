@@ -10,8 +10,9 @@ import eu.kanade.tachiyomi.data.updater.AppUpdateResult
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.main.WhatsNewDialogController
-import eu.kanade.tachiyomi.util.lang.launchNow
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.toDateTimestampString
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import logcat.LogPriority
@@ -49,20 +50,23 @@ class AboutController : BasicFullComposeController() {
 
         activity!!.toast(R.string.update_check_look_for_updates)
 
-        launchNow {
-            try {
-                when (val result = updateChecker.checkForUpdate(activity!!, isUserPrompt = true)) {
-                    is AppUpdateResult.NewUpdate -> {
-                        NewUpdateDialogController(result).showDialog(router)
+        viewScope.launchIO {
+            val result = updateChecker.checkForUpdate(activity!!, isUserPrompt = true)
+            withUIContext {
+                try {
+                    when (result) {
+                        is AppUpdateResult.NewUpdate -> {
+                            NewUpdateDialogController(result).showDialog(router)
+                        }
+                        is AppUpdateResult.NoNewUpdate -> {
+                            activity?.toast(R.string.update_check_no_new_updates)
+                        }
+                        else -> {}
                     }
-                    is AppUpdateResult.NoNewUpdate -> {
-                        activity?.toast(R.string.update_check_no_new_updates)
-                    }
-                    else -> {}
+                } catch (error: Exception) {
+                    activity?.toast(error.message)
+                    logcat(LogPriority.ERROR, error)
                 }
-            } catch (error: Exception) {
-                activity?.toast(error.message)
-                logcat(LogPriority.ERROR, error)
             }
         }
     }

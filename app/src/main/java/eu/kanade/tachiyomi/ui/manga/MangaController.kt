@@ -80,6 +80,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import logcat.LogPriority
 import uy.kohesive.injekt.Injekt
@@ -308,7 +309,7 @@ class MangaController :
                 }
             } else null,
             onRequireCategory = { manga, categories ->
-                val ids = presenter.getMangaCategoryIds(manga)
+                val ids = runBlocking { presenter.getMangaCategoryIds(manga) }
                 val preselected = categories.map {
                     if (it.id in ids) {
                         QuadStateTextView.State.CHECKED.ordinal
