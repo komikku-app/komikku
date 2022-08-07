@@ -1170,45 +1170,38 @@ class LibraryPresenter(
     }
 
     private fun getGroupedMangaItems(groupType: Int, libraryManga: List<LibraryItem>): Pair<LibraryMap, List<Category>> {
-        val manga = mutableMapOf<Long, MutableList<LibraryItem>>()
-
-        when (groupType) {
+        val manga = when (groupType) {
             LibraryGroup.BY_TRACK_STATUS -> {
                 val tracks = runBlocking { getTracks.await() }.groupBy { it.mangaId }
-                libraryManga.forEach { libraryItem ->
+                libraryManga.groupBy { libraryItem ->
                     val status = tracks[libraryItem.manga.id]?.firstNotNullOfOrNull { track ->
                         TrackStatus.parseTrackerStatus(track.syncId, track.status)
                     } ?: TrackStatus.OTHER
 
-                    manga.getOrPut(status.int.toLong()) { mutableListOf() } += libraryItem
-                }
+                    status.int
+                }.mapKeys { it.key.toLong() }
             }
             LibraryGroup.BY_SOURCE -> {
-                libraryManga.forEach { libraryItem ->
-                    manga.getOrPut(libraryItem.manga.source) { mutableListOf() } += libraryItem
+                libraryManga.groupBy { libraryItem ->
+                    libraryItem.manga.source
                 }
             }
             else -> {
-                libraryManga.forEach { libraryItem ->
-                    manga.getOrPut(libraryItem.manga.status.toLong()) { mutableListOf() } += libraryItem
-                }
+                libraryManga.groupBy { libraryItem ->
+                    libraryItem.manga.status
+                }.mapKeys { it.key.toLong() }
             }
         }
 
         val categories = when (groupType) {
-            LibraryGroup.BY_SOURCE -> manga.keys.map { Category(it, sourceManager.getOrStub(it).name, 0, 0) }
-                .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
-            LibraryGroup.BY_TRACK_STATUS ->
+            LibraryGroup.BY_SOURCE ->
                 manga.keys
-                    .map { id ->
-                        TrackStatus.values().find { id == it.int.toLong() }
-                            ?: TrackStatus.OTHER
-                    }
-                    .sortedBy { it.int }
-                    .map {
-                        Category(it.int.toLong(), "", 0, 0)
-                    }
-            LibraryGroup.BY_STATUS -> manga.keys.sorted().map { Category(it, "", 0, 0) }
+                    .map { Category(it, sourceManager.getOrStub(it).name, 0, 0) }
+                    .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
+            LibraryGroup.BY_TRACK_STATUS, LibraryGroup.BY_STATUS ->
+                manga.keys
+                    .sorted()
+                    .map { Category(it, "", 0, 0) }
             else -> throw IllegalStateException("Invalid group type $groupType")
         }
 
