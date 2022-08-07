@@ -129,16 +129,16 @@ fun LibraryRegularToolbar(
         },
         actions = {
             IconButton(onClick = onClickSearch) {
-                Icon(Icons.Outlined.Search, contentDescription = "search")
+                Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.action_search))
             }
             IconButton(onClick = onClickFilter) {
-                Icon(Icons.Outlined.FilterList, contentDescription = "search", tint = filterTint)
+                Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.action_filter), tint = filterTint)
             }
             // SY -->
             val moveGlobalUpdate = showSyncExh && calculateWindowWidthSizeClass() == WindowWidthSizeClass.Compact
             if (!moveGlobalUpdate) {
                 IconButton(onClick = onClickRefresh) {
-                    Icon(Icons.Outlined.Refresh, contentDescription = "search")
+                    Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.pref_category_library_update))
                 }
             }
             var showOverflow by remember { mutableStateOf(false) }
