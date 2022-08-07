@@ -505,7 +505,7 @@ class LibrarySettingsSheet(
             private val groupItems = mutableListOf<Item.DrawableSelection>()
             private val trackManager: TrackManager = Injekt.get()
             private val hasCategories = runBlocking {
-                Injekt.get<GetCategories>().await().isNotEmpty()
+                Injekt.get<GetCategories>().await().filterNot(Category::isSystemCategory).isNotEmpty()
             }
 
             init {
