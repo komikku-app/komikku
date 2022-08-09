@@ -252,8 +252,39 @@ class MangaPresenter(
         // Manga info - start
 
         presenterScope.launchIO {
-            if (!getMangaAndChapters.awaitManga(mangaId).favorite) {
+            val manga = getMangaAndChapters.awaitManga(mangaId)
+
+            if (!manga.favorite) {
                 ChapterSettingsHelper.applySettingDefaults(mangaId)
+            }
+
+            // Show what we have earlier.
+            // Defaults set by the block above won't apply until next update but it doesn't matter
+            // since we don't have any chapter yet.
+            _state.update {
+                val source = Injekt.get<SourceManager>().getOrStub(manga.source)
+                MangaScreenState.Success(
+                    manga = manga,
+                    source = source,
+                    isFromSource = isFromSource,
+                    trackingAvailable = trackManager.hasLoggedServices(),
+                    chapters = emptyList(),
+                    isRefreshingChapter = true,
+                    isIncognitoMode = incognitoMode,
+                    isDownloadedOnlyMode = downloadedOnlyMode,
+                    // SY -->
+                    showRecommendationsInOverflow = preferences.recommendsInOverflow().get(),
+                    showMergeWithAnother = smartSearched,
+                    mergedData = null,
+                    meta = null,
+                    pagePreviewsState = if (source.getMainSource() is PagePreviewSource) {
+                        getPagePreviews(manga, source)
+                        PagePreviewState.Loading
+                    } else {
+                        PagePreviewState.Unused
+                    },
+                    // SY <--
+                )
             }
 
             getMangaAndChapters.subscribe(mangaId)
@@ -333,44 +364,17 @@ class MangaPresenter(
                         alwaysShowReadingProgress = preferences.preserveReadingPosition().get() && manga.isEhBasedManga(),
                         // SY <--
                     )
-                    _state.update { currentState ->
-                        when (currentState) {
-                            // Initialize success state
-                            MangaScreenState.Loading -> {
-                                val source = Injekt.get<SourceManager>().getOrStub(manga.source)
-                                MangaScreenState.Success(
-                                    manga = manga,
-                                    source = source,
-                                    isFromSource = isFromSource,
-                                    trackingAvailable = trackManager.hasLoggedServices(),
-                                    chapters = chapterItems,
-                                    isIncognitoMode = incognitoMode,
-                                    isDownloadedOnlyMode = downloadedOnlyMode,
-                                    // SY -->
-                                    meta = raiseMetadata(flatMetadata, source),
-                                    mergedData = mergedData,
-                                    showRecommendationsInOverflow = preferences.recommendsInOverflow().get(),
-                                    showMergeWithAnother = smartSearched,
-                                    pagePreviewsState = if (source.getMainSource() is PagePreviewSource) {
-                                        getPagePreviews(manga, source)
-                                        PagePreviewState.Loading
-                                    } else {
-                                        PagePreviewState.Unused
-                                    },
-                                    // SY <--
-                                )
-                            }
-
-                            // Update state
-                            is MangaScreenState.Success -> currentState.copy(
-                                manga = manga,
-                                chapters = chapterItems,
-                                // SY -->
-                                meta = raiseMetadata(flatMetadata, currentState.source),
-                                mergedData = mergedData,
-                                // SY <--
-                            )
-                        }
+                    updateSuccessState {
+                        it.copy(
+                            manga = manga,
+                            chapters = chapterItems,
+                            isRefreshingChapter = false,
+                            isRefreshingInfo = false,
+                            // SY -->
+                            meta = raiseMetadata(flatMetadata, it.source),
+                            mergedData = mergedData,
+                            // SY <--
+                        )
                     }
 
                     observeTrackers()
