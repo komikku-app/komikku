@@ -28,7 +28,7 @@ import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.materialdialogs.QuadStateTextView
 import exh.favorites.FavoritesIntroDialog
@@ -276,7 +276,7 @@ class LibraryController(
                     else -> QuadStateTextView.State.UNCHECKED.ordinal
                 }
             }.toTypedArray()
-            launchUI {
+            withUIContext {
                 ChangeMangaCategoriesDialog(this@LibraryController, mangas.mapNotNull { it.toDomainManga() }, categories, preselected)
                     .showDialog(router)
             }
