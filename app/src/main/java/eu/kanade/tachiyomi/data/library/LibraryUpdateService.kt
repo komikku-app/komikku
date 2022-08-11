@@ -438,7 +438,7 @@ class LibraryUpdateService(
                                             else -> {
                                                 // Convert to the manga that contains new chapters
                                                 mangaWithNotif.toDomainManga()?.let { domainManga ->
-                                                    val (newChapters, _) = updateManga(domainManga, loggedServices)
+                                                    val newChapters = updateManga(domainManga, loggedServices)
                                                     val newDbChapters = newChapters.map { it.toDbChapter() }
 
                                                     if (newChapters.isNotEmpty()) {
@@ -532,7 +532,7 @@ class LibraryUpdateService(
      * @param manga the manga to update.
      * @return a pair of the inserted and removed chapters.
      */
-    private suspend fun updateManga(manga: DomainManga, loggedServices: List<TrackService>): Pair<List<DomainChapter>, List<DomainChapter>> {
+    private suspend fun updateManga(manga: DomainManga, loggedServices: List<TrackService>): List<DomainChapter> {
         val source = sourceManager.getOrStub(manga.source)
 
         val mangaInfo: MangaInfo = manga.toMangaInfo()
@@ -567,7 +567,7 @@ class LibraryUpdateService(
 
         // Get manga from database to account for if it was removed during the update
         val dbManga = getManga.await(manga.id)
-            ?: return Pair(emptyList(), emptyList())
+            ?: return emptyList()
 
         // [dbmanga] was used so that manga data doesn't get overwritten
         // in case manga gets new chapter

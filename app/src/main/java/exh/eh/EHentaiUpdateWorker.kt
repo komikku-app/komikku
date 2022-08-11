@@ -209,7 +209,7 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             val newChapters = source.getChapterList(manga.toMangaInfo())
                 .map { it.toSChapter() }
 
-            val (new, _) = syncChaptersWithSource.await(newChapters, manga, source)
+            val new = syncChaptersWithSource.await(newChapters, manga, source)
             return new to getChapterByMangaId.await(manga.id)
         } catch (t: Throwable) {
             if (t is EHentai.GalleryNotFoundException) {

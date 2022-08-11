@@ -163,7 +163,7 @@ class MergedSource : HttpSource() {
         }
     }
 
-    suspend fun fetchChaptersAndSync(manga: Manga, downloadChapters: Boolean = true): Pair<List<Chapter>, List<Chapter>> {
+    suspend fun fetchChaptersAndSync(manga: Manga, downloadChapters: Boolean = true): List<Chapter> {
         val syncChaptersWithSource = Injekt.get<SyncChaptersWithSource>()
         val mangaReferences = getMergedReferencesById.await(manga.id)
         if (mangaReferences.isEmpty()) {
@@ -180,7 +180,7 @@ class MergedSource : HttpSource() {
                 .map { (_, values) ->
                     async {
                         semaphore.withPermit {
-                            values.map {
+                            values.flatMap {
                                 try {
                                     val (source, loadedManga, reference) =
                                         it.load(sourceManager, getManga, insertManga, updateManga)
@@ -192,17 +192,17 @@ class MergedSource : HttpSource() {
                                         if (ifDownloadNewChapters && reference.downloadChapters) {
                                             downloadManager.downloadChapters(
                                                 loadedManga,
-                                                results.first.map(Chapter::toDbChapter),
+                                                results.map(Chapter::toDbChapter),
                                             )
                                         }
                                         results
                                     } else {
-                                        null
+                                        emptyList()
                                     }
                                 } catch (e: Exception) {
                                     if (e is CancellationException) throw e
                                     exception = e
-                                    null
+                                    emptyList()
                                 }
                             }
                         }
@@ -210,9 +210,6 @@ class MergedSource : HttpSource() {
                 }
                 .awaitAll()
                 .flatten()
-                .let { pairs ->
-                    pairs.flatMap { it?.first.orEmpty() } to pairs.flatMap { it?.second.orEmpty() }
-                }
         }.also {
             exception?.let { throw it }
         }
