@@ -38,6 +38,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationContr
 import eu.kanade.tachiyomi.ui.browse.migration.search.SearchController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.system.getParcelableCompat
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
@@ -67,7 +68,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
     private var adapter: MigrationProcessAdapter? = null
 
-    val config: MigrationProcedureConfig? = args.getParcelable(CONFIG_EXTRA)
+    val config = args.getParcelableCompat<MigrationProcedureConfig>(CONFIG_EXTRA)
 
     private val preferences: PreferencesHelper by injectLazy()
     private val sourceManager: SourceManager by injectLazy()

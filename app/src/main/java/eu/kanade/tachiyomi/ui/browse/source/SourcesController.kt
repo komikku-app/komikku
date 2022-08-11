@@ -23,6 +23,7 @@ import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.util.system.getParcelableCompat
 import exh.ui.smartsearch.SmartSearchController
 import kotlinx.parcelize.Parcelize
 import uy.kohesive.injekt.injectLazy
@@ -32,7 +33,7 @@ class SourcesController(bundle: Bundle? = null) : SearchableComposeController<So
     private val preferences: PreferencesHelper by injectLazy()
 
     // EXH -->
-    private val smartSearchConfig: SmartSearchConfig? = args.getParcelable(SMART_SEARCH_CONFIG)
+    private val smartSearchConfig = args.getParcelableCompat<SmartSearchConfig>(SMART_SEARCH_CONFIG)
 
     private val mode = if (smartSearchConfig == null) Mode.CATALOGUE else Mode.SMART_SEARCH
     // EXH <--

@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.system.getSerializableExtraCompat
 import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import exh.log.xLogD
 import exh.log.xLogE
@@ -82,19 +83,18 @@ class BrowserActionActivity : AppCompatActivity() {
             (source as? HttpSource)?.headers?.toMultimap()?.mapValues {
                 it.value.joinToString(",")
             } ?: emptyMap()
-            ) + (intent.getSerializableExtra(HEADERS_EXTRA) as? HashMap<String, String> ?: emptyMap())
+            ) + (intent.getSerializableExtraCompat<HashMap<String, String>>(HEADERS_EXTRA) ?: emptyMap())
 
         @Suppress("UNCHECKED_CAST")
-        val cookies: HashMap<String, String>? =
-            intent.getSerializableExtra(COOKIES_EXTRA) as? HashMap<String, String>
+        val cookies = intent.getSerializableExtraCompat<HashMap<String, String>>(COOKIES_EXTRA)
         val script: String? = intent.getStringExtra(SCRIPT_EXTRA)
         val url: String? = intent.getStringExtra(URL_EXTRA)
         val actionName = intent.getStringExtra(ACTION_NAME_EXTRA)
 
         @Suppress("NOT_NULL_ASSERTION_ON_CALLABLE_REFERENCE", "UNCHECKED_CAST")
-        val verifyComplete = if (source != null) {
+        val verifyComplete: ((String) -> Boolean)? = if (source != null) {
             source::verifyComplete!!
-        } else intent.getSerializableExtra(VERIFY_LAMBDA_EXTRA) as? (String) -> Boolean
+        } else intent.getSerializableExtraCompat(VERIFY_LAMBDA_EXTRA)
 
         if (verifyComplete == null || url == null) {
             finish()

@@ -108,7 +108,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             pagerListener,
             // SY <--
         )
-        pager.tapListener = f@{ event ->
+        pager.tapListener = { event ->
             val pos = PointF(event.rawX / pager.width, event.rawY / pager.height)
             val navigator = config.navigator
 

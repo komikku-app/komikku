@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.util.system.getParcelableCompat
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -22,7 +23,7 @@ class SmartSearchController(bundle: Bundle) : NucleusController<EhSmartSearchBin
     private val sourceManager: SourceManager by injectLazy()
 
     private val source = sourceManager.get(bundle.getLong(ARG_SOURCE_ID, -1)) as CatalogueSource
-    private val smartSearchConfig: SourcesController.SmartSearchConfig = bundle.getParcelable(ARG_SMART_SEARCH_CONFIG)!!
+    private val smartSearchConfig = bundle.getParcelableCompat<SourcesController.SmartSearchConfig>(ARG_SMART_SEARCH_CONFIG)!!
 
     constructor(sourceId: Long, smartSearchConfig: SourcesController.SmartSearchConfig) : this(
         bundleOf(

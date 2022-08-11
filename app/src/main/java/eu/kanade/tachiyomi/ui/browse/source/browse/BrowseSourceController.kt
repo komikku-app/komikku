@@ -52,6 +52,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.asHotFlow
 import eu.kanade.tachiyomi.util.system.connectivityManager
+import eu.kanade.tachiyomi.util.system.getParcelableCompat
 import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.util.view.inflate
@@ -765,7 +766,7 @@ open class BrowseSourceController(bundle: Bundle) :
             MangaController(
                 item.manga.id,
                 true,
-                args.getParcelable(MangaController.SMART_SEARCH_CONFIG_EXTRA),
+                args.getParcelableCompat(MangaController.SMART_SEARCH_CONFIG_EXTRA),
             ),
         )
         return false

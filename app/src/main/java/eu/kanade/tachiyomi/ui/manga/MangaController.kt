@@ -65,6 +65,7 @@ import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.system.getParcelableCompat
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.materialdialogs.QuadStateTextView
@@ -122,7 +123,7 @@ class MangaController :
         get() = presenter.isFromSource
 
     // SY -->
-    val smartSearchConfig: SourcesController.SmartSearchConfig? = args.getParcelable(
+    val smartSearchConfig = args.getParcelableCompat<SourcesController.SmartSearchConfig>(
         SMART_SEARCH_CONFIG_EXTRA,
     )
     // SY <--
