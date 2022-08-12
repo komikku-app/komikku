@@ -159,13 +159,12 @@ class UpdatesPresenter(
      * @param download download object containing progress.
      */
     private fun updateDownloadState(download: Download) {
-        val uiModels = state.uiModels
-        val modifiedIndex = uiModels.indexOfFirst {
-            it is UpdatesUiModel.Item && it.item.update.chapterId == download.chapter.id
-        }
-        if (modifiedIndex < 0) return
-
         state.uiModels = uiModels.toMutableList().apply {
+            val modifiedIndex = uiModels.indexOfFirst {
+                it is UpdatesUiModel.Item && it.item.update.chapterId == download.chapter.id
+            }
+            if (modifiedIndex < 0) return@apply
+
             var uiModel = removeAt(modifiedIndex)
             if (uiModel is UpdatesUiModel.Item) {
                 val item = uiModel.item.copy(
@@ -251,7 +250,6 @@ class UpdatesPresenter(
                 downloadManager.deleteChapters(chapters, manga, source).mapNotNull { it.id }
             }
 
-            val uiModels = state.uiModels
             val deletedUpdates = uiModels.filter {
                 it is UpdatesUiModel.Item && deletedIds.contains(it.item.update.chapterId)
             }
@@ -281,16 +279,15 @@ class UpdatesPresenter(
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
     ) {
-        val uiModels = state.uiModels
-        val modifiedIndex = uiModels.indexOfFirst {
-            it is UpdatesUiModel.Item && it.item.update.chapterId == item.update.chapterId
-        }
-        if (modifiedIndex < 0) return
-
-        val oldItem = (uiModels[modifiedIndex] as? UpdatesUiModel.Item)?.item ?: return
-        if ((oldItem.selected && selected) || (!oldItem.selected && !selected)) return
-
         state.uiModels = uiModels.toMutableList().apply {
+            val modifiedIndex = indexOfFirst {
+                it is UpdatesUiModel.Item && it.item == item
+            }
+            if (modifiedIndex < 0) return@apply
+
+            val oldItem = (get(modifiedIndex) as? UpdatesUiModel.Item)?.item ?: return@apply
+            if ((oldItem.selected && selected) || (!oldItem.selected && !selected)) return@apply
+
             val firstSelection = none { it is UpdatesUiModel.Item && it.item.selected }
             var newItem = (removeAt(modifiedIndex) as? UpdatesUiModel.Item)?.item?.copy(selected = selected) ?: return@apply
             add(modifiedIndex, UpdatesUiModel.Item(newItem))
