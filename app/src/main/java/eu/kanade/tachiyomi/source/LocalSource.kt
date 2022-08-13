@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.junrar.Archive
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -29,6 +30,8 @@ import logcat.LogPriority
 import rx.Observable
 import tachiyomi.source.model.ChapterInfo
 import tachiyomi.source.model.MangaInfo
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.FileInputStream
@@ -38,6 +41,7 @@ import java.util.zip.ZipFile
 
 class LocalSource(
     private val context: Context,
+    private val coverCache: CoverCache = Injekt.get(),
 ) : CatalogueSource, UnmeteredSource {
 
     private val json: Json by injectLazy()
