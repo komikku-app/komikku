@@ -474,8 +474,8 @@ class MigrationListController(bundle: Bundle? = null) :
     }
 
     private fun MenuItem.setIconTint(enabled: Boolean, color: Int) {
-        icon.mutate()
-        icon.setTint(color)
+        icon?.mutate()
+        icon?.setTint(color)
         isEnabled = enabled
     }
 

@@ -53,10 +53,8 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
         if (prevChapter != null) {
             binding.upperText.textAlignment = TEXT_ALIGNMENT_TEXT_START
             val isPrevDownloaded = downloadManager.isChapterDownloaded(
-                prevChapter.name,
-                prevChapter.scanlator,
-                manga.title,
-                manga.source,
+                prevChapter,
+                manga
             )
             val isCurrentDownloaded = transition.from.pageLoader is DownloadPageLoader
             binding.upperText.text = buildSpannedString {
@@ -90,10 +88,8 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             binding.upperText.textAlignment = TEXT_ALIGNMENT_TEXT_START
             val isCurrentDownloaded = transition.from.pageLoader is DownloadPageLoader
             val isNextDownloaded = downloadManager.isChapterDownloaded(
-                nextChapter.name,
-                nextChapter.scanlator,
-                manga.title,
-                manga.source,
+                nextChapter,
+                manga
             )
             binding.upperText.text = buildSpannedString {
                 bold { append(context.getString(R.string.transition_finished)) }

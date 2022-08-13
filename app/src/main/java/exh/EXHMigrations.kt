@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.system.DeviceUtil
+import eu.kanade.tachiyomi.util.system.logcat
 import exh.eh.EHentaiUpdateWorker
 import exh.log.xLogE
 import exh.log.xLogW
@@ -314,14 +315,14 @@ object EXHMigrations {
                         val newSortingMode = when (oldSortingMode) {
                             0 -> SortModeSetting.ALPHABETICAL
                             1 -> SortModeSetting.LAST_READ
-                            2 -> SortModeSetting.LAST_MANGA_UPDATE
-                            3 -> SortModeSetting.UNREAD_COUNT
+                            2 -> SortModeSetting.LAST_CHECKED
+                            3 -> SortModeSetting.UNREAD
                             4 -> SortModeSetting.TOTAL_CHAPTERS
                             6 -> SortModeSetting.LATEST_CHAPTER
                             7 -> SortModeSetting.DRAG_AND_DROP
                             8 -> SortModeSetting.DATE_ADDED
                             9 -> SortModeSetting.TAG_LIST
-                            10 -> SortModeSetting.CHAPTER_FETCH_DATE
+                            10 -> SortModeSetting.DATE_FETCHED
                             else -> SortModeSetting.ALPHABETICAL
                         }
 
