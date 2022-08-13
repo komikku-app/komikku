@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -225,10 +226,6 @@ dependencies {
 
     // Tests
     testImplementation(libs.junit)
-    testImplementation(libs.assertj.core)
-    testImplementation(libs.mockito.core)
-
-    testImplementation(libs.bundles.robolectric)
 
     // For detecting memory leaks; see https://square.github.io/leakcanary/
     // debugImplementation(libs.leakcanary.android)
@@ -258,6 +255,13 @@ dependencies {
 }
 
 tasks {
+    withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        }
+    }
+
     // See https://kotlinlang.org/docs/reference/experimental.html#experimental-status-of-experimental-api(-markers)
     withType<KotlinCompile> {
         kotlinOptions.freeCompilerArgs += listOf(
