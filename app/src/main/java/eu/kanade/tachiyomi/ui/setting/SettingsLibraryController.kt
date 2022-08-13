@@ -28,7 +28,6 @@ import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.category.genre.SortTagController
-import eu.kanade.tachiyomi.ui.library.LibrarySettingsSheet
 import eu.kanade.tachiyomi.util.preference.bindTo
 import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
@@ -58,13 +57,6 @@ class SettingsLibraryController : SettingsController() {
     private val getCategories: GetCategories by injectLazy()
     private val trackManager: TrackManager by injectLazy()
     private val resetCategoryFlags: ResetCategoryFlags by injectLazy()
-
-    // SY -->
-    /**
-     * Sheet containing filter/sort/display items.
-     */
-    private var settingsSheet: LibrarySettingsSheet? = null
-    // SY <--
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_library
@@ -99,21 +91,6 @@ class SettingsLibraryController : SettingsController() {
                     }
                     .launchIn(viewScope)
             }
-            // SY -->
-            preference {
-                key = "pref_library_settings_sheet"
-                titleRes = R.string.library_settings_sheet
-
-                summaryRes = R.string.library_settings_sheet_summary
-
-                onClick {
-                    if (settingsSheet == null) {
-                        settingsSheet = LibrarySettingsSheet(router) {}
-                    }
-                    settingsSheet?.show()
-                }
-            }
-            // Sy <--
         }
 
         preferenceCategory {
