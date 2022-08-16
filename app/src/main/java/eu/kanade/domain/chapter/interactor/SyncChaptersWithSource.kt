@@ -104,8 +104,13 @@ class SyncChaptersWithSource(
                 toAdd.add(toAddChapter)
             } else {
                 if (shouldUpdateDbChapter.await(dbChapter, chapter)) {
-                    if (dbChapter.name != chapter.name && downloadManager.isChapterDownloaded(dbChapter.name, dbChapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, manga.source)) {
-                        downloadManager.renameChapter(source, manga, dbChapter.toDbChapter(), chapter.toDbChapter())
+                    downloadManager.run {
+                        val shouldRenameChapter = provider.isChapterDirNameChanged(dbChapter, chapter) &&
+                            isChapterDownloaded(dbChapter.name, dbChapter.scanlator, /* SY --> */ manga.ogTitle /* SY <-- */, manga.source)
+
+                        if (shouldRenameChapter) {
+                            renameChapter(source, manga, dbChapter.toDbChapter(), chapter.toDbChapter())
+                        }
                     }
                     var toChangeChapter = dbChapter.copy(
                         name = chapter.name,
