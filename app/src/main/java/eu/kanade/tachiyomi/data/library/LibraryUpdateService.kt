@@ -193,22 +193,19 @@ class LibraryUpdateService(
          * @return true if service newly started, false otherwise
          */
         fun start(context: Context, category: Category? = null, target: Target = Target.CHAPTERS /* SY --> */, group: Int = LibraryGroup.BY_DEFAULT, groupExtra: String? = null /* SY <-- */): Boolean {
-            return if (!isRunning(context)) {
-                val intent = Intent(context, LibraryUpdateService::class.java).apply {
-                    putExtra(KEY_TARGET, target)
-                    category?.let { putExtra(KEY_CATEGORY, it.id) }
-                    // SY -->
-                    putExtra(KEY_GROUP, group)
-                    groupExtra?.let { putExtra(KEY_GROUP_EXTRA, it) }
-                    // SY <--
-                }
-                ContextCompat.startForegroundService(context, intent)
+            if (isRunning(context)) return false
 
-                true
-            } else {
-                instance?.addMangaToQueue(category?.id ?: -1, group, groupExtra)
-                false
+            val intent = Intent(context, LibraryUpdateService::class.java).apply {
+                putExtra(KEY_TARGET, target)
+                category?.let { putExtra(KEY_CATEGORY, it.id) }
+                // SY -->
+                putExtra(KEY_GROUP, group)
+                groupExtra?.let { putExtra(KEY_GROUP_EXTRA, it) }
+                // SY <--
             }
+            ContextCompat.startForegroundService(context, intent)
+
+            return true
         }
 
         /**

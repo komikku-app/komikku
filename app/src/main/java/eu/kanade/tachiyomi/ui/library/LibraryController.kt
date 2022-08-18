@@ -93,21 +93,20 @@ class LibraryController(
             onClickRefresh = {
                 // SY -->
                 val groupType = presenter.groupType
-                if (
-                    LibraryUpdateService.start(
-                        context = context,
-                        category = if (groupType == LibraryGroup.BY_DEFAULT) it else null,
-                        group = groupType,
-                        groupExtra = when (groupType) {
-                            LibraryGroup.BY_DEFAULT -> null
-                            LibraryGroup.BY_SOURCE, LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> it?.id?.toString()
-                            else -> null
-                        },
-                    )
-                ) {
-                    // SY <--
-                    context.toast(R.string.updating_library)
-                }
+                // SY -->
+                val started = LibraryUpdateService.start(
+                    context = context,
+                    category = if (groupType == LibraryGroup.BY_DEFAULT) it else null,
+                    group = groupType,
+                    groupExtra = when (groupType) {
+                        LibraryGroup.BY_DEFAULT -> null
+                        LibraryGroup.BY_SOURCE, LibraryGroup.BY_STATUS, LibraryGroup.BY_TRACK_STATUS -> it?.id?.toString()
+                        else -> null
+                    },
+                )
+                // SY <--
+                context.toast(if (started) R.string.updating_library else R.string.update_already_running)
+                started
             },
             onClickInvertSelection = { presenter.invertSelection(presenter.activeCategory) },
             onClickSelectAll = { presenter.selectAll(presenter.activeCategory) },

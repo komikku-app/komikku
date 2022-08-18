@@ -36,7 +36,7 @@ fun LibraryScreen(
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
     onClickFilter: () -> Unit,
-    onClickRefresh: (Category?) -> Unit,
+    onClickRefresh: (Category?) -> Boolean,
     // SY -->
     onClickCleanTitles: () -> Unit,
     onClickMigrate: () -> Unit,
