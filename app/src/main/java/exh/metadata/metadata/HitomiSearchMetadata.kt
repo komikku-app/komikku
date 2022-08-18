@@ -2,11 +2,12 @@ package exh.metadata.metadata
 
 import android.content.Context
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
-import tachiyomi.source.model.MangaInfo
 import java.util.Date
 
 @Serializable
@@ -32,24 +33,24 @@ class HitomiSearchMetadata : RaisedSearchMetadata() {
 
     var uploadDate: Long? = null
 
-    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+    override fun createMangaInfo(manga: SManga): SManga {
         val cover = thumbnailUrl
 
         val title = title
 
         // Copy tags -> genres
-        val genres = tagsToGenreList()
+        val genres = tagsToGenreString()
 
         val artist = artists.joinToString()
 
-        val status = MangaInfo.UNKNOWN
+        val status = SManga.UNKNOWN
 
         val description = "meta"
 
         return manga.copy(
-            cover = cover ?: manga.cover,
+            thumbnail_url = cover ?: manga.thumbnail_url,
             title = title ?: manga.title,
-            genres = genres,
+            genre = genres,
             artist = artist,
             status = status,
             description = description,

@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
-import tachiyomi.source.model.MangaInfo
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -43,7 +43,7 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
 
     var character: List<String> = emptyList()
 
-    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+    override fun createMangaInfo(manga: SManga): SManga {
         val title = title
         val cover = tmId?.let { BASE_URL.replace("www", "content") + thumbUrlFromId(it.toString()) }
 
@@ -52,16 +52,16 @@ class TsuminoSearchMetadata : RaisedSearchMetadata() {
         val status = SManga.UNKNOWN
 
         // Copy tags -> genres
-        val genres = tagsToGenreList()
+        val genres = tagsToGenreString()
 
         val description = "meta"
 
         return manga.copy(
             title = title ?: manga.title,
-            cover = cover ?: manga.cover,
+            thumbnail_url = cover ?: manga.thumbnail_url,
             artist = artist ?: manga.artist,
             status = status,
-            genres = genres,
+            genre = genres,
             description = description,
         )
     }

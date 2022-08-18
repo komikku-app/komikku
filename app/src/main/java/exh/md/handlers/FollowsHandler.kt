@@ -4,7 +4,6 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.dto.MangaDataDto
 import exh.md.dto.PersonalRatingDto
@@ -57,7 +56,7 @@ class FollowsHandler(
             MdUtil.createMangaEntry(
                 it,
                 lang,
-            ).toSManga() to MangaDexSearchMetadata().apply {
+            ) to MangaDexSearchMetadata().apply {
                 followStatus = FollowStatus.fromDex(statuses[it.id]).int
             }
         }.sortedWith(comparator)

@@ -10,10 +10,6 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toChapterInfo
-import eu.kanade.tachiyomi.source.model.toMangaInfo
-import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.chapter.ChapterRecognition
 import eu.kanade.tachiyomi.util.lang.compareToCaseInsensitiveNaturalOrder
 import eu.kanade.tachiyomi.util.storage.DiskUtil
@@ -27,8 +23,6 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import logcat.LogPriority
 import rx.Observable
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.io.FileInputStream
@@ -125,11 +119,10 @@ class LocalSource(
 
         // Fetch chapters of all the manga
         mangas.forEach { manga ->
-            val mangaInfo = manga.toMangaInfo()
             runBlocking {
-                val chapters = getChapterList(mangaInfo)
+                val chapters = getChapterList(manga)
                 if (chapters.isNotEmpty()) {
-                    val chapter = chapters.last().toSChapter()
+                    val chapter = chapters.last()
                     val format = getFormat(chapter)
 
                     if (format is Format.Epub) {
@@ -161,12 +154,37 @@ class LocalSource(
         }
     }
 
-    private fun SManga.toJson(): MangaJson {
-        return MangaJson(title, author, artist, description, genre?.split(", "), status)
+    private fun SManga.toJson(): MangaDetails {
+        return MangaDetails(title, author, artist, description, genre?.split(", "), status)
+    }
+    // SY <--
+
+    // Manga details related
+    override suspend fun getMangaDetails(manga: SManga): SManga {
+        val baseDirsFile = getBaseDirectoriesFiles(context)
+
+        getCoverFile(manga.url, baseDirsFile)?.let {
+            manga.thumbnail_url = it.absolutePath
+        }
+
+        getMangaDirsFiles(manga.url, baseDirsFile)
+            .firstOrNull { it.extension.equals("json", ignoreCase = true) }
+            ?.let { file ->
+                json.decodeFromStream<MangaDetails>(file.inputStream()).run {
+                    title?.let { manga.title = it }
+                    author?.let { manga.author = it }
+                    artist?.let { manga.artist = it }
+                    description?.let { manga.description = it }
+                    genre?.let { manga.genre = it.joinToString() }
+                    status?.let { manga.status = it }
+                }
+            }
+
+        return manga
     }
 
     @Serializable
-    data class MangaJson(
+    data class MangaDetails(
         val title: String? = null,
         val author: String? = null,
         val artist: String? = null,
@@ -174,50 +192,16 @@ class LocalSource(
         val genre: List<String>? = null,
         val status: Int? = null,
     )
-    // SY <--
-
-    // Manga details related
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        var mangaInfo = manga
-
-        val baseDirsFile = getBaseDirectoriesFiles(context)
-
-        val coverFile = getCoverFile(manga.key, baseDirsFile)
-
-        coverFile?.let {
-            mangaInfo = mangaInfo.copy(cover = it.absolutePath)
-        }
-
-        val localDetails = getMangaDirsFiles(manga.key, baseDirsFile)
-            .firstOrNull { it.extension.equals("json", ignoreCase = true) }
-
-        if (localDetails != null) {
-            val mangaJson = json.decodeFromStream<MangaJson>(localDetails.inputStream())
-
-            mangaInfo = mangaInfo.copy(
-                title = mangaJson.title ?: mangaInfo.title,
-                author = mangaJson.author ?: mangaInfo.author,
-                artist = mangaJson.artist ?: mangaInfo.artist,
-                description = mangaJson.description ?: mangaInfo.description,
-                genres = mangaJson.genre ?: mangaInfo.genres,
-                status = mangaJson.status ?: mangaInfo.status,
-            )
-        }
-
-        return mangaInfo
-    }
 
     // Chapters
-    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
-        val sManga = manga.toSManga()
-
+    override suspend fun getChapterList(manga: SManga): List<SChapter> {
         val baseDirsFile = getBaseDirectoriesFiles(context)
-        return getMangaDirsFiles(manga.key, baseDirsFile)
+        return getMangaDirsFiles(manga.url, baseDirsFile)
             // Only keep supported formats
             .filter { it.isDirectory || isSupportedFile(it.extension) }
             .map { chapterFile ->
                 SChapter.create().apply {
-                    url = "${manga.key}/${chapterFile.name}"
+                    url = "${manga.url}/${chapterFile.name}"
                     name = if (chapterFile.isDirectory) {
                         chapterFile.name
                     } else {
@@ -225,7 +209,7 @@ class LocalSource(
                     }
                     date_upload = chapterFile.lastModified()
 
-                    chapter_number = ChapterRecognition.parseChapterNumber(sManga.title, this.name, this.chapter_number)
+                    chapter_number = ChapterRecognition.parseChapterNumber(manga.title, this.name, this.chapter_number)
 
                     val format = getFormat(chapterFile)
                     if (format is Format.Epub) {
@@ -235,9 +219,8 @@ class LocalSource(
                     }
                 }
             }
-            .map { it.toChapterInfo() }
             .sortedWith { c1, c2 ->
-                val c = c2.number.compareTo(c1.number)
+                val c = c2.chapter_number.compareTo(c1.chapter_number)
                 if (c == 0) c2.name.compareToCaseInsensitiveNaturalOrder(c1.name) else c
             }
             .toList()
@@ -256,7 +239,7 @@ class LocalSource(
     )
 
     // Unused stuff
-    override suspend fun getPageList(chapter: ChapterInfo) = throw UnsupportedOperationException("Unused")
+    override suspend fun getPageList(chapter: SChapter) = throw UnsupportedOperationException("Unused")
 
     // Miscellaneous
     private fun isSupportedFile(extension: String): Boolean {

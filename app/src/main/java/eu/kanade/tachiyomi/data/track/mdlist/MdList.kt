@@ -10,13 +10,12 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.toMangaInfo
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.utils.FollowStatus
 import exh.md.utils.MdUtil
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -134,7 +133,7 @@ class MdList(private val context: Context, id: Long) : TrackService(id) {
                 .flatMap { page ->
                     runAsObservable {
                         page.mangas.map {
-                            toTrackSearch(mdex.getMangaDetails(it.toMangaInfo()))
+                            toTrackSearch(mdex.getMangaDetails(it))
                         }
                     }
                 }
@@ -142,11 +141,11 @@ class MdList(private val context: Context, id: Long) : TrackService(id) {
         }
     }
 
-    private fun toTrackSearch(mangaInfo: MangaInfo): TrackSearch = TrackSearch.create(TrackManager.MDLIST).apply {
-        tracking_url = MdUtil.baseUrl + mangaInfo.key
+    private fun toTrackSearch(mangaInfo: SManga): TrackSearch = TrackSearch.create(TrackManager.MDLIST).apply {
+        tracking_url = MdUtil.baseUrl + mangaInfo.url
         title = mangaInfo.title
-        cover_url = mangaInfo.cover
-        summary = mangaInfo.description
+        cover_url = mangaInfo.thumbnail_url.orEmpty()
+        summary = mangaInfo.description.orEmpty()
     }
 
     override suspend fun login(username: String, password: String): Unit = throw Exception("not used")

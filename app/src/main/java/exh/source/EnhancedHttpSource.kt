@@ -8,8 +8,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import okhttp3.Response
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 
 @Suppress("OverridingDeprecatedMember", "DEPRECATION")
@@ -177,12 +175,13 @@ class EnhancedHttpSource(
      *
      * @param manga the manga to be updated.
      */
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
     override fun fetchMangaDetails(manga: SManga) = source().fetchMangaDetails(manga)
 
     /**
      * [1.x API] Get the updated details for a manga.
      */
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo = source().getMangaDetails(manga)
+    override suspend fun getMangaDetails(manga: SManga): SManga = source().getMangaDetails(manga)
 
     /**
      * Returns the request for the details of a manga. Override only if it's needed to change the
@@ -198,24 +197,26 @@ class EnhancedHttpSource(
      *
      * @param manga the manga to look for chapters.
      */
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
     override fun fetchChapterList(manga: SManga) = source().fetchChapterList(manga)
 
     /**
      * [1.x API] Get all the available chapters for a manga.
      */
-    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> = source().getChapterList(manga)
+    override suspend fun getChapterList(manga: SManga): List<SChapter> = source().getChapterList(manga)
 
     /**
      * Returns an observable with the page list for a chapter.
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter) = source().fetchPageList(chapter)
 
     /**
      * [1.x API] Get the list of pages a chapter has.
      */
-    override suspend fun getPageList(chapter: ChapterInfo): List<tachiyomi.source.model.Page> = source().getPageList(chapter)
+    override suspend fun getPageList(chapter: SChapter): List<Page> = source().getPageList(chapter)
 
     /**
      * Returns an observable with the page containing the source url of the image. If there's any

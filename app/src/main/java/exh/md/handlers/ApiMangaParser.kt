@@ -3,6 +3,7 @@ package exh.md.handlers
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
+import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.xLogE
 import exh.md.dto.ChapterDataDto
@@ -17,8 +18,6 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.util.capitalize
 import exh.util.floor
 import exh.util.nullIfEmpty
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
@@ -40,13 +39,13 @@ class ApiMangaParser(
         ?: error("Could not find no-args constructor for meta class: ${metaClass.qualifiedName}!")
 
     suspend fun parseToManga(
-        manga: MangaInfo,
+        manga: SManga,
         sourceId: Long,
         input: MangaDto,
         simpleChapters: List<String>,
         statistics: StatisticsMangaDto?,
-    ): MangaInfo {
-        val mangaId = getManga.await(manga.key, sourceId)?.id
+    ): SManga {
+        val mangaId = getManga.await(manga.url, sourceId)?.id
         val metadata = if (mangaId != null) {
             val flatMetadata = getFlatMetadataById.await(mangaId)
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
@@ -184,7 +183,7 @@ class ApiMangaParser(
         else -> SManga.UNKNOWN
     }
 
-    fun chapterListParse(chapterListResponse: List<ChapterDataDto>, groupMap: Map<String, String>): List<ChapterInfo> {
+    fun chapterListParse(chapterListResponse: List<ChapterDataDto>, groupMap: Map<String, String>): List<SChapter> {
         val now = System.currentTimeMillis()
         return chapterListResponse
             .filterNot { MdUtil.parseDate(it.attributes.publishAt) > now && it.attributes.externalUrl == null }
@@ -202,7 +201,7 @@ class ApiMangaParser(
     private fun mapChapter(
         networkChapter: ChapterDataDto,
         groups: Map<String, String>,
-    ): ChapterInfo {
+    ): SChapter {
         val attributes = networkChapter.attributes
         val key = MdUtil.chapterSuffix + networkChapter.id
         val chapterName = StringBuilder()
@@ -265,11 +264,11 @@ class ApiMangaParser(
 
         // chapter.language = MdLang.fromIsoCode(attributes.translatedLanguage)?.prettyPrint ?: ""
 
-        return ChapterInfo(
-            key = key,
+        return SChapter(
+            url = key,
             name = name,
             scanlator = scanlator,
-            dateUpload = dateUpload,
+            date_upload = dateUpload,
         )
     }
 }

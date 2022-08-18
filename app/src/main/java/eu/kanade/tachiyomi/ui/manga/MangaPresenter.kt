@@ -35,7 +35,6 @@ import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.TriStateFilter
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
-import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.domain.track.interactor.DeleteTrack
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.interactor.InsertTrack
@@ -55,7 +54,6 @@ import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
@@ -416,7 +414,7 @@ class MangaPresenter(
             updateSuccessState { it.copy(isRefreshingInfo = true) }
             try {
                 successState?.let {
-                    val networkManga = it.source.getMangaDetails(it.manga.toMangaInfo())
+                    val networkManga = it.source.getMangaDetails(it.manga.toSManga())
                     updateManga.awaitUpdateFromSource(it.manga, networkManga, manualFetch)
                 }
             } catch (e: Throwable) {
@@ -964,8 +962,7 @@ class MangaPresenter(
             try {
                 successState?.let { successState ->
                     if (successState.source !is MergedSource) {
-                        val chapters = successState.source.getChapterList(successState.manga.toMangaInfo())
-                            .map { it.toSChapter() }
+                        val chapters = successState.source.getChapterList(successState.manga.toSManga())
 
                         val newChapters = syncChaptersWithSource.await(
                             chapters,

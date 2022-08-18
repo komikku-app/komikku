@@ -9,11 +9,9 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import exh.log.xLogStack
@@ -135,7 +133,7 @@ class GalleryAdder(
                 }
 
             // Fetch and copy details
-            val newManga = source.getMangaDetails(manga.toMangaInfo())
+            val newManga = source.getMangaDetails(manga.toSManga())
             updateManga.awaitUpdateFromSource(manga, newManga, false)
             manga = getManga.await(manga.id)!!
 
@@ -147,10 +145,10 @@ class GalleryAdder(
             // Fetch and copy chapters
             try {
                 val chapterList = if (source is EHentai) {
-                    source.getChapterList(manga.toMangaInfo(), throttleFunc)
+                    source.getChapterList(manga.toSManga(), throttleFunc)
                 } else {
-                    source.getChapterList(manga.toMangaInfo())
-                }.map { it.toSChapter() }
+                    source.getChapterList(manga.toSManga())
+                }
 
                 if (chapterList.isNotEmpty()) {
                     syncChaptersWithSource.await(chapterList, manga, source)

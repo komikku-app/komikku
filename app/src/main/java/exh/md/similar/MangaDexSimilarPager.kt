@@ -1,7 +1,6 @@
 package exh.md.similar
 
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
@@ -16,8 +15,8 @@ class MangaDexSimilarPager(val manga: Manga, val source: MangaDex) : Pager() {
 
     override suspend fun requestNextPage() {
         val mangasPage = coroutineScope {
-            val similarPageDef = async { source.getMangaSimilar(manga.toMangaInfo()) }
-            val relatedPageDef = async { source.getMangaRelated(manga.toMangaInfo()) }
+            val similarPageDef = async { source.getMangaSimilar(manga.toSManga()) }
+            val relatedPageDef = async { source.getMangaRelated(manga.toSManga()) }
             val similarPage = similarPageDef.await()
             val relatedPage = relatedPageDef.await()
 

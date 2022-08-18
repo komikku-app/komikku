@@ -19,13 +19,11 @@ import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.library.LibraryUpdateNotifier
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
 import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import exh.debug.DebugToggles
@@ -203,11 +201,10 @@ class EHentaiUpdateWorker(private val context: Context, workerParams: WorkerPara
             ?: throw GalleryNotUpdatedException(false, IllegalStateException("Missing EH-based source (${manga.source})!"))
 
         try {
-            val updatedManga = source.getMangaDetails(manga.toMangaInfo())
+            val updatedManga = source.getMangaDetails(manga.toSManga())
             updateManga.awaitUpdateFromSource(manga, updatedManga, false)
 
-            val newChapters = source.getChapterList(manga.toMangaInfo())
-                .map { it.toSChapter() }
+            val newChapters = source.getChapterList(manga.toSManga())
 
             val new = syncChaptersWithSource.await(newChapters, manga, source)
             return new to getChapterByMangaId.await(manga.id)

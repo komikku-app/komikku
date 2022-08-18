@@ -3,10 +3,10 @@ package exh.metadata.metadata
 import android.content.Context
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import kotlinx.serialization.Serializable
-import tachiyomi.source.model.MangaInfo
 import java.util.Date
 
 @Serializable
@@ -38,7 +38,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
 
     var preferredTitle: Int? = null
 
-    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+    override fun createMangaInfo(manga: SManga): SManga {
         val key = nhId?.let { nhIdToPath(it) }
 
         val cover = if (mediaId != null) {
@@ -59,7 +59,7 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         }
 
         // Copy tags -> genres
-        val genres = tagsToGenreList()
+        val genres = tagsToGenreString()
 
         // Try to automatically identify if it is ongoing, we try not to be too lenient here to avoid making mistakes
         // We default to completed
@@ -75,11 +75,11 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
         val description = "meta"
 
         return manga.copy(
-            key = key ?: manga.key,
-            cover = cover ?: manga.cover,
+            url = key ?: manga.url,
+            thumbnail_url = cover ?: manga.thumbnail_url,
             title = title,
             artist = artist ?: manga.artist,
-            genres = genres,
+            genre = genres,
             status = status,
             description = description,
         )

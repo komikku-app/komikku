@@ -2,7 +2,6 @@ package eu.kanade.domain.manga.interactor
 
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.PagePreview
-import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.Source
@@ -19,7 +18,7 @@ class GetPagePreviews(
             val pagePreviews = try {
                 pagePreviewCache.getPageListFromCache(manga, page)
             } catch (e: Exception) {
-                source.getPagePreviewList(manga.toMangaInfo(), page).also {
+                source.getPagePreviewList(manga.toSManga(), page).also {
                     pagePreviewCache.putPageListToCache(manga, it)
                 }
             }

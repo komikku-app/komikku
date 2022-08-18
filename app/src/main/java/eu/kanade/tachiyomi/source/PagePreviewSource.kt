@@ -1,17 +1,17 @@
 package eu.kanade.tachiyomi.source
 
 import eu.kanade.tachiyomi.network.ProgressListener
+import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import okhttp3.CacheControl
 import okhttp3.Response
-import tachiyomi.source.model.MangaInfo
 
 interface PagePreviewSource : Source {
 
-    suspend fun getPagePreviewList(manga: MangaInfo, page: Int): PagePreviewPage
+    suspend fun getPagePreviewList(manga: SManga, page: Int): PagePreviewPage
 
     suspend fun fetchPreviewImage(page: PagePreviewInfo, cacheControl: CacheControl? = null): Response
 }

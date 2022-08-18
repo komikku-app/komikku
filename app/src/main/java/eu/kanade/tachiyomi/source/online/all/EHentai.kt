@@ -23,9 +23,7 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toMangaInfo
-import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.model.copy
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -92,8 +90,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import rx.Observable
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.injectLazy
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -306,13 +302,13 @@ class EHentai(
         MetadataMangasPage(mangaFromSource.first.map { it.manga }, mangaFromSource.second, mangaFromSource.first.map { it.metadata })
     }
 
-    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> = getChapterList(manga) {}
+    override suspend fun getChapterList(manga: SManga): List<SChapter> = getChapterList(manga) {}
 
-    suspend fun getChapterList(manga: MangaInfo, throttleFunc: suspend () -> Unit): List<ChapterInfo> {
+    suspend fun getChapterList(manga: SManga, throttleFunc: suspend () -> Unit): List<SChapter> {
         // Pull all the way to the root gallery
         // We can't do this with RxJava or we run into stack overflows on shit like this:
         //   https://exhentai.org/g/1073061/f9345f1c12/
-        var url = manga.key
+        var url = manga.url
         var doc: Document
 
         while (true) {
@@ -348,11 +344,11 @@ class EHentai(
         }
         val newDisplay = doc.select("#gnd a")
         // Build chapter for root gallery
-        val self = ChapterInfo(
-            key = EHentaiSearchMetadata.normalizeUrl(doc.location()),
+        val self = SChapter(
+            url = EHentaiSearchMetadata.normalizeUrl(doc.location()),
             name = "v1: " + doc.selectFirst("#gn")!!.text(),
-            number = 1f,
-            dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(
+            chapter_number = 1f,
+            date_upload = MetadataUtil.EX_DATE_FORMAT.parse(
                 doc.select("#gdd .gdt1").find { el ->
                     el.text().lowercase() == "posted:"
                 }!!.nextElementSibling()!!.text(),
@@ -366,26 +362,28 @@ class EHentai(
                 val link = newGallery.attr("href")
                 val name = newGallery.text()
                 val posted = (newGallery.nextSibling() as TextNode).text().removePrefix(", added ")
-                ChapterInfo(
-                    key = EHentaiSearchMetadata.normalizeUrl(link),
+                SChapter(
+                    url = EHentaiSearchMetadata.normalizeUrl(link),
                     name = "v${index + 2}: $name",
-                    number = index + 2f,
-                    dateUpload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time,
+                    chapter_number = index + 2f,
+                    date_upload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time,
                 )
             }.reversed() + self
         }
     }
 
-    @Suppress("OverridingDeprecatedMember", "DEPRECATION")
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
+    @Suppress("DEPRECATION")
     override fun fetchChapterList(manga: SManga) = fetchChapterList(manga) {}
 
     @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Use getChapterList instead")
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
     fun fetchChapterList(manga: SManga, throttleFunc: suspend () -> Unit) = runAsObservable {
-        getChapterList(manga.toMangaInfo(), throttleFunc).map { it.toSChapter() }
+        getChapterList(manga, throttleFunc)
     }
 
-    override fun fetchPageList(chapter: SChapter) = fetchChapterPage(chapter, baseUrl + chapter.url)
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
+    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> = fetchChapterPage(chapter, baseUrl + chapter.url)
         .map {
             it.mapIndexed { i, s ->
                 Page(i, s)
@@ -541,6 +539,7 @@ class EHentai(
      *
      * @param manga the manga to be updated.
      */
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
             .asObservableWithAsyncStacktrace()
@@ -556,7 +555,8 @@ class EHentai(
                     } else Observable.just(doc)
 
                     pre.flatMap {
-                        parseToManga(manga, it).andThen(
+                        @Suppress("DEPRECATION")
+                        parseToMangaCompletable(manga, it).andThen(
                             Observable.just(
                                 manga.apply {
                                     initialized = true
@@ -576,17 +576,17 @@ class EHentai(
             }
     }
 
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+    override suspend fun getMangaDetails(manga: SManga): SManga {
         val exception = Exception("Async stacktrace")
-        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).awaitResponse()
+        val response = client.newCall(mangaDetailsRequest(manga)).awaitResponse()
         if (response.isSuccessful) {
             // Pull to most recent
             val doc = response.asJsoup()
             val newerGallery = doc.select("#gnd a").lastOrNull()
             val pre = if (newerGallery != null && DebugToggles.PULL_TO_ROOT_WHEN_LOADING_EXH_MANGA_DETAILS.enabled) {
-                val sManga = manga.toSManga().apply {
-                    url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href"))
-                }
+                val sManga = manga.copy(
+                    url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href")),
+                )
                 client.newCall(mangaDetailsRequest(sManga)).await().asJsoup()
             } else doc
             return parseToManga(manga, pre)
@@ -1097,12 +1097,12 @@ class EHentai(
     }
 
     override suspend fun getPagePreviewList(
-        manga: MangaInfo,
+        manga: SManga,
         page: Int,
     ): PagePreviewPage {
         val doc = client.newCall(
             exGet(
-                (baseUrl + manga.key)
+                (baseUrl + manga.url)
                     .toHttpUrl()
                     .newBuilder()
                     .removeAllQueryParameters("nw")

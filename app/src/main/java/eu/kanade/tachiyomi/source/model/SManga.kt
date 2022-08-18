@@ -4,7 +4,6 @@ import data.Mangas
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.download.DownloadManager
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.Serializable
@@ -127,6 +126,20 @@ interface SManga : Serializable {
         }
     }
 
+    fun copy() = create().also {
+        it.url = url
+        // SY -->
+        it.title = originalTitle
+        it.artist = originalArtist
+        it.author = originalAuthor
+        it.description = originalDescription
+        it.genre = originalGenre
+        it.status = originalStatus
+        // SY <--
+        it.thumbnail_url = thumbnail_url
+        it.initialized = initialized
+    }
+
     companion object {
         const val UNKNOWN = 0
         const val ONGOING = 1
@@ -139,32 +152,55 @@ interface SManga : Serializable {
         fun create(): SManga {
             return SMangaImpl()
         }
+
+        // SY -->
+        operator fun invoke(
+            url: String,
+            title: String,
+            artist: String? = null,
+            author: String? = null,
+            description: String? = null,
+            genre: String? = null,
+            status: Int = 0,
+            thumbnail_url: String? = null,
+            initialized: Boolean = false,
+        ): SManga {
+            return create().also {
+                it.url = url
+                it.title = title
+                it.artist = artist
+                it.author = author
+                it.description = description
+                it.genre = genre
+                it.status = status
+                it.thumbnail_url = thumbnail_url
+                it.initialized = initialized
+            }
+        }
+        // SY <--
     }
 }
 
-fun SManga.toMangaInfo(): MangaInfo {
-    return MangaInfo(
-        key = this.url,
-        title = this.title,
-        artist = this.artist ?: "",
-        author = this.author ?: "",
-        description = this.description ?: "",
-        genres = this.getGenres() ?: emptyList(),
-        status = this.status,
-        cover = this.thumbnail_url ?: "",
-    )
+// SY -->
+fun SManga.copy(
+    url: String = this.url,
+    title: String = this.originalTitle,
+    artist: String? = this.originalArtist,
+    author: String? = this.originalAuthor,
+    description: String? = this.originalDescription,
+    genre: String? = this.originalGenre,
+    status: Int = this.status,
+    thumbnail_url: String? = this.thumbnail_url,
+    initialized: Boolean = this.initialized,
+) = SManga.create().also {
+    it.url = url
+    it.title = title
+    it.artist = artist
+    it.author = author
+    it.description = description
+    it.genre = genre
+    it.status = status
+    it.thumbnail_url = thumbnail_url
+    it.initialized = initialized
 }
-
-fun MangaInfo.toSManga(): SManga {
-    val mangaInfo = this
-    return SManga.create().apply {
-        url = mangaInfo.key
-        title = mangaInfo.title
-        artist = mangaInfo.artist
-        author = mangaInfo.author
-        description = mangaInfo.description
-        genre = mangaInfo.genres.joinToString(", ")
-        status = mangaInfo.status
-        thumbnail_url = mangaInfo.cover
-    }
-}
+// SY <--

@@ -6,14 +6,12 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toMangaInfo
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import rx.Completable
 import rx.Single
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.reflect.KClass
@@ -51,11 +49,11 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
      */
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Use the MangaInfo variant")
-    fun parseToManga(manga: SManga, input: I): Completable = runAsObservable {
-        parseToManga(manga.toMangaInfo(), input)
+    fun parseToMangaCompletable(manga: SManga, input: I): Completable = runAsObservable {
+        parseToManga(manga, input)
     }.toCompletable()
 
-    suspend fun parseToManga(manga: MangaInfo, input: I): MangaInfo {
+    suspend fun parseToManga(manga: SManga, input: I): SManga {
         val mangaId = manga.id()
         val metadata = if (mangaId != null) {
             val flatMetadata = getFlatMetadataById.await(mangaId)
@@ -114,5 +112,5 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
     @Composable
     fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit)
 
-    suspend fun MangaInfo.id() = getManga.await(key, id)?.id
+    suspend fun SManga.id() = getManga.await(url, id)?.id
 }

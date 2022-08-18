@@ -3,6 +3,7 @@ package exh.md.utils
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.all.MangaDex
 import exh.log.xLogD
@@ -24,8 +25,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.jsoup.parser.Parser
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.SimpleDateFormat
@@ -233,7 +232,7 @@ class MdUtil {
             return scanlators.sorted().joinToString(scanlatorSeparator)
         }
 
-        fun getMissingChapterCount(chapters: List<ChapterInfo>, mangaStatus: Int): String? {
+        fun getMissingChapterCount(chapters: List<SChapter>, mangaStatus: Int): String? {
             if (mangaStatus == SManga.COMPLETED) return null
 
             val remove0ChaptersFromCount = chapters.distinctBy {
@@ -242,14 +241,14 @@ class MdUtil {
                 } else {*/
                 it.name
                 /*}*/
-            }.sortedByDescending { it.number }
+            }.sortedByDescending { it.chapter_number }
 
             remove0ChaptersFromCount.firstOrNull()?.let { chapter ->
-                val chpNumber = chapter.number.floor()
+                val chpNumber = chapter.chapter_number.floor()
                 val allChapters = (1..chpNumber).toMutableSet()
 
                 remove0ChaptersFromCount.forEach {
-                    allChapters.remove(it.number.floor())
+                    allChapters.remove(it.chapter_number.floor())
                 }
 
                 if (allChapters.isEmpty()) return null
@@ -264,11 +263,11 @@ class MdUtil {
         fun parseDate(dateAsString: String): Long =
             dateFormatter.parse(dateAsString)?.time ?: 0
 
-        fun createMangaEntry(json: MangaDataDto, lang: String): MangaInfo {
-            return MangaInfo(
-                key = buildMangaUrl(json.id),
+        fun createMangaEntry(json: MangaDataDto, lang: String): SManga {
+            return SManga(
+                url = buildMangaUrl(json.id),
                 title = cleanString(getTitleFromManga(json.attributes, lang)),
-                cover = json.relationships
+                thumbnail_url = json.relationships
                     .firstOrNull { relationshipDto -> relationshipDto.type == MdConstants.Types.coverArt }
                     ?.attributes
                     ?.fileName

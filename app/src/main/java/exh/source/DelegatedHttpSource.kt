@@ -10,8 +10,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 
 @Suppress("OverridingDeprecatedMember", "DEPRECATION")
 abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
@@ -183,6 +181,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      *
      * @param manga the manga to be updated.
      */
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         ensureDelegateCompatible()
         return delegate.fetchMangaDetails(manga)
@@ -191,7 +190,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     /**
      * [1.x API] Get the updated details for a manga.
      */
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+    override suspend fun getMangaDetails(manga: SManga): SManga {
         ensureDelegateCompatible()
         return delegate.getMangaDetails(manga)
     }
@@ -213,6 +212,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      *
      * @param manga the manga to look for chapters.
      */
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         ensureDelegateCompatible()
         return delegate.fetchChapterList(manga)
@@ -221,7 +221,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     /**
      * [1.x API] Get all the available chapters for a manga.
      */
-    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
+    override suspend fun getChapterList(manga: SManga): List<SChapter> {
         ensureDelegateCompatible()
         return delegate.getChapterList(manga)
     }
@@ -231,6 +231,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
      *
      * @param chapter the chapter whose page list has to be fetched.
      */
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         ensureDelegateCompatible()
         return delegate.fetchPageList(chapter)
@@ -239,7 +240,7 @@ abstract class DelegatedHttpSource(val delegate: HttpSource) : HttpSource() {
     /**
      * [1.x API] Get the list of pages a chapter has.
      */
-    override suspend fun getPageList(chapter: ChapterInfo): List<tachiyomi.source.model.Page> {
+    override suspend fun getPageList(chapter: SChapter): List<Page> {
         ensureDelegateCompatible()
         return delegate.getPageList(chapter)
     }

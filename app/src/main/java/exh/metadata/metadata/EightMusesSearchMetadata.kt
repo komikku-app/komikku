@@ -2,10 +2,11 @@ package exh.metadata.metadata
 
 import android.content.Context
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
-import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class EightMusesSearchMetadata : RaisedSearchMetadata() {
@@ -15,7 +16,7 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
 
     var thumbnailUrl: String? = null
 
-    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+    override fun createMangaInfo(manga: SManga): SManga {
         val key = path.joinToString("/", prefix = "/")
 
         val title = title
@@ -24,16 +25,16 @@ class EightMusesSearchMetadata : RaisedSearchMetadata() {
 
         val artist = tags.ofNamespace(ARTIST_NAMESPACE).joinToString { it.name }
 
-        val genres = tagsToGenreList()
+        val genres = tagsToGenreString()
 
         val description = "meta"
 
         return manga.copy(
-            key = key,
+            url = key,
             title = title ?: manga.title,
-            cover = cover ?: manga.cover,
+            thumbnail_url = cover ?: manga.thumbnail_url,
             artist = artist,
-            genres = genres,
+            genre = genres,
             description = description,
         )
     }

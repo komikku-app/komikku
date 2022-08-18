@@ -3,11 +3,12 @@ package exh.metadata.metadata
 import android.content.Context
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTitle
 import exh.util.nullIfEmpty
 import kotlinx.serialization.Serializable
-import tachiyomi.source.model.MangaInfo
 
 @Serializable
 class PervEdenSearchMetadata : RaisedSearchMetadata() {
@@ -34,7 +35,7 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
 
     var lang: String? = null
 
-    override fun createMangaInfo(manga: MangaInfo): MangaInfo {
+    override fun createMangaInfo(manga: SManga): SManga {
         val key = url
         val cover = thumbnailUrl
 
@@ -43,23 +44,23 @@ class PervEdenSearchMetadata : RaisedSearchMetadata() {
         val artist = artist
 
         val status = when (status) {
-            "Ongoing" -> MangaInfo.ONGOING
-            "Completed", "Suspended" -> MangaInfo.COMPLETED
-            else -> MangaInfo.UNKNOWN
+            "Ongoing" -> SManga.ONGOING
+            "Completed", "Suspended" -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
         }
 
         // Copy tags -> genres
-        val genres = tagsToGenreList()
+        val genres = tagsToGenreString()
 
         val description = "meta"
 
         return manga.copy(
-            key = key ?: manga.key,
-            cover = cover ?: manga.cover,
+            url = key ?: manga.url,
+            thumbnail_url = cover ?: manga.thumbnail_url,
             title = title ?: manga.title,
             artist = artist ?: manga.artist,
             status = status,
-            genres = genres,
+            genre = genres,
             description = description,
         )
     }

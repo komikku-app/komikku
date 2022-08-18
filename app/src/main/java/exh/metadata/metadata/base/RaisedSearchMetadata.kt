@@ -2,8 +2,6 @@ package exh.metadata.metadata.base
 
 import android.content.Context
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toMangaInfo
-import eu.kanade.tachiyomi.source.model.toSManga
 import exh.metadata.metadata.EHentaiSearchMetadata
 import exh.metadata.metadata.EightMusesSearchMetadata
 import exh.metadata.metadata.HBrowseSearchMetadata
@@ -25,7 +23,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import tachiyomi.source.model.MangaInfo
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -64,11 +61,11 @@ abstract class RaisedSearchMetadata {
     }
 
     open fun copyTo(manga: SManga) {
-        val infoManga = createMangaInfo(manga.toMangaInfo()).toSManga()
+        val infoManga = createMangaInfo(manga.copy())
         manga.copyFrom(infoManga)
     }
 
-    abstract fun createMangaInfo(manga: MangaInfo): MangaInfo
+    abstract fun createMangaInfo(manga: SManga): SManga
 
     fun tagsToGenreString() = tags.toGenreString()
 

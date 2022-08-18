@@ -14,7 +14,6 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toChapterInfo
 import eu.kanade.tachiyomi.source.online.BrowseSourceFilterHeader
 import eu.kanade.tachiyomi.source.online.FollowsSource
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -54,8 +53,6 @@ import exh.ui.metadata.adapters.MangaDexDescription
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import rx.Observable
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.reflect.KClass
@@ -182,24 +179,27 @@ class MangaDex(delegate: HttpSource, val context: Context) :
             }
     }
 
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getMangaDetails"))
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return mangaHandler.fetchMangaDetailsObservable(manga, id)
     }
 
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+    override suspend fun getMangaDetails(manga: SManga): SManga {
         return mangaHandler.getMangaDetails(manga, id)
     }
 
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return mangaHandler.fetchChapterListObservable(manga, blockedGroups(), blockedUploaders())
     }
 
-    override suspend fun getChapterList(manga: MangaInfo): List<ChapterInfo> {
+    override suspend fun getChapterList(manga: SManga): List<SChapter> {
         return mangaHandler.getChapterList(manga, blockedGroups(), blockedUploaders())
     }
 
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return runAsObservable { pageHandler.fetchPageList(chapter.toChapterInfo(), isLogged(), usePort443Only(), dataSaver(), delegate) }
+        return runAsObservable { pageHandler.fetchPageList(chapter, isLogged(), usePort443Only(), dataSaver(), delegate) }
     }
 
     override fun fetchImage(page: Page): Observable<Response> {
@@ -301,11 +301,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return mangaHandler.fetchRandomMangaId()
     }
 
-    suspend fun getMangaSimilar(manga: MangaInfo): MetadataMangasPage {
+    suspend fun getMangaSimilar(manga: SManga): MetadataMangasPage {
         return similarHandler.getSimilar(manga)
     }
 
-    suspend fun getMangaRelated(manga: MangaInfo): MetadataMangasPage {
+    suspend fun getMangaRelated(manga: SManga): MetadataMangasPage {
         return similarHandler.getRelated(manga)
     }
 

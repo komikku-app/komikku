@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -119,12 +118,14 @@ data class Manga(
 
     fun toSManga(): SManga = SManga.create().also {
         it.url = url
-        it.title = title
-        it.artist = artist
-        it.author = author
-        it.description = description
-        it.genre = genre.orEmpty().joinToString()
-        it.status = status.toInt()
+        // SY -->
+        it.title = ogTitle
+        it.artist = ogArtist
+        it.author = ogAuthor
+        it.description = ogDescription
+        it.genre = ogGenre.orEmpty().joinToString()
+        it.status = ogStatus.toInt()
+        // SY <--
         it.thumbnail_url = thumbnailUrl
         it.initialized = initialized
     }
@@ -228,19 +229,6 @@ fun Manga.toDbManga(): DbManga = MangaImpl().also {
     it.initialized = initialized
 }
 
-fun Manga.toMangaInfo(): MangaInfo = MangaInfo(
-    // SY -->
-    artist = ogArtist ?: "",
-    author = ogAuthor ?: "",
-    cover = thumbnailUrl ?: "",
-    description = ogDescription ?: "",
-    genres = ogGenre ?: emptyList(),
-    key = url,
-    status = ogStatus.toInt(),
-    title = ogTitle,
-    // SY <--
-)
-
 fun Manga.toMangaUpdate(): MangaUpdate {
     return MangaUpdate(
         id = id,
@@ -252,12 +240,14 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         chapterFlags = chapterFlags,
         coverLastModified = coverLastModified,
         url = url,
-        title = title,
-        artist = artist,
-        author = author,
-        description = description,
-        genre = genre,
-        status = status,
+        // SY -->
+        title = ogTitle,
+        artist = ogArtist,
+        author = ogAuthor,
+        description = ogDescription,
+        genre = ogGenre,
+        status = ogStatus,
+        // SY <--
         thumbnailUrl = thumbnailUrl,
         initialized = initialized,
     )

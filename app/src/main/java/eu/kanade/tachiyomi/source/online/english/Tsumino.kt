@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -24,7 +24,6 @@ import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import rx.Observable
-import tachiyomi.source.model.MangaInfo
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -50,8 +49,8 @@ class Tsumino(delegate: HttpSource, val context: Context) :
         return "https://tsumino.com/Book/Info/${uri.lastPathSegment}"
     }
 
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+    override suspend fun getMangaDetails(manga: SManga): SManga {
+        val response = client.newCall(mangaDetailsRequest(manga)).await()
         return parseToManga(manga, response.asJsoup())
     }
 

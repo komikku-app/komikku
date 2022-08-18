@@ -11,7 +11,7 @@ import eu.kanade.tachiyomi.source.PagePreviewInfo
 import eu.kanade.tachiyomi.source.PagePreviewPage
 import eu.kanade.tachiyomi.source.PagePreviewSource
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -30,7 +30,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.CacheControl
 import okhttp3.Response
-import tachiyomi.source.model.MangaInfo
 
 class NHentai(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -57,8 +56,8 @@ class NHentai(delegate: HttpSource, val context: Context) :
             super.fetchSearchManga(page, query, filters)
         }
 
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+    override suspend fun getMangaDetails(manga: SManga): SManga {
+        val response = client.newCall(mangaDetailsRequest(manga)).await()
         return parseToManga(manga, response)
     }
 
@@ -181,9 +180,9 @@ class NHentai(delegate: HttpSource, val context: Context) :
         NHentaiDescription(state, openMetadataViewer)
     }
 
-    override suspend fun getPagePreviewList(manga: MangaInfo, page: Int): PagePreviewPage {
+    override suspend fun getPagePreviewList(manga: SManga, page: Int): PagePreviewPage {
         val metadata = fetchOrLoadMetadata(manga.id()) {
-            client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+            client.newCall(mangaDetailsRequest(manga)).await()
         }
         return PagePreviewPage(
             page,

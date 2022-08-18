@@ -10,7 +10,6 @@ import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
@@ -19,7 +18,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toSChapter
+import eu.kanade.tachiyomi.source.model.copy
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
@@ -33,8 +32,6 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import okhttp3.Response
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -64,18 +61,20 @@ class MergedSource : HttpSource() {
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
     override fun pageListParse(response: Response) = throw UnsupportedOperationException()
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getChapterList"))
     override fun fetchChapterList(manga: SManga) = throw UnsupportedOperationException()
-    override suspend fun getChapterList(manga: MangaInfo) = throw UnsupportedOperationException()
+    override suspend fun getChapterList(manga: SManga) = throw UnsupportedOperationException()
     override fun fetchImage(page: Page) = throw UnsupportedOperationException()
     override fun fetchImageUrl(page: Page) = throw UnsupportedOperationException()
+    @Deprecated("Use the 1.x API instead", replaceWith = ReplaceWith("getPageList"))
     override fun fetchPageList(chapter: SChapter) = throw UnsupportedOperationException()
-    override suspend fun getPageList(chapter: ChapterInfo) = throw UnsupportedOperationException()
+    override suspend fun getPageList(chapter: SChapter) = throw UnsupportedOperationException()
     override fun fetchLatestUpdates(page: Int) = throw UnsupportedOperationException()
     override fun fetchPopularManga(page: Int) = throw UnsupportedOperationException()
 
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
+    override suspend fun getMangaDetails(manga: SManga): SManga {
         return withIOContext {
-            val mergedManga = getManga.await(manga.key, id) ?: throw Exception("merged manga not in db")
+            val mergedManga = getManga.await(manga.url, id) ?: throw Exception("merged manga not in db")
             val mangaReferences = getMergedReferencesById.await(mergedManga.id)
                 .apply {
                     if (isEmpty()) {
@@ -93,10 +92,10 @@ class MergedSource : HttpSource() {
             val mangaInfoReference = mangaReferences.firstOrNull { it.isInfoManga }
                 ?: mangaReferences.firstOrNull { it.mangaId != it.mergeId }
             val dbManga = mangaInfoReference?.run {
-                getManga.await(mangaUrl, mangaSourceId)?.toMangaInfo()
+                getManga.await(mangaUrl, mangaSourceId)?.toSManga()
             }
-            (dbManga ?: mergedManga.toMangaInfo()).copy(
-                key = manga.key,
+            (dbManga ?: mergedManga.toSManga()).copy(
+                url = manga.url,
             )
         }
     }
@@ -185,8 +184,7 @@ class MergedSource : HttpSource() {
                                     val (source, loadedManga, reference) =
                                         it.load(sourceManager, getManga, insertManga, updateManga)
                                     if (loadedManga != null && reference.getChapterUpdates) {
-                                        val chapterList = source.getChapterList(loadedManga.toMangaInfo())
-                                            .map(ChapterInfo::toSChapter)
+                                        val chapterList = source.getChapterList(loadedManga.toSManga())
                                         val results =
                                             syncChaptersWithSource.await(chapterList, loadedManga, source)
                                         if (ifDownloadNewChapters && reference.downloadChapters) {
@@ -226,7 +224,7 @@ class MergedSource : HttpSource() {
                 ),
             )!!
             val newManga = getManga.await(id)!!
-            updateManga.awaitUpdateFromSource(newManga, source.getMangaDetails(newManga.toMangaInfo()), false)
+            updateManga.awaitUpdateFromSource(newManga, source.getMangaDetails(newManga.toSManga()), false)
             manga = getManga.await(id)!!
         }
         return LoadedMangaSource(source, manga, this)

@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.source.online
 
-import tachiyomi.source.Source
+import eu.kanade.tachiyomi.source.Source
 
 interface RandomMangaSource : Source {
     suspend fun fetchRandomMangaUrl(): String

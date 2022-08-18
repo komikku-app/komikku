@@ -6,7 +6,7 @@ import android.os.Build
 import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -20,7 +20,6 @@ import exh.source.DelegatedHttpSource
 import exh.ui.metadata.adapters.HitomiDescription
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
-import tachiyomi.source.model.MangaInfo
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -38,8 +37,8 @@ class Hitomi(delegate: HttpSource, val context: Context) :
             super.fetchSearchManga(page, query, filters)
         }
 
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+    override suspend fun getMangaDetails(manga: SManga): SManga {
+        val response = client.newCall(mangaDetailsRequest(manga)).await()
         return parseToManga(manga, response.asJsoup())
     }
 

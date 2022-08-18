@@ -3,9 +3,6 @@ package exh.md.handlers
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.model.toMangaInfo
-import eu.kanade.tachiyomi.source.model.toSChapter
-import eu.kanade.tachiyomi.source.model.toSManga
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.dto.ChapterDataDto
@@ -19,8 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import rx.Observable
-import tachiyomi.source.model.ChapterInfo
-import tachiyomi.source.model.MangaInfo
 
 class MangaHandler(
     private val lang: String,
@@ -28,9 +23,9 @@ class MangaHandler(
     private val apiMangaParser: ApiMangaParser,
     private val followsHandler: FollowsHandler,
 ) {
-    suspend fun getMangaDetails(manga: MangaInfo, sourceId: Long): MangaInfo {
+    suspend fun getMangaDetails(manga: SManga, sourceId: Long): SManga {
         return coroutineScope {
-            val mangaId = MdUtil.getMangaId(manga.key)
+            val mangaId = MdUtil.getMangaId(manga.url)
             val response = async(Dispatchers.IO) { service.viewManga(mangaId) }
             val simpleChapters = async(Dispatchers.IO) { getSimpleChapters(manga) }
             val statistics = async(Dispatchers.IO) { service.mangasRating(mangaId).statistics[mangaId] }
@@ -46,19 +41,19 @@ class MangaHandler(
 
     fun fetchMangaDetailsObservable(manga: SManga, sourceId: Long): Observable<SManga> {
         return runAsObservable {
-            getMangaDetails(manga.toMangaInfo(), sourceId).toSManga()
+            getMangaDetails(manga, sourceId)
         }
     }
 
     fun fetchChapterListObservable(manga: SManga, blockedGroups: String, blockedUploaders: String): Observable<List<SChapter>> = runAsObservable {
-        getChapterList(manga.toMangaInfo(), blockedGroups, blockedUploaders).map { it.toSChapter() }
+        getChapterList(manga, blockedGroups, blockedUploaders)
     }
 
-    suspend fun getChapterList(manga: MangaInfo, blockedGroups: String, blockedUploaders: String): List<ChapterInfo> {
+    suspend fun getChapterList(manga: SManga, blockedGroups: String, blockedUploaders: String): List<SChapter> {
         return withIOContext {
             val results = mdListCall {
                 service.viewChapters(
-                    MdUtil.getMangaId(manga.key),
+                    MdUtil.getMangaId(manga.url),
                     lang,
                     it,
                     blockedGroups,
@@ -109,8 +104,8 @@ class MangaHandler(
         }
     }
 
-    private suspend fun getSimpleChapters(manga: MangaInfo): List<String> {
-        return runCatching { service.aggregateChapters(MdUtil.getMangaId(manga.key), lang) }
+    private suspend fun getSimpleChapters(manga: SManga): List<String> {
+        return runCatching { service.aggregateChapters(MdUtil.getMangaId(manga.url), lang) }
             .onFailure {
                 if (it is CancellationException) throw it
             }

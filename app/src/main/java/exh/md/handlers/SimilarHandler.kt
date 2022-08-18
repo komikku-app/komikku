@@ -1,7 +1,7 @@
 package exh.md.handlers
 
 import eu.kanade.tachiyomi.source.model.MetadataMangasPage
-import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import exh.md.dto.RelationListDto
 import exh.md.dto.SimilarMangaDto
@@ -10,7 +10,6 @@ import exh.md.service.SimilarService
 import exh.md.utils.MangaDexRelation
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
-import tachiyomi.source.model.MangaInfo
 
 class SimilarHandler(
     private val lang: String,
@@ -18,8 +17,8 @@ class SimilarHandler(
     private val similarService: SimilarService,
 ) {
 
-    suspend fun getSimilar(manga: MangaInfo): MetadataMangasPage {
-        val similarDto = withIOContext { similarService.getSimilarManga(MdUtil.getMangaId(manga.key)) }
+    suspend fun getSimilar(manga: SManga): MetadataMangasPage {
+        val similarDto = withIOContext { similarService.getSimilarManga(MdUtil.getMangaId(manga.url)) }
         return similarDtoToMangaListPage(similarDto)
     }
 
@@ -31,14 +30,14 @@ class SimilarHandler(
         }
 
         val mangaList = service.viewMangas(ids).data.map {
-            MdUtil.createMangaEntry(it, lang).toSManga()
+            MdUtil.createMangaEntry(it, lang)
         }
 
         return MetadataMangasPage(mangaList, false, List(mangaList.size) { MangaDexSearchMetadata().also { it.relation = MangaDexRelation.SIMILAR } })
     }
 
-    suspend fun getRelated(manga: MangaInfo): MetadataMangasPage {
-        val relatedListDto = withIOContext { service.relatedManga(MdUtil.getMangaId(manga.key)) }
+    suspend fun getRelated(manga: SManga): MetadataMangasPage {
+        val relatedListDto = withIOContext { service.relatedManga(MdUtil.getMangaId(manga.url)) }
         return relatedDtoToMangaListPage(relatedListDto)
     }
 
@@ -50,7 +49,7 @@ class SimilarHandler(
             .map { it.id }
 
         val mangaList = service.viewMangas(ids).data.map {
-            MdUtil.createMangaEntry(it, lang).toSManga()
+            MdUtil.createMangaEntry(it, lang)
         }
 
         return MetadataMangasPage(

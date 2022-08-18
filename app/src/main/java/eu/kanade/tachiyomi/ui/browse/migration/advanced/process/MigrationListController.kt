@@ -20,14 +20,12 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.toDbManga
-import eu.kanade.domain.manga.model.toMangaInfo
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationListControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.source.model.toSChapter
 import eu.kanade.tachiyomi.source.online.all.EHentai
 import eu.kanade.tachiyomi.ui.base.changehandler.OneWayFadeChangeHandler
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
@@ -186,13 +184,13 @@ class MigrationListController(bundle: Bundle? = null) :
                                                 )
 
                                                 val chapters = if (source is EHentai) {
-                                                    source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle)
+                                                    source.getChapterList(localManga.toSManga(), throttleManager::throttle)
                                                 } else {
-                                                    source.getChapterList(localManga.toMangaInfo())
+                                                    source.getChapterList(localManga.toSManga())
                                                 }
 
                                                 try {
-                                                    syncChaptersWithSource.await(chapters.map { it.toSChapter() }, localManga, source)
+                                                    syncChaptersWithSource.await(chapters, localManga, source)
                                                 } catch (e: Exception) {
                                                     return@async2 null
                                                 }
@@ -223,10 +221,10 @@ class MigrationListController(bundle: Bundle? = null) :
                                         val localManga = smartSearchEngine.networkToLocalManga(searchResult, source.id)
                                         val chapters = try {
                                             if (source is EHentai) {
-                                                source.getChapterList(localManga.toMangaInfo(), throttleManager::throttle)
+                                                source.getChapterList(localManga.toSManga(), throttleManager::throttle)
                                             } else {
-                                                source.getChapterList(localManga.toMangaInfo())
-                                            }.map { it.toSChapter() }
+                                                source.getChapterList(localManga.toSManga())
+                                            }
                                         } catch (e: Exception) {
                                             this@MigrationListController.logcat(LogPriority.ERROR, e)
                                             emptyList()
@@ -254,7 +252,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
                 if (result != null && result.thumbnailUrl == null) {
                     try {
-                        val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo())
+                        val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toSManga())
                         updateManga.awaitUpdateFromSource(result, newManga, true)
                     } catch (e: CancellationException) {
                         // Ignore cancellations
@@ -359,8 +357,7 @@ class MigrationListController(bundle: Bundle? = null) :
             val result = CoroutineScope(migratingManga.manga.migrationJob).async {
                 val localManga = smartSearchEngine.networkToLocalManga(manga.toDbManga(), source.id)
                 try {
-                    val chapters = source.getChapterList(localManga.toMangaInfo())
-                        .map { it.toSChapter() }
+                    val chapters = source.getChapterList(localManga.toSManga())
                     syncChaptersWithSource.await(chapters, localManga, source)
                 } catch (e: Exception) {
                     return@async null
@@ -370,7 +367,7 @@ class MigrationListController(bundle: Bundle? = null) :
 
             if (result != null) {
                 try {
-                    val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toMangaInfo())
+                    val newManga = sourceManager.getOrStub(result.source).getMangaDetails(result.toSManga())
                     updateManga.awaitUpdateFromSource(result, newManga, true)
                 } catch (e: CancellationException) {
                     // Ignore cancellations

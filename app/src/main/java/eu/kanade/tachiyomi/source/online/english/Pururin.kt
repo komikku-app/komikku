@@ -7,7 +7,7 @@ import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.toSManga
+import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
@@ -24,7 +24,6 @@ import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import rx.Observable
-import tachiyomi.source.model.MangaInfo
 
 class Pururin(delegate: HttpSource, val context: Context) :
     DelegatedHttpSource(delegate),
@@ -53,8 +52,8 @@ class Pururin(delegate: HttpSource, val context: Context) :
         }
     }
 
-    override suspend fun getMangaDetails(manga: MangaInfo): MangaInfo {
-        val response = client.newCall(mangaDetailsRequest(manga.toSManga())).await()
+    override suspend fun getMangaDetails(manga: SManga): SManga {
+        val response = client.newCall(mangaDetailsRequest(manga)).await()
         return parseToManga(manga, response.asJsoup())
     }
 
