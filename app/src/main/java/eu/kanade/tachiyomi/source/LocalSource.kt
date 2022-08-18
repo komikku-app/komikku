@@ -103,7 +103,9 @@ class LocalSource(
                     }
                 }
 
-                else -> { /* Do nothing */ }
+                else -> {
+                    /* Do nothing */
+                }
             }
         }
 

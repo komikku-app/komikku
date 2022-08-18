@@ -87,7 +87,7 @@ object Entry {
         override val key = "uh"
     }
 
-    /* ktlint-disable experimental:enum-entry-name-case */
+    /* ktlint-disable enum-entry-name-case */
     enum class ImageSize(override val value: String) : ConfigItem {
         AUTO("0"),
         `2400`("5"),
@@ -131,7 +131,7 @@ object Entry {
 
         override val key = "tr"
     }
-    /* ktlint-enable experimental:enum-entry-name-case */
+    /* ktlint-enable enum-entry-name-case */
 
     enum class UseOriginalImages(override val value: String) : ConfigItem {
         NO("0"),
