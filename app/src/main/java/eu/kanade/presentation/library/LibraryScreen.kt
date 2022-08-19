@@ -93,7 +93,7 @@ fun LibraryScreen(
                     state = presenter,
                     contentPadding = paddingValues,
                     currentPage = { presenter.activeCategory },
-                    isLibraryEmpty = { presenter.loadedManga.isEmpty() },
+                    isLibraryEmpty = presenter.isLibraryEmpty,
                     showPageTabs = presenter.tabVisibility,
                     showMangaCount = presenter.mangaCountVisibility,
                     onChangeCurrentPage = { presenter.activeCategory = it },
