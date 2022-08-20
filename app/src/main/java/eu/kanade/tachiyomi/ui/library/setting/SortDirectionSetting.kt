@@ -11,13 +11,13 @@ enum class SortDirectionSetting(val flag: Long) {
     companion object {
         const val MASK = 0b01000000L
 
-        fun fromFlag(flag: Long?): SortDirectionSetting {
+        private fun fromFlag(flag: Long?): SortDirectionSetting {
             return values().find { mode -> mode.flag == flag } ?: ASCENDING
         }
 
         fun get(preferences: PreferencesHelper, category: Category?): SortDirectionSetting {
-            return if (preferences.categorizedDisplaySettings().get() && category != null && category.id != 0L /* SY --> */ && preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT/* SY <-- */) {
-                fromFlag(category.sortDirection)
+            return if (/* SY --> */ preferences.groupLibraryBy().get() == LibraryGroup.BY_DEFAULT/* SY <-- */) {
+                fromFlag(category?.sortDirection)
             } else {
                 preferences.librarySortingAscending().get()
             }

@@ -278,27 +278,13 @@ class LibrarySettingsSheet(
                     else -> throw Exception("Unknown state")
                 }
 
-                setSortModePreference(item)
-
-                setSortDirectionPreference(item)
+                setSortPreference(item)
 
                 item.group.items.forEach { adapter.notifyItemChanged(it) }
             }
 
-            private fun setSortDirectionPreference(item: Item.MultiStateGroup) {
-                val flag = if (item.state == Item.MultiSort.SORT_ASC) {
-                    SortDirectionSetting.ASCENDING
-                } else {
-                    SortDirectionSetting.DESCENDING
-                }
-
-                sheetScope.launchIO {
-                    setSortModeForCategory.await(currentCategory!!, flag)
-                }
-            }
-
-            private fun setSortModePreference(item: Item) {
-                val flag = when (item) {
+            private fun setSortPreference(item: Item.MultiStateGroup) {
+                val mode = when (item) {
                     alphabetically -> SortModeSetting.ALPHABETICAL
                     lastRead -> SortModeSetting.LAST_READ
                     lastChecked -> SortModeSetting.LAST_MANGA_UPDATE
@@ -312,9 +298,14 @@ class LibrarySettingsSheet(
                     // SY <--
                     else -> throw NotImplementedError("Unknown display mode")
                 }
+                val direction = if (item.state == Item.MultiSort.SORT_ASC) {
+                    SortDirectionSetting.ASCENDING
+                } else {
+                    SortDirectionSetting.DESCENDING
+                }
 
                 sheetScope.launchIO {
-                    setSortModeForCategory.await(currentCategory!!, flag)
+                    setSortModeForCategory.await(currentCategory!!, mode, direction)
                 }
             }
         }

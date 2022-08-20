@@ -478,12 +478,16 @@ class LibraryPresenter(
         }
         // SY <--
 
-        val defaultSortingMode = SortModeSetting.get(preferences, null)
+        // SY -->
+        val defaultSortingMode = preferences.librarySortingMode().get()
+        // SY <--
         val sortingModes = categories.associate { category ->
             category.id to SortModeSetting.get(preferences, category)
         }
 
-        val defaultSortDirection = SortDirectionSetting.get(preferences, null)
+        // SY -->
+        val defaultSortDirection = preferences.librarySortingAscending().get()
+        // SY <--
         val sortDirections = categories.associate { category ->
             category.id to SortDirectionSetting.get(preferences, category)
         }
@@ -493,6 +497,7 @@ class LibraryPresenter(
             strength = Collator.PRIMARY
         }
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
+            // SY -->
             val sortingMode = if (groupType == LibraryGroup.BY_DEFAULT) {
                 sortingModes[i1.manga.category.toLong()] ?: defaultSortingMode
             } else {
@@ -503,6 +508,7 @@ class LibraryPresenter(
             } else {
                 defaultSortDirection
             } == SortDirectionSetting.ASCENDING
+            // SY <--
 
             when (sortingMode) {
                 SortModeSetting.ALPHABETICAL -> {
