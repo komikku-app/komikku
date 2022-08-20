@@ -38,7 +38,7 @@ open /* SY <-- */ class NetworkHelper(context: Context) {
                 val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.HEADERS
                 }
-                builder.addInterceptor(httpLoggingInterceptor)
+                builder.addNetworkInterceptor(httpLoggingInterceptor)
             }
 
             when (preferences.dohProvider()) {
