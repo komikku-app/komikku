@@ -2,19 +2,33 @@ package exh.ui.intercept
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
-import androidx.core.view.isVisible
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.chapter.model.Chapter
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.databinding.EhActivityInterceptBinding
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.util.view.setComposeContent
 import exh.GalleryAddEvent
 import exh.GalleryAdder
 import kotlinx.coroutines.Dispatchers
@@ -27,35 +41,60 @@ import kotlinx.coroutines.launch
 class InterceptActivity : BaseActivity() {
     private var statusJob: Job? = null
 
-    lateinit var binding: EhActivityInterceptBinding
+    private val status: MutableStateFlow<InterceptResult> = MutableStateFlow(InterceptResult.Idle)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = EhActivityInterceptBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        // Show back button
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        setComposeContent {
+            InterceptActivityContent(status.collectAsState().value)
+        }
 
         processLink()
     }
 
-    private fun processLink() {
-        if (Intent.ACTION_VIEW == intent.action) {
-            binding.interceptProgress.isVisible = true
-            binding.interceptStatus.setText(R.string.loading_manga)
-            loadGallery(intent.dataString!!)
+    @Composable
+    private fun InterceptActivityContent(status: InterceptResult) {
+        Scaffold(
+            topBar = {
+                AppBar(
+                    title = stringResource(R.string.app_name),
+                    navigateUp = ::onBackPressed,
+                )
+            },
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+            ) {
+                when (status) {
+                    InterceptResult.Idle, InterceptResult.Loading -> {
+                        Text(
+                            text = stringResource(R.string.loading_manga),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        CircularProgressIndicator(modifier = Modifier.size(56.dp))
+                    }
+                    is InterceptResult.Success -> Text(
+                        text = stringResource(R.string.launching_app),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    is InterceptResult.Failure -> Text(
+                        text = stringResource(R.string.error_with_reason, status.reason),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+            }
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> onBackPressed()
-            else -> return super.onOptionsItemSelected(item)
+    private fun processLink() {
+        if (Intent.ACTION_VIEW == intent.action) {
+            loadGallery(intent.dataString!!)
         }
-        return true
     }
 
     override fun onStart() {
@@ -65,8 +104,6 @@ class InterceptActivity : BaseActivity() {
             .onEach {
                 when (it) {
                     is InterceptResult.Success -> {
-                        binding.interceptProgress.isVisible = false
-                        binding.interceptStatus.setText(R.string.launching_app)
                         onBackPressed()
                         startActivity(
                             if (it.chapter != null) {
@@ -80,8 +117,6 @@ class InterceptActivity : BaseActivity() {
                         )
                     }
                     is InterceptResult.Failure -> {
-                        binding.interceptProgress.isVisible = false
-                        binding.interceptStatus.text = getString(R.string.error_with_reason, it.reason)
                         MaterialAlertDialogBuilder(this)
                             .setTitle(R.string.chapter_error)
                             .setMessage(getString(R.string.could_not_open_manga, it.reason))
@@ -90,8 +125,7 @@ class InterceptActivity : BaseActivity() {
                             .setOnDismissListener { onBackPressed() }
                             .show()
                     }
-                    InterceptResult.Idle -> Unit
-                    InterceptResult.Loading -> Unit
+                    else -> Unit
                 }
             }
             .launchIn(lifecycleScope)
@@ -103,8 +137,6 @@ class InterceptActivity : BaseActivity() {
     }
 
     private val galleryAdder = GalleryAdder()
-
-    val status: MutableStateFlow<InterceptResult> = MutableStateFlow(InterceptResult.Idle)
 
     @Synchronized
     fun loadGallery(gallery: String) {
@@ -126,7 +158,6 @@ class InterceptActivity : BaseActivity() {
         }
     }
 
-    @Synchronized
     private fun loadGalleryEnd(gallery: String, source: UrlImportableSource? = null) {
         // Load gallery async
         lifecycleScope.launch(Dispatchers.IO) {
