@@ -163,7 +163,7 @@ fun MangaActionRow(
     onTrackingClicked: (() -> Unit)?,
     onEditCategory: (() -> Unit)?,
     // SY -->
-    onMergeClicked: () -> Unit,
+    onMergeClicked: (() -> Unit)?,
     // SY <--
 ) {
     Row(modifier = modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp)) {
@@ -200,12 +200,14 @@ fun MangaActionRow(
             )
         }
         // SY -->
-        MangaActionButton(
-            title = stringResource(R.string.merge),
-            icon = Icons.Outlined.CallMerge,
-            color = defaultActionButtonColor,
-            onClick = onMergeClicked,
-        )
+        if (onMergeClicked != null) {
+            MangaActionButton(
+                title = stringResource(R.string.merge),
+                icon = Icons.Outlined.CallMerge,
+                color = defaultActionButtonColor,
+                onClick = onMergeClicked,
+            )
+        }
         // SY <--
     }
 }

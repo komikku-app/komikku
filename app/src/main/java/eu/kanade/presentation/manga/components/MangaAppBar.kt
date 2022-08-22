@@ -55,6 +55,7 @@ fun MangaAppBar(
     onEditInfoClicked: () -> Unit,
     showRecommends: Boolean,
     onRecommendClicked: () -> Unit,
+    onMergeClicked: (() -> Unit)?,
     showMergeSettings: Boolean,
     onMergedSettingsClicked: () -> Unit,
     // SY <--
@@ -201,6 +202,15 @@ fun MangaAppBar(
                                         text = { Text(text = stringResource(R.string.action_migrate)) },
                                         onClick = {
                                             onMigrateClicked()
+                                            onDismissRequest()
+                                        },
+                                    )
+                                }
+                                if (onMergeClicked != null) {
+                                    DropdownMenuItem(
+                                        text = { Text(text = stringResource(R.string.merge)) },
+                                        onClick = {
+                                            onMergeClicked()
                                             onDismissRequest()
                                         },
                                     )

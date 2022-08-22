@@ -302,6 +302,7 @@ private fun MangaScreenSmallImpl(
                 onRecommendClicked = onRecommendClicked,
                 showMergeSettings = state.manga.source == MERGED_SOURCE_ID,
                 onMergedSettingsClicked = onMergedSettingsClicked,
+                onMergeClicked = onMergeClicked.takeIf { state.showMergeInOverflow },
                 // SY <--
                 actionModeCounter = chapters.count { it.selected },
                 onSelectAll = { onAllChapterSelected(true) },
@@ -404,7 +405,7 @@ private fun MangaScreenSmallImpl(
                             onTrackingClicked = onTrackingClicked,
                             onEditCategory = onEditCategoryClicked,
                             // SY -->
-                            onMergeClicked = onMergeClicked,
+                            onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow },
                             // SY <--
                         )
                     }
@@ -597,6 +598,7 @@ fun MangaScreenLargeImpl(
                     onRecommendClicked = onRecommendClicked,
                     showMergeSettings = state.manga.source == MERGED_SOURCE_ID,
                     onMergedSettingsClicked = onMergedSettingsClicked,
+                    onMergeClicked = onMergeClicked.takeIf { state.showMergeInOverflow },
                     // SY <--
                     actionModeCounter = chapters.count { it.selected },
                     onSelectAll = { onAllChapterSelected(true) },
@@ -678,7 +680,7 @@ fun MangaScreenLargeImpl(
                         onTrackingClicked = onTrackingClicked,
                         onEditCategory = onEditCategoryClicked,
                         // SY -->
-                        onMergeClicked = onMergeClicked,
+                        onMergeClicked = onMergeClicked.takeUnless { state.showMergeInOverflow },
                         // SY <--
                     )
                     // SY -->

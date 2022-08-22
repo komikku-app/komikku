@@ -453,6 +453,8 @@ class PreferencesHelper(val context: Context) {
 
     fun recommendsInOverflow() = flowPrefs.getBoolean("recommends_in_overflow", false)
 
+    fun mergeInOverflow() = flowPrefs.getBoolean("merge_in_overflow", false)
+
     fun enhancedEHentaiView() = flowPrefs.getBoolean("enhanced_e_hentai_view", true)
 
     fun webtoonEnableZoomOut() = flowPrefs.getBoolean("webtoon_enable_zoom_out", false)

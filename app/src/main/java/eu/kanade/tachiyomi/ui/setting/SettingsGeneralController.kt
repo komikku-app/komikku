@@ -106,6 +106,12 @@ class SettingsGeneralController : SettingsController() {
                 titleRes = R.string.put_recommends_in_overflow
                 summaryRes = R.string.put_recommends_in_overflow_summary
             }
+
+            switchPreference {
+                bindTo(preferences.mergeInOverflow())
+                titleRes = R.string.put_merge_in_overflow
+                summaryRes = R.string.put_merge_in_overflow_summary
+            }
         }
         // <-- EXH
     }
