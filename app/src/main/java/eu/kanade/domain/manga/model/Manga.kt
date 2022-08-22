@@ -60,7 +60,7 @@ data class Manga(
         get() = customMangaInfo?.genre ?: ogGenre
 
     val status: Long
-        get() = customMangaInfo?.statusLong ?: ogStatus
+        get() = customMangaInfo?.status ?: ogStatus
     // SY <--
 
     val sorting: Long

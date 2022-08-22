@@ -103,7 +103,6 @@ class CustomMangaManager(val context: Context) {
         val genreString by lazy {
             genre?.joinToString()
         }
-        val statusLong = status?.toLong()
 
         fun toJson(): MangaJson {
             return MangaJson(
