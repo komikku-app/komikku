@@ -165,12 +165,12 @@ class DownloadManager(
      * @param downloads the list of downloads to enqueue.
      */
     fun addDownloadsToStartOfQueue(downloads: List<Download>) {
-        val wasEmpty = queue.isEmpty()
+        if (downloads.isEmpty()) return
         queue.toMutableList().apply {
             addAll(0, downloads)
             reorderQueue(this)
         }
-        if (wasEmpty) startDownloads()
+        if (!DownloadService.isRunning(context)) DownloadService.start(context)
     }
 
     /**
