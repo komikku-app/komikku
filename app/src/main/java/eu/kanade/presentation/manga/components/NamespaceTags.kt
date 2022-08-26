@@ -5,11 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ChipBorder
 import androidx.compose.material3.LocalMinimumTouchTargetEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +20,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowRow
+import eu.kanade.presentation.components.ChipBorder
 import eu.kanade.presentation.components.SuggestionChip
+import eu.kanade.presentation.components.SuggestionChipDefaults
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -32,6 +32,8 @@ import exh.metadata.metadata.base.RaisedTag
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
 import exh.util.SourceTagsUtil
+import androidx.compose.material3.ChipBorder as ChipBorderM3
+import androidx.compose.material3.SuggestionChipDefaults as SuggestionChipDefaultsM3
 
 @Immutable
 data class DisplayTag(
@@ -106,14 +108,16 @@ fun NamespaceTags(
                     crossAxisSpacing = 8.dp,
                 ) {
                     tags.forEach { (_, text, search, border) ->
+                        val borderDp = border?.let { with(LocalDensity.current) { it.toDp() } }
                         TagsChip(
                             text = text,
                             onClick = { onClick(search) },
                             onLongClick = { onLongClick(search) },
-                            border = border?.let {
-                                with(LocalDensity.current) {
-                                    SuggestionChipDefaults.suggestionChipBorder(borderWidth = it.toDp())
-                                }
+                            border = borderDp?.let {
+                                SuggestionChipDefaults.suggestionChipBorder(borderWidth = it)
+                            },
+                            borderM3 = borderDp?.let {
+                                SuggestionChipDefaultsM3.suggestionChipBorder(borderWidth = it)
                             },
                         )
                     }
@@ -129,6 +133,7 @@ fun TagsChip(
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)?,
     border: ChipBorder? = null,
+    borderM3: ChipBorderM3? = null,
 ) {
     CompositionLocalProvider(LocalMinimumTouchTargetEnforcement provides false) {
         if (onClick != null) {
@@ -147,8 +152,8 @@ fun TagsChip(
                 SuggestionChip(
                     onClick = onClick,
                     label = { Text(text = text, style = MaterialTheme.typography.bodySmall) },
-                    border = border,
-                    colors = SuggestionChipDefaults.suggestionChipColors(
+                    border = borderM3,
+                    colors = SuggestionChipDefaultsM3.suggestionChipColors(
                         containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                         labelColor = MaterialTheme.colorScheme.onSurface,
                     ),
