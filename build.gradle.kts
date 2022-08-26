@@ -27,7 +27,6 @@ subprojects {
     kotlinter {
         experimentalRules = true
 
-
         disabledRules = arrayOf(
             "experimental:argument-list-wrapping", // Doesn't play well with Android Studio
             "experimental:comment-wrapping", // Doesn't play nice with SY specifiers

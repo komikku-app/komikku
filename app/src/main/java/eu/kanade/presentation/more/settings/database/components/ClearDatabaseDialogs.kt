@@ -35,19 +35,19 @@ fun ClearDatabaseDeleteDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = /* SY --> */ { onDelete(keepReadManga) } /* SY <-- */) {
-                Text(text = stringResource(id = android.R.string.ok))
+                Text(text = stringResource(android.R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(id = android.R.string.cancel))
+                Text(text = stringResource(android.R.string.cancel))
             }
         },
         text = {
             // SY -->
             Column {
                 // SY <--
-                Text(text = stringResource(id = R.string.clear_database_confirmation))
+                Text(text = stringResource(R.string.clear_database_confirmation))
                 // SY -->
                 Row(
                     Modifier
