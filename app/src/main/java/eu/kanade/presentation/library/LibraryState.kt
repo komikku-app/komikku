@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import eu.kanade.domain.category.model.Category
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.ui.library.LibraryGroup
+import eu.kanade.tachiyomi.ui.library.LibraryPresenter
 import exh.source.PERV_EDEN_EN_SOURCE_ID
 import exh.source.PERV_EDEN_IT_SOURCE_ID
 import exh.source.isEhBasedManga
@@ -22,6 +23,7 @@ interface LibraryState {
     val selection: List<LibraryManga>
     val selectionMode: Boolean
     var hasActiveFilters: Boolean
+    var dialog: LibraryPresenter.Dialog?
 
     // SY -->
     val ogCategories: List<Category>
@@ -43,6 +45,7 @@ class LibraryStateImpl : LibraryState {
     override var selection: List<LibraryManga> by mutableStateOf(emptyList())
     override val selectionMode: Boolean by derivedStateOf { selection.isNotEmpty() }
     override var hasActiveFilters: Boolean by mutableStateOf(false)
+    override var dialog: LibraryPresenter.Dialog? by mutableStateOf(null)
 
     // SY -->
     override var groupType: Int by mutableStateOf(LibraryGroup.BY_DEFAULT)

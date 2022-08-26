@@ -11,9 +11,11 @@ import androidx.compose.ui.platform.LocalContext
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.domain.category.model.Category
+import eu.kanade.core.prefs.CheckboxState
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.domain.manga.model.toDbManga
+import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.library.LibraryScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
@@ -24,13 +26,12 @@ import eu.kanade.tachiyomi.ui.base.controller.RootController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
+import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.toast
-import eu.kanade.tachiyomi.widget.materialdialogs.QuadStateTextView
 import exh.favorites.FavoritesIntroDialog
 import exh.favorites.FavoritesSyncStatus
 import exh.source.MERGED_SOURCE_ID
@@ -52,10 +53,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class LibraryController(
     bundle: Bundle? = null,
-) : FullComposeController<LibraryPresenter>(bundle),
-    RootController,
-    ChangeMangaCategoriesDialog.Listener,
-    DeleteLibraryMangasDialog.Listener {
+) : FullComposeController<LibraryPresenter>(bundle), RootController {
 
     /**
      * Sheet containing filter/sort/display items.
@@ -144,6 +142,36 @@ class LibraryController(
             },
             // SY <--
         )
+
+        val onDismissRequest = { presenter.dialog = null }
+        when (val dialog = presenter.dialog) {
+            is LibraryPresenter.Dialog.ChangeCategory -> {
+                ChangeCategoryDialog(
+                    initialSelection = dialog.initialSelection,
+                    onDismissRequest = onDismissRequest,
+                    onEditCategories = {
+                        presenter.clearSelection()
+                        router.pushController(CategoryController())
+                    },
+                    onConfirm = { include, exclude ->
+                        presenter.clearSelection()
+                        presenter.setMangaCategories(dialog.manga, include, exclude)
+                    },
+                )
+            }
+            is LibraryPresenter.Dialog.DeleteManga -> {
+                DeleteLibraryMangaDialog(
+                    containsLocalManga = dialog.manga.any(Manga::isLocal),
+                    onDismissRequest = onDismissRequest,
+                    onConfirm = { deleteManga, deleteChapter ->
+                        presenter.removeMangas(dialog.manga.map { it.toDbManga() }, deleteManga, deleteChapter)
+                        presenter.clearSelection()
+                    },
+                )
+            }
+            null -> {}
+        }
+
         LaunchedEffect(presenter.selectionMode) {
             val activity = (activity as? MainActivity) ?: return@LaunchedEffect
             // Could perhaps be removed when navigation is in a Compose world
@@ -262,44 +290,41 @@ class LibraryController(
     private fun showMangaCategoriesDialog() {
         viewScope.launchIO {
             // Create a copy of selected manga
-            val mangas = presenter.selection.toList()
+            val mangaList = presenter.selection.mapNotNull { it.toDomainManga() }.toList()
 
             // Hide the default category because it has a different behavior than the ones from db.
             val categories = presenter.ogCategories.filter { it.id != 0L } // SY <--
 
             // Get indexes of the common categories to preselect.
-            val common = presenter.getCommonCategories(mangas.mapNotNull { it.toDomainManga() })
+            val common = presenter.getCommonCategories(mangaList)
             // Get indexes of the mix categories to preselect.
-            val mix = presenter.getMixCategories(mangas.mapNotNull { it.toDomainManga() })
+            val mix = presenter.getMixCategories(mangaList)
             val preselected = categories.map {
                 when (it) {
-                    in common -> QuadStateTextView.State.CHECKED.ordinal
-                    in mix -> QuadStateTextView.State.INDETERMINATE.ordinal
-                    else -> QuadStateTextView.State.UNCHECKED.ordinal
+                    in common -> CheckboxState.State.Checked(it)
+                    in mix -> CheckboxState.TriState.Exclude(it)
+                    else -> CheckboxState.State.None(it)
                 }
-            }.toTypedArray()
-            withUIContext {
-                ChangeMangaCategoriesDialog(this@LibraryController, mangas.mapNotNull { it.toDomainManga() }, categories, preselected)
-                    .showDialog(router)
             }
+            presenter.dialog = LibraryPresenter.Dialog.ChangeCategory(mangaList, preselected)
         }
     }
 
     private fun downloadUnreadChapters() {
-        val mangas = presenter.selection.toList()
-        presenter.downloadUnreadChapters(mangas.mapNotNull { it.toDomainManga() })
+        val mangaList = presenter.selection.toList()
+        presenter.downloadUnreadChapters(mangaList.mapNotNull { it.toDomainManga() })
         presenter.clearSelection()
     }
 
     private fun markReadStatus(read: Boolean) {
-        val mangas = presenter.selection.toList()
-        presenter.markReadStatus(mangas.mapNotNull { it.toDomainManga() }, read)
+        val mangaList = presenter.selection.toList()
+        presenter.markReadStatus(mangaList.mapNotNull { it.toDomainManga() }, read)
         presenter.clearSelection()
     }
 
     private fun showDeleteMangaDialog() {
-        val mangas = presenter.selection.toList()
-        DeleteLibraryMangasDialog(this, mangas.mapNotNull { it.toDomainManga() }).showDialog(router)
+        val mangaList = presenter.selection.mapNotNull { it.toDomainManga() }.toList()
+        presenter.dialog = LibraryPresenter.Dialog.DeleteManga(mangaList)
     }
 
     // SY -->
@@ -321,19 +346,7 @@ class LibraryController(
         presenter.syncMangaToDex(mangas)
         presenter.clearSelection()
     }
-    // SY <--
 
-    override fun updateCategoriesForMangas(mangas: List<Manga>, addCategories: List<Category>, removeCategories: List<Category>) {
-        presenter.setMangaCategories(mangas, addCategories, removeCategories)
-        presenter.clearSelection()
-    }
-
-    override fun deleteMangas(mangas: List<Manga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
-        presenter.removeMangas(mangas.map { it.toDbManga() }, deleteFromLibrary, deleteChapters)
-        presenter.clearSelection()
-    }
-
-    // SY -->
     override fun onAttach(view: View) {
         super.onAttach(view)
 
