@@ -32,6 +32,11 @@ class WebtoonConfig(
     var sidePadding = 0
         private set
 
+    var longStripSplit = false
+        private set
+
+    var longStripSplitChangedListener: ((Boolean) -> Unit)? = null
+
     val theme = preferences.readerTheme().get()
 
     // SY -->
@@ -68,6 +73,15 @@ class WebtoonConfig(
 
         preferences.dualPageInvertWebtoon()
             .register({ dualPageInvert = it }, { imagePropertyChangedListener?.invoke() })
+
+        preferences.longStripSplitWebtoon()
+            .register(
+                { longStripSplit = it },
+                {
+                    imagePropertyChangedListener?.invoke()
+                    longStripSplitChangedListener?.invoke(it)
+                },
+            )
 
         preferences.readerTheme().asFlow()
             .drop(1)
