@@ -318,7 +318,7 @@ object ImageUtil {
 
         val options = extractImageOptions(imageStream).apply { inJustDecodeBounds = false }
 
-        val region = Rect(0, splitData.topOffset, splitData.outputImageHeight, splitData.bottomOffset)
+        val region = Rect(0, splitData.topOffset, options.outWidth, splitData.bottomOffset)
 
         try {
             val splitBitmap = bitmapRegionDecoder.decodeRegion(region, options)
