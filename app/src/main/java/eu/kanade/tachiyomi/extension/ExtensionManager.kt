@@ -226,7 +226,7 @@ class ExtensionManager(
             val availableExt = unalteredAvailableExtensions.find { it.pkgName == pkgName }
             // SY <--
 
-            if (availableExt == null && !installedExt.isObsolete) {
+            if (!installedExt.isUnofficial && availableExt == null && !installedExt.isObsolete) {
                 mutInstalledExtensions[index] = installedExt.copy(isObsolete = true)
                 changed = true
                 // SY -->
