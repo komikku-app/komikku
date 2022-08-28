@@ -253,16 +253,13 @@ object ImageUtil {
             inJustDecodeBounds = false
         }
 
-        // Values are stored as they get modified during split loop
-        val imageWidth = options.outWidth
-
         val splitDataList = options.splitData
 
         return try {
             splitDataList.forEach { splitData ->
                 val splitPath = splitImagePath(imageFilePath, splitData.index)
 
-                val region = Rect(0, splitData.topOffset, imageWidth, splitData.bottomOffset)
+                val region = Rect(0, splitData.topOffset, splitData.outputImageWidth, splitData.bottomOffset)
 
                 FileOutputStream(splitPath).use { outputStream ->
                     val splitBitmap = bitmapRegionDecoder.decodeRegion(region, options)
@@ -318,7 +315,7 @@ object ImageUtil {
 
         val options = extractImageOptions(imageStream).apply { inJustDecodeBounds = false }
 
-        val region = Rect(0, splitData.topOffset, options.outWidth, splitData.bottomOffset)
+        val region = Rect(0, splitData.topOffset, splitData.outputImageWidth, splitData.bottomOffset)
 
         try {
             val splitBitmap = bitmapRegionDecoder.decodeRegion(region, options)
@@ -339,6 +336,7 @@ object ImageUtil {
     private val BitmapFactory.Options.splitData
         get(): List<SplitData> {
             val imageHeight = outHeight
+            val imageWidth = outWidth
 
             val splitHeight = (getDisplayMaxHeightInPx * 1.5).toInt()
             // -1 so it doesn't try to split when imageHeight = splitHeight
@@ -364,7 +362,7 @@ object ImageUtil {
                     if (remainingHeight <= (optimalSplitHeight / 10)) {
                         outputImageHeight += remainingHeight
                     }
-                    add(SplitData(index, topOffset, outputImageHeight))
+                    add(SplitData(index, topOffset, outputImageHeight, imageWidth))
                 }
             }
         }
@@ -373,6 +371,7 @@ object ImageUtil {
         val index: Int,
         val topOffset: Int,
         val outputImageHeight: Int,
+        val outputImageWidth: Int,
     ) {
         val bottomOffset = topOffset + outputImageHeight
     }
