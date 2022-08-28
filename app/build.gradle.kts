@@ -37,7 +37,7 @@ android {
         buildConfigField("boolean", "INCLUDE_UPDATER", "false")
 
         ndk {
-            abiFilters += setOf("armeabi-v7a", "arm64-v8a", "x86")
+            abiFilters += setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
