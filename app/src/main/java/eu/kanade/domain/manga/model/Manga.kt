@@ -1,6 +1,7 @@
 package eu.kanade.domain.manga.model
 
 import eu.kanade.data.listOfStringsAdapter
+import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
@@ -227,6 +228,9 @@ fun Manga.toDbManga(): DbManga = MangaImpl().also {
     // SY <--
     it.thumbnail_url = thumbnailUrl
     it.initialized = initialized
+    // SY -->
+    it.filtered_scanlators = filteredScanlators?.let(listOfStringsAndAdapter::encode)
+    // SY <--
 }
 
 fun Manga.toMangaUpdate(): MangaUpdate {
@@ -250,6 +254,9 @@ fun Manga.toMangaUpdate(): MangaUpdate {
         // SY <--
         thumbnailUrl = thumbnailUrl,
         initialized = initialized,
+        // SY -->
+        filteredScanlators = filteredScanlators,
+        // SY <--
     )
 }
 
