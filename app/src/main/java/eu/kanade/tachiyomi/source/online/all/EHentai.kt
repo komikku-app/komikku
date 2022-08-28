@@ -344,8 +344,9 @@ class EHentai(
         }
         val newDisplay = doc.select("#gnd a")
         // Build chapter for root gallery
+        val location = doc.location()
         val self = SChapter(
-            url = EHentaiSearchMetadata.normalizeUrl(doc.location()),
+            url = EHentaiSearchMetadata.normalizeUrl(location),
             name = "v1: " + doc.selectFirst("#gn")!!.text(),
             chapter_number = 1f,
             date_upload = MetadataUtil.EX_DATE_FORMAT.parse(
@@ -353,6 +354,7 @@ class EHentai(
                     el.text().lowercase() == "posted:"
                 }!!.nextElementSibling()!!.text(),
             )!!.time,
+            scanlator = EHentaiSearchMetadata.galleryId(location),
         )
         // Build and append the rest of the galleries
         return if (DebugToggles.INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS.enabled) {
@@ -367,6 +369,7 @@ class EHentai(
                     name = "v${index + 2}: $name",
                     chapter_number = index + 2f,
                     date_upload = MetadataUtil.EX_DATE_FORMAT.parse(posted)!!.time,
+                    scanlator = EHentaiSearchMetadata.galleryId(link),
                 )
             }.reversed() + self
         }

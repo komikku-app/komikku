@@ -320,7 +320,10 @@ class MangaPresenter(
                                 }
                             }.launchIn(presenterScope)
                     }
-                    allChapterScanlators = chapters.flatMap { MdUtil.getScanlators(it.scanlator) }.distinct()
+                    if (!manga.isEhBasedManga()) {
+                        allChapterScanlators = chapters.flatMap { MdUtil.getScanlators(it.scanlator) }
+                            .distinct()
+                    }
                 }
                 .combine(
                     getFlatMetadata.subscribe(mangaId)
@@ -913,6 +916,9 @@ class MangaPresenter(
         mergedData: MergedMangaData?,
         alwaysShowReadingProgress: Boolean,
     ): List<ChapterItem> {
+        // SY -->
+        val isExhManga = manga.isEhBasedManga()
+        // SY <--
         return map { chapter ->
             val activeDownload = downloadManager.queue.find { chapter.id == it.chapter.id }
             val chapter = chapter.let { if (mergedData != null) it.toMergedDownloadedChapter() else it }
@@ -957,6 +963,9 @@ class MangaPresenter(
                         it + 1,
                     )
                 },
+                // SY -->
+                showScanlator = !isExhManga,
+                // SY <--
             )
         }
     }
@@ -1670,6 +1679,10 @@ data class ChapterItem(
     val readProgressString: String?,
 
     val selected: Boolean = false,
+
+    // SY -->
+    val showScanlator: Boolean = true,
+    // SY <--
 ) {
     val isDownloaded = downloadState == Download.State.DOWNLOADED
 }

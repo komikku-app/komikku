@@ -15,6 +15,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.ReaderChapterItemBinding
 import eu.kanade.tachiyomi.util.system.getResourceColor
 import eu.kanade.tachiyomi.util.view.setVectorCompat
+import exh.source.isEhBasedManga
 import java.text.DateFormat
 import java.text.DecimalFormat
 import java.util.Date
@@ -90,7 +91,7 @@ class ReaderChapterItem(val chapter: Chapter, val manga: Manga, val isCurrent: B
             if (chapter.dateUpload > 0) {
                 descriptions.add(item.dateFormat.format(Date(chapter.dateUpload)))
             }
-            if (!chapter.scanlator.isNullOrBlank()) {
+            if (!chapter.scanlator.isNullOrBlank() && !manga.isEhBasedManga()) {
                 descriptions.add(chapter.scanlator)
             }
 
