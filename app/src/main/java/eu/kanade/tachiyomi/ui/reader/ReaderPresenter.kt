@@ -293,7 +293,7 @@ class ReaderPresenter(
     fun init(mangaId: Long, initialChapterId: Long) {
         if (!needsInit()) return
 
-        launchIO {
+        presenterScope.launchIO {
             try {
                 // SY -->
                 val manga = getManga.await(mangaId) ?: return@launchIO

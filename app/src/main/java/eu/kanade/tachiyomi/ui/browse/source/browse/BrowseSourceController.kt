@@ -784,7 +784,7 @@ open class BrowseSourceController(bundle: Bundle) :
     override fun onItemLongClick(position: Int) {
         val activity = activity ?: return
         val manga = (adapter?.getItem(position) as? SourceItem?)?.manga ?: return
-        launchIO {
+        viewScope.launchIO {
             val duplicateManga = presenter.getDuplicateLibraryManga(manga)
 
             withUIContext {
@@ -820,7 +820,7 @@ open class BrowseSourceController(bundle: Bundle) :
 
     private fun addToLibrary(newManga: Manga, position: Int) {
         val activity = activity ?: return
-        launchIO {
+        viewScope.launchIO {
             val categories = presenter.getCategories()
             val defaultCategoryId = preferences.defaultCategory()
             val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
