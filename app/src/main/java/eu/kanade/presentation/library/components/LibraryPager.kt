@@ -15,7 +15,7 @@ import com.google.accompanist.pager.PagerState
 import eu.kanade.core.prefs.PreferenceMutableState
 import eu.kanade.tachiyomi.data.database.models.LibraryManga
 import eu.kanade.tachiyomi.ui.library.LibraryItem
-import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
+import eu.kanade.tachiyomi.ui.library.setting.LibraryDisplayMode
 
 @Composable
 fun LibraryPager(
@@ -24,7 +24,7 @@ fun LibraryPager(
     selectedManga: List<LibraryManga>,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
-    getDisplayModeForPage: @Composable (Int) -> State<DisplayModeSetting>,
+    getDisplayModeForPage: @Composable (Int) -> State<LibraryDisplayMode>,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
     getLibraryForPage: @Composable (Int) -> State<List<LibraryItem>>,
     onClickManga: (LibraryManga) -> Unit,
@@ -45,7 +45,7 @@ fun LibraryPager(
         }
         val library by getLibraryForPage(page)
         val displayMode by getDisplayModeForPage(page)
-        val columns by if (displayMode != DisplayModeSetting.LIST) {
+        val columns by if (displayMode != LibraryDisplayMode.List) {
             val configuration = LocalConfiguration.current
             val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -55,7 +55,7 @@ fun LibraryPager(
         }
 
         when (displayMode) {
-            DisplayModeSetting.LIST -> {
+            LibraryDisplayMode.List -> {
                 LibraryList(
                     items = library,
                     selection = selectedManga,
@@ -65,7 +65,7 @@ fun LibraryPager(
                     onGlobalSearchClicked = onGlobalSearchClicked,
                 )
             }
-            DisplayModeSetting.COMPACT_GRID -> {
+            LibraryDisplayMode.CompactGrid -> {
                 LibraryCompactGrid(
                     items = library,
                     columns = columns,
@@ -79,7 +79,7 @@ fun LibraryPager(
                     // SY <--
                 )
             }
-            DisplayModeSetting.COMFORTABLE_GRID -> {
+            LibraryDisplayMode.ComfortableGrid -> {
                 LibraryComfortableGrid(
                     items = library,
                     columns = columns,
@@ -93,7 +93,7 @@ fun LibraryPager(
                     // SY <--
                 )
             }
-            DisplayModeSetting.COVER_ONLY_GRID -> {
+            LibraryDisplayMode.CoverOnlyGrid -> {
                 LibraryCoverOnlyGrid(
                     items = library,
                     columns = columns,

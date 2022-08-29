@@ -57,9 +57,10 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
-import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
-import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
+import eu.kanade.tachiyomi.ui.library.setting.LibraryDisplayMode
+import eu.kanade.tachiyomi.ui.library.setting.LibrarySort
+import eu.kanade.tachiyomi.ui.library.setting.display
+import eu.kanade.tachiyomi.ui.library.setting.sort
 import eu.kanade.tachiyomi.util.lang.combineLatest
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -480,17 +481,13 @@ class LibraryPresenter(
         // SY <--
 
         // SY -->
-        val defaultSortingMode = preferences.librarySortingMode().get()
+        val groupType = preferences.groupLibraryBy().get()
+        val groupSort = preferences.librarySortingMode().get()
         // SY <--
-        val sortingModes = categories.associate { category ->
-            category.id to SortModeSetting.get(preferences, category)
-        }
-
-        // SY -->
-        val defaultSortDirection = preferences.librarySortingAscending().get()
-        // SY <--
-        val sortDirections = categories.associate { category ->
-            category.id to SortDirectionSetting.get(preferences, category)
+        val sortModes = categories.associate { category ->
+            // SY -->
+            category.id to category.sort
+            // SY <--
         }
 
         val locale = Locale.getDefault()
@@ -499,74 +496,68 @@ class LibraryPresenter(
         }
         val sortFn: (LibraryItem, LibraryItem) -> Int = { i1, i2 ->
             // SY -->
-            val sortingMode = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortingModes[i1.manga.category.toLong()] ?: defaultSortingMode
-            } else {
-                defaultSortingMode
+            val sort = when (groupType) {
+                LibraryGroup.BY_DEFAULT -> sortModes[i1.manga.category.toLong()]!!
+                else -> groupSort
             }
-            val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortDirections[i1.manga.category.toLong()] ?: defaultSortDirection
-            } else {
-                defaultSortDirection
-            } == SortDirectionSetting.ASCENDING
             // SY <--
-
-            when (sortingMode) {
-                SortModeSetting.ALPHABETICAL -> {
+            when (sort.type) {
+                LibrarySort.Type.Alphabetical -> {
                     collator.compare(i1.manga.title.lowercase(locale), i2.manga.title.lowercase(locale))
                 }
-                SortModeSetting.LAST_READ -> {
+                LibrarySort.Type.LastRead -> {
                     val manga1LastRead = lastReadManga[i1.manga.id!!] ?: 0
                     val manga2LastRead = lastReadManga[i2.manga.id!!] ?: 0
                     manga1LastRead.compareTo(manga2LastRead)
                 }
-                SortModeSetting.LAST_MANGA_UPDATE -> {
+                LibrarySort.Type.LastUpdate -> {
                     i1.manga.last_update.compareTo(i2.manga.last_update)
                 }
-                SortModeSetting.UNREAD_COUNT -> when {
+                LibrarySort.Type.UnreadCount -> when {
                     // Ensure unread content comes first
                     i1.manga.unreadCount == i2.manga.unreadCount -> 0
-                    i1.manga.unreadCount == 0 -> if (sortAscending) 1 else -1
-                    i2.manga.unreadCount == 0 -> if (sortAscending) -1 else 1
+                    i1.manga.unreadCount == 0 -> if (sort.isAscending) 1 else -1
+                    i2.manga.unreadCount == 0 -> if (sort.isAscending) -1 else 1
                     else -> i1.manga.unreadCount.compareTo(i2.manga.unreadCount)
                 }
-                SortModeSetting.TOTAL_CHAPTERS -> {
+                LibrarySort.Type.TotalChapters -> {
                     i1.manga.totalChapters.compareTo(i2.manga.totalChapters)
                 }
-                SortModeSetting.LATEST_CHAPTER -> {
+                LibrarySort.Type.LatestChapter -> {
                     val manga1latestChapter = latestChapterManga[i1.manga.id!!]
                         ?: latestChapterManga.size
                     val manga2latestChapter = latestChapterManga[i2.manga.id!!]
                         ?: latestChapterManga.size
                     manga1latestChapter.compareTo(manga2latestChapter)
                 }
-                SortModeSetting.CHAPTER_FETCH_DATE -> {
+                LibrarySort.Type.ChapterFetchDate -> {
                     val manga1chapterFetchDate = chapterFetchDateManga[i1.manga.id!!] ?: 0
                     val manga2chapterFetchDate = chapterFetchDateManga[i2.manga.id!!] ?: 0
                     manga1chapterFetchDate.compareTo(manga2chapterFetchDate)
                 }
-                SortModeSetting.DATE_ADDED -> {
+                LibrarySort.Type.DateAdded -> {
                     i1.manga.date_added.compareTo(i2.manga.date_added)
                 }
                 // SY -->
-                SortModeSetting.TAG_LIST -> {
+                LibrarySort.Type.TagList -> {
                     val manga1IndexOfTag = listOfTags.indexOfFirst { i1.manga.getGenres()?.contains(it) ?: false }
                     val manga2IndexOfTag = listOfTags.indexOfFirst { i2.manga.getGenres()?.contains(it) ?: false }
                     manga1IndexOfTag.compareTo(manga2IndexOfTag)
                 }
                 // SY <--
-                else -> throw IllegalStateException("Invalid SortModeSetting: $sortingMode")
+                else -> throw IllegalStateException("Invalid SortModeSetting: ${sort.type}")
             }
         }
 
         return map.mapValues { entry ->
-            val sortAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
-                sortDirections[entry.key.toLong()] ?: defaultSortDirection
+            // SY -->
+            val isAscending = if (groupType == LibraryGroup.BY_DEFAULT) {
+                sortModes[entry.key]!!.isAscending
             } else {
-                defaultSortDirection
-            } == SortDirectionSetting.ASCENDING
-
-            val comparator = if (sortAscending) {
+                groupSort.isAscending
+            }
+            // SY <--
+            val comparator = if ( /* SY --> */ isAscending /* SY <-- */) {
                 Comparator(sortFn)
             } else {
                 Collections.reverseOrder(sortFn)
@@ -587,13 +578,6 @@ class LibraryPresenter(
                 dbCategories.filterNot { it.isSystemCategory }
             } else {
                 dbCategories
-            }
-
-            libraryManga.forEach { (categoryId, libraryManga) ->
-                val category = categories.first { category -> category.id == categoryId }
-                libraryManga.forEach { libraryItem ->
-                    libraryItem.displayMode = category.displayMode
-                }
             }
 
             // SY -->
@@ -1117,18 +1101,18 @@ class LibraryPresenter(
         }
     }
 
-    private val currentCategory by preferences.libraryDisplayMode().asState()
+    private val libraryDisplayMode by preferences.libraryDisplayMode().asState()
     // SY <--
 
     @Composable
-    fun getDisplayMode(index: Int): androidx.compose.runtime.State<DisplayModeSetting> {
+    fun getDisplayMode(index: Int): androidx.compose.runtime.State<LibraryDisplayMode> {
         val category = categories[index]
         return derivedStateOf {
             // SY -->
             if (groupType != LibraryGroup.BY_DEFAULT) {
-                currentCategory
+                libraryDisplayMode
             } else {
-                DisplayModeSetting.fromFlag(category.displayMode)
+                category.display
             }
             // SY <--
         }

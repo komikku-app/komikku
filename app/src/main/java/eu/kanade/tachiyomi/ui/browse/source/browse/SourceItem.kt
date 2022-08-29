@@ -11,12 +11,12 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.SourceComfortableGridItemBinding
 import eu.kanade.tachiyomi.databinding.SourceCompactGridItemBinding
-import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
+import eu.kanade.tachiyomi.ui.library.setting.LibraryDisplayMode
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.isEhBasedManga
 import uy.kohesive.injekt.injectLazy
 
-class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayModeSetting> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
+class SourceItem(val manga: Manga, private val displayMode: Preference<LibraryDisplayMode> /* SY --> */, private val metadata: RaisedSearchMetadata? = null /* SY <-- */) :
     AbstractFlexibleItem<SourceHolder<*>>() {
     // SY -->
     val preferences: PreferencesHelper by injectLazy()
@@ -29,9 +29,9 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         }
         // SY <--
         return when (displayMode.get()) {
-            DisplayModeSetting.COMPACT_GRID, DisplayModeSetting.COVER_ONLY_GRID -> R.layout.source_compact_grid_item
-            DisplayModeSetting.COMFORTABLE_GRID -> R.layout.source_comfortable_grid_item
-            DisplayModeSetting.LIST -> R.layout.source_list_item
+            LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> R.layout.source_compact_grid_item
+            LibraryDisplayMode.ComfortableGrid -> R.layout.source_comfortable_grid_item
+            LibraryDisplayMode.List -> R.layout.source_list_item
         }
     }
 
@@ -45,13 +45,13 @@ class SourceItem(val manga: Manga, private val displayMode: Preference<DisplayMo
         }
         // SY <--
         return when (displayMode.get()) {
-            DisplayModeSetting.COMPACT_GRID, DisplayModeSetting.COVER_ONLY_GRID -> {
+            LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
                 SourceCompactGridHolder(SourceCompactGridItemBinding.bind(view), adapter)
             }
-            DisplayModeSetting.COMFORTABLE_GRID -> {
+            LibraryDisplayMode.ComfortableGrid -> {
                 SourceComfortableGridHolder(SourceComfortableGridItemBinding.bind(view), adapter)
             }
-            DisplayModeSetting.LIST -> {
+            LibraryDisplayMode.List -> {
                 SourceListHolder(view, adapter)
             }
         }

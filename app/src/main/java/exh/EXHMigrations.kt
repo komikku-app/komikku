@@ -33,9 +33,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.all.Hitomi
 import eu.kanade.tachiyomi.source.online.all.NHentai
-import eu.kanade.tachiyomi.ui.library.setting.DisplayModeSetting
-import eu.kanade.tachiyomi.ui.library.setting.SortDirectionSetting
-import eu.kanade.tachiyomi.ui.library.setting.SortModeSetting
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.util.preference.minusAssign
 import eu.kanade.tachiyomi.util.system.DeviceUtil
@@ -271,35 +268,35 @@ object EXHMigrations {
                 if (oldVersion under 20) {
                     try {
                         val oldSortingMode = prefs.getInt(PreferenceKeys.librarySortingMode, 0 /* ALPHABETICAL */)
-                        val oldSortingDirection = prefs.getBoolean(PreferenceKeys.librarySortingDirection, true)
+                        val oldSortingDirection = prefs.getBoolean("library_sorting_ascending", true)
 
                         val newSortingMode = when (oldSortingMode) {
-                            0 -> SortModeSetting.ALPHABETICAL
-                            1 -> SortModeSetting.LAST_READ
-                            2 -> SortModeSetting.LAST_MANGA_UPDATE
-                            3 -> SortModeSetting.UNREAD_COUNT
-                            4 -> SortModeSetting.TOTAL_CHAPTERS
-                            6 -> SortModeSetting.LATEST_CHAPTER
-                            7 -> SortModeSetting.DRAG_AND_DROP
-                            8 -> SortModeSetting.DATE_ADDED
-                            9 -> SortModeSetting.TAG_LIST
-                            10 -> SortModeSetting.CHAPTER_FETCH_DATE
-                            else -> SortModeSetting.ALPHABETICAL
+                            0 -> "ALPHABETICAL"
+                            1 -> "LAST_READ"
+                            2 -> "LAST_MANGA_UPDATE"
+                            3 -> "UNREAD_COUNT"
+                            4 -> "TOTAL_CHAPTERS"
+                            6 -> "LATEST_CHAPTER"
+                            7 -> "DRAG_AND_DROP"
+                            8 -> "DATE_ADDED"
+                            9 -> "TAG_LIST"
+                            10 -> "CHAPTER_FETCH_DATE"
+                            else -> "ALPHABETICAL"
                         }
 
                         val newSortingDirection = when (oldSortingDirection) {
-                            true -> SortDirectionSetting.ASCENDING
-                            else -> SortDirectionSetting.DESCENDING
+                            true -> "ASCENDING"
+                            else -> "DESCENDING"
                         }
 
                         prefs.edit(commit = true) {
                             remove(PreferenceKeys.librarySortingMode)
-                            remove(PreferenceKeys.librarySortingDirection)
+                            remove("library_sorting_ascending")
                         }
 
                         prefs.edit {
-                            putString(PreferenceKeys.librarySortingMode, newSortingMode.name)
-                            putString(PreferenceKeys.librarySortingDirection, newSortingDirection.name)
+                            putString(PreferenceKeys.librarySortingMode, newSortingMode)
+                            putString("library_sorting_ascending", newSortingDirection)
                         }
                     } catch (e: Exception) {
                         logcat(throwable = e) { "Already done migration" }
@@ -358,12 +355,16 @@ object EXHMigrations {
                 }
                 if (oldVersion under 28) {
                     if (prefs.getString("pref_display_mode_library", null) == "NO_TITLE_GRID") {
-                        preferences.libraryDisplayMode().set(DisplayModeSetting.COVER_ONLY_GRID)
+                        prefs.edit(commit = true) {
+                            putString("pref_display_mode_library", "COVER_ONLY_GRID")
+                        }
                     }
                 }
                 if (oldVersion under 29) {
                     if (prefs.getString("pref_display_mode_catalogue", null) == "NO_TITLE_GRID") {
-                        preferences.sourceDisplayMode().set(DisplayModeSetting.COMPACT_GRID)
+                        prefs.edit(commit = true) {
+                            putString("pref_display_mode_catalogue", "COMPACT_GRID")
+                        }
                     }
                 }
                 if (oldVersion under 30) {
@@ -414,27 +415,37 @@ object EXHMigrations {
                 if (oldVersion under 38) {
                     // Handle renamed enum values
                     @Suppress("DEPRECATION")
-                    val newSortingMode = when (val oldSortingMode = preferences.librarySortingMode().get()) {
-                        SortModeSetting.LAST_CHECKED -> SortModeSetting.LAST_MANGA_UPDATE
-                        SortModeSetting.UNREAD -> SortModeSetting.UNREAD_COUNT
-                        SortModeSetting.DATE_FETCHED -> SortModeSetting.CHAPTER_FETCH_DATE
-                        SortModeSetting.DRAG_AND_DROP -> SortModeSetting.ALPHABETICAL
+                    val newSortingMode = when (val oldSortingMode = prefs.getString(PreferenceKeys.librarySortingMode, "ALPHABETICAL")) {
+                        "LAST_CHECKED" -> "LAST_MANGA_UPDATE"
+                        "UNREAD" -> "UNREAD_COUNT"
+                        "DATE_FETCHED" -> "CHAPTER_FETCH_DATE"
+                        "DRAG_AND_DROP" -> "ALPHABETICAL"
                         else -> oldSortingMode
                     }
-                    preferences.librarySortingMode().set(newSortingMode)
+                    prefs.edit {
+                        putString(PreferenceKeys.librarySortingMode, newSortingMode)
+                    }
                     runBlocking {
                         handler.await(true) {
                             categoriesQueries.getCategories(categoryMapper).executeAsList()
-                                .filter { SortModeSetting.fromFlag(it.flags and SortModeSetting.MASK) == SortModeSetting.DRAG_AND_DROP }
+                                .filter { (it.flags and 0b00111100L) == 0b00100000L }
                                 .forEach {
                                     categoriesQueries.update(
                                         categoryId = it.id,
-                                        flags = it.flags xor SortModeSetting.DRAG_AND_DROP.flag,
+                                        flags = it.flags and 0b00111100L.inv(),
                                         name = null,
                                         order = null,
                                     )
                                 }
                         }
+                    }
+                }
+                if (oldVersion under 39) {
+                    prefs.edit {
+                        val sort = prefs.getString(PreferenceKeys.librarySortingMode, null) ?: return@edit
+                        val direction = prefs.getString("library_sorting_ascending", "ASCENDING")!!
+                        putString(PreferenceKeys.librarySortingMode, "$sort,$direction")
+                        remove("library_sorting_ascending")
                     }
                 }
 
