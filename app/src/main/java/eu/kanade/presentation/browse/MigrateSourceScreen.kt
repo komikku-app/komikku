@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,12 +16,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.browse.components.BaseSourceItem
 import eu.kanade.presentation.browse.components.SourceIcon
@@ -41,7 +41,6 @@ import eu.kanade.tachiyomi.util.system.copyToClipboard
 
 @Composable
 fun MigrateSourceScreen(
-    nestedScrollInterop: NestedScrollConnection,
     presenter: MigrationSourcesPresenter,
     onClickItem: (Source) -> Unit,
     // SY -->
@@ -54,13 +53,16 @@ fun MigrateSourceScreen(
         presenter.isEmpty -> EmptyScreen(textResource = R.string.information_empty_library)
         else ->
             MigrateSourceList(
-                nestedScrollInterop = nestedScrollInterop,
                 list = presenter.items,
                 onClickItem = onClickItem,
                 onLongClickItem = { source ->
                     val sourceId = source.id.toString()
                     context.copyToClipboard(sourceId, sourceId)
                 },
+                sortingMode = presenter.sortingMode,
+                onToggleSortingMode = { presenter.toggleSortingMode() },
+                sortingDirection = presenter.sortingDirection,
+                onToggleSortingDirection = { presenter.toggleSortingDirection() },
                 // SY -->
                 onClickAll = onClickAll,
                 // SY <--
@@ -70,18 +72,31 @@ fun MigrateSourceScreen(
 
 @Composable
 fun MigrateSourceList(
-    nestedScrollInterop: NestedScrollConnection,
     list: List<Pair<Source, Long>>,
     onClickItem: (Source) -> Unit,
     onLongClickItem: (Source) -> Unit,
+    sortingMode: SetMigrateSorting.Mode,
+    onToggleSortingMode: () -> Unit,
+    sortingDirection: SetMigrateSorting.Direction,
+    onToggleSortingDirection: () -> Unit,
     // SY -->
     onClickAll: (Source) -> Unit,
     // SY <--
 ) {
     ScrollbarLazyColumn(
-        modifier = Modifier.nestedScroll(nestedScrollInterop),
         contentPadding = bottomNavPaddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
+        stickyHeader {
+            Row {
+                Button(onClick = onToggleSortingMode) {
+                    Text(sortingMode.toString())
+                }
+                Button(onClick = onToggleSortingDirection) {
+                    Text(sortingDirection.toString())
+                }
+            }
+        }
+
         item(key = "title") {
             Text(
                 text = stringResource(R.string.migration_selection_prompt),

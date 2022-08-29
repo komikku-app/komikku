@@ -2,31 +2,22 @@ package eu.kanade.presentation.library.components
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.accompanist.pager.PagerState
 import eu.kanade.domain.category.model.Category
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.components.DownloadedOnlyModeBanner
 import eu.kanade.presentation.components.IncognitoModeBanner
-import eu.kanade.presentation.components.Pill
+import eu.kanade.presentation.components.TabIndicator
+import eu.kanade.presentation.components.TabText
 import kotlinx.coroutines.launch
 
 @Composable
@@ -49,13 +40,7 @@ fun LibraryTabs(
         ScrollableTabRow(
             selectedTabIndex = state.currentPage.coerceAtMost(categories.lastIndex),
             edgePadding = 0.dp,
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    Modifier
-                        .tabIndicatorOffset(tabPositions[state.currentPage.coerceAtMost(categories.lastIndex)])
-                        .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)),
-                )
-            },
+            indicator = { TabIndicator(it[state.currentPage.coerceAtMost(categories.lastIndex)]) },
         ) {
             categories.forEachIndexed { index, category ->
                 val count by if (showMangaCount) {
@@ -67,23 +52,13 @@ fun LibraryTabs(
                     selected = state.currentPage == index,
                     onClick = { scope.launch { state.animateScrollToPage(index) } },
                     text = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                // SY -->
-                                text = getCategoryName(category, category.visualName),
-                                // SY <--
-                                color = if (state.currentPage == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                            )
-                            if (count != null) {
-                                Pill(
-                                    text = "$count",
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = pillAlpha),
-                                    fontSize = 10.sp,
-                                )
-                            }
-                        }
+                        TabText(
+                            // SY -->
+                            text = getCategoryName(category, category.visualName),
+                            // SY <--
+                            count,
+                            state.currentPage == index,
+                        )
                     },
                 )
             }

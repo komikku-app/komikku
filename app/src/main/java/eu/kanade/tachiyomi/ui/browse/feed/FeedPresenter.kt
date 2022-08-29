@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
-import android.os.Bundle
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -24,13 +23,13 @@ import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -55,6 +54,7 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * @param preferences manages the preference calls.
  */
 open class FeedPresenter(
+    private val presenterScope: CoroutineScope,
     private val state: FeedStateImpl = FeedState() as FeedStateImpl,
     val sourceManager: SourceManager = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
@@ -67,7 +67,7 @@ open class FeedPresenter(
     private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
-) : BasePresenter<FeedController>(), FeedState by state {
+) : FeedState by state {
 
     /**
      * Fetches the different sources by user settings.
@@ -84,9 +84,7 @@ open class FeedPresenter(
      */
     private var fetchImageSubscription: Subscription? = null
 
-    override fun onCreate(savedState: Bundle?) {
-        super.onCreate(savedState)
-
+    fun onCreate() {
         getFeedSavedSearchGlobal.subscribe()
             .distinctUntilChanged()
             .onEach {
@@ -106,10 +104,24 @@ open class FeedPresenter(
             .launchIn(presenterScope)
     }
 
-    override fun onDestroy() {
+    fun onDestroy() {
         fetchSourcesSubscription?.unsubscribe()
         fetchImageSubscription?.unsubscribe()
-        super.onDestroy()
+    }
+
+    fun openAddDialog() {
+        presenterScope.launchIO {
+            if (hasTooManyFeeds()) {
+                return@launchIO
+            }
+            dialog = Dialog.AddFeed(getEnabledSources())
+        }
+    }
+
+    fun openAddSearchDialog(source: CatalogueSource) {
+        presenterScope.launchIO {
+            dialog = Dialog.AddFeedSearch(source, (if (source.supportsLatest) listOf(null) else emptyList()) + getSourceSavedSearches(source.id))
+        }
     }
 
     suspend fun hasTooManyFeeds(): Boolean {
@@ -329,5 +341,11 @@ open class FeedPresenter(
             localManga = localManga.copy(ogTitle = sManga.title)
         }
         return localManga?.toDbManga()!!
+    }
+
+    sealed class Dialog {
+        data class AddFeed(val options: List<CatalogueSource>) : Dialog()
+        data class AddFeedSearch(val source: CatalogueSource, val options: List<SavedSearch?>) : Dialog()
+        data class DeleteFeed(val feed: FeedSavedSearch) : Dialog()
     }
 }

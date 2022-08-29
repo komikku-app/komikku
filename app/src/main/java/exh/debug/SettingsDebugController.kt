@@ -114,7 +114,7 @@ class SettingsDebugController : BasicFullComposeController() {
     fun FunctionList(
         paddingValues: PaddingValues,
         functions: List<Pair<KFunction<*>, String>>,
-        toggles: List<DebugToggle>
+        toggles: List<DebugToggle>,
     ) {
         val scope = rememberCoroutineScope()
         Box(Modifier.fillMaxSize()) {

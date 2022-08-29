@@ -24,8 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -51,7 +49,6 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SourcesScreen(
-    nestedScrollInterop: NestedScrollConnection,
     presenter: SourcesPresenter,
     onClickItem: (Source) -> Unit,
     onClickDisable: (Source) -> Unit,
@@ -66,7 +63,6 @@ fun SourcesScreen(
         presenter.isEmpty -> EmptyScreen(R.string.source_empty_screen)
         else -> {
             SourceList(
-                nestedScrollConnection = nestedScrollInterop,
                 state = presenter,
                 onClickItem = onClickItem,
                 onClickDisable = onClickDisable,
@@ -90,7 +86,6 @@ fun SourcesScreen(
 
 @Composable
 fun SourceList(
-    nestedScrollConnection: NestedScrollConnection,
     state: SourcesState,
     onClickItem: (Source) -> Unit,
     onClickDisable: (Source) -> Unit,
@@ -100,7 +95,6 @@ fun SourceList(
     onClickToggleDataSaver: (Source) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        modifier = Modifier.nestedScroll(nestedScrollConnection),
         contentPadding = bottomNavPaddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
     ) {
         items(
