@@ -310,8 +310,6 @@ class PreferencesHelper(val context: Context) {
 
     fun defaultUserAgent() = flowPrefs.getString(Keys.defaultUserAgent, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.44")
 
-    fun lastSearchQuerySearchSettings() = flowPrefs.getString("last_search_query", "")
-
     fun filterChapterByRead() = prefs.getInt(Keys.defaultChapterFilterByRead, DomainManga.SHOW_ALL.toInt())
 
     fun filterChapterByDownloaded() = prefs.getInt(Keys.defaultChapterFilterByDownloaded, DomainManga.SHOW_ALL.toInt())
