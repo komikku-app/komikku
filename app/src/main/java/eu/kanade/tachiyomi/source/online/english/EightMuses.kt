@@ -47,8 +47,8 @@ class EightMuses(delegate: HttpSource, val context: Context) :
         val gc = doc.select(".gallery .c-tile")
 
         // Check if any in self
-        val selfAlbums = gc.filter { it.attr("href").startsWith("/comics/album") }
-        val selfImages = gc.filter { it.attr("href").startsWith("/comics/picture") }
+        val selfAlbums = gc.filter { element -> element.attr("href").startsWith("/comics/album") }
+        val selfImages = gc.filter { element -> element.attr("href").startsWith("/comics/picture") }
 
         return SelfContents(selfAlbums, selfImages)
     }

@@ -130,9 +130,9 @@ class EHentai(
 
     private fun extendedGenericMangaParse(doc: Document) = with(doc) {
         // Parse mangas (supports compact + extended layout)
-        val parsedMangas = select(".itg > tbody > tr").filter {
+        val parsedMangas = select(".itg > tbody > tr").filter { element ->
             // Do not parse header and ads
-            it.selectFirst("th") == null && it.selectFirst(".itd") == null
+            element.selectFirst("th") == null && element.selectFirst(".itd") == null
         }.map { body ->
             val thumbnailElement = body.selectFirst(".gl1e img, .gl2c .glthumb img")!!
             val column2 = body.selectFirst(".gl3e, .gl2c")!!

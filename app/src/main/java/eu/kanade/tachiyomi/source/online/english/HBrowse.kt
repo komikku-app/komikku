@@ -69,7 +69,7 @@ class HBrowse(delegate: HttpSource, val context: Context) :
         return doc.select("#main > .listTable").associate { ele ->
             val tableName = ele.previousElementSibling()?.text()?.lowercase().orEmpty()
             tableName to ele.select("tr")
-                .filter { it.childrenSize() > 1 }
+                .filter { element -> element.childrenSize() > 1 }
                 .associate {
                     it.child(0).text() to it.child(1)
                 }
