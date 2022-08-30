@@ -4,6 +4,7 @@ import android.content.Context
 import eu.kanade.domain.source.model.SourceData
 import eu.kanade.domain.source.repository.SourceDataRepository
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.model.Page
@@ -53,6 +54,7 @@ class SourceManager(
     private val extensionManager: ExtensionManager,
     private val sourceRepository: SourceDataRepository,
 ) {
+    private val downloadManager: DownloadManager by injectLazy()
 
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
@@ -182,7 +184,12 @@ class SourceManager(
     private fun registerStubSource(sourceData: SourceData) {
         scope.launch {
             val (id, lang, name) = sourceData
+            val dbSourceData = sourceRepository.getSourceData(id)
+            if (dbSourceData == sourceData) return@launch
             sourceRepository.upsertSourceData(id, lang, name)
+            if (dbSourceData != null) {
+                downloadManager.renameSource(StubSource(dbSourceData), StubSource(sourceData))
+            }
         }
     }
 
