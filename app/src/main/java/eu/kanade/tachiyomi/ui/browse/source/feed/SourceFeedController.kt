@@ -1,24 +1,23 @@
 package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import dev.chrisbanes.insetter.applyInsetter
+import eu.kanade.domain.manga.model.Manga
+import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.GlobalSearchControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.base.controller.FabController
-import eu.kanade.tachiyomi.ui.base.controller.SearchableNucleusController
+import eu.kanade.tachiyomi.ui.base.controller.SearchableComposeController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
@@ -42,10 +41,8 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * [SourceFeedCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
 open class SourceFeedController :
-    SearchableNucleusController<GlobalSearchControllerBinding, SourceFeedPresenter>,
-    FabController,
-    SourceFeedCardAdapter.OnMangaClickListener,
-    SourceFeedAdapter.OnFeedClickListener {
+    SearchableComposeController<SourceFeedPresenter>,
+    FabController {
 
     constructor(source: CatalogueSource?) : super(
         bundleOf(
@@ -61,11 +58,6 @@ open class SourceFeedController :
 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(bundle.getLong(SOURCE_EXTRA))
-
-    /**
-     * Adapter containing search results grouped by lang.
-     */
-    protected var adapter: SourceFeedAdapter? = null
 
     var source: CatalogueSource? = null
 
@@ -90,27 +82,7 @@ open class SourceFeedController :
      * @return instance of [SourceFeedPresenter]
      */
     override fun createPresenter(): SourceFeedPresenter {
-        return SourceFeedPresenter(source!!)
-    }
-
-    /**
-     * Called when manga in global search is clicked, opens manga.
-     *
-     * @param manga clicked item containing manga information.
-     */
-    override fun onMangaClick(manga: Manga) {
-        // Open MangaController.
-        router.pushController(MangaController(manga.id!!, true).withFadeTransaction())
-    }
-
-    /**
-     * Called when manga in global search is long clicked.
-     *
-     * @param manga clicked item containing manga information.
-     */
-    override fun onMangaLongClick(manga: Manga) {
-        // Delegate to single click by default.
-        onMangaClick(manga)
+        return SourceFeedPresenter(source = source!!)
     }
 
     /**
@@ -133,8 +105,6 @@ open class SourceFeedController :
         }
     }
 
-    override fun createBinding(inflater: LayoutInflater): GlobalSearchControllerBinding = GlobalSearchControllerBinding.inflate(inflater)
-
     /**
      * Called when the view is created
      *
@@ -145,33 +115,6 @@ open class SourceFeedController :
 
         // Prepare filter sheet
         initFilterSheet()
-
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-
-        adapter = SourceFeedAdapter(this)
-
-        // Create recycler and set adapter.
-        binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.adapter = adapter
-    }
-
-    override fun onDestroyView(view: View) {
-        adapter = null
-        super.onDestroyView(view)
-    }
-
-    override fun onSaveViewState(view: View, outState: Bundle) {
-        super.onSaveViewState(view, outState)
-        adapter?.onSaveInstanceState(outState)
-    }
-
-    override fun onRestoreViewState(view: View, savedViewState: Bundle) {
-        super.onRestoreViewState(view, savedViewState)
-        adapter?.onRestoreInstanceState(savedViewState)
     }
 
     private val filterSerializer = FilterSerializer()
@@ -284,66 +227,46 @@ open class SourceFeedController :
         actionFab = null
     }
 
-    /**
-     * Returns the view holder for the given manga.
-     *
-     * @param source used to find holder containing source
-     * @return the holder of the manga or null if it's not bound.
-     */
-    private fun getHolder(sourceFeed: SourceFeed): SourceFeedHolder? {
-        val adapter = adapter ?: return null
-
-        adapter.allBoundViewHolders.forEach { holder ->
-            val item = adapter.getItem(holder.bindingAdapterPosition)
-            if (item != null && sourceFeed == item.sourceFeed) {
-                return holder as SourceFeedHolder
-            }
-        }
-
-        return null
+    @Composable
+    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+        SourceFeedScreen(
+            nestedScrollInterop = nestedScrollInterop,
+            presenter = presenter,
+            onClickBrowse = ::onBrowseClick,
+            onClickLatest = ::onLatestClick,
+            onClickSavedSearch = ::onSavedSearchClick,
+            onClickDelete = ::onRemoveClick,
+            onClickManga = ::onMangaClick,
+        )
     }
 
     /**
-     * Add search result to adapter.
+     * Called when manga in global search is clicked, opens manga.
      *
-     * @param feedManga the source items containing the latest manga.
+     * @param manga clicked item containing manga information.
      */
-    fun setItems(feedManga: List<SourceFeedItem>) {
-        adapter?.updateDataSet(feedManga)
-
-        if (feedManga.isEmpty()) {
-            binding.emptyView.show(R.string.feed_tab_empty)
-        } else {
-            binding.emptyView.hide()
-        }
-    }
-
-    /**
-     * Called from the presenter when a manga is initialized.
-     *
-     * @param manga the initialized manga.
-     */
-    fun onMangaInitialized(sourceFeed: SourceFeed, manga: Manga) {
-        getHolder(sourceFeed)?.setImage(manga)
+    private fun onMangaClick(manga: Manga) {
+        // Open MangaController.
+        router.pushController(MangaController(manga.id, true).withFadeTransaction())
     }
 
     fun onBrowseClick(search: String? = null, savedSearch: Long? = null, filters: String? = null) {
         router.replaceTopController(BrowseSourceController(presenter.source, search, savedSearch = savedSearch, filterList = filters).withFadeTransaction())
     }
 
-    override fun onLatestClick() {
+    private fun onLatestClick() {
         router.replaceTopController(LatestUpdatesController(presenter.source).withFadeTransaction())
     }
 
-    override fun onBrowseClick() {
+    private fun onBrowseClick() {
         router.replaceTopController(BrowseSourceController(presenter.source).withFadeTransaction())
     }
 
-    override fun onSavedSearchClick(savedSearch: SavedSearch) {
+    private fun onSavedSearchClick(savedSearch: SavedSearch) {
         router.replaceTopController(BrowseSourceController(presenter.source, savedSearch = savedSearch.id).withFadeTransaction())
     }
 
-    override fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {
+    private fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {
         MaterialAlertDialogBuilder(activity!!)
             .setTitle(R.string.feed)
             .setMessage(R.string.feed_delete)

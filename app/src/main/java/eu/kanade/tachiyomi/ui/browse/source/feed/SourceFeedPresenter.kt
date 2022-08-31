@@ -14,6 +14,9 @@ import eu.kanade.domain.source.interactor.GetFeedSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
+import eu.kanade.presentation.browse.SourceFeedState
+import eu.kanade.presentation.browse.SourceFeedStateImpl
+import eu.kanade.presentation.browse.SourceFeedUI
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -44,12 +47,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
 
-sealed class SourceFeed {
-    object Latest : SourceFeed()
-    object Browse : SourceFeed()
-    data class SourceSavedSearch(val feed: FeedSavedSearch, val savedSearch: SavedSearch) : SourceFeed()
-}
-
 /**
  * Presenter of [SourceFeedController]
  * Function calls should be done from here. UI calls should be done from the controller.
@@ -59,6 +56,7 @@ sealed class SourceFeed {
  * @param preferences manages the preference calls.
  */
 open class SourceFeedPresenter(
+    private val state: SourceFeedStateImpl = SourceFeedState() as SourceFeedStateImpl,
     val source: CatalogueSource,
     val preferences: PreferencesHelper = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -71,7 +69,7 @@ open class SourceFeedPresenter(
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
-) : BasePresenter<SourceFeedController>() {
+) : BasePresenter<SourceFeedController>(), SourceFeedState by state {
 
     /**
      * Fetches the different sources by user settings.
@@ -81,7 +79,7 @@ open class SourceFeedPresenter(
     /**
      * Subject which fetches image of given manga.
      */
-    private val fetchImageSubject = PublishSubject.create<Triple<List<Manga>, Source, SourceFeed>>()
+    private val fetchImageSubject = PublishSubject.create<Triple<List<Manga>, Source, SourceFeedUI>>()
 
     /**
      * Subscription for fetching images of manga.
@@ -110,7 +108,10 @@ open class SourceFeedPresenter(
 
         getFeedSavedSearchBySourceId.subscribe(source.id)
             .onEach {
-                getFeed(it)
+                val items = getSourcesToGetFeed(it)
+                state.items = items
+                state.isLoading = false
+                getFeed(items)
             }
             .launchIn(presenterScope)
     }
@@ -148,54 +149,35 @@ open class SourceFeedPresenter(
         }
     }
 
-    private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<SourceFeed> {
+    private suspend fun getSourcesToGetFeed(feedSavedSearch: List<FeedSavedSearch>): List<SourceFeedUI> {
         val savedSearches = getSavedSearchBySourceIdFeed.await(source.id)
             .associateBy { it.id }
 
         return listOfNotNull(
             if (source.supportsLatest) {
-                SourceFeed.Latest
+                SourceFeedUI.Latest(null)
             } else null,
-            SourceFeed.Browse,
+            SourceFeedUI.Browse(null),
         ) + feedSavedSearch
-            .map { SourceFeed.SourceSavedSearch(it, savedSearches[it.savedSearch]!!) }
-    }
-
-    /**
-     * Creates a catalogue search item
-     */
-    protected open fun createCatalogueSearchItem(
-        sourceFeed: SourceFeed,
-        results: List<SourceFeedCardItem>?,
-    ): SourceFeedItem {
-        return SourceFeedItem(sourceFeed, results)
+            .map { SourceFeedUI.SourceSavedSearch(it, savedSearches[it.savedSearch]!!, null) }
     }
 
     /**
      * Initiates get manga per feed.
      */
-    private suspend fun getFeed(feedSavedSearch: List<FeedSavedSearch>) {
+    private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
         // Create image fetch subscription
         initializeFetchImageSubscription()
 
-        // Create items with the initial state
-        val initialItems = getSourcesToGetFeed(feedSavedSearch).map {
-            createCatalogueSearchItem(
-                it,
-                null,
-            )
-        }
-        var items = initialItems
-
         fetchSourcesSubscription?.unsubscribe()
-        fetchSourcesSubscription = Observable.from(getSourcesToGetFeed(feedSavedSearch))
+        fetchSourcesSubscription = Observable.from(feedSavedSearch)
             .flatMap(
                 { sourceFeed ->
                     Observable.defer {
                         when (sourceFeed) {
-                            SourceFeed.Browse -> source.fetchPopularManga(1)
-                            SourceFeed.Latest -> source.fetchLatestUpdates(1)
-                            is SourceFeed.SourceSavedSearch -> source.fetchSearchManga(
+                            is SourceFeedUI.Browse -> source.fetchPopularManga(1)
+                            is SourceFeedUI.Latest -> source.fetchLatestUpdates(1)
+                            is SourceFeedUI.SourceSavedSearch -> source.fetchSearchManga(
                                 page = 1,
                                 query = sourceFeed.savedSearch.query.orEmpty(),
                                 filters = getFilterList(sourceFeed.savedSearch, source),
@@ -207,24 +189,21 @@ open class SourceFeedPresenter(
                         .map { it.mangas } // Get manga from search result.
                         .map { list -> list.map { networkToLocalManga(it, source.id) } } // Convert to local manga.
                         .doOnNext { fetchImage(it, source, sourceFeed) } // Load manga covers.
-                        .map { list -> createCatalogueSearchItem(sourceFeed, list.map { SourceFeedCardItem(it) }) }
+                        .map { list -> sourceFeed.withResults(list.mapNotNull { it.toDomainManga() }) }
                 },
                 5,
             )
             .observeOn(AndroidSchedulers.mainThread())
             // Update matching source with the obtained results
-            .map { result ->
-                items.map { item -> if (item.sourceFeed == result.sourceFeed) result else item }
+            .doOnNext { result ->
+                synchronized(state) {
+                    state.items = state.items?.map { item -> if (item.id == result.id) result else item }
+                }
             }
-            // Update current state
-            .doOnNext { items = it }
             // Deliver initial state
-            .startWith(initialItems)
-            .subscribeLatestCache(
-                { view, manga ->
-                    view.setItems(manga)
-                },
-                { _, error ->
+            .subscribe(
+                {},
+                { error ->
                     logcat(LogPriority.ERROR, error)
                 },
             )
@@ -249,7 +228,7 @@ open class SourceFeedPresenter(
      *
      * @param manga the list of manga to initialize.
      */
-    private fun fetchImage(manga: List<Manga>, source: Source, sourceFeed: SourceFeed) {
+    private fun fetchImage(manga: List<Manga>, source: Source, sourceFeed: SourceFeedUI) {
         fetchImageSubject.onNext(Triple(manga, source, sourceFeed))
     }
 
@@ -270,8 +249,21 @@ open class SourceFeedPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { (sourceFeed, manga) ->
-                    @Suppress("DEPRECATION")
-                    view?.onMangaInitialized(sourceFeed, manga)
+                    synchronized(state) {
+                        state.items = items?.map { itemUI ->
+                            if (sourceFeed.id == itemUI.id) {
+                                itemUI.withResults(
+                                    results = itemUI.results?.map {
+                                        if (it.id == manga.id) {
+                                            manga.toDomainManga()!!
+                                        } else {
+                                            it
+                                        }
+                                    },
+                                )
+                            } else itemUI
+                        }
+                    }
                 },
                 { error ->
                     logcat(LogPriority.ERROR, error)
