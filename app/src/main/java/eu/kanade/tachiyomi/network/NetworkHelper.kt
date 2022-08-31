@@ -4,6 +4,7 @@ import android.content.Context
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
+import eu.kanade.tachiyomi.network.interceptor.Http103Interceptor
 import eu.kanade.tachiyomi.network.interceptor.UserAgentInterceptor
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -24,6 +25,8 @@ open /* SY <-- */ class NetworkHelper(context: Context) {
     /* SY --> */
     open /* SY <-- */val cookieManager = AndroidCookieJar()
 
+    private val http103Interceptor = Http103Interceptor(context)
+
     private val baseClientBuilder: OkHttpClient.Builder
         get() {
             val builder = OkHttpClient.Builder()
@@ -33,6 +36,7 @@ open /* SY <-- */ class NetworkHelper(context: Context) {
                 .callTimeout(2, TimeUnit.MINUTES)
                 // .fastFallback(true) // TODO: re-enable when OkHttp 5 is stabler
                 .addInterceptor(UserAgentInterceptor())
+                .addNetworkInterceptor(http103Interceptor)
 
             if (BuildConfig.DEBUG) {
                 val httpLoggingInterceptor = HttpLoggingInterceptor().apply {
