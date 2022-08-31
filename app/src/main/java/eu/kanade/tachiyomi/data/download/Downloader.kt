@@ -36,7 +36,8 @@ import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import rx.subscriptions.CompositeSubscription
-import uy.kohesive.injekt.injectLazy
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.io.BufferedOutputStream
 import java.io.File
 import java.util.zip.CRC32
@@ -61,12 +62,10 @@ class Downloader(
     private val context: Context,
     private val provider: DownloadProvider,
     private val cache: DownloadCache,
-    private val sourceManager: SourceManager,
+    private val sourceManager: SourceManager = Injekt.get(),
+    private val chapterCache: ChapterCache = Injekt.get(),
+    private val preferences: PreferencesHelper = Injekt.get(),
 ) {
-
-    private val chapterCache: ChapterCache by injectLazy()
-
-    private val preferences: PreferencesHelper by injectLazy()
 
     /**
      * Store for persisting downloads across restarts.

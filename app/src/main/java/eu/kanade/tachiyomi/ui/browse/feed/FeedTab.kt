@@ -5,9 +5,9 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.bluelinelabs.conductor.Router
-import eu.kanade.presentation.browse.BrowseTab
 import eu.kanade.presentation.browse.FeedScreen
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
@@ -18,7 +18,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaController
 fun feedTab(
     router: Router?,
     presenter: FeedPresenter,
-) = BrowseTab(
+) = TabContent(
     titleRes = R.string.feed,
     actions = listOf(
         AppBar.Action(

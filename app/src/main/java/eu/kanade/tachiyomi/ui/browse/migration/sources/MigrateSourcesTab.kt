@@ -7,9 +7,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import com.bluelinelabs.conductor.Router
 import eu.kanade.domain.manga.interactor.GetFavorites
-import eu.kanade.presentation.browse.BrowseTab
 import eu.kanade.presentation.browse.MigrateSourceScreen
 import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.pushController
@@ -24,10 +24,10 @@ import uy.kohesive.injekt.api.get
 fun migrateSourcesTab(
     router: Router?,
     presenter: MigrationSourcesPresenter,
-): BrowseTab {
+): TabContent {
     val uriHandler = LocalUriHandler.current
 
-    return BrowseTab(
+    return TabContent(
         titleRes = R.string.label_migration,
         actions = listOf(
             AppBar.Action(

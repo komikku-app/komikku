@@ -9,9 +9,10 @@ import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.Scaffold
+import eu.kanade.presentation.components.TabContent
 
 @Composable
-fun BrowseTabWrapper(tab: BrowseTab) {
+fun BrowseTabWrapper(tab: TabContent) {
     Scaffold(
         modifier = Modifier.statusBarsPadding(),
         topBar = {
