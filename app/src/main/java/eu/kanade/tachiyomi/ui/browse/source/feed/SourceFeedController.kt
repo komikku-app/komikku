@@ -1,11 +1,8 @@
 package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -17,7 +14,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.base.controller.FabController
-import eu.kanade.tachiyomi.ui.base.controller.SearchableComposeController
+import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
@@ -41,7 +38,7 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * [SourceFeedCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
 open class SourceFeedController :
-    SearchableComposeController<SourceFeedPresenter>,
+    FullComposeController<SourceFeedPresenter>,
     FabController {
 
     constructor(source: CatalogueSource?) : super(
@@ -68,14 +65,6 @@ open class SourceFeedController :
      */
     private var filterSheet: SourceFilterSheet? = null
 
-    init {
-        setHasOptionsMenu(true)
-    }
-
-    override fun getTitle(): String? {
-        return source!!.name
-    }
-
     /**
      * Create the [SourceFeedPresenter] used in controller.
      *
@@ -83,26 +72,6 @@ open class SourceFeedController :
      */
     override fun createPresenter(): SourceFeedPresenter {
         return SourceFeedPresenter(source = source!!)
-    }
-
-    /**
-     * Adds items to the options menu.
-     *
-     * @param menu menu containing options.
-     * @param inflater used to load the menu xml.
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        createOptionsMenu(menu, inflater, R.menu.global_search, R.id.action_search)
-    }
-
-    override fun onSearchViewQueryTextSubmit(query: String?) {
-        onBrowseClick(query?.nullIfBlank())
-    }
-
-    override fun onSearchViewQueryTextChange(newText: String?) {
-        if (router.backstack.lastOrNull()?.controller == this) {
-            presenter.query = newText ?: ""
-        }
     }
 
     /**
@@ -136,11 +105,11 @@ open class SourceFeedController :
                 filterSheet?.dismiss()
                 if (allDefault) {
                     onBrowseClick(
-                        presenter.query.nullIfBlank(),
+                        presenter.searchQuery?.nullIfBlank(),
                     )
                 } else {
                     onBrowseClick(
-                        presenter.query.nullIfBlank(),
+                        presenter.searchQuery?.nullIfBlank(),
                         filters = Json.encodeToString(filterSerializer.serialize(presenter.sourceFilters)),
                     )
                 }
@@ -173,7 +142,7 @@ open class SourceFeedController :
 
                     if (!allDefault) {
                         onBrowseClick(
-                            search = presenter.query.nullIfBlank(),
+                            search = presenter.searchQuery?.nullIfBlank(),
                             savedSearch = search.id,
                         )
                     }
@@ -228,9 +197,8 @@ open class SourceFeedController :
     }
 
     @Composable
-    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+    override fun ComposeContent() {
         SourceFeedScreen(
-            nestedScrollInterop = nestedScrollInterop,
             presenter = presenter,
             onClickBrowse = ::onBrowseClick,
             onClickLatest = ::onLatestClick,

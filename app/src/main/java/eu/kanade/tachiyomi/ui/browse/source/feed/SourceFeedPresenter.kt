@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.os.Bundle
+import androidx.compose.runtime.getValue
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
@@ -71,6 +72,9 @@ open class SourceFeedPresenter(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
 ) : BasePresenter<SourceFeedController>(), SourceFeedState by state {
 
+    val isDownloadOnly: Boolean by preferences.downloadedOnly().asState()
+    val isIncognitoMode: Boolean by preferences.incognitoMode().asState()
+
     /**
      * Fetches the different sources by user settings.
      */
@@ -96,10 +100,6 @@ open class SourceFeedPresenter(
         }
 
     var filterItems: List<IFlexible<*>> = emptyList()
-
-    init {
-        query = ""
-    }
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)

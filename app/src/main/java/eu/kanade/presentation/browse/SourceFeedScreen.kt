@@ -1,5 +1,6 @@
 package eu.kanade.presentation.browse
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,28 +8,39 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.LoadingScreen
+import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
+import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
@@ -92,7 +104,6 @@ sealed class SourceFeedUI {
 
 @Composable
 fun SourceFeedScreen(
-    nestedScrollInterop: NestedScrollConnection,
     presenter: SourceFeedPresenter,
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
@@ -100,26 +111,45 @@ fun SourceFeedScreen(
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
 ) {
-    when {
-        presenter.isLoading -> LoadingScreen()
-        else -> {
-            SourceFeedList(
-                nestedScrollConnection = nestedScrollInterop,
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val insets = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
+    Scaffold(
+        modifier = Modifier
+            .windowInsetsPadding(insets)
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            SourceFeedToolbar(
+                title = presenter.source.name,
                 state = presenter,
-                onClickBrowse = onClickBrowse,
-                onClickLatest = onClickLatest,
-                onClickSavedSearch = onClickSavedSearch,
-                onClickDelete = onClickDelete,
-                onClickManga = onClickManga,
+                scrollBehavior = scrollBehavior,
+                incognitoMode = presenter.isIncognitoMode,
+                downloadedOnlyMode = presenter.isDownloadOnly,
             )
+        },
+    ) { paddingValues ->
+        Crossfade(targetState = presenter.isLoading) { state ->
+            when (state) {
+                true -> LoadingScreen()
+                false -> {
+                    SourceFeedList(
+                        state = presenter,
+                        paddingValues = paddingValues,
+                        onClickBrowse = onClickBrowse,
+                        onClickLatest = onClickLatest,
+                        onClickSavedSearch = onClickSavedSearch,
+                        onClickDelete = onClickDelete,
+                        onClickManga = onClickManga,
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
 fun SourceFeedList(
-    nestedScrollConnection: NestedScrollConnection,
     state: SourceFeedState,
+    paddingValues: PaddingValues,
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
     onClickSavedSearch: (SavedSearch) -> Unit,
@@ -127,8 +157,10 @@ fun SourceFeedList(
     onClickManga: (Manga) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        modifier = Modifier.nestedScroll(nestedScrollConnection),
-        contentPadding = bottomNavPaddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+        contentPadding = paddingValues +
+            bottomNavPaddingValues +
+            WindowInsets.navigationBars.only(WindowInsetsSides.Vertical).asPaddingValues() +
+            topPaddingValues,
     ) {
         items(
             state.items.orEmpty(),
@@ -215,5 +247,37 @@ fun SourceFeedItem(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SourceFeedToolbar(
+    title: String,
+    state: SourceFeedState,
+    scrollBehavior: TopAppBarScrollBehavior,
+    incognitoMode: Boolean,
+    downloadedOnlyMode: Boolean,
+) {
+    when {
+        state.searchQuery != null -> SearchToolbar(
+            searchQuery = state.searchQuery!!,
+            onChangeSearchQuery = { state.searchQuery = it },
+            onClickCloseSearch = { state.searchQuery = null },
+            onClickResetSearch = { state.searchQuery = "" },
+            scrollBehavior = scrollBehavior,
+            incognitoMode = incognitoMode,
+            downloadedOnlyMode = downloadedOnlyMode,
+        )
+        else -> AppBar(
+            title = title,
+            incognitoMode = incognitoMode,
+            downloadedOnlyMode = downloadedOnlyMode,
+            scrollBehavior = scrollBehavior,
+            actions = {
+                IconButton(onClick = { state.searchQuery = "" }) {
+                    Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.action_search))
+                }
+            },
+        )
     }
 }
