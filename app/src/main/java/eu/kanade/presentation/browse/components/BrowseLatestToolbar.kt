@@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +37,7 @@ fun BrowseLatestToolbar(
     // SY -->
     onSettingsClick: () -> Unit,
     // SY <--
+    scrollBehavior: TopAppBarScrollBehavior,
 ) {
     AppBar(
         navigateUp = navigateUp,
@@ -115,5 +117,6 @@ fun BrowseLatestToolbar(
                 )
             }
         },
+        scrollBehavior = scrollBehavior,
     )
 }

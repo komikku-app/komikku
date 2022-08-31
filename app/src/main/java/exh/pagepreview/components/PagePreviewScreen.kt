@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.UTurnRight
@@ -16,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,15 +53,14 @@ fun PagePreviewScreen(
     navigateUp: () -> Unit,
 ) {
     Scaffold(
-        modifier = Modifier
-            .statusBarsPadding(),
-        topBar = {
+        topBar = { scrollBehavior ->
             PagePreviewTopAppBar(
                 navigateUp = navigateUp,
                 title = stringResource(R.string.page_previews),
                 onOpenPageDialog = onOpenPageDialog,
                 showOpenPageDialog = state is PagePreviewState.Success &&
                     (state.pageCount != null && state.pageCount > 1 /* TODO support unknown pageCount || state.hasNextPage*/),
+                scrollBehavior = scrollBehavior,
             )
         },
     ) { paddingValues ->
@@ -171,6 +170,7 @@ fun PagePreviewTopAppBar(
     title: String,
     onOpenPageDialog: () -> Unit,
     showOpenPageDialog: Boolean,
+    scrollBehavior: TopAppBarScrollBehavior,
 ) {
     AppBar(
         title = title,
@@ -185,5 +185,6 @@ fun PagePreviewTopAppBar(
             }
         },
         navigateUp = navigateUp,
+        scrollBehavior = scrollBehavior,
     )
 }

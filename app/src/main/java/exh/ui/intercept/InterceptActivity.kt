@@ -56,10 +56,11 @@ class InterceptActivity : BaseActivity() {
     @Composable
     private fun InterceptActivityContent(status: InterceptResult) {
         Scaffold(
-            topBar = {
+            topBar = { scrollBehavior ->
                 AppBar(
                     title = stringResource(R.string.app_name),
                     navigateUp = ::onBackPressed,
+                    scrollBehavior = scrollBehavior,
                 )
             },
         ) {

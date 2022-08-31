@@ -253,7 +253,6 @@ private fun MangaScreenSmallImpl(
     val layoutDirection = LocalLayoutDirection.current
     val chapterListState = rememberLazyListState()
 
-    val insetPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
     val chapters = remember(state) { state.processedChapters.toList() }
     // SY -->
     val metadataSource = remember(state.source.id) { state.source.getMainSource<MetadataSource<*, *>>() }
@@ -269,8 +268,6 @@ private fun MangaScreenSmallImpl(
     BackHandler(onBack = internalOnBackPressed)
 
     Scaffold(
-        modifier = Modifier
-            .padding(insetPadding),
         topBar = {
             val firstVisibleItemIndex by remember {
                 derivedStateOf { chapterListState.firstVisibleItemIndex }

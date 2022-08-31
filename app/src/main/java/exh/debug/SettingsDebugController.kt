@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -29,8 +28,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -72,8 +68,6 @@ class SettingsDebugController : BasicFullComposeController() {
 
     @Composable
     override fun ComposeContent() {
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-        val insets = WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
         val functions by produceState<List<Pair<KFunction<*>, String>>?>(initialValue = null) {
             value = withContext(Dispatchers.Default) {
                 DebugFunctions::class.declaredFunctions.filter {
@@ -91,10 +85,7 @@ class SettingsDebugController : BasicFullComposeController() {
             }
         }
         Scaffold(
-            modifier = Modifier
-                .windowInsetsPadding(insets)
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
+            topBar = { scrollBehavior ->
                 AppBar(
                     title = "DEBUG MENU",
                     scrollBehavior = scrollBehavior,

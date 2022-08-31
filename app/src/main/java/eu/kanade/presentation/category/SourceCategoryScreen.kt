@@ -1,11 +1,9 @@
 package eu.kanade.presentation.category
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.category.components.CategoryCreateDialog
@@ -33,12 +31,11 @@ fun SourceCategoryScreen(
 ) {
     val lazyListState = rememberLazyListState()
     Scaffold(
-        modifier = Modifier
-            .statusBarsPadding(),
-        topBar = {
+        topBar = { scrollBehavior ->
             AppBar(
                 navigateUp = navigateUp,
                 title = stringResource(R.string.action_edit_categories),
+                scrollBehavior = scrollBehavior,
             )
         },
         floatingActionButton = {

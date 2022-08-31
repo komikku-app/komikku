@@ -77,7 +77,7 @@ fun BrowseSourceScreen(
     }
 
     Scaffold(
-        topBar = {
+        topBar = { scrollBehavior ->
             BrowseSourceToolbar(
                 state = presenter,
                 source = presenter.source!!,
@@ -90,6 +90,7 @@ fun BrowseSourceScreen(
                 // SY -->
                 onSettingsClick = onSettingsClick,
                 // SY <--
+                scrollBehavior = scrollBehavior,
             )
         },
         floatingActionButton = {

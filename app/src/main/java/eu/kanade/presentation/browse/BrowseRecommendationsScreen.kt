@@ -38,12 +38,13 @@ fun BrowseRecommendationsScreen(
     }
 
     Scaffold(
-        topBar = {
+        topBar = { scrollBehavior ->
             BrowseSourceSimpleToolbar(
                 navigateUp = navigateUp,
                 title = title,
                 displayMode = presenter.displayMode,
                 onDisplayModeChange = { presenter.displayMode = it },
+                scrollBehavior = scrollBehavior,
             )
         },
     ) { paddingValues ->

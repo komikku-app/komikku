@@ -48,12 +48,13 @@ fun BrowseMangadexFollowsScreen(
     }
 
     Scaffold(
-        topBar = {
+        topBar = { scrollBehavior ->
             BrowseSourceSimpleToolbar(
                 title = stringResource(R.string.mangadex_follows),
                 displayMode = presenter.displayMode,
                 onDisplayModeChange = onDisplayModeChange,
                 navigateUp = navigateUp,
+                scrollBehavior = scrollBehavior,
             )
         },
         snackbarHost = {
