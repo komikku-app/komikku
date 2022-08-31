@@ -1,13 +1,17 @@
 package exh.md.similar
 
 import android.os.Bundle
-import android.view.Menu
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.core.os.bundleOf
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.presentation.browse.BrowseRecommendationsScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
+import eu.kanade.tachiyomi.ui.manga.MangaController
 
 /**
  * Controller that shows the latest manga from the catalogue. Inherit [BrowseSourceController].
@@ -22,34 +26,26 @@ class MangaDexSimilarController(bundle: Bundle) : BrowseSourceController(bundle)
         ),
     )
 
-    private val mangaTitle = args.getString(MANGA_TITLE)
-
-    override fun getTitle(): String? {
-        return view?.context?.getString(R.string.similar, mangaTitle)
-    }
+    private val mangaTitle = args.getString(MANGA_TITLE, "")
 
     override fun createPresenter(): BrowseSourcePresenter {
         return MangaDexSimilarPresenter(args.getLong(MANGA_ID), args.getLong(SOURCE_ID_KEY))
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-        menu.findItem(R.id.action_search).isVisible = false
-        menu.findItem(R.id.action_open_in_web_view).isVisible = false
-        menu.findItem(R.id.action_settings).isVisible = false
+    @Composable
+    override fun ComposeContent() {
+        BrowseRecommendationsScreen(
+            presenter = presenter,
+            navigateUp = { router.popCurrentController() },
+            title = stringResource(R.string.similar, mangaTitle),
+            onMangaClick = {
+                router.pushController(MangaController(it.id, true))
+            },
+        )
     }
 
     override fun initFilterSheet() {
         // No-op: we don't allow filtering in similar
-    }
-
-    override fun onItemLongClick(position: Int) {
-        return
-    }
-
-    override fun onAddPageError(error: Throwable) {
-        super.onAddPageError(error)
-        binding.emptyView.show(activity!!.getString(R.string.similar_no_results))
     }
 
     companion object {

@@ -281,6 +281,7 @@ dependencies {
 
     // RatingBar (SY)
     implementation(sylibs.ratingbar)
+    implementation(sylibs.composeRatingbar)
 }
 
 tasks {

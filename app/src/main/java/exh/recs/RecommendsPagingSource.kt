@@ -8,12 +8,13 @@ import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.ui.browse.source.browse.BrowsePagingSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
-import eu.kanade.tachiyomi.ui.browse.source.browse.Pager
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.util.MangaType
 import exh.util.mangaType
+import exh.util.nullIfEmpty
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -191,12 +192,12 @@ class Anilist : API("https://graphql.anilist.co/") {
     }
 }
 
-open class RecommendsPager(
+open class RecommendsPagingSource(
     private val manga: Manga,
     private val smart: Boolean = true,
     private var preferredApi: API = API.MYANIMELIST,
-) : Pager() {
-    override suspend fun requestNextPage() {
+) : BrowsePagingSource() {
+    override suspend fun requestNextPage(currentPage: Int): MangasPage {
         if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
 
         val apiList = API_MAP.toList().sortedByDescending { it.first == preferredApi }
@@ -210,15 +211,9 @@ open class RecommendsPager(
                 logcat(LogPriority.ERROR, e) { key.toString() }
                 null
             }
-        }.orEmpty()
+        }?.nullIfEmpty() ?: throw NoResultsException()
 
-        val mangasPage = MangasPage(recs, false)
-
-        if (mangasPage.mangas.isNotEmpty()) {
-            onPageReceived(mangasPage)
-        } else {
-            throw NoResultsException()
-        }
+        return MangasPage(recs, false)
     }
 
     companion object {

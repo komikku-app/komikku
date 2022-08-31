@@ -91,13 +91,22 @@ fun LibraryComfortableGridItem(
                 },
                 // SY <--
             )
-            Text(
-                modifier = Modifier.padding(4.dp),
+            MangaGridComfortableText(
                 text = manga.title,
-                fontSize = 12.sp,
-                maxLines = 2,
-                style = MaterialTheme.typography.titleSmall,
             )
         }
     }
+}
+
+@Composable
+fun MangaGridComfortableText(
+    text: String,
+) {
+    Text(
+        modifier = Modifier.padding(4.dp),
+        text = text,
+        fontSize = 12.sp,
+        maxLines = 2,
+        style = MaterialTheme.typography.titleSmall,
+    )
 }

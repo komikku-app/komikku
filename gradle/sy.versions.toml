@@ -14,3 +14,4 @@ debugOverlay-standard = { module = "com.ms-square:debugoverlay", version.ref = "
 debugOverlay-noop = { module = "com.ms-square:debugoverlay-no-op", version.ref = "debugOverlay" }
 
 ratingbar = "me.zhanghai.android.materialratingbar:library:1.4.0"
+composeRatingbar = "com.github.a914-gowtham:compose-ratingbar:1.2.3"
