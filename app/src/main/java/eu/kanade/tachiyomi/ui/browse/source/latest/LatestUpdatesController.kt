@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.browse.source.latest
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.os.bundleOf
 import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.browse.BrowseLatestScreen
@@ -10,12 +11,14 @@ import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.components.ChangeCategoryDialog
 import eu.kanade.presentation.components.DuplicateMangaDialog
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
 import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
 
 /**
@@ -40,6 +43,7 @@ class LatestUpdatesController(bundle: Bundle) : BrowseSourceController(bundle) {
     @Composable
     override fun ComposeContent() {
         val scope = rememberCoroutineScope()
+        val context = LocalContext.current
 
         BrowseLatestScreen(
             presenter = presenter,
@@ -54,6 +58,11 @@ class LatestUpdatesController(bundle: Bundle) : BrowseSourceController(bundle) {
                         else -> presenter.addFavorite(manga)
                     }
                 }
+            },
+            onWebViewClick = f@{
+                val source = presenter.source as? HttpSource ?: return@f
+                val intent = WebViewActivity.newIntent(context, source.baseUrl, source.id, source.name)
+                context.startActivity(intent)
             },
             // SY -->
             onSettingsClick = {

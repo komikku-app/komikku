@@ -35,12 +35,10 @@ import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
-import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter
 import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
 import eu.kanade.tachiyomi.ui.library.setting.LibraryDisplayMode
 import eu.kanade.tachiyomi.ui.more.MoreController
-import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.widget.EmptyView
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.source.isEhBasedSource
@@ -53,6 +51,7 @@ fun BrowseSourceScreen(
     onFabClick: () -> Unit,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
+    onWebViewClick: () -> Unit,
     // SY -->
     onSettingsClick: () -> Unit,
     // SY <--
@@ -63,17 +62,10 @@ fun BrowseSourceScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
     val onHelpClick = {
         uriHandler.openUri(LocalSource.HELP_URL)
-    }
-
-    val onWebViewClick = f@{
-        val source = presenter.source as? HttpSource ?: return@f
-        val intent = WebViewActivity.newIntent(context, source.baseUrl, source.id, source.name)
-        context.startActivity(intent)
     }
 
     Scaffold(
@@ -155,9 +147,11 @@ fun BrowseSourceContent(
     displayMode: LibraryDisplayMode,
     snackbarHostState: SnackbarHostState,
     contentPadding: PaddingValues,
-    onWebViewClick: () -> Unit,
-    onHelpClick: () -> Unit,
-    onLocalSourceHelpClick: () -> Unit,
+    // SY -->
+    onWebViewClick: (() -> Unit)?,
+    onHelpClick: (() -> Unit)?,
+    onLocalSourceHelpClick: (() -> Unit)?,
+    // SY <--
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
 ) {
@@ -192,15 +186,17 @@ fun BrowseSourceContent(
     if (mangaList.itemCount <= 0 && errorState != null && errorState is LoadState.Error) {
         EmptyScreen(
             message = getErrorMessage(errorState),
-            actions = if (source is LocalSource) {
+            actions = if (source is LocalSource /* SY --> */ && onLocalSourceHelpClick != null /* SY <-- */) {
                 listOf(
                     EmptyView.Action(R.string.local_source_help_guide, R.drawable.ic_help_24dp) { onLocalSourceHelpClick() },
                 )
             } else {
-                listOf(
+                listOfNotNull(
                     EmptyView.Action(R.string.action_retry, R.drawable.ic_refresh_24dp) { mangaList.refresh() },
-                    EmptyView.Action(R.string.action_open_in_web_view, R.drawable.ic_public_24dp) { onWebViewClick() },
-                    EmptyView.Action(R.string.label_help, R.drawable.ic_help_24dp) { onHelpClick() },
+                    // SY -->
+                    EmptyView.Action(R.string.action_open_in_web_view, R.drawable.ic_public_24dp) { onWebViewClick?.invoke() }.takeIf { onWebViewClick != null },
+                    EmptyView.Action(R.string.label_help, R.drawable.ic_help_24dp) { onHelpClick?.invoke() }.takeIf { onHelpClick != null },
+                    // SY <--
                 )
             },
         )

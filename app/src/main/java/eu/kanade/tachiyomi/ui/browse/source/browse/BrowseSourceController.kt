@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.browse.BrowseSourceScreen
@@ -14,6 +15,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
@@ -21,6 +23,7 @@ import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourcePresenter.Dialog
 import eu.kanade.tachiyomi.ui.category.CategoryController
 import eu.kanade.tachiyomi.ui.manga.MangaController
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.toast
@@ -102,6 +105,7 @@ open class BrowseSourceController(bundle: Bundle) :
     @Composable
     override fun ComposeContent() {
         val scope = rememberCoroutineScope()
+        val context = LocalContext.current
 
         BrowseSourceScreen(
             presenter = presenter,
@@ -118,6 +122,11 @@ open class BrowseSourceController(bundle: Bundle) :
                         else -> presenter.addFavorite(manga)
                     }
                 }
+            },
+            onWebViewClick = f@{
+                val source = presenter.source as? HttpSource ?: return@f
+                val intent = WebViewActivity.newIntent(context, source.baseUrl, source.id, source.name)
+                context.startActivity(intent)
             },
             // SY -->
             onSettingsClick = {

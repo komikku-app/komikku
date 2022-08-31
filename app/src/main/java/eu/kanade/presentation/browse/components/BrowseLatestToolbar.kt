@@ -48,20 +48,20 @@ fun BrowseLatestToolbar(
                 // SY -->
                 actions = listOfNotNull(
                     AppBar.Action(
-                        title = "display_mode",
+                        title = stringResource(id = R.string.action_display_mode),
                         icon = Icons.Filled.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ).takeIf { displayMode != null },
                     // SY <--
                     if (source is LocalSource) {
                         AppBar.Action(
-                            title = "help",
+                            title = stringResource(id = R.string.label_help),
                             icon = Icons.Outlined.Help,
                             onClick = onHelpClick,
                         )
                     } else {
                         AppBar.Action(
-                            title = stringResource(R.string.action_web_view),
+                            title = stringResource(id = R.string.action_web_view),
                             icon = Icons.Outlined.Public,
                             onClick = onWebViewClick,
                         )

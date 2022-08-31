@@ -36,7 +36,7 @@ fun BrowseSourceSimpleToolbar(
                 // SY -->
                 actions = listOfNotNull(
                     AppBar.Action(
-                        title = "display_mode",
+                        title = stringResource(id = R.string.action_display_mode),
                         icon = Icons.Filled.ViewModule,
                         onClick = { selectingDisplayMode = true },
                     ),
