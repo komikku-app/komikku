@@ -12,6 +12,9 @@ import eu.kanade.domain.source.interactor.GetFeedSavedSearchGlobal
 import eu.kanade.domain.source.interactor.GetSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetSavedSearchGlobalFeed
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
+import eu.kanade.presentation.browse.FeedItemUI
+import eu.kanade.presentation.browse.FeedState
+import eu.kanade.presentation.browse.FeedStateImpl
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -24,9 +27,11 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
@@ -50,6 +55,7 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * @param preferences manages the preference calls.
  */
 open class FeedPresenter(
+    private val state: FeedStateImpl = FeedState() as FeedStateImpl,
     val sourceManager: SourceManager = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
@@ -61,7 +67,7 @@ open class FeedPresenter(
     private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
-) : BasePresenter<FeedController>() {
+) : BasePresenter<FeedController>(), FeedState by state {
 
     /**
      * Fetches the different sources by user settings.
@@ -82,8 +88,20 @@ open class FeedPresenter(
         super.onCreate(savedState)
 
         getFeedSavedSearchGlobal.subscribe()
+            .distinctUntilChanged()
             .onEach {
-                getFeed(it)
+                val items = getSourcesToGetFeed(it).map { (feed, savedSearch) ->
+                    createCatalogueSearchItem(
+                        feed = feed,
+                        savedSearch = savedSearch,
+                        source = sourceManager.get(feed.source) as? CatalogueSource,
+                        results = null,
+                    )
+                }
+                state.items = items
+                state.isEmpty = items.isEmpty()
+                state.isLoading = false
+                getFeed(items)
             }
             .launchIn(presenterScope)
     }
@@ -142,72 +160,67 @@ open class FeedPresenter(
     /**
      * Creates a catalogue search item
      */
-    protected open fun createCatalogueSearchItem(
+    private fun createCatalogueSearchItem(
         feed: FeedSavedSearch,
         savedSearch: SavedSearch?,
         source: CatalogueSource?,
-        results: List<FeedCardItem>?,
-    ): FeedItem {
-        return FeedItem(feed, savedSearch, source, results)
+        results: List<eu.kanade.domain.manga.model.Manga>?,
+    ): FeedItemUI {
+        return FeedItemUI(
+            feed,
+            savedSearch,
+            source,
+            savedSearch?.name ?: (source?.name ?: feed.source.toString()),
+            if (savedSearch != null) {
+                source?.name ?: feed.source.toString()
+            } else {
+                LocaleHelper.getDisplayName(source?.lang)
+            },
+            results,
+        )
     }
 
     /**
      * Initiates get manga per feed.
      */
-    private suspend fun getFeed(feedSavedSearch: List<FeedSavedSearch>) {
+    private fun getFeed(feedSavedSearch: List<FeedItemUI>) {
         // Create image fetch subscription
         initializeFetchImageSubscription()
 
-        // Create items with the initial state
-        val initialItems = getSourcesToGetFeed(feedSavedSearch).map { (feed, savedSearch) ->
-            createCatalogueSearchItem(
-                feed,
-                savedSearch,
-                sourceManager.get(feed.source) as? CatalogueSource,
-                null,
-            )
-        }
-        var items = initialItems
-
         fetchSourcesSubscription?.unsubscribe()
-        fetchSourcesSubscription = Observable.from(getSourcesToGetFeed(feedSavedSearch))
+        fetchSourcesSubscription = Observable.from(feedSavedSearch)
             .flatMap(
-                { (feed, savedSearch) ->
-                    val source = sourceManager.get(feed.source) as? CatalogueSource
-                    if (source != null) {
+                { itemUI ->
+                    if (itemUI.source != null) {
                         Observable.defer {
-                            if (savedSearch == null) {
-                                source.fetchLatestUpdates(1)
+                            if (itemUI.savedSearch == null) {
+                                itemUI.source.fetchLatestUpdates(1)
                             } else {
-                                source.fetchSearchManga(1, savedSearch.query.orEmpty(), getFilterList(savedSearch, source))
+                                itemUI.source.fetchSearchManga(1, itemUI.savedSearch.query.orEmpty(), getFilterList(itemUI.savedSearch, itemUI.source))
                             }
                         }
                             .subscribeOn(Schedulers.io())
                             .onErrorReturn { MangasPage(emptyList(), false) } // Ignore timeouts or other exceptions
                             .map { it.mangas } // Get manga from search result.
-                            .map { list -> list.map { networkToLocalManga(it, source.id) } } // Convert to local manga.
-                            .doOnNext { fetchImage(it, source, feed) } // Load manga covers.
-                            .map { list -> createCatalogueSearchItem(feed, savedSearch, source, list.map { FeedCardItem(it) }) }
+                            .map { list -> list.map { networkToLocalManga(it, itemUI.source.id) } } // Convert to local manga.
+                            .doOnNext { fetchImage(it, itemUI.source, itemUI.feed) } // Load manga covers.
+                            .map { list -> itemUI.copy(results = list.mapNotNull { it.toDomainManga() }) }
                     } else {
-                        Observable.just(createCatalogueSearchItem(feed, null, null, emptyList()))
+                        Observable.just(itemUI.copy(results = emptyList()))
                     }
                 },
                 5,
             )
             .observeOn(AndroidSchedulers.mainThread())
             // Update matching source with the obtained results
-            .map { result ->
-                items.map { item -> if (item.feed == result.feed) result else item }
+            .doOnNext { result ->
+                synchronized(state) {
+                    state.items = state.items?.map { if (it.feed.id == result.feed.id) result else it }
+                }
             }
-            // Update current state
-            .doOnNext { items = it }
-            // Deliver initial state
-            .startWith(initialItems)
-            .subscribeLatestCache(
-                { view, manga ->
-                    view.setItems(manga)
-                },
-                { _, error ->
+            .subscribe(
+                {},
+                { error ->
                     logcat(LogPriority.ERROR, error)
                 },
             )
@@ -253,8 +266,21 @@ open class FeedPresenter(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { (feed, manga) ->
-                    @Suppress("DEPRECATION")
-                    view?.onMangaInitialized(feed, manga)
+                    synchronized(state) {
+                        state.items = items?.map { itemUI ->
+                            if (feed.id == itemUI.feed.id) {
+                                itemUI.copy(
+                                    results = itemUI.results?.map {
+                                        if (it.id == manga.id) {
+                                            manga.toDomainManga()!!
+                                        } else {
+                                            it
+                                        }
+                                    },
+                                )
+                            } else itemUI
+                        }
+                    }
                 },
                 { error ->
                     logcat(LogPriority.ERROR, error)

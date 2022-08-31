@@ -1,19 +1,15 @@
 package eu.kanade.tachiyomi.ui.browse.feed
 
-import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import dev.chrisbanes.insetter.applyInsetter
+import eu.kanade.presentation.browse.FeedScreen
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.database.models.Manga
-import eu.kanade.tachiyomi.databinding.GlobalSearchControllerBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.ComposeController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
@@ -28,19 +24,11 @@ import exh.savedsearches.models.SavedSearch
  * This controller should only handle UI actions, IO actions should be done by [FeedPresenter]
  * [FeedCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
-open class FeedController :
-    NucleusController<GlobalSearchControllerBinding, FeedPresenter>(),
-    FeedCardAdapter.OnMangaClickListener,
-    FeedAdapter.OnFeedClickListener {
+class FeedController : ComposeController<FeedPresenter>() {
 
     init {
         setHasOptionsMenu(true)
     }
-
-    /**
-     * Adapter containing search results grouped by lang.
-     */
-    protected var adapter: FeedAdapter? = null
 
     override fun getTitle(): String? {
         return applicationContext?.getString(R.string.feed)
@@ -53,6 +41,18 @@ open class FeedController :
      */
     override fun createPresenter(): FeedPresenter {
         return FeedPresenter()
+    }
+
+    @Composable
+    override fun ComposeContent(nestedScrollInterop: NestedScrollConnection) {
+        FeedScreen(
+            nestedScrollInterop = nestedScrollInterop,
+            presenter = presenter,
+            onClickSavedSearch = ::onSavedSearchClick,
+            onClickSource = ::onSourceClick,
+            onClickDelete = ::onRemoveClick,
+            onClickManga = ::onMangaClick,
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -113,116 +113,25 @@ open class FeedController :
      *
      * @param manga clicked item containing manga information.
      */
-    override fun onMangaClick(manga: Manga) {
+    private fun onMangaClick(manga: eu.kanade.domain.manga.model.Manga) {
         // Open MangaController.
-        parentController?.router?.pushController(MangaController(manga.id!!, true))
-    }
-
-    /**
-     * Called when manga in global search is long clicked.
-     *
-     * @param manga clicked item containing manga information.
-     */
-    override fun onMangaLongClick(manga: Manga) {
-        // Delegate to single click by default.
-        onMangaClick(manga)
-    }
-
-    override fun createBinding(inflater: LayoutInflater): GlobalSearchControllerBinding = GlobalSearchControllerBinding.inflate(inflater)
-
-    /**
-     * Called when the view is created
-     *
-     * @param view view of controller
-     */
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
-
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-
-        adapter = FeedAdapter(this)
-
-        // Create recycler and set adapter.
-        binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.adapter = adapter
-    }
-
-    override fun onDestroyView(view: View) {
-        adapter = null
-        super.onDestroyView(view)
-    }
-
-    override fun onSaveViewState(view: View, outState: Bundle) {
-        super.onSaveViewState(view, outState)
-        adapter?.onSaveInstanceState(outState)
-    }
-
-    override fun onRestoreViewState(view: View, savedViewState: Bundle) {
-        super.onRestoreViewState(view, savedViewState)
-        adapter?.onRestoreInstanceState(savedViewState)
-    }
-
-    /**
-     * Returns the view holder for the given manga.
-     *
-     * @param source used to find holder containing source
-     * @return the holder of the manga or null if it's not bound.
-     */
-    private fun getHolder(feed: FeedSavedSearch): FeedHolder? {
-        val adapter = adapter ?: return null
-
-        adapter.allBoundViewHolders.forEach { holder ->
-            val item = adapter.getItem(holder.bindingAdapterPosition)
-            if (item != null && feed.id == item.feed.id) {
-                return holder as FeedHolder
-            }
-        }
-
-        return null
-    }
-
-    /**
-     * Add search result to adapter.
-     *
-     * @param feedManga the source items containing the latest manga.
-     */
-    fun setItems(feedManga: List<FeedItem>) {
-        adapter?.updateDataSet(feedManga)
-
-        if (feedManga.isEmpty()) {
-            binding.emptyView.show(R.string.feed_tab_empty)
-        } else {
-            binding.emptyView.hide()
-        }
-    }
-
-    /**
-     * Called from the presenter when a manga is initialized.
-     *
-     * @param manga the initialized manga.
-     */
-    fun onMangaInitialized(feed: FeedSavedSearch, manga: Manga) {
-        getHolder(feed)?.setImage(manga)
+        parentController?.router?.pushController(MangaController(manga.id, true))
     }
 
     /**
      * Opens a catalogue with the given search.
      */
-    override fun onSourceClick(source: CatalogueSource) {
+    private fun onSourceClick(source: CatalogueSource) {
         presenter.preferences.lastUsedSource().set(source.id)
         parentController?.router?.pushController(LatestUpdatesController(source))
     }
 
-    override fun onSavedSearchClick(savedSearch: SavedSearch, source: CatalogueSource) {
+    private fun onSavedSearchClick(savedSearch: SavedSearch, source: CatalogueSource) {
         presenter.preferences.lastUsedSource().set(savedSearch.source)
         parentController?.router?.pushController(BrowseSourceController(source, savedSearch = savedSearch.id))
     }
 
-    override fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {
+    private fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {
         MaterialAlertDialogBuilder(activity!!)
             .setTitle(R.string.feed)
             .setMessage(R.string.feed_delete)
