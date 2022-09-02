@@ -17,11 +17,14 @@ import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOC
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate.Companion.LOCK_WEDNESDAY
 import eu.kanade.tachiyomi.ui.category.biometric.TimeRange
 import eu.kanade.tachiyomi.ui.security.UnlockActivity
+import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
 import eu.kanade.tachiyomi.util.view.setSecureScreen
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
 import java.util.Date
@@ -32,8 +35,7 @@ interface SecureActivityDelegate {
     fun registerSecureActivity(activity: AppCompatActivity)
 
     companion object {
-        var locked: Boolean = true
-
+        // SY -->
         const val LOCK_SUNDAY = 0x40
         const val LOCK_MONDAY = 0x20
         const val LOCK_TUESDAY = 0x10
@@ -42,7 +44,36 @@ interface SecureActivityDelegate {
         const val LOCK_FRIDAY = 0x2
         const val LOCK_SATURDAY = 0x1
         const val LOCK_ALL_DAYS = 0x7F
+        // SY <--
+
+        fun onApplicationStopped() {
+            val preferences = Injekt.get<PreferencesHelper>()
+            if (!preferences.useAuthenticator().get()) return
+            if (lockState != LockState.ACTIVE) {
+                preferences.lastAppClosed().set(Date().time)
+            }
+            if (!AuthenticatorUtil.isAuthenticating) {
+                lockState = if (preferences.lockAppAfter().get() >= 0) {
+                    LockState.PENDING
+                } else {
+                    LockState.ACTIVE
+                }
+            }
+        }
+
+        fun unlock() {
+            lockState = LockState.INACTIVE
+            Injekt.get<PreferencesHelper>().lastAppClosed().delete()
+        }
     }
+}
+
+private var lockState = LockState.INACTIVE
+
+private enum class LockState {
+    INACTIVE,
+    PENDING,
+    ACTIVE
 }
 
 class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObserver {
@@ -78,6 +109,7 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
     private fun setAppLock() {
         if (!preferences.useAuthenticator().get()) return
         if (activity.isAuthenticationSupported()) {
+            updatePendingLockStatus()
             if (!isAppLocked()) return
             activity.startActivity(Intent(activity, UnlockActivity::class.java))
             activity.overridePendingTransition(0, 0)
@@ -86,9 +118,23 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
         }
     }
 
-    private fun isAppLocked(): Boolean {
-        if (!SecureActivityDelegate.locked) return false
+    private fun updatePendingLockStatus() {
+        val lastClosedPref = preferences.lastAppClosed()
+        val lockDelay = 60000 * preferences.lockAppAfter().get()
+        if (lastClosedPref.isSet() && lockDelay > 0) {
+            // Restore pending status in case app was killed
+            lockState = LockState.PENDING
+        }
+        if (lockState != LockState.PENDING) {
+            return
+        }
+        if (Date().time >= lastClosedPref.get() + lockDelay) {
+            // Activate lock after delay
+            lockState = LockState.ACTIVE
+        }
+    }
 
+    private fun isAppLocked(): Boolean {
         // SY -->
         val today: Calendar = Calendar.getInstance()
         val timeRanges = preferences.authenticatorTimeRanges().get()
@@ -118,7 +164,6 @@ class SecureActivityDelegateImpl : SecureActivityDelegate, DefaultLifecycleObser
         }
         // SY <--
 
-        return preferences.lockAppAfter().get() <= 0 ||
-            Date().time >= preferences.lastAppClosed().get() + 60 * 1000 * preferences.lockAppAfter().get()
+        return lockState == LockState.ACTIVE
     }
 }

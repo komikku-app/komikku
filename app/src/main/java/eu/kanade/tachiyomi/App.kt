@@ -56,7 +56,6 @@ import eu.kanade.tachiyomi.glance.UpdatesGridGlanceWidget
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.util.preference.asHotFlow
-import eu.kanade.tachiyomi.util.system.AuthenticatorUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.logcat
@@ -83,7 +82,6 @@ import uy.kohesive.injekt.injectLazy
 import java.io.File
 import java.security.Security
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import kotlin.time.Duration.Companion.days
 
@@ -219,10 +217,7 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
     }
 
     override fun onStop(owner: LifecycleOwner) {
-        preferences.lastAppClosed().set(Date().time)
-        if (!AuthenticatorUtil.isAuthenticating && preferences.lockAppAfter().get() >= 0) {
-            SecureActivityDelegate.locked = true
-        }
+        SecureActivityDelegate.onApplicationStopped()
     }
 
     override fun getPackageName(): String {
