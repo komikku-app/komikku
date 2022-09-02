@@ -54,6 +54,7 @@ import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.lang.byteSize
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
 import eu.kanade.tachiyomi.util.lang.takeBytes
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.storage.DiskUtil
@@ -275,7 +276,7 @@ class ReaderPresenter(
      */
     fun onSaveInstanceStateNonConfigurationChange() {
         val currentChapter = getCurrentChapter() ?: return
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             saveChapterProgress(currentChapter)
         }
     }
@@ -615,7 +616,7 @@ class ReaderPresenter(
      * Called when reader chapter is changed in reader or when activity is paused.
      */
     private fun saveReadingProgress(readerChapter: ReaderChapter) {
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             saveChapterProgress(readerChapter)
             saveChapterHistory(readerChapter)
         }
@@ -696,7 +697,7 @@ class ReaderPresenter(
     fun bookmarkCurrentChapter(bookmarked: Boolean) {
         val chapter = getCurrentChapter()?.chapter ?: return
         chapter.bookmark = bookmarked // Otherwise the bookmark icon doesn't update
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             updateChapter.await(
                 ChapterUpdate(
                     id = chapter.id!!.toLong(),
@@ -831,7 +832,7 @@ class ReaderPresenter(
 
         // Copy file in background.
         try {
-            presenterScope.launchIO {
+            presenterScope.launchNonCancellableIO {
                 val uri = imageSaver.save(
                     image = Image.Page(
                         inputStream = page.stream!!,
@@ -935,7 +936,7 @@ class ReaderPresenter(
         val filename = generateFilename(manga, page)
 
         try {
-            presenterScope.launchIO {
+            presenterScope.launchNonCancellableIO {
                 destDir.deleteRecursively()
                 val uri = imageSaver.save(
                     image = Image.Page(
@@ -991,7 +992,7 @@ class ReaderPresenter(
         val manga = manga?.toDomainManga() ?: return
         val stream = page.stream ?: return
 
-        presenterScope.launchIO {
+        presenterScope.launchNonCancellableIO {
             try {
                 manga.editCover(context, stream())
                 withUIContext {
@@ -1037,7 +1038,7 @@ class ReaderPresenter(
         val trackManager = Injekt.get<TrackManager>()
         val context = Injekt.get<Application>()
 
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             getTracks.await(manga.id!!)
                 .mapNotNull { track ->
                     val service = trackManager.getService(track.syncId)
@@ -1081,7 +1082,7 @@ class ReaderPresenter(
         } ?: return
         // SY <--
 
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             downloadManager.enqueueDeleteChapters(listOf(chapter.chapter), manga.toDomainManga()!!)
         }
     }
@@ -1091,7 +1092,7 @@ class ReaderPresenter(
      * are ignored.
      */
     private fun deletePendingChapters() {
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             downloadManager.deletePendingChapters()
         }
     }

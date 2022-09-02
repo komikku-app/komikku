@@ -63,6 +63,7 @@ import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.chapter.ChapterSettingsHelper
 import eu.kanade.tachiyomi.util.chapter.getChapterSort
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
 import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.preference.asHotFlow
@@ -799,7 +800,6 @@ class MangaPresenter(
     /**
      * Move the given manga to categories.
      *
-     * @param manga the manga to move.
      * @param categories the selected categories.
      */
     private fun moveMangaToCategories(categories: List<Category>) {
@@ -816,7 +816,6 @@ class MangaPresenter(
     /**
      * Move the given manga to the category.
      *
-     * @param manga the manga to move.
      * @param category the selected category, or null for default category.
      */
     private fun moveMangaToCategory(category: Category?) {
@@ -1123,7 +1122,7 @@ class MangaPresenter(
      * @param chapters the list of chapters to delete.
      */
     fun deleteChapters(chapters: List<DomainChapter>) {
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             val chapters2 = chapters.map { it.toDbChapter() }
             try {
                 updateSuccessState { successState ->
@@ -1155,10 +1154,10 @@ class MangaPresenter(
     }
 
     private fun downloadNewChapters(chapters: List<DomainChapter>) {
-        presenterScope.launchIO {
-            val manga = successState?.manga ?: return@launchIO
+        presenterScope.launchNonCancellableIO {
+            val manga = successState?.manga ?: return@launchNonCancellableIO
             val categories = getCategories.await(manga.id).map { it.id }
-            if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(categories, preferences) || manga.isEhBasedManga()) return@launchIO
+            if (chapters.isEmpty() || !manga.shouldDownloadNewChapters(categories, preferences) || manga.isEhBasedManga()) return@launchNonCancellableIO
             downloadChapters(chapters)
         }
     }
@@ -1175,7 +1174,7 @@ class MangaPresenter(
             State.INCLUDE -> DomainManga.CHAPTER_SHOW_UNREAD
             State.EXCLUDE -> DomainManga.CHAPTER_SHOW_READ
         }
-        presenterScope.launchIO {
+        presenterScope.launchNonCancellableIO {
             setMangaChapterFlags.awaitSetUnreadFilter(manga, flag)
         }
     }
@@ -1193,7 +1192,7 @@ class MangaPresenter(
             State.EXCLUDE -> DomainManga.CHAPTER_SHOW_NOT_DOWNLOADED
         }
 
-        presenterScope.launchIO {
+        presenterScope.launchNonCancellableIO {
             setMangaChapterFlags.awaitSetDownloadedFilter(manga, flag)
         }
     }
@@ -1211,7 +1210,7 @@ class MangaPresenter(
             State.EXCLUDE -> DomainManga.CHAPTER_SHOW_NOT_BOOKMARKED
         }
 
-        presenterScope.launchIO {
+        presenterScope.launchNonCancellableIO {
             setMangaChapterFlags.awaitSetBookmarkFilter(manga, flag)
         }
     }
@@ -1232,7 +1231,7 @@ class MangaPresenter(
     fun setDisplayMode(mode: Long) {
         val manga = successState?.manga ?: return
 
-        presenterScope.launchIO {
+        presenterScope.launchNonCancellableIO {
             setMangaChapterFlags.awaitSetDisplayMode(manga, mode)
         }
     }
@@ -1244,7 +1243,7 @@ class MangaPresenter(
     fun setSorting(sort: Long) {
         val manga = successState?.manga ?: return
 
-        presenterScope.launchIO {
+        presenterScope.launchNonCancellableIO {
             setMangaChapterFlags.awaitSetSortingModeOrFlipOrder(manga, sort)
         }
     }
@@ -1389,7 +1388,7 @@ class MangaPresenter(
 
     fun refreshTrackers() {
         refreshTrackersJob?.cancel()
-        refreshTrackersJob = launchIO {
+        refreshTrackersJob = presenterScope.launchNonCancellableIO {
             supervisorScope {
                 try {
                     trackList
@@ -1439,7 +1438,7 @@ class MangaPresenter(
         val successState = successState ?: return
         if (item != null) {
             item.manga_id = successState.manga.id
-            launchIO {
+            presenterScope.launchNonCancellableIO {
                 try {
                     val allChapters = successState.chapters.map { it.chapter }
                     val hasReadChapters = allChapters.any { it.read }
@@ -1481,13 +1480,13 @@ class MangaPresenter(
     fun unregisterTracking(service: TrackService) {
         val manga = successState?.manga ?: return
 
-        presenterScope.launchIO {
+        presenterScope.launchNonCancellableIO {
             deleteTrack.await(manga.id, service.id)
         }
     }
 
     private fun updateRemote(track: Track, service: TrackService) {
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             try {
                 service.update(track)
 
