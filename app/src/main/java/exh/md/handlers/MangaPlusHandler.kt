@@ -40,7 +40,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
     }
 
     private fun pageListParse(response: Response): List<Page> {
-        val result = ProtoBuf.decodeFromByteArray<MangaPlusResponse>(response.body!!.bytes())
+        val result = ProtoBuf.decodeFromByteArray<MangaPlusResponse>(response.body.bytes())
 
         if (result.success == null) {
             throw Exception("error getting images")
@@ -70,7 +70,7 @@ class MangaPlusHandler(currentClient: OkHttpClient) {
 
         val response = chain.proceed(request)
 
-        val image = decodeImage(encryptionKey, response.body!!.bytes())
+        val image = decodeImage(encryptionKey, response.body.bytes())
 
         val body = image.toResponseBody("image/jpeg".toMediaTypeOrNull())
         return response.newBuilder().body(body).build()

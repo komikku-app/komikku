@@ -292,7 +292,7 @@ class BrowserActionActivity : AppCompatActivity() {
                 token to it
             }
         }.flatMap { (token, response) ->
-            val audioFile = response.body!!.bytes()
+            val audioFile = response.body.bytes()
 
             httpClient.newCall(
                 Request.Builder()

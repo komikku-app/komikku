@@ -32,7 +32,7 @@ class AzukiHandler(currentClient: OkHttpClient, userAgent: String) {
     }
 
     fun pageListParse(response: Response): List<Page> {
-        return Json.parseToJsonElement(response.body!!.string())
+        return Json.parseToJsonElement(response.body.string())
             .jsonObject["pages"]!!
             .jsonArray.mapIndexed { index, element ->
                 val url = element.jsonObject["image_wm"]!!.jsonObject["webp"]!!.jsonArray[1].jsonObject["url"]!!.jsonPrimitive.content

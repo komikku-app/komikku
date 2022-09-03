@@ -45,7 +45,7 @@ class ComikeyHandler(cloudflareClient: OkHttpClient, userAgent: String) {
     }
 
     private fun getActualPageList(response: Response): Request? {
-        val element = Json.parseToJsonElement(response.body!!.string()).jsonObject
+        val element = Json.parseToJsonElement(response.body.string()).jsonObject
         val ok = element["ok"]?.jsonPrimitive?.booleanOrNull ?: false
         if (ok.not()) {
             return null
@@ -55,7 +55,7 @@ class ComikeyHandler(cloudflareClient: OkHttpClient, userAgent: String) {
     }
 
     fun pageListParse(response: Response): List<Page> {
-        return Json.parseToJsonElement(response.body!!.string())
+        return Json.parseToJsonElement(response.body.string())
             .jsonObject["readingOrder"]!!
             .jsonArray.mapIndexed { index, element ->
                 val url = element.jsonObject["href"]!!.jsonPrimitive.content

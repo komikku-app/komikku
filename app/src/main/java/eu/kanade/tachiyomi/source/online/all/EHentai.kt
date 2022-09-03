@@ -1087,7 +1087,7 @@ class EHentai(
                     .url(EH_API_BASE)
                     .post(json.toString().toRequestBody(JSON))
                     .build(),
-            ).execute().body!!.string(),
+            ).execute().body.string(),
         )
 
         val obj = outJson["tokenlist"]!!.jsonArray.first().jsonObject
@@ -1216,7 +1216,7 @@ class EHentai(
                 if (response.isSuccessful) {
                     val body = ByteArrayOutputStream()
                         .use {
-                            val bitmap = BitmapFactory.decodeStream(response.body!!.byteStream())
+                            val bitmap = BitmapFactory.decodeStream(response.body.byteStream())
                                 ?: throw IOException("Null bitmap($thumbnailPreview)")
                             Bitmap.createBitmap(
                                 bitmap,

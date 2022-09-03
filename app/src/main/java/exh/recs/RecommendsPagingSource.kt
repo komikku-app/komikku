@@ -52,7 +52,7 @@ class MyAnimeList : API("https://api.jikan.moe/v3/") {
             .toString()
 
         val response = client.newCall(GET(apiUrl)).await()
-        val body = withIOContext { response.body?.string() } ?: throw Exception("Null Response")
+        val body = withIOContext { response.body.string() }
         val data = Json.decodeFromString<JsonObject>(body)
         val recommendations = data["recommendations"] as? JsonArray
         return recommendations?.filterIsInstance<JsonObject>()?.map { rec ->
