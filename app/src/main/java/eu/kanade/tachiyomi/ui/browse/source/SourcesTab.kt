@@ -6,6 +6,7 @@ import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.bluelinelabs.conductor.Router
+import eu.kanade.domain.source.interactor.GetRemoteManga.Companion.QUERY_POPULAR
 import eu.kanade.presentation.browse.SourcesScreen
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
@@ -14,7 +15,6 @@ import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.feed.SourceFeedController
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchController
-import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import exh.ui.smartsearch.SmartSearchController
 
 @Composable
@@ -45,13 +45,13 @@ fun sourcesTab(
     content = {
         SourcesScreen(
             presenter = presenter,
-            onClickItem = { source ->
+            onClickItem = { source, query ->
                 // SY -->
                 val controller = when {
                     presenter.controllerMode == SourcesController.Mode.SMART_SEARCH ->
                         SmartSearchController(source.id, presenter.smartSearchConfig!!)
-                    presenter.useNewSourceNavigation -> SourceFeedController(source.id)
-                    else -> BrowseSourceController(source)
+                    (query.isBlank() || query == QUERY_POPULAR) && presenter.useNewSourceNavigation -> SourceFeedController(source.id)
+                    else -> BrowseSourceController(source, query)
                 }
                 presenter.onOpenSource(source)
                 router?.pushController(controller)
@@ -59,10 +59,6 @@ fun sourcesTab(
             },
             onClickDisable = { source ->
                 presenter.toggleSource(source)
-            },
-            onClickLatest = { source ->
-                presenter.onOpenSource(source)
-                router?.pushController(LatestUpdatesController(source))
             },
             onClickPin = { source ->
                 presenter.togglePin(source)

@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.domain.source.model.Pin
 import eu.kanade.domain.source.model.Source
 import eu.kanade.presentation.browse.components.BaseSourceItem
@@ -50,9 +51,8 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun SourcesScreen(
     presenter: SourcesPresenter,
-    onClickItem: (Source) -> Unit,
+    onClickItem: (Source, String) -> Unit,
     onClickDisable: (Source) -> Unit,
-    onClickLatest: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
     onClickSetCategories: (Source, List<String>) -> Unit,
     onClickToggleDataSaver: (Source) -> Unit,
@@ -66,7 +66,6 @@ fun SourcesScreen(
                 state = presenter,
                 onClickItem = onClickItem,
                 onClickDisable = onClickDisable,
-                onClickLatest = onClickLatest,
                 onClickPin = onClickPin,
                 onClickSetCategories = onClickSetCategories,
                 onClickToggleDataSaver = onClickToggleDataSaver,
@@ -87,9 +86,8 @@ fun SourcesScreen(
 @Composable
 fun SourceList(
     state: SourcesState,
-    onClickItem: (Source) -> Unit,
+    onClickItem: (Source, String) -> Unit,
     onClickDisable: (Source) -> Unit,
-    onClickLatest: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
     onClickSetCategories: (Source, List<String>) -> Unit,
     onClickToggleDataSaver: (Source) -> Unit,
@@ -127,7 +125,6 @@ fun SourceList(
                     showPin = state.showPin,
                     onClickItem = onClickItem,
                     onLongClickItem = { state.dialog = Dialog.SourceLongClick(it) },
-                    onClickLatest = onClickLatest,
                     onClickPin = onClickPin,
                 )
             }
@@ -199,19 +196,18 @@ fun SourceItem(
     showLatest: Boolean,
     showPin: Boolean,
     // SY <--
-    onClickItem: (Source) -> Unit,
+    onClickItem: (Source, String) -> Unit,
     onLongClickItem: (Source) -> Unit,
-    onClickLatest: (Source) -> Unit,
     onClickPin: (Source) -> Unit,
 ) {
     BaseSourceItem(
         modifier = modifier,
         source = source,
-        onClickItem = { onClickItem(source) },
+        onClickItem = { onClickItem(source, GetRemoteManga.QUERY_POPULAR) },
         onLongClickItem = { onLongClickItem(source) },
         action = { source ->
             if (source.supportsLatest /* SY --> */ && showLatest /* SY <-- */) {
-                TextButton(onClick = { onClickLatest(source) }) {
+                TextButton(onClick = { onClickItem(source, GetRemoteManga.QUERY_LATEST) }) {
                     Text(
                         text = stringResource(R.string.latest),
                         style = LocalTextStyle.current.copy(

@@ -8,10 +8,10 @@ import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.browse.SourceSearchScreen
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.controller.pushController
-import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesController
+import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
+import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
@@ -31,12 +31,16 @@ class SourceSearchController(
 
     @Composable
     override fun ComposeContent() {
+        // LocalContext is not a first available to us when we try access it
+        // Decoupling from BrowseSourceController is needed
+        val context = applicationContext!!
+
         SourceSearchScreen(
             presenter = presenter,
             navigateUp = { router.popCurrentController() },
             onFabClick = { filterSheet?.show() },
             // SY -->
-            onClickManga = { manga ->
+            onMangaClick = { manga ->
                 val migrationListController = targetController as? MigrationListController ?: return@SourceSearchScreen
                 val sourceManager = Injekt.get<SourceManager>()
                 val source = sourceManager.get(manga.source) ?: return@SourceSearchScreen
@@ -44,10 +48,12 @@ class SourceSearchController(
                 router.popCurrentController()
                 router.popCurrentController()
             },
-            onSettingsClick = {
-                router.pushController(SourcePreferencesController(presenter.source!!.id))
-            },
             // SY <--
+            onWebViewClick = f@{
+                val source = presenter.source as? HttpSource ?: return@f
+                val intent = WebViewActivity.newIntent(context, source.baseUrl, source.id, source.name)
+                context.startActivity(intent)
+            },
         )
 
         LaunchedEffect(presenter.filters) {

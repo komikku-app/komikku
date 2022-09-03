@@ -1,15 +1,16 @@
 package exh.recs
 
+import eu.kanade.data.source.NoResultsException
+import eu.kanade.data.source.SourcePagingSource
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.parseAs
+import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.ui.browse.source.browse.BrowsePagingSource
-import eu.kanade.tachiyomi.ui.browse.source.browse.NoResultsException
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.util.MangaType
@@ -193,10 +194,11 @@ class Anilist : API("https://graphql.anilist.co/") {
 }
 
 open class RecommendsPagingSource(
+    source: CatalogueSource,
     private val manga: Manga,
     private val smart: Boolean = true,
     private var preferredApi: API = API.MYANIMELIST,
-) : BrowsePagingSource() {
+) : SourcePagingSource(source) {
     override suspend fun requestNextPage(currentPage: Int): MangasPage {
         if (smart) preferredApi = if (manga.mangaType() != MangaType.TYPE_MANGA) API.ANILIST else preferredApi
 

@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.SourceFeedScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
@@ -18,7 +19,6 @@ import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
-import eu.kanade.tachiyomi.ui.browse.source.latest.LatestUpdatesController
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -223,11 +223,11 @@ open class SourceFeedController :
     }
 
     private fun onLatestClick() {
-        router.replaceTopController(LatestUpdatesController(presenter.source).withFadeTransaction())
+        router.replaceTopController(BrowseSourceController(presenter.source, GetRemoteManga.QUERY_LATEST).withFadeTransaction())
     }
 
     private fun onBrowseClick() {
-        router.replaceTopController(BrowseSourceController(presenter.source).withFadeTransaction())
+        router.replaceTopController(BrowseSourceController(presenter.source, GetRemoteManga.QUERY_POPULAR).withFadeTransaction())
     }
 
     private fun onSavedSearchClick(savedSearch: SavedSearch) {

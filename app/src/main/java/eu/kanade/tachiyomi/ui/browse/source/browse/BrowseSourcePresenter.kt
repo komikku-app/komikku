@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import androidx.paging.map
 import eu.davidea.flexibleadapter.items.IFlexible
@@ -33,7 +32,9 @@ import eu.kanade.domain.manga.model.toDbManga
 import eu.kanade.domain.manga.model.toMangaUpdate
 import eu.kanade.domain.source.interactor.DeleteSavedSearchById
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
+import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.domain.source.interactor.InsertSavedSearch
+import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.domain.track.interactor.InsertTrack
 import eu.kanade.domain.track.model.toDomainTrack
 import eu.kanade.presentation.browse.BrowseSourceState
@@ -77,7 +78,6 @@ import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.savedsearches.models.SavedSearch
 import exh.source.getMainSource
-import exh.source.isEhBasedSource
 import exh.util.nullIfBlank
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
@@ -112,6 +112,7 @@ open class BrowseSourcePresenter(
     private val sourceManager: SourceManager = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
+    private val getRemoteManga: GetRemoteManga = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val getDuplicateLibraryManga: GetDuplicateLibraryManga = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
@@ -129,6 +130,8 @@ open class BrowseSourcePresenter(
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
     // SY <--
 ) : BasePresenter<BrowseSourceController>(), BrowseSourceState by state {
+
+    private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
 
     var displayMode by preferences.sourceDisplayMode().asState()
 
@@ -148,11 +151,11 @@ open class BrowseSourcePresenter(
 
     @Composable
     fun getMangaList(): Flow<PagingData</* SY --> */Pair<DomainManga, RaisedSearchMetadata?>/* SY <-- */>> {
-        return remember(currentQuery, appliedFilters) {
+        return remember(currentQuery, currentFilters) {
             Pager(
                 PagingConfig(pageSize = 25),
             ) {
-                createPager(currentQuery, appliedFilters)
+                createSourcePagingSource(currentQuery, currentFilters)
             }.flow
                 .map {
                     it.map {
@@ -169,12 +172,12 @@ open class BrowseSourcePresenter(
 
     @Composable
     fun getManga(initialManga: DomainManga): State<DomainManga> {
-        return produceState(initialValue = initialManga, initialManga.url, initialManga.source) {
+        return produceState(initialValue = initialManga) {
             getManga.subscribe(initialManga.url, initialManga.source)
                 .collectLatest { manga ->
                     if (manga == null) return@collectLatest
-                    launchIO {
-                        initializeMangas(manga)
+                    withIOContext {
+                        initializeManga(manga)
                     }
                     value = manga
                 }
@@ -198,16 +201,14 @@ open class BrowseSourcePresenter(
     }
 
     fun resetFilter() {
-        state.appliedFilters = FilterList()
         val newFilters = source!!.getFilterList()
         state.filters = newFilters
+        state.currentFilters = state.filters
     }
 
-    fun search() {
-        state.currentQuery = searchQuery ?: ""
+    fun search(query: String? = null) {
+        state.currentQuery = query ?: searchQuery ?: ""
     }
-
-    private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
 
     // SY -->
     private val filterSerializer = FilterSerializer()
@@ -246,15 +247,6 @@ open class BrowseSourcePresenter(
             }
             .launchIn(presenterScope)
         // SY <--
-
-        if (savedState != null) {
-            query = savedState.getString(::query.name, "")
-        }
-    }
-
-    override fun onSave(state: Bundle) {
-        state.putString(::query.name, query)
-        super.onSave(state)
     }
 
     /**
@@ -284,9 +276,9 @@ open class BrowseSourcePresenter(
     /**
      * Initialize a manga.
      *
-     * @param mangas the list of manga to initialize.
+     * @param manga to initialize.
      */
-    private suspend fun initializeMangas(manga: DomainManga) {
+    private suspend fun initializeManga(manga: DomainManga) {
         if (manga.thumbnailUrl != null && manga.initialized) return
         withContext(NonCancellable) {
             val db = manga.toDbManga()
@@ -394,18 +386,14 @@ open class BrowseSourcePresenter(
      * @param filters a list of active filters.
      */
     fun setSourceFilter(filters: FilterList) {
-        state.appliedFilters = filters
+        state.currentFilters = filters
     }
 
-    open fun createPager(query: String, filters: FilterList): PagingSource<Long, Pair<SManga, RaisedSearchMetadata?>> {
-        // SY -->
-        return if (source!!.isEhBasedSource()) {
-            EHentaiBrowsePagingSource(source!!, query, filters)
-        } else {
-            SourceBrowsePagingSource(source!!, query, filters)
-        }
-        // SY <--
+    // SY -->
+    open fun createSourcePagingSource(query: String, filters: FilterList): SourcePagingSourceType {
+        return getRemoteManga.subscribe(sourceId, currentQuery, currentFilters)
     }
+    // SY <--
 
     /**
      * Get user categories.
@@ -423,12 +411,6 @@ open class BrowseSourcePresenter(
         return getDuplicateLibraryManga.await(manga.title, manga.source)
     }
 
-    /**
-     * Move the given manga to categories.
-     *
-     * @param categories the selected categories.
-     * @param manga the manga to move.
-     */
     fun moveMangaToCategories(manga: DomainManga, vararg categories: DomainCategory) {
         moveMangaToCategories(manga, categories.filter { it.id != 0L }.map { it.id })
     }

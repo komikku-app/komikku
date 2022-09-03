@@ -102,6 +102,17 @@ open class BrowseSourceController(bundle: Bundle) :
      */
     protected var filterSheet: SourceFilterSheet? = null
 
+    override fun createPresenter(): BrowseSourcePresenter {
+        // SY -->
+        return BrowseSourcePresenter(
+            args.getLong(SOURCE_ID_KEY),
+            args.getString(SEARCH_QUERY_KEY),
+            filtersJson = args.getString(FILTERS_CONFIG_KEY),
+            savedSearch = args.getLong(SAVED_SEARCH_CONFIG_KEY, 0).takeUnless { it == 0L },
+        )
+        // SY <--
+    }
+
     @Composable
     override fun ComposeContent() {
         val scope = rememberCoroutineScope()
@@ -110,7 +121,6 @@ open class BrowseSourceController(bundle: Bundle) :
         BrowseSourceScreen(
             presenter = presenter,
             navigateUp = { router.popCurrentController() },
-            onDisplayModeChange = { presenter.displayMode = (it) },
             onFabClick = { filterSheet?.show() },
             onMangaClick = { router.pushController(MangaController(it.id, true)) },
             onMangaLongClick = { manga ->
@@ -172,17 +182,6 @@ open class BrowseSourceController(bundle: Bundle) :
         LaunchedEffect(presenter.filters) {
             initFilterSheet()
         }
-    }
-
-    override fun createPresenter(): BrowseSourcePresenter {
-        // SY -->
-        return BrowseSourcePresenter(
-            args.getLong(SOURCE_ID_KEY),
-            args.getString(SEARCH_QUERY_KEY),
-            filtersJson = args.getString(FILTERS_CONFIG_KEY),
-            savedSearch = args.getLong(SAVED_SEARCH_CONFIG_KEY, 0).takeUnless { it == 0L },
-        )
-        // SY <--
     }
 
     fun setSavedSearches(savedSearches: List<EXHSavedSearch>) {

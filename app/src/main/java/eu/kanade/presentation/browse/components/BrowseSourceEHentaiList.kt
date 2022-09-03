@@ -58,10 +58,17 @@ fun BrowseSourceEHentaiList(
     contentPadding: PaddingValues,
     onMangaClick: (Manga) -> Unit,
     onMangaLongClick: (Manga) -> Unit,
+    header: (@Composable () -> Unit)? = null,
 ) {
     LazyColumn(
         contentPadding = contentPadding,
     ) {
+        if (header != null) {
+            item {
+                header()
+            }
+        }
+
         item {
             if (mangaList.loadState.prepend is LoadState.Loading) {
                 BrowseSourceLoadingItem()

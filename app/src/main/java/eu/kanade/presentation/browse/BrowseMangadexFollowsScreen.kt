@@ -43,7 +43,7 @@ fun BrowseMangadexFollowsScreen(
         },
     ) { paddingValues ->
         BrowseSourceContent(
-            source = presenter.source,
+            state = presenter,
             mangaList = mangaList,
             getMangaState = { presenter.getManga(it) },
             // SY -->

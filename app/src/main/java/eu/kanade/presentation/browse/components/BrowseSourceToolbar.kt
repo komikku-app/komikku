@@ -49,11 +49,15 @@ fun BrowseSourceToolbar(
 ) {
     if (state.searchQuery == null) {
         BrowseSourceRegularToolbar(
-            source = source,
+            title = if (state.isUserQuery) state.currentQuery else source.name,
+            isLocalSource = source is LocalSource,
+            // SY -->
+            isConfigurableSource = source.anyIs<ConfigurableSource>(),
+            // SY <--
             displayMode = displayMode,
             onDisplayModeChange = onDisplayModeChange,
             navigateUp = navigateUp,
-            onSearchClick = { state.searchQuery = "" },
+            onSearchClick = { state.searchQuery = if (state.isUserQuery) state.currentQuery else "" },
             onWebViewClick = onWebViewClick,
             onHelpClick = onHelpClick,
             // SY -->
@@ -65,10 +69,7 @@ fun BrowseSourceToolbar(
         BrowseSourceSearchToolbar(
             searchQuery = state.searchQuery!!,
             onSearchQueryChanged = { state.searchQuery = it },
-            navigateUp = {
-                state.searchQuery = null
-                onSearch()
-            },
+            navigateUp = { state.searchQuery = null },
             onResetClick = { state.searchQuery = "" },
             onSearchClick = onSearch,
             scrollBehavior = scrollBehavior,
@@ -78,7 +79,9 @@ fun BrowseSourceToolbar(
 
 @Composable
 fun BrowseSourceRegularToolbar(
-    source: CatalogueSource,
+    title: String,
+    isLocalSource: Boolean,
+    isConfigurableSource: Boolean,
     displayMode: LibraryDisplayMode?,
     onDisplayModeChange: (LibraryDisplayMode) -> Unit,
     navigateUp: () -> Unit,
@@ -92,7 +95,7 @@ fun BrowseSourceRegularToolbar(
 ) {
     AppBar(
         navigateUp = navigateUp,
-        title = source.name,
+        title = title,
         actions = {
             var selectingDisplayMode by remember { mutableStateOf(false) }
             AppBarActions(
@@ -109,7 +112,7 @@ fun BrowseSourceRegularToolbar(
                         onClick = { selectingDisplayMode = true },
                     ).takeIf { displayMode != null },
                     // SY <--
-                    if (source is LocalSource) {
+                    if (isLocalSource) {
                         AppBar.Action(
                             title = stringResource(id = R.string.label_help),
                             icon = Icons.Outlined.Help,
@@ -123,11 +126,13 @@ fun BrowseSourceRegularToolbar(
                         )
                     },
                     // SY -->
-                    AppBar.Action(
-                        title = stringResource(R.string.action_settings),
-                        icon = Icons.Outlined.Settings,
-                        onClick = onSettingsClick,
-                    ).takeIf { source.anyIs<ConfigurableSource>() },
+                    if (isConfigurableSource) {
+                        AppBar.Action(
+                            title = stringResource(R.string.action_settings),
+                            icon = Icons.Outlined.Settings,
+                            onClick = onSettingsClick,
+                        )
+                    } else null,
                     // SY <--
                 ),
             )

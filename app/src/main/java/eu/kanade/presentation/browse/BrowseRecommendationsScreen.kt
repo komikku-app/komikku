@@ -31,7 +31,7 @@ fun BrowseRecommendationsScreen(
         },
     ) { paddingValues ->
         BrowseSourceContent(
-            source = presenter.source,
+            state = presenter,
             mangaList = presenter.getMangaList().collectAsLazyPagingItems(),
             getMangaState = { presenter.getManga(it) },
             // SY -->

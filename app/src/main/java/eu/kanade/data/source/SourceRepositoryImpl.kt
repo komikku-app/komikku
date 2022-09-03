@@ -2,11 +2,15 @@ package eu.kanade.data.source
 
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.domain.source.model.Source
+import eu.kanade.domain.source.model.SourcePagingSourceType
 import eu.kanade.domain.source.model.SourceWithCount
 import eu.kanade.domain.source.repository.SourceRepository
+import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.FilterList
 import exh.source.MERGED_SOURCE_ID
+import exh.source.isEhBasedSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -49,5 +53,39 @@ class SourceRepositoryImpl(
                 SourceWithCount(sourceMapper(source), count)
             }
         }
+    }
+
+    override fun search(
+        sourceId: Long,
+        query: String,
+        filterList: FilterList,
+    ): SourcePagingSourceType {
+        val source = sourceManager.get(sourceId) as CatalogueSource
+        // SY -->
+        if (source.isEhBasedSource()) {
+            return EHentaiSearchPagingSource(source, query, filterList)
+        }
+        // SY <--
+        return SourceSearchPagingSource(source, query, filterList)
+    }
+
+    override fun getPopular(sourceId: Long): SourcePagingSourceType {
+        val source = sourceManager.get(sourceId) as CatalogueSource
+        // SY -->
+        if (source.isEhBasedSource()) {
+            return EHentaiPopularPagingSource(source)
+        }
+        // SY <--
+        return SourcePopularPagingSource(source)
+    }
+
+    override fun getLatest(sourceId: Long): SourcePagingSourceType {
+        val source = sourceManager.get(sourceId) as CatalogueSource
+        // SY -->
+        if (source.isEhBasedSource()) {
+            return EHentaiLatestPagingSource(source)
+        }
+        // SY <--
+        return SourceLatestPagingSource(source)
     }
 }
