@@ -135,7 +135,12 @@ open class BrowseSourcePresenter(
 
     var displayMode by preferences.sourceDisplayMode().asState()
 
+    val isDownloadOnly: Boolean by preferences.downloadedOnly().asState()
+    val isIncognitoMode: Boolean by preferences.incognitoMode().asState()
+
+    // SY -->
     val ehentaiBrowseDisplayMode by preferences.enhancedEHentaiView().asState()
+	// SY <--
 
     @Composable
     fun getColumnsPreferenceForCurrentOrientation(): State<GridCells> {
@@ -184,6 +189,7 @@ open class BrowseSourcePresenter(
         }
     }
 
+    // SY -->
     @Composable
     open fun getRaisedSearchMetadata(manga: DomainManga, initialMetadata: RaisedSearchMetadata?): State<RaisedSearchMetadata?> {
         return produceState(initialValue = initialMetadata, manga.id) {
@@ -195,6 +201,7 @@ open class BrowseSourcePresenter(
                 }
         }
     }
+    // SY <--
 
     fun setFilter(filters: FilterList) {
         state.filters = filters

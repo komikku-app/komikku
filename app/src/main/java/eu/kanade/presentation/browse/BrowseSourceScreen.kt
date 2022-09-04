@@ -2,6 +2,7 @@ package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -41,8 +42,10 @@ import eu.kanade.presentation.browse.components.BrowseSourceCompactGrid
 import eu.kanade.presentation.browse.components.BrowseSourceEHentaiList
 import eu.kanade.presentation.browse.components.BrowseSourceList
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
+import eu.kanade.presentation.components.DownloadedOnlyModeBanner
 import eu.kanade.presentation.components.EmptyScreen
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
+import eu.kanade.presentation.components.IncognitoModeBanner
 import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
@@ -65,6 +68,8 @@ fun BrowseSourceScreen(
     // SY -->
     onSettingsClick: () -> Unit,
     // SY <--
+    incognitoMode: Boolean,
+    downloadedOnlyMode: Boolean,
 ) {
     val columns by presenter.getColumnsPreferenceForCurrentOrientation()
 
@@ -80,20 +85,28 @@ fun BrowseSourceScreen(
 
     Scaffold(
         topBar = { scrollBehavior ->
-            BrowseSourceToolbar(
-                state = presenter,
-                source = presenter.source!!,
-                displayMode = presenter.displayMode.takeUnless { presenter.source!!.isEhBasedSource() && presenter.ehentaiBrowseDisplayMode },
-                onDisplayModeChange = { presenter.displayMode = it },
-                navigateUp = navigateUp,
-                onWebViewClick = onWebViewClick,
-                onHelpClick = onHelpClick,
-                onSearch = { presenter.search() },
-                // SY -->
-                onSettingsClick = onSettingsClick,
-                // SY <--
-                scrollBehavior = scrollBehavior,
-            )
+            Column {
+                BrowseSourceToolbar(
+                    state = presenter,
+                    source = presenter.source!!,
+                    displayMode = presenter.displayMode.takeUnless { presenter.source!!.isEhBasedSource() && presenter.ehentaiBrowseDisplayMode },
+                    onDisplayModeChange = { presenter.displayMode = it },
+                    navigateUp = navigateUp,
+                    onWebViewClick = onWebViewClick,
+                    onHelpClick = onHelpClick,
+                    onSearch = { presenter.search() },
+                    // SY -->
+                    onSettingsClick = onSettingsClick,
+                    // SY <--
+                    scrollBehavior = scrollBehavior,
+                )
+                if (downloadedOnlyMode) {
+                    DownloadedOnlyModeBanner()
+                }
+                if (incognitoMode) {
+                    IncognitoModeBanner()
+                }
+            }
         },
         floatingActionButton = {
             BrowseSourceFloatingActionButton(

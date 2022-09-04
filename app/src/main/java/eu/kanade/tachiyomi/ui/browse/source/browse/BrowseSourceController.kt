@@ -143,6 +143,8 @@ open class BrowseSourceController(bundle: Bundle) :
                 router.pushController(SourcePreferencesController(presenter.source!!.id))
             },
             // SY <--
+            incognitoMode = presenter.isIncognitoMode,
+            downloadedOnlyMode = presenter.isDownloadOnly,
         )
 
         val onDismissRequest = { presenter.dialog = null }
