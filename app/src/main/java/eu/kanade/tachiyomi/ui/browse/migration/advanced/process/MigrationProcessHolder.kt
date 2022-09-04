@@ -6,52 +6,51 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import coil.dispose
 import eu.davidea.viewholders.FlexibleViewHolder
-import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
-import eu.kanade.domain.manga.interactor.GetManga
-import eu.kanade.domain.manga.interactor.GetMergedReferencesById
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.MigrationMangaCardBinding
 import eu.kanade.tachiyomi.databinding.MigrationProcessItemBinding
-import eu.kanade.tachiyomi.source.Source
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.controller.pushController
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.ChapterInfo
+import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga.SearchResult
 import eu.kanade.tachiyomi.ui.manga.MangaController
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.view.loadAutoPause
 import eu.kanade.tachiyomi.util.view.setVectorCompat
-import exh.source.MERGED_SOURCE_ID
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import reactivecircus.flowbinding.android.view.clicks
-import uy.kohesive.injekt.injectLazy
 import java.text.DecimalFormat
+import java.util.concurrent.CopyOnWriteArrayList
 
 class MigrationProcessHolder(
-    private val view: View,
+    view: View,
     private val adapter: MigrationProcessAdapter,
 ) : FlexibleViewHolder(view, adapter) {
-    private val sourceManager: SourceManager by injectLazy()
-    private val getManga: GetManga by injectLazy()
-    private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
-    private val getMergedReferencesById: GetMergedReferencesById by injectLazy()
-
     private var item: MigrationProcessItem? = null
     private val binding = MigrationProcessItemBinding.bind(view)
+
+    private val jobs = CopyOnWriteArrayList<Job>()
 
     init {
         // We need to post a Runnable to show the popup to make sure that the PopupMenu is
         // correctly positioned. The reason being that the view may change position before the
         // PopupMenu is shown.
         binding.migrationMenu.setOnClickListener { it.post { showPopupMenu(it) } }
-        binding.skipManga.setOnClickListener { it.post { adapter.removeManga(bindingAdapterPosition) } }
+        binding.skipManga.setOnClickListener { it.post { adapter.controller.removeManga(item?.manga?.manga?.id ?: return@post) } }
     }
 
     fun bind(item: MigrationProcessItem) {
         this.item = item
-        launchUI {
-            val manga = item.manga.manga()
-            val source = item.manga.mangaSource()
+        jobs.removeAll { it.cancel(); true }
+        jobs += adapter.controller.viewScope.launchUI {
+            val migrateManga = item.manga
+            val manga = migrateManga.manga
 
             binding.migrationMenu.setVectorCompat(
                 R.drawable.ic_more_24dp,
@@ -64,67 +63,74 @@ class MigrationProcessHolder(
             binding.migrationMenu.isInvisible = true
             binding.skipManga.isVisible = true
             binding.migrationMangaCardTo.resetManga()
-            if (manga != null) {
-                binding.migrationMangaCardFrom.attachManga(manga, source)
-                binding.migrationMangaCardFrom.root.clicks()
-                    .onEach {
-                        adapter.controller.router.pushController(
-                            MangaController(
-                                manga.id,
-                                true,
-                            ),
-                        )
-                    }
-                    .launchIn(adapter.controller.viewScope)
+            binding.migrationMangaCardFrom.attachManga(manga, item.manga.sourcesString, item.manga.chapterInfo)
+            jobs += binding.migrationMangaCardFrom.root.clicks()
+                .onEach {
+                    adapter.controller.router.pushController(
+                        MangaController(
+                            manga.id,
+                            true,
+                        ),
+                    )
+                }
+                .launchIn(adapter.controller.viewScope)
 
-                /*launchUI {
-                    item.manga.progress.asFlow().collect { (max, progress) ->
-                        withUIContext {
-                            migration_manga_card_to.search_progress.let { progressBar ->
-                                progressBar.max = max
-                                progressBar.progress = progress
+            /*launchUI {
+            item.manga.progress.asFlow().collect { (max, progress) ->
+                withUIContext {
+                    migration_manga_card_to.search_progress.let { progressBar ->
+                        progressBar.max = max
+                        progressBar.progress = progress
+                    }
+                }
+            }
+        }*/
+
+            jobs += migrateManga.searchResult
+                .onEach { searchResult ->
+                    this@MigrationProcessHolder.logcat { (searchResult to (migrateManga.manga.id to this@MigrationProcessHolder.item?.manga?.manga?.id)).toString() }
+                    if (migrateManga.manga.id != this@MigrationProcessHolder.item?.manga?.manga?.id ||
+                        searchResult == SearchResult.Searching
+                    ) {
+                        return@onEach
+                    }
+
+                    val resultManga = withIOContext {
+                        (searchResult as? SearchResult.Result)
+                            ?.let { migrateManga.getManga(it) }
+                    }
+                    if (resultManga != null) {
+                        val (sourceName, latestChapter) = withIOContext {
+                            val sourceNameAsync = async { migrateManga.getSourceName(resultManga).orEmpty() }
+                            val latestChapterAsync = async { migrateManga.getChapterInfo(searchResult as SearchResult.Result) }
+                            sourceNameAsync.await() to latestChapterAsync.await()
+                        }
+
+                        binding.migrationMangaCardTo.attachManga(resultManga, sourceName, latestChapter)
+                        jobs += binding.migrationMangaCardTo.root.clicks()
+                            .onEach {
+                                adapter.controller.router.pushController(
+                                    MangaController(
+                                        resultManga.id,
+                                        true,
+                                    ),
+                                )
                             }
-                        }
-                    }
-                }*/
-
-                val searchResult = item.manga.searchResult.get()?.let {
-                    getManga.await(it)
-                }
-                val resultSource = searchResult?.source?.let {
-                    sourceManager.get(it)
-                }
-
-                if (item.manga.mangaId != this@MigrationProcessHolder.item?.manga?.mangaId ||
-                    item.manga.migrationStatus == MigrationStatus.RUNNING
-                ) {
-                    return@launchUI
-                }
-                if (searchResult != null && resultSource != null) {
-                    binding.migrationMangaCardTo.attachManga(searchResult, resultSource)
-                    binding.migrationMangaCardTo.root.clicks()
-                        .onEach {
-                            adapter.controller.router.pushController(
-                                MangaController(
-                                    searchResult.id,
-                                    true,
-                                ),
-                            )
-                        }
-                        .launchIn(adapter.controller.viewScope)
-                } else {
-                    if (adapter.hideNotFound) {
-                        adapter.removeManga(bindingAdapterPosition)
+                            .launchIn(adapter.controller.viewScope)
                     } else {
                         binding.migrationMangaCardTo.progress.isVisible = false
-                        binding.migrationMangaCardTo.title.text = view.context.applicationContext
+                        binding.migrationMangaCardTo.title.text = itemView.context
                             .getString(R.string.no_alternatives_found)
                     }
+
+                    binding.migrationMenu.isVisible = true
+                    binding.skipManga.isVisible = false
+                    adapter.controller.sourceFinished()
                 }
-                binding.migrationMenu.isVisible = true
-                binding.skipManga.isVisible = false
-                adapter.sourceFinished()
-            }
+                .catch {
+                    this@MigrationProcessHolder.logcat(throwable = it) { "Error updating result info" }
+                }
+                .launchIn(adapter.controller.viewScope)
         }
     }
 
@@ -139,39 +145,35 @@ class MigrationProcessHolder(
         mangaLastChapterLabel.text = ""
     }
 
-    private suspend fun MigrationMangaCardBinding.attachManga(manga: Manga, source: Source) {
+    private fun MigrationMangaCardBinding.attachManga(
+        manga: Manga,
+        sourceString: String,
+        chapterInfo: ChapterInfo,
+    ) {
         progress.isVisible = false
         thumbnail.loadAutoPause(manga)
 
         title.text = if (manga.title.isBlank()) {
-            view.context.getString(R.string.unknown)
+            itemView.context.getString(R.string.unknown)
         } else {
             manga.ogTitle
         }
 
-        mangaSourceLabel.text = if (source.id == MERGED_SOURCE_ID) {
-            getMergedReferencesById.await(manga.id).map {
-                sourceManager.getOrStub(it.mangaSourceId).toString()
-            }.distinct().joinToString()
-        } else {
-            source.toString()
-        }
+        mangaSourceLabel.text = sourceString
 
-        val chapters = getChapterByMangaId.await(manga.id)
         // For rounded corners
         badges.leftBadges.clipToOutline = true
         badges.rightBadges.clipToOutline = true
         badges.unreadText.isVisible = true
-        badges.unreadText.text = chapters.size.toString()
-        val latestChapter = chapters.maxOfOrNull { it.chapterNumber } ?: -1f
+        badges.unreadText.text = chapterInfo.chapterCount.toString()
 
-        if (latestChapter > 0f) {
-            mangaLastChapterLabel.text = root.context.getString(
+        if (chapterInfo.latestChapter != null && chapterInfo.latestChapter > 0f) {
+            mangaLastChapterLabel.text = itemView.context.getString(
                 R.string.latest_,
-                DecimalFormat("#.#").format(latestChapter),
+                DecimalFormat("#.#").format(chapterInfo.latestChapter),
             )
         } else {
-            mangaLastChapterLabel.text = root.context.getString(
+            mangaLastChapterLabel.text = itemView.context.getString(
                 R.string.latest_,
                 root.context.getString(R.string.unknown),
             )
@@ -191,14 +193,14 @@ class MigrationProcessHolder(
 
         popup.menu.findItem(R.id.action_search_manually).isVisible = true
         // Hide download and show delete if the chapter is downloaded
-        if (mangas.searchResult.content != null) {
+        if (mangas.searchResult.value != SearchResult.Searching) {
             popup.menu.findItem(R.id.action_migrate_now).isVisible = true
             popup.menu.findItem(R.id.action_copy_now).isVisible = true
         }
 
         // Set a listener so we are notified if a menu item is clicked
         popup.setOnMenuItemClickListener { menuItem ->
-            adapter.menuItemListener.onMenuItemClick(bindingAdapterPosition, menuItem)
+            adapter.controller.onMenuItemClick(item.manga.manga.id, menuItem)
             true
         }
 

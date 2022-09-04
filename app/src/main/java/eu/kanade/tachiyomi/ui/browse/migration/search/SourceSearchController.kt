@@ -45,8 +45,7 @@ class SourceSearchController(
                 val sourceManager = Injekt.get<SourceManager>()
                 val source = sourceManager.get(manga.source) ?: return@SourceSearchScreen
                 migrationListController.useMangaForMigration(manga, source)
-                router.popCurrentController()
-                router.popCurrentController()
+                router.popToTag(MigrationListController.TAG)
             },
             // SY <--
             onWebViewClick = f@{

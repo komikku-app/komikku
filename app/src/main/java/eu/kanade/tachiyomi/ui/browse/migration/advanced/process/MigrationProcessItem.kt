@@ -30,12 +30,12 @@ class MigrationProcessItem(val manga: MigratingManga) :
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other is MigrationProcessItem) {
-            return manga.mangaId == other.manga.mangaId
+            return manga.manga.id == other.manga.manga.id
         }
         return false
     }
 
     override fun hashCode(): Int {
-        return manga.mangaId.toInt()
+        return manga.manga.id.hashCode()
     }
 }

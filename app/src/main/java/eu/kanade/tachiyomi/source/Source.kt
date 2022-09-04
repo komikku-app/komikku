@@ -7,7 +7,6 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.ui.manga.MergedMangaData
 import eu.kanade.tachiyomi.util.lang.awaitSingle
 import rx.Observable
 import uy.kohesive.injekt.Injekt
@@ -96,7 +95,7 @@ fun Source.getPreferenceKey(): String = "source_$id"
 
 fun Source.toSourceData(): SourceData = SourceData(id = id, lang = lang, name = name)
 
-fun Source.getNameForMangaInfo(mergeData: MergedMangaData?): String {
+fun Source.getNameForMangaInfo(mergeSources: List<Source>?): String {
     val preferences = Injekt.get<PreferencesHelper>()
     val enabledLanguages = preferences.enabledLanguages().get()
         .filterNot { it in listOf("all", "other") }
@@ -104,8 +103,8 @@ fun Source.getNameForMangaInfo(mergeData: MergedMangaData?): String {
     val isInEnabledLanguages = lang in enabledLanguages
     return when {
         // SY -->
-        mergeData != null -> getMergedSourcesString(
-            mergeData,
+        !mergeSources.isNullOrEmpty() -> getMergedSourcesString(
+            mergeSources,
             enabledLanguages,
             hasOneActiveLanguages,
         )
@@ -120,12 +119,12 @@ fun Source.getNameForMangaInfo(mergeData: MergedMangaData?): String {
 
 // SY -->
 private fun getMergedSourcesString(
-    mergeData: MergedMangaData,
+    mergeSources: List<Source>,
     enabledLangs: List<String>,
     onlyName: Boolean,
 ): String {
     return if (onlyName) {
-        mergeData.sources.joinToString { source ->
+        mergeSources.joinToString { source ->
             if (source.lang !in enabledLangs) {
                 source.toString()
             } else {
@@ -133,7 +132,7 @@ private fun getMergedSourcesString(
             }
         }
     } else {
-        mergeData.sources.joinToString()
+        mergeSources.joinToString()
     }
 }
 // SY <--

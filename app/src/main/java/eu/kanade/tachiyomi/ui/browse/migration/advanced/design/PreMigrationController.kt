@@ -31,6 +31,13 @@ class PreMigrationController(bundle: Bundle? = null) :
     FlexibleAdapter.OnItemClickListener,
     FabController,
     StartMigrationListener {
+
+    constructor(mangaIds: List<Long>) : this(
+        bundleOf(
+            MANGA_IDS_EXTRA to mangaIds.toLongArray(),
+        ),
+    )
+
     private val sourceManager: SourceManager by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
 
@@ -95,7 +102,7 @@ class PreMigrationController(bundle: Bundle? = null) :
         prefs.migrationSources().set(listOfSources)
 
         router.replaceTopController(
-            MigrationListController.create(
+            MigrationListController(
                 MigrationProcedureConfig(
                     config.toList(),
                     extraSearchParams = extraParam,
@@ -186,20 +193,12 @@ class PreMigrationController(bundle: Bundle? = null) :
         fun navigateToMigration(skipPre: Boolean, router: Router, mangaIds: List<Long>) {
             router.pushController(
                 if (skipPre) {
-                    MigrationListController.create(
+                    MigrationListController(
                         MigrationProcedureConfig(mangaIds, null),
                     )
                 } else {
-                    create(mangaIds)
+                    PreMigrationController(mangaIds)
                 }.withFadeTransaction().tag(if (skipPre) MigrationListController.TAG else null),
-            )
-        }
-
-        fun create(mangaIds: List<Long>): PreMigrationController {
-            return PreMigrationController(
-                bundleOf(
-                    MANGA_IDS_EXTRA to mangaIds.toLongArray(),
-                ),
             )
         }
     }
