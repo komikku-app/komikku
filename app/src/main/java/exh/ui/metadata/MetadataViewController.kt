@@ -1,24 +1,46 @@
 package exh.ui.metadata
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
-import androidx.recyclerview.widget.LinearLayoutManager
-import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.model.Manga
-import eu.kanade.tachiyomi.databinding.MetadataViewControllerBinding
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.EmptyScreen
+import eu.kanade.presentation.components.LoadingScreen
+import eu.kanade.presentation.components.Scaffold
+import eu.kanade.presentation.components.ScrollbarLazyColumn
+import eu.kanade.presentation.util.clickableNoIndication
+import eu.kanade.presentation.util.plus
+import eu.kanade.presentation.util.topPaddingValues
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.manga.MangaController
-import exh.metadata.metadata.base.RaisedSearchMetadata
+import eu.kanade.tachiyomi.util.system.copyToClipboard
 import kotlinx.coroutines.runBlocking
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
-class MetadataViewController : NucleusController<MetadataViewControllerBinding, MetadataViewPresenter> {
+class MetadataViewController : FullComposeController<MetadataViewPresenter> {
     constructor(manga: Manga) : super(
         bundleOf(
             MangaController.MANGA_EXTRA to manga.id,
@@ -35,45 +57,59 @@ class MetadataViewController : NucleusController<MetadataViewControllerBinding, 
     @Suppress("unused")
     constructor(bundle: Bundle) : this(bundle.getLong(MangaController.MANGA_EXTRA))
 
-    var adapter: MetadataViewAdapter? = null
-
     var manga: Manga? = null
         private set
     var source: Source? = null
         private set
 
-    override fun getTitle(): String? {
-        return manga?.title
-    }
-
     override fun createPresenter(): MetadataViewPresenter {
-        return MetadataViewPresenter(
-            manga!!,
-            source!!,
-        )
+        return MetadataViewPresenter(manga!!, source!!)
     }
 
-    override fun createBinding(inflater: LayoutInflater) = MetadataViewControllerBinding.inflate(inflater)
-
-    override fun onViewCreated(view: View) {
-        super.onViewCreated(view)
-
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
+    @Composable
+    override fun ComposeContent() {
+        val state by presenter.state.collectAsState()
+        Scaffold(
+            topBar = { scrollBehavior ->
+                AppBar(
+                    title = manga?.title,
+                    navigateUp = router::popCurrentController,
+                    scrollBehavior = scrollBehavior,
+                )
+            },
+        ) { paddingValues ->
+            when (val state = state) {
+                MetadataViewState.Loading -> LoadingScreen()
+                MetadataViewState.MetadataNotFound -> EmptyScreen(R.string.no_results_found)
+                MetadataViewState.SourceNotFound -> EmptyScreen(R.string.source_empty_screen)
+                is MetadataViewState.Success -> {
+                    val context = LocalContext.current
+                    val items by derivedStateOf { state.meta.getExtraInfoPairs(context) }
+                    ScrollbarLazyColumn(
+                        contentPadding = paddingValues + WindowInsets.navigationBars.asPaddingValues() + topPaddingValues,
+                    ) {
+                        items(items) { (title, text) ->
+                            Row(
+                                Modifier.fillMaxWidth()
+                                    .clickableNoIndication(onLongClick = { context.copyToClipboard(title, text) }, onClick = {})
+                                    .padding(vertical = 8.dp),
+                            ) {
+                                Text(
+                                    title,
+                                    modifier = Modifier.width(140.dp).padding(start = 16.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Text(
+                                    text,
+                                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = LocalContentColor.current.copy(alpha = 0.7F),
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        if (manga == null || source == null) return
-        binding.recycler.layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.VERTICAL, false)
-        adapter = MetadataViewAdapter()
-        binding.recycler.adapter = adapter
-        binding.recycler.setHasFixedSize(true)
-    }
-
-    fun onNextMangaInfo(meta: RaisedSearchMetadata?) {
-        val adapter = adapter ?: return
-        val context = view?.context ?: return
-        adapter.items = meta?.getExtraInfoPairs(context).orEmpty()
     }
 }
