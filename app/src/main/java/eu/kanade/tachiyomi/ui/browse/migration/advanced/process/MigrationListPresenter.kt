@@ -516,6 +516,9 @@ class MigrationListPresenter(
     override fun onDestroy() {
         super.onDestroy()
         migrationsJob?.cancel()
+        migratingItems.value.forEach {
+            it.migrationScope.cancel()
+        }
     }
 
     /**
