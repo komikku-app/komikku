@@ -1,14 +1,27 @@
 package exh.ui.smartsearch
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.databinding.EhSmartSearchBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
-import eu.kanade.tachiyomi.ui.base.controller.NucleusController
+import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.SourcesController
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
@@ -19,7 +32,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import uy.kohesive.injekt.injectLazy
 
-class SmartSearchController(bundle: Bundle) : NucleusController<EhSmartSearchBinding, SmartSearchPresenter>() {
+class SmartSearchController(bundle: Bundle) : FullComposeController<SmartSearchPresenter>() {
     private val sourceManager: SourceManager by injectLazy()
 
     private val source = sourceManager.get(bundle.getLong(ARG_SOURCE_ID, -1)) as CatalogueSource
@@ -36,7 +49,32 @@ class SmartSearchController(bundle: Bundle) : NucleusController<EhSmartSearchBin
 
     override fun createPresenter() = SmartSearchPresenter(source, smartSearchConfig)
 
-    override fun createBinding(inflater: LayoutInflater) = EhSmartSearchBinding.inflate(inflater)
+    @Composable
+    override fun ComposeContent() {
+        Scaffold(
+            topBar = { scrollBehavior ->
+                AppBar(
+                    title = source.name,
+                    navigateUp = router::popCurrentController,
+                    scrollBehavior = scrollBehavior,
+                )
+            },
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+            ) {
+                Text(
+                    text = stringResource(R.string.searching_source),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                CircularProgressIndicator(modifier = Modifier.size(56.dp))
+            }
+        }
+    }
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
