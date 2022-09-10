@@ -39,16 +39,6 @@ class MigrationSourceHolder(view: View, val adapter: MigrationSourceAdapter) :
         }
     }
 
-    /**
-     * Called when an item is released.
-     *
-     * @param position The position of the released item.
-     */
-    override fun onItemReleased(position: Int) {
-        super.onItemReleased(position)
-        adapter.updateItems()
-    }
-
     companion object {
         private const val DISABLED_ALPHA = 0.3f
     }

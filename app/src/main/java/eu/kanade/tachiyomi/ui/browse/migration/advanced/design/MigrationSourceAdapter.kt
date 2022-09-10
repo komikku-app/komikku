@@ -7,10 +7,9 @@ import eu.kanade.tachiyomi.source.SourceManager
 import uy.kohesive.injekt.injectLazy
 
 class MigrationSourceAdapter(
-    var items: List<MigrationSourceItem>,
     controllerPre: PreMigrationController,
 ) : FlexibleAdapter<MigrationSourceItem>(
-    items,
+    null,
     controllerPre,
     true,
 ) {
@@ -39,10 +38,6 @@ class MigrationSourceAdapter(
         }
 
         super.onRestoreInstanceState(savedInstanceState)
-    }
-
-    fun updateItems() {
-        items = currentItems
     }
 
     companion object {

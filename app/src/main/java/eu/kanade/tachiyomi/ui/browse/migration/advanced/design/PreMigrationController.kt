@@ -2,34 +2,63 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Deselect
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bluelinelabs.conductor.Router
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import dev.chrisbanes.insetter.applyInsetter
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.ExtendedFloatingActionButton
+import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.PreMigrationControllerBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
-import eu.kanade.tachiyomi.ui.base.controller.BaseController
-import eu.kanade.tachiyomi.ui.base.controller.FabController
+import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationListController
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigrationProcedureConfig
-import eu.kanade.tachiyomi.util.view.shrinkOnScroll
+import eu.kanade.tachiyomi.util.lang.launchIO
 import uy.kohesive.injekt.injectLazy
+import kotlin.math.roundToInt
 
 class PreMigrationController(bundle: Bundle? = null) :
-    BaseController<PreMigrationControllerBinding>(bundle),
+    BasicFullComposeController(bundle),
     FlexibleAdapter.OnItemClickListener,
-    FabController,
     StartMigrationListener {
 
     constructor(mangaIds: List<Long>) : this(
@@ -45,60 +74,163 @@ class PreMigrationController(bundle: Bundle? = null) :
 
     private val config: LongArray = args.getLongArray(MANGA_IDS_EXTRA) ?: LongArray(0)
 
-    private var actionFab: ExtendedFloatingActionButton? = null
-    private var actionFabScrollListener: RecyclerView.OnScrollListener? = null
-
     private lateinit var dialog: MigrationBottomSheetDialog
 
-    override fun getTitle() = view?.context?.getString(R.string.select_sources)
+    private lateinit var controllerBinding: PreMigrationControllerBinding
 
-    override fun createBinding(inflater: LayoutInflater) = PreMigrationControllerBinding.inflate(inflater)
+    var items by mutableStateOf(emptyList<MigrationSourceItem>())
 
     override fun onViewCreated(view: View) {
         super.onViewCreated(view)
 
-        binding.recycler.applyInsetter {
-            type(navigationBars = true) {
-                padding()
-            }
-        }
-
-        val ourAdapter = adapter ?: MigrationSourceAdapter(
-            getEnabledSources().map { MigrationSourceItem(it, isEnabled(it.id.toString())) },
-            this,
-        )
-        adapter = ourAdapter
-        binding.recycler.layoutManager = LinearLayoutManager(view.context)
-        binding.recycler.setHasFixedSize(true)
-        binding.recycler.adapter = ourAdapter
-        ourAdapter.itemTouchHelperCallback = null // Reset adapter touch adapter to fix drag after rotation
-        ourAdapter.isHandleDragEnabled = true
         dialog = MigrationBottomSheetDialog(activity!!, this)
 
-        actionFabScrollListener = actionFab?.shrinkOnScroll(binding.recycler)
-    }
-
-    override fun configureFab(fab: ExtendedFloatingActionButton) {
-        actionFab = fab
-        fab.setText(R.string.action_migrate)
-        fab.setIconResource(R.drawable.ic_arrow_forward_24dp)
-        fab.setOnClickListener {
-            if (!dialog.isShowing) {
-                dialog.show()
-            }
+        viewScope.launchIO {
+            items = getEnabledSources()
         }
     }
 
-    override fun cleanupFab(fab: ExtendedFloatingActionButton) {
-        fab.setOnClickListener(null)
-        actionFabScrollListener?.let { binding.recycler.removeOnScrollListener(it) }
-        actionFab = null
+    @Composable
+    override fun ComposeContent() {
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+        var fabExpanded by remember { mutableStateOf(true) }
+        val nestedScrollConnection = remember {
+            // All this lines just for fab state :/
+            object : NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    fabExpanded = available.y >= 0
+                    return scrollBehavior.nestedScrollConnection.onPreScroll(available, source)
+                }
+
+                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                    return scrollBehavior.nestedScrollConnection.onPostScroll(consumed, available, source)
+                }
+
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    return scrollBehavior.nestedScrollConnection.onPreFling(available)
+                }
+
+                override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                    return scrollBehavior.nestedScrollConnection.onPostFling(consumed, available)
+                }
+            }
+        }
+        Scaffold(
+            topBar = {
+                AppBar(
+                    title = stringResource(R.string.select_sources),
+                    navigateUp = router::popCurrentController,
+                    scrollBehavior = scrollBehavior,
+                    actions = {
+                        IconButton(onClick = { massSelect(false) }) {
+                            Icon(
+                                imageVector = Icons.Default.Deselect,
+                                contentDescription = stringResource(R.string.select_none),
+                            )
+                        }
+                        IconButton(onClick = { massSelect(true) }) {
+                            Icon(
+                                imageVector = Icons.Default.SelectAll,
+                                contentDescription = stringResource(R.string.action_select_all),
+                            )
+                        }
+                        val (expanded, onExpanded) = remember { mutableStateOf(false) }
+                        Box {
+                            IconButton(onClick = { onExpanded(!expanded) }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.MoreVert,
+                                    contentDescription = stringResource(R.string.label_more),
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { onExpanded(false) },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.match_enabled_sources)) },
+                                    onClick = { matchSelection(true) },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.match_pinned_sources)) },
+                                    onClick = { matchSelection(false) },
+                                )
+                            }
+                        }
+                    },
+                )
+            },
+            floatingActionButton = {
+                ExtendedFloatingActionButton(
+                    text = { Text(text = stringResource(R.string.action_migrate)) },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = stringResource(R.string.action_migrate),
+                        )
+                    },
+                    onClick = {
+                        if (!dialog.isShowing) {
+                            dialog.show()
+                        }
+                    },
+                    expanded = fabExpanded,
+                    modifier = Modifier.navigationBarsPadding(),
+                )
+            },
+        ) { contentPadding ->
+            val density = LocalDensity.current
+            val layoutDirection = LocalLayoutDirection.current
+            val left = with(density) { contentPadding.calculateLeftPadding(layoutDirection).toPx().roundToInt() }
+            val top = with(density) { contentPadding.calculateTopPadding().toPx().roundToInt() }
+            val right = with(density) { contentPadding.calculateRightPadding(layoutDirection).toPx().roundToInt() }
+            val bottom = with(density) { contentPadding.calculateBottomPadding().toPx().roundToInt() }
+            Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
+                AndroidView(
+                    factory = { context ->
+                        controllerBinding = PreMigrationControllerBinding.inflate(LayoutInflater.from(context))
+                        adapter = MigrationSourceAdapter(this@PreMigrationController)
+                        controllerBinding.recycler.adapter = adapter
+                        adapter?.isHandleDragEnabled = true
+                        adapter?.fastScroller = controllerBinding.fastScroller
+                        controllerBinding.recycler.layoutManager = LinearLayoutManager(context)
+
+                        ViewCompat.setNestedScrollingEnabled(controllerBinding.root, true)
+
+                        controllerBinding.root
+                    },
+                    update = {
+                        controllerBinding.recycler
+                            .updatePadding(
+                                left = left,
+                                top = top,
+                                right = right,
+                                bottom = bottom,
+                            )
+
+                        controllerBinding.fastScroller
+                            .updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                                leftMargin = left
+                                topMargin = top
+                                rightMargin = right
+                                bottomMargin = bottom
+                            }
+
+                        adapter?.updateDataSet(items)
+                    },
+                )
+            }
+        }
     }
 
     override fun startMigration(extraParam: String?) {
-        val listOfSources = adapter?.items?.filter {
-            it.sourceEnabled
-        }?.joinToString("/") { it.source.id.toString() }.orEmpty()
+        val listOfSources = adapter?.currentItems
+            ?.filterIsInstance<MigrationSourceItem>()
+            ?.filter {
+                it.sourceEnabled
+            }
+            ?.joinToString("/") { it.source.id.toString() }
+            .orEmpty()
+
         prefs.migrationSources().set(listOfSources)
 
         router.replaceTopController(
@@ -109,6 +241,11 @@ class PreMigrationController(bundle: Bundle? = null) :
                 ),
             ).withFadeTransaction().tag(MigrationListController.TAG),
         )
+    }
+
+    override fun onDestroyView(view: View) {
+        adapter = null
+        super.onDestroyView(view)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -123,10 +260,11 @@ class PreMigrationController(bundle: Bundle? = null) :
     }
 
     override fun onItemClick(view: View, position: Int): Boolean {
-        adapter?.getItem(position)?.let {
+        val adapter = adapter ?: return false
+        adapter.getItem(position)?.let {
             it.sourceEnabled = !it.sourceEnabled
         }
-        adapter?.notifyItemChanged(position)
+        adapter.notifyItemChanged(position)
         return false
     }
 
@@ -135,56 +273,70 @@ class PreMigrationController(bundle: Bundle? = null) :
      *
      * @return list containing enabled sources.
      */
-    private fun getEnabledSources(): List<HttpSource> {
+    private fun getEnabledSources(): List<MigrationSourceItem> {
         val languages = prefs.enabledLanguages().get()
         val sourcesSaved = prefs.migrationSources().get().split("/")
+            .mapNotNull { it.toLongOrNull() }
+        val disabledSources = prefs.disabledSources().get()
+            .mapNotNull { it.toLongOrNull() }
         val sources = sourceManager.getVisibleCatalogueSources()
             .filterIsInstance<HttpSource>()
             .filter { it.lang in languages }
             .sortedBy { "(${it.lang}) ${it.name}" }
-
-        return sources.filter { isEnabled(it.id.toString()) }.sortedBy { sourcesSaved.indexOf(it.id.toString()) } + sources.filterNot { isEnabled(it.id.toString()) }
-    }
-
-    fun isEnabled(id: String): Boolean {
-        val sourcesSaved = prefs.migrationSources().get()
-        val disabledSourceIds = prefs.disabledSources().get()
-        return if (sourcesSaved.isEmpty()) id !in disabledSourceIds
-        else sourcesSaved.split("/").contains(id)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.pre_migration, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_select_all, R.id.action_select_none -> {
-                adapter?.currentItems?.forEach {
-                    it.sourceEnabled = item.itemId == R.id.action_select_all
-                }
-                adapter?.notifyDataSetChanged()
+            .map {
+                MigrationSourceItem(
+                    it,
+                    isEnabled(
+                        sourcesSaved,
+                        disabledSources,
+                        it.id,
+                    ),
+                )
             }
-            R.id.action_match_enabled, R.id.action_match_pinned -> {
-                val enabledSources = if (item.itemId == R.id.action_match_enabled) {
-                    prefs.disabledSources().get().mapNotNull { it.toLongOrNull() }
-                } else {
-                    prefs.pinnedSources().get().mapNotNull { it.toLongOrNull() }
-                }
-                val items = adapter?.currentItems?.toList() ?: return true
-                items.forEach {
-                    it.sourceEnabled = if (item.itemId == R.id.action_match_enabled) {
-                        it.source.id !in enabledSources
-                    } else {
-                        it.source.id in enabledSources
-                    }
-                }
-                val sortedItems = items.sortedBy { it.source.name }.sortedBy { !it.sourceEnabled }
-                adapter?.updateDataSet(sortedItems)
-            }
-            else -> return super.onOptionsItemSelected(item)
+
+        return sources
+            .filter { it.sourceEnabled }
+            .sortedBy { sourcesSaved.indexOf(it.source.id) } +
+            sources.filterNot { it.sourceEnabled }
+    }
+
+    fun isEnabled(
+        sourcesSaved: List<Long>,
+        disabledSources: List<Long>,
+        id: Long,
+    ): Boolean {
+        return if (sourcesSaved.isEmpty()) {
+            id !in disabledSources
+        } else {
+            id in sourcesSaved
         }
-        return true
+    }
+
+    private fun massSelect(selectAll: Boolean) {
+        val adapter = adapter ?: return
+        adapter.currentItems.forEach {
+            it.sourceEnabled = selectAll
+        }
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun matchSelection(matchEnabled: Boolean) {
+        val adapter = adapter ?: return
+        val enabledSources = if (matchEnabled) {
+            prefs.disabledSources().get().mapNotNull { it.toLongOrNull() }
+        } else {
+            prefs.pinnedSources().get().mapNotNull { it.toLongOrNull() }
+        }
+        val items = adapter.currentItems.toList()
+        items.forEach {
+            it.sourceEnabled = if (matchEnabled) {
+                it.source.id !in enabledSources
+            } else {
+                it.source.id in enabledSources
+            }
+        }
+        val sortedItems = items.sortedBy { it.source.name }.sortedBy { !it.sourceEnabled }
+        adapter.updateDataSet(sortedItems)
     }
 
     companion object {
