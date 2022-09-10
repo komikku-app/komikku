@@ -52,6 +52,7 @@ android {
             //isMinifyEnabled = true
             //isShrinkResources = true
             setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
+            matchingFallbacks.add("release")
         }
         named("release") {
             isMinifyEnabled = true
@@ -235,6 +236,7 @@ dependencies {
     implementation(libs.insetter)
     implementation(libs.markwon)
     implementation(libs.aboutLibraries.compose)
+    implementation(libs.cascade)
 
     // Conductor
     implementation(libs.bundles.conductor)
