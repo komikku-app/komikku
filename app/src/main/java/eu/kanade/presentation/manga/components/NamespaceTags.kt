@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowRow
@@ -141,7 +142,14 @@ fun TagsChip(
                 SuggestionChip(
                     onClick = onClick,
                     onLongClick = onLongClick,
-                    label = { Text(text = text, style = MaterialTheme.typography.bodySmall) },
+                    label = {
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     border = border,
                     colors = SuggestionChipDefaults.suggestionChipColors(
                         containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
@@ -151,7 +159,14 @@ fun TagsChip(
             } else {
                 SuggestionChip(
                     onClick = onClick,
-                    label = { Text(text = text, style = MaterialTheme.typography.bodySmall) },
+                    label = {
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     border = borderM3,
                     colors = SuggestionChipDefaultsM3.suggestionChipColors(
                         containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
@@ -161,7 +176,14 @@ fun TagsChip(
             }
         } else {
             SuggestionChip(
-                label = { Text(text = text, style = MaterialTheme.typography.bodySmall) },
+                label = {
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 border = border,
                 colors = SuggestionChipDefaults.suggestionChipColors(
                     containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
