@@ -39,3 +39,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "TachiyomiSY"
 include(":app")
+include(":i18n")
