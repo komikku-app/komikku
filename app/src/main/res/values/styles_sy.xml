@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.Tachiyomi.Chip.Action" parent="Widget.Material3.Chip.Suggestion">
+        <item name="chipBackgroundColor">?attr/chipBackgroundColor</item>
+        <item name="android:textColor">?attr/chipTextColor</item>
+        <item name="rippleColor">?attr/colorControlHighlight</item>
+        <item name="chipStrokeWidth">0dp</item>
+
+        <!-- Smaller text/height -->
+        <item name="chipMinHeight">28dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodySmall</item>
+
+        <!-- Collapse horizontal margin -->
+        <item name="chipMinTouchTargetSize">28dp</item>
+
+        <!-- Custom chip states -->
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+</resources>
