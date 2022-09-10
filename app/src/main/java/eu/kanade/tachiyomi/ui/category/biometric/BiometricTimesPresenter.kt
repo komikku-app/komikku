@@ -1,44 +1,44 @@
 package eu.kanade.tachiyomi.ui.category.biometric
 
+import android.app.Application
 import android.os.Bundle
+import eu.kanade.presentation.category.BiometricTimesState
+import eu.kanade.presentation.category.BiometricTimesStateImpl
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.preference.plusAssign
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.consumeAsFlow
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
  * Presenter of [BiometricTimesController]. Used to manage the categories of the library.
  */
-class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
-
-    /**
-     * List containing categories.
-     */
-    private var timeRanges: List<TimeRange> = emptyList()
+class BiometricTimesPresenter(
+    private val state: BiometricTimesStateImpl = BiometricTimesState() as BiometricTimesStateImpl,
+) : BasePresenter<BiometricTimesController>(), BiometricTimesState by state {
 
     val preferences: PreferencesHelper = Injekt.get()
 
-    /**
-     * Called when the presenter is created.
-     *
-     * @param savedState The saved state of this presenter.
-     */
+    private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
+    val events = _events.consumeAsFlow()
+
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
-
-        preferences.authenticatorTimeRanges().asFlow().onEach { prefTimeRanges ->
-            timeRanges = prefTimeRanges.toList()
-                .mapNotNull(TimeRange::fromPreferenceString)
-
-            withUIContext {
-                view?.setBiometricTimeItems(timeRanges.map(::BiometricTimesItem))
-            }
-        }.launchIn(presenterScope)
+        presenterScope.launchIO {
+            // todo usecase
+            preferences.authenticatorTimeRanges().asFlow()
+                .collectLatest {
+                    val context = view?.activity ?: Injekt.get<Application>()
+                    state.isLoading = false
+                    state.timeRanges = it.toList()
+                        .mapNotNull(TimeRange::fromPreferenceString)
+                        .map { TimeRangeItem(it, it.getFormattedString(context)) }
+                }
+        }
     }
 
     /**
@@ -47,15 +47,16 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
      * @param name The name of the category to create.
      */
     fun createTimeRange(timeRange: TimeRange) {
-        // Do not allow duplicate categories.
-        if (timeRangeConflicts(timeRange)) {
-            launchUI {
-                view?.onTimeRangeConflictsError()
+        // todo usecase
+        presenterScope.launchIO {
+            // Do not allow duplicate categories.
+            if (timeRangeConflicts(timeRange)) {
+                _events.send(Event.TimeConflicts)
+                return@launchIO
             }
-            return
-        }
 
-        preferences.authenticatorTimeRanges() += timeRange.toPreferenceString()
+            preferences.authenticatorTimeRanges() += timeRange.toPreferenceString()
+        }
     }
 
     /**
@@ -63,16 +64,29 @@ class BiometricTimesPresenter : BasePresenter<BiometricTimesController>() {
      *
      * @param timeRanges The list of categories to delete.
      */
-    fun deleteTimeRanges(timeRanges: List<TimeRange>) {
-        preferences.authenticatorTimeRanges().set(
-            this.timeRanges.filterNot { it in timeRanges }.map(TimeRange::toPreferenceString).toSet(),
-        )
+    fun deleteTimeRanges(timeRange: TimeRangeItem) {
+        // todo usecase
+        presenterScope.launchIO {
+            preferences.authenticatorTimeRanges().set(
+                state.timeRanges.filterNot { it == timeRange }.map { it.timeRange.toPreferenceString() }.toSet(),
+            )
+        }
     }
 
     /**
      * Returns true if a category with the given name already exists.
      */
     private fun timeRangeConflicts(timeRange: TimeRange): Boolean {
-        return timeRanges.any { timeRange.conflictsWith(it) }
+        return timeRanges.any { timeRange.conflictsWith(it.timeRange) }
+    }
+
+    sealed class Event {
+        object TimeConflicts : Event()
+        object InternalError : Event()
+    }
+
+    sealed class Dialog {
+        object Create : Dialog()
+        data class Delete(val timeRange: TimeRangeItem) : Dialog()
     }
 }
