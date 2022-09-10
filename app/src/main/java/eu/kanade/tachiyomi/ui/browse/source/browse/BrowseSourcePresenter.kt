@@ -140,7 +140,7 @@ open class BrowseSourcePresenter(
 
     // SY -->
     val ehentaiBrowseDisplayMode by preferences.enhancedEHentaiView().asState()
-	// SY <--
+    // SY <--
 
     @Composable
     fun getColumnsPreferenceForCurrentOrientation(): State<GridCells> {

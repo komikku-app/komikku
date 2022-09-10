@@ -2,11 +2,11 @@ package eu.kanade.data.manga
 
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.mergedMangaReferenceMapper
-import eu.kanade.data.toLong
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MergeMangaSettingsUpdate
 import eu.kanade.domain.manga.repository.MangaMergeRepository
 import eu.kanade.tachiyomi.util.system.logcat
+import eu.kanade.tachiyomi.util.system.toLong
 import exh.merged.sql.models.MergedMangaReference
 import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority

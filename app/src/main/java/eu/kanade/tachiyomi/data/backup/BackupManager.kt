@@ -8,7 +8,6 @@ import data.Mangas
 import eu.kanade.data.DatabaseHandler
 import eu.kanade.data.exh.mergedMangaReferenceMapper
 import eu.kanade.data.manga.mangaMapper
-import eu.kanade.data.toLong
 import eu.kanade.domain.category.interactor.GetCategories
 import eu.kanade.domain.category.model.Category
 import eu.kanade.domain.history.model.HistoryUpdate
@@ -51,6 +50,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.logcat
+import eu.kanade.tachiyomi.util.system.toLong
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
 import exh.util.nullIfBlank

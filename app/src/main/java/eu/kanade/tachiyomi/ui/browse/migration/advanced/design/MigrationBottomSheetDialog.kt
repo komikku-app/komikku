@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.databinding.MigrationBottomSheetBinding
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
+import eu.kanade.tachiyomi.util.system.toInt
 import eu.kanade.tachiyomi.util.system.toast
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
 import uy.kohesive.injekt.injectLazy
@@ -118,8 +119,6 @@ class MigrationBottomSheetDialog(private val activity: Activity, private val lis
             pref.set(index == 1)
         }
     }
-
-    private fun Boolean.toInt() = if (this) 1 else 0
 }
 
 interface StartMigrationListener {
