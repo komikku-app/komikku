@@ -45,8 +45,6 @@ class SmartSearchController(bundle: Bundle) : FullComposeController<SmartSearchP
         ),
     )
 
-    override fun getTitle() = source.name
-
     override fun createPresenter() = SmartSearchPresenter(source, smartSearchConfig)
 
     @Composable

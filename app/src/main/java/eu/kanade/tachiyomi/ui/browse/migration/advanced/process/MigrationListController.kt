@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.browse.migration.advanced.process
 
-import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -95,12 +94,6 @@ class MigrationListController(bundle: Bundle? = null) :
         if (router.backstack.lastOrNull()?.controller == this@MigrationListController) {
             setTitle()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 
     private fun enableButtons() {

@@ -6,7 +6,6 @@ import android.os.Parcelable
 import android.view.View
 import androidx.compose.runtime.Composable
 import eu.kanade.presentation.browse.BrowseTabWrapper
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.requestPermissionsSafe
 import eu.kanade.tachiyomi.util.system.getParcelableCompat
@@ -15,15 +14,6 @@ import kotlinx.parcelize.Parcelize
 class SourcesController(bundle: Bundle? = null) : FullComposeController<SourcesPresenterWrapper>(bundle) {
     private val smartSearchConfig = args.getParcelableCompat<SmartSearchConfig>(SMART_SEARCH_CONFIG)
     private val mode = if (smartSearchConfig == null) Mode.CATALOGUE else Mode.SMART_SEARCH
-
-    override fun getTitle(): String? {
-        // SY -->
-        return when (mode) {
-            Mode.CATALOGUE -> applicationContext?.getString(R.string.label_sources)
-            Mode.SMART_SEARCH -> applicationContext?.getString(R.string.find_in_another_source)
-        }
-        // SY <--
-    }
 
     override fun createPresenter() = SourcesPresenterWrapper(controllerMode = mode, smartSearchConfig = smartSearchConfig)
 

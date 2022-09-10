@@ -113,11 +113,16 @@ class LibraryController(
             // SY -->
             onClickCleanTitles = ::cleanTitles,
             onClickMigrate = {
-                val skipPre = Injekt.get<PreferencesHelper>().skipPreMigration().get()
-                val selectedMangaIds = presenter.selection.filterNot { it.source == MERGED_SOURCE_ID }.mapNotNull { it.id }
+                val selectedMangaIds = presenter.selection
+                    .filterNot { it.source == MERGED_SOURCE_ID }
+                    .mapNotNull { it.id }
                 presenter.clearSelection()
                 if (selectedMangaIds.isNotEmpty()) {
-                    PreMigrationController.navigateToMigration(skipPre, router, selectedMangaIds)
+                    PreMigrationController.navigateToMigration(
+                        Injekt.get<PreferencesHelper>().skipPreMigration().get(),
+                        router,
+                        selectedMangaIds,
+                    )
                 } else {
                     activity?.toast(R.string.no_valid_manga)
                 }
