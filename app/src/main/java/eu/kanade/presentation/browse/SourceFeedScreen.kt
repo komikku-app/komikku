@@ -101,6 +101,7 @@ sealed class SourceFeedUI {
 @Composable
 fun SourceFeedScreen(
     presenter: SourceFeedPresenter,
+    onFabClick: () -> Unit,
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
     onClickSavedSearch: (SavedSearch) -> Unit,
@@ -115,6 +116,12 @@ fun SourceFeedScreen(
                 scrollBehavior = scrollBehavior,
                 incognitoMode = presenter.isIncognitoMode,
                 downloadedOnlyMode = presenter.isDownloadOnly,
+            )
+        },
+        floatingActionButton = {
+            BrowseSourceFloatingActionButton(
+                isVisible = presenter.filterItems.isNotEmpty(),
+                onFabClick = onFabClick,
             )
         },
     ) { paddingValues ->

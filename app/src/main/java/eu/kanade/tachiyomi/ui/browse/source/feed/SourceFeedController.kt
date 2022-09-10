@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.core.os.bundleOf
-import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.source.interactor.GetRemoteManga
 import eu.kanade.presentation.browse.SourceFeedScreen
@@ -14,7 +12,6 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
-import eu.kanade.tachiyomi.ui.base.controller.FabController
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
@@ -38,8 +35,7 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * [SourceFeedCardAdapter.OnMangaClickListener] called when manga is clicked in global search
  */
 open class SourceFeedController :
-    FullComposeController<SourceFeedPresenter>,
-    FabController {
+    FullComposeController<SourceFeedPresenter> {
 
     constructor(source: CatalogueSource?) : super(
         bundleOf(
@@ -57,8 +53,6 @@ open class SourceFeedController :
     constructor(bundle: Bundle) : this(bundle.getLong(SOURCE_EXTRA))
 
     var source: CatalogueSource? = null
-
-    private var actionFab: ExtendedFloatingActionButton? = null
 
     /**
      * Sheet containing filter items.
@@ -89,10 +83,6 @@ open class SourceFeedController :
     private val filterSerializer = FilterSerializer()
 
     fun initFilterSheet() {
-        if (presenter.sourceFilters.isEmpty()) {
-            actionFab?.text = activity!!.getString(R.string.saved_searches)
-        }
-
         filterSheet = SourceFilterSheet(
             activity!!,
             // SY -->
@@ -101,7 +91,7 @@ open class SourceFeedController :
             emptyList(),
             // SY <--
             onFilterClicked = {
-                val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
+                val allDefault = presenter.filters == presenter.source.getFilterList()
                 filterSheet?.dismiss()
                 if (allDefault) {
                     onBrowseClick(
@@ -110,7 +100,7 @@ open class SourceFeedController :
                 } else {
                     onBrowseClick(
                         presenter.searchQuery?.nullIfBlank(),
-                        filters = Json.encodeToString(filterSerializer.serialize(presenter.sourceFilters)),
+                        filters = Json.encodeToString(filterSerializer.serialize(presenter.filters)),
                     )
                 }
             },
@@ -135,9 +125,9 @@ open class SourceFeedController :
                         return@launchUI
                     }
 
-                    presenter.sourceFilters = FilterList(search.filterList)
+                    presenter.setFilters(FilterList(search.filterList))
                     filterSheet?.setFilters(presenter.filterItems)
-                    val allDefault = presenter.sourceFilters == presenter.source.getFilterList()
+                    val allDefault = presenter.filters == presenter.source.getFilterList()
                     filterSheet?.dismiss()
 
                     if (!allDefault) {
@@ -171,35 +161,13 @@ open class SourceFeedController :
             filterSheet?.setSavedSearches(presenter.loadSearches())
         }
         filterSheet?.setFilters(presenter.filterItems)
-
-        // TODO: [ExtendedFloatingActionButton] hide/show methods don't work properly
-        filterSheet?.setOnShowListener { actionFab?.isVisible = false }
-        filterSheet?.setOnDismissListener { actionFab?.isVisible = true }
-
-        actionFab?.setOnClickListener { filterSheet?.show() }
-
-        actionFab?.isVisible = true
-    }
-
-    override fun configureFab(fab: ExtendedFloatingActionButton) {
-        actionFab = fab
-
-        // Controlled by initFilterSheet()
-        fab.isVisible = false
-
-        fab.setText(R.string.action_filter)
-        fab.setIconResource(R.drawable.ic_filter_list_24dp)
-    }
-
-    override fun cleanupFab(fab: ExtendedFloatingActionButton) {
-        fab.setOnClickListener(null)
-        actionFab = null
     }
 
     @Composable
     override fun ComposeContent() {
         SourceFeedScreen(
             presenter = presenter,
+            onFabClick = { filterSheet?.show() },
             onClickBrowse = ::onBrowseClick,
             onClickLatest = ::onLatestClick,
             onClickSavedSearch = ::onSavedSearchClick,

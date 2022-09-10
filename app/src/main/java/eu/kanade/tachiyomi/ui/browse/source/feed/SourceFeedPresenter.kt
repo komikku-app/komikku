@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.os.Bundle
 import androidx.compose.runtime.getValue
-import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -12,7 +11,6 @@ import eu.kanade.domain.source.interactor.CountFeedSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.DeleteFeedSavedSearchById
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetFeedSavedSearchBySourceId
-import eu.kanade.domain.source.interactor.GetSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetSavedSearchBySourceIdFeed
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.presentation.browse.SourceFeedState
@@ -27,8 +25,7 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
-import eu.kanade.tachiyomi.ui.browse.source.browse.toItems
-import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
@@ -53,8 +50,6 @@ import xyz.nulldev.ts.api.http.serializer.FilterSerializer
  * Function calls should be done from here. UI calls should be done from the controller.
  *
  * @param source the source.
- * @param handler manages the database calls.
- * @param preferences manages the preference calls.
  */
 open class SourceFeedPresenter(
     private val state: SourceFeedStateImpl = SourceFeedState() as SourceFeedStateImpl,
@@ -66,7 +61,6 @@ open class SourceFeedPresenter(
     private val getFeedSavedSearchBySourceId: GetFeedSavedSearchBySourceId = Injekt.get(),
     private val getSavedSearchBySourceIdFeed: GetSavedSearchBySourceIdFeed = Injekt.get(),
     private val countFeedSavedSearchBySourceId: CountFeedSavedSearchBySourceId = Injekt.get(),
-    private val getSavedSearchBySourceId: GetSavedSearchBySourceId = Injekt.get(),
     private val insertFeedSavedSearch: InsertFeedSavedSearch = Injekt.get(),
     private val deleteFeedSavedSearchById: DeleteFeedSavedSearchById = Injekt.get(),
     private val getExhSavedSearch: GetExhSavedSearch = Injekt.get(),
@@ -90,21 +84,10 @@ open class SourceFeedPresenter(
      */
     private var fetchImageSubscription: Subscription? = null
 
-    /**
-     * Modifiable list of filters.
-     */
-    var sourceFilters = FilterList()
-        set(value) {
-            field = value
-            filterItems = value.toItems()
-        }
-
-    var filterItems: List<IFlexible<*>> = emptyList()
-
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
-        sourceFilters = source.getFilterList()
+        setFilters(source.getFilterList())
 
         getFeedSavedSearchBySourceId.subscribe(source.id)
             .onEach {
@@ -122,16 +105,16 @@ open class SourceFeedPresenter(
         super.onDestroy()
     }
 
+    fun setFilters(filters: FilterList) {
+        state.filters = filters
+    }
+
     suspend fun hasTooManyFeeds(): Boolean {
         return countFeedSavedSearchBySourceId.await(source.id) > 10
     }
 
-    suspend fun getSourceSavedSearches(): List<SavedSearch> {
-        return getSavedSearchBySourceId.await(source.id)
-    }
-
     fun createFeed(savedSearchId: Long) {
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             insertFeedSavedSearch.await(
                 FeedSavedSearch(
                     id = -1,
@@ -144,7 +127,7 @@ open class SourceFeedPresenter(
     }
 
     fun deleteFeed(feed: FeedSavedSearch) {
-        launchIO {
+        presenterScope.launchNonCancellableIO {
             deleteFeedSavedSearchById.await(feed.id)
         }
     }

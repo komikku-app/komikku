@@ -85,7 +85,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        return filter == (other as SelectItem).filter
+        return filter == (other as AutoComplete).filter
     }
 
     override fun hashCode(): Int {
