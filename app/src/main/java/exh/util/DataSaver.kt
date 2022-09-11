@@ -55,7 +55,9 @@ private class DataSaverImpl(preferences: PreferencesHelper) : DataSaver {
                 imageUrl.contains(".gif", true) -> if (ignoreGif) imageUrl else getUrl(imageUrl)
                 else -> getUrl(imageUrl)
             }
-        } else imageUrl
+        } else {
+            imageUrl
+        }
     }
 
     private fun getUrl(imageUrl: String): String {

@@ -39,7 +39,9 @@ fun PervEdenDescription(state: MangaScreenState.Success, openMetadataViewer: () 
             binding.language.text = if (language != null) {
                 val local = Locale(language)
                 local.displayName
-            } else context.getString(R.string.unknown)
+            } else {
+                context.getString(R.string.unknown)
+            }
 
             binding.ratingBar.rating = meta.rating ?: 0F
             @SuppressLint("SetTextI18n")

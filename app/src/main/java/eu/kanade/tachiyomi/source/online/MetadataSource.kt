@@ -58,7 +58,9 @@ interface MetadataSource<M : RaisedSearchMetadata, I> : CatalogueSource {
         val metadata = if (mangaId != null) {
             val flatMetadata = getFlatMetadataById.await(mangaId)
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
-        } else newMetaInstance()
+        } else {
+            newMetaInstance()
+        }
 
         parseIntoMetadata(metadata, input)
         if (mangaId != null) {

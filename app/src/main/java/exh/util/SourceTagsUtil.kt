@@ -41,8 +41,12 @@ object SourceTagsUtil {
                     TSUMINO_SOURCE_ID -> wrapTagTsumino(parsed.namespace, parsed.name.substringBefore('|').trim())
                     else -> wrapTag(parsed.namespace, parsed.name.substringBefore('|').trim())
                 }
-            } else null
-        } else null
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     }
 
     private fun wrapTag(namespace: String, tag: String) = if (tag.contains(spaceRegex)) {
@@ -103,7 +107,8 @@ object SourceTagsUtil {
         IMAGE_SET_COLOR("#3f51b5"),
         COSPLAY_COLOR("#9c27b0"),
         ASIAN_PORN_COLOR("#9575cd"),
-        MISC_COLOR("#f06292");
+        MISC_COLOR("#f06292"),
+        ;
 
         constructor(color: String) : this(Color.parseColor(color))
     }

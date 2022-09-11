@@ -49,7 +49,9 @@ class ApiMangaParser(
         val metadata = if (mangaId != null) {
             val flatMetadata = getFlatMetadataById.await(mangaId)
             flatMetadata?.raise(metaClass) ?: newMetaInstance()
-        } else newMetaInstance()
+        } else {
+            newMetaInstance()
+        }
 
         parseIntoMetadata(metadata, input, simpleChapters, statistics)
         if (mangaId != null) {
@@ -253,7 +255,9 @@ class ApiMangaParser(
             .map {
                 if (it == "no group") {
                     "No Group"
-                } else it
+                } else {
+                    it
+                }
             }
             .toSet()
             .ifEmpty { setOf("No Group") }

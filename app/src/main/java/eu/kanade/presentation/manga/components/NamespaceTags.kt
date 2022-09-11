@@ -70,7 +70,9 @@ value class SearchMetadataChips(
                                         EHentaiSearchMetadata.TAG_TYPE_LIGHT -> 1
                                         else -> null
                                     }
-                                } else null,
+                                } else {
+                                    null
+                                },
                             )
                         }
                         .groupBy { it.namespace.orEmpty() },
@@ -86,7 +88,9 @@ value class SearchMetadataChips(
                             it.namespace.orEmpty()
                         },
                 )
-            } else null
+            } else {
+                null
+            }
         }
     }
 }

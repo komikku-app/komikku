@@ -40,7 +40,9 @@ val MANGADEX_LOGIN_PATCH: EHInterceptor = { request, response, sourceId ->
                 )
             }
         }
-    } else response
+    } else {
+        response
+    }
 }
 
 val MANGADEX_SOURCE_IDS = listOf(

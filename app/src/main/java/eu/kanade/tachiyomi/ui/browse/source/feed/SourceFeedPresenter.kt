@@ -139,7 +139,9 @@ open class SourceFeedPresenter(
         return listOfNotNull(
             if (source.supportsLatest) {
                 SourceFeedUI.Latest(null)
-            } else null,
+            } else {
+                null
+            },
             SourceFeedUI.Browse(null),
         ) + feedSavedSearch
             .map { SourceFeedUI.SourceSavedSearch(it, savedSearches[it.savedSearch]!!, null) }
@@ -244,7 +246,9 @@ open class SourceFeedPresenter(
                                         }
                                     },
                                 )
-                            } else itemUI
+                            } else {
+                                itemUI
+                            }
                         }
                     }
                 },

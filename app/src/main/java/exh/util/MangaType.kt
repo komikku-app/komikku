@@ -80,7 +80,9 @@ fun DomainManga.mangaType(sourceName: String? = Injekt.get<SourceManager>().get(
 fun Manga.defaultReaderType(type: MangaType = mangaType()): Int? {
     return if (type == MangaType.TYPE_MANHWA || type == MangaType.TYPE_WEBTOON) {
         ReadingModeType.WEBTOON.prefValue
-    } else null
+    } else {
+        null
+    }
 }
 
 private fun isMangaTag(tag: String): Boolean {
@@ -184,5 +186,5 @@ enum class MangaType {
     TYPE_MANHWA,
     TYPE_MANHUA,
     TYPE_COMIC,
-    TYPE_WEBTOON
+    TYPE_WEBTOON,
 }

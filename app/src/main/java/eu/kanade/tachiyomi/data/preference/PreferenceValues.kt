@@ -89,7 +89,7 @@ object PreferenceValues {
     enum class GroupLibraryMode {
         GLOBAL,
         ALL_BUT_UNGROUPED,
-        ALL
+        ALL,
     }
     // SY <--
 }

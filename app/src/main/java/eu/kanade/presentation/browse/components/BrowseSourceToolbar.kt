@@ -132,7 +132,9 @@ fun BrowseSourceRegularToolbar(
                             icon = Icons.Outlined.Settings,
                             onClick = onSettingsClick,
                         )
-                    } else null,
+                    } else {
+                        null
+                    },
                     // SY <--
                 ),
             )

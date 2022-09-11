@@ -45,7 +45,9 @@ class MigrationBottomSheetDialog(private val activity: Activity, private val lis
             listener.startMigration(
                 if (binding.useSmartSearch.isChecked && binding.extraSearchParamText.text.isNotBlank()) {
                     binding.extraSearchParamText.toString()
-                } else null,
+                } else {
+                    null
+                },
             )
             dismiss()
         }

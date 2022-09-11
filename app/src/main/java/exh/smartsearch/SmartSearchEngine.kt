@@ -34,7 +34,9 @@ class SmartSearchEngine(
                 async(Dispatchers.Default) {
                     val builtQuery = if (extraSearchParams != null) {
                         "$query ${extraSearchParams.trim()}"
-                    } else query
+                    } else {
+                        query
+                    }
 
                     val searchResults = source.fetchSearchManga(1, builtQuery, FilterList()).awaitSingle()
 
@@ -56,7 +58,9 @@ class SmartSearchEngine(
         val eligibleManga = supervisorScope {
             val searchQuery = if (extraSearchParams != null) {
                 "$title ${extraSearchParams.trim()}"
-            } else title
+            } else {
+                title
+            }
             val searchResults = source.fetchSearchManga(1, searchQuery, FilterList()).awaitSingle()
 
             if (searchResults.mangas.size == 1) {

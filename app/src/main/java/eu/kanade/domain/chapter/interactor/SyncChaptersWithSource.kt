@@ -181,7 +181,9 @@ class SyncChaptersWithSource(
                     updatedToAdd = updatedToAdd.map {
                         if (it !in reAdded) {
                             it.copy(lastPageRead = max)
-                        } else it
+                        } else {
+                            it
+                        }
                     }
                 }
             }

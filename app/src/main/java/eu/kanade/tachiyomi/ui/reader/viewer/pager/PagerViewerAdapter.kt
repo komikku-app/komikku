@@ -276,9 +276,13 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
                         val fullPageBeforeIndex = max(
                             0,
                             (
-                                if (index > -1) (
-                                    items.take(index).indexOfLast { it?.fullPage == true }
-                                    ) else -1
+                                if (index > -1) {
+                                    (
+                                        items.take(index).indexOfLast { it?.fullPage == true }
+                                        )
+                                } else {
+                                    -1
+                                }
                                 ),
                         )
                         // Add a shifted page to the first place there isnt a full page

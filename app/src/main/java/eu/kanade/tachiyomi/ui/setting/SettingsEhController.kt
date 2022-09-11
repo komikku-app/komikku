@@ -470,7 +470,9 @@ class SettingsEhController : SettingsController() {
 
                             val statsText = if (stats != null) {
                                 context.getString(R.string.gallery_updater_stats_text, getRelativeTimeString(getRelativeTimeFromNow(stats.startTime.milliseconds), context), stats.updateCount, stats.possibleUpdates)
-                            } else context.getString(R.string.gallery_updater_not_ran_yet)
+                            } else {
+                                context.getString(R.string.gallery_updater_not_ran_yet)
+                            }
 
                             val allMeta = getExhFavoriteMangaWithMetadata.await()
                                 .mapNotNull {

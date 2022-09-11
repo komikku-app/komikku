@@ -284,7 +284,9 @@ class MangaPresenter(
                 ) { (manga, chapters), mergedChapters ->
                     if (manga.source == MERGED_SOURCE_ID) {
                         manga to mergedChapters
-                    } else manga to chapters
+                    } else {
+                        manga to chapters
+                    }
                 }
                 .onEach { (manga, chapters) ->
                     if (chapters.isNotEmpty() && manga.isEhBasedManga() && DebugToggles.ENABLE_EXH_ROOT_REDIRECT.enabled) {
@@ -333,7 +335,9 @@ class MangaPresenter(
                                 references.map { it.mangaSourceId }.distinct()
                                     .map { sourceManager.getOrStub(it) },
                             )
-                        } else null
+                        } else {
+                            null
+                        }
                     },
                 ) { state, mergedData ->
                     state.copy(mergedData = mergedData)
@@ -420,7 +424,9 @@ class MangaPresenter(
         return if (flatMetadata != null) {
             val metaClass = source.getMainSource<MetadataSource<*, *>>()?.metaClass
             if (metaClass != null) flatMetadata.raise(metaClass) else null
-        } else null
+        } else {
+            null
+        }
     }
 
     fun updateMangaInfo(
@@ -765,7 +771,9 @@ class MangaPresenter(
             mergedManga?.forEach { (manga, source) ->
                 downloadManager.deleteManga(manga, source)
             }
-        } else /* SY <-- */ downloadManager.deleteManga(state.manga, state.source)
+        } else {
+            /* SY <-- */ downloadManager.deleteManga(state.manga, state.source)
+        }
     }
 
     /**
@@ -1361,7 +1369,9 @@ class MangaPresenter(
                             }
                             else -> trackItems
                         }
-                    } else trackItems
+                    } else {
+                        trackItems
+                    }
                 }
                 // SY <--
                 .collectLatest { trackItems ->

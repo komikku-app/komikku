@@ -137,5 +137,5 @@ fun LibraryGridCover(
 
 enum class PlayButtonPosition(val alignment: Alignment) {
     Top(Alignment.TopEnd),
-    Bottom(Alignment.BottomEnd)
+    Bottom(Alignment.BottomEnd),
 }

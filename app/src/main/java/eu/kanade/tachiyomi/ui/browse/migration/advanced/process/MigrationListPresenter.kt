@@ -106,7 +106,9 @@ class MigrationListPresenter(
                                         if (manga.source == MERGED_SOURCE_ID) {
                                             getMergedReferencesById.await(manga.id)
                                                 .map { sourceManager.getOrStub(it.mangaSourceId) }
-                                        } else null,
+                                        } else {
+                                            null
+                                        },
                                     ),
                                     parentContext = presenterScope.coroutineContext,
                                     getManga = ::getManga,
@@ -233,7 +235,9 @@ class MigrationListPresenter(
                                         }
                                         syncChaptersWithSource.await(chapters, localManga, source)
                                         localManga
-                                    } else null
+                                    } else {
+                                        null
+                                    }
                                 } catch (e: CancellationException) {
                                     // Ignore cancellations
                                     throw e

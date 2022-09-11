@@ -40,7 +40,9 @@ fun sourcesTab(
                 onClick = { router?.pushController(SourceFilterController()) },
             ),
         )
-    } else emptyList(),
+    } else {
+        emptyList()
+    },
     // SY <--
     content = {
         SourcesScreen(

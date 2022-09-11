@@ -252,7 +252,9 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return if (result) {
             mdList.saveCredentials(username, password)
             true
-        } else false
+        } else {
+            false
+        }
     }
 
     override suspend fun logout(): Boolean {

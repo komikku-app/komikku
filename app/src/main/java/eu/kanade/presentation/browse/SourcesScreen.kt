@@ -181,7 +181,9 @@ fun SourceHeader(
     Text(
         text = if (!isCategory) {
             LocaleHelper.getSourceDisplayName(language, context)
-        } else language,
+        } else {
+            language
+        },
         modifier = modifier
             .padding(horizontal = horizontalPadding, vertical = 8.dp),
         style = MaterialTheme.typography.header,

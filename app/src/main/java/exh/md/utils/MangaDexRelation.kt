@@ -20,7 +20,8 @@ enum class MangaDexRelation(@StringRes val resId: Int, val mdString: String?) {
     PRESERIALIZATION(R.string.relation_preserialization, "preserialization"),
     COLORED(R.string.relation_colored, "colored"),
     SERIALIZATION(R.string.relation_serialization, "serialization"),
-    ALTERNATE_VERSION(R.string.relation_alternate_version, "alternate_version");
+    ALTERNATE_VERSION(R.string.relation_alternate_version, "alternate_version"),
+    ;
 
     companion object {
         fun fromDex(mdString: String) = values().find { it.mdString == mdString }

@@ -26,5 +26,7 @@ fun Response.interceptAsHtml(block: (Document) -> Unit): Response {
         }
 
         rebuiltResponse
-    } else this
+    } else {
+        this
+    }
 }

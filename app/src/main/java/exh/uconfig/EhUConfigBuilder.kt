@@ -82,7 +82,8 @@ object Entry {
     enum class UseHentaiAtHome(override val value: String) : ConfigItem {
         ANY("0"),
         DEFAULTONLY("1"),
-        NO("2");
+        NO("2"),
+        ;
 
         override val key = "uh"
     }
@@ -94,7 +95,8 @@ object Entry {
         `1600`("4"),
         `1280`("3"),
         `980`("2"),
-        `780`("1");
+        `780`("1"),
+        ;
 
         override val key = "xr"
     }
@@ -102,7 +104,8 @@ object Entry {
 
     enum class TitleDisplayLanguage(override val value: String) : ConfigItem {
         DEFAULT("0"),
-        JAPANESE("1");
+        JAPANESE("1"),
+        ;
 
         override val key = "tl"
     }
@@ -118,7 +121,8 @@ object Entry {
         `25`("0"),
         `50`("1"),
         `100`("2"),
-        `200`("3");
+        `200`("3"),
+        ;
 
         override val key = "rc"
     }
@@ -127,7 +131,8 @@ object Entry {
         `4`("0"),
         `10`("1"),
         `20`("2"),
-        `40`("3");
+        `40`("3"),
+        ;
 
         override val key = "tr"
     }
@@ -135,7 +140,8 @@ object Entry {
 
     enum class UseOriginalImages(override val value: String) : ConfigItem {
         NO("0"),
-        YES("1");
+        YES("1"),
+        ;
 
         override val key = "oi"
     }

@@ -76,7 +76,9 @@ class BrowserActionActivity : AppCompatActivity() {
                         NoopActionCompletionVerifier(it)
                     }
                 }
-        } else null
+        } else {
+            null
+        }
 
         @Suppress("UNCHECKED_CAST")
         val headers = (
@@ -94,7 +96,9 @@ class BrowserActionActivity : AppCompatActivity() {
         @Suppress("NOT_NULL_ASSERTION_ON_CALLABLE_REFERENCE", "UNCHECKED_CAST")
         val verifyComplete: ((String) -> Boolean)? = if (source != null) {
             source::verifyComplete!!
-        } else intent.getSerializableExtraCompat(VERIFY_LAMBDA_EXTRA)
+        } else {
+            intent.getSerializableExtraCompat(VERIFY_LAMBDA_EXTRA)
+        }
 
         if (verifyComplete == null || url == null) {
             finish()
@@ -105,7 +109,9 @@ class BrowserActionActivity : AppCompatActivity() {
 
         binding.toolbar.title = if (source != null) {
             "${source.name}: $actionStr"
-        } else actionStr
+        } else {
+            actionStr
+        }
 
         val parsedUrl = URL(url)
 

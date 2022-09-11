@@ -40,13 +40,17 @@ class BrowseController : FullComposeController<BrowsePresenter>, RootController 
             titleRes = R.string.browse,
             // SY -->
             tabs = (
-                if (presenter.feedTabInFront) listOf(
-                    feedTab(router, presenter.feedPresenter),
-                    sourcesTab(router, presenter.sourcesPresenter),
-                ) else listOf(
-                    sourcesTab(router, presenter.sourcesPresenter),
-                    feedTab(router, presenter.feedPresenter),
-                )
+                if (presenter.feedTabInFront) {
+                    listOf(
+                        feedTab(router, presenter.feedPresenter),
+                        sourcesTab(router, presenter.sourcesPresenter),
+                    )
+                } else {
+                    listOf(
+                        sourcesTab(router, presenter.sourcesPresenter),
+                        feedTab(router, presenter.feedPresenter),
+                    )
+                }
                 ) + listOf(
                 extensionsTab(router, presenter.extensionsPresenter),
                 migrateSourcesTab(router, presenter.migrationSourcesPresenter),

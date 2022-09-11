@@ -20,6 +20,6 @@ interface LoginSource : Source {
     enum class AuthSupport {
         NOT_SUPPORTED,
         SUPPORTED,
-        REQUIRED
+        REQUIRED,
     }
 }

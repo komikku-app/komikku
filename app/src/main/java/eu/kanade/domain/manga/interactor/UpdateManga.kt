@@ -38,7 +38,9 @@ class UpdateManga(
         val title = if (remoteManga.title.isNotBlank() && localManga.ogTitle != remoteManga.title) {
             downloadManager.renameMangaDir(localManga.ogTitle, remoteManga.title, localManga.source)
             remoteManga.title
-        } else null
+        } else {
+            null
+        }
         // SY <--
 
         val coverLastModified =

@@ -124,7 +124,9 @@ fun BrowseSourceEHentaiListItem(
                 resources.getQuantityString(R.plurals.browse_language_and_pages, pageCount, pageCount, locale.toLanguageTag().uppercase())
             } else if (pageCount != null) {
                 resources.getQuantityString(R.plurals.num_pages, pageCount, pageCount)
-            } else locale?.toLanguageTag()?.uppercase().orEmpty()
+            } else {
+                locale?.toLanguageTag()?.uppercase().orEmpty()
+            }
         }
     }
     val datePosted by produceState("", metadata) {
@@ -237,7 +239,9 @@ fun BrowseSourceEHentaiListItem(
                     Card(
                         colors = if (color != null) {
                             CardDefaults.cardColors(Color(color))
-                        } else CardDefaults.cardColors(),
+                        } else {
+                            CardDefaults.cardColors()
+                        },
                     ) {
                         Text(
                             text = if (res != null) {

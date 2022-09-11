@@ -19,5 +19,7 @@ val CAPTCHA_DETECTION_PATCH: EHInterceptor = { request, response, sourceId ->
                 )
             }
         }
-    } else response
+    } else {
+        response
+    }
 }

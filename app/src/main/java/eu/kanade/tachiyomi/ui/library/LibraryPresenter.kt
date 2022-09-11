@@ -353,8 +353,11 @@ class LibraryPresenter(
             if (filterLewd == State.IGNORE.value) return@lewd true
             val isLewd = item.manga.isLewd()
 
-            return@lewd if (filterLewd == State.INCLUDE.value) isLewd
-            else !isLewd
+            return@lewd if (filterLewd == State.INCLUDE.value) {
+                isLewd
+            } else {
+                !isLewd
+            }
         }
         // SY <--
 
@@ -412,7 +415,9 @@ class LibraryPresenter(
                                 getMergedMangaById.await(mergeMangaId)
                             }.sumOf { downloadManager.getDownloadCount(it) }
                         } ?: 0
-                    } else /* SY <-- */ downloadManager.getDownloadCount(item.manga.toDomainManga()!!)
+                    } else {
+                        /* SY <-- */ downloadManager.getDownloadCount(item.manga.toDomainManga()!!)
+                    }
                 } else {
                     // Unset download count if not enabled
                     -1
@@ -758,8 +763,10 @@ class LibraryPresenter(
                         getChapterByMangaId.await(manga.id).minByOrNull { it.sourceOrder }
                             ?.takeUnless { it.read }
                             .let(::listOfNotNull)
-                    } else /* SY <-- */ getChapterByMangaId.await(manga.id)
-                        .filter { !it.read }
+                    } else {
+                        /* SY <-- */ getChapterByMangaId.await(manga.id)
+                            .filter { !it.read }
+                    }
 
                     downloadManager.downloadChapters(manga, chapters.map { it.toDbChapter() })
                 }
@@ -852,7 +859,9 @@ class LibraryPresenter(
                                 val mergedSource = sources.firstOrNull { mergedManga.source == it.id } as? HttpSource ?: return@merge
                                 downloadManager.deleteManga(mergedManga, mergedSource)
                             }
-                        } else downloadManager.deleteManga(manga.toDomainManga()!!, source)
+                        } else {
+                            downloadManager.deleteManga(manga.toDomainManga()!!, source)
+                        }
                     }
                 }
             }
@@ -905,7 +914,9 @@ class LibraryPresenter(
         return produceState(initialValue = default, category, loadedManga, mangaCountVisibility, tabVisibility, groupType, context) {
             val title = if (tabVisibility.not()) {
                 getCategoryName(context, category, groupType, categoryName)
-            } else defaultTitle
+            } else {
+                defaultTitle
+            }
             val count = when {
                 category == null || mangaCountVisibility.not() -> null
                 tabVisibility.not() -> loadedManga[category.id]?.size
@@ -966,7 +977,9 @@ class LibraryPresenter(
                     val mangaWithMetaIds = getIdsOfFavoriteMangaWithMetadata.await()
                     val tracks = if (loggedServices.isNotEmpty()) {
                         getTracks.await(unfiltered.mapNotNull { it.manga.id }.distinct())
-                    } else emptyMap()
+                    } else {
+                        emptyMap()
+                    }
                     val sources = unfiltered
                         .distinctBy { it.manga.source }
                         .mapNotNull { sourceManager.get(it.manga.source) }
@@ -1091,7 +1104,9 @@ class LibraryPresenter(
                 val status = trackService.getStatus(it.status.toInt())
                 val name = services[it.syncId]
                 status.contains(constraint, true) || name?.contains(constraint, true) == true
-            } else false
+            } else {
+                false
+            }
         }
     }
 
@@ -1150,7 +1165,9 @@ class LibraryPresenter(
     fun getFirstUnread(manga: Manga): Chapter? {
         val chapters = if (manga.source == MERGED_SOURCE_ID) {
             (sourceManager.get(MERGED_SOURCE_ID) as MergedSource).getChaptersAsBlocking(manga.id)
-        } else runBlocking { getChapterByMangaId.await(manga.id) }
+        } else {
+            runBlocking { getChapterByMangaId.await(manga.id) }
+        }
         return if (manga.isEhBasedManga()) {
             val chapter = chapters.sortedBy { it.sourceOrder }.getOrNull(0)
             if (chapter?.read == false) chapter else null

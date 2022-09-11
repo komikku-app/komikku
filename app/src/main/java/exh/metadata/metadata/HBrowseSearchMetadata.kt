@@ -28,7 +28,9 @@ class HBrowseSearchMetadata : RaisedSearchMetadata() {
         // Guess thumbnail URL if manga does not have thumbnail URL
         val cover = if (manga.thumbnail_url.isNullOrBlank()) {
             guessThumbnailUrl(hbId.toString())
-        } else null
+        } else {
+            null
+        }
 
         val artist = tags.ofNamespace(ARTIST_NAMESPACE).joinToString { it.name }
 

@@ -9,7 +9,8 @@ import eu.kanade.tachiyomi.data.preference.PreferenceKeys
 enum class EHLogLevel(@StringRes val nameRes: Int, @StringRes val description: Int) {
     MINIMAL(R.string.log_minimal, R.string.log_minimal_desc),
     EXTRA(R.string.log_extra, R.string.log_extra_desc),
-    EXTREME(R.string.log_extreme, R.string.log_extreme_desc);
+    EXTREME(R.string.log_extreme, R.string.log_extreme_desc),
+    ;
 
     companion object {
         private var curLogLevel: Int? = null

@@ -122,8 +122,12 @@ class SourceManager(
             val matched = factories.find { sourceQName.startsWith(it) }
             if (matched != null) {
                 DELEGATED_SOURCES[matched]
-            } else DELEGATED_SOURCES[sourceQName]
-        } else null
+            } else {
+                DELEGATED_SOURCES[sourceQName]
+            }
+        } else {
+            null
+        }
         val newSource = if (this is HttpSource && delegate != null) {
             xLogD("Delegating source: %s -> %s!", sourceQName, delegate.newSourceClass.qualifiedName)
             val enhancedSource = EnhancedHttpSource(
@@ -139,12 +143,16 @@ class SourceManager(
                 delegate.factory,
             )
             enhancedSource
-        } else this
+        } else {
+            this
+        }
 
         return if (id in BlacklistedSources.BLACKLISTED_EXT_SOURCES) {
             xLogD("Removing blacklisted source: (id: %s, name: %s, lang: %s)!", id, name, (this as? CatalogueSource)?.lang)
             null
-        } else newSource
+        } else {
+            newSource
+        }
         // EXH <--
     }
 

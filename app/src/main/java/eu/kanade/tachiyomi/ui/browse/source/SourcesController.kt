@@ -32,7 +32,7 @@ class SourcesController(bundle: Bundle? = null) : FullComposeController<SourcesP
 
     enum class Mode {
         CATALOGUE,
-        SMART_SEARCH
+        SMART_SEARCH,
     }
 
     companion object {

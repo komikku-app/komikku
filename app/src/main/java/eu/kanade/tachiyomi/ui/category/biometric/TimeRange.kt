@@ -46,7 +46,9 @@ data class TimeRange(private val startTime: Duration, private val endTime: Durat
                     timeRange.substring(0, index).toDoubleOrNull()?.minutes ?: return null,
                     timeRange.substring(index + 1).toDoubleOrNull()?.minutes ?: return null,
                 )
-            } else return null
+            } else {
+                return null
+            }
         }
     }
 }

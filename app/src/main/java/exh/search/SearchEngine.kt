@@ -84,7 +84,9 @@ class SearchEngine {
                         textToSubQueries(component.namespace, null)
                     }
                 }
-            } else error("Unknown query component!")
+            } else {
+                error("Unknown query component!")
+            }
 
             if (query != null) {
                 (if (component.excluded) exclude else include) += query

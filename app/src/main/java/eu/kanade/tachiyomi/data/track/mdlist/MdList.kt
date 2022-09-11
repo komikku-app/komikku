@@ -100,7 +100,9 @@ class MdList(private val context: Context, id: Long) : TrackService(id) {
             if (it.status == FollowStatus.UNFOLLOWED.int) {
                 it.status = if (hasReadChapters) {
                     FollowStatus.READING.int
-                } else FollowStatus.PLAN_TO_READ.int
+                } else {
+                    FollowStatus.PLAN_TO_READ.int
+                }
             }
         },
     )

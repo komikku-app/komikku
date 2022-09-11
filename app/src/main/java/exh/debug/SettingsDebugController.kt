@@ -162,7 +162,9 @@ class SettingsDebugController : BasicFullComposeController() {
                             .capitalize(Locale.getDefault()),
                         subtitleAnnotated = if (pref.value != default) {
                             AnnotatedString("MODIFIED", SpanStyle(color = Color.Red))
-                        } else null,
+                        } else {
+                            null
+                        },
                     )
                 }
                 item {

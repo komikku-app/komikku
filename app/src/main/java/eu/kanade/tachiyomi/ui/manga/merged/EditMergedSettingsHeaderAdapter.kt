@@ -99,7 +99,9 @@ class EditMergedSettingsHeaderAdapter(private val controller: EditMergedSettings
             mergedMangas.indexOfFirst { it.second.isInfoManga }.let {
                 if (it != -1) {
                     binding.mangaInfoSpinner.setSelection(it)
-                } else binding.mangaInfoSpinner.setSelection(0)
+                } else {
+                    binding.mangaInfoSpinner.setSelection(0)
+                }
             }
 
             binding.mangaInfoSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {

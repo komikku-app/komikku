@@ -554,12 +554,15 @@ class SettingsAdvancedController(
             withUIContext {
                 val activity = activity ?: return@withUIContext
                 val cleanupString =
-                    if (foldersCleared == 0) activity.getString(R.string.no_folders_to_cleanup)
-                    else resources!!.getQuantityString(
-                        R.plurals.cleanup_done,
-                        foldersCleared,
-                        foldersCleared,
-                    )
+                    if (foldersCleared == 0) {
+                        activity.getString(R.string.no_folders_to_cleanup)
+                    } else {
+                        resources!!.getQuantityString(
+                            R.plurals.cleanup_done,
+                            foldersCleared,
+                            foldersCleared,
+                        )
+                    }
                 activity.toast(cleanupString, Toast.LENGTH_LONG)
             }
         }

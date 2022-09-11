@@ -18,7 +18,8 @@ enum class TrackStatus(val int: Int, @StringRes val res: Int) {
     PAUSED(4, R.string.on_hold),
     COMPLETED(5, R.string.completed),
     DROPPED(6, R.string.dropped),
-    OTHER(7, R.string.not_tracked);
+    OTHER(7, R.string.not_tracked),
+    ;
 
     companion object {
         fun parseTrackerStatus(tracker: Long, statusLong: Long): TrackStatus? {

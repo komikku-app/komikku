@@ -331,7 +331,9 @@ class Downloader(
 
         val dataSaver = if (preferences.dataSaverDownloader().get()) {
             DataSaver(download.source, preferences)
-        } else DataSaver.NoOp
+        } else {
+            DataSaver.NoOp
+        }
 
         pageListObservable
             .doOnNext { _ ->

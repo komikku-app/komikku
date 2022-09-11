@@ -20,7 +20,8 @@ enum class DebugToggles(val default: Boolean) {
     RESTRICT_EXH_GALLERY_UPDATE_CHECK_FREQUENCY(true),
 
     // Pretend that all galleries only have a single version
-    INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS(false);
+    INCLUDE_ONLY_ROOT_WHEN_LOADING_EXH_VERSIONS(false),
+    ;
 
     private val prefKey = "eh_debug_toggle_${name.lowercase(Locale.US)}"
 

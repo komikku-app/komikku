@@ -439,7 +439,11 @@ class PagerPageHolder(
 
         val centerMargin = if (viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN > 0 &&
             !viewer.config.imageCropBorders
-        ) 96 / (max(1, getHeight()) / max(height, height2)) else 0
+        ) {
+            96 / (max(1, getHeight()) / max(height, height2))
+        } else {
+            0
+        }
 
         return ImageUtil.mergeBitmaps(imageBitmap, imageBitmap2, isLTR, centerMargin, viewer.config.pageCanvasColor) {
             viewer.scope.launchUI {
@@ -480,7 +484,11 @@ class PagerPageHolder(
 
         val sideMargin = if ((viewer.config.centerMarginType and PagerConfig.CenterMarginType.DOUBLE_PAGE_CENTER_MARGIN) > 0 &&
             viewer.config.doublePages && !viewer.config.imageCropBorders
-        ) 48 else 0
+        ) {
+            48
+        } else {
+            0
+        }
 
         return ImageUtil.splitInHalf(imageStream, side, sideMargin)
     }

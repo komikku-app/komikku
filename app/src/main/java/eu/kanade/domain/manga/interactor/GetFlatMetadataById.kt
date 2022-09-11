@@ -19,7 +19,9 @@ class GetFlatMetadataById(
                 val titles = mangaMetadataRepository.getTitlesById(id)
 
                 FlatMetadata(meta, tags, titles)
-            } else null
+            } else {
+                null
+            }
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             null
@@ -34,7 +36,9 @@ class GetFlatMetadataById(
         ) { meta, tags, titles ->
             if (meta != null) {
                 FlatMetadata(meta, tags, titles)
-            } else null
+            } else {
+                null
+            }
         }
     }
 }

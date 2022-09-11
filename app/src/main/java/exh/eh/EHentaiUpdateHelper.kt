@@ -172,7 +172,9 @@ class EHentaiUpdateHelper(context: Context) {
                 ?.takeIf { it.chapterId != chapter.id && it.readAt != null }
             if (newHistory != null) {
                 HistoryUpdate(chapter.id, newHistory.readAt!!, newHistory.readDuration)
-            } else null
+            } else {
+                null
+            }
         }
         val currentChapterIds = currentChapters.map { it.id }
         val historyToDelete = chainsAsHistory.filterNot { it.chapterId in currentChapterIds }
@@ -207,7 +209,9 @@ class EHentaiUpdateHelper(context: Context) {
                                 lastPageRead = lastPageRead,
                                 bookmark = bookmark,
                             )
-                        } else it
+                        } else {
+                            it
+                        }
                     }
                 } else {
                     new = true
@@ -220,7 +224,9 @@ class EHentaiUpdateHelper(context: Context) {
                         bookmark = chapter.bookmark,
                         lastPageRead = if (newLastPageRead != null && chapter.lastPageRead <= 0) {
                             newLastPageRead
-                        } else chapter.lastPageRead,
+                        } else {
+                            chapter.lastPageRead
+                        },
                         dateFetch = chapter.dateFetch,
                         dateUpload = chapter.dateUpload,
                         chapterNumber = -1F,

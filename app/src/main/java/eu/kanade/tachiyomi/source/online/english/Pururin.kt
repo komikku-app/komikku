@@ -45,7 +45,9 @@ class Pururin(delegate: HttpSource, val context: Context) :
         val trimmedIdQuery = query.trim().removePrefix("id:")
         val newQuery = if (trimmedIdQuery.toIntOrNull() ?: -1 >= 0) {
             "$baseUrl/gallery/$trimmedIdQuery/-"
-        } else query
+        } else {
+            query
+        }
 
         return urlImportFetchSearchManga(context, newQuery) {
             super.fetchSearchManga(page, query, filters)

@@ -66,8 +66,11 @@ class GalleryAdder(
             // Find matching source
             val source = if (forceSource != null) {
                 try {
-                    if (forceSource.matchesUri(uri)) forceSource
-                    else return GalleryAddEvent.Fail.UnknownSource(url, context)
+                    if (forceSource.matchesUri(uri)) {
+                        forceSource
+                    } else {
+                        return GalleryAddEvent.Fail.UnknownSource(url, context)
+                    }
                 } catch (e: Exception) {
                     logger.e(context.getString(R.string.gallery_adder_source_uri_must_match), e)
                     return GalleryAddEvent.Fail.UnknownType(url, context)
@@ -98,11 +101,15 @@ class GalleryAdder(
                     logger.e(context.getString(R.string.gallery_adder_uri_clean_error), e)
                     null
                 }
-            } else null
+            } else {
+                null
+            }
 
             val chapterMangaUrl = if (realChapterUrl != null) {
                 source.mapChapterUrlToMangaUrl(realChapterUrl.toUri())
-            } else null
+            } else {
+                null
+            }
 
             // Map URL to manga URL
             val realMangaUrl = try {

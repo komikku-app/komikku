@@ -20,7 +20,9 @@ class RenameSourceCategory(
                     val index = it.indexOf('|')
                     if (index != -1 && it.substring(index + 1) == categoryOld) {
                         it.substring(0, index + 1) + categoryNew
-                    } else it
+                    } else {
+                        it
+                    }
                 }
                 .toSet(),
         )

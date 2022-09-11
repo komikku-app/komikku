@@ -45,7 +45,9 @@ class NHentaiSearchMetadata : RaisedSearchMetadata() {
             typeToExtension(coverImageType)?.let {
                 "https://t.nhentai.net/galleries/$mediaId/cover.$it"
             }
-        } else null
+        } else {
+            null
+        }
 
         val title = when (preferredTitle) {
             TITLE_TYPE_SHORT -> shortTitle ?: englishTitle ?: japaneseTitle ?: manga.title

@@ -290,7 +290,9 @@ open class FeedPresenter(
                                         }
                                     },
                                 )
-                            } else itemUI
+                            } else {
+                                itemUI
+                            }
                         }
                     }
                 },

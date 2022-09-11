@@ -317,7 +317,9 @@ private infix fun String.plusRepo(extension: Extension): String {
             } else {
                 "$this • "
             } + context.getString(R.string.repo_source)
-        } else this
+        } else {
+            this
+        }
     }
 }
 

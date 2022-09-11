@@ -43,7 +43,9 @@ data class Manga(
     // SY -->
     private val customMangaInfo = if (favorite) {
         customMangaManager.getManga(this)
-    } else null
+    } else {
+        null
+    }
 
     val title: String
         get() = customMangaInfo?.title ?: ogTitle

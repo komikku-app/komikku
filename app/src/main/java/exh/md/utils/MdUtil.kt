@@ -291,7 +291,9 @@ class MdUtil {
                 ?: if (originalLanguage == "ja") {
                     langMap["ja-ro"]
                         ?: langMap["jp-ro"]
-                } else null
+                } else {
+                    null
+                }
         }
 
         fun getAltTitle(langMaps: List<Map<String, String>>, currentLang: String, originalLanguage: String): String? {
@@ -300,7 +302,9 @@ class MdUtil {
                 ?: if (originalLanguage == "ja") {
                     langMaps.firstNotNullOfOrNull { it["ja-ro"] }
                         ?: langMaps.firstNotNullOfOrNull { it["jp-ro"] }
-                } else null
+                } else {
+                    null
+                }
         }
 
         fun cdnCoverUrl(dexId: String, fileName: String): String {

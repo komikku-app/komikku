@@ -267,7 +267,9 @@ class EHentai(
         return if (text != null) {
             val date = MetadataUtil.EX_DATE_FORMAT.parse(text)
             date?.time
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun getRating(element: Element?): Double? {
@@ -279,9 +281,15 @@ class EHentai(
                 if (matches[1] == 21) {
                     rate--
                     rate + 0.5
-                } else rate.toDouble()
-            } else null
-        } else null
+                } else {
+                    rate.toDouble()
+                }
+            } else {
+                null
+            }
+        } else {
+            null
+        }
     }
 
     private fun getUploader(element: Element?): String? {
@@ -292,7 +300,9 @@ class EHentai(
         val pageCount = element?.text()?.trimOrNull()
         return if (pageCount != null) {
             PAGE_COUNT_REGEX.find(pageCount)?.value?.toIntOrNull()
-        } else null
+        } else {
+            null
+        }
     }
 
     /**
@@ -333,7 +343,9 @@ class EHentai(
                         ),
                     )
                     url = EHentaiSearchMetadata.normalizeUrl(parentLink)
-                } else break
+                } else {
+                    break
+                }
             } else {
                 this@EHentai.xLogD("Parent cache hit: %s!", gid)
                 url = EHentaiSearchMetadata.idAndTokenToUrl(
@@ -393,9 +405,11 @@ class EHentai(
             }
         }!!
         .doOnNext { pages ->
-            if (pages.any { it.url == "https://$domain/img/509.gif" }) throw Exception(
-                "Hit page limit",
-            )
+            if (pages.any { it.url == "https://$domain/img/509.gif" }) {
+                throw Exception(
+                    "Hit page limit",
+                )
+            }
         }
 
     private fun fetchChapterPage(
@@ -440,7 +454,9 @@ class EHentai(
     private fun <T : MangasPage> Observable<T>.checkValid(): Observable<MangasPage> = map {
         if (exh && it.mangas.isEmpty() && preferences.igneousVal().get().equals("mystery", true)) {
             throw Exception("Invalid igneous cookie, try re-logging or finding a correct one to input in the login menu")
-        } else it
+        } else {
+            it
+        }
     }
 
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
@@ -479,7 +495,9 @@ class EHentai(
 
         val regularPage = if (toplist == ToplistOption.NONE) {
             page
-        } else null
+        } else {
+            null
+        }
 
         val request = exGet(uri.toString(), regularPage)
 
@@ -517,7 +535,9 @@ class EHentai(
         return GET(
             if (page != null) {
                 addParam(url, "page", (page - 1).toString())
-            } else url,
+            } else {
+                url
+            },
             if (additionalHeaders != null) {
                 val headers = headers.newBuilder()
                 additionalHeaders.toMultimap().forEach { (t, u) ->
@@ -526,7 +546,9 @@ class EHentai(
                     }
                 }
                 headers.build()
-            } else headers,
+            } else {
+                headers
+            },
         ).let {
             if (cacheControl == null) {
                 it
@@ -555,7 +577,9 @@ class EHentai(
                         manga.url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href"))
                         client.newCall(mangaDetailsRequest(manga))
                             .asObservableSuccess().map { it.asJsoup() }
-                    } else Observable.just(doc)
+                    } else {
+                        Observable.just(doc)
+                    }
 
                     pre.flatMap {
                         @Suppress("DEPRECATION")
@@ -591,7 +615,9 @@ class EHentai(
                     url = EHentaiSearchMetadata.normalizeUrl(newerGallery.attr("href")),
                 )
                 client.newCall(mangaDetailsRequest(sManga)).await().asJsoup()
-            } else doc
+            } else {
+                doc
+            }
             return parseToManga(manga, pre)
         } else {
             response.close()
@@ -646,7 +672,9 @@ class EHentai(
                                 // Parent is older variation of the gallery
                                 "parent" -> parent = if (!right.equals("None", true)) {
                                     rightElement.child(0).attr("href")
-                                } else null
+                                } else {
+                                    null
+                                }
                                 "visible" -> visible = right.nullIfBlank()
                                 "language" -> {
                                     language = right.removeSuffix(TR_SUFFIX).trimOrNull()
@@ -884,7 +912,8 @@ class EHentai(
         ALL_TIME("All time", 11),
         PAST_YEAR("Past year", 12),
         PAST_MONTH("Past month", 13),
-        YESTERDAY("Yesterday", 15);
+        YESTERDAY("Yesterday", 15),
+        ;
 
         override fun toString(): String {
             return humanName
@@ -1034,12 +1063,16 @@ class EHentai(
 
     // === URL IMPORT STUFF
 
-    override val matchingHosts: List<String> = if (exh) listOf(
-        "exhentai.org",
-    ) else listOf(
-        "g.e-hentai.org",
-        "e-hentai.org",
-    )
+    override val matchingHosts: List<String> = if (exh) {
+        listOf(
+            "exhentai.org",
+        )
+    } else {
+        listOf(
+            "g.e-hentai.org",
+            "e-hentai.org",
+        )
+    }
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         return when (uri.pathSegments.firstOrNull()) {

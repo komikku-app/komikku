@@ -20,7 +20,9 @@ class GetSortTag(private val preferences: PreferencesHelper) {
             val index = it.indexOf('|')
             if (index != -1) {
                 (it.substring(0, index).toIntOrNull() ?: return@mapNotNull null) to it.substring(index + 1)
-            } else null
+            } else {
+                null
+            }
         }
             .sortedBy { it.first }.map { it.second }
     }

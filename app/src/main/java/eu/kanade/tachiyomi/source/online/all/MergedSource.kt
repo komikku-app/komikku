@@ -117,9 +117,13 @@ class MergedSource : HttpSource() {
                             "$source: ${chapter.scanlator}"
                         },
                     )
-                } else chapter
+                } else {
+                    chapter
+                }
             }
-        } else chapterList
+        } else {
+            chapterList
+        }
         return if (dedupe) dedupeChapterList(mangaReferences, chapters) else chapters
     }
 

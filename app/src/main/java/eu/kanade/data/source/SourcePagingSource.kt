@@ -32,7 +32,9 @@ abstract class SourcePagingSource(
         // SY -->
         val metadata = if (mangasPage is MetadataMangasPage) {
             mangasPage.mangasMetadata
-        } else emptyList()
+        } else {
+            emptyList()
+        }
         // SY <--
 
         return LoadResult.Page(

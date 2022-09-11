@@ -9,7 +9,8 @@ enum class FollowStatus(val int: Int) {
     ON_HOLD(3),
     PLAN_TO_READ(4),
     DROPPED(5),
-    RE_READING(6);
+    RE_READING(6),
+    ;
 
     fun toDex(): String = this.name.lowercase(Locale.US)
 

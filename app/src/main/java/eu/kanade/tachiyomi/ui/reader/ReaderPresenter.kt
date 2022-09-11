@@ -174,7 +174,9 @@ class ReaderPresenter(
             /* SY --> */ if (manga.source == MERGED_SOURCE_ID) {
                 (sourceManager.get(MERGED_SOURCE_ID) as MergedSource)
                     .getChapters(manga.id!!)
-            } else /* SY <-- */ getChapterByMangaId.await(manga.id!!)
+            } else {
+                /* SY <-- */ getChapterByMangaId.await(manga.id!!)
+            }
         }
 
         val selectedChapter = chapters.find { it.id == chapterId }
@@ -303,7 +305,9 @@ class ReaderPresenter(
                 val source = sourceManager.get(manga.source)?.getMainSource<MetadataSource<*, *>>()
                 val metadata = if (source != null) {
                     getFlatMetadataById.await(mangaId)?.raise(source.metaClass)
-                } else null
+                } else {
+                    null
+                }
                 withUIContext {
                     init(manga.toDbManga(), initialChapterId, metadata)
                 }

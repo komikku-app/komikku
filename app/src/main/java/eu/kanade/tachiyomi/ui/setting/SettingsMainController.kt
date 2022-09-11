@@ -82,14 +82,18 @@ class SettingsMainController : BasicFullComposeController() {
                     painter = painterResource(R.drawable.eh_ic_ehlogo_red_24dp),
                     onClick = { router.pushController(SettingsEhController()) },
                 )
-            } else null,
+            } else {
+                null
+            },
             if (remember { MdUtil.getEnabledMangaDexs(preferences).isNotEmpty() }) {
                 SettingsSection(
                     titleRes = R.string.pref_category_mangadex,
                     painter = painterResource(R.drawable.ic_tracker_mangadex_logo_24dp),
                     onClick = { router.pushController(SettingsMangaDexController()) },
                 )
-            } else null,
+            } else {
+                null
+            },
             // SY <--
             SettingsSection(
                 titleRes = R.string.pref_category_advanced,
