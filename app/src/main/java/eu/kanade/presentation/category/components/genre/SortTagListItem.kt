@@ -22,7 +22,6 @@ import eu.kanade.presentation.util.horizontalPadding
 fun SortTagListItem(
     modifier: Modifier,
     tag: String,
-    index: Int,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
     onMoveUp: () -> Unit,
