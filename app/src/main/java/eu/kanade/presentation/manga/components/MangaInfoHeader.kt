@@ -347,10 +347,12 @@ private fun MangaAndSourceTitlesLarge(
                 .padding(top = 2.dp)
                 .clickableNoIndication(
                     onLongClick = {
-                        if (!author.isNullOrBlank()) context.copyToClipboard(
-                            author,
-                            author,
-                        )
+                        if (!author.isNullOrBlank()) {
+                            context.copyToClipboard(
+                                author,
+                                author,
+                            )
+                        }
                     },
                     onClick = { if (!author.isNullOrBlank()) doSearch(author, true) },
                 ),
@@ -459,10 +461,12 @@ private fun MangaAndSourceTitlesSmall(
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.clickableNoIndication(
                     onLongClick = {
-                        if (title.isNotBlank()) context.copyToClipboard(
-                            title,
-                            title,
-                        )
+                        if (title.isNotBlank()) {
+                            context.copyToClipboard(
+                                title,
+                                title,
+                            )
+                        }
                     },
                     onClick = { if (title.isNotBlank()) doSearch(title, true) },
                 ),
@@ -477,10 +481,12 @@ private fun MangaAndSourceTitlesSmall(
                     .padding(top = 2.dp)
                     .clickableNoIndication(
                         onLongClick = {
-                            if (!author.isNullOrBlank()) context.copyToClipboard(
-                                author,
-                                author,
-                            )
+                            if (!author.isNullOrBlank()) {
+                                context.copyToClipboard(
+                                    author,
+                                    author,
+                                )
+                            }
                         },
                         onClick = { if (!author.isNullOrBlank()) doSearch(author, true) },
                     ),
