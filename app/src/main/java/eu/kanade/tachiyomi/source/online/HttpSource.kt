@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.source.online
 import android.app.Application
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.AndroidCookieJar
+import eu.kanade.tachiyomi.network.CACHE_CONTROL_NO_STORE
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -23,6 +24,7 @@ import okhttp3.Response
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import uy.kohesive.injekt.injectLazy
 import java.net.URI
 import java.net.URISyntaxException
 import java.security.MessageDigest
@@ -335,7 +337,11 @@ abstract class HttpSource : CatalogueSource {
      */
     /* SY --> */
     open /* SY <-- */ fun fetchImage(page: Page): Observable<Response> {
-        return client.newCallWithProgress(imageRequest(page), page)
+        val request = imageRequest(page).newBuilder()
+            // images will be cached or saved manually, so don't take up network cache
+            .cacheControl(CACHE_CONTROL_NO_STORE)
+            .build()
+        return client.newCallWithProgress(request, page)
             .asObservableSuccess()
     }
 
