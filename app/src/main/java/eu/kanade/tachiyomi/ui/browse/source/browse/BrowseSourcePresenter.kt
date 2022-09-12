@@ -236,10 +236,11 @@ open class BrowseSourcePresenter(
         if (savedSearchFilters != null) {
             val savedSearch = runBlocking { getExhSavedSearch.awaitOne(savedSearchFilters) { filters } }
             if (savedSearch != null) {
-                query = savedSearch.query
+                state.searchQuery = savedSearch.query.nullIfBlank()
                 if (savedSearch.filterList != null) {
-                    setFilter(savedSearch.filterList)
+                    setSourceFilter(savedSearch.filterList)
                 }
+                search()
             }
         } else if (jsonFilters != null) {
             runCatching {
