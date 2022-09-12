@@ -202,6 +202,16 @@ open class SourceFeedController :
         router.replaceTopController(BrowseSourceController(presenter.source, savedSearch = savedSearch.id).withFadeTransaction())
     }
 
+    override fun handleBack(): Boolean {
+        return when {
+            presenter.searchQuery != null -> {
+                presenter.searchQuery = null
+                true
+            }
+            else -> false
+        }
+    }
+
     private fun onRemoveClick(feedSavedSearch: FeedSavedSearch) {
         MaterialAlertDialogBuilder(activity!!)
             .setTitle(R.string.feed)
