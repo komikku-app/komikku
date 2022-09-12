@@ -21,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -126,6 +128,7 @@ fun SourceFeedScreen(
                     SourceFeedList(
                         state = presenter,
                         paddingValues = paddingValues,
+                        getMangaState = { presenter.getManga(it) },
                         onClickBrowse = onClickBrowse,
                         onClickLatest = onClickLatest,
                         onClickSavedSearch = onClickSavedSearch,
@@ -142,6 +145,7 @@ fun SourceFeedScreen(
 fun SourceFeedList(
     state: SourceFeedState,
     paddingValues: PaddingValues,
+    getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickBrowse: () -> Unit,
     onClickLatest: () -> Unit,
     onClickSavedSearch: (SavedSearch) -> Unit,
@@ -158,6 +162,7 @@ fun SourceFeedList(
             SourceFeedItem(
                 modifier = Modifier.animateItemPlacement(),
                 item = item,
+                getMangaState = getMangaState,
                 onClickTitle = when (item) {
                     is SourceFeedUI.Browse -> onClickBrowse
                     is SourceFeedUI.Latest -> onClickLatest
@@ -176,6 +181,7 @@ fun SourceFeedList(
 fun SourceFeedItem(
     modifier: Modifier,
     item: SourceFeedUI,
+    getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickTitle: () -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
@@ -228,8 +234,9 @@ fun SourceFeedItem(
                     contentPadding = PaddingValues(horizontal = 12.dp),
                 ) {
                     items(results) {
+                        val manga by getMangaState(it)
                         FeedCardItem(
-                            manga = it,
+                            manga = manga,
                             onClickManga = onClickManga,
                         )
                     }

@@ -1,7 +1,10 @@
 package eu.kanade.tachiyomi.ui.browse.source.feed
 
 import android.os.Bundle
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
@@ -20,19 +23,21 @@ import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.toDomainManga
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchNonCancellableIO
-import eu.kanade.tachiyomi.util.lang.runAsObservable
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.savedsearches.models.FeedSavedSearch
 import exh.savedsearches.models.SavedSearch
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import logcat.LogPriority
@@ -40,10 +45,10 @@ import rx.Observable
 import rx.Subscription
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
-import rx.subjects.PublishSubject
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import xyz.nulldev.ts.api.http.serializer.FilterSerializer
+import eu.kanade.domain.manga.model.Manga as DomainManga
 
 /**
  * Presenter of [SourceFeedController]
@@ -74,16 +79,6 @@ open class SourceFeedPresenter(
      */
     private var fetchSourcesSubscription: Subscription? = null
 
-    /**
-     * Subject which fetches image of given manga.
-     */
-    private val fetchImageSubject = PublishSubject.create<Triple<List<Manga>, Source, SourceFeedUI>>()
-
-    /**
-     * Subscription for fetching images of manga.
-     */
-    private var fetchImageSubscription: Subscription? = null
-
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
 
@@ -101,7 +96,6 @@ open class SourceFeedPresenter(
 
     override fun onDestroy() {
         fetchSourcesSubscription?.unsubscribe()
-        fetchImageSubscription?.unsubscribe()
         super.onDestroy()
     }
 
@@ -151,9 +145,6 @@ open class SourceFeedPresenter(
      * Initiates get manga per feed.
      */
     private fun getFeed(feedSavedSearch: List<SourceFeedUI>) {
-        // Create image fetch subscription
-        initializeFetchImageSubscription()
-
         fetchSourcesSubscription?.unsubscribe()
         fetchSourcesSubscription = Observable.from(feedSavedSearch)
             .flatMap(
@@ -173,7 +164,6 @@ open class SourceFeedPresenter(
                         .onErrorReturn { MangasPage(emptyList(), false) } // Ignore timeouts or other exceptions
                         .map { it.mangas } // Get manga from search result.
                         .map { list -> list.map { networkToLocalManga(it, source.id) } } // Convert to local manga.
-                        .doOnNext { fetchImage(it, source, sourceFeed) } // Load manga covers.
                         .map { list -> sourceFeed.withResults(list.mapNotNull { it.toDomainManga() }) }
                 },
                 5,
@@ -208,71 +198,18 @@ open class SourceFeedPresenter(
         }.getOrElse { FilterList() }
     }
 
-    /**
-     * Initialize a list of manga.
-     *
-     * @param manga the list of manga to initialize.
-     */
-    private fun fetchImage(manga: List<Manga>, source: Source, sourceFeed: SourceFeedUI) {
-        fetchImageSubject.onNext(Triple(manga, source, sourceFeed))
-    }
-
-    /**
-     * Subscribes to the initializer of manga details and updates the view if needed.
-     */
-    private fun initializeFetchImageSubscription() {
-        fetchImageSubscription?.unsubscribe()
-        fetchImageSubscription = fetchImageSubject.observeOn(Schedulers.io())
-            .flatMap { pair ->
-                val source = pair.second
-                Observable.from(pair.first).filter { it.thumbnail_url == null && !it.initialized }
-                    .map { Pair(it, source) }
-                    .concatMap { getMangaDetailsObservable(it.first, it.second) }
-                    .map { Pair(pair.third, it) }
-            }
-            .onBackpressureBuffer()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { (sourceFeed, manga) ->
-                    synchronized(state) {
-                        state.items = items?.map { itemUI ->
-                            if (sourceFeed.id == itemUI.id) {
-                                itemUI.withResults(
-                                    results = itemUI.results?.map {
-                                        if (it.id == manga.id) {
-                                            manga.toDomainManga()!!
-                                        } else {
-                                            it
-                                        }
-                                    },
-                                )
-                            } else {
-                                itemUI
-                            }
-                        }
+    @Composable
+    fun getManga(initialManga: DomainManga): State<DomainManga> {
+        return produceState(initialValue = initialManga) {
+            getManga.subscribe(initialManga.url, initialManga.source)
+                .collectLatest { manga ->
+                    if (manga == null) return@collectLatest
+                    withIOContext {
+                        initializeManga(manga)
                     }
-                },
-                { error ->
-                    logcat(LogPriority.ERROR, error)
-                },
-            )
-    }
-
-    /**
-     * Returns an observable of manga that initializes the given manga.
-     *
-     * @param manga the manga to initialize.
-     * @return an observable of the manga to initialize
-     */
-    private fun getMangaDetailsObservable(manga: Manga, source: Source): Observable<Manga> {
-        return runAsObservable {
-            val networkManga = source.getMangaDetails(manga.copy())
-            manga.copyFrom(networkManga)
-            manga.initialized = true
-            updateManga.await(manga.toDomainManga()!!.toMangaUpdate())
-            manga
+                    value = manga
+                }
         }
-            .onErrorResumeNext { Observable.just(manga) }
     }
 
     /**
@@ -300,6 +237,30 @@ open class SourceFeedPresenter(
             localManga = localManga.copy(ogTitle = sManga.title)
         }
         return localManga?.toDbManga()!!
+    }
+
+    /**
+     * Initialize a manga.
+     *
+     * @param manga to initialize.
+     */
+    private suspend fun initializeManga(manga: DomainManga) {
+        if (manga.thumbnailUrl != null && manga.initialized) return
+        withContext(NonCancellable) {
+            val db = manga.toDbManga()
+            try {
+                val networkManga = source.getMangaDetails(db.copy())
+                db.copyFrom(networkManga)
+                db.initialized = true
+                updateManga.await(
+                    db
+                        .toDomainManga()
+                        ?.toMangaUpdate()!!,
+                )
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e)
+            }
+        }
     }
 
     suspend fun loadSearch(searchId: Long) =

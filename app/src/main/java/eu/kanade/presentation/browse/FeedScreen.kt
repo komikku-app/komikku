@@ -28,6 +28,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,6 +85,7 @@ fun FeedScreen(
         else -> {
             FeedList(
                 state = presenter,
+                getMangaState = { item, source -> presenter.getManga(item, source) },
                 onClickAdd = onClickAdd,
                 onClickCreate = onClickCreate,
                 onClickSavedSearch = onClickSavedSearch,
@@ -99,6 +101,7 @@ fun FeedScreen(
 @Composable
 fun FeedList(
     state: FeedState,
+    getMangaState: @Composable ((Manga, CatalogueSource?) -> State<Manga>),
     onClickAdd: (CatalogueSource) -> Unit,
     onClickCreate: (CatalogueSource, SavedSearch?) -> Unit,
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
@@ -117,6 +120,7 @@ fun FeedList(
             FeedItem(
                 modifier = Modifier.animateItemPlacement(),
                 item = item,
+                getMangaState = { getMangaState(it, item.source) },
                 onClickSavedSearch = onClickSavedSearch,
                 onClickSource = onClickSource,
                 onClickDelete = onClickDelete,
@@ -165,6 +169,7 @@ fun FeedList(
 fun FeedItem(
     modifier: Modifier,
     item: FeedItemUI,
+    getMangaState: @Composable ((Manga) -> State<Manga>),
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
@@ -223,8 +228,9 @@ fun FeedItem(
                     contentPadding = PaddingValues(horizontal = 12.dp),
                 ) {
                     items(item.results) {
+                        val manga by getMangaState(it)
                         FeedCardItem(
-                            manga = it,
+                            manga = manga,
                             onClickManga = onClickManga,
                         )
                     }
