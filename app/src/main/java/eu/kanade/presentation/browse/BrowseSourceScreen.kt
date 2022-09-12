@@ -110,7 +110,7 @@ fun BrowseSourceScreen(
         },
         floatingActionButton = {
             BrowseSourceFloatingActionButton(
-                isVisible = presenter.filters.isNotEmpty() && presenter.currentFilter is BrowseSourcePresenter.Filter.UserInput,
+                isVisible = presenter.filters.isNotEmpty()/* SY --> && presenter.currentFilter is BrowseSourcePresenter.Filter.UserInput <-- SY */,
                 onFabClick = onFabClick,
             )
         },
@@ -200,7 +200,7 @@ fun BrowseSourceScreen(
                                     text = if (presenter.filters.isNotEmpty()) {
                                         stringResource(id = R.string.action_filter)
                                     } else {
-                                        stringResource(id = R.string.saved_searches)
+                                        stringResource(id = R.string.action_search)
                                     },
                                 )
                                 // SY <--

@@ -254,7 +254,6 @@ open class BrowseSourceController(bundle: Bundle) :
                     val allDefault = search.filterList != null && presenter.filters == presenter.source!!.getFilterList()
                     filterSheet?.dismiss()
 
-                    filterSheet?.dismiss()
                     presenter.searchQuery = search.query.nullIfBlank()
                     presenter.setSourceFilter(if (allDefault) FilterList() else presenter.filters)
                     presenter.search()
