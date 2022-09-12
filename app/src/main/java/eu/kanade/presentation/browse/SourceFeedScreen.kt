@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.presentation.components.AppBar
@@ -103,6 +106,7 @@ fun SourceFeedScreen(
     onClickSavedSearch: (SavedSearch) -> Unit,
     onClickDelete: (FeedSavedSearch) -> Unit,
     onClickManga: (Manga) -> Unit,
+    onClickSearch: () -> Unit,
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
@@ -112,6 +116,7 @@ fun SourceFeedScreen(
                 scrollBehavior = scrollBehavior,
                 incognitoMode = presenter.isIncognitoMode,
                 downloadedOnlyMode = presenter.isDownloadOnly,
+                onClickSearch = onClickSearch,
             )
         },
         floatingActionButton = {
@@ -253,6 +258,7 @@ fun SourceFeedToolbar(
     scrollBehavior: TopAppBarScrollBehavior,
     incognitoMode: Boolean,
     downloadedOnlyMode: Boolean,
+    onClickSearch: () -> Unit,
 ) {
     when {
         state.searchQuery != null -> SearchToolbar(
@@ -263,6 +269,12 @@ fun SourceFeedToolbar(
             scrollBehavior = scrollBehavior,
             incognitoMode = incognitoMode,
             downloadedOnlyMode = downloadedOnlyMode,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    onClickSearch()
+                },
+            ),
         )
         else -> AppBar(
             title = title,

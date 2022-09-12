@@ -173,6 +173,7 @@ open class SourceFeedController :
             onClickSavedSearch = ::onSavedSearchClick,
             onClickDelete = ::onRemoveClick,
             onClickManga = ::onMangaClick,
+            onClickSearch = ::onSearchClick,
         )
     }
 
@@ -200,6 +201,10 @@ open class SourceFeedController :
 
     private fun onSavedSearchClick(savedSearch: SavedSearch) {
         router.replaceTopController(BrowseSourceController(presenter.source, savedSearch = savedSearch.id).withFadeTransaction())
+    }
+
+    private fun onSearchClick() {
+        onBrowseClick(presenter.searchQuery?.nullIfBlank())
     }
 
     override fun handleBack(): Boolean {
