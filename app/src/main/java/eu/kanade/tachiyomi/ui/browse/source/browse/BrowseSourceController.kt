@@ -242,20 +242,22 @@ open class BrowseSourceController(bundle: Bundle) :
                         return@launchUI
                     }
 
-                    if (search.filterList == null) {
+                    if (search.filterList == null && presenter.filters.isNotEmpty()) {
                         activity?.toast(R.string.save_search_invalid)
                         return@launchUI
                     }
 
-                    presenter.setFilter(FilterList(search.filterList))
-                    filterSheet?.setFilters(presenter.filterItems)
-                    val allDefault = presenter.filters == presenter.source!!.getFilterList()
+                    if (search.filterList != null) {
+                        presenter.setFilter(FilterList(search.filterList))
+                        filterSheet?.setFilters(presenter.filterItems)
+                    }
+                    val allDefault = search.filterList != null && presenter.filters == presenter.source!!.getFilterList()
+                    filterSheet?.dismiss()
 
                     filterSheet?.dismiss()
                     presenter.searchQuery = search.query.nullIfBlank()
                     presenter.setSourceFilter(if (allDefault) FilterList() else presenter.filters)
                     presenter.search()
-                    activity?.invalidateOptionsMenu()
                 }
             },
             onSavedSearchDeleteClicked = { idToDelete, name ->

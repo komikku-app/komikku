@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.ui.base.controller.FullComposeController
+import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceController
 import eu.kanade.tachiyomi.ui.browse.source.browse.SourceFilterSheet
@@ -120,14 +121,16 @@ open class SourceFeedController :
                         return@launchUI
                     }
 
-                    if (search.filterList == null) {
+                    if (search.filterList == null && presenter.filters.isNotEmpty()) {
                         activity?.toast(R.string.save_search_invalid)
                         return@launchUI
                     }
 
-                    presenter.setFilters(FilterList(search.filterList))
-                    filterSheet?.setFilters(presenter.filterItems)
-                    val allDefault = presenter.filters == presenter.source.getFilterList()
+                    if (search.filterList != null) {
+                        presenter.setFilters(FilterList(search.filterList))
+                        filterSheet?.setFilters(presenter.filterItems)
+                    }
+                    val allDefault = search.filterList != null && presenter.filters == presenter.source.getFilterList()
                     filterSheet?.dismiss()
 
                     if (!allDefault) {
@@ -184,7 +187,7 @@ open class SourceFeedController :
      */
     private fun onMangaClick(manga: Manga) {
         // Open MangaController.
-        router.pushController(MangaController(manga.id, true).withFadeTransaction())
+        router.pushController(MangaController(manga.id, true))
     }
 
     fun onBrowseClick(search: String? = null, savedSearch: Long? = null, filters: String? = null) {
