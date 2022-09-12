@@ -282,6 +282,7 @@ open class SourceFeedPresenter(
      * @param sManga the manga from the source.
      * @return a manga from the database.
      */
+    @Synchronized
     private fun networkToLocalManga(sManga: SManga, sourceId: Long): Manga {
         var localManga = runBlocking { getManga.await(sManga.url, sourceId) }
         if (localManga == null) {
