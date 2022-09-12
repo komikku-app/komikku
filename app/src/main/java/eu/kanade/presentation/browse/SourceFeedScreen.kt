@@ -7,12 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -37,7 +32,6 @@ import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
 import eu.kanade.presentation.components.SearchToolbar
-import eu.kanade.presentation.util.bottomNavPaddingValues
 import eu.kanade.presentation.util.plus
 import eu.kanade.presentation.util.topPaddingValues
 import eu.kanade.tachiyomi.R
@@ -155,10 +149,7 @@ fun SourceFeedList(
     onClickManga: (Manga) -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = paddingValues +
-            bottomNavPaddingValues +
-            WindowInsets.navigationBars.only(WindowInsetsSides.Vertical).asPaddingValues() +
-            topPaddingValues,
+        contentPadding = paddingValues + topPaddingValues,
     ) {
         items(
             state.items.orEmpty(),
