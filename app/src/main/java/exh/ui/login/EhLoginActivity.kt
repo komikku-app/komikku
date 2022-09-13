@@ -2,33 +2,21 @@ package exh.ui.login
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Bundle
 import android.webkit.CookieManager
-import android.webkit.WebChromeClient
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.presentation.webview.EhLoginWebViewScreen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.databinding.EhActivityLoginBinding
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.system.WebViewUtil
-import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
+import eu.kanade.tachiyomi.util.view.setComposeContent
 import eu.kanade.tachiyomi.widget.materialdialogs.setTextInput
 import exh.log.xLogD
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import reactivecircus.flowbinding.appcompat.navigationClicks
 import uy.kohesive.injekt.injectLazy
 import java.net.HttpCookie
 import java.util.Locale
@@ -37,13 +25,7 @@ import java.util.Locale
  * LoginController
  */
 class EhLoginActivity : BaseActivity() {
-    lateinit var binding: EhActivityLoginBinding
-
-    val preferenceManager: PreferencesHelper by injectLazy()
-
-    val sourceManager: SourceManager by injectLazy()
-
-    private var bundle: Bundle? = null
+    private val preferenceManager: PreferencesHelper by injectLazy()
 
     private var igneous: String? = null
 
@@ -56,95 +38,28 @@ class EhLoginActivity : BaseActivity() {
             return
         }
 
-        try {
-            binding = EhActivityLoginBinding.inflate(layoutInflater)
-            setContentView(binding.root)
-        } catch (e: Throwable) {
-            // Potentially throws errors like "Error inflating class android.webkit.WebView"
-            toast(R.string.information_webview_required, Toast.LENGTH_LONG)
-            finish()
-            return
-        }
-
-        title = "ExHentai login"
-
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        binding.toolbar.navigationClicks()
-            .onEach { finish() }
-            .launchIn(lifecycleScope)
-
-        onViewCreated()
-
-        if (bundle == null) {
-            binding.webview.setDefaultSettings()
-
-            // Debug mode (chrome://inspect/#devices)
-            if (BuildConfig.DEBUG && 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) {
-                WebView.setWebContentsDebuggingEnabled(true)
-            }
-
-            binding.webview.webChromeClient = object : WebChromeClient() {
-                override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                    binding.progressBar.isVisible = true
-                    binding.progressBar.progress = newProgress
-                    if (newProgress == 100) {
-                        binding.progressBar.isInvisible = true
-                    }
-                    super.onProgressChanged(view, newProgress)
-                }
-            }
-        } else {
-            binding.webview.restoreState(bundle!!)
-        }
-
-        if (bundle == null) {
-            startWebview()
+        setComposeContent {
+            EhLoginWebViewScreen(
+                onUp = { finish() },
+                onPageFinished = ::onPageFinished,
+                onClickRecheckLoginStatus = ::recheckLoginStatus,
+                onClickAlternateLoginPage = ::alternateLoginPage,
+                onClickSkipPageRestyling = ::skipPageRestyling,
+                onClickCustomIgneousCookie = ::openIgneousDialog,
+            )
         }
     }
 
-    fun onViewCreated() {
-        binding.btnCancel.setOnClickListener { finish() }
+    private fun recheckLoginStatus(loadUrl: (String) -> Unit) {
+        loadUrl("https://exhentai.org/")
+    }
 
-        binding.btnAdvanced.setOnClickListener {
-            binding.advancedOptions.isVisible = true
-            binding.webview.isVisible = false
-            binding.btnAdvanced.isEnabled = false
-            binding.btnCancel.isEnabled = false
-        }
+    private fun alternateLoginPage(loadUrl: (String) -> Unit) {
+        loadUrl("https://e-hentai.org/bounce_login.php")
+    }
 
-        binding.btnClose.setOnClickListener {
-            hideAdvancedOptions()
-        }
-
-        binding.btnRecheck.setOnClickListener {
-            hideAdvancedOptions()
-            binding.webview.loadUrl("https://exhentai.org/")
-        }
-
-        binding.btnAltLogin.setOnClickListener {
-            hideAdvancedOptions()
-            binding.webview.loadUrl("https://e-hentai.org/bounce_login.php")
-        }
-
-        binding.btnSkipRestyle.setOnClickListener {
-            hideAdvancedOptions()
-            binding.webview.loadUrl("https://forums.e-hentai.org/index.php?act=Login&$PARAM_SKIP_INJECT=true")
-        }
-
-        binding.btnIgneousCookie.setOnClickListener {
-            hideAdvancedOptions()
-            openIgneousDialog()
-        }
-
-        CookieManager.getInstance().removeAllCookies {
-            launchUI {
-                if (bundle == null) {
-                    startWebview()
-                }
-            }
-        }
+    private fun skipPageRestyling(loadUrl: (String) -> Unit) {
+        loadUrl("https://forums.e-hentai.org/index.php?act=Login&$PARAM_SKIP_INJECT=true")
     }
 
     private fun openIgneousDialog() {
@@ -164,54 +79,33 @@ class EhLoginActivity : BaseActivity() {
             .show()
     }
 
-    private fun hideAdvancedOptions() {
-        binding.advancedOptions.isVisible = false
-        binding.webview.isVisible = true
-        binding.btnAdvanced.isEnabled = true
-        binding.btnCancel.isEnabled = true
-    }
+    private fun onPageFinished(view: WebView, url: String) {
+        xLogD(url)
+        val parsedUrl = Uri.parse(url)
+        if (parsedUrl.host.equals("forums.e-hentai.org", ignoreCase = true)) {
+            // Hide distracting content
+            if (!parsedUrl.queryParameterNames.contains(PARAM_SKIP_INJECT)) {
+                view.evaluateJavascript(HIDE_JS, null)
+            }
+            // Check login result
 
-    private fun startWebview() {
-        binding.webview.setDefaultSettings()
-
-        binding.webview.loadUrl("https://forums.e-hentai.org/index.php?act=Login")
-
-        binding.webview.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView, url: String) {
-                super.onPageFinished(view, url)
-                xLogD(url)
-                val parsedUrl = Uri.parse(url)
-                if (parsedUrl.host.equals("forums.e-hentai.org", ignoreCase = true)) {
-                    // Hide distracting content
-                    if (!parsedUrl.queryParameterNames.contains(PARAM_SKIP_INJECT)) {
-                        view.evaluateJavascript(HIDE_JS, null)
-                    }
-                    // Check login result
-
-                    if (parsedUrl.getQueryParameter("code")?.toInt() != 0) {
-                        if (checkLoginCookies(url)) view.loadUrl("https://exhentai.org/")
-                    }
-                } else if (parsedUrl.host.equals("exhentai.org", ignoreCase = true)) {
-                    // At ExHentai, check that everything worked out...
-                    if (applyExHentaiCookies(url)) {
-                        preferenceManager.enableExhentai().set(true)
-                        setResult(RESULT_OK)
-                        finish()
-                    }
-                }
+            if (parsedUrl.getQueryParameter("code")?.toInt() != 0) {
+                if (checkLoginCookies(url)) view.loadUrl("https://exhentai.org/")
+            }
+        } else if (parsedUrl.host.equals("exhentai.org", ignoreCase = true)) {
+            // At ExHentai, check that everything worked out...
+            if (applyExHentaiCookies(url)) {
+                preferenceManager.enableExhentai().set(true)
+                setResult(RESULT_OK)
+                finish()
             }
         }
-    }
-
-    override fun onDestroy() {
-        binding.webview?.destroy()
-        super.onDestroy()
     }
 
     /**
      * Check if we are logged in
      */
-    fun checkLoginCookies(url: String): Boolean {
+    private fun checkLoginCookies(url: String): Boolean {
         getCookies(url)?.let { parsed ->
             return parsed.count {
                 (
@@ -227,7 +121,7 @@ class EhLoginActivity : BaseActivity() {
     /**
      * Parse cookies at ExHentai
      */
-    fun applyExHentaiCookies(url: String): Boolean {
+    private fun applyExHentaiCookies(url: String): Boolean {
         getCookies(url)?.let { parsed ->
 
             var memberId: String? = null
