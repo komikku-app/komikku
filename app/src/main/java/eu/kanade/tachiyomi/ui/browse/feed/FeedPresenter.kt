@@ -290,8 +290,7 @@ open class FeedPresenter(
      * @param manga to initialize.
      */
     private suspend fun initializeManga(source: CatalogueSource?, manga: DomainManga) {
-        source ?: return
-        if (manga.thumbnailUrl != null && manga.initialized) return
+        if (source == null || manga.thumbnailUrl != null || manga.initialized) return
         withContext(NonCancellable) {
             val db = manga.toDbManga()
             try {
