@@ -45,7 +45,7 @@ import eu.kanade.presentation.components.ExtendedFloatingActionButton
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.databinding.PreMigrationControllerBinding
+import eu.kanade.tachiyomi.databinding.PreMigrationListBinding
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.controller.BasicFullComposeController
@@ -76,7 +76,7 @@ class PreMigrationController(bundle: Bundle? = null) :
 
     private lateinit var dialog: MigrationBottomSheetDialog
 
-    private lateinit var controllerBinding: PreMigrationControllerBinding
+    private lateinit var controllerBinding: PreMigrationListBinding
 
     var items by mutableStateOf(emptyList<MigrationSourceItem>())
 
@@ -187,7 +187,7 @@ class PreMigrationController(bundle: Bundle? = null) :
             Box(modifier = Modifier.nestedScroll(nestedScrollConnection)) {
                 AndroidView(
                     factory = { context ->
-                        controllerBinding = PreMigrationControllerBinding.inflate(LayoutInflater.from(context))
+                        controllerBinding = PreMigrationListBinding.inflate(LayoutInflater.from(context))
                         adapter = MigrationSourceAdapter(this@PreMigrationController)
                         controllerBinding.recycler.adapter = adapter
                         adapter?.isHandleDragEnabled = true
