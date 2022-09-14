@@ -76,6 +76,10 @@ class SourcesPresenter(
                 d2 == LAST_USED_KEY && d1 != LAST_USED_KEY -> 1
                 d1 == PINNED_KEY && d2 != PINNED_KEY -> -1
                 d2 == PINNED_KEY && d1 != PINNED_KEY -> 1
+                // SY -->
+                d1.startsWith(CATEGORY_KEY_PREFIX) && !d2.startsWith(CATEGORY_KEY_PREFIX) -> -1
+                d2.startsWith(CATEGORY_KEY_PREFIX) && !d1.startsWith(CATEGORY_KEY_PREFIX) -> 1
+                // SY <--
                 d1 == "" && d2 != "" -> 1
                 d2 == "" && d1 != "" -> -1
                 else -> d1.compareTo(d2)
@@ -84,7 +88,7 @@ class SourcesPresenter(
         val byLang = sources.groupByTo(map) {
             when {
                 // SY -->
-                it.category != null -> it.category
+                it.category != null -> "$CATEGORY_KEY_PREFIX${it.category}"
                 // SY <--
                 it.isUsedLast -> LAST_USED_KEY
                 Pin.Actual in it.pin -> PINNED_KEY
@@ -94,7 +98,7 @@ class SourcesPresenter(
 
         val uiModels = byLang.flatMap {
             listOf(
-                SourceUiModel.Header(it.key, it.value.firstOrNull()?.category != null),
+                SourceUiModel.Header(it.key.removePrefix(CATEGORY_KEY_PREFIX), it.value.firstOrNull()?.category != null),
                 *it.value.map { source ->
                     SourceUiModel.Item(source)
                 }.toTypedArray(),
@@ -103,7 +107,7 @@ class SourcesPresenter(
         // SY -->
         state.showPin = showPin
         state.showLatest = showLatest
-        state.categories = categories.sortedWith(compareByDescending(String.CASE_INSENSITIVE_ORDER) { it })
+        state.categories = categories.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it })
         // SY <--
         state.isLoading = false
         state.items = uiModels
@@ -143,5 +147,8 @@ class SourcesPresenter(
     companion object {
         const val PINNED_KEY = "pinned"
         const val LAST_USED_KEY = "last_used"
+        // SY -->
+        const val CATEGORY_KEY_PREFIX = "category-"
+        // SY <--
     }
 }
