@@ -11,7 +11,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -158,13 +157,6 @@ class MangaController : FullComposeController<MangaPresenter> {
             return
         }
 
-        val dialog by derivedStateOf {
-            when (val state = state) {
-                MangaScreenState.Loading -> null
-                is MangaScreenState.Success -> state.dialog
-            }
-        }
-
         val successState = state as MangaScreenState.Success
         val isHttpSource = remember { successState.source is HttpSource }
         val scope = rememberCoroutineScope()
@@ -210,7 +202,7 @@ class MangaController : FullComposeController<MangaPresenter> {
         )
 
         val onDismissRequest = { presenter.dismissDialog() }
-        when (val dialog = dialog) {
+        when (val dialog = (state as? MangaScreenState.Success)?.dialog) {
             is Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,

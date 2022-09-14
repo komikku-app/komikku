@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,9 +47,9 @@ fun LibraryContent(
     onRefresh: (Category?) -> Boolean,
     onGlobalSearchClicked: () -> Unit,
     getNumberOfMangaForCategory: @Composable (Long) -> State<Int?>,
-    getDisplayModeForPage: @Composable (Int) -> State<LibraryDisplayMode>,
+    getDisplayModeForPage: @Composable (Int) -> LibraryDisplayMode,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
-    getLibraryForPage: @Composable (Int) -> State<List<LibraryItem>>,
+    getLibraryForPage: @Composable (Int) -> List<LibraryItem>,
     // SY -->
     onOpenReader: (LibraryManga) -> Unit,
     getCategoryName: (Context, Category, Int, String) -> String,
@@ -77,9 +76,9 @@ fun LibraryContent(
                 // SY -->
                 getCategoryName = { category, name ->
                     val context = LocalContext.current
-                    derivedStateOf {
+                    remember(context, category, state.groupType, name) {
                         getCategoryName(context, category, state.groupType, name)
-                    }.value
+                    }
                 },
                 // SY <--
             )

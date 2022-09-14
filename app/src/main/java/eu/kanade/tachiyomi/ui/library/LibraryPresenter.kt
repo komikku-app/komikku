@@ -962,13 +962,13 @@ class LibraryPresenter(
 
     // SY -->
     @Composable
-    fun getMangaForCategory(page: Int): androidx.compose.runtime.State<List<LibraryItem>> {
-        val categoryId = remember(categories) {
-            categories.getOrNull(page)?.id ?: -1
+    fun getMangaForCategory(page: Int): List<LibraryItem> {
+        val unfiltered = remember(categories, loadedManga) {
+            val categoryId = categories.getOrNull(page)?.id ?: -1
+            loadedManga[categoryId] ?: emptyList()
         }
-        val unfiltered = loadedManga[categoryId] ?: emptyList()
 
-        return produceState(initialValue = unfiltered, unfiltered, searchQuery) {
+        val items = produceState(initialValue = unfiltered, unfiltered, searchQuery) {
             val query = searchQuery
             value = withIOContext {
                 if (unfiltered.isNotEmpty() && !query.isNullOrBlank()) {
@@ -1023,6 +1023,8 @@ class LibraryPresenter(
                 }
             }
         }
+
+        return items.value
     }
 
     private fun filterManga(
@@ -1114,9 +1116,9 @@ class LibraryPresenter(
     // SY <--
 
     @Composable
-    fun getDisplayMode(index: Int): androidx.compose.runtime.State<LibraryDisplayMode> {
+    fun getDisplayMode(index: Int): LibraryDisplayMode {
         val category = categories[index]
-        return derivedStateOf {
+        return remember(groupType, libraryDisplayMode, category) {
             // SY -->
             if (groupType != LibraryGroup.BY_DEFAULT) {
                 libraryDisplayMode

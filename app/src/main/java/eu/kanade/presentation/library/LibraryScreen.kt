@@ -88,7 +88,9 @@ fun LibraryScreen(
                     onRefresh = onClickRefresh,
                     onGlobalSearchClicked = onGlobalSearchClicked,
                     getNumberOfMangaForCategory = { presenter.getMangaCountForCategory(it) },
+                    // SY -->
                     getDisplayModeForPage = { presenter.getDisplayMode(index = it) },
+                    // SY <--
                     getColumnsForOrientation = { presenter.getColumnsPreferenceForCurrentOrientation(it) },
                     getLibraryForPage = { presenter.getMangaForCategory(page = it) },
                     isIncognitoMode = presenter.isIncognitoMode,
