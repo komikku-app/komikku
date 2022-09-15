@@ -12,8 +12,8 @@ import eu.kanade.tachiyomi.databinding.DescriptionAdapterEhBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.EHentaiSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 
 @Composable
 fun EHentaiDescription(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
@@ -29,7 +29,7 @@ fun EHentaiDescription(state: MangaScreenState.Success, openMetadataViewer: () -
             val binding = DescriptionAdapterEhBinding.bind(it)
 
             binding.genre.text =
-                meta.genre?.let { MetadataUtil.getGenreAndColour(context, it) }
+                meta.genre?.let { MetadataUIUtil.getGenreAndColour(context, it) }
                     ?.let {
                         binding.genre.setBackgroundColor(it.first)
                         it.second
@@ -61,7 +61,7 @@ fun EHentaiDescription(state: MangaScreenState.Success, openMetadataViewer: () -
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (ratingFloat ?: 0F).toString() + " - " + MetadataUtil.getRatingString(context, ratingFloat?.times(2))
+            binding.rating.text = (ratingFloat ?: 0F).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp)
 

@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
@@ -10,12 +9,10 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.HBrowseSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
-import exh.ui.metadata.adapters.HBrowseDescription
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -83,10 +80,5 @@ class HBrowse(delegate: HttpSource, val context: Context) :
 
     override suspend fun mapUrlToMangaUrl(uri: Uri): String? {
         return uri.pathSegments.firstOrNull()?.let { "/$it/c00001/" }
-    }
-
-    @Composable
-    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
-        HBrowseDescription(state, openMetadataViewer)
     }
 }

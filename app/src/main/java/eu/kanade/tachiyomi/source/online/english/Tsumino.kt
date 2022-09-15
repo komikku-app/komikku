@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.source.online.english
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -11,14 +10,12 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.TsuminoSearchMetadata
 import exh.metadata.metadata.TsuminoSearchMetadata.Companion.TAG_TYPE_DEFAULT
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUAL
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
-import exh.ui.metadata.adapters.TsuminoDescription
 import exh.util.dropBlank
 import exh.util.trimAll
 import exh.util.urlImportFetchSearchManga
@@ -140,10 +137,5 @@ class Tsumino(delegate: HttpSource, val context: Context) :
         val RATING_FLOAT_REGEX = "([0-9].*) \\(".toRegex()
         val RATING_USERS_REGEX = "\\(([0-9].*) users".toRegex()
         val RATING_FAVORITES_REGEX = "/ ([0-9].*) favs".toRegex()
-    }
-
-    @Composable
-    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
-        TsuminoDescription(state, openMetadataViewer)
     }
 }

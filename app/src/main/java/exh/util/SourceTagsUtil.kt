@@ -34,12 +34,12 @@ object SourceTagsUtil {
             }
             if (parsed?.namespace != null) {
                 when (sourceId) {
-                    in hitomiSourceIds -> wrapTagHitomi(parsed.namespace, parsed.name.substringBefore('|').trim())
-                    in nHentaiSourceIds -> wrapTagNHentai(parsed.namespace, parsed.name.substringBefore('|').trim())
+                    in hitomiSourceIds -> wrapTagHitomi(parsed.namespace!!, parsed.name.substringBefore('|').trim())
+                    in nHentaiSourceIds -> wrapTagNHentai(parsed.namespace!!, parsed.name.substringBefore('|').trim())
                     in mangaDexSourceIds -> parsed.name
                     PURURIN_SOURCE_ID -> parsed.name.substringBefore('|').trim()
-                    TSUMINO_SOURCE_ID -> wrapTagTsumino(parsed.namespace, parsed.name.substringBefore('|').trim())
-                    else -> wrapTag(parsed.namespace, parsed.name.substringBefore('|').trim())
+                    TSUMINO_SOURCE_ID -> wrapTagTsumino(parsed.namespace!!, parsed.name.substringBefore('|').trim())
+                    else -> wrapTag(parsed.namespace!!, parsed.name.substringBefore('|').trim())
                 }
             } else {
                 null

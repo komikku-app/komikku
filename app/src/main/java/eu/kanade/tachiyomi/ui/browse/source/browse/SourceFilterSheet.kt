@@ -13,10 +13,11 @@ import eu.davidea.flexibleadapter.FlexibleAdapter
 import eu.davidea.flexibleadapter.items.IFlexible
 import eu.kanade.tachiyomi.databinding.SourceFilterSheetBinding
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.online.BrowseSourceFilterHeader
+import eu.kanade.tachiyomi.source.online.all.MangaDex
 import eu.kanade.tachiyomi.ui.base.controller.BaseController
 import eu.kanade.tachiyomi.widget.SimpleNavigationView
 import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
+import exh.md.MangaDexFabHeaderAdapter
 import exh.savedsearches.EXHSavedSearch
 import exh.source.getMainSource
 
@@ -117,8 +118,12 @@ class SourceFilterSheet(
             recycler.adapter = ConcatAdapter(
                 listOfNotNull(
                     controller?.let {
-                        source?.getMainSource<BrowseSourceFilterHeader>()
-                            ?.getFilterHeader(it) { dismissSheet?.invoke() }
+                        source?.getMainSource<MangaDex>()
+                            ?.let {
+                                MangaDexFabHeaderAdapter(controller, it) {
+                                    dismissSheet?.invoke()
+                                }
+                            }
                     },
                     savedSearchesAdapter,
                     adapter,

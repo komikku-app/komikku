@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaImpl
@@ -28,7 +27,6 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import eu.kanade.tachiyomi.util.lang.runAsObservable
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -51,7 +49,6 @@ import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.TAG_TYPE_VIRTUA
 import exh.metadata.metadata.base.RaisedSearchMetadata.Companion.toGenreString
 import exh.metadata.metadata.base.RaisedTag
 import exh.ui.login.EhLoginActivity
-import exh.ui.metadata.adapters.EHentaiDescription
 import exh.util.UriFilter
 import exh.util.UriGroup
 import exh.util.asObservableWithAsyncStacktrace
@@ -1125,11 +1122,6 @@ class EHentai(
 
         val obj = outJson["tokenlist"]!!.jsonArray.first().jsonObject
         return "${uri.scheme}://${uri.host}/g/${obj["gid"]!!.jsonPrimitive.int}/${obj["token"]!!.jsonPrimitive.content}/"
-    }
-
-    @Composable
-    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
-        EHentaiDescription(state, openMetadataViewer, search)
     }
 
     override suspend fun getPagePreviewList(

@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.source.online.all
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -10,13 +9,11 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.PervEdenSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
-import exh.ui.metadata.adapters.PervEdenDescription
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -131,10 +128,5 @@ class PervEden(delegate: HttpSource, val context: Context) :
             newUri.appendPath(it)
         }
         return newUri.toString()
-    }
-
-    @Composable
-    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
-        PervEdenDescription(state, openMetadataViewer)
     }
 }

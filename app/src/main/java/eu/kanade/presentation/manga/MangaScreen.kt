@@ -72,14 +72,33 @@ import eu.kanade.presentation.util.isScrollingUp
 import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
+import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.source.online.MetadataSource
+import eu.kanade.tachiyomi.source.online.all.EHentai
+import eu.kanade.tachiyomi.source.online.all.Hitomi
+import eu.kanade.tachiyomi.source.online.all.MangaDex
+import eu.kanade.tachiyomi.source.online.all.NHentai
+import eu.kanade.tachiyomi.source.online.all.PervEden
+import eu.kanade.tachiyomi.source.online.english.EightMuses
+import eu.kanade.tachiyomi.source.online.english.HBrowse
+import eu.kanade.tachiyomi.source.online.english.Pururin
+import eu.kanade.tachiyomi.source.online.english.Tsumino
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import exh.source.MERGED_SOURCE_ID
 import exh.source.getMainSource
+import exh.ui.metadata.adapters.EHentaiDescription
+import exh.ui.metadata.adapters.EightMusesDescription
+import exh.ui.metadata.adapters.HBrowseDescription
+import exh.ui.metadata.adapters.HitomiDescription
+import exh.ui.metadata.adapters.MangaDexDescription
+import exh.ui.metadata.adapters.NHentaiDescription
+import exh.ui.metadata.adapters.PervEdenDescription
+import exh.ui.metadata.adapters.PururinDescription
+import exh.ui.metadata.adapters.TsuminoDescription
 
 @Composable
 fun MangaScreen(
@@ -255,7 +274,7 @@ private fun MangaScreenSmallImpl(
 
     val chapters = remember(state) { state.processedChapters.toList() }
     // SY -->
-    val metadataSource = remember(state.source.id) { state.source.getMainSource<MetadataSource<*, *>>() }
+    val metadataDescription = metadataDescription(state.source)
     // SY <--
 
     val internalOnBackPressed = {
@@ -408,12 +427,12 @@ private fun MangaScreenSmallImpl(
                     }
 
                     // SY -->
-                    if (metadataSource != null) {
+                    if (metadataDescription != null) {
                         item(
                             key = MangaScreenItem.METADATA_INFO,
                             contentType = MangaScreenItem.METADATA_INFO,
                         ) {
-                            metadataSource.DescriptionComposable(
+                            metadataDescription(
                                 state = state,
                                 openMetadataViewer = onMetadataViewerClicked,
                                 search = { onSearch(it, false) },
@@ -540,7 +559,7 @@ fun MangaScreenLargeImpl(
     val chapters = remember(state) { state.processedChapters.toList() }
 
     // SY -->
-    val metadataSource = remember(state.source.id) { state.source.getMainSource<MetadataSource<*, *>>() }
+    val metadataDescription = metadataDescription(state.source)
     // SY <--
 
     val insetPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues()
@@ -681,7 +700,7 @@ fun MangaScreenLargeImpl(
                         // SY <--
                     )
                     // SY -->
-                    metadataSource?.DescriptionComposable(
+                    metadataDescription?.invoke(
                         state = state,
                         openMetadataViewer = onMetadataViewerClicked,
                         search = { onSearch(it, false) },
@@ -845,5 +864,44 @@ private fun onChapterItemClick(
         chapterItem.selected -> onToggleSelection(false)
         chapters.any { it.selected } -> onToggleSelection(true)
         else -> onChapterClicked(chapterItem.chapter)
+    }
+}
+
+typealias MetadataDescriptionComposable = @Composable (state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) -> Unit
+
+@Composable
+fun metadataDescription(source: Source): MetadataDescriptionComposable? {
+    val metadataSource = remember(source.id) { source.getMainSource<MetadataSource<*, *>>() }
+    return remember(metadataSource) {
+        when (metadataSource) {
+            is EHentai -> { state, openMetadataViewer, search ->
+                EHentaiDescription(state, openMetadataViewer, search)
+            }
+            is Hitomi -> { state, openMetadataViewer, _ ->
+                HitomiDescription(state, openMetadataViewer)
+            }
+            is MangaDex -> { state, openMetadataViewer, _ ->
+                MangaDexDescription(state, openMetadataViewer)
+            }
+            is NHentai -> { state, openMetadataViewer, _ ->
+                NHentaiDescription(state, openMetadataViewer)
+            }
+            is PervEden -> { state, openMetadataViewer, _ ->
+                PervEdenDescription(state, openMetadataViewer)
+            }
+            is EightMuses -> { state, openMetadataViewer, _ ->
+                EightMusesDescription(state, openMetadataViewer)
+            }
+            is HBrowse -> { state, openMetadataViewer, _ ->
+                HBrowseDescription(state, openMetadataViewer)
+            }
+            is Pururin -> { state, openMetadataViewer, _ ->
+                PururinDescription(state, openMetadataViewer)
+            }
+            is Tsumino -> { state, openMetadataViewer, _ ->
+                TsuminoDescription(state, openMetadataViewer)
+            }
+            else -> null
+        }
     }
 }

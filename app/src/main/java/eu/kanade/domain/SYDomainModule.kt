@@ -20,6 +20,7 @@ import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetIdsOfFavoriteMangaWithMetadata
+import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.GetMangaBySource
 import eu.kanade.domain.manga.interactor.GetMergedManga
 import eu.kanade.domain.manga.interactor.GetMergedMangaById
@@ -65,6 +66,7 @@ import eu.kanade.domain.source.interactor.ToggleExcludeFromDataSaver
 import eu.kanade.domain.source.interactor.ToggleSources
 import eu.kanade.domain.source.repository.FeedSavedSearchRepository
 import eu.kanade.domain.source.repository.SavedSearchRepository
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addFactory
@@ -99,6 +101,11 @@ class SYDomainModule : InjektModule {
         addFactory { DeleteSortTag(get(), get()) }
         addFactory { ReorderSortTag(get(), get()) }
         addFactory { GetPagePreviews(get()) }
+
+        // Required for [MetadataSource]
+        addFactory<MetadataSource.GetMangaId> { GetManga(get()) }
+        addFactory<MetadataSource.GetFlatMetadataById> { GetFlatMetadataById(get()) }
+        addFactory<MetadataSource.InsertFlatMetadata> { InsertFlatMetadata(get()) }
 
         addSingletonFactory<MangaMetadataRepository> { MangaMetadataRepositoryImpl(get()) }
         addFactory { GetFlatMetadataById(get()) }

@@ -48,6 +48,7 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.source.model.copyFrom
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.logcat
 import eu.kanade.tachiyomi.util.system.toLong

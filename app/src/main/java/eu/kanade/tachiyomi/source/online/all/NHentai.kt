@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
-import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.newCallWithProgress
@@ -16,12 +15,10 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import exh.metadata.metadata.NHentaiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
-import exh.ui.metadata.adapters.NHentaiDescription
 import exh.util.trimOrNull
 import exh.util.urlImportFetchSearchManga
 import kotlinx.serialization.SerialName
@@ -173,11 +170,6 @@ class NHentai(delegate: HttpSource, val context: Context) :
         }
 
         return "$baseUrl/g/${uri.pathSegments[1]}/"
-    }
-
-    @Composable
-    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
-        NHentaiDescription(state, openMetadataViewer)
     }
 
     override suspend fun getPagePreviewList(manga: SManga, page: Int): PagePreviewPage {

@@ -1,6 +1,10 @@
 package eu.kanade.tachiyomi.data.database.models
 
+import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.library.CustomMangaManager
+import eu.kanade.tachiyomi.source.model.SManga
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 open class MangaImpl : Manga {
@@ -77,6 +81,19 @@ open class MangaImpl : Manga {
         private set
     var ogStatus: Int = 0
         private set
+
+    override val originalTitle: String
+        get() = ogTitle
+    override val originalAuthor: String?
+        get() = ogAuthor ?: author
+    override val originalArtist: String?
+        get() = ogArtist ?: artist
+    override val originalDescription: String?
+        get() = ogDesc ?: description
+    override val originalGenre: String?
+        get() = ogGenre ?: genre
+    override val originalStatus: Int
+        get() = ogStatus
     // SY <--
 
     override fun equals(other: Any?): Boolean {
@@ -93,6 +110,18 @@ open class MangaImpl : Manga {
     }
 
     // SY -->
+    override fun copyFrom(other: SManga) {
+        // EXH -->
+        if (other.title.isNotBlank() && originalTitle != other.title) {
+            val source = (this as? Manga)?.source
+            if (source != null) {
+                Injekt.get<DownloadManager>().renameMangaDir(originalTitle, other.originalTitle, source)
+            }
+        }
+        // EXH <--
+        super.copyFrom(other)
+    }
+
     companion object {
         private val customMangaManager: CustomMangaManager by injectLazy()
     }

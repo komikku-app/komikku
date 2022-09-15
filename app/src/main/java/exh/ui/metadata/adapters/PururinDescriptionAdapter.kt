@@ -11,9 +11,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterPuBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.metadata.MetadataUtil
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.PururinSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import kotlin.math.round
 
 @Composable
@@ -30,7 +29,7 @@ fun PururinDescription(state: MangaScreenState.Success, openMetadataViewer: () -
             val binding = DescriptionAdapterPuBinding.bind(it)
 
             binding.genre.text = meta.tags.find { it.namespace == PururinSearchMetadata.TAG_NAMESPACE_CATEGORY }.let { genre ->
-                genre?.let { MetadataUtil.getGenreAndColour(context, it.name) }?.let {
+                genre?.let { MetadataUIUtil.getGenreAndColour(context, it.name) }?.let {
                     binding.genre.setBackgroundColor(it.first)
                     it.second
                 } ?: genre?.name ?: context.getString(R.string.unknown)
@@ -47,7 +46,7 @@ fun PururinDescription(state: MangaScreenState.Success, openMetadataViewer: () -
             val ratingFloat = meta.averageRating?.toFloat()
             binding.ratingBar.rating = ratingFloat ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUtil.getRatingString(context, ratingFloat?.times(2))
+            binding.rating.text = (round((ratingFloat ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, ratingFloat?.times(2))
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp)
 

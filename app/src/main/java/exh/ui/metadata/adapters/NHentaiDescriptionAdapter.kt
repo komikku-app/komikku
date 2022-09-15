@@ -12,8 +12,8 @@ import eu.kanade.tachiyomi.databinding.DescriptionAdapterNhBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.NHentaiSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import java.util.Date
 
 @Composable
@@ -32,7 +32,7 @@ fun NHentaiDescription(state: MangaScreenState.Success, openMetadataViewer: () -
             binding.genre.text = meta.tags.filter { it.namespace == NHentaiSearchMetadata.NHENTAI_CATEGORIES_NAMESPACE }.let { tags ->
                 if (tags.isNotEmpty()) tags.joinToString(transform = { it.name }) else null
             }.let { categoriesString ->
-                categoriesString?.let { MetadataUtil.getGenreAndColour(context, it) }?.let {
+                categoriesString?.let { MetadataUIUtil.getGenreAndColour(context, it) }?.let {
                     binding.genre.setBackgroundColor(it.first)
                     it.second
                 } ?: categoriesString ?: context.getString(R.string.unknown)

@@ -10,8 +10,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterHbBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.HBrowseSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 
 @Composable
 fun HBrowseDescription(state: MangaScreenState.Success, openMetadataViewer: () -> Unit) {

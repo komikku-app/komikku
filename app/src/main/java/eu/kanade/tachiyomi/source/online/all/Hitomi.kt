@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
@@ -11,13 +10,11 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.asJsoup
 import exh.metadata.metadata.HitomiSearchMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
 import exh.metadata.metadata.base.RaisedTag
 import exh.source.DelegatedHttpSource
-import exh.ui.metadata.adapters.HitomiDescription
 import exh.util.urlImportFetchSearchManga
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat
@@ -134,11 +131,6 @@ class Hitomi(delegate: HttpSource, val context: Context) :
         }
 
         return "https://hitomi.la/manga/${uri.pathSegments[1].substringBefore('.')}.html"
-    }
-
-    @Composable
-    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
-        HitomiDescription(state, openMetadataViewer)
     }
 
     companion object {

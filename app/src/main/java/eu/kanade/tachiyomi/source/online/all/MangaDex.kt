@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.source.online.all
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
-import androidx.compose.runtime.Composable
 import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
@@ -14,7 +13,6 @@ import eu.kanade.tachiyomi.source.model.MetadataMangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.online.BrowseSourceFilterHeader
 import eu.kanade.tachiyomi.source.online.FollowsSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.source.online.LoginSource
@@ -22,10 +20,7 @@ import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.source.online.NamespaceSource
 import eu.kanade.tachiyomi.source.online.RandomMangaSource
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
-import eu.kanade.tachiyomi.ui.base.controller.BaseController
-import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.lang.runAsObservable
-import exh.md.MangaDexFabHeaderAdapter
 import exh.md.dto.MangaDto
 import exh.md.dto.StatisticsMangaDto
 import exh.md.handlers.ApiMangaParser
@@ -49,7 +44,6 @@ import exh.md.utils.MdLang
 import exh.md.utils.MdUtil
 import exh.metadata.metadata.MangaDexSearchMetadata
 import exh.source.DelegatedHttpSource
-import exh.ui.metadata.adapters.MangaDexDescription
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import rx.Observable
@@ -64,7 +58,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     UrlImportableSource,
     FollowsSource,
     LoginSource,
-    BrowseSourceFilterHeader,
     RandomMangaSource,
     NamespaceSource {
     override val lang: String = delegate.lang
@@ -217,11 +210,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
     // MetadataSource methods
     override val metaClass: KClass<MangaDexSearchMetadata> = MangaDexSearchMetadata::class
 
-    @Composable
-    override fun DescriptionComposable(state: MangaScreenState.Success, openMetadataViewer: () -> Unit, search: (String) -> Unit) {
-        MangaDexDescription(state, openMetadataViewer)
-    }
-
     override suspend fun parseIntoMetadata(metadata: MangaDexSearchMetadata, input: Triple<MangaDto, List<String>, StatisticsMangaDto>) {
         apiMangaParser.parseIntoMetadata(metadata, input.first, input.second, input.third)
     }
@@ -272,11 +260,11 @@ class MangaDex(delegate: HttpSource, val context: Context) :
         return followsHandler.fetchAllFollows()
     }
 
-    override suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
+    suspend fun updateFollowStatus(mangaID: String, followStatus: FollowStatus): Boolean {
         return followsHandler.updateFollowStatus(mangaID, followStatus)
     }
 
-    override suspend fun fetchTrackingInfo(url: String): Track {
+    suspend fun fetchTrackingInfo(url: String): Track {
         return followsHandler.fetchTrackingInfo(url)
     }
 
@@ -291,11 +279,6 @@ class MangaDex(delegate: HttpSource, val context: Context) :
 
     suspend fun getTrackingAndMangaInfo(track: Track): Pair<Track, MangaDexSearchMetadata?> {
         return mangaHandler.getTrackingInfo(track)
-    }
-
-    // BrowseSourceFilterHeader method
-    override fun getFilterHeader(controller: BaseController<*>, onClick: () -> Unit): MangaDexFabHeaderAdapter {
-        return MangaDexFabHeaderAdapter(controller, this, onClick)
     }
 
     // RandomMangaSource method

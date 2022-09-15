@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerConfig
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import eu.kanade.tachiyomi.util.system.isDevFlavor
+import eu.kanade.tachiyomi.util.system.isDynamicColorAvailable
 import eu.kanade.tachiyomi.widget.ExtendedNavigationView
 import java.io.File
 import java.text.DateFormat

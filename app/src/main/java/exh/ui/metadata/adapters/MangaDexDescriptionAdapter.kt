@@ -12,9 +12,9 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterMdBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.metadata.MetadataUtil.getRatingString
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.MangaDexSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
+import exh.ui.metadata.adapters.MetadataUIUtil.getRatingString
 import kotlin.math.round
 
 @Composable

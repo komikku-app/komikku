@@ -11,9 +11,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapterTsBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.metadata.MetadataUtil
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.TsuminoSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import java.util.Date
 import kotlin.math.round
 
@@ -30,7 +29,7 @@ fun TsuminoDescription(state: MangaScreenState.Success, openMetadataViewer: () -
             if (meta == null || meta !is TsuminoSearchMetadata) return@AndroidView
             val binding = DescriptionAdapterTsBinding.bind(it)
 
-            binding.genre.text = meta.category?.let { MetadataUtil.getGenreAndColour(context, it) }?.let {
+            binding.genre.text = meta.category?.let { MetadataUIUtil.getGenreAndColour(context, it) }?.let {
                 binding.genre.setBackgroundColor(it.first)
                 it.second
             } ?: meta.category ?: context.getString(R.string.unknown)
@@ -47,7 +46,7 @@ fun TsuminoDescription(state: MangaScreenState.Success, openMetadataViewer: () -
 
             binding.ratingBar.rating = meta.averageRating ?: 0F
             @SuppressLint("SetTextI18n")
-            binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUtil.getRatingString(context, meta.averageRating?.times(2))
+            binding.rating.text = (round((meta.averageRating ?: 0F) * 100.0) / 100.0).toString() + " - " + MetadataUIUtil.getRatingString(context, meta.averageRating?.times(2))
 
             binding.moreInfo.bindDrawable(context, R.drawable.ic_info_24dp)
 

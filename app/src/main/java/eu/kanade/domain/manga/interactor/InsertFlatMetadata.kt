@@ -1,6 +1,7 @@
 package eu.kanade.domain.manga.interactor
 
 import eu.kanade.domain.manga.repository.MangaMetadataRepository
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.FlatMetadata
 import exh.metadata.metadata.base.RaisedSearchMetadata
@@ -8,7 +9,7 @@ import logcat.LogPriority
 
 class InsertFlatMetadata(
     private val mangaMetadataRepository: MangaMetadataRepository,
-) {
+) : MetadataSource.InsertFlatMetadata {
 
     suspend fun await(flatMetadata: FlatMetadata) {
         try {
@@ -18,7 +19,7 @@ class InsertFlatMetadata(
         }
     }
 
-    suspend fun await(metadata: RaisedSearchMetadata) {
+    override suspend fun await(metadata: RaisedSearchMetadata) {
         try {
             mangaMetadataRepository.insertMetadata(metadata)
         } catch (e: Exception) {

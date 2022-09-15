@@ -11,8 +11,8 @@ import eu.kanade.tachiyomi.databinding.DescriptionAdapterHiBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.metadata.MetadataUtil
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.HitomiSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 import java.util.Date
 
 @Composable
@@ -28,7 +28,7 @@ fun HitomiDescription(state: MangaScreenState.Success, openMetadataViewer: () ->
             if (meta == null || meta !is HitomiSearchMetadata) return@AndroidView
             val binding = DescriptionAdapterHiBinding.bind(it)
 
-            binding.genre.text = meta.genre?.let { MetadataUtil.getGenreAndColour(context, it) }?.let {
+            binding.genre.text = meta.genre?.let { MetadataUIUtil.getGenreAndColour(context, it) }?.let {
                 binding.genre.setBackgroundColor(it.first)
                 it.second
             } ?: meta.genre ?: context.getString(R.string.unknown)

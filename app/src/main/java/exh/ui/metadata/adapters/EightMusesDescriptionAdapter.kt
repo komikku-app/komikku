@@ -10,8 +10,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.databinding.DescriptionAdapter8mBinding
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
 import eu.kanade.tachiyomi.util.system.copyToClipboard
-import exh.metadata.bindDrawable
 import exh.metadata.metadata.EightMusesSearchMetadata
+import exh.ui.metadata.adapters.MetadataUIUtil.bindDrawable
 
 @Composable
 fun EightMusesDescription(state: MangaScreenState.Success, openMetadataViewer: () -> Unit) {

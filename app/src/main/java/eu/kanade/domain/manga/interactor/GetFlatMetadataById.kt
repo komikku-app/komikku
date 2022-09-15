@@ -1,6 +1,7 @@
 package eu.kanade.domain.manga.interactor
 
 import eu.kanade.domain.manga.repository.MangaMetadataRepository
+import eu.kanade.tachiyomi.source.online.MetadataSource
 import eu.kanade.tachiyomi.util.system.logcat
 import exh.metadata.metadata.base.FlatMetadata
 import kotlinx.coroutines.flow.Flow
@@ -9,9 +10,9 @@ import logcat.LogPriority
 
 class GetFlatMetadataById(
     private val mangaMetadataRepository: MangaMetadataRepository,
-) {
+) : MetadataSource.GetFlatMetadataById {
 
-    suspend fun await(id: Long): FlatMetadata? {
+    override suspend fun await(id: Long): FlatMetadata? {
         return try {
             val meta = mangaMetadataRepository.getMetadataById(id)
             return if (meta != null) {

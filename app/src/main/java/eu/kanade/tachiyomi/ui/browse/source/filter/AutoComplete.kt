@@ -46,7 +46,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
         // select from auto complete
         holder.autoComplete.setOnItemClickListener { adapterView, _, chipPosition, _ ->
             val name = adapterView.getItemAtPosition(chipPosition) as String
-            if (name !in if (filter.excludePrefix != null && name.startsWith(filter.excludePrefix)) filter.skipAutoFillTags.map { filter.excludePrefix + it } else filter.skipAutoFillTags) {
+            if (name !in if (filter.excludePrefix != null && name.startsWith(filter.excludePrefix!!)) filter.skipAutoFillTags.map { filter.excludePrefix + it } else filter.skipAutoFillTags) {
                 holder.autoComplete.text = null
                 addTag(name, holder)
             }
@@ -54,7 +54,7 @@ open class AutoComplete(val filter: Filter.AutoComplete) : AbstractFlexibleItem<
 
         // done keyboard button is pressed
         holder.autoComplete.setOnEditorActionListener { textView, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.toString() !in if (filter.excludePrefix != null && textView.text.toString().startsWith(filter.excludePrefix)) filter.skipAutoFillTags.map { filter.excludePrefix + it } else filter.skipAutoFillTags) {
+            if (actionId == EditorInfo.IME_ACTION_DONE && textView.text.toString() !in if (filter.excludePrefix != null && textView.text.toString().startsWith(filter.excludePrefix!!)) filter.skipAutoFillTags.map { filter.excludePrefix + it } else filter.skipAutoFillTags) {
                 textView.text = null
                 addTag(textView.text.toString(), holder)
                 return@setOnEditorActionListener true
