@@ -1,9 +1,10 @@
 package eu.kanade.tachiyomi.data.database.models
 
+import eu.kanade.data.listOfStringsAndAdapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
-import exh.md.utils.MdUtil
+import exh.util.nullIfEmpty
 import eu.kanade.domain.manga.model.Manga as DomainManga
 
 interface Manga : SManga {
@@ -106,7 +107,7 @@ fun Manga.toDomainManga(): DomainManga? {
         thumbnailUrl = thumbnail_url,
         initialized = initialized,
         // SY -->
-        filteredScanlators = MdUtil.getScanlators(filtered_scanlators).toList(),
+        filteredScanlators = filtered_scanlators?.let(listOfStringsAndAdapter::decode)?.nullIfEmpty(),
         // SY <--
     )
 }

@@ -1,0 +1,3 @@
+UPDATE mangas
+SET filtered_scanlators = NULL
+WHERE filtered_scanlators = "";
