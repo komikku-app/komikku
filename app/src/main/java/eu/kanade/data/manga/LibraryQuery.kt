@@ -40,15 +40,15 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
             """
             SELECT M.*, COALESCE(MC.category_id, 0) AS category
             FROM (
-                SELECT mangas.*, COALESCE(C.unreadCount, 0) AS unread_count, COALESCE(R.readCount, 0) AS read_count
+                SELECT mangas.*, COALESCE(UR.unreadCount, 0) AS unread_count, COALESCE(R.readCount, 0) AS read_count
                     FROM mangas
                     LEFT JOIN (
                         SELECT chapters.manga_id, COUNT(*) AS unreadCount
                         FROM chapters
                         WHERE chapters.read = 0
                         GROUP BY chapters.manga_id
-                    ) AS C
-                    ON mangas._id = C.manga_id
+                    ) AS UR
+                    ON mangas._id = UR.manga_id
                     LEFT JOIN (
                         SELECT chapters.manga_id, COUNT(*) AS readCount
                         FROM chapters
@@ -59,7 +59,7 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
                     WHERE mangas.favorite = 1 AND mangas.source <> $MERGED_SOURCE_ID
                     GROUP BY mangas._id
                 UNION
-                SELECT mangas.*, COALESCE(C.unreadCount, 0) AS unread_count, COALESCE(R.readCount, 0) AS read_count
+                SELECT mangas.*, COALESCE(UR.unreadCount, 0) AS unread_count, COALESCE(R.readCount, 0) AS read_count
                     FROM mangas
                     LEFT JOIN (
                         SELECT merged.merge_id, COUNT(*) as unreadCount
@@ -68,8 +68,8 @@ class LibraryQuery(val driver: SqlDriver) : Query<LibraryManga>(copyOnWriteList(
                         ON chapters.manga_id = merged.manga_id
                         WHERE chapters.read = 0
                         GROUP BY merged.merge_id
-                    ) AS C
-                    ON mangas._id = C.merge_id
+                    ) AS UR
+                    ON mangas._id = UR.merge_id
                     LEFT JOIN (
                         SELECT merged.merge_id, COUNT(*) as readCount
                         FROM merged
