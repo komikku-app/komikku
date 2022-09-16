@@ -79,7 +79,7 @@ suspend fun MaterialAlertDialogBuilder.await(
     @StringRes positiveLabelId: Int,
     @StringRes negativeLabelId: Int,
     @StringRes neutralLabelId: Int? = null,
-) = suspendCancellableCoroutine<Int> { cont ->
+) = suspendCancellableCoroutine { cont ->
     setPositiveButton(positiveLabelId) { _, _ -> cont.resume(AlertDialog.BUTTON_POSITIVE) }
     setNegativeButton(negativeLabelId) { _, _ -> cont.resume(AlertDialog.BUTTON_NEGATIVE) }
     if (neutralLabelId != null) {
