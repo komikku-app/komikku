@@ -210,6 +210,10 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         }.build()
     }
 
+    override fun onCreate(owner: LifecycleOwner) {
+        SecureActivityDelegate.onApplicationCreated()
+    }
+
     private fun addAnalytics() {
         if (syDebugVersion != "0") {
             Firebase.analytics.setUserProperty("preview_version", syDebugVersion)

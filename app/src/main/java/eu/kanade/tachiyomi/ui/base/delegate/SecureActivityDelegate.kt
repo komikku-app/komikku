@@ -46,6 +46,15 @@ interface SecureActivityDelegate {
         const val LOCK_ALL_DAYS = 0x7F
         // SY <--
 
+        fun onApplicationCreated() {
+            val lockDelay = Injekt.get<PreferencesHelper>().lockAppAfter().get()
+            if (lockDelay == 0) {
+                // Restore always active app lock
+                // Delayed lock will be restored later on activity resume
+                lockState = LockState.ACTIVE
+            }
+        }
+
         fun onApplicationStopped() {
             val preferences = Injekt.get<PreferencesHelper>()
             if (!preferences.useAuthenticator().get()) return
