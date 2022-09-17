@@ -200,9 +200,9 @@ class LibraryPresenter(
 
         // SY -->
         combine(
-            preferences.isHentaiEnabled().asFlow(),
-            preferences.disabledSources().asFlow(),
-            preferences.enableExhentai().asFlow(),
+            preferences.isHentaiEnabled().changes(),
+            preferences.disabledSources().changes(),
+            preferences.enableExhentai().changes(),
         ) { isHentaiEnabled, disabledSources, enableExhentai ->
             state.showSyncExh = isHentaiEnabled && (EH_SOURCE_ID.toString() !in disabledSources || enableExhentai)
         }.flowOn(Dispatchers.IO).launchIn(presenterScope)

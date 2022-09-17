@@ -66,9 +66,9 @@ class MangaDexLoginHelper(authServiceLazy: Lazy<MangaDexAuthService>, val prefer
     }
 
     suspend fun login(): Boolean {
-        val username = preferences.trackUsername(mdList)
-        val password = preferences.trackPassword(mdList)
-        if (username.isNullOrBlank() || password.isNullOrBlank()) {
+        val username = preferences.trackUsername(mdList).get()
+        val password = preferences.trackPassword(mdList).get()
+        if (username.isBlank() || password.isBlank()) {
             xLogI("No username or password stored, can't login")
             return false
         }

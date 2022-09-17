@@ -106,7 +106,7 @@ class PagerConfig(
 
         preferences.pagerNavInverted()
             .register({ tappingInverted = it }, { navigator.invertMode = it })
-        preferences.pagerNavInverted().asFlow()
+        preferences.pagerNavInverted().changes()
             .drop(1)
             .onEach { navigationModeChangedListener?.invoke() }
             .launchIn(scope)

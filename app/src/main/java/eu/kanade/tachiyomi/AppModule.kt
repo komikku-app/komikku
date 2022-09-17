@@ -16,6 +16,8 @@ import eu.kanade.data.dateAdapter
 import eu.kanade.data.listOfLongsAdapter
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.tachiyomi.core.preference.AndroidPreferenceStore
+import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
@@ -27,8 +29,11 @@ import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.track.job.DelayedTrackingStore
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
+import eu.kanade.tachiyomi.util.system.isDevFlavor
 import exh.eh.EHentaiUpdateHelper
+import exh.pref.SourcePreferences
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.api.InjektModule
@@ -98,8 +103,6 @@ class AppModule(val app: Application) : InjektModule {
             }
         }
 
-        addSingletonFactory { PreferencesHelper(app) }
-
         addSingletonFactory { ChapterCache(app) }
 
         addSingletonFactory { CoverCache(app) }
@@ -128,8 +131,6 @@ class AppModule(val app: Application) : InjektModule {
 
         // Asynchronously init expensive components for a faster cold start
         ContextCompat.getMainExecutor(app).execute {
-            get<PreferencesHelper>()
-
             get<NetworkHelper>()
 
             get<SourceManager>()
@@ -144,3 +145,36 @@ class AppModule(val app: Application) : InjektModule {
         }
     }
 }
+
+class PreferenceModule(val application: Application) : InjektModule {
+    override fun InjektRegistrar.registerInjectables() {
+        addSingletonFactory<PreferenceStore> {
+            AndroidPreferenceStore(application)
+        }
+        addSingletonFactory {
+            NetworkPreferences(
+                preferenceStore = get(),
+                verboseLogging = isDevFlavor,
+            )
+        }
+        addSingletonFactory {
+            PreferencesHelper(
+                context = application,
+                preferenceStore = get(),
+            )
+        }
+    }
+}
+
+// SY -->
+class SYPreferenceModule(val application: Application) : InjektModule {
+
+    override fun InjektRegistrar.registerInjectables() {
+        addSingletonFactory {
+            SourcePreferences(
+                preferenceStore = get(),
+            )
+        }
+    }
+}
+// SY <--

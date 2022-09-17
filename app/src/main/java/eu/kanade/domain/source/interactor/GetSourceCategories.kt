@@ -9,6 +9,6 @@ class GetSourceCategories(
 ) {
 
     fun subscribe(): Flow<List<String>> {
-        return preferences.sourcesTabCategories().asFlow().map { it.sortedWith(String.CASE_INSENSITIVE_ORDER) }
+        return preferences.sourcesTabCategories().changes().map { it.sortedWith(String.CASE_INSENSITIVE_ORDER) }
     }
 }

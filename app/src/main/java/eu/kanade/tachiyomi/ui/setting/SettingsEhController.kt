@@ -12,12 +12,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.widget.doAfterTextChanged
 import androidx.preference.PreferenceScreen
-import com.fredporciuncula.flow.preferences.Preference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.domain.manga.interactor.DeleteFavoriteEntries
 import eu.kanade.domain.manga.interactor.GetExhFavoriteMangaWithMetadata
 import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.core.preference.Preference
 import eu.kanade.tachiyomi.data.preference.DEVICE_CHARGING
 import eu.kanade.tachiyomi.data.preference.DEVICE_ONLY_ON_WIFI
 import eu.kanade.tachiyomi.databinding.DialogStubTextinputBinding
@@ -75,7 +75,7 @@ class SettingsEhController : SettingsController() {
 
     fun Preference<*>.reconfigure(): Boolean {
         // Listen for change commit
-        asFlow()
+        changes()
             .take(1) // Only listen for first commit
             .onEach {
                 // Only listen for first change commit
@@ -99,7 +99,7 @@ class SettingsEhController : SettingsController() {
                 summaryOff = context.getString(R.string.requires_login)
                 isPersistent = false
                 preferences.enableExhentai()
-                    .asFlow()
+                    .changes()
                     .onEach {
                         isChecked = it
                     }
@@ -395,7 +395,7 @@ class SettingsEhController : SettingsController() {
                 )
                 entryValues = arrayOf("0", "1", "2", "3", "6", "12", "24", "48")
 
-                preferences.exhAutoUpdateFrequency().asFlow()
+                preferences.exhAutoUpdateFrequency().changes()
                     .onEach { newVal ->
                         summary = if (newVal == 0) {
                             context.getString(R.string.time_between_batches_summary_1, context.getString(R.string.app_name))
@@ -445,7 +445,7 @@ class SettingsEhController : SettingsController() {
                     true
                 }
 
-                preferences.exhAutoUpdateRequirements().asFlow()
+                preferences.exhAutoUpdateRequirements().changes()
                     .onEach { updateSummary() }
                     .launchIn(viewScope)
             }

@@ -30,7 +30,7 @@ class BiometricTimesPresenter(
         super.onCreate(savedState)
         presenterScope.launchIO {
             // todo usecase
-            preferences.authenticatorTimeRanges().asFlow()
+            preferences.authenticatorTimeRanges().changes()
                 .collectLatest {
                     val context = view?.activity ?: Injekt.get<Application>()
                     state.isLoading = false

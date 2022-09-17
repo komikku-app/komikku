@@ -2,12 +2,12 @@ package exh.metadata.metadata
 
 import android.content.Context
 import androidx.core.net.toUri
-import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.source.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
+import exh.pref.SourcePreferences
 import kotlinx.serialization.Serializable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -53,7 +53,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
 
         // No title bug?
         val title = altTitle
-            ?.takeIf { Injekt.get<NetworkHelper>().preferences.getBoolean("use_jp_title", false) } // todo
+            ?.takeIf { Injekt.get<SourcePreferences>().useJapaneseTitle().get() } // todo
             ?: title
 
         // Set artist (if we can find one)

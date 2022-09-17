@@ -18,17 +18,17 @@ class GetEnabledSources(
 
     fun subscribe(): Flow<List<Source>> {
         return combine(
-            preferences.pinnedSources().asFlow(),
+            preferences.pinnedSources().changes(),
             combine(
-                preferences.enabledLanguages().asFlow(),
-                preferences.disabledSources().asFlow(),
-                preferences.lastUsedSource().asFlow(),
+                preferences.enabledLanguages().changes(),
+                preferences.disabledSources().changes(),
+                preferences.lastUsedSource().changes(),
             ) { a, b, c -> Triple(a, b, c) },
             // SY -->
             combine(
-                preferences.dataSaverExcludedSources().asFlow(),
-                preferences.sourcesTabSourcesInCategories().asFlow(),
-                preferences.sourcesTabCategoriesFilter().asFlow(),
+                preferences.dataSaverExcludedSources().changes(),
+                preferences.sourcesTabSourcesInCategories().changes(),
+                preferences.sourcesTabCategoriesFilter().changes(),
             ) { a, b, c -> Triple(a, b, c) },
             // SY <--
             repository.getSources(),

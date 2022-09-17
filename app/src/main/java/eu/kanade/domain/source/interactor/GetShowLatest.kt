@@ -10,7 +10,7 @@ class GetShowLatest(
 ) {
 
     fun subscribe(mode: SourcesController.Mode): Flow<Boolean> {
-        return preferences.useNewSourceNavigation().asFlow()
+        return preferences.useNewSourceNavigation().changes()
             .map {
                 mode == SourcesController.Mode.CATALOGUE && !it
             }

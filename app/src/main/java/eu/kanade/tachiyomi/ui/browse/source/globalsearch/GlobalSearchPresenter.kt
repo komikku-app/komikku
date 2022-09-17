@@ -125,7 +125,7 @@ open class GlobalSearchPresenter(
             return filteredSources
         }
 
-        val onlyPinnedSources = preferences.searchPinnedSourcesOnly()
+        val onlyPinnedSources = preferences.searchPinnedSourcesOnly().get()
         val pinnedSourceIds = preferences.pinnedSources().get()
 
         return enabledSources

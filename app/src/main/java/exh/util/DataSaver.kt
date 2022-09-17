@@ -1,6 +1,6 @@
 package exh.util
 
-import com.fredporciuncula.flow.preferences.Preference
+import eu.kanade.tachiyomi.core.preference.Preference
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page

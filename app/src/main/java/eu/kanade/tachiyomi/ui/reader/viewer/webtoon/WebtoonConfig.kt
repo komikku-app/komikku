@@ -63,7 +63,7 @@ class WebtoonConfig(
 
         preferences.webtoonNavInverted()
             .register({ tappingInverted = it }, { navigator.invertMode = it })
-        preferences.webtoonNavInverted().asFlow()
+        preferences.webtoonNavInverted().changes()
             .drop(1)
             .onEach { navigationModeChangedListener?.invoke() }
             .launchIn(scope)
@@ -83,7 +83,7 @@ class WebtoonConfig(
                 },
             )
 
-        preferences.readerTheme().asFlow()
+        preferences.readerTheme().changes()
             .drop(1)
             .distinctUntilChanged()
             .onEach { themeChangedListener?.invoke() }

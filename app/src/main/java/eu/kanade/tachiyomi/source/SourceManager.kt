@@ -79,7 +79,7 @@ class SourceManager(
         scope.launch {
             extensionManager.getInstalledExtensionsFlow()
                 // SY -->
-                .combine(preferences.enableExhentai().asFlow()) { extensions, enableExhentai ->
+                .combine(preferences.enableExhentai().changes()) { extensions, enableExhentai ->
                     extensions to enableExhentai
                 }
                 // SY <--
@@ -133,7 +133,6 @@ class SourceManager(
             val enhancedSource = EnhancedHttpSource(
                 this,
                 delegate.newSourceClass.constructors.find { it.parameters.size == 2 }!!.call(this, context),
-                ::delegateSources,
             )
 
             currentDelegatedSources[enhancedSource.originalSource.id] = DelegatedSource(
@@ -156,8 +155,6 @@ class SourceManager(
         }
         // EXH <--
     }
-
-    private fun delegateSources() = preferences.delegateSources().get()
 
     fun get(sourceKey: Long): Source? {
         return sourcesMap[sourceKey]

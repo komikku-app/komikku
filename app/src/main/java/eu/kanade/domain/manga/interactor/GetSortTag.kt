@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.map
 class GetSortTag(private val preferences: PreferencesHelper) {
 
     fun subscribe(): Flow<List<String>> {
-        return preferences.sortTagsForLibrary().asFlow()
+        return preferences.sortTagsForLibrary().changes()
             .map(::mapSortTags)
     }
 

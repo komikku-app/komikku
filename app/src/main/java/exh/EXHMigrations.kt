@@ -2,6 +2,7 @@
 
 package exh
 
+import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import eu.kanade.data.DatabaseHandler
@@ -28,6 +29,7 @@ import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
+import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.network.PREF_DOH_CLOUDFLARE
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceManager
@@ -87,8 +89,11 @@ object EXHMigrations {
      * @param preferences Preferences of the application.
      * @return true if a migration is performed, false otherwise.
      */
-    fun upgrade(preferences: PreferencesHelper): Boolean {
-        val context = preferences.context
+    fun upgrade(
+        context: Context,
+        preferences: PreferencesHelper,
+        networkPreferences: NetworkPreferences,
+    ): Boolean {
         val oldVersion = preferences.ehLastVersionCode().get()
         try {
             if (oldVersion < BuildConfig.VERSION_CODE) {
@@ -211,7 +216,7 @@ object EXHMigrations {
                     val wasDohEnabled = prefs.getBoolean("enable_doh", false)
                     if (wasDohEnabled) {
                         prefs.edit {
-                            putInt(PreferenceKeys.dohProvider, PREF_DOH_CLOUDFLARE)
+                            putInt(networkPreferences.dohProvider().key(), PREF_DOH_CLOUDFLARE)
                             remove("enable_doh")
                         }
                     }
