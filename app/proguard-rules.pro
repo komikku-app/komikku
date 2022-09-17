@@ -1,36 +1,45 @@
 -dontobfuscate
 
-# Extensions may require methods unused in the core app
--dontwarn eu.kanade.tachiyomi.**
--keep class eu.kanade.tachiyomi.** { public protected private *; }
+# Keep common dependencies used in extensions
+-keep,allowoptimization class androidx.preference.** { public protected *; }
+-keep,allowoptimization class kotlin.** { public protected *; }
+-keep,allowoptimization class kotlinx.coroutines.** { public protected *; }
+-keep,allowoptimization class kotlinx.serialization.** { public protected *; }
+-keep,allowoptimization class okhttp3.** { public protected *; }
+-keep,allowoptimization class okio.** { public protected *; }
+-keep,allowoptimization class rx.** { public protected *; }
+-keep,allowoptimization class org.jsoup.** { public protected *; }
+-keep,allowoptimization class app.cash.quickjs.** { public protected *; }
+-keep,allowoptimization class uy.kohesive.injekt.** { public protected *; }
 
--keep class org.jsoup.** { *; }
--keep class kotlin.** { *; }
--keep class okhttp3.** { *; }
--keep class com.google.gson.** { *; }
--keep class com.github.salomonbrys.kotson.** { *; }
--keep class com.squareup.duktape.** { *; }
+# From extensions-lib
+-keep,allowoptimization class eu.kanade.tachiyomi.network.interceptor.RateLimitInterceptorKt { public protected *; }
+-keep,allowoptimization class eu.kanade.tachiyomi.network.interceptor.SpecificHostRateLimitInterceptorKt { public protected *; }
+-keep,allowoptimization class eu.kanade.tachiyomi.network.NetworkHelper { public protected *; }
+-keep,allowoptimization class eu.kanade.tachiyomi.network.OkHttpExtensionsKt { public protected *; }
+-keep,allowoptimization class eu.kanade.tachiyomi.network.RequestsKt { public protected *; }
+-keep,allowoptimization class eu.kanade.tachiyomi.AppInfo { public protected *; }
 
-# === Keep EH classes
--keep class exh.** { *; }
--keep class xyz.nulldev.** { *; }
+##---------------Begin: proguard configuration for RxJava 1.x  ----------
+-dontwarn sun.misc.**
 
-# === Keep RxAndroid, https://github.com/ReactiveX/RxAndroid/issues/350
--keep class rx.android.** { *; }
-
-# Design library
--dontwarn com.google.android.material.**
--keep class com.google.android.material.** { *; }
--keep interface com.google.android.material.** { *; }
--keep public class com.google.android.material.R$* { *; }
-
--keep class com.hippo.image.** { *; }
--keep interface com.hippo.image.** { *; }
--keepclassmembers class * extends nucleus.presenter.Presenter {
-    <init>();
+-keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
+   long producerIndex;
+   long consumerIndex;
 }
 
-# Kotlin Serialization
+-keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueProducerNodeRef {
+    rx.internal.util.atomic.LinkedQueueNode producerNode;
+}
+
+-keepclassmembers class rx.internal.util.unsafe.BaseLinkedQueueConsumerNodeRef {
+    rx.internal.util.atomic.LinkedQueueNode consumerNode;
+}
+
+-dontnote rx.internal.util.PlatformDependent
+##---------------End: proguard configuration for RxJava 1.x  ----------
+
+##---------------Begin: proguard configuration for kotlinx.serialization  ----------
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt # core serialization annotations
 
@@ -67,24 +76,11 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Keep extension's common dependencies
--keep class eu.kanade.tachiyomi.source.** { public protected *; } # Avoid access modification
--keep,allowoptimization class eu.kanade.tachiyomi.** { public protected *; }
--keep,allowoptimization class androidx.preference.** { public protected *; }
--keep,allowoptimization class kotlin.** { public protected *; }
--keep,allowoptimization class kotlinx.coroutines.** { public protected *; }
--keep,allowoptimization class kotlinx.serialization.** { public protected *; }
--keep,allowoptimization class okhttp3.** { public protected *; }
--keep,allowoptimization class okio.** { public protected *; }
--keep,allowoptimization class rx.** { public protected *; }
--keep,allowoptimization class org.jsoup.** { public protected *; }
--keep,allowoptimization class app.cash.quickjs.** { public protected *; }
--keep,allowoptimization class uy.kohesive.injekt.** { public protected *; }
-
-# RxJava 1.1.0
--dontwarn sun.misc.**
-
--dontnote rx.internal.util.PlatformDependent
+-keep class kotlinx.serialization.**
+-keepclassmembers class kotlinx.serialization.** {
+    <methods>;
+}
+##---------------End: proguard configuration for kotlinx.serialization  ----------
 
 # === Reactive network: https://github.com/pwittchen/ReactiveNetwork/tree/v0.12.4#proguard-configuration
 -dontwarn com.github.pwittchen.reactivenetwork.library.rx2.ReactiveNetwork
@@ -105,6 +101,18 @@
 # === Okio: https://github.com/square/okio/tree/9b8545e7fa267c9d89753283990f24a35cd69cd6#proguard
 -dontwarn okio.**
 
+# === Keep RxAndroid, https://github.com/ReactiveX/RxAndroid/issues/350
+-keep class rx.android.** { *; }
+
+# Design library
+-dontwarn com.google.android.material.**
+-keep class com.google.android.material.** { *; }
+-keep interface com.google.android.material.** { *; }
+-keep public class com.google.android.material.R$* { *; }
+
+-keep class com.hippo.image.** { *; }
+-keep interface com.hippo.image.** { *; }
+
 # == Nucleus
 -keepclassmembers class * extends nucleus.presenter.Presenter {
     <init>();
@@ -115,12 +123,6 @@
 # === Injekt
 ## From original config: "Attempt to fix: java.lang.NoClassDefFoundError: uy.kohesive.injekt.registry.default.DefaultRegistrar$NOKEY$1"
 -keep class uy.kohesive.injekt.** { *; }
-
-# === Conductor
-# This isn't in the consumer proguard rules yet: https://github.com/bluelinelabs/Conductor/pull/550/files
--keepclassmembers public class * extends com.bluelinelabs.conductor.ControllerChangeHandler {
-   public <init>();
-}
 
 # === RxBinding
 -dontwarn com.google.auto.value.AutoValue
