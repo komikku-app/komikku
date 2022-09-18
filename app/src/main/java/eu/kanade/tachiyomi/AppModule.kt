@@ -36,6 +36,8 @@ import eu.kanade.tachiyomi.util.system.isDevFlavor
 import exh.eh.EHentaiUpdateHelper
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
+import nl.adaptivity.xmlutil.serialization.UnknownChildHandler
+import nl.adaptivity.xmlutil.serialization.XML
 import uy.kohesive.injekt.api.InjektModule
 import uy.kohesive.injekt.api.InjektRegistrar
 import uy.kohesive.injekt.api.addSingleton
@@ -100,6 +102,13 @@ class AppModule(val app: Application) : InjektModule {
             Json {
                 ignoreUnknownKeys = true
                 explicitNulls = false
+            }
+        }
+
+        addSingletonFactory {
+            XML {
+                unknownChildHandler = UnknownChildHandler { _, _, _, _, _ -> emptyList() }
+                autoPolymorphic = true
             }
         }
 
