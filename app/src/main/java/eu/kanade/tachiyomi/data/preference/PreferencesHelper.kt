@@ -49,20 +49,6 @@ class PreferencesHelper(
 
     fun sideNavIconAlignment() = this.preferenceStore.getInt("pref_side_nav_icon_alignment", 0)
 
-    fun useAuthenticator() = this.preferenceStore.getBoolean("use_biometric_lock", false)
-
-    fun lockAppAfter() = this.preferenceStore.getInt("lock_app_after", 0)
-
-    /**
-     * For app lock. Will be set when there is a pending timed lock.
-     * Otherwise this pref should be deleted.
-     */
-    fun lastAppClosed() = this.preferenceStore.getLong("last_app_closed", 0)
-
-    fun secureScreen() = this.preferenceStore.getEnum("secure_screen_v2", Values.SecureScreenMode.INCOGNITO)
-
-    fun hideNotificationContent() = this.preferenceStore.getBoolean(Keys.hideNotificationContent, false)
-
     fun autoUpdateMetadata() = this.preferenceStore.getBoolean(Keys.autoUpdateMetadata, false)
 
     fun autoUpdateTrackers() = this.preferenceStore.getBoolean(Keys.autoUpdateTrackers, false)
@@ -438,10 +424,6 @@ class PreferencesHelper(
     fun mangadexSyncToLibraryIndexes() = this.preferenceStore.getStringSet("pref_mangadex_sync_to_library_indexes", emptySet())
 
     fun allowLocalSourceHiddenFolders() = this.preferenceStore.getBoolean("allow_local_source_hidden_folders", false)
-
-    fun authenticatorTimeRanges() = this.preferenceStore.getStringSet("biometric_time_ranges", mutableSetOf())
-
-    fun authenticatorDays() = this.preferenceStore.getInt("biometric_days", 0x7F)
 
     fun sortTagsForLibrary() = this.preferenceStore.getStringSet("sort_tags_for_library", mutableSetOf())
 

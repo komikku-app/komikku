@@ -4,7 +4,7 @@ import android.app.Application
 import android.os.Bundle
 import eu.kanade.presentation.category.BiometricTimesState
 import eu.kanade.presentation.category.BiometricTimesStateImpl
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.preference.plusAssign
@@ -19,9 +19,8 @@ import uy.kohesive.injekt.api.get
  */
 class BiometricTimesPresenter(
     private val state: BiometricTimesStateImpl = BiometricTimesState() as BiometricTimesStateImpl,
+    private val preferences: SecurityPreferences = Injekt.get(),
 ) : BasePresenter<BiometricTimesController>(), BiometricTimesState by state {
-
-    val preferences: PreferencesHelper = Injekt.get()
 
     private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
     val events = _events.consumeAsFlow()

@@ -79,12 +79,6 @@ object PreferenceValues {
         SHIZUKU(R.string.ext_installer_shizuku),
     }
 
-    enum class SecureScreenMode(val titleResId: Int) {
-        ALWAYS(R.string.lock_always),
-        INCOGNITO(R.string.pref_incognito_mode),
-        NEVER(R.string.lock_never),
-    }
-
     // SY -->
     enum class GroupLibraryMode {
         GLOBAL,

@@ -20,6 +20,7 @@ import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.interactor.InsertSavedSearch
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.BuildConfig
+import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
@@ -95,6 +96,7 @@ object EXHMigrations {
         preferences: PreferencesHelper,
         networkPreferences: NetworkPreferences,
         sourcePreferences: SourcePreferences,
+        securityPreferences: SecurityPreferences,
     ): Boolean {
         val oldVersion = preferences.ehLastVersionCode().get()
         try {
@@ -354,7 +356,7 @@ object EXHMigrations {
                 if (oldVersion under 27) {
                     val oldSecureScreen = prefs.getBoolean("secure_screen", false)
                     if (oldSecureScreen) {
-                        preferences.secureScreen().set(PreferenceValues.SecureScreenMode.ALWAYS)
+                        securityPreferences.secureScreen().set(SecurityPreferences.SecureScreenMode.ALWAYS)
                     }
                     if (DeviceUtil.isMiui && preferences.extensionInstaller().get() == PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER) {
                         preferences.extensionInstaller().set(PreferenceValues.ExtensionInstaller.LEGACY)

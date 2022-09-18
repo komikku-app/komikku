@@ -8,14 +8,12 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferenceValues
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.base.delegate.SecureActivityDelegate
 import eu.kanade.tachiyomi.ui.category.biometric.BiometricTimesController
 import eu.kanade.tachiyomi.util.preference.bindTo
-import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.entriesRes
 import eu.kanade.tachiyomi.util.preference.infoPreference
 import eu.kanade.tachiyomi.util.preference.intListPreference
@@ -31,16 +29,17 @@ import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupport
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.startAuthentication
 import eu.kanade.tachiyomi.util.system.toast
 import uy.kohesive.injekt.injectLazy
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 
 class SettingsSecurityController : SettingsController() {
+
+    private val securityPreferences: SecurityPreferences by injectLazy()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.pref_category_security
 
         if (context.isAuthenticationSupported()) {
             switchPreference {
-                bindTo(preferences.useAuthenticator())
+                bindTo(securityPreferences.useAuthenticator())
                 titleRes = R.string.lock_with_biometrics
 
                 requireAuthentication(
@@ -51,7 +50,7 @@ class SettingsSecurityController : SettingsController() {
             }
 
             intListPreference {
-                bindTo(preferences.lockAppAfter())
+                bindTo(securityPreferences.lockAppAfter())
                 titleRes = R.string.lock_when_idle
                 val values = arrayOf("0", "1", "2", "5", "10", "-1")
                 entries = values.mapNotNull {
@@ -91,22 +90,21 @@ class SettingsSecurityController : SettingsController() {
                     false
                 }
 
-                visibleIf(preferences.useAuthenticator()) { it }
+                visibleIf(securityPreferences.useAuthenticator()) { it }
             }
         }
 
         switchPreference {
-            key = Keys.hideNotificationContent
+            bindTo(securityPreferences.hideNotificationContent())
             titleRes = R.string.hide_notification_content
-            defaultValue = false
         }
 
         listPreference {
-            bindTo(preferences.secureScreen())
+            bindTo(securityPreferences.secureScreen())
             titleRes = R.string.secure_screen
             summary = "%s"
-            entriesRes = PreferenceValues.SecureScreenMode.values().map { it.titleResId }.toTypedArray()
-            entryValues = PreferenceValues.SecureScreenMode.values().map { it.name }.toTypedArray()
+            entriesRes = SecurityPreferences.SecureScreenMode.values().map { it.titleResId }.toTypedArray()
+            entryValues = SecurityPreferences.SecureScreenMode.values().map { it.name }.toTypedArray()
         }
 
         // SY -->
@@ -114,10 +112,10 @@ class SettingsSecurityController : SettingsController() {
             key = "pref_edit_lock_times"
             titleRes = R.string.action_edit_biometric_lock_times
 
-            val timeRanges = preferences.authenticatorTimeRanges().get().size
+            val timeRanges = securityPreferences.authenticatorTimeRanges().get().size
             summary = context.resources.getQuantityString(R.plurals.num_lock_times, timeRanges, timeRanges)
 
-            visibleIf(preferences.useAuthenticator()) { it }
+            visibleIf(securityPreferences.useAuthenticator()) { it }
 
             onClick {
                 router.pushController(BiometricTimesController())
@@ -128,7 +126,7 @@ class SettingsSecurityController : SettingsController() {
             titleRes = R.string.biometric_lock_days
             summaryRes = R.string.biometric_lock_days_summary
 
-            visibleIf(preferences.useAuthenticator()) { it }
+            visibleIf(securityPreferences.useAuthenticator()) { it }
 
             onClick {
                 SetLockedDaysDialog().showDialog(router)
@@ -141,7 +139,7 @@ class SettingsSecurityController : SettingsController() {
 
     // SY -->
     class SetLockedDaysDialog(bundle: Bundle? = null) : DialogController(bundle) {
-        val preferences: PreferencesHelper by injectLazy()
+        val securityPreferences: SecurityPreferences by injectLazy()
 
         override fun onCreateDialog(savedViewState: Bundle?): Dialog {
             val activity = activity!!
@@ -157,7 +155,7 @@ class SettingsSecurityController : SettingsController() {
                 .map { activity.getString(it) }
                 .toTypedArray()
 
-            val lockDays = preferences.authenticatorDays().get()
+            val lockDays = securityPreferences.authenticatorDays().get()
             val selection = BooleanArray(7) {
                 when (it) {
                     0 -> (lockDays and SecureActivityDelegate.LOCK_SUNDAY) == SecureActivityDelegate.LOCK_SUNDAY
@@ -195,7 +193,7 @@ class SettingsSecurityController : SettingsController() {
                         }
                     }
 
-                    preferences.authenticatorDays().set(flags)
+                    securityPreferences.authenticatorDays().set(flags)
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()

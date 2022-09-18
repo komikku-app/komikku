@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import eu.kanade.domain.source.service.SourcePreferences
+import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
@@ -41,6 +42,7 @@ object Migrations {
         preferences: PreferencesHelper,
         networkPreferences: NetworkPreferences,
         sourcePreferences: SourcePreferences,
+        securityPreferences: SecurityPreferences,
     ): Boolean {
         val oldVersion = preferences.lastVersionCode().get()
         if (oldVersion < BuildConfig.VERSION_CODE) {
@@ -257,7 +259,7 @@ object Migrations {
             if (oldVersion < 75) {
                 val oldSecureScreen = prefs.getBoolean("secure_screen", false)
                 if (oldSecureScreen) {
-                    preferences.secureScreen().set(PreferenceValues.SecureScreenMode.ALWAYS)
+                    securityPreferences.secureScreen().set(SecurityPreferences.SecureScreenMode.ALWAYS)
                 }
                 if (DeviceUtil.isMiui && preferences.extensionInstaller().get() == PreferenceValues.ExtensionInstaller.PACKAGEINSTALLER) {
                     preferences.extensionInstaller().set(PreferenceValues.ExtensionInstaller.LEGACY)
