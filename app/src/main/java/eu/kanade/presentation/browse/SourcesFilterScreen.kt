@@ -1,9 +1,6 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Switch
@@ -23,7 +20,6 @@ import eu.kanade.presentation.components.LoadingScreen
 import eu.kanade.presentation.components.PreferenceRow
 import eu.kanade.presentation.components.Scaffold
 import eu.kanade.presentation.components.ScrollbarLazyColumn
-import eu.kanade.presentation.util.plus
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.browse.source.FilterUiModel
 import eu.kanade.tachiyomi.ui.browse.source.SourcesFilterPresenter
@@ -50,13 +46,13 @@ fun SourcesFilterScreen(
                 scrollBehavior = scrollBehavior,
             )
         },
-    ) { paddingValues ->
+    ) { contentPadding ->
         when {
             presenter.isLoading -> LoadingScreen()
             presenter.isEmpty -> EmptyScreen(textResource = R.string.source_filter_empty_screen)
             else -> {
                 SourcesFilterContent(
-                    paddingValues = paddingValues,
+                    contentPadding = contentPadding,
                     state = presenter,
                     onClickLang = onClickLang,
                     onClickSource = onClickSource,
@@ -80,7 +76,7 @@ fun SourcesFilterScreen(
 
 @Composable
 fun SourcesFilterContent(
-    paddingValues: PaddingValues,
+    contentPadding: PaddingValues,
     state: SourcesFilterState,
     onClickLang: (String) -> Unit,
     onClickSource: (Source) -> Unit,
@@ -89,7 +85,7 @@ fun SourcesFilterContent(
     // SY <--
 ) {
     ScrollbarLazyColumn(
-        contentPadding = paddingValues + WindowInsets.navigationBars.asPaddingValues(),
+        contentPadding = contentPadding,
     ) {
         items(
             items = state.items,
