@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.toDomainChapter
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
@@ -34,7 +35,8 @@ class HttpPageLoader(
     private val chapterCache: ChapterCache = Injekt.get(),
     // SY -->
     private val preferences: PreferencesHelper = Injekt.get(),
-// SY <--
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    // SY <--
 ) : PageLoader() {
 
     /**
@@ -50,7 +52,7 @@ class HttpPageLoader(
     private val preloadSize = /* SY --> */ preferences.preloadSize().get() // SY <--
 
     // SY -->
-    private val dataSaver = DataSaver(source, preferences)
+    private val dataSaver = DataSaver(source, sourcePreferences)
     // SY <--
 
     init {

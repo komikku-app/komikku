@@ -1,11 +1,11 @@
 package eu.kanade.domain.source.interactor
 
 import eu.kanade.domain.source.model.Source
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.core.preference.getAndSet
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 
 class ToggleSources(
-    private val preferences: PreferencesHelper,
+    private val preferences: SourcePreferences,
 ) {
 
     fun await(isEnable: Boolean, sources: List<Source>) {

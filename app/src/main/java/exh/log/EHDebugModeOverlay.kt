@@ -8,16 +8,16 @@ import android.widget.TextView
 import androidx.core.text.HtmlCompat
 import com.ms_square.debugoverlay.DataObserver
 import com.ms_square.debugoverlay.OverlayModule
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.util.system.dpToPx
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class EHDebugModeOverlay(private val context: Context) : OverlayModule<String>(null, null) {
     private var textView: TextView? = null
-    private val preferences: PreferencesHelper by injectLazy()
+    private val preferences: SourcePreferences by injectLazy()
 
     override fun start() {}
     override fun stop() {}

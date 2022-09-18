@@ -10,6 +10,7 @@ import eu.kanade.domain.manga.interactor.GetFlatMetadataById
 import eu.kanade.domain.manga.interactor.GetSearchMetadata
 import eu.kanade.domain.manga.interactor.InsertFlatMetadata
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
@@ -32,6 +33,7 @@ object DebugFunctions {
     val handler: DatabaseHandler by injectLazy()
     val prefs: PreferencesHelper by injectLazy()
     val networkPrefs: NetworkPreferences by injectLazy()
+    val sourcePrefs: SourcePreferences by injectLazy()
     val sourceManager: SourceManager by injectLazy()
     val updateManga: UpdateManga by injectLazy()
     val getFavorites: GetFavorites by injectLazy()
@@ -43,12 +45,12 @@ object DebugFunctions {
 
     fun forceUpgradeMigration() {
         prefs.ehLastVersionCode().set(1)
-        EXHMigrations.upgrade(app, prefs, networkPrefs)
+        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs)
     }
 
     fun forceSetupJobs() {
         prefs.ehLastVersionCode().set(0)
-        EXHMigrations.upgrade(app, prefs, networkPrefs)
+        EXHMigrations.upgrade(app, prefs, networkPrefs, sourcePrefs)
     }
 
     fun resetAgedFlagInEXHManga() {

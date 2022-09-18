@@ -5,6 +5,7 @@ import com.hippo.unifile.UniFile
 import com.jakewharton.rxrelay.BehaviorRelay
 import com.jakewharton.rxrelay.PublishRelay
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.database.models.Chapter
@@ -65,6 +66,9 @@ class Downloader(
     private val sourceManager: SourceManager = Injekt.get(),
     private val chapterCache: ChapterCache = Injekt.get(),
     private val preferences: PreferencesHelper = Injekt.get(),
+    // SY -->
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
+    // SY <--
 ) {
 
     /**
@@ -329,8 +333,8 @@ class Downloader(
             Observable.just(download.pages!!)
         }
 
-        val dataSaver = if (preferences.dataSaverDownloader().get()) {
-            DataSaver(download.source, preferences)
+        val dataSaver = if (sourcePreferences.dataSaverDownloader().get()) {
+            DataSaver(download.source, sourcePreferences)
         } else {
             DataSaver.NoOp
         }

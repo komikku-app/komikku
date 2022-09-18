@@ -1,7 +1,7 @@
 package exh.util
 
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.core.preference.Preference
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
@@ -30,7 +30,7 @@ interface DataSaver {
     }
 }
 
-fun DataSaver(source: Source, preferences: PreferencesHelper): DataSaver {
+fun DataSaver(source: Source, preferences: SourcePreferences): DataSaver {
     return if (preferences.dataSaver().get() && source.id.toString() !in preferences.dataSaverExcludedSources().get()) {
         return DataSaverImpl(preferences)
     } else {
@@ -38,7 +38,7 @@ fun DataSaver(source: Source, preferences: PreferencesHelper): DataSaver {
     }
 }
 
-private class DataSaverImpl(preferences: PreferencesHelper) : DataSaver {
+private class DataSaverImpl(preferences: SourcePreferences) : DataSaver {
     private val dataSavedServer = preferences.dataSaverServer().get().trimEnd('/')
 
     private val ignoreJpg = preferences.dataSaverIgnoreJpeg().get()

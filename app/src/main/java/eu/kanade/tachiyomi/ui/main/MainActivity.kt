@@ -33,6 +33,7 @@ import com.bluelinelabs.conductor.RouterTransaction
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.platform.MaterialContainerTransformSharedElementCallback
 import dev.chrisbanes.insetter.applyInsetter
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -85,6 +86,8 @@ import uy.kohesive.injekt.injectLazy
 import java.util.LinkedList
 
 class MainActivity : BaseActivity() {
+
+    private val sourcePreferences: SourcePreferences by injectLazy()
 
     lateinit var binding: MainActivityBinding
 
@@ -139,6 +142,7 @@ class MainActivity : BaseActivity() {
                 context = applicationContext,
                 preferences = preferences,
                 networkPreferences = Injekt.get(),
+                sourcePreferences = sourcePreferences,
             )
         } else {
             false
@@ -302,7 +306,7 @@ class MainActivity : BaseActivity() {
             .onEach { setUnreadUpdatesBadge() }
             .launchIn(lifecycleScope)
 
-        preferences.extensionUpdatesCount()
+        sourcePreferences.extensionUpdatesCount()
             .asHotFlow { setExtensionsBadge() }
             .launchIn(lifecycleScope)
 
@@ -425,7 +429,7 @@ class MainActivity : BaseActivity() {
                     this@MainActivity,
                     fromAvailableExtensionList = true,
                 )?.let { pendingUpdates ->
-                    preferences.extensionUpdatesCount().set(pendingUpdates.size)
+                    sourcePreferences.extensionUpdatesCount().set(pendingUpdates.size)
                 }
             } catch (e: Exception) {
                 logcat(LogPriority.ERROR, e)
@@ -446,7 +450,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setExtensionsBadge() {
-        val updates = preferences.extensionUpdatesCount().get()
+        val updates = sourcePreferences.extensionUpdatesCount().get()
         if (updates > 0) {
             nav.getOrCreateBadge(R.id.nav_browse).apply {
                 number = updates

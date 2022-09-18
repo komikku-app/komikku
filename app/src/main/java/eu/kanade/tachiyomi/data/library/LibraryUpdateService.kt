@@ -700,7 +700,7 @@ class LibraryUpdateService(
      */
     private suspend fun syncFollows() {
         var count = 0
-        val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager) ?: return
+        val mangaDex = MdUtil.getEnabledMangaDex(preferences, sourceManager = sourceManager) ?: return
         val syncFollowStatusInts = preferences.mangadexSyncToLibraryIndexes().get().map { it.toInt() }
 
         val size: Int

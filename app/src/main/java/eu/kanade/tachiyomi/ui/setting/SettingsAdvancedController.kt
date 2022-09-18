@@ -18,6 +18,7 @@ import eu.kanade.domain.chapter.interactor.GetChapterByMangaId
 import eu.kanade.domain.chapter.model.toDbChapter
 import eu.kanade.domain.manga.interactor.GetAllManga
 import eu.kanade.domain.manga.repository.MangaRepository
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.PagePreviewCache
@@ -71,7 +72,7 @@ import eu.kanade.tachiyomi.util.system.setDefaultSettings
 import eu.kanade.tachiyomi.util.system.toast
 import exh.debug.SettingsDebugController
 import exh.log.EHLogLevel
-import exh.pref.SourcePreferences
+import exh.pref.DelegateSourcePreferences
 import exh.source.BlacklistedSources
 import exh.source.EH_SOURCE_ID
 import exh.source.EXH_SOURCE_ID
@@ -93,6 +94,7 @@ class SettingsAdvancedController(
     private val trackManager: TrackManager by injectLazy()
     private val networkPreferences: NetworkPreferences by injectLazy()
     private val sourcePreferences: SourcePreferences by injectLazy()
+    private val delegateSourcePreferences: DelegateSourcePreferences by injectLazy()
     private val getAllManga: GetAllManga by injectLazy()
     private val getChapterByMangaId: GetChapterByMangaId by injectLazy()
     private val pagePreviewCache: PagePreviewCache by injectLazy()
@@ -388,64 +390,64 @@ class SettingsAdvancedController(
             titleRes = R.string.data_saver
 
             switchPreference {
-                bindTo(preferences.dataSaver())
+                bindTo(sourcePreferences.dataSaver())
                 titleRes = R.string.data_saver
                 summaryRes = R.string.data_saver_summary
             }
 
             editTextPreference {
-                bindTo(preferences.dataSaverServer())
+                bindTo(sourcePreferences.dataSaverServer())
                 titleRes = R.string.data_saver_server
                 summaryRes = R.string.data_saver_server_summary
 
-                visibleIf(preferences.dataSaver()) { it }
+                visibleIf(sourcePreferences.dataSaver()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.dataSaverDownloader())
+                bindTo(sourcePreferences.dataSaverDownloader())
                 titleRes = R.string.data_saver_downloader
 
-                visibleIf(preferences.dataSaver()) { it }
+                visibleIf(sourcePreferences.dataSaver()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.dataSaverIgnoreJpeg())
+                bindTo(sourcePreferences.dataSaverIgnoreJpeg())
                 titleRes = R.string.data_saver_ignore_jpeg
 
-                visibleIf(preferences.dataSaver()) { it }
+                visibleIf(sourcePreferences.dataSaver()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.dataSaverIgnoreGif())
+                bindTo(sourcePreferences.dataSaverIgnoreGif())
                 titleRes = R.string.data_saver_ignore_gif
 
-                visibleIf(preferences.dataSaver()) { it }
+                visibleIf(sourcePreferences.dataSaver()) { it }
             }
 
             intListPreference {
-                bindTo(preferences.dataSaverImageQuality())
+                bindTo(sourcePreferences.dataSaverImageQuality())
                 titleRes = R.string.data_saver_image_quality
                 entries = arrayOf("10%", "20%", "40%", "50%", "70%", "80%", "90%", "95%")
                 entryValues = entries.map { it.trimEnd('%') }.toTypedArray()
                 summaryRes = R.string.data_saver_image_quality_summary
 
-                visibleIf(preferences.dataSaver()) { it }
+                visibleIf(sourcePreferences.dataSaver()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.dataSaverImageFormatJpeg())
+                bindTo(sourcePreferences.dataSaverImageFormatJpeg())
                 titleRes = R.string.data_saver_image_format
                 summaryOn = context.getString(R.string.data_saver_image_format_summary_on)
                 summaryOff = context.getString(R.string.data_saver_image_format_summary_off)
 
-                visibleIf(preferences.dataSaver()) { it }
+                visibleIf(sourcePreferences.dataSaver()) { it }
             }
 
             switchPreference {
-                bindTo(preferences.dataSaverColorBW())
+                bindTo(sourcePreferences.dataSaverColorBW())
                 titleRes = R.string.data_saver_color_bw
 
-                visibleIf(preferences.dataSaver()) { it }
+                visibleIf(sourcePreferences.dataSaver()) { it }
             }
         }
 
@@ -471,7 +473,7 @@ class SettingsAdvancedController(
             }
 
             switchPreference {
-                bindTo(sourcePreferences.delegateSources())
+                bindTo(delegateSourcePreferences.delegateSources())
                 titleRes = R.string.toggle_delegated_sources
                 summary = context.getString(R.string.toggle_delegated_sources_summary, context.getString(R.string.app_name), DELEGATED_SOURCES.values.map { it.sourceName }.distinct().joinToString())
             }
@@ -489,7 +491,7 @@ class SettingsAdvancedController(
             }
 
             switchPreference {
-                bindTo(preferences.enableSourceBlacklist())
+                bindTo(sourcePreferences.enableSourceBlacklist())
                 titleRes = R.string.enable_source_blacklist
                 summary = context.getString(R.string.enable_source_blacklist_summary, context.getString(R.string.app_name))
             }

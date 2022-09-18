@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.MANGA_NON_COMPLETED
@@ -39,6 +40,7 @@ object Migrations {
         context: Context,
         preferences: PreferencesHelper,
         networkPreferences: NetworkPreferences,
+        sourcePreferences: SourcePreferences,
     ): Boolean {
         val oldVersion = preferences.lastVersionCode().get()
         if (oldVersion < BuildConfig.VERSION_CODE) {
@@ -234,8 +236,8 @@ object Migrations {
                 }
             }
             if (oldVersion < 70) {
-                if (preferences.enabledLanguages().isSet()) {
-                    preferences.enabledLanguages() += "all"
+                if (sourcePreferences.enabledLanguages().isSet()) {
+                    sourcePreferences.enabledLanguages() += "all"
                 }
             }
             if (oldVersion < 71) {

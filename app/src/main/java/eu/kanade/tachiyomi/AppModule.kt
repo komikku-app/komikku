@@ -16,6 +16,7 @@ import eu.kanade.data.dateAdapter
 import eu.kanade.data.listOfLongsAdapter
 import eu.kanade.data.listOfStringsAdapter
 import eu.kanade.data.listOfStringsAndAdapter
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.core.preference.AndroidPreferenceStore
 import eu.kanade.tachiyomi.core.preference.PreferenceStore
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -33,7 +34,6 @@ import eu.kanade.tachiyomi.network.NetworkPreferences
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.util.system.isDevFlavor
 import exh.eh.EHentaiUpdateHelper
-import exh.pref.SourcePreferences
 import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import kotlinx.serialization.json.Json
 import uy.kohesive.injekt.api.InjektModule
@@ -156,6 +156,9 @@ class PreferenceModule(val application: Application) : InjektModule {
                 preferenceStore = get(),
                 verboseLogging = isDevFlavor,
             )
+        }
+        addSingletonFactory {
+            SourcePreferences(get())
         }
         addSingletonFactory {
             PreferencesHelper(

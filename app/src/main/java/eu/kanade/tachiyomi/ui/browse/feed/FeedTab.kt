@@ -39,11 +39,11 @@ fun feedTab(
                 presenter.createFeed(source, savedSearch)
             },
             onClickSavedSearch = { savedSearch, source ->
-                presenter.preferences.lastUsedSource().set(savedSearch.source)
+                presenter.sourcePreferences.lastUsedSource().set(savedSearch.source)
                 router?.pushController(BrowseSourceController(source, savedSearch = savedSearch.id))
             },
             onClickSource = { source ->
-                presenter.preferences.lastUsedSource().set(source.id)
+                presenter.sourcePreferences.lastUsedSource().set(source.id)
                 router?.pushController(BrowseSourceController(source, GetRemoteManga.QUERY_LATEST))
             },
             onClickDelete = {

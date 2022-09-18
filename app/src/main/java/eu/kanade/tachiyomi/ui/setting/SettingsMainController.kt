@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.more.settings.SettingsMainScreen
 import eu.kanade.presentation.more.settings.SettingsSection
 import eu.kanade.tachiyomi.R
@@ -26,6 +27,10 @@ import uy.kohesive.injekt.injectLazy
 class SettingsMainController : BasicFullComposeController() {
 
     private val preferences: PreferencesHelper by injectLazy()
+
+    // SY -->
+    private val sourcePreferences: SourcePreferences by injectLazy()
+    // SY <--
 
     @Composable
     override fun ComposeContent() {
@@ -85,7 +90,7 @@ class SettingsMainController : BasicFullComposeController() {
             } else {
                 null
             },
-            if (remember { MdUtil.getEnabledMangaDexs(preferences).isNotEmpty() }) {
+            if (remember { MdUtil.getEnabledMangaDexs(sourcePreferences).isNotEmpty() }) {
                 SettingsSection(
                     titleRes = R.string.pref_category_mangadex,
                     painter = painterResource(R.drawable.ic_tracker_mangadex_logo_24dp),

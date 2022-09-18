@@ -5,8 +5,8 @@ import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import com.jakewharton.rxrelay.BehaviorRelay
 import eu.kanade.domain.source.model.SourceData
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.extension.api.ExtensionGithubApi
 import eu.kanade.tachiyomi.extension.model.AvailableSources
 import eu.kanade.tachiyomi.extension.model.Extension
@@ -48,7 +48,7 @@ import java.util.Locale
  */
 class ExtensionManager(
     private val context: Context,
-    private val preferences: PreferencesHelper = Injekt.get(),
+    private val preferences: SourcePreferences = Injekt.get(),
 ) {
 
     /**

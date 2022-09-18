@@ -1,5 +1,6 @@
 package exh.md.utils
 
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.data.track.mdlist.MdList
 import eu.kanade.tachiyomi.source.SourceManager
@@ -337,8 +338,8 @@ class MdUtil {
                 "Bearer " + (sessionToken(preferences, mdList) ?: throw NoSessionException()),
             ).build()
 
-        fun getEnabledMangaDex(preferences: PreferencesHelper, sourceManager: SourceManager = Injekt.get()): MangaDex? {
-            return getEnabledMangaDexs(preferences, sourceManager).let { mangadexs ->
+        fun getEnabledMangaDex(preferences: PreferencesHelper, sourcePreferences: SourcePreferences = Injekt.get(), sourceManager: SourceManager = Injekt.get()): MangaDex? {
+            return getEnabledMangaDexs(sourcePreferences, sourceManager).let { mangadexs ->
                 preferences.preferredMangaDexId().get().toLongOrNull()?.nullIfZero()
                     ?.let { preferredMangaDexId ->
                         mangadexs.firstOrNull { it.id == preferredMangaDexId }
@@ -347,7 +348,7 @@ class MdUtil {
             }
         }
 
-        fun getEnabledMangaDexs(preferences: PreferencesHelper, sourceManager: SourceManager = Injekt.get()): List<MangaDex> {
+        fun getEnabledMangaDexs(preferences: SourcePreferences, sourceManager: SourceManager = Injekt.get()): List<MangaDex> {
             val languages = preferences.enabledLanguages().get()
             val disabledSourceIds = preferences.disabledSources().get()
 

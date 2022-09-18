@@ -39,6 +39,7 @@ import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bluelinelabs.conductor.Router
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.DropdownMenu
 import eu.kanade.presentation.components.ExtendedFloatingActionButton
@@ -69,6 +70,7 @@ class PreMigrationController(bundle: Bundle? = null) :
 
     private val sourceManager: SourceManager by injectLazy()
     private val prefs: PreferencesHelper by injectLazy()
+    private val sourcePreferences: SourcePreferences by injectLazy()
 
     private var adapter: MigrationSourceAdapter? = null
 
@@ -274,10 +276,10 @@ class PreMigrationController(bundle: Bundle? = null) :
      * @return list containing enabled sources.
      */
     private fun getEnabledSources(): List<MigrationSourceItem> {
-        val languages = prefs.enabledLanguages().get()
+        val languages = sourcePreferences.enabledLanguages().get()
         val sourcesSaved = prefs.migrationSources().get().split("/")
             .mapNotNull { it.toLongOrNull() }
-        val disabledSources = prefs.disabledSources().get()
+        val disabledSources = sourcePreferences.disabledSources().get()
             .mapNotNull { it.toLongOrNull() }
         val sources = sourceManager.getVisibleCatalogueSources()
             .filterIsInstance<HttpSource>()
@@ -323,9 +325,9 @@ class PreMigrationController(bundle: Bundle? = null) :
     private fun matchSelection(matchEnabled: Boolean) {
         val adapter = adapter ?: return
         val enabledSources = if (matchEnabled) {
-            prefs.disabledSources().get().mapNotNull { it.toLongOrNull() }
+            sourcePreferences.disabledSources().get().mapNotNull { it.toLongOrNull() }
         } else {
-            prefs.pinnedSources().get().mapNotNull { it.toLongOrNull() }
+            sourcePreferences.pinnedSources().get().mapNotNull { it.toLongOrNull() }
         }
         val items = adapter.currentItems.toList()
         items.forEach {

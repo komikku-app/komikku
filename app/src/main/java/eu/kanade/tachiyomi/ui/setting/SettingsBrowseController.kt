@@ -2,13 +2,13 @@ package eu.kanade.tachiyomi.ui.setting
 
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceScreen
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.extension.ExtensionUpdateJob
 import eu.kanade.tachiyomi.ui.base.controller.pushController
 import eu.kanade.tachiyomi.ui.category.repos.RepoController
 import eu.kanade.tachiyomi.ui.category.sources.SourceCategoryController
 import eu.kanade.tachiyomi.util.preference.bindTo
-import eu.kanade.tachiyomi.util.preference.defaultValue
 import eu.kanade.tachiyomi.util.preference.infoPreference
 import eu.kanade.tachiyomi.util.preference.onChange
 import eu.kanade.tachiyomi.util.preference.onClick
@@ -19,9 +19,11 @@ import eu.kanade.tachiyomi.util.preference.summaryRes
 import eu.kanade.tachiyomi.util.preference.switchPreference
 import eu.kanade.tachiyomi.util.preference.titleRes
 import eu.kanade.tachiyomi.util.system.AuthenticatorUtil.isAuthenticationSupported
-import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
+import uy.kohesive.injekt.injectLazy
 
 class SettingsBrowseController : SettingsController() {
+
+    private val sourcePreferences: SourcePreferences by injectLazy()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.browse
@@ -34,7 +36,7 @@ class SettingsBrowseController : SettingsController() {
                 key = "pref_edit_source_categories"
                 titleRes = R.string.action_edit_categories
 
-                val catCount = preferences.sourcesTabCategories().get().count()
+                val catCount = sourcePreferences.sourcesTabCategories().get().count()
                 summary = context.resources.getQuantityString(R.plurals.num_categories, catCount, catCount)
 
                 onClick {
@@ -42,7 +44,7 @@ class SettingsBrowseController : SettingsController() {
                 }
             }
             switchPreference {
-                bindTo(preferences.sourcesTabCategoriesFilter())
+                bindTo(sourcePreferences.sourcesTabCategoriesFilter())
                 titleRes = R.string.pref_source_source_filtering
                 summaryRes = R.string.pref_source_source_filtering_summery
             }
@@ -73,7 +75,7 @@ class SettingsBrowseController : SettingsController() {
             titleRes = R.string.label_sources
 
             switchPreference {
-                bindTo(preferences.duplicatePinnedSources())
+                bindTo(sourcePreferences.duplicatePinnedSources())
                 titleRes = R.string.pref_duplicate_pinned_sources
                 summaryRes = R.string.pref_duplicate_pinned_sources_summary
             }
@@ -111,9 +113,8 @@ class SettingsBrowseController : SettingsController() {
             titleRes = R.string.action_global_search
 
             switchPreference {
-                key = Keys.searchPinnedSourcesOnly
+                bindTo(sourcePreferences.searchPinnedSourcesOnly())
                 titleRes = R.string.pref_search_pinned_sources_only
-                defaultValue = false
             }
         }
 
@@ -121,7 +122,7 @@ class SettingsBrowseController : SettingsController() {
             titleRes = R.string.pref_category_nsfw_content
 
             switchPreference {
-                bindTo(preferences.showNsfwSource())
+                bindTo(sourcePreferences.showNsfwSource())
                 titleRes = R.string.pref_show_nsfw_source
                 summaryRes = R.string.requires_app_restart
 

@@ -14,6 +14,7 @@ import eu.kanade.domain.source.interactor.GetFeedSavedSearchGlobal
 import eu.kanade.domain.source.interactor.GetSavedSearchBySourceId
 import eu.kanade.domain.source.interactor.GetSavedSearchGlobalFeed
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.FeedItemUI
 import eu.kanade.presentation.browse.FeedState
 import eu.kanade.presentation.browse.FeedStateImpl
@@ -64,6 +65,7 @@ open class FeedPresenter(
     private val state: FeedStateImpl = FeedState() as FeedStateImpl,
     val sourceManager: SourceManager = Injekt.get(),
     val preferences: PreferencesHelper = Injekt.get(),
+    val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val insertManga: InsertManga = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
@@ -124,8 +126,8 @@ open class FeedPresenter(
     }
 
     fun getEnabledSources(): List<CatalogueSource> {
-        val languages = preferences.enabledLanguages().get()
-        val pinnedSources = preferences.pinnedSources().get()
+        val languages = sourcePreferences.enabledLanguages().get()
+        val pinnedSources = sourcePreferences.pinnedSources().get()
 
         val list = sourceManager.getVisibleCatalogueSources()
             .filter { it.lang in languages }

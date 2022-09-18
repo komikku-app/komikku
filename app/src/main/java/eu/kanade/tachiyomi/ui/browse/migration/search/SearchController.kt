@@ -110,7 +110,7 @@ class SearchController(
     }
 
     override fun onTitleClick(source: CatalogueSource) {
-        presenter.preferences.lastUsedSource().set(source.id)
+        presenter.sourcePreferences.lastUsedSource().set(source.id)
 
         router.pushController(SourceSearchController(targetController as? MigrationListController ?: return, manga!!, source, presenter.query))
     }

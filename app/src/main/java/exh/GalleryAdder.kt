@@ -9,8 +9,8 @@ import eu.kanade.domain.manga.interactor.GetManga
 import eu.kanade.domain.manga.interactor.InsertManga
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.UrlImportableSource
 import eu.kanade.tachiyomi.source.online.all.EHentai
@@ -28,7 +28,7 @@ class GalleryAdder(
     private val sourceManager: SourceManager = Injekt.get(),
 ) {
 
-    private val filters: Pair<Set<String>, Set<Long>> = Injekt.get<PreferencesHelper>().run {
+    private val filters: Pair<Set<String>, Set<Long>> = Injekt.get<SourcePreferences>().run {
         enabledLanguages().get() to disabledSources().get().map { it.toLong() }.toSet()
     }
 

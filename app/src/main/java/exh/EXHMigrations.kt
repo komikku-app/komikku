@@ -18,6 +18,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.source.interactor.InsertFeedSavedSearch
 import eu.kanade.domain.source.interactor.InsertSavedSearch
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
 import eu.kanade.tachiyomi.data.database.models.Manga
@@ -93,6 +94,7 @@ object EXHMigrations {
         context: Context,
         preferences: PreferencesHelper,
         networkPreferences: NetworkPreferences,
+        sourcePreferences: SourcePreferences,
     ): Boolean {
         val oldVersion = preferences.ehLastVersionCode().get()
         try {

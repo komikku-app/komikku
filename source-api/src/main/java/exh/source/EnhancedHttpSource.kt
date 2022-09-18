@@ -6,7 +6,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
-import exh.pref.SourcePreferences
+import exh.pref.DelegateSourcePreferences
 import okhttp3.Response
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -249,7 +249,7 @@ class EnhancedHttpSource(
     override fun getFilterList() = source().getFilterList()
 
     fun source(): HttpSource {
-        return if (Injekt.get<SourcePreferences>().delegateSources().get()) {
+        return if (Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
             enhancedSource
         } else {
             originalSource

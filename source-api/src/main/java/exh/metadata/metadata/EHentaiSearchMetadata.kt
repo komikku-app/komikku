@@ -7,7 +7,7 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.copy
 import exh.metadata.MetadataUtil
 import exh.metadata.metadata.base.RaisedSearchMetadata
-import exh.pref.SourcePreferences
+import exh.pref.DelegateSourcePreferences
 import kotlinx.serialization.Serializable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -53,7 +53,7 @@ class EHentaiSearchMetadata : RaisedSearchMetadata() {
 
         // No title bug?
         val title = altTitle
-            ?.takeIf { Injekt.get<SourcePreferences>().useJapaneseTitle().get() } // todo
+            ?.takeIf { Injekt.get<DelegateSourcePreferences>().useJapaneseTitle().get() } // todo
             ?: title
 
         // Set artist (if we can find one)

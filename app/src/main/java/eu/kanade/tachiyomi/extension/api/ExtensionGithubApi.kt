@@ -1,6 +1,7 @@
 package eu.kanade.tachiyomi.extension.api
 
 import android.content.Context
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.AvailableSources
@@ -25,6 +26,10 @@ internal class ExtensionGithubApi {
     private val networkService: NetworkHelper by injectLazy()
     private val preferences: PreferencesHelper by injectLazy()
     private val extensionManager: ExtensionManager by injectLazy()
+
+    // SY -->
+    private val sourcePreferences: SourcePreferences by injectLazy()
+    // SY <--
 
     private var requiresFallbackSource = false
 
@@ -91,7 +96,7 @@ internal class ExtensionGithubApi {
         }
 
         // SY -->
-        val blacklistEnabled = preferences.enableSourceBlacklist().get()
+        val blacklistEnabled = sourcePreferences.enableSourceBlacklist().get()
         // SY <--
 
         val installedExtensions = ExtensionLoader.loadExtensions(context)
@@ -172,7 +177,7 @@ internal class ExtensionGithubApi {
 
     // SY -->
     private fun Extension.isBlacklisted(
-        blacklistEnabled: Boolean = preferences.enableSourceBlacklist().get(),
+        blacklistEnabled: Boolean = sourcePreferences.enableSourceBlacklist().get(),
     ): Boolean {
         return pkgName in BlacklistedSources.BLACKLISTED_EXTENSIONS && blacklistEnabled
     }

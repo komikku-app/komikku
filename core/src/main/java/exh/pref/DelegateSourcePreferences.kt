@@ -3,7 +3,7 @@ package exh.pref
 import eu.kanade.tachiyomi.core.preference.Preference
 import eu.kanade.tachiyomi.core.preference.PreferenceStore
 
-class SourcePreferences(
+class DelegateSourcePreferences(
     private val preferenceStore: PreferenceStore,
 ) {
 

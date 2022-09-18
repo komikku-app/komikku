@@ -9,6 +9,7 @@ import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceManager
 import androidx.preference.forEach
 import androidx.preference.get
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.setting.SettingsAdvancedController
 import eu.kanade.tachiyomi.ui.setting.SettingsAppearanceController
@@ -52,7 +53,8 @@ object SettingsSearchHelper {
             SettingsTrackingController::class,
         )
         val preferences = Injekt.get<PreferencesHelper>()
-        if (MdUtil.getEnabledMangaDexs(preferences).isNotEmpty()) {
+        val sourcePreferences = Injekt.get<SourcePreferences>()
+        if (MdUtil.getEnabledMangaDexs(sourcePreferences).isNotEmpty()) {
             controllers += SettingsMangaDexController::class
         }
         if (preferences.isHentaiEnabled().get()) {

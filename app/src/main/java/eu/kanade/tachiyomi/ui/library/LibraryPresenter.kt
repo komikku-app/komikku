@@ -35,6 +35,7 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.Manga
 import eu.kanade.domain.manga.model.MangaUpdate
 import eu.kanade.domain.manga.model.isLocal
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.GetTracks
 import eu.kanade.domain.track.model.Track
 import eu.kanade.presentation.category.visualName
@@ -134,6 +135,7 @@ class LibraryPresenter(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
     // SY -->
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val searchEngine: SearchEngine = SearchEngine(),
     private val customMangaManager: CustomMangaManager = Injekt.get(),
     private val getMergedMangaById: GetMergedMangaById = Injekt.get(),
@@ -201,7 +203,7 @@ class LibraryPresenter(
         // SY -->
         combine(
             preferences.isHentaiEnabled().changes(),
-            preferences.disabledSources().changes(),
+            sourcePreferences.disabledSources().changes(),
             preferences.enableExhentai().changes(),
         ) { isHentaiEnabled, disabledSources, enableExhentai ->
             state.showSyncExh = isHentaiEnabled && (EH_SOURCE_ID.toString() !in disabledSources || enableExhentai)
@@ -801,7 +803,7 @@ class LibraryPresenter(
 
     fun syncMangaToDex(mangaList: List<DbManga>) {
         launchIO {
-            MdUtil.getEnabledMangaDex(preferences, sourceManager)?.let { mdex ->
+            MdUtil.getEnabledMangaDex(preferences, sourcePreferences, sourceManager)?.let { mdex ->
                 mangaList.forEach {
                     mdex.updateFollowStatus(MdUtil.getMangaId(it.url), FollowStatus.READING)
                 }

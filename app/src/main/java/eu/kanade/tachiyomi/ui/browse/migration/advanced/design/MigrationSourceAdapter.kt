@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.migration.advanced.design
 
 import android.os.Bundle
 import eu.davidea.flexibleadapter.FlexibleAdapter
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.source.SourceManager
 import uy.kohesive.injekt.injectLazy
@@ -15,6 +16,10 @@ class MigrationSourceAdapter(
 ) {
     val preferences: PreferencesHelper by injectLazy()
     val sourceManager: SourceManager by injectLazy()
+
+    // SY _->
+    val sourcePreferences: SourcePreferences by injectLazy()
+    // SY <--
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

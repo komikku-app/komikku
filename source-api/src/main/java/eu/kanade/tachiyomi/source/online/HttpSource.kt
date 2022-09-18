@@ -14,7 +14,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import exh.log.maybeInjectEHLogger
-import exh.pref.SourcePreferences
+import exh.pref.DelegateSourcePreferences
 import exh.source.DelegatedHttpSource
 import okhttp3.Headers
 import okhttp3.OkHttpClient
@@ -410,7 +410,7 @@ abstract class HttpSource : CatalogueSource {
 
     // EXH -->
     private var delegate: DelegatedHttpSource? = null
-        get() = if (Injekt.get<SourcePreferences>().delegateSources().get()) {
+        get() = if (Injekt.get<DelegateSourcePreferences>().delegateSources().get()) {
             field
         } else {
             null

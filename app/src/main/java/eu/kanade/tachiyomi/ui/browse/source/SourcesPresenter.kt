@@ -9,6 +9,7 @@ import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.source.model.Pin
 import eu.kanade.domain.source.model.Source
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.browse.SourceUiModel
 import eu.kanade.presentation.browse.SourcesState
 import eu.kanade.presentation.browse.SourcesStateImpl
@@ -32,6 +33,7 @@ class SourcesPresenter(
     private val presenterScope: CoroutineScope,
     private val state: SourcesStateImpl = SourcesState() as SourcesStateImpl,
     private val preferences: PreferencesHelper = Injekt.get(),
+    private val sourcePreferences: SourcePreferences = Injekt.get(),
     private val getEnabledSources: GetEnabledSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleSourcePin: ToggleSourcePin = Injekt.get(),
@@ -115,7 +117,7 @@ class SourcesPresenter(
 
     fun onOpenSource(source: Source) {
         if (!preferences.incognitoMode().get()) {
-            preferences.lastUsedSource().set(source.id)
+            sourcePreferences.lastUsedSource().set(source.id)
         }
     }
 
@@ -147,6 +149,7 @@ class SourcesPresenter(
     companion object {
         const val PINNED_KEY = "pinned"
         const val LAST_USED_KEY = "last_used"
+
         // SY -->
         const val CATEGORY_KEY_PREFIX = "category-"
         // SY <--

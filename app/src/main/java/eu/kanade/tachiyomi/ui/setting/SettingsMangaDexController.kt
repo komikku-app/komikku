@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.setting
 
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateService
 import eu.kanade.tachiyomi.source.Source
@@ -15,6 +16,7 @@ import exh.md.utils.MdUtil
 import exh.widget.preference.MangaDexLoginPreference
 import exh.widget.preference.MangadexLoginDialog
 import exh.widget.preference.MangadexLogoutDialog
+import uy.kohesive.injekt.injectLazy
 
 class SettingsMangaDexController :
     SettingsController(),
@@ -22,6 +24,7 @@ class SettingsMangaDexController :
     MangadexLogoutDialog.Listener {
 
     private val mdex by lazy { MdUtil.getEnabledMangaDex(preferences) }
+    private val sourcePreferences: SourcePreferences by injectLazy()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) = screen.apply {
         titleRes = R.string.mangadex_specific_settings
@@ -48,7 +51,7 @@ class SettingsMangaDexController :
             bindTo(preferences.preferredMangaDexId())
             titleRes = R.string.mangadex_preffered_source
             summaryRes = R.string.mangadex_preffered_source_summary
-            val mangaDexs = MdUtil.getEnabledMangaDexs(preferences)
+            val mangaDexs = MdUtil.getEnabledMangaDexs(sourcePreferences)
             entries = mangaDexs.map { it.toString() }.toTypedArray()
             entryValues = mangaDexs.map { it.id.toString() }.toTypedArray()
         }

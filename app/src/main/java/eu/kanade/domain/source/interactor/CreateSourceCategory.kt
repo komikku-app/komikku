@@ -1,9 +1,9 @@
 package eu.kanade.domain.source.interactor
 
-import eu.kanade.tachiyomi.data.preference.PreferencesHelper
+import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.util.preference.plusAssign
 
-class CreateSourceCategory(private val preferences: PreferencesHelper) {
+class CreateSourceCategory(private val preferences: SourcePreferences) {
 
     fun await(category: String): Result {
         // Do not allow duplicate categories.
