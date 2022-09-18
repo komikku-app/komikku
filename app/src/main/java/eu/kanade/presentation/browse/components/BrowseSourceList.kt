@@ -106,7 +106,7 @@ fun BrowseSourceListItem(
         onLongClick = onLongClick,
         badges = {
             if (manga.favorite) {
-                Badge(text = stringResource(id = R.string.in_library))
+                Badge(text = stringResource(R.string.in_library))
             }
             if (metadata is MangaDexSearchMetadata) {
                 metadata.followStatus?.let { followStatus ->

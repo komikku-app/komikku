@@ -1,5 +1,6 @@
 package eu.kanade.presentation.more.settings.database
 
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import eu.kanade.presentation.components.Scaffold
@@ -17,6 +18,7 @@ fun ClearDatabaseScreen(
     navigateUp: () -> Unit,
 ) {
     val context = LocalContext.current
+    val lazyListState = rememberLazyListState()
     Scaffold(
         topBar = { scrollBehavior ->
             ClearDatabaseToolbar(
@@ -30,6 +32,7 @@ fun ClearDatabaseScreen(
         floatingActionButton = {
             ClearDatabaseFloatingActionButton(
                 isVisible = presenter.selection.isNotEmpty(),
+                lazyListState = lazyListState,
                 onClickDelete = {
                     presenter.dialog = ClearDatabasePresenter.Dialog.Delete(presenter.selection)
                 },
@@ -39,6 +42,7 @@ fun ClearDatabaseScreen(
         ClearDatabaseContent(
             state = presenter,
             contentPadding = paddingValues,
+            lazyListState = lazyListState,
             onClickSelection = { source ->
                 presenter.toggleSelection(source)
             },

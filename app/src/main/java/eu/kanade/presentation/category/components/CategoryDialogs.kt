@@ -61,6 +61,7 @@ fun CategoryCreateDialog(
                     label = {
                         Text(text = stringResource(R.string.name))
                     },
+                    singleLine = true,
                 )
                 // SY -->
             }
@@ -110,6 +111,7 @@ fun CategoryRenameDialog(
                 label = {
                     Text(text = stringResource(R.string.name))
                 },
+                singleLine = true,
             )
         },
     )
