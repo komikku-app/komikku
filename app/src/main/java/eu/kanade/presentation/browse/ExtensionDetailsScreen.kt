@@ -412,7 +412,7 @@ private fun SourceSwitchPreference(
 }
 
 @Composable
-fun NsfwWarningDialog(
+private fun NsfwWarningDialog(
     onClickConfirm: () -> Unit,
 ) {
     AlertDialog(

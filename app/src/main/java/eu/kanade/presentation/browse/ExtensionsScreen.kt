@@ -94,7 +94,7 @@ fun ExtensionScreen(
 }
 
 @Composable
-fun ExtensionContent(
+private fun ExtensionContent(
     state: ExtensionsState,
     onLongClickItem: (Extension) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
@@ -204,7 +204,7 @@ fun ExtensionContent(
 }
 
 @Composable
-fun ExtensionItem(
+private fun ExtensionItem(
     modifier: Modifier = Modifier,
     item: ExtensionUiModel.Item,
     onClickItem: (Extension) -> Unit,
@@ -241,7 +241,7 @@ fun ExtensionItem(
 }
 
 @Composable
-fun ExtensionItemContent(
+private fun ExtensionItemContent(
     extension: Extension,
     modifier: Modifier = Modifier,
 ) {
@@ -324,7 +324,7 @@ private infix fun String.plusRepo(extension: Extension): String {
 }
 
 @Composable
-fun ExtensionItemActions(
+private fun ExtensionItemActions(
     extension: Extension,
     installStep: InstallStep,
     modifier: Modifier = Modifier,
@@ -387,7 +387,7 @@ fun ExtensionItemActions(
 }
 
 @Composable
-fun ExtensionHeader(
+private fun ExtensionHeader(
     @StringRes textRes: Int,
     modifier: Modifier = Modifier,
     action: @Composable RowScope.() -> Unit = {},
@@ -400,7 +400,7 @@ fun ExtensionHeader(
 }
 
 @Composable
-fun ExtensionHeader(
+private fun ExtensionHeader(
     text: String,
     modifier: Modifier = Modifier,
     action: @Composable RowScope.() -> Unit = {},
@@ -421,7 +421,7 @@ fun ExtensionHeader(
 }
 
 @Composable
-fun ExtensionTrustDialog(
+private fun ExtensionTrustDialog(
     onClickConfirm: () -> Unit,
     onClickDismiss: () -> Unit,
     onDismissRequest: () -> Unit,
